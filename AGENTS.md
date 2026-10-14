@@ -126,6 +126,48 @@ do not store the pack anywhere else.
 Krish's time budget is about 20 minutes a day and 30 on Sunday. Keep every
 pack small enough to finish in that, best item first.
 
+## When Krish says: "create the automations"
+
+This is the setup run. Krish opens a Codex chat on this repository and types
+"create the automations" (or anything that plainly means it). Do exactly
+this, in order, and nothing else:
+
+1. **Get the latest.** `git pull --ff-only`.
+2. **Check the machine.** `python3 growth.py doctor`. If any line says NOT
+   READY, stop. Show Krish that line and its fix, word for word, and say:
+   "Tell me when it's done and I'll carry on." Never work around a missing
+   key: no key, no automations.
+3. **Check the clock.** Run `date +%Z` (or the system equivalent). The times
+   in `automations.json` are New York time. If this computer's time zone is
+   not New York, convert each time, and tell Krish which zone you used.
+4. **Create the eight scheduled tasks** from `automations.json`, using
+   Codex's own scheduled tasks (a Codex chat can create and update them).
+   For each entry:
+   - name: the entry's `name`;
+   - prompt: the entry's `prompt`, exactly;
+   - schedule: the entry's `schedule` (an RFC 5545 rule);
+   - where: this local project, not a new worktree;
+   - access: network on; the browser, if Codex offers it, for the jobs that
+     read channels;
+   - model and reasoning: the defaults.
+
+   If a task with the same name already exists, **update** it; never make a
+   second one. Never create a task that is not in `automations.json`, and
+   never one whose prompt asks to post, send or publish.
+5. **Read back.** List the scheduled tasks and show Krish a table: name, next
+   run (his local time), and the prompt. Every row in `automations.json` must
+   be there exactly once. Say so plainly, or name what is missing.
+6. **Prove one end to end.** Run the numbers job once now (`jobs/numbers.md`,
+   as AGENTS.md says). Confirm it printed "stored in Control Center". Give
+   Krish the link https://controlcenter.krishraja.com/#/growth?section=packs.
+7. **Finish** with one line: "8 automations live. First radar at 06:30
+   tomorrow. Packs land in Control Center > Growth > Packs."
+
+If your Codex can't create scheduled tasks from a chat, say so in one line.
+Then give Krish the table from `automations.json` to add by hand, under
+Scheduled in the app sidebar: name, schedule, prompt, and "run in this
+project". After he adds them, run steps 5 to 7.
+
 ## Lists this engine keeps
 
 `lists/swaps.md` (Substacks asked, with dates and replies),

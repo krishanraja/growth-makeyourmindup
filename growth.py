@@ -28,6 +28,10 @@ them and posts by hand.
     python3 growth.py read [--days 7] [--kind daily]
         The packs already in Control Center (for the Sunday report).
 
+    python3 growth.py doctor
+        Is this machine ready? Python, the key, Control Center accepting it,
+        the public feed, and the automations file. Exit 1 names what is not.
+
     python3 growth.py --self-test
 
 A pack file:
@@ -144,13 +148,24 @@ def check_pack(pack):
     return errs
 
 
+TOKEN_FILE = os.path.expanduser('~/.config/growth-makeyourmindup/token')
+
+
+def token():
+    """The Control Center key: the environment first, then the file on Krish's Mac."""
+    t = os.environ.get('GROWTH_ENGINE_TOKEN', '').strip()
+    if not t and os.path.exists(TOKEN_FILE):
+        t = open(TOKEN_FILE).read().strip()
+    return t
+
+
 def call(method, path, body=None):
-    token = os.environ.get('GROWTH_ENGINE_TOKEN', '')
-    if not token:
-        sys.exit('GROWTH_ENGINE_TOKEN is not set. Krish sets it once in this environment (README.md, step 1).')
+    token_value = token()
+    if not token_value:
+        sys.exit(f'No Control Center key: set GROWTH_ENGINE_TOKEN or put it in {TOKEN_FILE} (README.md, step 1).')
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(BASE + path, data=data, method=method)
-    req.add_header('Authorization', f'Bearer {token}')
+    req.add_header('Authorization', f'Bearer {token_value}')
     req.add_header('Content-Type', 'application/json')
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
@@ -159,6 +174,41 @@ def call(method, path, body=None):
         sys.exit(f'Control Center said {e.code}: {e.read().decode(errors="replace")[:500]}')
     except urllib.error.URLError as e:
         sys.exit(f'Could not reach Control Center at {BASE}: {e.reason}')
+
+
+def doctor():
+    ok = True
+    def line(good, what, fix=''):
+        nonlocal ok
+        ok = ok and good
+        print(('ready    ' if good else 'NOT READY ') + what + ('' if good else f'\n          fix: {fix}'))
+    line(sys.version_info >= (3, 9), f'Python {sys.version.split()[0]}', 'install Python 3.9 or newer')
+    t = token()
+    line(bool(t), 'the Control Center key' + (f' (from {"the environment" if os.environ.get("GROWTH_ENGINE_TOKEN") else TOKEN_FILE})' if t else ''),
+         f'README.md step 1: save the key to {TOKEN_FILE}')
+    if t:
+        req = urllib.request.Request(BASE + '/api/growth/packs?days=1', headers={'Authorization': f'Bearer {t}'})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                good = json.loads(r.read() or b'{}').get('ok') is True
+            line(good, f'Control Center accepts the key ({BASE})', 'check the value matches Vercel exactly, then redeploy')
+        except urllib.error.HTTPError as e:
+            fixes = {401: 'the key does not match GROWTH_ENGINE_TOKEN in Vercel', 503: 'GROWTH_ENGINE_TOKEN is not set in Vercel yet, or not redeployed',
+                     404: 'Control Center does not have /api/growth/packs yet (is PR #454 merged and deployed?)'}
+            line(False, f'Control Center accepts the key ({BASE}): HTTP {e.code}', fixes.get(e.code, 'see the HTTP code'))
+        except urllib.error.URLError as e:
+            line(False, f'Control Center reachable ({BASE})', f'network access is off or blocked: {e.reason}')
+    try:
+        n = len(pieces(30))
+        line(n > 0, f'the public feed ({n} pieces in 30 days)', 'check https://home.makeyourmindup.ai/feed opens')
+    except Exception as e:  # noqa: BLE001 - doctor reports, never raises
+        line(False, 'the public feed', f'network access is off or blocked: {e}')
+    here = os.path.dirname(os.path.abspath(__file__))
+    autos = json.load(open(os.path.join(here, 'automations.json')))['automations']
+    line(all(os.path.exists(os.path.join(here, a['job'])) for a in autos), f'automations.json ({len(autos)} automations, every job file present)',
+         'a job file named in automations.json is missing')
+    print('\nready to run' if ok else '\nnot ready: fix the lines above, then run doctor again')
+    return 0 if ok else 1
 
 
 def strip_html(s):
@@ -225,6 +275,11 @@ def self_test():
         t(f'jobs/{f} is on the schedule in AGENTS.md', f'jobs/{f}' in agents)
     for f in ('PLAYBOOK.md', 'BROWSER.md', 'knowledge/README.md', 'knowledge/10k-operating-system.md'):
         t(f'{f} exists and AGENTS.md or the playbook points at it', os.path.exists(os.path.join(here, f)))
+    autos = json.load(open(os.path.join(here, 'automations.json')))['automations']
+    for au in autos:
+        t(f'automation "{au["name"]}" runs a job that exists', os.path.exists(os.path.join(here, au['job'])))
+        t(f'automation "{au["name"]}" has a schedule rule', au['schedule'].startswith('RRULE:FREQ='))
+    t('every job file has an automation', {a['job'] for a in autos} == {f'jobs/{f}' for f in os.listdir(os.path.join(here, 'jobs'))})
     t('html becomes paragraphs', strip_html('<p>One &amp; two</p><p>Three</p>') == 'One & two\n\nThree')
     print(f'growth self-test passed: {ok} checks')
 
@@ -236,6 +291,7 @@ def main():
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     c = sub.add_parser('check'); c.add_argument('file')
     s = sub.add_parser('post'); s.add_argument('file')
+    sub.add_parser('doctor')
     lk = sub.add_parser('link'); lk.add_argument('url'); lk.add_argument('platform'); lk.add_argument('job')
     r = sub.add_parser('read'); r.add_argument('--days', type=int, default=7); r.add_argument('--kind')
     a = ap.parse_args()
@@ -260,6 +316,8 @@ def main():
         print(f'stored in Control Center: {pack["kind"]} {pack["pack_date"]} ({len(pack.get("items") or [])} drafts) '
               f'{BASE}/#/growth?section=packs' if out.get('ok') else json.dumps(out))
         return
+    if a.cmd == 'doctor':
+        sys.exit(doctor())
     if a.cmd == 'link':
         print(tracked(a.url, a.platform, a.job))
         return

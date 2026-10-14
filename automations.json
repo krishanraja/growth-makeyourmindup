@@ -1,0 +1,57 @@
+{
+ "_about": "The eight scheduled tasks this engine runs as, in one place. A Codex session asked to \"create the automations\" builds them from this file (AGENTS.md, \"When Krish says: create the automations\"); the README table is the same list for reading. Times are New York (America/New_York).",
+ "timezone": "America/New_York",
+ "run_in": "this local project (not a new worktree), so every run shares the lists and the token file",
+ "access": "network on (the public feed, the channels, controlcenter.krishraja.com); the signed-in browser when available",
+ "model": "default",
+ "automations": [
+  {
+   "name": "Growth: numbers",
+   "schedule": "RRULE:FREQ=DAILY;BYHOUR=6;BYMINUTE=0",
+   "job": "jobs/numbers.md",
+   "prompt": "Run jobs/numbers.md as AGENTS.md says."
+  },
+  {
+   "name": "Growth: radar",
+   "schedule": "RRULE:FREQ=DAILY;BYHOUR=6;BYMINUTE=30",
+   "job": "jobs/radar.md",
+   "prompt": "Run jobs/radar.md as AGENTS.md says."
+  },
+  {
+   "name": "Growth: day pack",
+   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;BYHOUR=13;BYMINUTE=30",
+   "job": "jobs/daily-pack.md",
+   "prompt": "Run jobs/daily-pack.md as AGENTS.md says."
+  },
+  {
+   "name": "Growth: pitches",
+   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=TU;BYHOUR=7;BYMINUTE=0",
+   "job": "jobs/pitches.md",
+   "prompt": "Run jobs/pitches.md as AGENTS.md says."
+  },
+  {
+   "name": "Growth: partners",
+   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=WE;BYHOUR=7;BYMINUTE=0",
+   "job": "jobs/partners.md",
+   "prompt": "Run jobs/partners.md as AGENTS.md says."
+  },
+  {
+   "name": "Growth: recommendations",
+   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=TH;BYHOUR=7;BYMINUTE=0",
+   "job": "jobs/swaps.md",
+   "prompt": "Run jobs/swaps.md as AGENTS.md says."
+  },
+  {
+   "name": "Growth: front door",
+   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=SA;BYHOUR=7;BYMINUTE=0",
+   "job": "jobs/conversion.md",
+   "prompt": "Run jobs/conversion.md as AGENTS.md says."
+  },
+  {
+   "name": "Growth: report",
+   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=SU;BYHOUR=7;BYMINUTE=0",
+   "job": "jobs/report.md",
+   "prompt": "Run jobs/report.md as AGENTS.md says."
+  }
+ ]
+}
