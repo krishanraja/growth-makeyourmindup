@@ -127,7 +127,7 @@ def check_pack(pack):
 def call(method, path, body=None):
     token = os.environ.get('GROWTH_ENGINE_TOKEN', '')
     if not token:
-        sys.exit('GROWTH_ENGINE_TOKEN is not set. Krish sets it once in this environment (growth-engine/README.md, step 2).')
+        sys.exit('GROWTH_ENGINE_TOKEN is not set. Krish sets it once in this environment (README.md, step 1).')
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(BASE + path, data=data, method=method)
     req.add_header('Authorization', f'Bearer {token}')
@@ -150,7 +150,7 @@ def strip_html(s):
 
 
 def pieces(days):
-    with urllib.request.urlopen(urllib.request.Request(FEED, headers={'User-Agent': 'growth-engine'}), timeout=60) as r:
+    with urllib.request.urlopen(urllib.request.Request(FEED, headers={'User-Agent': 'growth-makeyourmindup'}), timeout=60) as r:
         root = ET.fromstring(r.read())
     ns = {'c': 'http://purl.org/rss/1.0/modules/content/'}
     since = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days)

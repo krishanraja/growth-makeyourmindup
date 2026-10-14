@@ -1,4 +1,4 @@
-# growth-engine
+# growth-makeyourmindup
 
 The makeyourmindup growth engine. It drafts what brings relevant new
 followers and subscribers to Krish Raja's channels, with no paid boosts. It
@@ -22,7 +22,7 @@ articles in the public feed.
      Production. Redeploy.
    - In Codex, open this repository's environment settings and add the same
      value as the secret `GROWTH_ENGINE_TOKEN`.
-2. **The repository in Codex.** Connect krishanraja/growth-engine in Codex
+2. **The repository in Codex.** Connect krishanraja/growth-makeyourmindup in Codex
    (cloud or the desktop app), with internet access on, so a run can read
    public pages and reach controlcenter.krishraja.com.
 3. **The schedule.** Make six Codex automations on this repository, New York
