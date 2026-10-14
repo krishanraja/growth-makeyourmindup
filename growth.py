@@ -21,6 +21,10 @@ them and posts by hand.
         Bearer $GROWTH_ENGINE_TOKEN). Same date and kind replaces the earlier
         pack. Shows on Control Center > Growth > Packs.
 
+    python3 growth.py link URL PLATFORM JOB
+        The url with tracking for the subscriber counts by source, e.g.
+        `link https://home.makeyourmindup.ai/p/x linkedin daily`.
+
     python3 growth.py read [--days 7] [--kind daily]
         The packs already in Control Center (for the Sunday report).
 
@@ -33,7 +37,7 @@ A pack file:
                 "target_name": "", "why": "...", "text": "..."}],
      "numbers": null, "link": null}
 
-Kinds: daily, pitches, swaps, radar, numbers, report.
+Kinds: daily, pitches, swaps, radar, numbers, report, conversion, partners.
 Environment: GROWTH_ENGINE_TOKEN (required to post or read),
 CONTROL_CENTER_URL (default https://controlcenter.krishraja.com).
 """
@@ -51,8 +55,8 @@ import xml.etree.ElementTree as ET
 
 FEED = 'https://home.makeyourmindup.ai/feed'
 BASE = os.environ.get('CONTROL_CENTER_URL', 'https://controlcenter.krishraja.com').rstrip('/')
-KINDS = ('daily', 'pitches', 'swaps', 'radar', 'numbers', 'report')
-PLATFORMS = ('linkedin', 'x', 'substack', 'youtube', 'instagram', 'tiktok', 'reddit', 'email', 'seo', 'podcast', 'other')
+KINDS = ('daily', 'pitches', 'swaps', 'radar', 'numbers', 'report', 'conversion', 'partners')
+PLATFORMS = ('linkedin', 'x', 'substack', 'youtube', 'instagram', 'tiktok', 'spotify', 'reddit', 'email', 'seo', 'podcast', 'partner', 'other')
 
 # Krish's house rules for anything written in his name. Control Center refuses
 # the first two as well, so a pack that skips this check still cannot land.
@@ -69,6 +73,19 @@ SLOP = [
 NOT_BUT = re.compile(r"\b(?:it'?s|this is|that'?s)\s+not\s+(?:just\s+|only\s+|about\s+)?[^.;:!?]{1,60}[,;]\s*(?:it'?s|but)\b"
                      r"|\bisn'?t\s+(?:just|only)\b", re.I)
 LIMITS = {'linkedin': 3000, 'x': 280, 'reddit': 1500}
+# Every link to makeyourmindup carries tracking, so the report can count
+# subscribers by source (PLAYBOOK.md, "Every tracked link").
+OWN_LINK = re.compile(r'https?://(?:[\w-]+\.)?makeyourmindup\.ai[^\s)>\]"\']*', re.I)
+SETTINGS_PATH = re.compile(r'/publish/|/settings|/account', re.I)
+
+
+def tracked(url, platform, job, day=None):
+    """The url with this engine's UTM tags (replacing any already there)."""
+    day = (day or dt.date.today().isoformat()).replace('-', '')
+    base, _, frag = url.partition('#')
+    base = re.sub(r'([?&])utm_[a-z]+=[^&]*', r'\1', base).rstrip('?&').replace('?&', '?')
+    tags = f'utm_source={platform}&utm_medium=organic&utm_campaign=growth&utm_content={job}-{day}'
+    return base + ('&' if '?' in base else '?') + tags + (('#' + frag) if frag else '')
 X_THREAD_SPLIT = re.compile(r'\n\s*\n')
 
 
@@ -101,6 +118,9 @@ def problems(item):
         out.append('a LinkedIn comment with a link (LinkedIn hides those)')
     if len(text) > 4000:
         out.append('it is over 4,000 characters')
+    for url in OWN_LINK.findall(text):
+        if 'utm_source=' not in url and not SETTINGS_PATH.search(url):
+            out.append(f'the link {url} is not tracked (python3 growth.py link <url> <platform> <job>)')
     return out
 
 
@@ -189,6 +209,22 @@ def self_test():
     t('an X thread splits on blank lines', check_pack({**good, 'items': [{'platform': 'x', 'text': 'a' * 200 + '\n\n' + 'b' * 200}]}) == [])
     t('an unknown kind is refused', any('kind' in e for e in check_pack({**good, 'kind': 'notes'})))
     t('empty text is refused', any('no text' in e for e in check_pack({**good, 'items': [{'platform': 'x', 'text': ' '}]})))
+    t('an untracked own link is refused', any('not tracked' in e for e in check_pack({**good, 'items': [{'platform': 'linkedin', 'text': 'Read it https://home.makeyourmindup.ai/p/muse'}]})))
+    link = tracked('https://home.makeyourmindup.ai/p/muse', 'linkedin', 'daily', '2026-10-16')
+    t('a tracked link passes', check_pack({**good, 'items': [{'platform': 'linkedin', 'text': 'Read it ' + link}]}) == [])
+    t('tracking replaces old tags', tracked('https://makeyourmindup.ai/?utm_source=old&a=1', 'x', 'radar', '2026-10-16') ==
+      'https://makeyourmindup.ai/?a=1&utm_source=x&utm_medium=organic&utm_campaign=growth&utm_content=radar-20261016')
+    t('a settings page needs no tracking', check_pack({**good, 'items': [{'platform': 'substack', 'text': 'Open https://home.makeyourmindup.ai/publish/settings'}]}) == [])
+    t('the new kinds are accepted', check_pack({**good, 'kind': 'partners'}) == [] and check_pack({**good, 'kind': 'conversion'}) == [])
+    here = os.path.dirname(os.path.abspath(__file__))
+    agents = open(os.path.join(here, 'AGENTS.md')).read()
+    for f in sorted(os.listdir(os.path.join(here, 'jobs'))):
+        body = open(os.path.join(here, 'jobs', f)).read()
+        m = re.search(r'Kind `(\w+)`', body)
+        t(f'jobs/{f} names a kind Control Center accepts', bool(m) and m.group(1) in KINDS)
+        t(f'jobs/{f} is on the schedule in AGENTS.md', f'jobs/{f}' in agents)
+    for f in ('PLAYBOOK.md', 'BROWSER.md', 'knowledge/README.md', 'knowledge/10k-operating-system.md'):
+        t(f'{f} exists and AGENTS.md or the playbook points at it', os.path.exists(os.path.join(here, f)))
     t('html becomes paragraphs', strip_html('<p>One &amp; two</p><p>Three</p>') == 'One & two\n\nThree')
     print(f'growth self-test passed: {ok} checks')
 
@@ -200,6 +236,7 @@ def main():
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     c = sub.add_parser('check'); c.add_argument('file')
     s = sub.add_parser('post'); s.add_argument('file')
+    lk = sub.add_parser('link'); lk.add_argument('url'); lk.add_argument('platform'); lk.add_argument('job')
     r = sub.add_parser('read'); r.add_argument('--days', type=int, default=7); r.add_argument('--kind')
     a = ap.parse_args()
     if a.self_test:
@@ -222,6 +259,9 @@ def main():
         out = call('POST', '/api/growth/packs', pack)
         print(f'stored in Control Center: {pack["kind"]} {pack["pack_date"]} ({len(pack.get("items") or [])} drafts) '
               f'{BASE}/#/growth?section=packs' if out.get('ok') else json.dumps(out))
+        return
+    if a.cmd == 'link':
+        print(tracked(a.url, a.platform, a.job))
         return
     if a.cmd == 'read':
         q = f'/api/growth/packs?days={a.days}' + (f'&kind={a.kind}' if a.kind else '')

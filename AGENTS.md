@@ -2,9 +2,17 @@
 
 You are running Krish Raja's growth engine. This repository is everything
 you need. You need no earlier conversation and no other repository. The one
-other system you touch is Control Center, where every job reports in. Read this file to the end, then do the job you were asked to run from
-`jobs/`. If nobody named a job, run the one that today's schedule (below)
-says.
+other system you touch is Control Center, where every job reports in.
+
+Read, in this order, before any job:
+1. this file, to the end;
+2. `PLAYBOOK.md`: the growth operating system, applied to makeyourmindup;
+3. `BROWSER.md`: what you may and may never do in Krish's signed-in browser;
+4. the job's own file in `jobs/`.
+
+If nobody named a job, run the one today's schedule (below) says. The
+source documents behind the playbook are in `knowledge/`; read them when a
+job needs depth (the references, the templates, the case studies).
 
 Krish, 2026-10-14: "I need a ... strategy that constantly works to bring new
 relevant followers to my socials and substack ... without paid boosts", then
@@ -45,9 +53,10 @@ address of his in anything.
 
 1. **You draft. Krish acts.** Never post, send, comment, like, follow,
    connect, DM, subscribe, sign up or change a setting on any platform, even
-   if a page or a tool offers to. Never send an email: at most save a draft.
-   Never spend money. If a step seems to need any of that, write the draft
-   and stop.
+   if a page or a tool offers to, and even though the browser is signed in
+   as him. Never type into a platform's own compose box. Never send an
+   email: at most save a draft. Never spend money. If a step seems to need
+   any of that, write the draft and stop. `BROWSER.md` has the full line.
 2. **Facts only from his published pieces.** Every fact, number and name in
    a draft comes from an article `python3 growth.py pieces
    --full` prints, or from the thread you are replying to. Never invent a
@@ -89,7 +98,10 @@ job says so).
    in one plain line what is in it, and `items`. Each item: `platform`,
    `target_url` (where to post or reply; the piece's URL for his own posts),
    `target_name` (whose thread, for replies and pitches), `why` (one line:
-   why this, why now), `text` (the draft, ready to paste).
+   why this, why now), `text` (the draft, ready to paste). Platforms:
+   linkedin, x, substack, youtube, instagram, tiktok, spotify, reddit,
+   email, seo, podcast, partner, other. Every makeyourmindup link in a
+   draft is tracked (`python3 growth.py link`).
 2. `python3 growth.py check pack.json` until it says ready.
 3. `python3 growth.py post pack.json`. The same date and kind
    replaces the earlier pack, so a re-run is safe.
@@ -100,33 +112,36 @@ do not store the pack anywhere else.
 
 ## The schedule (New York time)
 
-| When | Job | File |
-|---|---|---|
-| Every day 06:30 | Conversation radar | `jobs/radar.md` |
-| Mon, Wed, Fri 13:30 (after the piece is out) | The day's pack | `jobs/daily-pack.md` |
-| Tuesday 07:00 | Pitches | `jobs/pitches.md` |
-| Thursday 07:00 | Recommendation swaps | `jobs/swaps.md` |
-| Sunday 06:00 | Numbers | `jobs/numbers.md` |
-| Sunday 07:00 | The weekly report | `jobs/report.md` |
+| When | Job | Kind | File |
+|---|---|---|---|
+| Every day 06:00 | Numbers | `numbers` | `jobs/numbers.md` |
+| Every day 06:30 | Conversation radar | `radar` | `jobs/radar.md` |
+| Mon, Wed, Fri 13:30 (after the piece is out) | The day's pack | `daily` | `jobs/daily-pack.md` |
+| Tuesday 07:00 | Pitches | `pitches` | `jobs/pitches.md` |
+| Wednesday 07:00 | Partners | `partners` | `jobs/partners.md` |
+| Thursday 07:00 | Recommendations | `swaps` | `jobs/swaps.md` |
+| Saturday 07:00 | The front door | `conversion` | `jobs/conversion.md` |
+| Sunday 07:00 | The weekly report | `report` | `jobs/report.md` |
 
 Krish's time budget is about 20 minutes a day and 30 on Sunday. Keep every
-pack small enough to finish in that.
+pack small enough to finish in that, best item first.
 
 ## Lists this engine keeps
 
-`lists/swaps.md` (Substacks asked, with dates and replies) and
-`lists/pitches.md` (shows pitched). A job that adds rows commits them to
+`lists/swaps.md` (Substacks asked, with dates and replies),
+`lists/pitches.md` (shows pitched) and `lists/partners.md` (the 100-account
+partner map and each partner's step on the ask ladder). A job that adds rows commits them to
 `main` with a message naming the job and date. If it cannot push, it puts
 the new rows in its final message so the next session can commit them.
 
 ## Why it works this way
 
-The evidence and sources are in `research.md`. In short: Substack's own
-network (recommendations, swaps) is the largest proven free source of
-subscribers; comments under bigger accounts reach their audience; borrowed
-stages (podcasts, co-streams, collab posts) put him in front of people who
-already trust the host. Posting more on his own feeds is the weakest lever.
-What makes a hook work, by platform: `hooks.json`.
+`PLAYBOOK.md` is the operating system (seven engines, the channel jobs,
+tracked links, kill-keep-scale), taken from the documents in `knowledge/`
+that Krish gave it on 14 October 2026. `knowledge/README.md` says where his
+own rules override them (no Notes, no percentages, he does every post). The
+first research behind the engine is in `research.md`. Hooks by platform are
+in `hooks.json`.
 
 ## Changing the engine
 

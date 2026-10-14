@@ -1,5 +1,5 @@
 {
- "_about": "What the 2026 hooks research says works, per surface. Krish's own lessons win wherever they disagree: 'name the product exactly, say the format, give the real finding with the why left open' (from his rewrites of 14 Oct titles).",
+ "_about": "What the 2026 hooks research says works, per surface. Krish's own lessons win wherever they disagree: 'name the product exactly, say the format, give the real finding with the why left open' (from his rewrites of 14 Oct titles). Hook families, the ask ladder and the X, Instagram, TikTok and Spotify rules come from knowledge/10k-operating-system.md (14 Oct 2026).",
  "formula": "Specific subject + visible stakes + proof marker + one honest open loop, inside the surface's first readable space, with the words people search for early, and the payoff delivered fast.",
  "everywhere": [
   "Name the subject: a person, product, company, number or moment. Vague curiosity is losing to specific, honest tension.",
@@ -77,7 +77,57 @@
     "ending on a question (0.82x)",
     "'I was wrong' (<0.5x)",
     "plain how-to (1.07x)"
+   ],
+   "links": "Links in Shorts descriptions and comments are not clickable: say and show the name; link the related long video; put the tracked link first in the long description and the pinned comment."
+  },
+  "x": {
+   "formula": "Thread: counterintuitive hook, stakes for a named reader, evidence, framework, application, open loop, a specific subscribe line. Post 1 stands alone.",
+   "cadence": "1 to 3 original posts a day, 2 threads a week, 5 to 10 useful replies a day",
+   "weak": [
+    "hashtags beyond an event or established community",
+    "tagging people not involved"
    ]
+  },
+  "instagram": {
+   "formula": "Win the first three seconds. Reels for reach, carousels for saves, Stories for conversion (tension, insight, proof, link sticker), Collabs for shared reach.",
+   "strong": [
+    "search words in profile, bio and caption",
+    "original vertical media without watermarks",
+    "pinned manifesto, proof and start-here"
+   ],
+   "weak": [
+    "irrelevant hashtags",
+    "recycled content"
+   ]
+  },
+  "tiktok": {
+   "formula": "Lead with tension, result or surprise at once; every clip stands alone; captions and on-screen keywords; numbered series; reply to strong comments with video; close with one specific continuation that names makeyourmindup.",
+   "weak": [
+    "#fyp and hashtag piles",
+    "sounds or tags that do not fit"
+   ]
+  },
+  "spotify": {
+   "formula": "Predictable cadence, value before the ask, one spoken ask at the end, the matched link in show notes, one 9:16 clip under 90 seconds per episode, mark the best place to start."
   }
+ },
+ "hook_families": [
+  "prediction",
+  "contrarian claim",
+  "new evidence",
+  "avoidable loss",
+  "audience identity",
+  "confession or failure",
+  "specific utility",
+  "narrative scene",
+  "curiosity gap",
+  "public challenge"
+ ],
+ "cta_ladder": {
+  "cold": "save it, watch part two, read the free breakdown",
+  "curious": "get the full finding or source list",
+  "warm": "subscribe for the next piece",
+  "engaged free reader": "forward it to one person",
+  "subscriber": "refer one sharp person"
  }
 }

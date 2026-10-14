@@ -1,25 +1,28 @@
 # Job: conversation radar (every day)
 
-Kind `radar`. Time for Krish: about 10 minutes (he posts 5 to 8 of these).
+Kind `radar`. Engine 5 in `PLAYBOOK.md`. Time for Krish: about 10 minutes.
+He posts the best 5 to 10.
 
-1. `python3 growth.py pieces --days 21 --full`: these are the
-   only facts you may bring to a thread.
-2. Find live threads from the last 12 hours where one of those facts adds
-   something real. Look, through web search and public pages only:
-   - LinkedIn posts by people in his world: AI, media, adtech, data, the
-     business of tech, creators, investors and operators;
-   - X posts on the topics of his last three pieces;
-   - Reddit: r/artificial, r/OpenAI, r/singularity, r/technology, and any
-     subreddit about the piece's subject (read its rules: skip any that bans
+1. `python3 growth.py pieces --days 21 --full`. These are the only facts you
+   may bring.
+2. Read `lists/partners.md`. A reply under a mapped account is worth more:
+   it moves that partner one step up the ask ladder.
+3. Using the signed-in browser (`BROWSER.md`; read only), find live threads
+   from the last 12 hours where one fact from his pieces adds something:
+   - his LinkedIn feed and LinkedIn search for the topics of his last three
+     pieces (goal: 10 comments a workday);
+   - X search and his lists on the same topics (goal: 5 to 10 replies);
+   - Reddit: r/artificial, r/OpenAI, r/singularity, r/technology and any
+     subreddit about a piece's subject (read its rules; skip any that bans
      this);
-   - comments under bigger AI channels' newest YouTube videos;
-   - Substack posts from AI and tech writers.
-   Never log in, never act on a page.
-3. Rank by reach (the author's followers, if shown), fit (his fact answers
-   their point) and freshness. Keep 10 to 15.
-4. For each, one item: `platform`, `target_url` (the thread),
-   `target_name` (who posted it, and their follower count if shown), `why`
-   (one line), `text`: a reply of at most 60 words in his voice that adds one
-   named fact from his piece. No links in LinkedIn comments; on Reddit say
-   once, plainly, that he wrote the piece if you link it.
-5. Headline: "Radar: 12 threads, best one first". Check, then post.
+   - the newest videos of bigger AI channels on YouTube;
+   - Substack posts by AI and tech writers in the partner map.
+4. Rank by fit (his fact answers their point), reach (followers, if shown),
+   freshness and partner-map priority. Keep 10 to 15, best first.
+5. One item each: `platform`, `target_url` (the thread), `target_name` (who,
+   followers if shown, and "partner map" if mapped), `why` (one line),
+   `text`: a reply of at most 60 words that adds one named fact. It never
+   just praises or agrees. No links in LinkedIn comments. On Reddit, if you
+   link, say once and plainly that he wrote the piece.
+6. Headline: "Radar: 12 threads, 3 under partners, best first". Check, then
+   post.
