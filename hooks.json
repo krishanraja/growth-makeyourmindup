@@ -1,0 +1,83 @@
+{
+ "_about": "What the 2026 hooks research says works, per surface. Krish's own lessons win wherever they disagree: 'name the product exactly, say the format, give the real finding with the why left open' (from his rewrites of 14 Oct titles).",
+ "formula": "Specific subject + visible stakes + proof marker + one honest open loop, inside the surface's first readable space, with the words people search for early, and the payoff delivered fast.",
+ "everywhere": [
+  "Name the subject: a person, product, company, number or moment. Vague curiosity is losing to specific, honest tension.",
+  "Keep one honest open loop and pay it off early in the piece (YouTube: in the first 5 to 10 seconds). Over-promising is now punished after the click.",
+  "First person ('I tried', 'I scored') is the strongest tested opener (+19% within the same creator on LinkedIn).",
+  "Stack three or four frames into one idea (action + constraint + stake), not one buzzword.",
+  "A proof marker makes the promise believable: a number, a duration, a sample size.",
+  "Slop tells to kill: 'it's not X, it's Y', 'Unpopular opinion:', 'Let that sink in.', rule-of-three filler, stacked rhetorical questions. Test: delete the name; if nobody could tell it was Krish's, it is slop.",
+  "Never over-claim. A misleading title wins the click and loses the trust."
+ ],
+ "surfaces": {
+  "linkedin": {
+   "limit_chars": 140,
+   "formula": "I + [specific decision or moment] + [unexpected consequence] + [unresolved why], with the topic keyword in line one.",
+   "strong": [
+    "first person (+19%)",
+    "a number in line one (+8%)"
+   ],
+   "weak": [
+    "'you' address (-10%) unless the reader is the subject",
+    "'Unpopular opinion' (-2%)",
+    "broetry line breaks"
+   ]
+  },
+  "article": {
+   "limit_chars": 60,
+   "formula": "On Substack the title is also the email subject and the homepage headline: under about 60 characters, with a specific number, a broken rule, or an unexpected word in an expected phrase. The subtitle (60 to 150 characters) says who it is for and what they walk away with.",
+   "strong": [
+    "confession",
+    "contrast or tension",
+    "a resource readers can save or forward"
+   ],
+   "weak": [
+    "the word 'newsletter'",
+    "describing the topic instead of the reader's situation"
+   ]
+  },
+  "blog": {
+   "limit_chars": 60,
+   "formula": "[main search phrase in the first 3 words] + [checkable claim or number] + [something an AI summary can't give: data, a template, tested, first-hand]. Match the H1.",
+   "strong": [
+    "claim first",
+    "a number kept in title and H1"
+   ],
+   "weak": [
+    "over 70 characters (rewritten 99.9% of the time)"
+   ]
+  },
+  "shorts": {
+   "limit_chars": 50,
+   "formula": "Title = the words people search + a specific outcome (30 to 50 characters). First frame shows motion and the payoff object; on-screen text is a 3 to 7 word claim. Caption every spoken hook: most watch muted.",
+   "strong": [
+    "keyword first",
+    "'what nobody tells you' (transferred across every niche)"
+   ],
+   "weak": [
+    "vibe titles ('POV: when ...')"
+   ]
+  },
+  "youtube": {
+   "limit_chars": 60,
+   "formula": "[stacked story frame] + [specific number or name] + [stake]. The thumbnail completes the title; it never repeats it.",
+   "strong": [
+    "caught on camera (>4x)",
+    "turning X into Y (>3x)",
+    "nobody talks about (>2.5x)",
+    "inside X (2.5x)",
+    "tenure: I've done X for N years (>2x)",
+    "banned/forbidden (>2x)",
+    "don't/stop/never (~2x)",
+    "N days/hours (~1.5x)",
+    "contradiction ('..., but nobody will buy it')"
+   ],
+   "weak": [
+    "ending on a question (0.82x)",
+    "'I was wrong' (<0.5x)",
+    "plain how-to (1.07x)"
+   ]
+  }
+ }
+}
