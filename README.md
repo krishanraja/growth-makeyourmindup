@@ -17,18 +17,20 @@ articles in the public feed.
 
 ## Setting it up (Krish, once)
 
-1. **The key** (one minute; exact steps in `docs/KEY.md`). Make it on your
-   Mac, save it where the engine looks, and put the same value in Vercel.
-2. **Open this repository in the Codex app** on your Mac (Add project,
+1. **The key** (two minutes; exact PowerShell steps in `docs/KEY.md`). Make
+   it on your PC, save it where the engine looks, and put the same value in
+   Vercel.
+2. **Open this repository in the Codex app** on your Windows PC (Add project,
    choose your clone of krishanraja/growth-makeyourmindup), and stay signed
    in to Substack, YouTube Studio, Instagram, TikTok, X and LinkedIn in your
    browser.
 3. **Start a Codex chat in this project and type: `create the automations`.**
-   Codex checks the machine (`python3 growth.py doctor`), creates the eight
+   Codex checks the machine (`python growth.py doctor`), creates the eight
    scheduled tasks from `automations.json`, reads them back, and runs the
    numbers job once to prove a pack lands in Control Center (`AGENTS.md`,
    "When Krish says: create the automations").
-4. Keep the Mac on, and the app running, at the scheduled times.
+4. Keep the PC on (not asleep), and the Codex app running, at the scheduled
+   times: Settings > System > Power > Sleep: Never when plugged in.
 
 Optional: connect Gmail in Codex so pitches and swap asks are also saved as
 Gmail drafts (never sent).

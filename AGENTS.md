@@ -49,6 +49,20 @@ video and a 90-second vertical cut (Shorts, Reels, TikTok, X).
 Krish's public contact address is hello@krishraja.com. Never put any other
 address of his in anything.
 
+## Running commands on Krish's machine
+
+Krish's machine is a **Windows PC, with PowerShell**. Write every command so
+that it runs there:
+- Python is `python`, or `py` if that's missing (`python3` is often not
+  there on Windows). Where this file says `python3 growth.py`, use whichever
+  of the three runs.
+- In Windows PowerShell 5.1, `&&` is not allowed: run commands one per line,
+  or join them with `;`.
+- The key file is `%USERPROFILE%\.config\growth-makeyourmindup\token`
+  (`growth.py` finds it itself).
+- Never hand Krish a Mac or Linux command (`pbcopy`, `chmod`, `openssl`,
+  `tee`) to run.
+
 ## The rules that never bend
 
 1. **You draft. Krish acts.** Never post, send, comment, like, follow,
@@ -137,7 +151,7 @@ this, in order, and nothing else:
    READY, stop. Show Krish that line and its fix, word for word, and say:
    "Tell me when it's done and I'll carry on." Never work around a missing
    key: no key, no automations.
-3. **Check the clock.** Run `date +%Z` (or the system equivalent). The times
+3. **Check the clock.** Run `tzutil /g` on Windows (or `date +%Z`). The times
    in `automations.json` are New York time. If this computer's time zone is
    not New York, convert each time, and tell Krish which zone you used.
 4. **Create the eight scheduled tasks** from `automations.json`, using
