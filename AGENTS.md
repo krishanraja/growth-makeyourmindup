@@ -199,8 +199,8 @@ model keys, which this engine deliberately does not hold (it drafts and
 never spends). It runs fortnightly: Sundays on odd ISO weeks, from 25
 October 2026 (Krish, 2026-10-15: "happy with the fortnightly AI visiblity
 check"). Its results land in Control Center (`/api/aeo/*`, the growth view).
-The `numbers` and `report` jobs read the latest result there and say which
-buyer questions makeyourmindup is missing from. Never run AEO-Engine from
+The `report` job reads the latest result there on a week it ran and says
+which buyer questions makeyourmindup is missing from. Never run AEO-Engine from
 here: a run spends money and needs Krish's yes.
 
 ## Why it works this way

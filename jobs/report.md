@@ -5,7 +5,10 @@ Kind `report`. Engine 7 in `PLAYBOOK.md`. Time for Krish: about 15 minutes.
 1. Read the week:
    - `python3 growth.py read --days 8` gives every pack, what Krish marked
      Posted or Skipped, and the daily numbers;
-   - `python3 growth.py pieces --days 8` gives what was published.
+   - `python3 growth.py pieces --days 8` gives what was published;
+   - on a week the AI-visibility check ran (fortnightly, odd ISO weeks; see
+     AGENTS.md), its latest result in Control Center's growth view (signed-in
+     browser, read only).
 2. Work out, from real numbers only, never estimates:
    - net new Substack subscribers, and the **source mix**:
      - owned (his profiles, direct);
@@ -28,6 +31,9 @@ Kind `report`. Engine 7 in `PLAYBOOK.md`. Time for Krish: about 15 minutes.
    - **Next week**: targets (start with 5 to 10 radar replies a day, 3
      pitches, 3 to 5 recommendation asks, 5 partner steps) and any job to
      change, for him to keep or kill.
+   - **AI visibility** (only on a week the check ran): the buyer questions
+     where the assistants cite someone else and not makeyourmindup, who they
+     cite, and one piece idea for each, from its result as written.
    - **For planning the pieces**: 3 lines on the topics, formats and hooks
      that brought subscribers, and each piece's breakout score.
    - Once a month only: **what we are not doing** (Notes, paid, a 30-day
