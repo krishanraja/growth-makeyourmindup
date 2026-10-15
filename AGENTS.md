@@ -190,6 +190,19 @@ partner map and each partner's step on the ask ladder). A job that adds rows com
 `main` with a message naming the job and date. If it cannot push, it puts
 the new rows in its final message so the next session can commit them.
 
+## The AI-visibility check (AEO-Engine)
+
+Whether the AI assistants (ChatGPT, Claude, Perplexity, Grok) cite
+makeyourmindup when a buyer asks them a question is measured by a separate
+machine, `krishanraja/AEO-Engine`. It runs on GitHub Actions with its own
+model keys, which this engine deliberately does not hold (it drafts and
+never spends). It runs fortnightly: Sundays on odd ISO weeks, from 25
+October 2026 (Krish, 2026-10-15: "happy with the fortnightly AI visiblity
+check"). Its results land in Control Center (`/api/aeo/*`, the growth view).
+The `numbers` and `report` jobs read the latest result there and say which
+buyer questions makeyourmindup is missing from. Never run AEO-Engine from
+here: a run spends money and needs Krish's yes.
+
 ## Why it works this way
 
 `PLAYBOOK.md` is the operating system (seven engines, the channel jobs,

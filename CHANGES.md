@@ -16,3 +16,5 @@
   partners (the 100-account map and ask ladder) and the front door
   (conversion). Numbers run daily from the dashboards. Every own link is
   tracked. Notes stay off (his 14 Oct ruling).
+
+- 2026-10-15: The AI-visibility check (AEO-Engine) goes fortnightly and is named in AGENTS.md as this engine's visibility measure, read from Control Center. Krish: "happy with the fortnightly AI visiblity check, but I think stuff like that needs to move to the growth-makeyourmindup repo? That is now the dedicated growth engine?" The machine stays in its own repo because it holds model keys and spends; this engine owns reading it.
