@@ -1,42 +1,40 @@
-# Job: the weekly report (Sunday 07:00)
+# Job: weekly review
 
-Kind `report`. Engine 7 in `PLAYBOOK.md`. Time for Krish: about 15 minutes.
+Kind `report`. Read shared instructions and `docs/ENGINE.md`. Sunday's total
+queue budget is 30 minutes, including radar and any other pending work.
 
-1. Read the week:
-   - `python3 growth.py read --days 8` gives every pack, what Krish marked
-     Posted or Skipped, and the daily numbers;
-   - `python3 growth.py pieces --days 8` gives what was published;
-   - on a week the AI-visibility check ran (fortnightly, odd ISO weeks; see
-     AGENTS.md), its latest result in Control Center's growth view (signed-in
-     browser, read only).
-2. Work out, from real numbers only, never estimates:
-   - net new Substack subscribers, and the **source mix**:
-     - owned (his profiles, direct);
-     - borrowed (guests, partners);
-     - native (Recommendations, the app);
-     - reader-powered (referrals, forwards);
-   - **subscriber yield** per channel and per piece: subscribers per 1,000
-     people reached, where both are known;
-   - visit-to-subscribe as "N of every 100 visitors", where both are known;
-   - which drafts he posted, and what followed them.
-3. Write the report as items (`platform: other`), one short section each:
-   - **Numbers**: each platform against last week. Say "not shown" where a
-     number is missing.
-   - **What brought subscribers**: the top five assets by subscribers, and
-     the hook family of each.
-   - **Kill, keep, scale**: apply the five rules in `PLAYBOOK.md` to each
-     channel and job, and name the decision.
-   - **Where we are**: the decision point for this day of the engine (3, 7,
-     14, 21 or 30), answered.
-   - **Next week**: targets (start with 5 to 10 radar replies a day, 3
-     pitches, 3 to 5 recommendation asks, 5 partner steps) and any job to
-     change, for him to keep or kill.
-   - **AI visibility** (only on a week the check ran): the buyer questions
-     where the assistants cite someone else and not makeyourmindup, who they
-     cite, and one piece idea for each, from its result as written.
-   - **For planning the pieces**: 3 lines on the topics, formats and hooks
-     that brought subscribers, and each piece's breakout score.
-   - Once a month only: **what we are not doing** (Notes, paid, a 30-day
-     flagship campaign), the evidence for each in a sentence, and that it
-     is his call.
-4. Headline: the week in one plain line. Check, then post.
+1. Read the last eight days' packs/statuses and published pieces. Read local
+   evidence envelopes and observations. Posted marks alone do not establish
+   sent URLs or outcomes. Obtain actual human-confirmed event evidence when
+   available; report missing execution visibility explicitly.
+2. Compare like snapshots and disjoint metric windows. Record freshness and
+   missing dashboard access. Never sum rolling weeks, views as unique reach,
+   free-to-paid upgrades as new people, or double-count subscriber sources.
+   Direct remains unattributed. Subscriber yield needs an attributed numerator
+   and matching unique reach; otherwise "not shown". `growth.py measure`
+   checks these boundaries. No inferred causal return from temporal growth.
+3. Report net people, actual source mix, confirmed published assets and
+   qualified journeys when available. Distinguish observed from proposed
+   fixes. Include 30-day retention by acquisition cohort and measured effort
+   only when those records exist; otherwise mark them unknown. Privacy-
+   distorted email opens do not establish activation or reader quality.
+4. Rank assets by attributed retained subscribers per measured hour when
+   known; otherwise show the limited metric actually available. Review
+   `experiments.json`: one variable, comparison, complete window, predeclared
+   metric, minimum sample and quality guardrail. Low sample means collect
+   more. Propose keep/test/fix, with uncertainty; Krish decides kill/scale.
+   `growth.py experiment` guards incomplete or undersampled decisions.
+5. Each recommendation needs source/date, expected mechanism (a hypothesis),
+   owner, effort, prerequisite and a verifiable success check. Pick at most
+   three next-week priorities within the real time budget. A subjective
+   breakout score informs planning, not a promise of results. Editorial
+   input can name a supported question; do not create articles or scripts.
+6. AI visibility: read the latest AEO result only when one ran, fortnightly
+   on odd ISO Sundays from 25 October 2026. Quote its actual questions and
+   cited sources, with run date/freshness. Missing or stale is explicit.
+   Never run the paid AEO engine. Monthly, revisit deferred channels only
+   against evidence and Krish's instructions; Notes/WhatsApp/paid stay off.
+7. Prepare/check the v2 report. Current Control Centre cannot show all rich
+   fields; include essential context in card prose and retain full local
+   records. Apply the `AGENTS.md` delivery rule. UI requirements are a brief,
+   not permission to modify Control Centre.

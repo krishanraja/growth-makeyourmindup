@@ -1,33 +1,39 @@
-# Job: numbers (every day)
+# Job: numbers
 
-Kind `numbers`. Engine 7 in `PLAYBOOK.md`. No drafts: one row per platform in
-`numbers`.
+Kind `numbers`. Read `BROWSER.md` and `docs/ENGINE.md`. This is observation,
+not an invitation to change integrations or fabricate missing analytics.
 
-1. Using the signed-in browser (`BROWSER.md`), read each dashboard for
-   **yesterday** (New York) and write down only what it shows:
-
-   | Platform | `followers` | `new_this_week` | `reach` | `visits` | `new_free` | `new_paid` | `unsubscribes` | `top_source` |
-   |---|---|---|---|---|---|---|---|---|
-   | Substack | total subscribers | yes | | post views | yes | yes | yes | biggest source of new subscribers |
-   | YouTube | subscribers | yes | views | | | | | top video by subscribers gained |
-   | Instagram | followers | yes | accounts reached | profile visits | | | | top Reel |
-   | TikTok | followers | yes | views | profile views | | | | top post |
-   | X | followers | yes | impressions | profile visits | | | | top post |
-   | LinkedIn | followers | yes | impressions | profile views | | | | top post |
-   | Spotify | followers | yes | plays | | | | | |
-
-   Leave a field out, or `followers: null`, when the page doesn't show it.
-   `note` says where you read it, and anything odd. If no signed-in browser
-   is available, use the public pages and say so in `note`:
-   - home.makeyourmindup.ai
-   - youtube.com/@makeyourmind-up
-   - instagram.com/makeyourmind.up
-   - tiktok.com/@therealkrisho
-   - x.com/therealkrisho
-   - linkedin.com/in/krish-raja
-2. Substack's subscribers by source are the most important numbers: put the
-   biggest three sources and their counts in Substack's `note`.
-3. Compare with yesterday's pack (`python3 growth.py read --days 2 --kind
-   numbers`). Headline: the one change that matters, in plain words, for
-   example "Substack +18 yesterday, 11 from Recommendations; YouTube +3". No
-   percentages. Post.
+1. Read each available dashboard for the previous completed New York day.
+   Capture the platform's displayed timezone and window. If it cannot show
+   that day, record the actual window; do not relabel a rolling week as
+   yesterday. Take followers/subscribers as a timestamped snapshot.
+2. Record structured observations using the metric registry in
+   `engine/operations.py`: source URL, scope, asset ID when known, capture
+   time, start/end with offsets, reporting timezone, metric, unit,
+   availability and value. Missing values are null with a reason such as
+   signed_out, not_connected, not_shown, delayed or not_supported.
+   Counts rounded on a public profile are not exact dashboard observations.
+3. Keep unique reach, impressions, views, plays, sessions, link clicks,
+   followers and subscribers distinct. Do not put views or plays in `reach`.
+   On Substack, distinguish new people, free-to-paid upgrades, unsubscribes,
+   reactivations and paid cancellations when shown. A cancellation does not
+   automatically mean the person left the publication.
+4. Record actual attributed source counts separately: native recommendations,
+   app, partner, reader referral and external placement. Direct remains
+   unattributed. Never assign it to owned social merely because it is direct.
+   Capture source export/window and delayed reporting. Preserve original
+   acquisition separately from subsequent internal placements.
+5. Validate `python growth.py measure .scratch/observations.json`.
+   Use `--aggregate` only for a comparable series of disjoint contiguous
+   interval windows. Never add daily captures of the same rolling week or
+   snapshots. A revised capture replaces the exact earlier window.
+6. Prepare the legacy numbers display only from matching structured
+   observations: `followers` is a snapshot, daily supported interval fields
+   stay daily, `new_this_week` is omitted. Include source URL, actual window,
+   capture time, timezone, units and missing reasons in every row's `note`,
+   because today's API cannot store those fields structurally. If dashboard
+   access is absent, state it and leave values null. Source observation time
+   remains separate from pack date. Include `observations` in the v2 input.
+7. Headline states the supported change or the access gap. A delta requires
+   comparable snapshots. Never claim a social post caused the change.
+   Prepare/check locally, then apply `AGENTS.md`'s delivery boundary.

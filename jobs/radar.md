@@ -1,28 +1,25 @@
-# Job: conversation radar (every day)
+# Job: conversation radar
 
-Kind `radar`. Engine 5 in `PLAYBOOK.md`. Time for Krish: about 10 minutes.
-He posts the best 5 to 10.
+Kind `radar`. Read the shared instructions and `docs/ENGINE.md`. The radar
+shares the global daily budget; there is no comment-volume target.
 
-1. `python3 growth.py pieces --days 21 --full`. These are the only facts you
-   may bring.
-2. Read `lists/partners.md`. A reply under a mapped account is worth more:
-   it moves that partner one step up the ask ladder.
-3. Using the signed-in browser (`BROWSER.md`; read only), find live threads
-   from the last 12 hours where one fact from his pieces adds something:
-   - his LinkedIn feed and LinkedIn search for the topics of his last three
-     pieces (goal: 10 comments a workday);
-   - X search and his lists on the same topics (goal: 5 to 10 replies);
-   - Reddit: r/artificial, r/OpenAI, r/singularity, r/technology and any
-     subreddit about a piece's subject (read its rules; skip any that bans
-     this);
-   - the newest videos of bigger AI channels on YouTube;
-   - Substack posts by AI and tech writers in the partner map.
-4. Rank by fit (his fact answers their point), reach (followers, if shown),
-   freshness and partner-map priority. Keep 10 to 15, best first.
-5. One item each: `platform`, `target_url` (the thread), `target_name` (who,
-   followers if shown, and "partner map" if mapped), `why` (one line),
-   `text`: a reply of at most 60 words that adds one named fact. It never
-   just praises or agrees. No links in LinkedIn comments. On Reddit, if you
-   link, say once and plainly that he wrote the piece.
-6. Headline: "Radar: 12 threads, 3 under partners, best first". Check, then
-   post.
+1. Read published pieces from the last 21 days and the partner lists. Use
+   the signed-in browser read-only when available. Find a few live threads
+   less than 12 hours old where a particular sourced finding answers the
+   actual question. Check LinkedIn, X, relevant YouTube/Substack discussions
+   and communities whose rules permit the contribution. Skip blocked access.
+2. Save the thread URL, author, creation time, literal excerpt, observation
+   time and any community rule. Cite the published piece as well when adding
+   its facts. Never use follower estimates as evidence of quality. Rank by
+   fit, usefulness, freshness and a genuine partner relationship.
+3. Draft at most five candidates, each at most 60 words. Add something
+   specific. No flattery-only replies, invented experience or unwanted tags.
+   LinkedIn comments have no links, even when `kind_hint` is absent. On
+   Reddit, disclose authorship if linking and follow the particular rules.
+4. Set `kind_hint: comment` for LinkedIn. Give every candidate `expires_at`
+   no later than 12 hours after the thread's creation, with thread evidence,
+   source evidence and a success check. If already expired, do not queue it.
+   A fresh replacement requires rereading the conversation for context.
+5. Prepare, merge all today's work and select within 20 minutes. A drafted
+   reply does not advance a partner relationship; a later real action needs
+   Krish confirmation and evidence. Follow the delivery rule in `AGENTS.md`.

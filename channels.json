@@ -1,0 +1,255 @@
+{
+  "schema_version": 2,
+  "goal": "qualified readers who remain subscribed after 30 days, measured only when cohort data exists",
+  "canonical_series": {
+    "Monday": "follow.the.money",
+    "Wednesday": "under.the.hood",
+    "Friday": "mind.the.gap"
+  },
+  "channels": [
+    {
+      "channel": "substack",
+      "url": "https://home.makeyourmindup.ai",
+      "role": "owned reading and subscription",
+      "surfaces": [
+        "about",
+        "subscribe",
+        "welcome_email",
+        "start_here",
+        "article_footer",
+        "recommendations",
+        "referrals"
+      ],
+      "primary_metrics": [
+        "visits",
+        "new_free",
+        "new_paid",
+        "unsubscribes",
+        "retained_30d"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "website",
+      "url": "https://makeyourmindup.ai",
+      "role": "topic discovery and qualified subscription",
+      "surfaces": [
+        "homepage",
+        "form",
+        "series_pages",
+        "calls_record",
+        "mobile_navigation",
+        "metadata",
+        "sitemap",
+        "404"
+      ],
+      "primary_metrics": [
+        "visits",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "linkedin",
+      "url": "https://www.linkedin.com/in/krish-raja/",
+      "role": "professional discussion and trust",
+      "surfaces": [
+        "headline",
+        "banner",
+        "about",
+        "featured",
+        "post",
+        "document",
+        "comment"
+      ],
+      "primary_metrics": [
+        "impressions",
+        "visits",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "x",
+      "url": "https://x.com/therealkrisho",
+      "role": "ideas and useful conversation",
+      "surfaces": [
+        "display_name",
+        "bio",
+        "profile_link",
+        "pinned_post",
+        "thread",
+        "reply"
+      ],
+      "primary_metrics": [
+        "impressions",
+        "visits",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "youtube",
+      "url": "https://www.youtube.com/@makeyourmind-up",
+      "role": "search discovery and lasting trust",
+      "surfaces": [
+        "channel_trailer",
+        "sections",
+        "playlists",
+        "long_pinned_comment",
+        "community",
+        "short_related_video",
+        "endscreen",
+        "cards",
+        "captions"
+      ],
+      "primary_metrics": [
+        "views",
+        "reach",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "instagram",
+      "url": "https://www.instagram.com/makeyourmind.up",
+      "role": "saves, shares and repeated trust",
+      "surfaces": [
+        "name",
+        "bio",
+        "profile_links",
+        "pinned_posts",
+        "highlights",
+        "story_link",
+        "reel",
+        "carousel",
+        "collab"
+      ],
+      "primary_metrics": [
+        "reach",
+        "saves",
+        "shares",
+        "visits",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "tiktok",
+      "url": "https://www.tiktok.com/@therealkrisho",
+      "role": "discovery and native continuation",
+      "surfaces": [
+        "name",
+        "bio",
+        "eligible_profile_link",
+        "pinned_videos",
+        "series",
+        "comment_followup"
+      ],
+      "primary_metrics": [
+        "views",
+        "visits",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "spotify",
+      "url": null,
+      "role": "listening habit",
+      "surfaces": [
+        "show_profile",
+        "episode_notes",
+        "spoken_close",
+        "chapters",
+        "transcript",
+        "best_start"
+      ],
+      "primary_metrics": [
+        "plays",
+        "followers",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "reddit",
+      "url": "https://www.reddit.com",
+      "role": "answer a specific community question",
+      "surfaces": [
+        "community_rules",
+        "thread_reply",
+        "profile"
+      ],
+      "primary_metrics": [
+        "visits",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "email",
+      "url": null,
+      "role": "reader activation and forwarding",
+      "surfaces": [
+        "welcome",
+        "forward_prompt",
+        "reply_prompt",
+        "referral"
+      ],
+      "primary_metrics": [
+        "new_free",
+        "unsubscribes",
+        "retained_30d"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "partner",
+      "url": null,
+      "role": "relevant borrowed distribution",
+      "surfaces": [
+        "named_quote_kit",
+        "podcast_pitch",
+        "guest_asset",
+        "recommendation"
+      ],
+      "primary_metrics": [
+        "link_clicks",
+        "new_free",
+        "retained_30d"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    }
+  ]
+}

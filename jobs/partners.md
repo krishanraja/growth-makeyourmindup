@@ -1,36 +1,24 @@
-# Job: partners (Wednesday)
+# Job: partners
 
-Kind `partners`. Engine 5 in `PLAYBOOK.md` (the 100-account map and the ask
-ladder). Time for Krish: about 10 minutes.
+Kind `partners`. Read the shared instructions and `docs/ENGINE.md`. Map
+quality matters more than a quota. This work shares the day's budget.
 
-1. Read `lists/partners.md`. Until it holds 100 accounts, add 10 to 15 new
-   ones each week, towards the target mix:
-   - 20 direct peers;
-   - 15 category leaders;
-   - 15 adjacent creators;
-   - 10 podcast hosts;
-   - 10 reporters and editors;
-   - 10 community owners;
-   - 10 researchers and operators;
-   - 10 institutions and events.
-
-   For each, record: their audience overlap, what they're working on now,
-   their recent work, what he can offer them, his warm route if any (a
-   mutual contact or a past exchange), a collaboration idea, and the date of
-   his last interaction.
-2. Pick the 5 partners whose next step on the **ask ladder** is due:
-   1. useful public engagement (the radar does this);
-   2. a private note of appreciation with an insight;
-   3. a small ask: a quote, a data point or a 100-word answer for a piece;
-   4. a guest exchange or a co-made asset;
-   5. a recommendation or cross-promotion;
-   6. a recurring partnership.
-
-   Never skip a step: a stranger gets step 1, not step 4.
-3. One item each (`partner`): `target_url` (where to reach them publicly),
-   `target_name` (who, and their step), `why` (the overlap and why now),
-   `text` (the message for that step, under 120 words, specific to their
-   recent work). For step 3 and up, say what they get: a quote card, a
-   clip, a tracked link.
-4. Update the partners list (new accounts, each step drafted) and commit it.
-   Headline: "Partners: 5 next steps, map at 40 of 100". Check, then post.
+1. Read `lists/partners.md`. Build towards the source playbook's 100-account
+   map as relevant evidence allows: peers, leaders, adjacent creators,
+   podcasts, editors, communities, researchers, institutions and events.
+   Add only genuinely researched accounts, with recent-work URL/excerpt,
+   audience overlap, a useful offer and a real warm route if one exists.
+2. Choose at most three candidates whose next step is useful and due.
+   The warmth ladder is useful public engagement, private insight, small
+   ask, co-made asset, recommendation, recurring partnership. Actual inbound
+   interest can justify a later relevant step. Never invent prior contact.
+3. Check real events, not draft dates. `growth.py relationship` evaluates
+   confirmed interactions. Drafts do not start cooldowns, advance stages or
+   count as collaborations. A decline suppresses future asks. Krish must
+   confirm sent/replied/booked/published events with an evidence URL.
+4. Each draft names the recent work, the shared reader, the precise benefit
+   and one proportionate ask, under 120 words. A partner kit has its own
+   tracked placement; no implied endorsement or guaranteed audience.
+5. Update the list with a stable person ID, sourced facts and `drafted`
+   status only. Commit actual list changes under `AGENTS.md`. Prepare a v2
+   envelope, merge today's queue, then apply the delivery boundary.

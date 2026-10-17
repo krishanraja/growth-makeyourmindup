@@ -1,133 +1,68 @@
 {
- "_about": "What the 2026 hooks research says works, per surface. Krish's own lessons win wherever they disagree: 'name the product exactly, say the format, give the real finding with the why left open' (from his rewrites of 14 Oct titles). Hook families, the ask ladder and the X, Instagram, TikTok and Spotify rules come from knowledge/10k-operating-system.md (14 Oct 2026).",
- "formula": "Specific subject + visible stakes + proof marker + one honest open loop, inside the surface's first readable space, with the words people search for early, and the payoff delivered fast.",
- "everywhere": [
-  "Name the subject: a person, product, company, number or moment. Vague curiosity is losing to specific, honest tension.",
-  "Keep one honest open loop and pay it off early in the piece (YouTube: in the first 5 to 10 seconds). Over-promising is now punished after the click.",
-  "First person ('I tried', 'I scored') is the strongest tested opener (+19% within the same creator on LinkedIn).",
-  "Stack three or four frames into one idea (action + constraint + stake), not one buzzword.",
-  "A proof marker makes the promise believable: a number, a duration, a sample size.",
-  "Slop tells to kill: 'it's not X, it's Y', 'Unpopular opinion:', 'Let that sink in.', rule-of-three filler, stacked rhetorical questions. Test: delete the name; if nobody could tell it was Krish's, it is slop.",
-  "Never over-claim. A misleading title wins the click and loses the trust."
- ],
- "surfaces": {
-  "linkedin": {
-   "limit_chars": 140,
-   "formula": "I + [specific decision or moment] + [unexpected consequence] + [unresolved why], with the topic keyword in line one.",
-   "strong": [
-    "first person (+19%)",
-    "a number in line one (+8%)"
-   ],
-   "weak": [
-    "'you' address (-10%) unless the reader is the subject",
-    "'Unpopular opinion' (-2%)",
-    "broetry line breaks"
-   ]
+  "_about": "House hypotheses to test with MYMU evidence. No universal performance multipliers or ranking guarantees. Existing historical research remains background, not a measured MYMU result.",
+  "formula": "Specific subject + visible stakes + proof marker + one honest open loop, inside the surface's first readable space, with the words people search for early, and the payoff delivered fast.",
+  "everywhere": [
+    "Name the subject and a specific stake. Deliver the promised finding early.",
+    "Use first-person experience only when the published source establishes Krish actually did it.",
+    "Use a number or quote only with a literal cited source.",
+    "Choose one useful next step matched to reader intent.",
+    "Use plain British English, no em dashes, percentages, stock phrases or invented results.",
+    "A claim about what works needs dated MYMU observations and comparable windows."
+  ],
+  "surfaces": {
+    "linkedin": {
+      "formula": "Name the topic early, show a specific stake and a useful finding. First-person experience must be in the source. Preview the fold on the actual device."
+    },
+    "article": {
+      "formula": "Respect the published piece. Suggest a clear topic and truthful benefit as a conversion fix; do not rewrite the editorial pipeline. Preview subject and subtitle on mobile."
+    },
+    "blog": {
+      "formula": "Use a clear, unique title and accurate description that match search intent and the visible page. Google may rewrite or truncate either; character counts are drafting aids, not ranking rules. Offer original evidence only when the published piece contains it."
+    },
+    "shorts": {
+      "formula": "Name the topic and a specific supported outcome. Make the first frame legible, caption the spoken hook and deliver the promise. Native continuation first; no promise of a clickable description link."
+    },
+    "youtube": {
+      "formula": "Use a specific subject and supported stake. Make the title and thumbnail add information to one another; avoid clickbait or invented experience.",
+      "links": "Links in Shorts descriptions and comments are not clickable: say and show the name; link the related long video; put the tracked link first in the long description and the pinned comment."
+    },
+    "x": {
+      "formula": "Thread: counterintuitive hook, stakes for a named reader, evidence, framework, application, open loop, a specific subscribe line. Post 1 stands alone.",
+      "cadence": "Budget-led selection across all jobs. Drafting quotas never override the daily work limit."
+    },
+    "instagram": {
+      "formula": "Win the first three seconds. Reels for reach, carousels for saves, Stories for conversion (tension, insight, proof, link sticker), Collabs for shared reach."
+    },
+    "tiktok": {
+      "formula": "Lead with tension, result or surprise at once; every clip stands alone; captions and on-screen keywords; numbered series; reply to strong comments with video; close with one specific continuation that names makeyourmindup."
+    },
+    "spotify": {
+      "formula": "Predictable cadence, value before the ask, one spoken ask at the end, the matched link in show notes, one 9:16 clip under 90 seconds per episode, mark the best place to start."
+    }
   },
-  "article": {
-   "limit_chars": 60,
-   "formula": "On Substack the title is also the email subject and the homepage headline: under about 60 characters, with a specific number, a broken rule, or an unexpected word in an expected phrase. The subtitle (60 to 150 characters) says who it is for and what they walk away with.",
-   "strong": [
-    "confession",
-    "contrast or tension",
-    "a resource readers can save or forward"
-   ],
-   "weak": [
-    "the word 'newsletter'",
-    "describing the topic instead of the reader's situation"
-   ]
+  "hook_families": [
+    "prediction",
+    "contrarian claim",
+    "new evidence",
+    "avoidable loss",
+    "audience identity",
+    "confession or failure",
+    "specific utility",
+    "narrative scene",
+    "curiosity gap",
+    "public challenge"
+  ],
+  "cta_ladder": {
+    "cold": "save it, watch part two, read the free breakdown",
+    "curious": "get the full finding or source list",
+    "warm": "subscribe for the next piece",
+    "engaged free reader": "forward it to one person",
+    "subscriber": "refer one sharp person"
   },
-  "blog": {
-   "limit_chars": 60,
-   "formula": "[main search phrase in the first 3 words] + [checkable claim or number] + [something an AI summary can't give: data, a template, tested, first-hand]. Match the H1.",
-   "strong": [
-    "claim first",
-    "a number kept in title and H1"
-   ],
-   "weak": [
-    "over 70 characters (rewritten 99.9% of the time)"
-   ]
-  },
-  "shorts": {
-   "limit_chars": 50,
-   "formula": "Title = the words people search + a specific outcome (30 to 50 characters). First frame shows motion and the payoff object; on-screen text is a 3 to 7 word claim. Caption every spoken hook: most watch muted.",
-   "strong": [
-    "keyword first",
-    "'what nobody tells you' (transferred across every niche)"
-   ],
-   "weak": [
-    "vibe titles ('POV: when ...')"
-   ]
-  },
-  "youtube": {
-   "limit_chars": 60,
-   "formula": "[stacked story frame] + [specific number or name] + [stake]. The thumbnail completes the title; it never repeats it.",
-   "strong": [
-    "caught on camera (>4x)",
-    "turning X into Y (>3x)",
-    "nobody talks about (>2.5x)",
-    "inside X (2.5x)",
-    "tenure: I've done X for N years (>2x)",
-    "banned/forbidden (>2x)",
-    "don't/stop/never (~2x)",
-    "N days/hours (~1.5x)",
-    "contradiction ('..., but nobody will buy it')"
-   ],
-   "weak": [
-    "ending on a question (0.82x)",
-    "'I was wrong' (<0.5x)",
-    "plain how-to (1.07x)"
-   ],
-   "links": "Links in Shorts descriptions and comments are not clickable: say and show the name; link the related long video; put the tracked link first in the long description and the pinned comment."
-  },
-  "x": {
-   "formula": "Thread: counterintuitive hook, stakes for a named reader, evidence, framework, application, open loop, a specific subscribe line. Post 1 stands alone.",
-   "cadence": "1 to 3 original posts a day, 2 threads a week, 5 to 10 useful replies a day",
-   "weak": [
-    "hashtags beyond an event or established community",
-    "tagging people not involved"
-   ]
-  },
-  "instagram": {
-   "formula": "Win the first three seconds. Reels for reach, carousels for saves, Stories for conversion (tension, insight, proof, link sticker), Collabs for shared reach.",
-   "strong": [
-    "search words in profile, bio and caption",
-    "original vertical media without watermarks",
-    "pinned manifesto, proof and start-here"
-   ],
-   "weak": [
-    "irrelevant hashtags",
-    "recycled content"
-   ]
-  },
-  "tiktok": {
-   "formula": "Lead with tension, result or surprise at once; every clip stands alone; captions and on-screen keywords; numbered series; reply to strong comments with video; close with one specific continuation that names makeyourmindup.",
-   "weak": [
-    "#fyp and hashtag piles",
-    "sounds or tags that do not fit"
-   ]
-  },
-  "spotify": {
-   "formula": "Predictable cadence, value before the ask, one spoken ask at the end, the matched link in show notes, one 9:16 clip under 90 seconds per episode, mark the best place to start."
-  }
- },
- "hook_families": [
-  "prediction",
-  "contrarian claim",
-  "new evidence",
-  "avoidable loss",
-  "audience identity",
-  "confession or failure",
-  "specific utility",
-  "narrative scene",
-  "curiosity gap",
-  "public challenge"
- ],
- "cta_ladder": {
-  "cold": "save it, watch part two, read the free breakdown",
-  "curious": "get the full finding or source list",
-  "warm": "subscribe for the next piece",
-  "engaged free reader": "forward it to one person",
-  "subscriber": "refer one sharp person"
- }
+  "official_references": [
+    "https://developers.google.com/search/docs/appearance/title-link",
+    "https://developers.google.com/search/docs/appearance/snippet",
+    "https://support.google.com/youtube/answer/13748639",
+    "https://support.google.com/youtube/answer/14075157"
+  ]
 }

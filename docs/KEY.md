@@ -1,45 +1,37 @@
-# The Control Center key (Krish, once, about two minutes)
+# Existing Control Centre credential
 
-The engine stores its packs in Control Center with one shared key,
-`GROWTH_ENGINE_TOKEN`. The same value lives in two places: Vercel, so
-Control Center accepts it, and a file on Krish's Windows PC, so the Codex
-runs can send it. It never goes in this repository, a chat or a document.
+Krish confirmed on 17 October 2026 that `GROWTH_ENGINE_TOKEN` is in GitHub
+secrets, and Vercel project access is available. A secret's presence does
+not prove a particular local runner has it. Never print or copy its value
+into a chat, repository, report, issue, log or draft.
 
-## 1. Make it and save it on the PC (Windows PowerShell)
+Development, evidence preparation, local queues and dry runs need no token:
 
-Open PowerShell and paste this one line. It works in Windows PowerShell 5.1
-and in PowerShell 7, and needs nothing installed:
+```powershell
+python growth.py doctor --offline
+python growth.py dry-run
+```
 
-    $d="$HOME\.config\growth-makeyourmindup"; New-Item -ItemType Directory -Force -Path $d | Out-Null; $b=New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $k=-join($b|ForEach-Object{$_.ToString('x2')}); [IO.File]::WriteAllText("$d\token",$k); icacls "$d\token" /inheritance:r /grant:r "$($env:USERNAME):F" | Out-Null; Set-Clipboard -Value $k; Write-Host "saved, and copied"
+A separately authorised scheduled delivery uses the existing runtime
+`GROWTH_ENGINE_TOKEN`, or the existing Windows file:
+`%USERPROFILE%\.config\growth-makeyourmindup\token`. The environment takes
+precedence. UTF-8 BOM files are supported. Do not regenerate the token,
+change GitHub secrets or edit Vercel configuration as part of this upgrade.
 
-It prints `saved, and copied`. The key is now in
-`C:\Users\<you>\.config\growth-makeyourmindup\token`, readable only by your
-Windows account, and on your clipboard.
+GitHub secret values cannot be downloaded through the secrets API. A
+GitHub Actions secret is only available inside a workflow explicitly
+configured to consume it; it does not automatically appear in a local
+Codex session. Never create a workflow to expose a secret. This repository's
+CI deliberately uses no secrets and makes no Control Centre writes.
 
-## 2. Put it in Vercel
+For an already configured production runner, `python growth.py doctor`
+performs read-only checks. Missing key, HTTP 401, endpoint failure or absent
+social login is reported as an access gap. There is no direct database
+fallback. No HTTP redirect is followed with the bearer credential. Remote
+error bodies are not echoed. Only the approved Control Centre HTTPS origin
+is accepted.
 
-1. Open https://vercel.com/krish-rajas-projects/control-center/settings/environment-variables
-2. Under "Add Environment Variable":
-   - Key: `GROWTH_ENGINE_TOKEN`
-   - Value: paste (Ctrl+V)
-   - Environments: **Production** only (untick Preview and Development)
-   - Sensitive: on
-3. Press **Save**.
-4. Open https://vercel.com/krish-rajas-projects/control-center/deployments,
-   then the top Production deployment, then the "..." menu, then
-   **Redeploy**. Confirm, and wait until it says Ready (about two minutes).
-
-## 3. Check it (PowerShell)
-
-    $k=(Get-Content "$HOME\.config\growth-makeyourmindup\token" -Raw).Trim(); Invoke-RestMethod "https://controlcenter.krishraja.com/api/growth/packs?days=1" -Headers @{Authorization="Bearer $k"}
-
-It should print `ok : True`.
-- An error naming **401**: the two values differ. Run
-  `Get-Content "$HOME\.config\growth-makeyourmindup\token" | Set-Clipboard`
-  and paste that into Vercel again (step 2).
-- An error naming **503**: the redeploy has not finished yet, or was missed.
-
-## If you ever need a new key
-
-Run step 1 again (it overwrites the file), then step 2 with the new value.
-The old key stops working as soon as the redeploy is Ready.
+Delivery requires a valid v2 envelope and an explicit `--deliver` in an
+independently authorised scheduled job. During this implementation, use
+only the dry-run form. Any future credential setup or rotation is a
+separate task with its own explicit instruction.

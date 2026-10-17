@@ -18,3 +18,11 @@
   tracked. Notes stay off (his 14 Oct ruling).
 
 - 2026-10-15: The AI-visibility check (AEO-Engine) goes fortnightly and is named in AGENTS.md as this engine's visibility measure, read from Control Center. Krish: "happy with the fortnightly AI visiblity check, but I think stuff like that needs to move to the growth-makeyourmindup repo? That is now the dedicated growth engine?" The machine stays in its own repo because it holds model keys and spends; this engine owns reading it.
+
+- 2026-10-17: Krish: "you are not to do any actual work in control-center,
+  only pass me a brief once you have completed your work". Complete and
+  verify growth-repository changes locally, then provide the handoff.
+  This task makes no Control Center writes and no changes to other repos.
+  V2 adds evidence records, asset and placement identity, late-publication
+  recovery, honest metric windows, relationship events, experiments and a
+  shared daily queue. Existing eight schedules remain unchanged.

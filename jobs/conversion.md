@@ -1,45 +1,35 @@
-# Job: the front door (Saturday)
+# Job: the front door
 
-Kind `conversion`. Engines 1, 3 and 6 in `PLAYBOOK.md`. Time for Krish:
-about 10 minutes. The one conversion action a day in the document's 3-2-1
-rhythm, done weekly as one audit.
+Kind `conversion`. Read the shared instructions, `docs/ENGINE.md`,
+`docs/CHANNEL_PLAYBOOK.md`, `channels.json` and `journeys.json`.
 
-1. Using the browser (`BROWSER.md`; read only), on a phone-sized window
-   and a desktop one, open and check:
-   - **the four doors:**
-     - the welcome page (home.makeyourmindup.ai/subscribe or the home page);
-     - the about page;
-     - a start-here post (if none exists, that is finding 1);
-     - this week's best piece.
-
-     Does each say, within five seconds:
-     - who it is for;
-     - what it does each week;
-     - why it's different;
-     - why to subscribe rather than follow?
-
-     Is there one subscribe button, with nothing competing above the fold?
-   - **every profile:** YouTube, Instagram, TikTok, X, LinkedIn and Spotify.
-     Is the Substack the first link? Does the bio say the promise? Are the
-     pinned or featured items the start-here post, the strongest proof, and
-     the newest piece?
-   - **the links:** open every link from the profiles and the last week's
-     packs. Note any that is broken, untracked, or lands on a cluttered page.
-   - **the welcome email:** read the most recent one in his inbox if a
-     signed-in mail tab is available. Otherwise say so. Does it deliver what
-     was promised? Does it link three start-here posts, ask what would make
-     the publication indispensable, invite one forward, and say when the
-     next piece arrives?
-   - **referrals and recommendations** (Substack settings, read only): are
-     referrals on, with rewards that suit the reader (`knowledge`, "Referral
-     tiers"; no generic prizes)? Are recommendation blurbs written?
-2. One item per fix (`substack`, `youtube`, `instagram` and so on), at most
-   8, worst first:
-   - `target_url`: the exact settings page;
-   - `why`: what it costs now;
-   - `text`: the exact new copy or setting, ready to paste, with where to
-     click.
-
-   The promise line stays Krish's ("What's coming in AI, before it's
-   obvious."). Offer a variant only as an option, never as a replacement.
-3. Headline: "Front door: 5 fixes, the worst is <x>". Check, then post.
+1. Audit the actual journey on mobile and desktop, logged out where readable:
+   profile or native asset, matched landing, subscribe form, confirmation,
+   welcome and useful next read. Read-only means do not submit a real form,
+   trigger an email, change settings or create a test subscriber. Mark the
+   steps that require a human action as not verified.
+2. Check every configured channel surface. Exact benefit text must be
+   accessible without relying on a logo image. Confirm Monday/money,
+   Wednesday/hood, Friday/gap; consistent names, pin freshness and usable
+   contrast, tap targets, captions/alt text, focus and mobile layout. Verify
+   the feature on this account before suggesting it as available.
+3. Check each external destination, redirects, tracking completeness and
+   topic match. Internal navigation must retain original acquisition.
+   Respect consent; do not collect unnecessary personal identifiers. The
+   website's incoming-source handoff to the subscription needs verification.
+4. Inspect welcome copy only when readable. Prefer one useful first read,
+   then a later reply/forward/referral ask. Audit recommendations/referrals
+   without changing them. Substack-native referral codes must survive URL
+   tracking. Paid conversion stays subordinate to reader value and trust.
+5. Search: inspect indexability, canonical URLs, titles/descriptions, actual
+   sitemap coverage, image metadata, article/video links and structured
+   data. Do not claim Substack lacks its existing article sitemap/schema.
+   Topic resources must add evidence from published work, not thin duplicate
+   pages. Respect robots, noindex, community rules and truthful author data.
+6. At most five candidate fixes: exact surface, observed defect and date,
+   literal evidence, proposed copy/settings, owner, priority, estimated
+   minutes, prerequisite and a success check. Access gaps are findings, not
+   defects proven on a page you could not read. Queue the highest-impact
+   verified blocker within the shared 20-minute budget.
+7. Prepare/check and follow `AGENTS.md`. External profile/website/settings
+   changes and Control Centre UI work remain handoff items.
