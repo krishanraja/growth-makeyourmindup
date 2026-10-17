@@ -303,6 +303,11 @@ class PackTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertTrue(check_pack({**pack, 'numbers': [{'platform': 'x', 'followers': value}]}))
 
+    def test_source_label_is_text_not_a_numeric_measure(self):
+        pack = {'pack_date': '2026-10-17', 'kind': 'numbers', 'headline': 'Fixture', 'items': [],
+                'numbers': [{'platform': 'substack', 'followers': None, 'top_source': 'Recommendations', 'note': 'Not shown in fixture.'}]}
+        self.assertEqual(check_pack(pack), [])
+
 
     def test_encoded_url_server_edge_case_is_refused_at_export(self):
         pack, evidence, metadata = draft()

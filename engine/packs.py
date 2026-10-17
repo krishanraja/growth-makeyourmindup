@@ -145,7 +145,7 @@ def check_pack(pack):
                     continue
                 if row.get('platform') not in PLATFORMS or 'followers' not in row:
                     errors.append('number row needs platform and followers (null if unavailable)')
-                for field in NUMBER_WIRE[1:9]:
+                for field in NUMBER_WIRE[1:8]:
                     value = row.get(field)
                     if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))
                                               or not math.isfinite(value) or (value < 0 and field != 'new_this_week')):

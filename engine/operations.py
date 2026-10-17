@@ -103,7 +103,7 @@ def daily_queue(items, now=None):
         minutes = item.get('minutes')
         if isinstance(minutes, bool) or not isinstance(minutes, int) or not 1 <= minutes <= 30:
             raise ValueError('minutes must be an estimate from 1 to 30')
-        if isinstance(item.get('priority'), bool) or item.get('priority') not in (1, 2, 3, 4, 5):
+        if isinstance(item.get('priority'), bool) or not isinstance(item.get('priority'), int) or item.get('priority') not in (1, 2, 3, 4, 5):
             raise ValueError('priority must be from 1 to 5; 1 is highest')
     for item in sorted(items, key=lambda r: (r['priority'], r.get('expires_at') or '9999', r['item_id'])):
         reason = None

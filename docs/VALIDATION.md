@@ -10,7 +10,7 @@ acknowledged in the handoff.
 
 | Check | Result |
 |---|---|
-| `python growth.py --self-test` | 84 regression tests pass |
+| `python growth.py --self-test` | 85 regression tests pass |
 | `python growth.py doctor --offline` | Ready; no token or network needed |
 | `python growth.py dry-run --out .scratch/final-offline` | Complete; replay creates no new tasks; draft does not advance contact |
 | `python growth.py dry-run --live --out .scratch/public-acceptance` | Complete using the real public feed; no external write |
