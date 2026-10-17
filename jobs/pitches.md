@@ -1,30 +1,23 @@
-# Job: pitches (Tuesday)
+# Job: pitches
 
-Kind `pitches`. Engine 5 in `PLAYBOOK.md` (borrowed audiences, the podcast
-protocol). Time for Krish: about 10 minutes.
+Kind `pitches`. Read the shared instructions and `docs/ENGINE.md`.
 
-1. `python3 growth.py pieces --days 10 --full`. This week's finding is the
-   hook.
-2. Find 3 podcasts, YouTube shows, Substack Lives or newsletters taking
-   guests, whose audience is his: AI, the business of tech, media and
-   marketing, founders, operators. Prefer a similar size or a bit bigger,
-   with a guest in the last month. Check `lists/pitches.md` and
-   `lists/partners.md`: skip any show pitched in the last 90 days, and
-   prefer partners already warmed up (the ask ladder).
-3. One item each (`podcast`, or `email` for a newsletter):
-   - `target_url`: the show;
-   - `target_name`: the host, and how to reach them publicly;
-   - `why`: the fit, naming a recent episode;
-   - `text`: a pitch under 150 words containing:
-     - one line on that episode;
-     - the one problem his appearance would solve for their audience;
-     - three talk points;
-     - a **companion asset** he will offer their listeners (the piece's
-       finding or source list) with a memorable tracked link;
-     - one line on who he is;
-     - the sign-off "Krish Raja, makeyourmindup.ai, hello@krishraja.com".
-4. If a Gmail tool is connected, also save each one as a Gmail draft with
-   the subject starting "[makeyourmindup]". Never send.
-5. Add the rows to `lists/pitches.md` (date, show, host, link, status
-   "drafted") and commit them (see `AGENTS.md`). Headline: "Pitches: 3
-   shows for this week's finding". Check, then post.
+1. Read recent published pieces. Find at most three genuinely relevant shows
+   or newsletters taking guests, with a recent episode or article read in
+   full. Preserve the host's source and a literal excerpt, plus the MYMU
+   finding offered. No invented subscriber counts or warm introductions.
+2. Check partner and pitches lists. Suppress confirmed sends within 90 days
+   using `growth.py relationship EVENTS.json PERSON_ID --cooldown-days 90`.
+   Unsent drafts do not mean the host was pitched. Respect declines and
+   pending conversations. Do not redraft the same unsent offer every week.
+3. One personalised draft under 150 words: a precise point from their work,
+   a listener problem, supported talk points, a real companion asset from
+   the published finding/source list and one easy next step. No promise to
+   create an unapproved editorial asset. Sign: "Krish Raja, makeyourmindup.ai,
+   hello@krishraja.com". Track the listener landing and placement distinctly.
+4. Prepare the offer in the local envelope, never a platform compose box.
+   A Gmail draft is optional only in a separately authorised scheduled job
+   with that capability; this implementation makes no such external write.
+5. Record `drafted` in `lists/pitches.md`, not sent. A later human-confirmed
+   event with evidence starts the cooldown. Merge the day's work, select
+   within budget, check and follow `AGENTS.md`'s delivery rule.

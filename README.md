@@ -1,49 +1,87 @@
 # growth-makeyourmindup
 
-The makeyourmindup growth engine. It drafts what brings relevant new
-followers and subscribers to Krish Raja's channels, with no paid boosts. It
-runs as scheduled Codex sessions. Every run reports into Control Center
-(Growth > Packs), where Krish copies each draft, posts it himself, and marks
-it Posted or Skipped.
+The independent, draft-only growth engine for makeyourmindup. It finds
+useful distribution opportunities, preserves their evidence, tracks each
+placement, and fits the work into 20 minutes a day, 30 on Sunday. Krish
+publishes, sends and changes settings himself.
 
-- How it works and the rules: `AGENTS.md` (Codex reads it on every run).
-- The jobs: `jobs/`. The one tool: `growth.py` (Python standard library only).
-- The operating system: `PLAYBOOK.md`, from the documents in `knowledge/`. Browser rules: `BROWSER.md`.
-- Earlier research: `research.md`. Hooks by platform: `hooks.json`. Krish's changes: `CHANGES.md`.
+The growth-repository upgrade is complete on this branch. Control Centre
+implementation is a separate handoff in [docs/CONTROL_CENTER_HANDOFF.md](docs/CONTROL_CENTER_HANDOFF.md).
+The channel audit and exact next actions are in
+[docs/CHANNEL_PLAYBOOK.md](docs/CHANNEL_PLAYBOOK.md). Validation evidence and
+access limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
-Nothing here posts, sends, comments, follows or spends. The content engine
-(krishanraja/content-engine) is not used: facts come from the published
-articles in the public feed.
+Start with `AGENTS.md`, then `PLAYBOOK.md`, `BROWSER.md` and the named job.
+`channels.json` inventories the surfaces, `journeys.json` maps the useful
+paths, `hooks.json` contains testable house hypotheses, and
+`experiments.json` holds unstarted experiment templates.
 
-## Setting it up (Krish, once)
+## Verify locally
 
-1. **The key** (two minutes; exact PowerShell steps in `docs/KEY.md`). Make
-   it on your PC, save it where the engine looks, and put the same value in
-   Vercel.
-2. **Open this repository in the Codex app** on your Windows PC (Add project,
-   choose your clone of krishanraja/growth-makeyourmindup), and stay signed
-   in to Substack, YouTube Studio, Instagram, TikTok, X and LinkedIn in your
-   browser.
-3. **Start a Codex chat in this project and type: `create the automations`.**
-   Codex checks the machine (`python growth.py doctor`), creates the eight
-   scheduled tasks from `automations.json`, reads them back, and runs the
-   numbers job once to prove a pack lands in Control Center (`AGENTS.md`,
-   "When Krish says: create the automations").
-4. Keep the PC on (not asleep), and the Codex app running, at the scheduled
-   times: Settings > System > Power > Sleep: Never when plugged in.
+Python 3.9 or newer. Standard library only. These commands work in Windows
+PowerShell and need no key, social login or external write:
 
-Optional: connect Gmail in Codex so pitches and swap asks are also saved as
-Gmail drafts (never sent).
+```powershell
+python growth.py doctor --offline
+python growth.py --self-test
+python growth.py dry-run
+```
 
-The schedule (New York time; `automations.json` is the source):
+Read the public feed through the same acceptance flow:
 
-| Name | When | Prompt |
+```powershell
+python growth.py dry-run --live --out .scratch/public-check
+python growth.py pieces --days 21 --full
+python growth.py discover --days 21
+```
+
+Local records go in ignored `.scratch/`. Fixtures are visibly test data.
+No live campaign is generated or published by the acceptance flow.
+
+## Prepare work
+
+See [docs/ENGINE.md](docs/ENGINE.md) for the input shape and workflow.
+`prepare` requires evidence and review metadata; `check` catches source
+reference errors, literal quote mismatches, house rules and platform limits.
+It cannot prove a paraphrase is true. Compare the claims with the source.
+
+```powershell
+python growth.py prepare .scratch/input.json --out .scratch/envelope.json
+python growth.py check .scratch/envelope.json
+python growth.py queue .scratch/envelope.json --out .scratch/queue.json
+python growth.py export .scratch/envelope.json --out .scratch/legacy-pack.json
+python growth.py post .scratch/envelope.json
+```
+
+The last command is a dry run. No Control Centre write happens without
+`--deliver`, which is reserved for a separately authorised scheduled run.
+This implementation session does not deliver packs or change Control Centre.
+The supported legacy API drops rich metadata, so full records stay local
+until the handoff is implemented. No database fallback exists.
+
+## Existing runtime
+
+There are still eight scheduled job definitions in `automations.json`.
+No automation is created or changed by this upgrade. All times are in
+`America/New_York`; use the scheduler's named timezone so daylight-saving
+changes follow New York, rather than storing a one-time local conversion.
+
+| Job | New York time | Prompt |
 |---|---|---|
-| Growth: numbers | daily 06:00 | `Run jobs/numbers.md as AGENTS.md says.` |
-| Growth: radar | daily 06:30 | `Run jobs/radar.md as AGENTS.md says.` |
-| Growth: day pack | Mon, Wed, Fri 13:30 | `Run jobs/daily-pack.md as AGENTS.md says.` |
-| Growth: pitches | Tue 07:00 | `Run jobs/pitches.md as AGENTS.md says.` |
-| Growth: partners | Wed 07:00 | `Run jobs/partners.md as AGENTS.md says.` |
-| Growth: recommendations | Thu 07:00 | `Run jobs/swaps.md as AGENTS.md says.` |
-| Growth: front door | Sat 07:00 | `Run jobs/conversion.md as AGENTS.md says.` |
-| Growth: report | Sun 07:00 | `Run jobs/report.md as AGENTS.md says.` |
+| Numbers | daily 06:00 | `Run jobs/numbers.md as AGENTS.md says.` |
+| Radar | daily 06:30 | `Run jobs/radar.md as AGENTS.md says.` |
+| Day pack | Mon/Wed/Fri 13:30 | `Run jobs/daily-pack.md as AGENTS.md says.` |
+| Pitches | Tue 07:00 | `Run jobs/pitches.md as AGENTS.md says.` |
+| Partners | Wed 07:00 | `Run jobs/partners.md as AGENTS.md says.` |
+| Recommendations | Thu 07:00 | `Run jobs/swaps.md as AGENTS.md says.` |
+| Front door | Sat 07:00 | `Run jobs/conversion.md as AGENTS.md says.` |
+| Report | Sun 07:00 | `Run jobs/report.md as AGENTS.md says.` |
+
+`python growth.py doctor` separately checks public-feed and authenticated
+Control Centre read access. It does not prove signed-in social insights are
+available. Those access states are captured per observation. Existing
+`GROWTH_ENGINE_TOKEN` setup is described in `docs/KEY.md`; do not regenerate
+an already configured secret. GitHub secrets cannot be read back.
+
+The content engine and AEO engine remain independent. No Notes, WhatsApp,
+paid boosts, social publishing, automated outreach or profile changes.
