@@ -1,3 +1,5 @@
+> **Superseded on 2026-10-18** by [`docs/CONTROL-CENTER-BRIEF.md`](CONTROL-CENTER-BRIEF.md): Control Center now runs one protocol for every growth engine. Kept for its history.
+
 # Control Centre handoff: MYMU growth engine
 
 Prepared 17 October 2026. Implementation scope: this growth repository only.
