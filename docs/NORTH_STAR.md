@@ -4,7 +4,7 @@ Status: Current
 Owner: Krish Raja
 Last verified: 2026-10-18
 
-> By September 2027, the publication grows every week from posts people share because they are useful, with zero paid boosts, and the right leaders make up most of the new subscribers.
+> By 31 December 2026, the publication grows every week from posts people share because they are useful, with zero paid boosts, and the right leaders make up most of the new subscribers.
 
 Set by Krish on 18 October 2026. It is not reached yet. It is what every session in this repository works toward.
 
