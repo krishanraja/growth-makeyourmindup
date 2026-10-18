@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-18: Krish: "Make sure the corpus I gave you is stored inside the
+  repo as well for future reference if needed." Preserved the three uploaded
+  Markdown originals under `knowledge/corpus/` and indexed all four uploads
+  in `knowledge/README.md`. The uploaded Word document is byte-identical to
+  the existing `knowledge/10k-operating-system.docx`; retained that canonical
+  original. The manifest records paths and checksums. Archiving source
+  instructions does not activate them or change the operating rules.
+
 - 2026-10-14: no Substack Notes or WhatsApp. Krish: "I don't think I need
   Substack notes or WhatsApp to be honest, right now." (`research.md` still
   describes a Notes pack; it does not run.)
