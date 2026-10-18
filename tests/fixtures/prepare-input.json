@@ -1,0 +1,37 @@
+{
+  "pack": {
+    "pack_date": "2026-10-17",
+    "kind": "daily",
+    "headline": "Test fixture only, do not publish",
+    "items": [
+      {
+        "platform": "x",
+        "text": "TEST FIXTURE ONLY. I asked one useful question."
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "evidence_id": "evidence_03a44573f77542f4d478",
+      "kind": "published_piece",
+      "url": "https://home.makeyourmindup.ai/p/test-fixture",
+      "excerpt": "TEST FIXTURE ONLY. I asked one useful question.",
+      "snapshot": "TEST FIXTURE ONLY. I asked one useful question.\n\nRead the video.",
+      "observed_at": "2026-10-17T18:00:00Z"
+    }
+  ],
+  "metadata": [
+    {
+      "asset_id": "piece_40edd39642a5cb9085d1",
+      "placement": "thread",
+      "variant": "a",
+      "evidence_ids": [
+        "evidence_03a44573f77542f4d478"
+      ],
+      "priority": 1,
+      "minutes": 3,
+      "why_now": "Test fixture only.",
+      "success_check": "Source comparison is complete."
+    }
+  ]
+}

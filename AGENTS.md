@@ -12,8 +12,8 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 <!-- north-star:end -->
 
 You are running Krish Raja's growth engine. This repository is everything
-you need. You need no earlier conversation and no other repository. The one
-other system you touch is Control Center, where every job reports in.
+you need. You need no earlier conversation and no other repository. Control Center is the eventual unified dashboard. Scheduled jobs may deliver
+draft packs through its supported API. Interactive implementation stays here.
 
 Read, in this order, before any job:
 1. this file, to the end;
@@ -21,7 +21,9 @@ Read, in this order, before any job:
 3. `BROWSER.md`: what you may and may never do in Krish's signed-in browser;
 4. the job's own file in `jobs/`.
 
-If nobody named a job, run the one today's schedule (below) says. The
+If nobody named a job, run the one today's schedule (below) says, unless the
+user asked for implementation or an audit. Never run a scheduled job as a side
+effect of repository development. The
 source documents behind the playbook are in `knowledge/`; read them when a
 job needs depth (the references, the templates, the case studies).
 
@@ -102,38 +104,61 @@ that it runs there:
 6. **Only real numbers.** A number in a report is one you read on a page
    today, with where you read it. Missing means "not shown", never a guess.
 7. **Stay in this repository.** Never change Control Center, the content
-   engine or any other repository. Your only write outside this repository
-   is the pack you post (below). A scheduled run changes no file here except
-   the lists (`lists/`); a fix to a job or to `growth.py` is made only when
-   Krish asks for it in an interactive session.
+   engine or any other repository. Krish, 2026-10-17: "you are not to do any
+   actual work in control-center, only pass me a brief once you have completed
+   your work". For this implementation: no Control Center writes, including
+   packs, database rows, observations or settings. Give the completed brief
+   in `docs/CONTROL_CENTER_HANDOFF.md`. A future explicitly authorised
+   scheduled job may deliver a draft pack through the supported API only.
+   Scheduled jobs can update `lists/` and ignored `.scratch/` local records;
+   code and job changes require an interactive instruction. Never publish,
+   deploy, create automations or rotate credentials as an incidental step.
 
 `python3 growth.py check PACK.json` checks rules 2 and 3 as far
 as code can. Control Center refuses a pack with an em dash or a percentage.
 
-## Where your work goes: Control Center
+## Preparing and delivering work
 
-Every job ends with one **pack** stored in Control Center, which Krish opens
-at https://controlcenter.krishraja.com/#/growth?section=packs. Each draft is
-a card with a Copy button and Posted and Skip buttons. That is the only
-place your work lands (plus Gmail drafts, if a Gmail tool is connected and a
-job says so).
+Read `docs/ENGINE.md` for the exact v2 envelope, commands and checks. Before
+any draft, preserve its source URL, literal excerpt and observation time.
+Create a stable asset/platform/placement/variant identity, estimated minutes,
+priority, why now and a verifiable success check. Record radar expiry.
+The checks verify references and literal quotes; the author must compare
+all paraphrased claims with the original. Never claim that a linter proves
+truth. First-person experience must be present in the published source.
 
-1. Write the pack as JSON in a scratch file (shape in `growth.py`'s top
-   comment): `pack_date` (today, New York), `kind`, a `headline` that says
-   in one plain line what is in it, and `items`. Each item: `platform`,
-   `target_url` (where to post or reply; the piece's URL for his own posts),
-   `target_name` (whose thread, for replies and pitches), `why` (one line:
-   why this, why now), `text` (the draft, ready to paste). Platforms:
-   linkedin, x, substack, youtube, instagram, tiktok, spotify, reddit,
-   email, seo, podcast, partner, other. Every makeyourmindup link in a
-   draft is tracked (`python3 growth.py link`).
-2. `python3 growth.py check pack.json` until it says ready.
-3. `python3 growth.py post pack.json`. The same date and kind
-   replaces the earlier pack, so a re-run is safe.
+1. Discovery: `python growth.py discover --days 21`. Read bodies with
+   `python growth.py pieces --days 21 --full`. Recover late pieces, revisions
+   and missing video bodies on the next existing job. Similar titles do not
+   prove a pair. A missed publication is not a reason to invent one.
+2. Prepare a v2 input in `.scratch/`, following `docs/ENGINE.md`, then
+   `python growth.py prepare .scratch/input.json --out .scratch/envelope.json`.
+3. Check: `python growth.py check .scratch/envelope.json`.
+4. Merge all current job envelopes in one queue:
+   `python growth.py queue .scratch/radar.json .scratch/daily.json --out .scratch/queue.json`.
+   Use only actual filenames. The shared budget is 20 minutes, 30 on Sunday.
+   Reduce the packs to that selection, then prepare/check again. Keep deferred
+   work locally; expired replies need fresh evidence before they return.
+5. Interactive implementation and audits end with local artifacts and a
+   handoff. `python growth.py post .scratch/envelope.json` is a dry run.
+   **Do not use `--deliver` during this implementation.**
+6. In a future explicitly authorised scheduled run only,
+   `python growth.py post .scratch/envelope.json --deliver` sends the legacy
+   projection to `/api/growth/packs`. No social action occurs. If the key or
+   endpoint fails, retain the ignored local envelope, report the failure,
+   and never claim delivery. No database fallback or second write path.
 
-`GROWTH_ENGINE_TOKEN` must be set in your environment. If it is missing or
-Control Center refuses it, stop and say exactly that in your final message:
-do not store the pack anywhere else.
+Control Center currently stores only the original fields. Stable IDs,
+evidence, time budget, observations and verification stay local until the
+handoff is implemented there. A rerun preserves existing Posted/Skip marks
+when platform and text are unchanged; edited copy can lose the old mark.
+Read current statuses before re-preparing; never infer a real post from a
+draft or report card. Do not assert Posted/Skip from this engine.
+
+An existing `GROWTH_ENGINE_TOKEN` is configured on GitHub and Vercel according
+to Krish. GitHub secrets cannot be read back. Do not regenerate it. Local
+development uses `python growth.py doctor --offline` with no credentials.
+Production `doctor` checks read access only and must report actual gaps.
 
 ## The schedule (New York time)
 
@@ -148,8 +173,9 @@ do not store the pack anywhere else.
 | Saturday 07:00 | The front door | `conversion` | `jobs/conversion.md` |
 | Sunday 07:00 | The weekly report | `report` | `jobs/report.md` |
 
-Krish's time budget is about 20 minutes a day and 30 on Sunday. Keep every
-pack small enough to finish in that, best item first.
+Krish's time budget is about 20 minutes a day and 30 on Sunday, across all
+jobs together. Merge the day's envelopes into one queue; a later job counts
+earlier selected work. An individual job has no separate 20-minute allowance.
 
 ## When Krish says: "create the automations"
 
@@ -162,9 +188,12 @@ this, in order, and nothing else:
    READY, stop. Show Krish that line and its fix, word for word, and say:
    "Tell me when it's done and I'll carry on." Never work around a missing
    key: no key, no automations.
-3. **Check the clock.** Run `tzutil /g` on Windows (or `date +%Z`). The times
-   in `automations.json` are New York time. If this computer's time zone is
-   not New York, convert each time, and tell Krish which zone you used.
+3. **Check the clock.** Run `tzutil /g` on Windows. The times in
+   `automations.json` are New York time. Prefer the scheduler's named
+   `America/New_York` timezone, which follows daylight saving. A one-time
+   conversion into another local zone can drift around clock changes. If
+   the scheduler cannot store the named zone, explain the limitation and
+   arrange the required future adjustments; do not claim permanent parity.
 4. **Create the eight scheduled tasks** from `automations.json`, using
    Codex's own scheduled tasks (a Codex chat can create and update them).
    For each entry:

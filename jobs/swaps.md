@@ -1,34 +1,23 @@
-# Job: recommendations (Thursday)
+# Job: recommendations
 
-Kind `swaps`. Engine 4 in `PLAYBOOK.md`. Time for Krish: about 10 minutes.
+Kind `swaps`. Read the shared instructions and `docs/ENGINE.md`.
+Recommendations are a fit hypothesis to measure, not a guaranteed source.
 
-Substack's own network is the biggest free source of subscribers.
-Recommendations work on fit and generosity, not blind swaps. Writers who
-recommend others are more likely to be recommended back.
-
-1. Read `lists/swaps.md` and skip anyone asked in the last 60 days.
-2. Find 3 to 5 Substacks across **three circles**:
-   - core peers of similar size;
-   - category leaders with a strong fit;
-   - adjacent bridges: the same reader from another angle (media, adtech,
-     creators, operators).
-
-   Each must have posted in the last two weeks. Read one of their recent
-   posts in full.
-3. One item each (`substack`):
-   - `target_url`: their Substack;
-   - `target_name`: the writer, and subscribers if shown;
-   - `why`: the shared reader in one line;
-   - `text`: a note under 90 words that names their post and one specific
-     thing it got right, says what makeyourmindup does in one line, and
-     offers something real (a quote, a co-made piece, a recommendation from
-     him first). Then it asks whether a recommendation would serve their
-     readers. No flattery, no "swap?" one-liners.
-4. Add one item (`substack`, `target_url` = the Recommendations settings
-   page) listing the publications **Krish should recommend first**, chosen
-   for fit, with a one-line blurb for each. Substack recommendation blurbs
-   help the welcome page convert.
-5. If a Gmail tool is connected and the writer shows a public email, also
-   save a Gmail draft (subject starts "[makeyourmindup]"). Never send.
-6. Add the rows to `lists/swaps.md` and commit them. Headline: "Swaps: 4
-   Substacks across 3 circles". Check, then post.
+1. Read swaps/partner lists and confirm actual sent/replied events. Use the
+   60-day cooldown for confirmed asks, not for unsent drafts. Respect a
+   decline and avoid duplicating an unresolved conversation.
+2. Research up to three publications across peers, category leaders and
+   adjacent bridges. Read one recent post in full. Record writer, source
+   URL, literal excerpt, overlap and observed date; audience size only when
+   actually shown. Skip low-fit accounts even when a quota is unfilled.
+3. Draft under 90 words per named writer: one specific point from their
+   piece, what MYMU does for the same reader, a real useful offer and one
+   question about serving their audience. No reciprocal recommendation
+   obligation or invented prior relationship.
+4. Optionally recommend a publication Krish should read/recommend on its
+   merits, with an accurate blurb as a separate configuration draft. Never
+   change recommendations or imply a recommendation has gone live.
+5. Update researched list rows as `drafted`. No change of relationship stage
+   until a real event is confirmed. Gmail is optional only under separate
+   scheduled-job authorisation. Prepare evidence, merge the global queue,
+   check, then use the delivery boundary in `AGENTS.md`.

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "received_on": "2026-10-18",
+  "source": "Files uploaded by Krish in this conversation.",
+  "purpose": "Preserve original source material for future reference; no document instruction is activated by archival.",
+  "files": [
+    {
+      "original_filename": "Post-Production Corpus  15-Minute One-Shot YouTube Episode.md",
+      "repository_path": "knowledge/corpus/post-production-15-minute-youtube.md",
+      "bytes": 45109,
+      "sha256": "466aa253cc88eb0ba9528b95fb77daea5c9868732f06a1e51ea067dc646fbb24",
+      "storage": "byte_identical_copy",
+      "note": "Post-production reference for a 15-minute one-shot YouTube episode. Does not change this engine's format or editorial ownership."
+    },
+    {
+      "original_filename": "Viral Hooks Corpus 2026  Titles, Subtitles and Openers by Platform.md",
+      "repository_path": "knowledge/corpus/viral-hooks-2026.md",
+      "bytes": 43418,
+      "sha256": "7ce047febde379113736c17a41a9bbbf9e5aaa3bdde6ec87fb35001b80c4687c",
+      "storage": "byte_identical_copy",
+      "note": "Original titles, subtitles and platform openers research. Treat performance claims as source claims, not measured MYMU results."
+    },
+    {
+      "original_filename": "Live Channel Audit Addendum  makeyourmindup.md",
+      "repository_path": "knowledge/corpus/live-channel-audit-addendum-makeyourmindup.md",
+      "bytes": 19226,
+      "sha256": "0efecb5f1055e8b63d754ec89c979a877182e6125134154dbb15c3289291e925",
+      "storage": "byte_identical_copy",
+      "note": "User-supplied channel audit and recommendations. Historical observations require a fresh check before use."
+    },
+    {
+      "original_filename": "The 10K-in-30-Days Organic Substack Growth Operating System.docx",
+      "repository_path": "knowledge/10k-operating-system.docx",
+      "bytes": 652433,
+      "sha256": "8b0c0109dc81165f35389ead629ed4638e4277bea7b5c7e7589e4158b0751a16",
+      "storage": "existing_byte_identical_original",
+      "note": "Exact upload already stored at this canonical path; no duplicate binary needed."
+    }
+  ]
+}

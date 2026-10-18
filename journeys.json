@@ -1,0 +1,247 @@
+{
+  "schema_version": 2,
+  "principle": "one useful next action matched to reader intent; loops are measured transitions, not links everywhere",
+  "journeys": [
+    {
+      "journey_id": "youtube-short",
+      "platform": "youtube",
+      "entry_stage": "cold",
+      "steps": [
+        "Short",
+        "related long video",
+        "matched article or source list",
+        "native subscribe"
+      ],
+      "prerequisite": "related-video and channel features must be available",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "youtube-search",
+      "platform": "youtube",
+      "entry_stage": "curious",
+      "steps": [
+        "long video",
+        "pinned comment or description",
+        "matched article",
+        "native subscribe"
+      ],
+      "prerequisite": "long video must be live",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "instagram-discovery",
+      "platform": "instagram",
+      "entry_stage": "cold",
+      "steps": [
+        "Reel",
+        "Story or pinned start-here",
+        "topic-matched Story link",
+        "article",
+        "subscribe"
+      ],
+      "prerequisite": "verify Story link and current destination",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "tiktok-discovery",
+      "platform": "tiktok",
+      "entry_stage": "cold",
+      "steps": [
+        "clip",
+        "named native follow-up",
+        "eligible bio link",
+        "matched article",
+        "subscribe"
+      ],
+      "prerequisite": "website link may be unavailable; use spoken name and native continuation",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "x-discussion",
+      "platform": "x",
+      "entry_stage": "curious",
+      "steps": [
+        "post or thread",
+        "matched article or refreshed pin",
+        "subscribe"
+      ],
+      "prerequisite": "pin and bio should agree",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "linkedin-authority",
+      "platform": "linkedin",
+      "entry_stage": "curious",
+      "steps": [
+        "native post or document",
+        "matched article or Featured start-here",
+        "subscribe"
+      ],
+      "prerequisite": "no links in comments",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "audio-habit",
+      "platform": "spotify",
+      "entry_stage": "warm",
+      "steps": [
+        "episode",
+        "spoken continuation and notes",
+        "matched article",
+        "subscribe"
+      ],
+      "prerequisite": "show URL and episode must be verified",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "search-topic",
+      "platform": "seo",
+      "entry_stage": "curious",
+      "steps": [
+        "search result",
+        "useful article or topic page",
+        "related series",
+        "subscribe"
+      ],
+      "prerequisite": "keep original referrer when recording internal placements",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "reader-loop",
+      "platform": "substack",
+      "entry_stage": "subscriber",
+      "steps": [
+        "welcome",
+        "one useful start-here piece",
+        "next issue",
+        "forward or refer one person"
+      ],
+      "prerequisite": "use native forwarding/referral facilities only after verification",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    },
+    {
+      "journey_id": "partner-loop",
+      "platform": "partner",
+      "entry_stage": "warm",
+      "steps": [
+        "named partner asset",
+        "topic-matched landing",
+        "subscribe",
+        "welcome",
+        "reader referral"
+      ],
+      "prerequisite": "actual published collaboration and distinct placement ID required",
+      "audit": [
+        "mobile",
+        "desktop",
+        "logged_out",
+        "correct_destination",
+        "single_primary_cta",
+        "source_preserved",
+        "subscribe_completion",
+        "welcome_delivery",
+        "unsubscribe_path"
+      ],
+      "status": "requires_surface_verification"
+    }
+  ]
+}

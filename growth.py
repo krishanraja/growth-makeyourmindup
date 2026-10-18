@@ -1,332 +1,238 @@
 #!/usr/bin/env python3
-"""The growth engine's one tool: read what Krish has published, check a draft
-against his house rules, and leave a pack in Control Center.
+"""Read published evidence, prepare growth drafts and plan a daily work queue.
 
-Standard library only. Runs anywhere Python 3.9+ runs (a Codex session, a Mac,
-a cloud box). Nothing here posts, sends, comments, follows or DMs anywhere:
-the only write is a pack of drafts into Control Center, where Krish reads
-them and posts by hand.
-
-    python3 growth.py pieces [--days 21] [--full]
-        The published pieces, newest first, from the public feed
-        (https://home.makeyourmindup.ai/feed). --full prints each article's
-        text: the only source of facts for any draft.
-
-    python3 growth.py check PACK.json
-        The house rules on every draft in the pack (see RULES below). Exit 1
-        names each draft that breaks one.
-
-    python3 growth.py post PACK.json
-        Checks, then stores the pack in Control Center (POST /api/growth/packs,
-        Bearer $GROWTH_ENGINE_TOKEN). Same date and kind replaces the earlier
-        pack. Shows on Control Center > Growth > Packs.
-
-    python3 growth.py link URL PLATFORM JOB
-        The url with tracking for the subscriber counts by source, e.g.
-        `link https://home.makeyourmindup.ai/p/x linkedin daily`.
-
-    python3 growth.py read [--days 7] [--kind daily]
-        The packs already in Control Center (for the Sunday report).
-
-    python3 growth.py doctor
-        Is this machine ready? Python, the key, Control Center accepting it,
-        the public feed, and the automations file. Exit 1 names what is not.
-
-    python3 growth.py --self-test
-
-A pack file:
-    {"pack_date": "2026-10-16", "kind": "daily",
-     "headline": "Friday: 2 posts and 4 search fixes for the AI pick piece",
-     "items": [{"platform": "linkedin", "target_url": "https://...",
-                "target_name": "", "why": "...", "text": "..."}],
-     "numbers": null, "link": null}
-
-Kinds: daily, pitches, swaps, radar, numbers, report, conversion, partners.
-Environment: GROWTH_ENGINE_TOKEN (required to post or read),
-CONTROL_CENTER_URL (default https://controlcenter.krishraja.com).
+Python 3.9+, standard library only. Development and dry runs need no token.
+Control Centre delivery is a separate explicit --deliver action. Social
+publication, outreach, settings changes and paid work remain Krish's actions.
+See README.md and docs/ENGINE.md for the versioned envelope and commands.
 """
 import argparse
-import datetime as dt
-import email.utils
-import html
 import json
 import os
-import re
+from pathlib import Path
 import sys
 import urllib.error
 import urllib.request
-import xml.etree.ElementTree as ET
 
-FEED = 'https://home.makeyourmindup.ai/feed'
+from engine.catalog import FEED, discover, pieces, parse_feed, strip_html
+from engine.core import (KINDS, PLATFORMS, http_url, identity, instant, locked,
+                         read_json, today, tracked, write_json)
+from engine.operations import (aggregate, daily_queue, experiment_decision,
+                               relationship, validate_observation, yield_per_thousand)
+from engine.packs import check_pack, problems, seal, validate_envelope, wire_pack
+
+ROOT = Path(__file__).resolve().parent
 BASE = os.environ.get('CONTROL_CENTER_URL', 'https://controlcenter.krishraja.com').rstrip('/')
-KINDS = ('daily', 'pitches', 'swaps', 'radar', 'numbers', 'report', 'conversion', 'partners')
-PLATFORMS = ('linkedin', 'x', 'substack', 'youtube', 'instagram', 'tiktok', 'spotify', 'reddit', 'email', 'seo', 'podcast', 'partner', 'other')
-
-# Krish's house rules for anything written in his name. Control Center refuses
-# the first two as well, so a pack that skips this check still cannot land.
-EM_DASH = re.compile('—')
-PERCENT = re.compile(r'\d\s*%|\bper ?cent\b', re.I)
-SLOP = [
-    'delve', "in today's", 'in a world where', "it's worth noting", 'navigate', 'landscape', 'game-changer',
-    'game changer', 'seamless', 'unlock', 'harness', 'leverage', 'robust', 'crucial', 'pivotal', 'moreover',
-    'furthermore', "here's the thing", 'the reality is', 'at the end of the day', 'a testament to', 'tapestry',
-    'realm', 'ever-evolving', 'cutting-edge', 'revolutionize', 'revolutionise', 'transformative', 'paradigm',
-    'synergy', 'buckle up', "let's dive", 'deep dive', 'a new era', 'make no mistake', 'let that sink in',
-    'unpopular opinion', 'thoughts?', 'agree?',
-]
-NOT_BUT = re.compile(r"\b(?:it'?s|this is|that'?s)\s+not\s+(?:just\s+|only\s+|about\s+)?[^.;:!?]{1,60}[,;]\s*(?:it'?s|but)\b"
-                     r"|\bisn'?t\s+(?:just|only)\b", re.I)
-LIMITS = {'linkedin': 3000, 'x': 280, 'reddit': 1500}
-# Every link to makeyourmindup carries tracking, so the report can count
-# subscribers by source (PLAYBOOK.md, "Every tracked link").
-OWN_LINK = re.compile(r'https?://(?:[\w-]+\.)?makeyourmindup\.ai[^\s)>\]"\']*', re.I)
-SETTINGS_PATH = re.compile(r'/publish/|/settings|/account', re.I)
-
-
-def tracked(url, platform, job, day=None):
-    """The url with this engine's UTM tags (replacing any already there)."""
-    day = (day or dt.date.today().isoformat()).replace('-', '')
-    base, _, frag = url.partition('#')
-    base = re.sub(r'([?&])utm_[a-z]+=[^&]*', r'\1', base).rstrip('?&').replace('?&', '?')
-    tags = f'utm_source={platform}&utm_medium=organic&utm_campaign=growth&utm_content={job}-{day}'
-    return base + ('&' if '?' in base else '?') + tags + (('#' + frag) if frag else '')
-X_THREAD_SPLIT = re.compile(r'\n\s*\n')
-
-
-def problems(item):
-    """Every house rule this one draft breaks, in plain words."""
-    out = []
-    text = item.get('text') or ''
-    platform = (item.get('platform') or '').lower()
-    if not text.strip():
-        return ['it has no text']
-    if platform not in PLATFORMS:
-        out.append(f'platform "{platform}" is not one of {", ".join(PLATFORMS)}')
-    if EM_DASH.search(text):
-        out.append('it has an em dash (use a comma, a full stop or "and")')
-    if PERCENT.search(text):
-        out.append('it has a percentage (Krish uses none: say the number of things, or a plain word)')
-    low = text.lower()
-    for s in SLOP:
-        if s in low:
-            out.append(f'it says "{s}", a stock phrase that reads as machine-written')
-    if NOT_BUT.search(text):
-        out.append('it uses the "it\'s not X, it\'s Y" turn')
-    if platform == 'x':
-        for n, post in enumerate(X_THREAD_SPLIT.split(text.strip()), 1):
-            if len(post) > LIMITS['x']:
-                out.append(f'X post {n} is {len(post)} characters (280 at most; separate posts with a blank line)')
-    elif platform in LIMITS and len(text) > LIMITS[platform]:
-        out.append(f'it is {len(text)} characters ({LIMITS[platform]} at most on {platform})')
-    if platform == 'linkedin' and item.get('kind_hint') == 'comment' and re.search(r'https?://', text):
-        out.append('a LinkedIn comment with a link (LinkedIn hides those)')
-    if len(text) > 4000:
-        out.append('it is over 4,000 characters')
-    for url in OWN_LINK.findall(text):
-        if 'utm_source=' not in url and not SETTINGS_PATH.search(url):
-            out.append(f'the link {url} is not tracked (python3 growth.py link <url> <platform> <job>)')
-    return out
-
-
-def check_pack(pack):
-    errs = []
-    if pack.get('kind') not in KINDS:
-        errs.append(f'kind must be one of {", ".join(KINDS)}')
-    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', str(pack.get('pack_date') or '')):
-        errs.append('pack_date must be YYYY-MM-DD')
-    head = (pack.get('headline') or '').strip()
-    if not head:
-        errs.append('headline is empty')
-    elif EM_DASH.search(head) or PERCENT.search(head):
-        errs.append('headline has an em dash or a percentage')
-    items = pack.get('items') or []
-    if len(items) > 40:
-        errs.append('more than 40 drafts in one pack')
-    for i, item in enumerate(items, 1):
-        for p in problems(item):
-            errs.append(f'draft {i} ({item.get("platform", "?")}): {p}')
-    return errs
-
-
-TOKEN_FILE = os.path.expanduser('~/.config/growth-makeyourmindup/token')
+TOKEN_FILE = Path.home() / '.config' / 'growth-makeyourmindup' / 'token'
 
 
 def token():
-    """The Control Center key: the environment first, then the file on Krish's Mac."""
-    t = os.environ.get('GROWTH_ENGINE_TOKEN', '').strip()
-    if not t and os.path.exists(TOKEN_FILE):
-        t = open(TOKEN_FILE).read().strip()
-    return t
+    value = os.environ.get('GROWTH_ENGINE_TOKEN', '').strip()
+    if not value and TOKEN_FILE.exists():
+        value = TOKEN_FILE.read_text(encoding='utf-8-sig').strip()
+    return value
 
 
-def call(method, path, body=None):
-    token_value = token()
-    if not token_value:
-        sys.exit(f'No Control Center key: set GROWTH_ENGINE_TOKEN or put it in {TOKEN_FILE} (README.md, step 1).')
-    data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(BASE + path, data=data, method=method)
-    req.add_header('Authorization', f'Bearer {token_value}')
-    req.add_header('Content-Type', 'application/json')
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError('Control Centre redirected the request; delivery stopped')
+
+
+def call(method, path, body=None, deliver=False):
+    if BASE != 'https://controlcenter.krishraja.com':
+        raise ValueError('CONTROL_CENTER_URL must be the approved HTTPS Control Centre origin')
+    if method not in ('GET', 'POST') or path.partition('?')[0] != '/api/growth/packs':
+        raise ValueError('only the supported packs endpoint is allowed')
+    if method == 'POST' and (not deliver or path != '/api/growth/packs'):
+        raise ValueError('Control Centre writes require explicit --deliver')
+    key = token()
+    if not key:
+        raise ValueError('No Control Centre key: use the existing configured GROWTH_ENGINE_TOKEN or token file. Do not rotate or print it. See docs/KEY.md.')
+    data = json.dumps(body, allow_nan=False).encode('utf-8') if body is not None else None
+    req = urllib.request.Request(BASE + path, data=data, method=method,
+                                 headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'})
     try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            return json.loads(r.read() or b'{}')
-    except urllib.error.HTTPError as e:
-        sys.exit(f'Control Center said {e.code}: {e.read().decode(errors="replace")[:500]}')
-    except urllib.error.URLError as e:
-        sys.exit(f'Could not reach Control Center at {BASE}: {e.reason}')
+        with urllib.request.build_opener(NoRedirect).open(req, timeout=30) as response:
+            result = json.loads(response.read(4_000_000))
+        if not isinstance(result, dict) or result.get('ok') is not True:
+            raise ValueError('Control Centre did not confirm success')
+        return result
+    except urllib.error.HTTPError as error:
+        # Never echo remote bodies: an upstream failure can include secrets.
+        raise ValueError('Control Centre returned HTTP ' + str(error.code)) from None
+    except urllib.error.URLError:
+        raise ValueError('Could not reach Control Centre; no successful delivery confirmed') from None
 
 
-def doctor():
-    ok = True
-    def line(good, what, fix=''):
-        nonlocal ok
-        ok = ok and good
-        print(('ready    ' if good else 'NOT READY ') + what + ('' if good else f'\n          fix: {fix}'))
-    line(sys.version_info >= (3, 9), f'Python {sys.version.split()[0]}', 'install Python 3.9 or newer')
-    t = token()
-    line(bool(t), 'the Control Center key' + (f' (from {"the environment" if os.environ.get("GROWTH_ENGINE_TOKEN") else TOKEN_FILE})' if t else ''),
-         f'README.md step 1: save the key to {TOKEN_FILE}')
-    if t:
-        req = urllib.request.Request(BASE + '/api/growth/packs?days=1', headers={'Authorization': f'Bearer {t}'})
-        try:
-            with urllib.request.urlopen(req, timeout=30) as r:
-                good = json.loads(r.read() or b'{}').get('ok') is True
-            line(good, f'Control Center accepts the key ({BASE})', 'check the value matches Vercel exactly, then redeploy')
-        except urllib.error.HTTPError as e:
-            fixes = {401: 'the key does not match GROWTH_ENGINE_TOKEN in Vercel', 503: 'GROWTH_ENGINE_TOKEN is not set in Vercel yet, or not redeployed',
-                     404: 'Control Center does not have /api/growth/packs yet (is PR #454 merged and deployed?)'}
-            line(False, f'Control Center accepts the key ({BASE}): HTTP {e.code}', fixes.get(e.code, 'see the HTTP code'))
-        except urllib.error.URLError as e:
-            line(False, f'Control Center reachable ({BASE})', f'network access is off or blocked: {e.reason}')
+def doctor(offline=False):
+    errors = []
+    if sys.version_info < (3, 9):
+        errors.append('Python 3.9 or newer required')
     try:
-        n = len(pieces(30))
-        line(n > 0, f'the public feed ({n} pieces in 30 days)', 'check https://home.makeyourmindup.ai/feed opens')
-    except Exception as e:  # noqa: BLE001 - doctor reports, never raises
-        line(False, 'the public feed', f'network access is off or blocked: {e}')
-    here = os.path.dirname(os.path.abspath(__file__))
-    autos = json.load(open(os.path.join(here, 'automations.json')))['automations']
-    line(all(os.path.exists(os.path.join(here, a['job'])) for a in autos), f'automations.json ({len(autos)} automations, every job file present)',
-         'a job file named in automations.json is missing')
-    print('\nready to run' if ok else '\nnot ready: fix the lines above, then run doctor again')
-    return 0 if ok else 1
-
-
-def strip_html(s):
-    s = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', s or '', flags=re.S | re.I)
-    s = re.sub(r'</(p|h\d|li|blockquote)>', '\n\n', s, flags=re.I)
-    s = re.sub(r'<br\s*/?>', '\n', s, flags=re.I)
-    s = html.unescape(re.sub(r'<[^>]+>', '', s))
-    return re.sub(r'\n{3,}', '\n\n', re.sub(r'[ \t]+', ' ', s)).strip()
-
-
-def pieces(days):
-    with urllib.request.urlopen(urllib.request.Request(FEED, headers={'User-Agent': 'growth-makeyourmindup'}), timeout=60) as r:
-        root = ET.fromstring(r.read())
-    ns = {'c': 'http://purl.org/rss/1.0/modules/content/'}
-    since = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days)
-    out = []
-    for it in root.iter('item'):
-        when = email.utils.parsedate_to_datetime(it.findtext('pubDate'))
-        if when < since:
-            continue
-        title = it.findtext('title') or ''
-        out.append({
-            'date': when.date().isoformat(),
-            'title': title,
-            'url': it.findtext('link'),
-            'kind': 'video post' if title.upper().startswith('VIDEO:') else 'article',
-            'subtitle': strip_html(it.findtext('description') or ''),
-            'text': strip_html(it.findtext('c:encoded', namespaces=ns) or ''),
-        })
-    return out
+        config = read_json(ROOT / 'automations.json')
+        if config['timezone'] != 'America/New_York' or len(config['automations']) != 8:
+            errors.append('expected eight New York automations')
+        if any(not (ROOT / entry['job']).is_file() for entry in config['automations']):
+            errors.append('automation job file missing')
+        for name in ('channels.json', 'journeys.json', 'experiments.json', 'hooks.json'):
+            read_json(ROOT / name)
+    except (KeyError, ValueError, OSError) as error:
+        errors.append('configuration: ' + str(error))
+    if not offline:
+        for label, action in (('Control Centre read access', lambda: call('GET', '/api/growth/packs?days=1')),
+                              ('public feed', lambda: pieces(30))):
+            try:
+                result = action()
+                if not result:
+                    errors.append(label + ': no records available')
+            except (ValueError, OSError) as error:
+                errors.append(label + ': ' + str(error))
+    for error in errors:
+        print('NOT READY ' + error)
+    if not errors:
+        print('ready: local development' if offline else 'ready: read-only runtime checks')
+    if offline:
+        print('Runtime credentials and signed-in social dashboards were not tested.')
+    return int(bool(errors))
 
 
 def self_test():
-    ok = 0
-    def t(name, cond):
-        nonlocal ok
-        if not cond:
-            sys.exit(f'self-test FAILED: {name}')
-        ok += 1
-    good = {'pack_date': '2026-10-16', 'kind': 'daily', 'headline': 'Friday pack',
-            'items': [{'platform': 'linkedin', 'text': 'I asked two AI apps the same thing. One said no.'}]}
-    t('a clean pack passes', check_pack(good) == [])
-    t('an em dash is refused', any('em dash' in e for e in check_pack({**good, 'items': [{'platform': 'x', 'text': 'Muse — Meta'}]})))
-    t('a percentage is refused', any('percentage' in e for e in check_pack({**good, 'items': [{'platform': 'x', 'text': '70% sure'}]})))
-    t('"per cent" is refused', any('percentage' in e for e in check_pack({**good, 'items': [{'platform': 'x', 'text': 'ten per cent'}]})))
-    t('slop is named', any('delve' in e for e in check_pack({**good, 'items': [{'platform': 'x', 'text': "Let's delve in"}]})))
-    t('an over-long X post is caught', any('X post 1' in e for e in check_pack({**good, 'items': [{'platform': 'x', 'text': 'a' * 281}]})))
-    t('an X thread splits on blank lines', check_pack({**good, 'items': [{'platform': 'x', 'text': 'a' * 200 + '\n\n' + 'b' * 200}]}) == [])
-    t('an unknown kind is refused', any('kind' in e for e in check_pack({**good, 'kind': 'notes'})))
-    t('empty text is refused', any('no text' in e for e in check_pack({**good, 'items': [{'platform': 'x', 'text': ' '}]})))
-    t('an untracked own link is refused', any('not tracked' in e for e in check_pack({**good, 'items': [{'platform': 'linkedin', 'text': 'Read it https://home.makeyourmindup.ai/p/muse'}]})))
-    link = tracked('https://home.makeyourmindup.ai/p/muse', 'linkedin', 'daily', '2026-10-16')
-    t('a tracked link passes', check_pack({**good, 'items': [{'platform': 'linkedin', 'text': 'Read it ' + link}]}) == [])
-    t('tracking replaces old tags', tracked('https://makeyourmindup.ai/?utm_source=old&a=1', 'x', 'radar', '2026-10-16') ==
-      'https://makeyourmindup.ai/?a=1&utm_source=x&utm_medium=organic&utm_campaign=growth&utm_content=radar-20261016')
-    t('a settings page needs no tracking', check_pack({**good, 'items': [{'platform': 'substack', 'text': 'Open https://home.makeyourmindup.ai/publish/settings'}]}) == [])
-    t('the new kinds are accepted', check_pack({**good, 'kind': 'partners'}) == [] and check_pack({**good, 'kind': 'conversion'}) == [])
-    here = os.path.dirname(os.path.abspath(__file__))
-    agents = open(os.path.join(here, 'AGENTS.md')).read()
-    for f in sorted(os.listdir(os.path.join(here, 'jobs'))):
-        body = open(os.path.join(here, 'jobs', f)).read()
-        m = re.search(r'Kind `(\w+)`', body)
-        t(f'jobs/{f} names a kind Control Center accepts', bool(m) and m.group(1) in KINDS)
-        t(f'jobs/{f} is on the schedule in AGENTS.md', f'jobs/{f}' in agents)
-    for f in ('PLAYBOOK.md', 'BROWSER.md', 'knowledge/README.md', 'knowledge/10k-operating-system.md'):
-        t(f'{f} exists and AGENTS.md or the playbook points at it', os.path.exists(os.path.join(here, f)))
-    autos = json.load(open(os.path.join(here, 'automations.json')))['automations']
-    for au in autos:
-        t(f'automation "{au["name"]}" runs a job that exists', os.path.exists(os.path.join(here, au['job'])))
-        t(f'automation "{au["name"]}" has a schedule rule', au['schedule'].startswith('RRULE:FREQ='))
-    t('every job file has an automation', {a['job'] for a in autos} == {f'jobs/{f}' for f in os.listdir(os.path.join(here, 'jobs'))})
-    t('html becomes paragraphs', strip_html('<p>One &amp; two</p><p>Three</p>') == 'One & two\n\nThree')
-    print(f'growth self-test passed: {ok} checks')
+    import unittest
+    suite = unittest.defaultTestLoader.discover(str(ROOT / 'tests'))
+    return int(not unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful())
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    ap.add_argument('--self-test', action='store_true')
-    sub = ap.add_subparsers(dest='cmd')
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
+    parser.add_argument('--self-test', action='store_true')
+    sub = parser.add_subparsers(dest='cmd')
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
-    c = sub.add_parser('check'); c.add_argument('file')
-    s = sub.add_parser('post'); s.add_argument('file')
-    sub.add_parser('doctor')
-    lk = sub.add_parser('link'); lk.add_argument('url'); lk.add_argument('platform'); lk.add_argument('job')
-    r = sub.add_parser('read'); r.add_argument('--days', type=int, default=7); r.add_argument('--kind')
-    a = ap.parse_args()
-    if a.self_test:
+    p.add_argument('--feed-file'); p.add_argument('--now'); p.add_argument('--json', action='store_true')
+    c = sub.add_parser('check'); c.add_argument('file'); c.add_argument('--now')
+    s = sub.add_parser('post'); s.add_argument('file'); s.add_argument('--deliver', action='store_true')
+    d = sub.add_parser('doctor'); d.add_argument('--offline', action='store_true')
+    lk = sub.add_parser('link'); lk.add_argument('url'); lk.add_argument('platform', choices=PLATFORMS); lk.add_argument('job', choices=KINDS)
+    for arg in ('date', 'asset', 'placement', 'variant'):
+        lk.add_argument('--' + arg, default='a' if arg == 'variant' else None)
+    r = sub.add_parser('read'); r.add_argument('--days', type=int, choices=range(1, 61), default=7); r.add_argument('--kind', choices=KINDS)
+    d = sub.add_parser('discover'); d.add_argument('--days', type=int, default=21); d.add_argument('--feed-file'); d.add_argument('--now')
+    d.add_argument('--state', default='.scratch/catalog.json')
+    p = sub.add_parser('prepare'); p.add_argument('file'); p.add_argument('--out', required=True); p.add_argument('--now')
+    e = sub.add_parser('evidence'); e.add_argument('url'); e.add_argument('--kind', required=True, choices=('published_piece', 'source_thread', 'dashboard', 'audit', 'policy'))
+    e.add_argument('--excerpt-file', required=True); e.add_argument('--snapshot-file'); e.add_argument('--out', required=True); e.add_argument('--now'); e.add_argument('--created-at')
+    w = sub.add_parser('export'); w.add_argument('file'); w.add_argument('--out', required=True); w.add_argument('--now')
+    q = sub.add_parser('queue'); q.add_argument('files', nargs='+'); q.add_argument('--now'); q.add_argument('--out')
+    m = sub.add_parser('measure'); m.add_argument('file'); m.add_argument('--aggregate', action='store_true'); m.add_argument('--yield-pair', action='store_true')
+    r = sub.add_parser('relationship'); r.add_argument('file'); r.add_argument('person_id'); r.add_argument('--now'); r.add_argument('--cooldown-days', type=int, choices=range(1, 366), default=60)
+    e = sub.add_parser('experiment'); e.add_argument('file'); e.add_argument('observations'); e.add_argument('--now')
+    d = sub.add_parser('dry-run'); d.add_argument('--out', default='.scratch/dry-run'); d.add_argument('--live', action='store_true')
+    args = parser.parse_args(argv)
+    if args.self_test:
         return self_test()
-    if a.cmd == 'pieces':
-        for x in pieces(a.days):
-            print(f"{x['date']}  {x['kind']:10}  {x['title']}\n            {x['url']}")
-            if a.full:
-                print('\n' + x['text'] + '\n' + '-' * 72)
-        return
-    if a.cmd in ('check', 'post'):
-        pack = json.load(open(a.file))
-        errs = check_pack(pack)
-        if errs:
-            print('Not ready:\n  ' + '\n  '.join(errs))
-            sys.exit(1)
-        if a.cmd == 'check':
-            print(f'ready: {len(pack.get("items") or [])} drafts')
-            return
-        out = call('POST', '/api/growth/packs', pack)
-        print(f'stored in Control Center: {pack["kind"]} {pack["pack_date"]} ({len(pack.get("items") or [])} drafts) '
-              f'{BASE}/#/growth?section=packs' if out.get('ok') else json.dumps(out))
-        return
-    if a.cmd == 'doctor':
-        sys.exit(doctor())
-    if a.cmd == 'link':
-        print(tracked(a.url, a.platform, a.job))
-        return
-    if a.cmd == 'read':
-        q = f'/api/growth/packs?days={a.days}' + (f'&kind={a.kind}' if a.kind else '')
-        print(json.dumps(call('GET', q), indent=1))
-        return
-    ap.print_help()
+    if args.cmd == 'doctor':
+        return doctor(args.offline)
+    if args.cmd == 'link':
+        print(tracked(args.url, args.platform, args.job, args.date, args.asset, args.placement, args.variant)); return 0
+    if args.cmd in ('pieces', 'discover'):
+        rows = parse_feed(Path(args.feed_file).read_bytes(), args.days, args.now) if args.feed_file else pieces(args.days, args.now)
+        if args.cmd == 'discover':
+            with locked(args.state):
+                previous = read_json(args.state) if Path(args.state).exists() else None
+                result = discover(rows, previous, args.now)
+                write_json(args.state, result)
+            print(json.dumps({key: value for key, value in result.items() if key != 'pieces'}, indent=2)); return 0
+        if args.json:
+            print(json.dumps(rows, ensure_ascii=False, indent=2)); return 0
+        for row in rows:
+            print(row['date'] + '  ' + row['kind'] + '  ' + row['title'] + '\n' + row['url'] + '\n' + row['piece_id'])
+            if args.full:
+                print(row['text'] or '[published body missing: read the page; do not infer]')
+        return 0
+    if args.cmd == 'check':
+        value = read_json(args.file)
+        if isinstance(value, dict) and value.get('schema_version') == 2:
+            validate_envelope(value, args.now)
+        else:
+            errors = check_pack(value)
+            if errors:
+                raise ValueError('; '.join(errors))
+            print('Legacy shape passes. Evidence is not verified; prepare a v2 envelope before delivery.')
+        print('ready: draft validation passed'); return 0
+    if args.cmd == 'prepare':
+        value = read_json(args.file)
+        result = seal(value['pack'], value['evidence'], value['metadata'], args.now, value.get('observations'))
+        write_json(args.out, result)
+        print('prepared locally: ' + args.out + '; no external write'); return 0
+    if args.cmd == 'evidence':
+        from engine.core import canonical
+        excerpt = Path(args.excerpt_file).read_text(encoding='utf-8-sig').strip()
+        if not excerpt:
+            raise ValueError('source excerpt cannot be empty')
+        snapshot = Path(args.snapshot_file).read_text(encoding='utf-8-sig') if args.snapshot_file else None
+        if snapshot is not None and excerpt not in snapshot:
+            raise ValueError('excerpt is absent from snapshot')
+        url = canonical(args.url)
+        result = {'evidence_id': identity('evidence', url, excerpt), 'kind': args.kind,
+                  'url': url, 'excerpt': excerpt, 'observed_at': instant(args.now).isoformat()}
+        if snapshot is not None:
+            result['snapshot'] = snapshot
+        if args.kind == 'source_thread':
+            if not args.created_at or instant(args.created_at) > instant(args.now):
+                raise ValueError('thread evidence requires --created-at no later than observation')
+            result['created_at'] = instant(args.created_at).isoformat()
+        write_json(args.out, result)
+        print('source recorded locally: ' + args.out); return 0
+    if args.cmd == 'export':
+        result = wire_pack(read_json(args.file), args.now)
+        write_json(args.out, result)
+        print('legacy pack exported locally: ' + args.out + '; full provenance remains in envelope; no external write'); return 0
+    if args.cmd == 'post':
+        envelope = read_json(args.file)
+        wire = wire_pack(envelope)
+        if not args.deliver:
+            print('Dry run: validated; no Control Centre write. Scheduled authorised delivery requires --deliver.'); return 0
+        call('POST', '/api/growth/packs', wire, deliver=True)
+        print('stored in Control Center: ' + wire['kind'] + ' ' + wire['pack_date'] + ' ' + BASE + '/#/growth?section=packs'); return 0
+    if args.cmd == 'read':
+        path = '/api/growth/packs?days=' + str(args.days) + ('&kind=' + args.kind if args.kind else '')
+        print(json.dumps(call('GET', path), indent=2)); return 0
+    if args.cmd == 'queue':
+        items = []
+        for path in args.files:
+            value = read_json(path)
+            validate_envelope(value, args.now)
+            items += [{**item, **meta, 'pack_kind': value['pack']['kind']} for item, meta in zip(value['pack'].get('items', []), value['metadata'])]
+        result = daily_queue(items, args.now)
+        if args.out:
+            write_json(args.out, result)
+        print(json.dumps(result, ensure_ascii=False, indent=2)); return 0
+    if args.cmd == 'measure':
+        rows = read_json(args.file)
+        for row in rows:
+            validate_observation(row)
+        if args.aggregate and args.yield_pair:
+            raise ValueError('choose aggregation or a yield pair')
+        result = aggregate(rows) if args.aggregate else {'valid_observations': len(rows)}
+        if args.yield_pair:
+            if len(rows) != 2:
+                raise ValueError('yield pair needs new_free and reach, in that order')
+            result = yield_per_thousand(*rows)
+        print(json.dumps(result, indent=2)); return 0
+    if args.cmd == 'relationship':
+        result = relationship(read_json(args.file), args.person_id, args.now, args.cooldown_days)
+        print(json.dumps(result, indent=2)); return 0
+    if args.cmd == 'experiment':
+        print(experiment_decision(read_json(args.file), read_json(args.observations), args.now)); return 0
+    if args.cmd == 'dry-run':
+        from engine.dry_run import run
+        print(json.dumps(run(ROOT, args.out, args.live), indent=2)); return 0
+    parser.print_help()
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        sys.exit(main())
+    except (ValueError, KeyError, TypeError, OSError) as error:
+        print('Not ready: ' + str(error), file=sys.stderr)
+        sys.exit(1)

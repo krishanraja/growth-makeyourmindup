@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "note": "Templates only, no experiment started. Set actual start/end and predeclare the comparison before measurement.",
+  "experiments": [
+    {
+      "experiment_id": "topic-landing",
+      "status": "planned",
+      "hypothesis": "A topic-matched landing can bring more qualified readers than a generic homepage.",
+      "primary_metric": "new_free",
+      "guardrail": "30-day retention and unsubscribes when available",
+      "decision_rule": "Compare matched source and time windows; change one variable; retain only if subscription quality holds.",
+      "owner": "Krish",
+      "minimum_observations": 6,
+      "sampling_note": "Six comparable observations is a review floor, not statistical power; set a power-based target when a baseline exists.",
+      "start": null,
+      "end": null
+    },
+    {
+      "experiment_id": "welcome-first-step",
+      "status": "planned",
+      "hypothesis": "One useful first read can activate more readers than three competing asks.",
+      "primary_metric": "retained_30d",
+      "guardrail": "No increase in unsubscribes; do not use privacy-distorted opens as proof",
+      "decision_rule": "Use complete 30-day cohorts; compare like acquisition sources; report uncertainty.",
+      "owner": "Krish",
+      "minimum_observations": 6,
+      "sampling_note": "Six comparable observations is a review floor, not statistical power; set a power-based target when a baseline exists.",
+      "start": null,
+      "end": null
+    },
+    {
+      "experiment_id": "native-continuation",
+      "status": "planned",
+      "hypothesis": "A native continuation before the subscribe ask can improve qualified visits.",
+      "primary_metric": "visits",
+      "guardrail": "Subscriber quality, factual accuracy and Krish time budget",
+      "decision_rule": "Compare similar pieces and placements; no causal claim from a before/after comparison alone.",
+      "owner": "Krish",
+      "minimum_observations": 6,
+      "sampling_note": "Six comparable observations is a review floor, not statistical power; set a power-based target when a baseline exists.",
+      "start": null,
+      "end": null
+    }
+  ]
+}

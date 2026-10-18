@@ -2,10 +2,17 @@ name: check
 on: [push, pull_request]
 jobs:
   self-test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.9', '3.12']
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
-      - run: python3 growth.py --self-test
-      - run: python3 -c "import json; json.load(open('hooks.json'))"
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python growth.py --self-test
+      - run: python growth.py doctor --offline
+      - run: python growth.py dry-run

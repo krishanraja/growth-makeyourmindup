@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>TEST FIXTURE: invented publication for offline checks</title>
+<item><title>TEST FIXTURE: a useful AI question</title><link>https://home.makeyourmindup.ai/p/test-fixture</link><pubDate>Fri, 16 Oct 2026 17:00:00 GMT</pubDate><description>Test data only.</description><content:encoded><![CDATA[<p>TEST FIXTURE ONLY. I asked one useful question.</p><p>Read the <a href="https://home.makeyourmindup.ai/p/test-fixture-video">video</a>.</p>]]></content:encoded></item>
+<item><title>VIDEO: TEST FIXTURE: a useful AI question</title><link>https://home.makeyourmindup.ai/p/test-fixture-video</link><pubDate>Sat, 17 Oct 2026 10:00:00 GMT</pubDate><description>Test data only.</description><content:encoded></content:encoded></item>
+</channel></rss>

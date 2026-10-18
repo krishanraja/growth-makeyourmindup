@@ -1,113 +1,110 @@
-# The playbook: the operating system, applied to makeyourmindup
+# The growth operating system
 
-Source: `knowledge/10k-operating-system.md`, as Krish gave it on 14 October
-2026. Where his own rules change it, see `knowledge/README.md`. Every job
-reads this file before it starts.
+The source doctrine is in `knowledge/10k-operating-system.md`. Krish's
+instructions in `AGENTS.md` and `CHANGES.md` take precedence. The goal is
+relevant readers who subscribe, find value, and stay. Reach and followers
+are discovery signals. They do not stand in for subscribers.
 
-## The one idea
+The promise stays: **What's coming in AI, before it's obvious.**
+Monday: follow.the.money. Wednesday: under.the.hood. Friday: mind.the.gap.
 
-"Do not try to post your way to 10,000. Engineer a 30-day media event in
-which every channel, collaborator, reader and content asset feeds one owned
-destination." The owned destination is the Substack:
-https://home.makeyourmindup.ai. A follower elsewhere is not a subscriber.
-Every draft ends in a reason to subscribe there.
+## Seven engines, one work queue
 
-The equation that decides where effort goes:
-
-    net subscribers = qualified reach x visit rate x subscribe rate
-                      + native subscriptions + referrals - people who leave
-
-Judge every source and every asset by the **subscribers it brings**, never
-by reach alone. Subscriber yield = subscribers it brought, per 1,000 people
-reached.
-
-## The seven engines, and which job runs each
-
-| Engine | What it means here | Job |
+| Engine | Work | Job |
 |---|---|---|
-| 1. A precise promise | "What's coming in AI, before it's obvious." Every page and profile must say who it is for, what it does each week, why it's different, and why subscribe rather than follow | `conversion` (weekly audit), `report` |
-| 2. A signature franchise | The three series: follow.the.money, under.the.hood, mind.the.gap, and the dated calls. Each piece has a forwardable unit: a named finding, a chart, a call | `daily-pack` finds it and builds every draft around it |
-| 3. A conversion spine | Four doors: welcome page, about/manifesto, start-here pack, the day's piece. Substack is the first link on every profile. Every link is tracked | `conversion` |
-| 4. Substack-native distribution | Recommendations (three circles: peers, category leaders, adjacent bridges). Notes are **off** by Krish's choice | `swaps` |
-| 5. Borrowed distribution | Podcasts, guest posts, co-streams, collab posts, communities: the 100-account partner map and the ask ladder | `pitches`, `partners`, `radar` |
-| 6. Constructed word of mouth | Forward prompts at the most useful moment, Substack referrals with identity rewards, reader status | `conversion` drafts the settings and the copy; `daily-pack` adds forward lines |
-| 7. A measurement loop | Daily numbers by source; weekly kill, keep, scale | `numbers` (daily), `report` (Sunday) |
+| Precise promise | Make the benefit, reader and cadence clear at every entry | conversion |
+| Signature franchises | Extract a forwardable finding from a published piece | daily |
+| Conversion spine | Match the entry to a useful article, topic or start-here page, then subscribe | conversion |
+| Native discovery | Useful recommendations and platform-native continuation | swaps, daily |
+| Borrowed distribution | One relevant person, one useful offer, evidence of fit | pitches, partners, radar |
+| Word of mouth | Give a reader a specific reason to forward or refer | daily, conversion |
+| Learning | Observe comparable windows, test a hypothesis, review retention and effort | numbers, report |
 
-## Each channel's job (from the document's channel table)
+Use `channels.json` for surface inventory and `journeys.json` for the paths.
+A cold viewer may need the next native video before an off-platform ask.
+Each asset gets one useful next action. Every door need not link to every
+other door. The eventual destination is the owned reader relationship.
 
-| Channel | Job | What the engine drafts | Where the subscribe path goes |
-|---|---|---|---|
-| Substack | Owning the reader | Recommendation asks; welcome, about and email copy fixes; forward lines | Native subscribe |
-| LinkedIn | Professional authority | 3 to 5 native posts a week: tension in the first two lines, the finding, 3 to 5 useful points, what to do, a matched ask. One document post a week. 10 comments a workday through the radar | Featured section: the welcome page and start-here pack; link in the post body, never in comments |
-| X | Ideas and discussion | A thread on publishing days (hook, stakes, evidence, framework, use, open loop, specific subscribe line). 5 to 10 replies a day through the radar | Bio link and the last post of each thread |
-| YouTube | Search and lasting trust | Long description with the tracked link in the first lines, pinned comment, one community post per piece | Links in Shorts descriptions and comments are not clickable: Shorts say the name "makeyourmindup" aloud and on screen, and link the related long video |
-| Instagram | Trust, saves and shares | Reel caption with search words, a carousel's slide text, a Story sequence (tension, insight, proof, link sticker), collab post invitations | Story link sticker, first bio link, pinned posts |
-| TikTok | Reach | Caption, the on-screen hook (3 to 7 words), one spoken closing line that names makeyourmindup | Bio link to the matched page |
-| Spotify | Habit | Show notes with the matched link, a clip caption under 90 seconds, the "best place to start" pick | Spoken ask and the show-note link |
+## Channel roles and ownership
 
-The **publish board** (in the content engine, outside this repository)
-already gives Krish the captions and descriptions he needs to post the
-videos. Don't redo those. This engine adds what makes people move: the
-pinned comment, the Story sequence, community posts, threads, partner kits,
-replies and asks.
+| Channel | Growth work | Useful next step |
+|---|---|---|
+| Substack | About, subscribe and welcome fixes, start-here path, referrals, genuine recommendations | read a relevant piece, subscribe, then forward when useful |
+| Website | Promise, series navigation, form friction, search access, original acquisition handoff | matched article or clear subscription |
+| LinkedIn | Native analysis, one useful document outline, thoughtful comments, Featured audit | relevant article or start-here; no links in comments |
+| X | Standalone opening, evidence-led thread, useful replies, current pin | matched article; bio and pin agree |
+| YouTube | Pinned comment, community question, related-video path, playlists/end screens audit | Short to related long video to article |
+| Instagram | Story sequence, useful carousel outline, pins/highlights and Collab invitations | save/share, Story link, matched read |
+| TikTok | Native continuation and a brief spoken close; profile-link eligibility audit | useful follow-up, then eligible bio link |
+| Spotify | Habit, episode continuation, show-note journey audit | named article in notes; verify show exists |
+| Communities | Answer the actual question, disclose authorship when linking, follow local rules | useful answer; link only when welcome |
+| Partners | Named quote kit, guest offer, co-made asset and genuine recommendation | matched landing with a distinct placement |
 
-## Every tracked link
+The content engine owns the publish-board captions, descriptions, scripts,
+articles and media production. Read published sources here. Add distribution
+assets without creating a second editorial pipeline. Never send or publish.
+No Notes, WhatsApp, paid boosts or automated outreach.
 
-Every link in a draft that points at makeyourmindup carries:
+## Evidence and attribution
 
-    ?utm_source=<platform>&utm_medium=organic&utm_campaign=growth&utm_content=<job>-<YYYYMMDD>
+Every pack uses the v2 envelope in `docs/ENGINE.md`. Keep evidence with the
+specific claim: URL, kind, literal excerpt and observation time. Quote only
+what is there. Paraphrases still need a source comparison. A missing video
+body stays pending. Explicit published links can verify an article/video
+pair; title similarity alone cannot.
 
-Build it with `python3 growth.py link <url> <platform> <job>`.
-`growth.py check` refuses a draft with an untracked makeyourmindup link.
+Use `growth.py link` with asset, placement and variant for new distribution.
+The generated `utm_content` is a stable placement identity. Keep functional
+query parameters and fragments. External placement links carry UTMs.
+Internal website navigation records a separate journey event and preserves
+original acquisition; adding fresh UTMs internally can overwrite the source.
+Website instrumentation is handed off, not implemented in this repo.
 
-## The hooks and the asks
+A publication can produce a launch draft, a next-day discussion follow-up,
+a useful evergreen retrieval and a later call review. Each needs a distinct
+placement and a reason to exist. Recovery uses the next existing scheduled
+job. Do not add automatic posting or another scheduler.
 
-- **Hook families:** prediction, contrarian claim, new evidence, avoidable
-  loss, audience identity, confession, specific utility, narrative scene,
-  curiosity gap, public challenge. Rotate them; the report says which family
-  brought subscribers. Hooks by platform are in `hooks.json`.
-- **The ask ladder, by how warm the reader is:**
-  - cold: save it, watch part two, read the free breakdown;
-  - curious: get the full finding or source list;
-  - warm: subscribe for the next piece;
-  - an engaged free reader: forward it to one person;
-  - a subscriber: refer one sharp person.
+## Work allocation
 
-  Match the ask to the reader, and change it often rather than repeating one
-  line.
-- **Forward prompts** sit at the most useful moment ("Know someone deciding
-  this? Send them this one.").
+All eight jobs feed one daily queue. Budget: 20 estimated minutes in total,
+30 on Sunday. Priority 1 is highest; select a conversion blocker or useful
+live conversation before low-value repackaging. Expired replies, missing
+prerequisites, already handled work and excess effort are deferred with a
+reason. Fewer strong drafts can be the whole day's work. No daily quota
+creates an obligation to publish. Time estimates are labelled estimates.
 
-## The breakout score (every published piece, in the report)
+A partner draft is not an interaction. Start cooldowns only from a real
+sent event confirmed by Krish with evidence. An actual inbound reply can
+justify the next relevant ask. A decline suppresses further outreach.
+The ask ladder is a guide to relationship warmth, not a compulsory ritual.
 
-Score the piece 0 to 2 on each: novel, useful, identity-rich, specific,
-timely, credible, works across formats, tense enough to discuss, ownable as
-a franchise, naturally leads to subscribing. Report the total out of 20 and
-the weakest two. A piece under 15 should not carry a big push. The report
-tells Krish which kinds of piece score high, as input to his planning.
+## Measurement and decisions
 
-## Kill, keep, scale (the report applies these every Sunday)
+Store observations with metric, unit, scope, asset, source URL, capture time,
+New York window, availability and null/reason when missing. Followers are
+snapshots. Views, impressions and unique reach are different metrics.
+Repeated rolling-week captures do not add to a weekly total. Never sum
+snapshots, overlapping windows or windows with gaps. Direct traffic remains
+unattributed unless an actual source record establishes more.
 
-- High reach, few visits: rewrite the hook and the ask, or stop.
-- Many visits, few subscribers: fix the promise or the page (conversion).
-- Strong conversion, little reach: put more distribution behind it.
-- Brings subscribers again and again: make it a franchise.
-- Volume with people leaving fast: protect quality and reduce that source.
+Subscriber yield requires attributed subscribers and matching unique reach
+for the same asset, population and window. If either is unavailable, say
+"not shown". A post followed by growth is an association. It is not proof
+that the post caused it. Free-to-paid upgrades must not count as new people.
+Privacy-distorted email opens are diagnostic only. Prefer confirmed clicks,
+useful replies and complete retention cohorts when available.
 
-Decision points from the document, counted from the day the engine started
-(day 1 is the first pack in Control Center):
+`experiments.json` contains planned hypotheses, not running experiments.
+Declare comparison, primary metric, minimum observations, window and quality
+checks before starting. The review floor is not statistical power. Low
+samples mean collect more. Weekly reporting can propose a fix or a test;
+kill or scale requires enough comparable evidence and Krish's decision.
+The preferred outcome is readers retained after 30 days per measured hour
+of work. It remains unknown until both cohort and effort records exist.
 
-| Day | The question |
-|---|---|
-| 3 | Is the promise understood, and are visitors subscribing? Which hook and channel show a signal? |
-| 7 | Which asset brought the most subscribers per 1,000 reached? Move at least half of the discretionary effort to the top two engines |
-| 14 | Are recommendations compounding? Are enough collaborations booked? If not, more co-made assets and direct partner asks, not more posting |
-| 21 | Which free benefits cause sharing? What becomes a permanent franchise? |
-| 30 | Net and active subscribers, repeatable engines, recurring partners, the honest next-60-day path |
-
-## What a pack must never become
-
-- A generic link hub, or the same post pasted on every platform.
-- Hashtag stuffing, or tagging big accounts that had nothing to do with it.
-- Followers counted as subscribers, or views counted as success.
-- A claim that any of this "cannot fail".
+The ten-part breakout score from the source playbook is a subjective
+editorial rubric, out of 20. Show the evidence and weakest dimensions. Never
+present it as a forecast or use it to suppress a useful niche piece solely
+because of its score. Review day 3, 7, 14, 21 and 30 from the first real run,
+then keep only the decision points the evidence can answer.
