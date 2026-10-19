@@ -5,8 +5,9 @@ useful distribution opportunities, preserves their evidence, tracks each
 placement, and fits the work into 20 minutes a day, 30 on Sunday. Krish
 publishes, sends and changes settings himself.
 
-The growth-repository upgrade is complete on this branch. Control Centre
-implementation is a separate handoff in [docs/CONTROL_CENTER_HANDOFF.md](docs/CONTROL_CENTER_HANDOFF.md).
+The growth-repository upgrade is complete. Control Center's brief for this
+engine is [docs/CONTROL-CENTER-BRIEF.md](docs/CONTROL-CENTER-BRIEF.md), which
+supersedes [docs/CONTROL_CENTER_HANDOFF.md](docs/CONTROL_CENTER_HANDOFF.md).
 The channel audit and exact next actions are in
 [docs/CHANNEL_PLAYBOOK.md](docs/CHANNEL_PLAYBOOK.md). Validation evidence and
 access limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
@@ -58,6 +59,23 @@ The last command is a dry run. No Control Centre write happens without
 This implementation session does not deliver packs or change Control Centre.
 The supported legacy API drops rich metadata, so full records stay local
 until the handoff is implemented. No database fallback exists.
+
+## Reporting to Control Center
+
+Every scheduled job starts with `python growth.py cc start --job KIND --deliver`
+and ends with `python growth.py cc finish --job KIND ... --deliver`: the growth
+engine protocol loop (attempt, directive, report with a digest readback,
+decisions, attempt end). Each selected draft goes to Krish as a proposal with
+its exact words; the engine never posts or sends. Without `--deliver` both are
+local dry runs. Control Center also wakes `.github/workflows/control-center.yml`
+every morning; that runner checks the engine offline and reports what it can
+see. Details: [docs/ENGINE.md](docs/ENGINE.md), "Reporting to Control Center",
+and [docs/CONTROL-CENTER-BRIEF.md](docs/CONTROL-CENTER-BRIEF.md).
+
+```powershell
+python growth.py cc finish --job daily --envelope .scratch/daily.json --queue .scratch/queue.json
+python growth.py cc runner
+```
 
 ## Existing runtime
 

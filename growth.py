@@ -4,7 +4,8 @@
 Python 3.9+, standard library only. Development and dry runs need no token.
 Control Centre delivery is a separate explicit --deliver action. Social
 publication, outreach, settings changes and paid work remain Krish's actions.
-See README.md and docs/ENGINE.md for the versioned envelope and commands.
+See README.md and docs/ENGINE.md for the versioned envelope and commands, and
+docs/ENGINE.md "Reporting to Control Center" for the `cc` protocol loop.
 """
 import argparse
 import json
@@ -15,6 +16,7 @@ import urllib.error
 import urllib.request
 
 from engine.catalog import FEED, discover, pieces, parse_feed, strip_html
+from engine.control_center import APPROVED_ORIGIN, Client, NoRedirect, ProtocolError, opener
 from engine.core import (KINDS, PLATFORMS, http_url, identity, instant, locked,
                          read_json, today, tracked, write_json)
 from engine.operations import (aggregate, daily_queue, experiment_decision,
@@ -24,6 +26,8 @@ from engine.packs import check_pack, problems, seal, validate_envelope, wire_pac
 ROOT = Path(__file__).resolve().parent
 BASE = os.environ.get('CONTROL_CENTER_URL', 'https://controlcenter.krishraja.com').rstrip('/')
 TOKEN_FILE = Path.home() / '.config' / 'growth-makeyourmindup' / 'token'
+# The protocol bearer (gen1_) is a different key from the packs key above.
+ENGINE_TOKEN_FILE = TOKEN_FILE.parent / 'engine-token'
 
 
 def token():
@@ -33,13 +37,23 @@ def token():
     return value
 
 
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        raise ValueError('Control Centre redirected the request; delivery stopped')
+def engine_token():
+    value = os.environ.get('CONTROL_CENTER_ENGINE_TOKEN', '').strip()
+    if not value and ENGINE_TOKEN_FILE.exists():
+        value = ENGINE_TOKEN_FILE.read_text(encoding='utf-8-sig').strip()
+    return value
+
+
+def engine_client():
+    key = engine_token()
+    if not key:
+        raise ValueError('No Control Center engine key: set CONTROL_CENTER_ENGINE_TOKEN or the engine-token file. '
+                         'Do not rotate or print it. See docs/KEY.md.')
+    return Client(key, os.environ.get('CONTROL_CENTER_URL', '').strip() or APPROVED_ORIGIN)
 
 
 def call(method, path, body=None, deliver=False):
-    if BASE != 'https://controlcenter.krishraja.com':
+    if BASE != APPROVED_ORIGIN:
         raise ValueError('CONTROL_CENTER_URL must be the approved HTTPS Control Centre origin')
     if method not in ('GET', 'POST') or path.partition('?')[0] != '/api/growth/packs':
         raise ValueError('only the supported packs endpoint is allowed')
@@ -52,7 +66,7 @@ def call(method, path, body=None, deliver=False):
     req = urllib.request.Request(BASE + path, data=data, method=method,
                                  headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'})
     try:
-        with urllib.request.build_opener(NoRedirect).open(req, timeout=30) as response:
+        with opener().open(req, timeout=30) as response:
             result = json.loads(response.read(4_000_000))
         if not isinstance(result, dict) or result.get('ok') is not True:
             raise ValueError('Control Centre did not confirm success')
@@ -62,6 +76,8 @@ def call(method, path, body=None, deliver=False):
         raise ValueError('Control Centre returned HTTP ' + str(error.code)) from None
     except urllib.error.URLError:
         raise ValueError('Could not reach Control Centre; no successful delivery confirmed') from None
+    except ProtocolError:
+        raise ValueError('Control Centre redirected the request; delivery stopped') from None
 
 
 def doctor(offline=False):
@@ -80,6 +96,7 @@ def doctor(offline=False):
         errors.append('configuration: ' + str(error))
     if not offline:
         for label, action in (('Control Centre read access', lambda: call('GET', '/api/growth/packs?days=1')),
+                              ('Control Center engine protocol read access', lambda: engine_client().capabilities()),
                               ('public feed', lambda: pieces(30))):
             try:
                 result = action()
@@ -126,6 +143,16 @@ def main(argv=None):
     r = sub.add_parser('relationship'); r.add_argument('file'); r.add_argument('person_id'); r.add_argument('--now'); r.add_argument('--cooldown-days', type=int, choices=range(1, 366), default=60)
     e = sub.add_parser('experiment'); e.add_argument('file'); e.add_argument('observations'); e.add_argument('--now')
     d = sub.add_parser('dry-run'); d.add_argument('--out', default='.scratch/dry-run'); d.add_argument('--live', action='store_true')
+    cc = sub.add_parser('cc', help='the Control Center protocol loop; network only with --deliver')
+    ccsub = cc.add_subparsers(dest='cc_cmd')
+    for name in ('start', 'finish', 'run', 'runner'):
+        x = ccsub.add_parser(name)
+        if name != 'runner':
+            x.add_argument('--job', required=True, choices=KINDS)
+            x.add_argument('--envelope', action='append', default=[]); x.add_argument('--queue')
+            x.add_argument('--observations', action='append', default=[]); x.add_argument('--completions')
+        x.add_argument('--deliver', action='store_true'); x.add_argument('--mode', choices=('live', 'synthetic'), default='live')
+        x.add_argument('--run-id'); x.add_argument('--now')
     args = parser.parse_args(argv)
     if args.self_test:
         return self_test()
@@ -226,6 +253,11 @@ def main(argv=None):
     if args.cmd == 'dry-run':
         from engine.dry_run import run
         print(json.dumps(run(ROOT, args.out, args.live), indent=2)); return 0
+    if args.cmd == 'cc':
+        if not args.cc_cmd:
+            raise ValueError('choose cc start, finish, run or runner')
+        from engine.cc_loop import cli
+        return cli(args, ROOT, engine_client)
     parser.print_help()
     return 0
 

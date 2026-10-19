@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-19: Krish: "make each engine adopt its brief now". The engine
+  reports through the Control Center growth engine protocol
+  (`docs/CONTROL-CENTER-BRIEF.md`): every scheduled job starts with
+  `growth.py cc start` and ends with `growth.py cc finish`, and
+  `.github/workflows/control-center.yml` answers the morning
+  `cc-growth-directive` dispatch with an offline check and an honest report.
+  Development sessions still make no Control Center writes. Posts, pitches
+  and asks go to Krish as proposals with their exact words; nothing sends.
+
 - 2026-10-18: Krish: "Make sure the corpus I gave you is stored inside the
   repo as well for future reference if needed." Preserved the three uploaded
   Markdown originals under `knowledge/corpus/` and indexed all four uploads
