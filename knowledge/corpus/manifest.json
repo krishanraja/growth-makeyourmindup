@@ -35,6 +35,24 @@
       "sha256": "8b0c0109dc81165f35389ead629ed4638e4277bea7b5c7e7589e4158b0751a16",
       "storage": "existing_byte_identical_original",
       "note": "Exact upload already stored at this canonical path; no duplicate binary needed."
+    },
+    {
+      "original_filename": "copywriting-offer-corpus.md",
+      "repository_path": "knowledge/corpus/copywriting-offers-demand-corpus.md",
+      "bytes": 68132,
+      "sha256": "04fddb23da2cb210470f60b57a6d78b56d37c3f84316217e0e493caa6b9856d9",
+      "storage": "byte_identical_copy",
+      "received_on": "2026-10-19",
+      "note": "The Copywriting, Offers and Demand Corpus: fourteen copywriting books plus the $100M trilogy. Applied to this engine in knowledge/COPY-DOCTRINE.md; Krish's rules there and in AGENTS.md win."
+    },
+    {
+      "original_filename": "The_Copywriting_Offers_and_Demand_Corpus.md",
+      "repository_path": "knowledge/corpus/copywriting-offers-demand-corpus-summary.md",
+      "bytes": 476,
+      "sha256": "2de846209031c79c7d635509da1d64516cfd055f6dad5b60274ef3cdcf926e87",
+      "storage": "byte_identical_copy",
+      "received_on": "2026-10-19",
+      "note": "Short summary stub supplied with the full corpus. No trailing newline in the original."
     }
   ]
 }

@@ -13,7 +13,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    adjacent bridges. Read one recent post in full. Record writer, source
    URL, literal excerpt, overlap and observed date; audience size only when
    actually shown. Skip low-fit accounts even when a quota is unfilled.
-3. Draft under 90 words per named writer: one specific point from their
+3. Draft under 90 words per named writer, using the direct outreach
+   structure in `knowledge/COPY-DOCTRINE.md`: one specific point from their
    piece, what MYMU does for the same reader, a real useful offer and one
    question about serving their audience. No reciprocal recommendation
    obligation or invented prior relationship.

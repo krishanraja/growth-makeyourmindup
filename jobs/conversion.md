@@ -29,7 +29,10 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    data. Do not claim Substack lacks its existing article sitemap/schema.
    Topic resources must add evidence from published work, not thin duplicate
    pages. Respect robots, noindex, community rules and truthful author data.
-6. At most five candidate fixes: exact surface, observed defect and date,
+6. Judge front door copy with `knowledge/COPY-DOCTRINE.md`: Promise then
+   Offer lead, the Value Equation for a free subscription, the persuasion
+   chain's weakest link, proof only from published pieces. At most five
+   candidate fixes: exact surface, observed defect and date,
    literal evidence, proposed copy/settings, owner, priority, estimated
    minutes, prerequisite and a success check. Access gaps are findings, not
    defects proven on a page you could not read. Queue the highest-impact

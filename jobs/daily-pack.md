@@ -18,7 +18,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    video items blocked and recheck on the next existing job. Empty bodies
    contain no facts. Do not infer them from titles.
 3. Choose distribution placements from `journeys.json`, using the reader's
-   stage. Draft a small candidate set, with one next action per placement:
+   stage. Apply `knowledge/COPY-DOCTRINE.md` (lead by surface awareness,
+   headline grid against `hooks.json`, proof hierarchy). Draft a small candidate set, with one next action per placement:
    - LinkedIn: a useful first-person analysis, topic early, named stake,
      sourced finding and matched article link. A document outline is an
      optional once-weekly asset chosen from pieces already published. Do
@@ -50,7 +51,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    or "not verified". Editorial planning remains outside this engine.
 5. Subjective breakout score out of 20 can guide effort, with rationale and
    weak dimensions. It is not measured reach or predicted performance.
-6. Prepare a v2 envelope, merge with today's other jobs, keep the selected
+6. Run the doctrine's before-handoff passes and critique rubric on each
+   kept draft; fix the weakest link first. Prepare a v2 envelope, merge with today's other jobs, keep the selected
    queue only, then check again. Defer unused candidates locally. Deliver
    only under the scheduled-run rule in `AGENTS.md`. No external write in
    an interactive implementation session.
