@@ -3,6 +3,9 @@
 Kind `report`. Read shared instructions and `docs/ENGINE.md`. Sunday's total
 queue budget is 30 minutes, including radar and any other pending work.
 
+First, before reading any source: `python growth.py cc start --job report --deliver`.
+Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
+
 1. Read the last eight days' packs/statuses and published pieces. Read local
    evidence envelopes and observations. Posted marks alone do not establish
    sent URLs or outcomes. Obtain actual human-confirmed event evidence when
@@ -38,3 +41,7 @@ queue budget is 30 minutes, including radar and any other pending work.
    fields; include essential context in card prose and retain full local
    records. Apply the `AGENTS.md` delivery rule. UI requirements are a brief,
    not permission to modify Control Centre.
+8. Last, report to Control Center with this run's actual file names:
+   `python growth.py cc finish --job report --envelope .scratch/report.json --queue .scratch/queue.json --deliver`.
+   It must print "readback digest matches" and "attempt succeeded". If it
+   prints a failure code instead, name that code in the final message.

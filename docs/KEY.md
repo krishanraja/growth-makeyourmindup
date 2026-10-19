@@ -21,8 +21,9 @@ change GitHub secrets or edit Vercel configuration as part of this upgrade.
 GitHub secret values cannot be downloaded through the secrets API. A
 GitHub Actions secret is only available inside a workflow explicitly
 configured to consume it; it does not automatically appear in a local
-Codex session. Never create a workflow to expose a secret. This repository's
-CI deliberately uses no secrets and makes no Control Centre writes.
+Codex session. Never create a workflow to expose a secret. The check
+workflow deliberately uses no secrets and makes no Control Centre writes;
+only the Control Center loop below reads a secret.
 
 For an already configured production runner, `python growth.py doctor`
 performs read-only checks. Missing key, HTTP 401, endpoint failure or absent
@@ -35,3 +36,23 @@ Delivery requires a valid v2 envelope and an explicit `--deliver` in an
 independently authorised scheduled job. During this implementation, use
 only the dry-run form. Any future credential setup or rotation is a
 separate task with its own explicit instruction.
+
+## The engine protocol key
+
+The growth engine protocol uses its own bearer, a `gen1_` token issued for
+this engine alone, as `CONTROL_CENTER_ENGINE_TOKEN`. It is a different key
+from `GROWTH_ENGINE_TOKEN`. Control Center keeps only its SHA-256.
+
+- On GitHub it is already a repository secret, with `CONTROL_CENTER_URL` as
+  a repository variable. Only `.github/workflows/control-center.yml` reads
+  them.
+- In the publication workspace, `growth.py cc ... --deliver` reads
+  `CONTROL_CENTER_ENGINE_TOKEN` from the environment, or else the file
+  `%USERPROFILE%\.config\growth-makeyourmindup\engine-token`, beside the
+  packs key file. Never commit it, print it or paste it into a chat.
+- `python growth.py doctor` checks it read-only (`GET capabilities`) and
+  says NOT READY when it is missing or refused.
+
+Issuing a new token replaces the old one at once, so the GitHub secret and
+the workspace file must then both change. That is a separate task with
+Krish's explicit yes.

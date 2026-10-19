@@ -3,6 +3,9 @@
 Kind `daily`. Read `AGENTS.md`, `PLAYBOOK.md`, `BROWSER.md` and
 `docs/ENGINE.md`. This job shares the day's 20-minute queue.
 
+First, before reading any source: `python growth.py cc start --job daily --deliver`.
+Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
+
 1. Run `python growth.py discover --days 21` and read
    `python growth.py pieces --days 21 --full`. Inspect new, revised, late
    and missing-body records. Read the current article completely. Recovery
@@ -51,3 +54,7 @@ Kind `daily`. Read `AGENTS.md`, `PLAYBOOK.md`, `BROWSER.md` and
    queue only, then check again. Defer unused candidates locally. Deliver
    only under the scheduled-run rule in `AGENTS.md`. No external write in
    an interactive implementation session.
+7. Last, report to Control Center with this run's actual file names:
+   `python growth.py cc finish --job daily --envelope .scratch/daily.json --queue .scratch/queue.json --deliver`.
+   It must print "readback digest matches" and "attempt succeeded". If it
+   prints a failure code instead, name that code in the final message.

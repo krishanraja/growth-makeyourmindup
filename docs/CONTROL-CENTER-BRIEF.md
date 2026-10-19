@@ -1,5 +1,7 @@
 # Control Center brief: growth-makeyourmindup
 
+**Status (2026-10-19): adopted in this repository.** The client, the workspace steps (`growth.py cc start` and `cc finish`) and the dispatch workflow are built and tested against a local stand-in; see `docs/ENGINE.md`, "Reporting to Control Center". The first live run is the next dispatch.
+
 Written 2026-10-18 by Control Center. This brief **supersedes `docs/CONTROL_CENTER_HANDOFF.md`**. Krish ruled that every growth engine reports through one protocol (ADR-038 in Control Center). Phases 2 and 3 of your handoff (one action list, honest numbers) are what the protocol gives you. Packs stay for the drafts Krish copies and posts.
 
 ## What Control Center now does for you

@@ -211,3 +211,88 @@ a stale lock, verify the other process has stopped.
 available read-only Control Centre TypeScript snapshot on Node 24. The
 private source is deliberately not bundled into this public repository.
 This is a compatibility check, not a CC change or API write.
+
+## Reporting to Control Center
+
+`engine/control_center.py` is the one Control Center transport: the
+bounded HTTPS calls (the legacy packs call in `growth.py` shares its
+no-redirect opener), the canonical digest, a validator for the published
+report schema in `docs/control-center/`, the report builder and the client
+for the protocol routes. `engine/cc_loop.py` runs the loop. Every run, in
+order: attempt `started` (before any source is read), `GET directive`, the
+job's own work, `POST reports` with `Idempotency-Key: <run_id>` and a
+readback of the stored digest, `GET decisions?since=`, then exactly one
+terminal attempt (`succeeded`, or `failed` with a lower_snake code).
+
+| Command | What it does |
+|---|---|
+| `growth.py cc start --job KIND --deliver` | Journal the start, pull and print the directive, keep the attempt in `.scratch/cc/KIND.state.json` |
+| `growth.py cc finish --job KIND --envelope F --queue F [--observations F]... [--completions F] --deliver` | Build the report from the job's files, report, read back, read decisions, journal the end |
+| `growth.py cc run --job KIND ... --deliver` | Both in one call |
+| `growth.py cc runner --deliver` | The GitHub runner's loop (below) |
+
+Without `--deliver` nothing reads the key or calls the network: `finish`
+writes the report it would send to `.scratch/cc/report-KIND.json`.
+
+**Identity.** Slug `makeyourmindup`, `engine_id` `growth-makeyourmindup`,
+`product_slug` `publication`. `run_id` is `makeyourmindup:<New York
+date>:<kind>` (or `:runner`); the attempt id adds the start time. A second
+run of the same kind on the same day with different content gets a 409:
+the client reads the stored report back, never resends, and ends the
+attempt `failed` with `report_conflict`.
+
+**How the v2 work maps.** The job's selected queue items become proposals
+(at most ten; the rest are holds):
+
+| Pack kind | Wall | Closes on |
+|---|---|---|
+| daily, radar | `post`, with the exact words | `published` |
+| conversion | `post`, the exact copy | `applied` |
+| pitches, swaps, partners | `send`, with the exact words | `sent` |
+| report | `strategy` | `reviewed` |
+| numbers | `none` | `verified` |
+
+`proposal_id` is `makeyourmindup:<item_id>`, so it survives a copy edit
+while `payload_sha256` (SHA-256 of the canonical `{channel, exact_payload,
+target}`) changes and sends the edit back to Krish. `why` carries
+`why_now` plus the minutes, `close_condition.reference` carries the
+`success_check`, `expires_at` is kept and https evidence links travel as
+`evidence[]`. Deferred and `blocked_by` items become `holds[]`. Completion
+labels Krish confirmed go in a `--completions` JSON list,
+`{label, item_id, at, evidence_url, confirmed_by: "Krish"}`, where the
+label is Published, Sent, Applied, Verified or Reviewed; each becomes an
+event. Skipped is his Purge and arrives as `declined`. Planned experiment
+templates are `strategy` proposals for his decision to start one.
+
+**Objectives.** `new_subscribers` (people, New York week) is the sum of this
+week's Substack `new_free` observations, validated and added with the same
+rules as `growth.py measure --aggregate`, only when the windows start on
+Monday at midnight New York time and have no gap. Anything else is `null`
+with its reason; a measured zero is `0`. `paid_boosts_usd` is always
+missing with its reason: this engine has no spend authority, bought no
+boosts and does not read platform ad spend.
+
+**Decisions.** `finish` records every proposal it reported in
+`.scratch/cc/proposals.json` and Krish's decisions in
+`.scratch/cc/decisions.json`. A yes counts only when its `payload_sha256`
+equals the reported payload. Even then the engine posts and sends nothing:
+the yes means Krish approved those exact words, and he acts.
+
+**The GitHub runner.** `.github/workflows/control-center.yml` runs on
+`repository_dispatch` (`cc-growth-directive`) and `workflow_dispatch`, with
+`contents: read`, one concurrency group and a 20 minute timeout. It runs
+`growth.py cc runner --deliver`: the unit tests, `doctor --offline` and the
+fixture `dry-run` in child processes that never see a key, and a read of
+the committed channels, journeys and experiments. Its report is `held`
+(`degraded` with a failed attempt if a check fails), both objectives are
+missing with "Measured only in the publication workspace", and its log
+prints only codes, counts and digests, never the directive, because this
+repository is public. It uploads no artifact. A missing secret or variable
+stops the job with an error and nothing reported.
+
+**Errors.** 401 `unauthorized`, 403 `forbidden`, 409 `report_conflict` or
+`engine_inactive`, 413 `payload_too_large`, 429 `rate_limited`, 5xx
+`server_error`, a redirect `redirect_refused`, no answer `unreachable` or
+`timeout`. Remote bodies are never echoed, and the bearer never appears in
+output, files or exceptions. `tests/test_control_center.py` proves the loop
+against a local stand-in server, including the worked example's digest.

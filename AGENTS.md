@@ -106,11 +106,14 @@ that it runs there:
 7. **Stay in this repository.** Never change Control Center, the content
    engine or any other repository. Krish, 2026-10-17: "you are not to do any
    actual work in control-center, only pass me a brief once you have completed
-   your work". For this implementation: no Control Center writes, including
-   packs, database rows, observations or settings. Give the completed brief
-   in `docs/CONTROL_CENTER_HANDOFF.md`. A future explicitly authorised
-   scheduled job may deliver a draft pack through the supported API only.
-   Scheduled jobs can update `lists/` and ignored `.scratch/` local records;
+   your work". An interactive development session makes no Control Center
+   writes: no packs, reports, attempts, database rows, observations or
+   settings. Scheduled jobs talk to Control Center only through this
+   engine's own routes: the growth engine protocol (`growth.py cc ...
+   --deliver`, below; Krish, 2026-10-19: "make each engine adopt its brief
+   now") and a draft pack through the supported packs API. The brief is
+   `docs/CONTROL-CENTER-BRIEF.md`, which supersedes
+   `docs/CONTROL_CENTER_HANDOFF.md`. Scheduled jobs can update `lists/` and ignored `.scratch/` local records;
    code and job changes require an interactive instruction. Never publish,
    deploy, create automations or rotate credentials as an incidental step.
 
@@ -141,16 +144,19 @@ truth. First-person experience must be present in the published source.
    work locally; expired replies need fresh evidence before they return.
 5. Interactive implementation and audits end with local artifacts and a
    handoff. `python growth.py post .scratch/envelope.json` is a dry run.
-   **Do not use `--deliver` during this implementation.**
-6. In a future explicitly authorised scheduled run only,
+   **Never use `--deliver` in an interactive development session.**
+6. In a scheduled run only,
    `python growth.py post .scratch/envelope.json --deliver` sends the legacy
    projection to `/api/growth/packs`. No social action occurs. If the key or
    endpoint fails, retain the ignored local envelope, report the failure,
    and never claim delivery. No database fallback or second write path.
+7. Every scheduled job then ends with `growth.py cc finish ... --deliver`
+   (the next section), which reports the same selected drafts as proposals.
 
-Control Center currently stores only the original fields. Stable IDs,
-evidence, time budget, observations and verification stay local until the
-handoff is implemented there. A rerun preserves existing Posted/Skip marks
+The packs API stores only the original fields. The protocol report carries
+each selected draft's stable id, exact words, why now, success check, expiry
+and evidence links; the full evidence envelope, time budget and observations
+stay local. A rerun preserves existing Posted/Skip marks
 when platform and text are unchanged; edited copy can lose the old mark.
 Read current statuses before re-preparing; never infer a real post from a
 draft or report card. Do not assert Posted/Skip from this engine.
@@ -159,6 +165,41 @@ An existing `GROWTH_ENGINE_TOKEN` is configured on GitHub and Vercel according
 to Krish. GitHub secrets cannot be read back. Do not regenerate it. Local
 development uses `python growth.py doctor --offline` with no credentials.
 Production `doctor` checks read access only and must report actual gaps.
+
+## Reporting to Control Center (the protocol loop)
+
+Every scheduled job reports through the one growth engine protocol
+(`docs/control-center/ENGINE-PROTOCOL.md`; how this engine maps onto it is
+in `docs/ENGINE.md`, "Reporting to Control Center"). Each job file has the
+two steps; in short:
+
+1. **First, before reading any source:**
+   `python growth.py cc start --job KIND --deliver`. It journals the attempt
+   as started and prints today's directive: the one next action Control
+   Center chose, the objectives and their latest values. If the next action
+   names a proposal Krish approved, prepare exactly those words for him.
+   Never post them: his yes only means he said yes to that payload.
+2. **Last, after the job's own checks:**
+   `python growth.py cc finish --job KIND --envelope FILE --queue .scratch/queue.json --deliver`
+   (the numbers job adds `--observations .scratch/observations.json`). It
+   turns the selected drafts into proposals for Krish (posts and comments
+   behind the `post` wall, pitches and asks behind `send`, report
+   recommendations behind `strategy`, each with its exact words), deferred
+   and blocked work into holds, reports with the run's stable id
+   (`makeyourmindup:<New York date>:<kind>`), reads the report back by its
+   digest, reads Krish's decisions and journals the end. It must print
+   "readback digest matches" and "attempt succeeded".
+
+Use only the actual file names the job wrote. Without `--deliver` either
+step is a local dry run that writes `.scratch/cc/report-KIND.json` and calls
+nothing. A failure is reported as a failed attempt with a code; never retry a
+report by hand after "report conflict". Control Center already holds that
+run, so say so in the job's final message. The engine key is
+`CONTROL_CENTER_ENGINE_TOKEN` or the `engine-token` file (`docs/KEY.md`).
+Separately, Control Center wakes `.github/workflows/control-center.yml`
+every morning; that GitHub runner checks the engine offline and reports
+what a clean runner can see. Its numbers are always "measured only in the
+publication workspace".
 
 ## The schedule (New York time)
 
@@ -212,7 +253,8 @@ this, in order, and nothing else:
    run (his local time), and the prompt. Every row in `automations.json` must
    be there exactly once. Say so plainly, or name what is missing.
 6. **Prove one end to end.** Run the numbers job once now (`jobs/numbers.md`,
-   as AGENTS.md says). Confirm it printed "stored in Control Center". Give
+   as AGENTS.md says). Confirm it printed "stored in Control Center", then
+   "readback digest matches" and "attempt succeeded" from its last step. Give
    Krish the link https://controlcenter.krishraja.com/#/growth?section=packs.
 7. **Finish** with one line: "8 automations live. First radar at 06:30
    tomorrow. Packs land in Control Center > Growth > Packs."

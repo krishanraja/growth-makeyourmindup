@@ -3,6 +3,9 @@
 Kind `partners`. Read the shared instructions and `docs/ENGINE.md`. Map
 quality matters more than a quota. This work shares the day's budget.
 
+First, before reading any source: `python growth.py cc start --job partners --deliver`.
+Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
+
 1. Read `lists/partners.md`. Build towards the source playbook's 100-account
    map as relevant evidence allows: peers, leaders, adjacent creators,
    podcasts, editors, communities, researchers, institutions and events.
@@ -22,3 +25,7 @@ quality matters more than a quota. This work shares the day's budget.
 5. Update the list with a stable person ID, sourced facts and `drafted`
    status only. Commit actual list changes under `AGENTS.md`. Prepare a v2
    envelope, merge today's queue, then apply the delivery boundary.
+6. Last, report to Control Center with this run's actual file names:
+   `python growth.py cc finish --job partners --envelope .scratch/partners.json --queue .scratch/queue.json --deliver`.
+   It must print "readback digest matches" and "attempt succeeded". If it
+   prints a failure code instead, name that code in the final message.

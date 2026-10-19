@@ -2,6 +2,9 @@
 
 Kind `pitches`. Read the shared instructions and `docs/ENGINE.md`.
 
+First, before reading any source: `python growth.py cc start --job pitches --deliver`.
+Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
+
 1. Read recent published pieces. Find at most three genuinely relevant shows
    or newsletters taking guests, with a recent episode or article read in
    full. Preserve the host's source and a literal excerpt, plus the MYMU
@@ -21,3 +24,7 @@ Kind `pitches`. Read the shared instructions and `docs/ENGINE.md`.
 5. Record `drafted` in `lists/pitches.md`, not sent. A later human-confirmed
    event with evidence starts the cooldown. Merge the day's work, select
    within budget, check and follow `AGENTS.md`'s delivery rule.
+6. Last, report to Control Center with this run's actual file names:
+   `python growth.py cc finish --job pitches --envelope .scratch/pitches.json --queue .scratch/queue.json --deliver`.
+   It must print "readback digest matches" and "attempt succeeded". If it
+   prints a failure code instead, name that code in the final message.

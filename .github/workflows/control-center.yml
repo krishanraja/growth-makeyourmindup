@@ -1,0 +1,45 @@
+name: control-center
+# Control Center wakes this engine every morning (05:10 UTC) with a
+# repository_dispatch of type cc-growth-directive. The runner journals the
+# attempt, pulls the directive, checks the engine offline, reports with a
+# readback, reads Krish's decisions and journals the end. It never posts,
+# sends, publishes or spends, and it uploads nothing: this repository is
+# public, so its log carries only counts, codes and digests.
+on:
+  repository_dispatch:
+    types: [cc-growth-directive]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: control-center-loop
+  cancel-in-progress: false
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Report to Control Center
+        env:
+          CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
+          CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
+          CC_DISPATCH_ENGINE_ID: ${{ github.event.client_payload.engine_id }}
+        run: |
+          if [ -z "$CONTROL_CENTER_ENGINE_TOKEN" ]; then
+            echo "::error::The CONTROL_CENTER_ENGINE_TOKEN secret is not set for this repository. Nothing was reported."
+            exit 1
+          fi
+          if [ -z "$CONTROL_CENTER_URL" ]; then
+            echo "::error::The CONTROL_CENTER_URL repository variable is not set. Nothing was reported."
+            exit 1
+          fi
+          python growth.py cc runner --deliver

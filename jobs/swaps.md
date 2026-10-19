@@ -3,6 +3,9 @@
 Kind `swaps`. Read the shared instructions and `docs/ENGINE.md`.
 Recommendations are a fit hypothesis to measure, not a guaranteed source.
 
+First, before reading any source: `python growth.py cc start --job swaps --deliver`.
+Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
+
 1. Read swaps/partner lists and confirm actual sent/replied events. Use the
    60-day cooldown for confirmed asks, not for unsent drafts. Respect a
    decline and avoid duplicating an unresolved conversation.
@@ -21,3 +24,7 @@ Recommendations are a fit hypothesis to measure, not a guaranteed source.
    until a real event is confirmed. Gmail is optional only under separate
    scheduled-job authorisation. Prepare evidence, merge the global queue,
    check, then use the delivery boundary in `AGENTS.md`.
+6. Last, report to Control Center with this run's actual file names:
+   `python growth.py cc finish --job swaps --envelope .scratch/swaps.json --queue .scratch/queue.json --deliver`.
+   It must print "readback digest matches" and "attempt succeeded". If it
+   prints a failure code instead, name that code in the final message.

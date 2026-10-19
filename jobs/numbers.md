@@ -3,6 +3,9 @@
 Kind `numbers`. Read `BROWSER.md` and `docs/ENGINE.md`. This is observation,
 not an invitation to change integrations or fabricate missing analytics.
 
+First, before reading any source: `python growth.py cc start --job numbers --deliver`.
+Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
+
 1. Read each available dashboard for the previous completed New York day.
    Capture the platform's displayed timezone and window. If it cannot show
    that day, record the actual window; do not relabel a rolling week as
@@ -37,3 +40,10 @@ not an invitation to change integrations or fabricate missing analytics.
 7. Headline states the supported change or the access gap. A delta requires
    comparable snapshots. Never claim a social post caused the change.
    Prepare/check locally, then apply `AGENTS.md`'s delivery boundary.
+8. Last, report to Control Center with this run's actual file names:
+   `python growth.py cc finish --job numbers --envelope .scratch/numbers.json --queue .scratch/queue.json --observations .scratch/observations.json --deliver`.
+   Pass `--observations` once for each observations file from this New York
+   week, so the weekly new-subscriber count can start on Monday; a gap or an
+   unread day reports the count as missing with its reason, never as zero.
+   It must print "readback digest matches" and "attempt succeeded". If it
+   prints a failure code instead, name that code in the final message.

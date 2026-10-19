@@ -3,6 +3,9 @@
 Kind `conversion`. Read the shared instructions, `docs/ENGINE.md`,
 `docs/CHANNEL_PLAYBOOK.md`, `channels.json` and `journeys.json`.
 
+First, before reading any source: `python growth.py cc start --job conversion --deliver`.
+Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
+
 1. Audit the actual journey on mobile and desktop, logged out where readable:
    profile or native asset, matched landing, subscribe form, confirmation,
    welcome and useful next read. Read-only means do not submit a real form,
@@ -33,3 +36,7 @@ Kind `conversion`. Read the shared instructions, `docs/ENGINE.md`,
    verified blocker within the shared 20-minute budget.
 7. Prepare/check and follow `AGENTS.md`. External profile/website/settings
    changes and Control Centre UI work remain handoff items.
+8. Last, report to Control Center with this run's actual file names:
+   `python growth.py cc finish --job conversion --envelope .scratch/conversion.json --queue .scratch/queue.json --deliver`.
+   It must print "readback digest matches" and "attempt succeeded". If it
+   prints a failure code instead, name that code in the final message.
