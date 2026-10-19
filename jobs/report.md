@@ -27,7 +27,10 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    metric, minimum sample and quality guardrail. Low sample means collect
    more. Propose keep/test/fix, with uncertainty; Krish decides kill/scale.
    `growth.py experiment` guards incomplete or undersampled decisions.
-5. Each recommendation needs source/date, expected mechanism (a hypothesis),
+5. Frame tests with the test record mapping in `knowledge/COPY-DOCTRINE.md`
+   (weakest link first, biggest variable first). Money-model or paid tier
+   ideas appear only here, as proposals with evidence. Each recommendation
+   needs source/date, expected mechanism (a hypothesis),
    owner, effort, prerequisite and a verifiable success check. Pick at most
    three next-week priorities within the real time budget. A subjective
    breakout score informs planning, not a promise of results. Editorial

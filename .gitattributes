@@ -1,0 +1,3 @@
+# Preserved originals must keep their exact bytes on every platform.
+knowledge/corpus/** -text
+knowledge/*.docx binary

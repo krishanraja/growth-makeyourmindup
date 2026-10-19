@@ -19,7 +19,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    confirmed interactions. Drafts do not start cooldowns, advance stages or
    count as collaborations. A decline suppresses future asks. Krish must
    confirm sent/replied/booked/published events with an evidence URL.
-4. Each draft names the recent work, the shared reader, the precise benefit
+4. Write with the direct outreach structure and proof hierarchy in
+   `knowledge/COPY-DOCTRINE.md`. Each draft names the recent work, the shared reader, the precise benefit
    and one proportionate ask, under 120 words. A partner kit has its own
    tracked placement; no implied endorsement or guaranteed audience.
 5. Update the list with a stable person ID, sourced facts and `drafted`

@@ -45,6 +45,14 @@ articles and media production. Read published sources here. Add distribution
 assets without creating a second editorial pipeline. Never send or publish.
 No Notes, WhatsApp, paid boosts or automated outreach.
 
+## Copy doctrine
+
+Every draft and review applies `knowledge/COPY-DOCTRINE.md`: one reader,
+one finding, one next step; the lead matched to the surface's awareness;
+proof from the published piece next to the claim; the weakest link in the
+persuasion chain fixed first. Read it before drafting. Its closing list
+says where Krish's rules override the copywriting corpus.
+
 ## Evidence and attribution
 
 Every pack uses the v2 envelope in `docs/ENGINE.md`. Keep evidence with the

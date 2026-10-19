@@ -1,5 +1,15 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-19: Krish: "all of these growth engines need to be imbued with this
+  knowledge". Preserved The Copywriting, Offers and Demand Corpus and its
+  summary byte for byte under `knowledge/corpus/`, added both to the
+  manifest, and added a test that checks every manifest file's bytes and
+  SHA-256. `knowledge/COPY-DOCTRINE.md` applies the corpus to makeyourmindup
+  and lists where his rules override it. `PLAYBOOK.md` and the drafting jobs
+  (daily, radar, pitches, partners, swaps, conversion, report) read it at
+  the drafting or review step. Schedules, automations, the envelope and the
+  Control Center protocol are unchanged.
+
 - 2026-10-19: Krish: "make each engine adopt its brief now". The engine
   reports through the Control Center growth engine protocol
   (`docs/CONTROL-CENTER-BRIEF.md`): every scheduled job starts with

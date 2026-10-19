@@ -46,10 +46,32 @@ claims rather than measured results. Archiving this corpus supports the
 North Star by keeping the source material for useful, shareable work
 available to future sessions.
 
+## Corpus supplied on 19 October 2026
+
+Krish, 2026-10-19: "all of these growth engines need to be imbued with this
+knowledge". Both uploads are unchanged byte-for-byte copies, recorded in the
+[corpus manifest](corpus/manifest.json) with their own receipt date.
+`tests/test_knowledge.py` checks every manifest file's size and SHA-256, and
+`.gitattributes` stops line-ending conversion from changing them.
+
+| Original upload | Stored reference | When to consult it |
+|---|---|---|
+| copywriting-offer-corpus.md | [Copywriting, offers and demand corpus](corpus/copywriting-offers-demand-corpus.md) | Persuasion chain, awareness, leads, offers, proof, Core Four, tests, rubric. |
+| The_Copywriting_Offers_and_Demand_Corpus.md | [Corpus summary](corpus/copywriting-offers-demand-corpus-summary.md) | The short description supplied with it. |
+
+**[`COPY-DOCTRINE.md`](COPY-DOCTRINE.md) is how this engine applies it.**
+Every drafting and review step reads the doctrine, not the full corpus. Its
+closing list, "Where Krish's rules change the corpus", records the
+overrides: no percentages, zero paid boosts, no Notes or WhatsApp, agents
+draft and Krish acts, facts only from published pieces, nothing invented,
+no fear or hype, his voice, real replies, nothing in bulk, editorial stays
+with Krish, money models only as Sunday proposals.
+
 ## How the sources apply
 
 These are the source. **`PLAYBOOK.md` (repository root) is how this engine
-applies them to makeyourmindup**, and each job in `jobs/` names the part it
+applies them to makeyourmindup**, `COPY-DOCTRINE.md` applies the copywriting
+corpus, and each job in `jobs/` names the part it
 uses. When a job and the documents disagree, the job wins, because the
 playbook adapts the documents to Krish's own rules.
 
