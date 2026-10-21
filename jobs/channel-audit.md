@@ -16,7 +16,8 @@ of 2026-10-21 supersedes older blanket read-only rules for this job only.
    Spotify needs an observed official show URL before it joins the audit;
    do not guess a show by name. Website subscription paths are read-only
    journey checks. Reddit/email/partners are not additional social accounts.
-3. Capture the run start in UTC, display dates in Europe/London. For each
+3. Capture the run start in UTC, display dates in Europe/London. Pass this
+   fixed timestamp as `--now` only to `audit checkpoint`. For each
    account inspect its profile, every pin/Featured placement and all posts
    since its last complete checkpoint, or the preceding 30 days on baseline.
    Paginate until the boundary is proved; pinned dates do not end pagination.

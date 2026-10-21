@@ -69,12 +69,22 @@ in fixtures or Actions output. State is one canonical file:
 Commands, run from this checkout:
 
 ```powershell
+$auditRunStart = (Get-Date).ToUniversalTime().ToString('o')
 python growth.py audit plan .scratch/channel-audit/change.json --out .scratch/channel-audit/plan.json
 python growth.py audit begin .scratch/channel-audit/begin.json --out .scratch/channel-audit/intent.json
 # Perform only the authorised field edit in the browser, then reload.
 python growth.py audit reconcile .scratch/channel-audit/readback.json --out .scratch/channel-audit/receipt.json
-python growth.py audit checkpoint .scratch/channel-audit/coverage.json --out .scratch/channel-audit/checkpoint.json
+python growth.py audit checkpoint .scratch/channel-audit/coverage.json --out .scratch/channel-audit/checkpoint.json --now $auditRunStart
 ```
+
+Capture auditRunStart before browser inspection. Only checkpoint uses that
+fixed time; repair evidence uses the current time for its freshness checks.
+For recurring authenticated sessions, start the browser with profile export
+enabled. After Krish signs in himself, close that owned session and capture
+its profile using the browser tool. Save only the opaque profile ID in
+ignored local runtime state; never export cookies or credential values.
+Later runs load that profile and verify the active owner again. No profile
+means authenticated recurring execution remains blocked.
 
 `plan` input: channel, exact configured account_url, target_url, surface
 (`post` or `profile`), field, exact before/after strings, reason, success_check
