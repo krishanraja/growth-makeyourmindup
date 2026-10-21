@@ -86,8 +86,8 @@ def doctor(offline=False):
         errors.append('Python 3.9 or newer required')
     try:
         config = read_json(ROOT / 'automations.json')
-        if config['timezone'] != 'America/New_York' or len(config['automations']) != 8:
-            errors.append('expected eight New York automations')
+        if config['timezone'] != 'America/New_York' or len(config['automations']) != 9:
+            errors.append('expected nine New York automations')
         if any(not (ROOT / entry['job']).is_file() for entry in config['automations']):
             errors.append('automation job file missing')
         for name in ('channels.json', 'journeys.json', 'experiments.json', 'hooks.json'):

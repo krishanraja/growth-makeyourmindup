@@ -1,5 +1,5 @@
 {
- "_about": "The eight scheduled tasks this engine runs as, in one place. A Codex session asked to \"create the automations\" builds them from this file (AGENTS.md, \"When Krish says: create the automations\"); the README table is the same list for reading. Times are New York (America/New_York).",
+ "_about": "The nine scheduled tasks this engine runs as, in one place. A Codex session asked to \"create the automations\" builds them from this file (AGENTS.md, \"When Krish says: create the automations\"); the README table is the same list for reading. Times are New York (America/New_York).",
  "timezone": "America/New_York",
  "run_in": "this local project (not a new worktree), so every run shares the lists and the token file",
  "access": "network on (the public feed, the channels, controlcenter.krishraja.com); the signed-in browser when available",
@@ -46,6 +46,12 @@
    "schedule": "RRULE:FREQ=WEEKLY;BYDAY=SA;BYHOUR=7;BYMINUTE=0",
    "job": "jobs/conversion.md",
    "prompt": "Run jobs/conversion.md as AGENTS.md says."
+  },
+  {
+   "name": "Growth: answer piece",
+   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=SA;BYHOUR=9;BYMINUTE=0",
+   "job": "jobs/answer.md",
+   "prompt": "Run jobs/answer.md as AGENTS.md says."
   },
   {
    "name": "Growth: report",

@@ -129,7 +129,8 @@ experience. Pick the live source first; do not publish a placeholder.
    Do not invent access or submit changes during this task.
 9. For AI answers, write quotable, accurate answers with dated evidence and
    clear attribution where editorially useful. Read AEO results; never run
-   the paid engine from here or guarantee citations.
+   the paid engine from here or guarantee citations. The full strategy is
+   "Search and AI answers: GEO and AEO" below.
 10. Keep the real calls record useful even when a call is wrong: original
     wording, publication date, due date, public outcome, uncertainty and
     correction. Sample data must stay clearly labelled until replaced.
@@ -248,10 +249,161 @@ experience. Pick the live source first; do not publish a placeholder.
    subscription confirmation, welcome/activation, later retention and measured
    effort. Unknown links remain visible; do not manufacture a complete funnel.
 
+## Search and AI answers: GEO and AEO
+
+Added 21 October 2026 at Krish's request for a GEO and AEO strategy, AI
+crawler access, favicon and social cards, and a recurring answer piece
+that Google and AI assistants can see. This repository has no website: it
+drafts, and Krish applies everything below on the hosts himself. Each item
+is a check he can run, not a claim that it is already true or already
+missing. Re-read the live page before changing it.
+
+Goal: when a leader asks Google or an AI assistant a question that a
+makeyourmindup piece answers, the answer cites the piece and the reader
+lands on the matched article, then subscribes. That serves the North Star
+directly: useful posts, no paid boosts, the right readers.
+
+### One rule above the rest: the same page for everyone
+
+Humans and crawlers get identical content. No cloaking, no text hidden from
+readers, no separate page or summary served only to bots, no keyword blocks,
+no markup describing anything a reader cannot see on the page. `llms.txt`
+and structured data only restate what is already visible. If a change would
+only make sense to a machine, do not make it.
+
+### Answer-first structure (every piece, and the weekly answer piece)
+
+1. The title or first subhead is the question in the words a reader uses.
+2. The first lines answer it in at most 60 words, so the paragraph can be
+   quoted alone and still be right. Names, a date and the finding go there.
+3. Then the evidence: each claim next to its source, named and dated.
+4. Subheads are the follow-up questions, each answered at its top.
+5. The dated call (mind.the.gap) is quoted word for word with its date,
+   so a later check can cite it either way.
+6. A visible published date and, when edited, an updated date and what
+   changed. A correction is stated, not silently overwritten.
+
+`jobs/answer.md` makes one such draft a week from a published piece and a
+real reader question; `growth.py check` enforces its shape (question first
+line, answer in at most 60 words, link back to the source piece) and its
+evidence (the published piece plus the record of the question).
+
+### Where questions come from
+
+Only real ones, each with a record: public comments and replies on the
+pieces (Substack, YouTube, LinkedIn, X), the AEO-Engine's list of buyer
+questions makeyourmindup is missing from (read in Control Center), Search
+Console queries Krish shares, and questions a human verified. Keep the
+reader's wording. No invented questions, no keyword permutations, no page
+per variant of the same question. A question the published work does not
+answer goes to Krish as a topic; the engine does not write the answer.
+
+### What makes a page worth citing
+
+- Something only makeyourmindup has: who gets paid, how it really works,
+  a dated call. A summary of other people's news is not that.
+- Precise, checkable statements with named sources and dates, close to
+  the claim. Counts and plain words, no inflated numbers.
+- A stable URL per piece, a clear author (Krish Raja, with an about page
+  that says who he is and links his profiles) and the same names
+  everywhere: makeyourmindup, the three series, Krish Raja.
+- The calls record kept honest, right or wrong, with the original wording.
+- Article and video link to each other, so either can be cited and found.
+
+### Host checklist (Krish applies; the engine never changes a host)
+
+The hosts are Substack (`home.makeyourmindup.ai`) and the website
+(`makeyourmindup.ai`). Verify each on the live host, logged out, on mobile.
+
+**Crawler access.** Decide per crawler, in `robots.txt` (website) and the
+publication's settings (Substack: check what its AI and search settings
+actually control on this account before relying on them).
+- Search and answer crawlers that cite with a link: `Googlebot`, `Bingbot`
+  (Copilot and other assistants draw on Bing's index), `OAI-SearchBot`
+  and `ChatGPT-User` (OpenAI), `Claude-SearchBot` and `Claude-User`
+  (Anthropic), `PerplexityBot` and `Perplexity-User`, `Applebot`.
+  Recommended: allow. Blocking these removes the publication from answers.
+- Model-training crawlers and tokens: `GPTBot`, `ClaudeBot`,
+  `Google-Extended` (a control token; it does not affect Google Search),
+  `Applebot-Extended`, `CCBot`, `meta-externalagent`, `Bytespider`. This is
+  Krish's ruling, separate from visibility. Record it in `CHANGES.md`.
+- No `noindex` on pieces, the about page, series pages or the calls record.
+  Check that a CDN or bot-protection setting is not blocking the allowed
+  agents (a firewall challenge is a block even when `robots.txt` allows).
+- Sitemaps: Substack's article sitemap exists; the website sitemap should
+  list every real page and be named in its `robots.txt`.
+
+**`llms.txt` (website).** A plain Markdown file at
+`https://makeyourmindup.ai/llms.txt`: the promise, the three series with
+what each asks, the start-here read, the calls record, and the best pieces
+with one line each and their canonical Substack URLs. It is a proposed
+convention, not something any engine has confirmed it reads: cheap, so do
+it, but never claim it raises citations. It must say only what the site
+already says. Substack offers no root file control as far as this audit
+knows; verify before assuming one way or the other.
+
+**Structured data (JSON-LD, describing only what is visible).**
+- Website home: `Organization` (name, url, logo, `sameAs` to Substack,
+  YouTube, Instagram, TikTok, X, LinkedIn) and `WebSite`.
+- About page: `Person` for Krish Raja (name, url, `sameAs` LinkedIn and X,
+  `jobTitle` only as he states it).
+- Any article or answer page on the website: `Article` with `headline`,
+  `author` (the Person), `datePublished`, `dateModified`, `image` and
+  `mainEntityOfPage`; `VideoObject` when the video is embedded;
+  `BreadcrumbList` for series pages.
+- Substack already emits article markup; audit it, do not duplicate it.
+- `FAQPage` only where the visible page really is questions and answers.
+  Google shows FAQ rich results only for a small set of authoritative
+  sites, so expect no rich result from it.
+- Validate with Google's Rich Results Test and the Schema.org validator.
+
+**Favicon and icons.**
+- Website: a square icon at a stable, crawlable URL (`/favicon.ico` with
+  48 by 48 among its sizes, plus an SVG), `apple-touch-icon` at 180 by
+  180, and a web manifest with 192 and 512 icons. Google shows the site
+  favicon in results; it must be square and readable at small size.
+- Substack: the publication icon in its settings, square and readable at
+  small size. The same mark on both hosts.
+
+**Social cards.**
+- Every page: `og:title`, `og:description`, `og:url`, `og:type`,
+  `og:image` at 1200 by 630 with `og:image:alt`, and
+  `twitter:card` set to `summary_large_image`. Titles and descriptions
+  match the visible page.
+- Substack: set each post's social image and description so the card
+  carries the finding, readable without the logo. The card's words are
+  real text on the page as well.
+- Check with LinkedIn's Post Inspector and a logged-out link preview on X
+  and Instagram. Krish runs these previews; the engine never types into a
+  compose box.
+
+**Search consoles.** Google Search Console and Bing Webmaster Tools for
+both hosts: sitemap submitted, canonical URLs indexed, no coverage errors.
+
+### Measurement: how to tell if AI answers cite it
+
+- **AEO-Engine** (separate repository, fortnightly, read in Control
+  Center) is the citation measure: which buyer questions cite
+  makeyourmindup in ChatGPT, Claude, Perplexity and Grok. Ask Krish to add
+  each answer piece's question to its question set; never run it from here.
+- **Referral visits.** In Substack and website analytics, record `visits`
+  from `chatgpt.com`, `perplexity.ai`, `claude.ai`, `copilot.microsoft.com`
+  and `gemini.google.com` as observations with the referrer in `scope`,
+  same windows week to week. Missing or not shown stays null with a reason.
+- **Search.** Search Console clicks and impressions for the answer piece's
+  question; Google counts AI Overviews inside ordinary web results, so
+  they are not separable there. Do not claim they are.
+- **Spot checks.** Krish may ask the assistants the week's question by
+  hand; a check is recorded with date, engine, question, cited or not, and
+  a screenshot kept locally. One check is an anecdote, not a trend.
+- A citation is an association with a subscriber, never proof of cause.
+  The decision runs through the planned `answer-first-pieces` experiment
+  in `experiments.json`, which Krish starts or declines.
+
 ## Operating order
 
 Fix clear promise/destination defects first. Establish trustworthy source
 measurement next. Then choose one native continuation and one relevant
 borrowed-audience test. Review complete windows and subscriber quality
-before expanding formats. The eight existing jobs handle this work through
+before expanding formats. The nine existing jobs handle this work through
 one budgeted queue; this checklist does not add a second publishing calendar.

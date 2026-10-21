@@ -38,6 +38,9 @@
     },
     "spotify": {
       "formula": "Predictable cadence, value before the ask, one spoken ask at the end, the matched link in show notes, one 9:16 clip under 90 seconds per episode, mark the best place to start."
+    },
+    "answer_piece": {
+      "formula": "The reader's real question as the first line, the answer in at most 60 words straight after it, then the evidence next to each claim and one link to the published piece. Identical for readers and crawlers; never a page written for machines. Shape checked by growth.py check (placement answer-piece)."
     }
   },
   "hook_families": [
