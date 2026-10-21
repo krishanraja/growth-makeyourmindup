@@ -74,6 +74,10 @@ relevant followers to my socials and substack ... without paid boosts", then
 set up to be fully self contained and a completely different system. Content
 Engine needs nothing to do with it, but Control Center certainly does."
 
+## Outreach belongs to Control Center (Ruling, Krish, 2026-10-21)
+
+Control Center's People tab (Guests, weighted 70 to this show) and Visibility already find, draft and track outreach to shows and guests, drafted from Jonny's mailbox. So this engine proposes posts and measures. It proposes no pitch, swap or partner note: `growth.py cc finish` holds that work with the reason "Control Center's People and Visibility own outreach to shows and guests". The Tuesday, Wednesday and Thursday jobs below may still prepare lists and research for Krish's own use, but nothing from them reaches his list. His list also shows one of this engine's asks at a time, a go-live first, then a check-in, then a plan, so never add a second ask of a kind that already waits.
+
 ## What you are growing
 
 **makeyourmindup** is Krish's AI media channel: "What's coming in AI, before
@@ -228,7 +232,7 @@ two steps; in short:
    `python growth.py cc finish --job KIND --envelope FILE --queue .scratch/queue.json --deliver`
    (the numbers job adds `--observations .scratch/observations.json`). It
    turns the selected drafts into proposals for Krish (posts and comments
-   behind the `post` wall, pitches and asks behind `send`, report
+   behind the `post` wall, pitches and asks held as Control Center's (above), report
    recommendations behind `strategy`, each with its exact words), deferred
    and blocked work into holds, reports with the run's stable id
    (`makeyourmindup:<New York date>:<kind>`), reads the report back by its
@@ -253,9 +257,9 @@ publication workspace".
 | Every day 06:00 | Numbers | `numbers` | `jobs/numbers.md` |
 | Every day 06:30 | Conversation radar | `radar` | `jobs/radar.md` |
 | Mon, Wed, Fri 13:30 (after the piece is out) | The day's pack | `daily` | `jobs/daily-pack.md` |
-| Tuesday 07:00 | Pitches | `pitches` | `jobs/pitches.md` |
-| Wednesday 07:00 | Partners | `partners` | `jobs/partners.md` |
-| Thursday 07:00 | Recommendations | `swaps` | `jobs/swaps.md` |
+| Tuesday 07:00 | Pitches (held: Control Center owns outreach) | `pitches` | `jobs/pitches.md` |
+| Wednesday 07:00 | Partners (held: Control Center owns outreach) | `partners` | `jobs/partners.md` |
+| Thursday 07:00 | Recommendations (held: Control Center owns outreach) | `swaps` | `jobs/swaps.md` |
 | Saturday 07:00 | The front door | `conversion` | `jobs/conversion.md` |
 | Saturday 09:00 | The answer piece | `daily` | `jobs/answer.md` |
 | Sunday 07:00 | The weekly report | `report` | `jobs/report.md` |
