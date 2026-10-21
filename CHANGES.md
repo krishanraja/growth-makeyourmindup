@@ -1,5 +1,15 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-21: Krish approved making the two named recent articles free,
+  correcting the About schedule and linking the Muse and Suno Shorts to
+  their matching full videos. He then ruled: "disable for now but as we get
+  more followers we are going to need to implement a paid benefits strategy".
+  Disable automatic archive paywalling for now; retain paid benefits as a
+  future owner decision. These exact approvals do not broaden the standing
+  weekly repair authority or authorise changing subscription prices.
+  Saved YouTube descriptions can be read back in the reopened native-ID
+  Studio editor because public watch pages truncate visible link text.
+
 - 2026-10-21: Krish: "I signed in through your browser. Can you use those
   existing sessions so we can get on with the audit?" Reuse the existing
   Codex in-app browser tabs. Do not infer their authentication from a

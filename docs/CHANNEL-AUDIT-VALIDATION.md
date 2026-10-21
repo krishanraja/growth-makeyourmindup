@@ -6,7 +6,7 @@ ownership and independent saved-page readback from the operator.
 
 ## Verified locally on Python 3.12
 
-- Full self-test: 143 tests pass, including 17 audit regression tests.
+- Full self-test: 144 tests pass, including 18 audit regression tests.
 - Offline doctor passes; fixture dry-run passes with no external writes.
 - `cc runner` dry-run produces an honest held report; no Control Center call.
 - The actual `growth.py audit plan`, `begin`, `reconcile` CLI was exercised

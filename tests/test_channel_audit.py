@@ -109,6 +109,19 @@ class ChannelAuditTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             begin({pending['repair_id']: pending}, c, current(c), NOW)
 
+    def test_reopened_studio_readback_verifies_full_description_only_for_same_video(self):
+        c = fixture()
+        c.update(field='description', before='Original summary', after='Original summary\n\nRead: https://example.com/article')
+        c['evidence']['excerpt'] = c['before']
+        pending = begin({}, c, current(c), NOW)
+        readback = {**current(c), 'url': 'https://studio.youtube.com/video/synthetic/edit',
+                    'value': c['after'], 'excerpt': c['after'], 'reopened': True}
+        self.assertEqual(reconcile(pending, readback, NOW)['status'], 'verified')
+        for url in ('https://studio.youtube.com/video/other/edit',
+                    'https://studio.youtube.com.evil.example/video/synthetic/edit'):
+            with self.assertRaises(ValueError):
+                reconcile(pending, {**readback, 'url': url}, NOW)
+
     def test_proved_noop_retries_once_and_budget_survives_reconciliation(self):
         c = fixture()
         first = begin({}, c, current(c), NOW)

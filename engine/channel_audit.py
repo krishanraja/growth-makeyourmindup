@@ -151,7 +151,7 @@ def begin(journal, change, current, now=None):
 
 def reconcile(record, readback, now=None):
     evidence(readback, now)
-    require(canonical(readback['url']) == canonical(record['target_url']), 'readback is for another target')
+    require(same_target(readback['url'], record['target_url']), 'readback is for another target')
     require(readback.get('field') == record['field'], 'readback is for another field')
     require(instant(readback['observed_at']) >= instant(record['started_at']), 'readback predates edit intent')
     require(readback.get('reopened') is True, 'reopen or reload the saved page before readback')
