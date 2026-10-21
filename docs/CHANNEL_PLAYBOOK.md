@@ -315,6 +315,16 @@ answer goes to Krish as a topic; the engine does not write the answer.
 The hosts are Substack (`home.makeyourmindup.ai`) and the website
 (`makeyourmindup.ai`). Verify each on the live host, logged out, on mobile.
 
+**Website status (2026-10-21, krishanraja/makeyourmindup#23).** Applied on
+`www.makeyourmindup.ai`: answer engines named in `robots.txt` with the
+Substack sitemap listed beside the website's, `/llms.txt` (the latest
+twenty pieces from the feed, refreshed every 15 minutes), `Organization`,
+`WebSite` and `Person` JSON-LD, `favicon.ico` with 48 by 48, a web
+manifest with 192 and 512 icons, and `og:image:alt`. Every training
+crawler is allowed, as everyone already was; recording a different ruling
+is Krish's. Still open: an SVG icon (there is no vector source of the mark
+in the repo), everything on Substack below, and the search consoles.
+
 **Crawler access.** Decide per crawler, in `robots.txt` (website) and the
 publication's settings (Substack: check what its AI and search settings
 actually control on this account before relying on them).

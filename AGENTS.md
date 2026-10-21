@@ -11,6 +11,26 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Only Krish changes it.
 <!-- north-star:end -->
 
+## Open setup: read before any other work
+
+Written 2026-10-21. Any session that can do one of these does it, then
+deletes its line here in the same commit. Leave a line in place if you
+cannot do it, and say why in one sentence at the end of your run.
+
+- **The ninth automation is not scheduled yet.** `automations.json` gained
+  "Growth: answer piece" (Saturdays 09:00 New York, `jobs/answer.md`) on
+  2026-10-21, after the other eight were created in Codex. A Codex session
+  that can create scheduled tasks runs steps 1, 2, 4 and 5 of "When Krish
+  says: create the automations" below for that one entry, updating rather
+  than duplicating. A session that cannot (the GitHub Actions runner, a
+  Claude session) reports it as a hold on Krish's list with reason
+  `automation_missing` and does not ask him to paste anything.
+- **The answer piece's question set.** Each answer piece's question also
+  belongs in AEO-Engine's question set (`krishanraja/AEO-Engine`), so the
+  fortnightly check measures whether it is cited. The `answer` job adds it
+  as a line in its final message; whoever next works in AEO-Engine commits
+  it there. Never run AEO-Engine from here.
+
 ## "Get going"
 
 When Krish says "Get going", or opens a session with no more specific task, follow `docs/GET-GOING.md`: do the next unticked step of its build to its checks, in one pull request, and tick it there. Keep that file current as the plan changes. Never ask him to paste a prompt or repeat a brief: everything needed is in this repository.
