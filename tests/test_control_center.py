@@ -313,7 +313,10 @@ class ReportTests(unittest.TestCase):
             self.assertEqual((item['value'], item['availability']), (None, 'missing'))
             self.assertTrue(item['reason'].startswith('Measured only in the publication workspace'))
         self.assertEqual({p['wall'] for p in report['proposals']}, {'strategy'})
-        self.assertEqual(len(report['proposals']), 3)
+        # One strategy proposal per planned experiment template, no more.
+        planned = json.loads((ROOT / 'experiments.json').read_text(encoding='utf-8'))['experiments']
+        self.assertEqual(len(report['proposals']), sum(e['status'] == 'planned' for e in planned))
+        self.assertIn('makeyourmindup:experiment:answer-first-pieces', {p['proposal_id'] for p in report['proposals']})
         self.assertTrue(any('9 tests' in a['line'] for a in report['activity']))
         failed, error = runner_report(ROOT, 'r1', NOW, checks(False), 'synthetic', True, 'fixture')
         self.assertEqual((failed['status'], error), ('degraded', 'offline_checks_failed'))

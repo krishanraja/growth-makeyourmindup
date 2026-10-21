@@ -79,8 +79,10 @@ python growth.py cc runner
 
 ## Existing runtime
 
-There are still eight scheduled job definitions in `automations.json`.
-No automation is created or changed by this upgrade. All times are in
+There are nine scheduled job definitions in `automations.json`. The ninth,
+the weekly answer piece, was added on 21 October 2026; Krish creates it in
+Codex by saying "create the automations" again, which updates the existing
+eight and adds the new one. All times are in
 `America/New_York`; use the scheduler's named timezone so daylight-saving
 changes follow New York, rather than storing a one-time local conversion.
 
@@ -93,6 +95,7 @@ changes follow New York, rather than storing a one-time local conversion.
 | Partners | Wed 07:00 | `Run jobs/partners.md as AGENTS.md says.` |
 | Recommendations | Thu 07:00 | `Run jobs/swaps.md as AGENTS.md says.` |
 | Front door | Sat 07:00 | `Run jobs/conversion.md as AGENTS.md says.` |
+| Answer piece | Sat 09:00 | `Run jobs/answer.md as AGENTS.md says.` |
 | Report | Sun 07:00 | `Run jobs/report.md as AGENTS.md says.` |
 
 `python growth.py doctor` separately checks public-feed and authenticated

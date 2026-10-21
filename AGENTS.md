@@ -237,6 +237,7 @@ publication workspace".
 | Wednesday 07:00 | Partners | `partners` | `jobs/partners.md` |
 | Thursday 07:00 | Recommendations | `swaps` | `jobs/swaps.md` |
 | Saturday 07:00 | The front door | `conversion` | `jobs/conversion.md` |
+| Saturday 09:00 | The answer piece | `daily` | `jobs/answer.md` |
 | Sunday 07:00 | The weekly report | `report` | `jobs/report.md` |
 
 Krish's time budget is about 20 minutes a day and 30 on Sunday, across all
@@ -260,7 +261,7 @@ this, in order, and nothing else:
    conversion into another local zone can drift around clock changes. If
    the scheduler cannot store the named zone, explain the limitation and
    arrange the required future adjustments; do not claim permanent parity.
-4. **Create the eight scheduled tasks** from `automations.json`, using
+4. **Create the nine scheduled tasks** from `automations.json`, using
    Codex's own scheduled tasks (a Codex chat can create and update them).
    For each entry:
    - name: the entry's `name`;
@@ -281,7 +282,7 @@ this, in order, and nothing else:
    as AGENTS.md says). Confirm it printed "stored in Control Center", then
    "readback digest matches" and "attempt succeeded" from its last step. Give
    Krish the link https://controlcenter.krishraja.com/#/growth?section=packs.
-7. **Finish** with one line: "8 automations live. First radar at 06:30
+7. **Finish** with one line: "9 automations live. First radar at 06:30
    tomorrow. Packs land in Control Center > Growth > Packs."
 
 If your Codex can't create scheduled tasks from a chat, say so in one line.
@@ -308,7 +309,10 @@ October 2026 (Krish, 2026-10-15: "happy with the fortnightly AI visiblity
 check"). Its results land in Control Center (`/api/aeo/*`, the growth view).
 The `report` job reads the latest result there on a week it ran and says
 which buyer questions makeyourmindup is missing from. Never run AEO-Engine from
-here: a run spends money and needs Krish's yes.
+here: a run spends money and needs Krish's yes. The strategy for being cited
+(answer-first pieces, the host checklist Krish applies, measurement) is in
+`docs/CHANNEL_PLAYBOOK.md`, "Search and AI answers: GEO and AEO"; the
+weekly `answer` job drafts one answer-first piece from a real question.
 
 ## Why it works this way
 

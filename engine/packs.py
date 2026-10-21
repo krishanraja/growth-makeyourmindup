@@ -108,6 +108,34 @@ def problems(item, kind=None):
     return errors
 
 
+ANSWER_PLACEMENT = 'answer-piece'
+ANSWER_WORDS = 60
+QUESTION_SOURCES = ('source_thread', 'dashboard', 'audit')
+
+
+def answer_piece_errors(text):
+    """The answer-first shape (docs/CHANNEL_PLAYBOOK.md, "Search and AI answers").
+
+    The reader's question alone on the first line, a short answer straight
+    after it that can be quoted on its own, and a link back to the published
+    piece the answer comes from. Shape only: it cannot judge the answer.
+    """
+    blocks = [b.strip() for b in re.split(r'\n\s*\n', text.strip()) if b.strip()]
+    errors = []
+    if not blocks or len(blocks[0].splitlines()) != 1 or not blocks[0].endswith('?'):
+        errors.append('an answer piece opens with the reader question alone on its first line')
+    if len(blocks) < 2:
+        errors.append('an answer piece needs a short answer straight after the question')
+    else:
+        if len(blocks[1].split()) > ANSWER_WORDS:
+            errors.append('the opening answer must be at most ' + str(ANSWER_WORDS) + ' words so it can be quoted alone')
+        if blocks[1].endswith('?'):
+            errors.append('the opening answer must answer the question, not ask another')
+    if not any(urlsplit(m.group().rstrip('.,;!?)')).hostname in OWN_HOSTS for m in URL.finditer(text)):
+        errors.append('an answer piece links to the published piece it comes from')
+    return errors
+
+
 def check_pack(pack):
     if not isinstance(pack, dict):
         return ['pack must be an object']
@@ -216,6 +244,16 @@ def seal(pack, evidence, metadata, now=None, observations=None):
         if pack['kind'] in ('daily', 'radar', 'partners', 'pitches', 'swaps') and not any(
                 evidence_map[ref]['kind'] in ('published_piece', 'source_thread') for ref in refs):
             raise ValueError('publication and outreach drafts need a published piece or source thread')
+        if meta['placement'] == ANSWER_PLACEMENT:
+            if item['platform'] not in ('substack', 'seo'):
+                raise ValueError('draft ' + str(index + 1) + ': an answer piece is a substack or seo draft')
+            shape = answer_piece_errors(item['text'])
+            if shape:
+                raise ValueError('draft ' + str(index + 1) + ': ' + '; '.join(shape))
+            kinds = {evidence_map[ref]['kind'] for ref in refs}
+            if 'published_piece' not in kinds or not kinds.intersection(QUESTION_SOURCES):
+                raise ValueError('draft ' + str(index + 1) + ': an answer piece cites its published piece and '
+                                 'the record of the real reader question')
         if pack['kind'] == 'radar' and (not meta.get('expires_at') or not any(evidence_map[ref]['kind'] == 'source_thread' for ref in refs)):
             raise ValueError('radar needs thread evidence and an expiry')
         if pack['kind'] == 'radar':

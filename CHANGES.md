@@ -1,5 +1,18 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-21: Krish asked, across his repositories, for a favicon, social
+  cards, a GEO and AEO strategy, AI crawler access and a recurring AEO
+  "blog" strategy visible to Google and AI (his request as relayed to this
+  session). This repository has no website, so the strategy and a host
+  checklist he applies himself went into `docs/CHANNEL_PLAYBOOK.md`
+  ("Search and AI answers: GEO and AEO"), with a pointer in `PLAYBOOK.md`.
+  A ninth job, `jobs/answer.md` (Saturday 09:00, kind `daily`), drafts one
+  answer-first piece a week from a real reader question and a published
+  piece; `check` enforces its shape and evidence. A planned
+  `answer-first-pieces` experiment and an `answer_piece` hook surface were
+  added. Nothing is published; the new scheduled task exists only after he
+  says "create the automations" again.
+
 - 2026-10-19: Krish: "all of these growth engines need to be imbued with this
   knowledge". Preserved The Copywriting, Offers and Demand Corpus and its
   summary byte for byte under `knowledge/corpus/`, added both to the

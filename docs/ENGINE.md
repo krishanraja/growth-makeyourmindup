@@ -78,6 +78,14 @@ python growth.py prepare tests/fixtures/prepare-input.json --out .scratch/exampl
 python growth.py check .scratch/example.json --now 2026-10-17T18:00:00Z
 ```
 
+An answer piece (`placement: "answer-piece"`, platform `substack` or
+`seo`, from `jobs/answer.md`) has extra checks at `prepare` and `check`:
+the reader's question alone on the first line ending in `?`, then an answer
+of at most 60 words that does not end in a question, and a link to an own
+host. Its evidence must include the `published_piece` and the record of the
+real question (`source_thread`, `dashboard` or `audit`).
+`tests/fixtures/answer-input.json` is a labelled synthetic example.
+
 ## Discovery and delayed publications
 
 `pieces` reads the public RSS feed, preserving published time, New York

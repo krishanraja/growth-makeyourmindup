@@ -1,0 +1,51 @@
+{
+  "_about": "Synthetic test fixture for jobs/answer.md. Not a real piece, question or draft. Never deliver it.",
+  "pack": {
+    "pack_date": "2026-10-17",
+    "kind": "daily",
+    "headline": "Test fixture only, do not publish",
+    "items": [
+      {
+        "platform": "substack",
+        "text": "TEST FIXTURE ONLY. What did you ask?\n\nTEST FIXTURE ONLY. I asked one useful question.\n\nWhy it matters: this is a synthetic answer used only to test the answer-first shape.\n\nThe full piece: https://home.makeyourmindup.ai/p/test-fixture?utm_source=substack&utm_medium=organic&utm_campaign=growth&utm_content=placement_58deea3d1cc49ce77dc0",
+        "target_url": "https://home.makeyourmindup.ai/p/test-fixture"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "evidence_id": "evidence_03a44573f77542f4d478",
+      "kind": "published_piece",
+      "url": "https://home.makeyourmindup.ai/p/test-fixture",
+      "excerpt": "TEST FIXTURE ONLY. I asked one useful question.",
+      "snapshot": "TEST FIXTURE ONLY. I asked one useful question.\n\nRead the video.",
+      "observed_at": "2026-10-17T18:00:00Z"
+    },
+    {
+      "evidence_id": "evidence_7c3f18fab883aa6c21f8",
+      "kind": "source_thread",
+      "url": "https://example.com/test-fixture-thread",
+      "excerpt": "TEST FIXTURE ONLY. What did you ask?",
+      "observed_at": "2026-10-17T18:00:00Z",
+      "created_at": "2026-10-17T12:00:00Z"
+    }
+  ],
+  "metadata": [
+    {
+      "asset_id": "piece_40edd39642a5cb9085d1",
+      "placement": "answer-piece",
+      "variant": "a",
+      "evidence_ids": [
+        "evidence_03a44573f77542f4d478",
+        "evidence_7c3f18fab883aa6c21f8"
+      ],
+      "priority": 2,
+      "minutes": 8,
+      "why_now": "Test fixture only.",
+      "success_check": "Source comparison is complete and the opening answer stands alone.",
+      "quotes": [
+        "TEST FIXTURE ONLY. I asked one useful question."
+      ]
+    }
+  ]
+}
