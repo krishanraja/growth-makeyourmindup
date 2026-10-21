@@ -33,6 +33,28 @@ def https(value):
     return http_url(value) and urlsplit(value).scheme == 'https'
 
 
+def same_target(left, right):
+    """Match an observed YouTube Studio editor to its public native video ID."""
+    if canonical(left) == canonical(right):
+        return True
+    from urllib.parse import parse_qs
+    def video_id(url):
+        parsed = urlsplit(url)
+        parts = parsed.path.strip('/').split('/')
+        if parsed.scheme != 'https':
+            return None
+        if parsed.hostname == 'studio.youtube.com' and len(parts) == 3 and parts[0] == 'video' and parts[2] == 'edit':
+            return parts[1]
+        if parsed.hostname == 'www.youtube.com':
+            if len(parts) == 2 and parts[0] == 'shorts':
+                return parts[1]
+            if parsed.path == '/watch':
+                return parse_qs(parsed.query).get('v', [None])[0]
+        return None
+    native_id = video_id(left)
+    return bool(native_id and native_id == video_id(right))
+
+
 def scope_start(last_complete=None, now=None):
     end = instant(now)
     start = instant(last_complete) if last_complete else end - dt.timedelta(days=30)
@@ -81,6 +103,8 @@ def repair_plan(change, now=None):
     digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
     result = {'repair_id': identity('repair', payload), 'payload_sha256': digest, **payload}
     field, surface = change.get('field'), change.get('surface')
+    if (channel == 'youtube' and field == 'title') or (channel == 'x' and surface == 'profile' and field == 'link'):
+        require(len(change['after']) <= 100, 'proposed value exceeds the observed platform field limit')
     if field in PROTECTED or field not in AUTO.get(surface, set()):
         return {**result, 'disposition': 'approval_required', 'reason': 'outside standing edit authority'}
     for key in ('owner_verified', 'meaning_preserved', 'voice_checked', 'claims_checked', 'field_editable'):
@@ -104,7 +128,7 @@ def begin(journal, change, current, now=None):
     plan = repair_plan(change, now)
     require(plan['disposition'] == 'autonomous', 'repair is not autonomously authorised')
     evidence(current, now)
-    require(canonical(current['url']) == canonical(plan['target_url']), 'current page is another target')
+    require(same_target(current['url'], plan['target_url']), 'current page is another target')
     require(current.get('account_url') == plan['account_url'] and current.get('owner_verified') is True,
             'current browser owner must match')
     require(current.get('field') == plan['field'], 'current field does not match')
@@ -114,9 +138,15 @@ def begin(journal, change, current, now=None):
     if previous:
         if previous['status'] == 'verified' and current.get('value') == plan['after']:
             return {**previous, 'replayed': True}
-        raise ValueError('existing repair needs readback/reconciliation before any retry')
+        # A proved no-op may retry once. An uncertain write or a human edit
+        # never retries, and the attempt budget survives process restarts.
+        require(previous['status'] == 'held' and previous.get('readback', {}).get('value') == plan['before']
+                and current.get('value') == plan['before'] and previous.get('attempts', 1) < 2,
+                'existing repair needs readback/reconciliation or has exhausted its attempt budget')
     require(current.get('value') == plan['before'], 'live value changed; re-audit rather than overwrite')
-    return {**plan, 'status': 'pending_readback', 'started_at': instant(now).isoformat()}
+    return {**plan, 'status': 'pending_readback', 'started_at': instant(now).isoformat(),
+            'attempts': previous.get('attempts', 1) + 1 if previous else 1,
+            'prior_readback': previous.get('readback') if previous else None}
 
 
 def reconcile(record, readback, now=None):

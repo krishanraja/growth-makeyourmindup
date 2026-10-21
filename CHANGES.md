@@ -1,5 +1,12 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-21: Krish: "I signed in through your browser. Can you use those
+  existing sessions so we can get on with the audit?" Reuse the existing
+  Codex in-app browser tabs. Do not infer their authentication from a
+  separate cloud session or require another login. YouTube Studio native-ID
+  matching now joins the public post to its real editor. A proved no-op save
+  can retry once after readback; unknown writes still cannot retry.
+
 - 2026-10-21: Krish agreed: "Fix broken profile links and align subscription
   links autonomously, but bring bio, positioning and pinned-content changes
   to me for approval. Let's get going." He also authorised existing post

@@ -36,6 +36,12 @@ class ChannelAuditTests(unittest.TestCase):
             c['approved'] = True
             self.assertEqual(repair_plan(c, NOW)['disposition'], 'approval_required')
 
+    def test_youtube_title_limit_is_checked_before_edit_intent(self):
+        c = fixture()
+        c['after'] = 'x' * 101
+        with self.assertRaises(ValueError):
+            repair_plan(c, NOW)
+
     def test_identity_target_and_literal_evidence_fail_closed(self):
         for key, value in [('account_url', 'https://www.youtube.com/@someone-else'),
                            ('target_url', 'https://example.com/watch'), ('before', 'not observed')]:
@@ -88,11 +94,30 @@ class ChannelAuditTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             begin({}, c, live, NOW)
 
+    def test_youtube_studio_editor_matches_only_the_same_native_video(self):
+        c = fixture()
+        live = {**current(c), 'url': 'https://studio.youtube.com/video/synthetic/edit'}
+        self.assertEqual(begin({}, c, live, NOW)['status'], 'pending_readback')
+        for url in ('https://studio.youtube.com/video/other/edit',
+                    'https://studio.youtube.com.evil.example/video/synthetic/edit'):
+            with self.assertRaises(ValueError):
+                begin({}, c, {**live, 'url': url}, NOW)
+
     def test_timeout_never_retries_pending_write(self):
         c = fixture()
         pending = begin({}, c, current(c), NOW)
         with self.assertRaises(ValueError):
             begin({pending['repair_id']: pending}, c, current(c), NOW)
+
+    def test_proved_noop_retries_once_and_budget_survives_reconciliation(self):
+        c = fixture()
+        first = begin({}, c, current(c), NOW)
+        failed = reconcile(first, {**current(c), 'reopened': True}, NOW)
+        second = begin({failed['repair_id']: failed}, c, current(c), NOW)
+        self.assertEqual(second['attempts'], 2)
+        failed_again = reconcile(second, {**current(c), 'reopened': True}, NOW)
+        with self.assertRaises(ValueError):
+            begin({failed_again['repair_id']: failed_again}, c, current(c), NOW)
 
     def test_reload_verifies_and_rerun_skips(self):
         c = fixture()

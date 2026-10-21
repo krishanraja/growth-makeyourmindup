@@ -6,7 +6,7 @@ ownership and independent saved-page readback from the operator.
 
 ## Verified locally on Python 3.12
 
-- Full self-test: 140 tests pass, including 14 audit regression tests.
+- Full self-test: 143 tests pass, including 17 audit regression tests.
 - Offline doctor passes; fixture dry-run passes with no external writes.
 - `cc runner` dry-run produces an honest held report; no Control Center call.
 - The actual `growth.py audit plan`, `begin`, `reconcile` CLI was exercised
@@ -23,8 +23,11 @@ ownership and independent saved-page readback from the operator.
 
 Initial public pages were inspected in an actual browser. Private evidence
 and findings remain ignored, outside the public repository. No complete
-account checkpoint or social repair is claimed. Account access and the
-ability to execute unattended edits remain unverified. The schedule is a
+account checkpoint is claimed. Existing in-app browser access was verified
+for five signed-in channels. Three scoped live repairs were saved and
+independently read back; their exact values and receipts remain in ignored
+local audit state. LinkedIn access remains blocked. Successful unattended
+execution remains unverified. The schedule is a
 wakeup, not proof of browser access or business results. Subscriber growth,
 audience quality, retention and causation are not measured by these tests.
 

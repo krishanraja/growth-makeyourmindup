@@ -42,17 +42,20 @@ approval/review effort in that budget; unattended inspection is not Krish's
 manual work. The baseline may need multiple resumable passes.
 
 The Codex heartbeat follows this chat and reads this repository's local
-checkout. It needs this host available and a browser tool with the authorised
-accounts signed in. Scheduling proves only that a wakeup exists, not access
+checkout. Reuse its existing signed-in in-app browser tabs; do not infer
+their authentication from an unrelated cloud browser. It needs this host
+available and a browser tool with the authorised accounts signed in. Scheduling proves only that a wakeup exists, not access
 or successful execution. Never replace a browser audit with a feed, scraper,
 cached corpus, API read or synthetic fixture. Those may corroborate it.
 
 Before the first browser action create `.scratch/channel-audit/run.lock`
 with exclusive creation and keep it until the session ends (finally cleanup).
 An existing lock means inspect the owning run, not delete it and start over.
-Persist each repair intent before Save. Maximum one Save attempt per intent;
+Persist each repair intent before Save. Maximum one Save per recorded attempt;
 after timeout or interruption reopen the field and reconcile. Never issue a
-second Save to find out whether the first worked. Record held coverage and
+second Save to find out whether the first worked. A verified unchanged
+original may retry once after reconciliation, with two total attempts stored
+in the repair record. Unknown or conflicting readback never retries. Record held coverage and
 partial progress on interruption. Resume through the same job and CLI.
 
 ## Local executable guard and receipts
@@ -79,12 +82,12 @@ python growth.py audit checkpoint .scratch/channel-audit/coverage.json --out .sc
 
 Capture auditRunStart before browser inspection. Only checkpoint uses that
 fixed time; repair evidence uses the current time for its freshness checks.
-For recurring authenticated sessions, start the browser with profile export
-enabled. After Krish signs in himself, close that owned session and capture
-its profile using the browser tool. Save only the opaque profile ID in
-ignored local runtime state; never export cookies or credential values.
-Later runs load that profile and verify the active owner again. No profile
-means authenticated recurring execution remains blocked.
+Existing in-app browser sessions need no cookie export or new cloud profile.
+Keep the user's tabs and verify their current owners each run. If Krish
+chooses a separate cloud browser instead, enable profile export when creating
+that session, capture its profile through the browser tool and save only its
+opaque profile ID in ignored runtime state. Never export credentials. A
+missing cloud profile does not block an available signed-in in-app browser.
 
 `plan` input: channel, exact configured account_url, target_url, surface
 (`post` or `profile`), field, exact before/after strings, reason, success_check

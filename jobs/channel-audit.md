@@ -5,9 +5,12 @@ Read AGENTS.md, BROWSER.md, docs/CHANNEL-AUDIT.md, docs/NORTH_STAR.md,
 docs/CHANNEL_PLAYBOOK.md and knowledge/COPY-DOCTRINE.md. The scoped ruling
 of 2026-10-21 supersedes older blanket read-only rules for this job only.
 
-1. Open the actual pages in the available browser. Prefer Skyvern when
-   available, using deterministic inspection/actions without provider AI
-   charges. Verify the active account and ownership in the edit UI. Public
+1. Reuse the user's already-open signed-in Codex in-app browser tabs when
+   present. Discover them with the in-app browser tool and bind the actual
+   tabs; a separate Skyvern cloud session does not share their sign-ins.
+   Do not ask for another login based on a different browser's state. Use
+   a new cloud session only when no suitable existing browser is available.
+   Verify the active account and ownership in the edit UI. Public
    viewing is not edit access. A login wall, connection error, missing
    permission or unsupported editor is a hold, not an empty successful audit.
    Never request passwords or keys in chat. Never copy browser credentials.
@@ -44,7 +47,9 @@ of 2026-10-21 supersedes older blanket read-only rules for this job only.
    change in browser. Reload or reopen the saved page and run `audit
    reconcile` with the independently read field. A button click or toast
    never proves success. Pending/uncertain writes require readback before
-   any retry. A changed original value means re-audit, never overwrite.
+   any retry. A proved unchanged original may retry once after reconciliation,
+   with its persisted total attempt budget. A changed original value means
+   re-audit, never overwrite. Wait for save completion before reloading.
 7. Creative replacement/re-upload, bios, positioning, pins and unknown
    actions go to approval with exact proposed assets/copy and the expected
    consequence. Existing approval is scoped to an exact replacement, not
