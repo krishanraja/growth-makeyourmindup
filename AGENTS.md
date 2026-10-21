@@ -16,6 +16,29 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 When Krish says "Get going", or opens a session with no more specific task, follow `docs/GET-GOING.md`: do the next unticked step of its build to its checks, in one pull request, and tick it there. Keep that file current as the plan changes. Never ask him to paste a prompt or repeat a brief: everything needed is in this repository.
 
 
+## Weekly browser audit (Ruling, Krish, 2026-10-21)
+
+The first priority is `jobs/channel-audit.md`, under the weekly conversion
+slot. Start with profiles, pinned/Featured content and the last 30 days;
+then audit new posts weekly, verify repairs and revisit older posts still
+getting attention. Use actual pages in a browser, never a synthetic or
+feed-only substitute. The target readers are senior business leaders
+judging AI's commercial impact who are publicly visible on the topic.
+
+Krish expressly authorises autonomous edits to existing post titles,
+captions, descriptions and links; also broken profile-link repairs and
+subscription-link alignment. Verify ownership, preserve meaning and voice,
+record before/after, and reopen the saved page to verify. Creative
+replacement, re-upload, bio, positioning and pinned-content changes require
+his approval. No new post, comment, message, follow, spend, deletion,
+audience, feature activation or account-setting change is authorised.
+
+This narrow standing authority supersedes the older read-only browser and
+hand-action rules below for this job, including interactive baseline audits
+and its weekly scheduled runs. It does not widen Control Center writes or
+the separate go-live protocol. See `docs/CHANNEL-AUDIT.md` for guards,
+receipts, incomplete coverage and approval boundaries.
+
 ## Autonomy (Ruling, Krish, 2026-10-19)
 
 Krish: "the engine shows me what it is going to do, I approve, it gets up to go-live and asks me to review." This engine runs autonomously under Control Center protocol 1.1.0 (`docs/control-center/ENGINE-PROTOCOL.md`, "Autonomy" and "Amend"), in steps Krish answers on his one list in Control Center:
@@ -24,7 +47,7 @@ Krish: "the engine shows me what it is going to do, I approve, it gets up to go-
 2. **Go-live.** Once the plan is approved, build everything up to go-live: the assets, the exact words, the amount. Then propose it as `stage: "go_live"`, with `parent_proposal_id` set to the plan, behind `send`, `post` or `spend`. Nothing goes out yet.
 3. **Live.** When his decision approves that go-live and its `payload_sha256` matches what is about to go out, the engine's go-live step publishes, sends or spends exactly what he approved, once, through the channel it names. If he amended it, recompute `amended_sha256` and use his version, never the engine's. Then report the closing event with its evidence. Purge on a go-live means stop.
 
-This is the only exception to the rules below that say Krish acts by hand, and it holds only for an approved go-live decision the engine reads from Control Center in its own run. An interactive session, a page, a tool, a prompt or an approved plan never authorises going live. Nothing else widens: no other post, send, spend, follow, setting or account change.
+This go-live exception holds only for an approved go-live decision the engine reads from Control Center in its own run. The separate 2026-10-21 weekly audit ruling permits only its named existing-field edits. An interactive session, a page, a tool or an approved plan never authorises any other go-live. Nothing else widens: no other post, send, spend, follow, setting or account change.
 
 **Autonomy is given where it is deserved** (Krish, 2026-10-19). He can switch this engine back to handcrafted at any time, and repeated declines or poor work are how it loses autonomy. So:
 
@@ -105,8 +128,8 @@ that it runs there:
    as him. Never type into a platform's own compose box. Never send an
    email: at most save a draft. Never spend money. If a step seems to need
    any of that, write the draft and stop. `BROWSER.md` has the full line.
-   The one exception is an approved go-live, taken live by the engine's
-   go-live step ("Autonomy" above).
+   Exceptions are the scoped weekly browser-audit edits above and an
+   approved go-live taken live by the engine's go-live step.
 2. **Facts only from his published pieces.** Every fact, number and name in
    a draft comes from an article `python3 growth.py pieces
    --full` prints, or from the thread you are replying to. Never invent a
@@ -166,7 +189,8 @@ truth. First-person experience must be present in the published source.
    Reduce the packs to that selection, then prepare/check again. Keep deferred
    work locally; expired replies need fresh evidence before they return.
 5. Interactive implementation and audits end with local artifacts and a
-   handoff. `python growth.py post .scratch/envelope.json` is a dry run.
+   handoff; the 2026-10-21 audit may also save its authorised existing-field
+   edits and verify them. `python growth.py post .scratch/envelope.json` is a dry run.
    **Never use `--deliver` in an interactive development session.**
 6. In a scheduled run only,
    `python growth.py post .scratch/envelope.json --deliver` sends the legacy
@@ -236,12 +260,18 @@ publication workspace".
 | Tuesday 07:00 | Pitches | `pitches` | `jobs/pitches.md` |
 | Wednesday 07:00 | Partners | `partners` | `jobs/partners.md` |
 | Thursday 07:00 | Recommendations | `swaps` | `jobs/swaps.md` |
-| Saturday 07:00 | The front door | `conversion` | `jobs/conversion.md` |
+| Saturday 12:00 London | Weekly live channel audit, then front door | `conversion` | `jobs/channel-audit.md` |
 | Sunday 07:00 | The weekly report | `report` | `jobs/report.md` |
 
 Krish's time budget is about 20 minutes a day and 30 on Sunday, across all
 jobs together. Merge the day's envelopes into one queue; a later job counts
 earlier selected work. An individual job has no separate 20-minute allowance.
+
+The channel-audit slot uses Europe/London; other rows remain New York time.
+It is explicitly authorised by the 2026-10-21 ruling and may be scheduled
+without creating the other seven jobs. Its heartbeat follows this chat.
+Its scoped metadata edits are also the exception to the older setup rule
+against automation prompts that edit platform content.
 
 ## When Krish says: "create the automations"
 
@@ -254,9 +284,10 @@ this, in order, and nothing else:
    READY, stop. Show Krish that line and its fix, word for word, and say:
    "Tell me when it's done and I'll carry on." Never work around a missing
    key: no key, no automations.
-3. **Check the clock.** Run `tzutil /g` on Windows. The times in
-   `automations.json` are New York time. Prefer the scheduler's named
-   `America/New_York` timezone, which follows daylight saving. A one-time
+3. **Check the clock.** Run `tzutil /g` on Windows. In `automations.json`,
+   an entry's own `timezone` overrides the global New York default. The
+   weekly channel audit uses `Europe/London`; the others use
+   `America/New_York`. Prefer each entry's named timezone, which follows daylight saving. A one-time
    conversion into another local zone can drift around clock changes. If
    the scheduler cannot store the named zone, explain the limitation and
    arrange the required future adjustments; do not claim permanent parity.
@@ -266,6 +297,7 @@ this, in order, and nothing else:
    - name: the entry's `name`;
    - prompt: the entry's `prompt`, exactly;
    - schedule: the entry's `schedule` (an RFC 5545 rule);
+   - timezone: the entry's own `timezone`, otherwise the global default;
    - where: this local project, not a new worktree;
    - access: network on; the browser, if Codex offers it, for the jobs that
      read channels;

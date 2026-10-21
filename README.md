@@ -1,9 +1,22 @@
 # growth-makeyourmindup
 
-The independent, draft-only growth engine for makeyourmindup. It finds
+The independent growth engine for makeyourmindup. It finds
 useful distribution opportunities, preserves their evidence, tracks each
 placement, and fits the work into 20 minutes a day, 30 on Sunday. Krish
-publishes, sends and changes settings himself.
+approves creative, positioning, bio and pinned-content changes. Weekly live
+browser audits may repair existing metadata and subscription links under
+the explicit scoped authority in AGENTS.md. Other publication stays gated.
+
+## Weekly channel audit
+
+[docs/CHANNEL-AUDIT.md](docs/CHANNEL-AUDIT.md) records the accepted brief,
+authority and browser workflow. [jobs/channel-audit.md](jobs/channel-audit.md)
+is the executable agent job. Initial coverage is profiles, pins and 30 days
+of posts; subsequent runs use per-account complete checkpoints and revisit
+older work still getting attention. `growth.py audit` guards edit scope and
+journals browser intent/readback; it does not itself drive a browser.
+The weekly slot is Saturday 12:00 Europe/London, following this Codex chat.
+It needs the host online and account access in its available browser.
 
 The growth-repository upgrade is complete. Control Center's brief for this
 engine is [docs/CONTROL-CENTER-BRIEF.md](docs/CONTROL-CENTER-BRIEF.md), which
@@ -80,11 +93,12 @@ python growth.py cc runner
 ## Existing runtime
 
 There are still eight scheduled job definitions in `automations.json`.
-No automation is created or changed by this upgrade. All times are in
-`America/New_York`; use the scheduler's named timezone so daylight-saving
+The weekly conversion slot now runs the channel audit at Saturday 12:00
+`Europe/London`; all other times are in `America/New_York`.
+Use the scheduler's named timezone so daylight-saving
 changes follow New York, rather than storing a one-time local conversion.
 
-| Job | New York time | Prompt |
+| Job | Time (New York unless stated) | Prompt |
 |---|---|---|
 | Numbers | daily 06:00 | `Run jobs/numbers.md as AGENTS.md says.` |
 | Radar | daily 06:30 | `Run jobs/radar.md as AGENTS.md says.` |
@@ -92,7 +106,7 @@ changes follow New York, rather than storing a one-time local conversion.
 | Pitches | Tue 07:00 | `Run jobs/pitches.md as AGENTS.md says.` |
 | Partners | Wed 07:00 | `Run jobs/partners.md as AGENTS.md says.` |
 | Recommendations | Thu 07:00 | `Run jobs/swaps.md as AGENTS.md says.` |
-| Front door | Sat 07:00 | `Run jobs/conversion.md as AGENTS.md says.` |
+| Weekly channel audit / front door | Sat 12:00 Europe/London | `Run jobs/conversion.md as AGENTS.md says, starting with jobs/channel-audit.md.` |
 | Report | Sun 07:00 | `Run jobs/report.md as AGENTS.md says.` |
 
 `python growth.py doctor` separately checks public-feed and authenticated
@@ -102,4 +116,5 @@ available. Those access states are captured per observation. Existing
 an already configured secret. GitHub secrets cannot be read back.
 
 The content engine and AEO engine remain independent. No Notes, WhatsApp,
-paid boosts, social publishing, automated outreach or profile changes.
+paid boosts or automated outreach. Only the scoped existing-field audit
+repairs above may change social content without a fresh approval.

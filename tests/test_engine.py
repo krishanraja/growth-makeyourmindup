@@ -533,7 +533,13 @@ class RuntimeTests(unittest.TestCase):
         config = read_json(ROOT / 'automations.json')
         self.assertEqual(config['timezone'], 'America/New_York')
         self.assertEqual(len(config['automations']), 8)
-        self.assertEqual({r['job'] for r in config['automations']}, {'jobs/' + p.name for p in (ROOT / 'jobs').glob('*.md')})
+        self.assertEqual({r['job'] for r in config['automations']}, {
+            'jobs/' + name + '.md' for name in ('numbers', 'radar', 'daily-pack',
+                'pitches', 'partners', 'swaps', 'conversion', 'report')})
+        self.assertIn('jobs/channel-audit.md', (ROOT / 'jobs/conversion.md').read_text())
+        conversion = next(r for r in config['automations'] if r['job'] == 'jobs/conversion.md')
+        self.assertEqual(conversion['timezone'], 'Europe/London')
+        self.assertEqual(conversion['schedule'], 'RRULE:FREQ=WEEKLY;BYDAY=SA;BYHOUR=12;BYMINUTE=0')
 
 
     def test_corrupt_feed_does_not_replace_catalog(self):

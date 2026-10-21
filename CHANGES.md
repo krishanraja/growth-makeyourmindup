@@ -1,5 +1,17 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-21: Krish agreed: "Fix broken profile links and align subscription
+  links autonomously, but bring bio, positioning and pinned-content changes
+  to me for approval. Let's get going." He also authorised existing post
+  titles, captions, descriptions and links, with creative replacements and
+  re-uploads held for approval. Weekly audits must inspect actual pages in
+  browser. Start with profiles, pins and 30 days; then new posts and older
+  ones still getting attention. Target senior business leaders who are
+  themselves publicly visible on AI. This narrow ruling supersedes earlier
+  blanket browser read-only text, without changing unrelated authority.
+  jobs/channel-audit.md uses the conversion slot; growth.py audit checks
+  scope, private receipts, interrupted writes and complete-channel windows.
+
 - 2026-10-19: Krish: "all of these growth engines need to be imbued with this
   knowledge". Preserved The Copywriting, Offers and Demand Corpus and its
   summary byte for byte under `knowledge/corpus/`, added both to the

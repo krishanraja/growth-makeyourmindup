@@ -42,7 +42,9 @@ other door. The eventual destination is the owned reader relationship.
 
 The content engine owns the publish-board captions, descriptions, scripts,
 articles and media production. Read published sources here. Add distribution
-assets without creating a second editorial pipeline. Never send or publish.
+assets without creating a second editorial pipeline. Existing-field browser
+repairs follow the scoped 2026-10-21 ruling in AGENTS.md and
+jobs/channel-audit.md. Other sends/publication remain behind their gates.
 No Notes, WhatsApp, paid boosts or automated outreach.
 
 ## Copy doctrine
