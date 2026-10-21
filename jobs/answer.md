@@ -72,6 +72,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
 7. In the final message, list the host checklist items from
    `docs/CHANNEL_PLAYBOOK.md` ("Host checklist") that this draft depends on
    and that are still unverified. Do not check them by changing anything.
+   Then one line, `AEO question: <the question, exactly>`, for AEO-Engine's
+   question set (AGENTS.md, "Open setup").
 8. Last, report to Control Center with this run's actual file names:
    `python growth.py cc finish --job daily --envelope .scratch/answer.json --queue .scratch/queue.json --deliver`.
    It must print "readback digest matches" and "attempt succeeded". If it

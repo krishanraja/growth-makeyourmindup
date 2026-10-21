@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-21 (later): Krish: "surely you can leave notes in the growth
+  repos for those engines, do the makeyourmindup one yourself". The setup
+  he would otherwise do by hand is now an "Open setup" list at the top of
+  `AGENTS.md` for whichever session can do it: scheduling the ninth job,
+  and carrying each answer piece's question to AEO-Engine (the `answer`
+  job now prints it). The website half of the host checklist was applied
+  on www.makeyourmindup.ai in krishanraja/makeyourmindup#23; its status
+  is recorded in `docs/CHANNEL_PLAYBOOK.md`.
+
 - 2026-10-21: Krish asked, across his repositories, for a favicon, social
   cards, a GEO and AEO strategy, AI crawler access and a recurring AEO
   "blog" strategy visible to Google and AI (his request as relayed to this
