@@ -272,11 +272,17 @@ class ReportTests(unittest.TestCase):
         report = workspace_report('daily', 'r1', NOW, [env], queue=queue, rev='fixture')[0]
         self.assertEqual([p['proposal_id'] for p in report['proposals']], ['makeyourmindup:' + env['metadata'][0]['item_id']])
 
-    def test_pitches_are_send_and_report_is_strategy(self):
+    def test_outreach_is_control_centers_so_pitches_swaps_and_partners_are_held(self):
+        # Ruling (Krish, 2026-10-21): People and Visibility own outreach to shows and guests.
+        for kind in ('pitches', 'swaps', 'partners'):
+            env = envelope()
+            env['pack']['kind'] = kind
+            report = workspace_report(kind, 'r1', NOW, [env], rev='fixture')[0]
+            self.assertEqual(report['proposals'], [], kind)
+            self.assertIn("Control Center's People and Visibility own outreach to shows and guests", [h['reason'] for h in report['holds']], kind)
         env = envelope()
-        env['pack']['kind'] = 'pitches'
-        report = workspace_report('pitches', 'r1', NOW, [env], rev='fixture')[0]
-        self.assertEqual((report['proposals'][0]['wall'], report['proposals'][0]['close_condition']['event']), ('send', 'sent'))
+        report = workspace_report('daily', 'r1', NOW, [env], rev='fixture')[0]
+        self.assertEqual(report['proposals'][0]['wall'], 'post', 'posts still go to Krish')
 
     def test_completion_needs_krish_and_evidence(self):
         for row in ({'label': 'Published', 'item_id': 'i', 'at': NOW, 'evidence_url': 'https://a.b/c'},

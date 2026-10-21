@@ -33,6 +33,10 @@ NO_SPEND = 'this engine has no spend authority, bought no boosts and does not re
 WALLS = {'daily': ('post', 'published'), 'radar': ('post', 'published'), 'conversion': ('post', 'applied'),
          'pitches': ('send', 'sent'), 'swaps': ('send', 'sent'), 'partners': ('send', 'sent'),
          'report': ('strategy', 'reviewed'), 'numbers': ('none', 'verified')}
+# Outreach to shows, guests, swaps and partners is Control Center's: People and Visibility
+# find, draft and track it (Ruling, Krish, 2026-10-21). That work is held, never proposed.
+CONTROL_CENTER_OWNS = frozenset({'pitches', 'swaps', 'partners'})
+OWNED_REASON = "Control Center's People and Visibility own outreach to shows and guests"
 COMPLETIONS = {'Published': 'published', 'Sent': 'sent', 'Applied': 'applied',
                'Verified': 'verified', 'Reviewed': 'reviewed'}
 NAMES = {'linkedin': 'LinkedIn', 'x': 'X', 'youtube': 'YouTube', 'tiktok': 'TikTok', 'seo': 'search',
@@ -328,6 +332,9 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     for item in selected:
         if len(proposals) == 10:
             holds.append({'reason': 'Over the ten proposals one report carries', 'detail': item['item_id']})
+            continue
+        if (item.get('pack_kind') or job) in CONTROL_CENTER_OWNS:
+            holds.append({'reason': OWNED_REASON, 'detail': item.get('item_id', '?') + ': open People in Control Center'})
             continue
         try:
             proposals.append(item_proposal(item, job, evidence))
