@@ -1,13 +1,19 @@
-# Browser access: read with Krish's logins, never act
+# Browser access: inspect and make only authorised audit repairs
 
 Krish runs this engine with a browser that is signed in to his channels. That
 lets a job read what only he can see: dashboards, his own feed, sources of
-subscribers. The browser is for **reading only**.
+subscribers. Most jobs remain read-only. The explicit 2026-10-21 weekly
+audit ruling in AGENTS.md permits a narrow exception: edit existing post
+titles, captions, descriptions and links, fix broken profile links and
+align subscription links. Follow jobs/channel-audit.md and its local guards.
+Verify owner, exact before/after and persisted saved-page readback.
+Creative replacement, re-upload, bios, positioning and pins need approval.
 
 ## The line you never cross
 
 In a signed-in browser you may open pages, scroll, search, sort and filter,
-open analytics, and copy text out. You may **never**:
+open analytics, and copy text out. Outside those scoped existing-field
+audit edits you may **never**:
 
 - type into a post, comment, reply, message, note or chat box (not even to
   "prepare" a draft there; drafts live in the pack);
@@ -21,6 +27,12 @@ open analytics, and copy text out. You may **never**:
 If a page shows a pop-up that needs one of these, close it or leave the page.
 If a task seems to need one, write it as a draft in the pack, with exactly
 where to click, for Krish to do.
+
+An existing post editor's Save/Publish button can be used only when it saves
+solely the authorised field without a new post or visibility change. Do not
+mistake an edit flow for authority to publish new content. Other fields in
+the same editor must remain unchanged. Missing edit support means hold;
+never delete and repost as a workaround.
 
 If a channel shows you signed out, don't sign in. Note "signed out of
 <channel>" in the pack's headline and carry on with the public page.

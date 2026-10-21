@@ -128,6 +128,11 @@ def main(argv=None):
     c = sub.add_parser('check'); c.add_argument('file'); c.add_argument('--now')
     s = sub.add_parser('post'); s.add_argument('file'); s.add_argument('--deliver', action='store_true')
     d = sub.add_parser('doctor'); d.add_argument('--offline', action='store_true')
+    a = sub.add_parser('audit', help='local guards and receipts for the weekly live-browser audit')
+    a.add_argument('action', choices=('plan', 'begin', 'reconcile', 'checkpoint'))
+    a.add_argument('file'); a.add_argument('--out', required=True)
+    a.add_argument('--state', default=str(ROOT / '.scratch' / 'channel-audit' / 'state.json'))
+    a.add_argument('--now')
     lk = sub.add_parser('link'); lk.add_argument('url'); lk.add_argument('platform', choices=PLATFORMS); lk.add_argument('job', choices=KINDS)
     for arg in ('date', 'asset', 'placement', 'variant'):
         lk.add_argument('--' + arg, default='a' if arg == 'variant' else None)
@@ -158,6 +163,9 @@ def main(argv=None):
         return self_test()
     if args.cmd == 'doctor':
         return doctor(args.offline)
+    if args.cmd == 'audit':
+        from engine.channel_audit import command
+        return command(args.action, args.file, args.state, args.out, ROOT, args.now)
     if args.cmd == 'link':
         print(tracked(args.url, args.platform, args.job, args.date, args.asset, args.placement, args.variant)); return 0
     if args.cmd in ('pieces', 'discover'):

@@ -1,5 +1,10 @@
 # Job: the front door
 
+First run `jobs/channel-audit.md` for the weekly live browser audit and its
+scoped autonomous repairs (Ruling, Krish, 2026-10-21). That job owns coverage,
+repair receipts and checkpoints. The broader journey checks below remain
+read-only. Do not run the same audit twice or duplicate its repair queue.
+
 Kind `conversion`. Read the shared instructions, `docs/ENGINE.md`,
 `docs/CHANNEL_PLAYBOOK.md`, `channels.json` and `journeys.json`.
 
