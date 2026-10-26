@@ -37,6 +37,9 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    minutes, prerequisite and a success check. Access gaps are findings, not
    defects proven on a page you could not read. Queue the highest-impact
    verified blocker within the shared 20-minute budget.
+   Write the proposed copy under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`,
+   "His approved voice rules" in `AGENTS.md`): how it is written only, never what it is about.
+   The judging in this step never uses them.
 7. Prepare/check and follow `AGENTS.md`. External profile/website/settings
    changes and Control Centre UI work remain handoff items.
 8. Last, report to Control Center with this run's actual file names:

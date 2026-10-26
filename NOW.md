@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
-as_of: 2026-10-23
-head: 64579c8
+as_of: 2026-10-26
+head: 2fe4eb0
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -22,7 +22,7 @@ The makeyourmindup growth engine: it drafts the posts that bring new readers to 
 
 Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
 
-## Where it is right now (as of 2026-10-23)
+## Where it is right now (as of 2026-10-26)
 
 <!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": null, "current_as_of": null, "current_source": null, "urgency": 4, "urgency_reason": "not measured yet"} --> **North Star number: U4, far behind.** New publication subscribers a week from organic posts and shares, zero paid: not measured yet, against 25 this week, on the way to 2,500 by 28 December 2026. A bold swing every day; work that does not move the number waits.
 
@@ -30,12 +30,13 @@ Lifecycle: live. The detail is in `README.md`.
 
 ## What changed recently
 
+- 2026-10-26 **Drafts follow Krish's approved voice rules from the daily directive.** Control Center protocol 1.5.0 adds `taste` to the directive; `cc start` prints the approved rules as one labelled block and keeps it in `.scratch/cc/voice-rules.txt` for the drafting steps: how a draft is written, never what it is about, never fed to a check, score or queue. None approved yet means none invented; absent means unknown.
 - 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets how hard it pushes. The number is in `docs/NORTH_STAR.md`; contract: ai-harness `contract/north-star-metric.md`.
 
 ## What is next and what is waiting on Krish
 
 - Measure the North Star number and record it on the first line under "Where it is right now".
-- North Star check (2026-10-23): holds.
+- North Star check (2026-10-26): holds. Drafts written to his approved voice are more likely to be shared, the first half of the North Star; the number is still not measured.
 
 ## Read next
 

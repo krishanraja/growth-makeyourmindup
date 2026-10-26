@@ -18,6 +18,7 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
 3. Draft at most five candidates, each at most 60 words. Add something
    specific: one sourced fact that answers the thread, the small Secret
    lead in `knowledge/COPY-DOCTRINE.md`; score it on the short rubric. No flattery-only replies, invented experience or unwanted tags.
+   Write it under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`, "His approved voice rules" in `AGENTS.md`): how it is written only, never what it is about, and never in a score or review.
    LinkedIn comments have no links, even when `kind_hint` is absent. On
    Reddit, disclose authorship if linking and follow the particular rules.
 4. Set `kind_hint: comment` for LinkedIn. Give every candidate `expires_at`

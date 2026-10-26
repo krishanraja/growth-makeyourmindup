@@ -229,6 +229,19 @@ two steps; in short:
    amended): an approved plan is built up to go-live and proposed again as a
    go-live; only an approved go-live is taken live, by the go-live step
    ("Autonomy" above).
+
+   **His approved voice rules** (protocol 1.5.0). The directive may carry
+   `taste`: the voice rules Krish approved or reworded in Control Center.
+   `cc start` prints them as a block headed "KRISH'S APPROVED VOICE RULES"
+   and keeps the same block in `.scratch/cc/voice-rules.txt` for the
+   drafting step. Every draft in his name or for makeyourmindup follows
+   them for how it is written, alongside rule 3 below; where they disagree
+   on how to write, his approved rule wins, and rules 1, 2, 4, 5 and 6
+   still bind. They never choose what a draft is about. They never feed a
+   judge, a score, a rubric, the breakout score, the queue or
+   `growth.py check`: review and rank exactly as if they were not there.
+   An empty list means none is approved yet: never invent one. No block
+   ("Could not be read today") means unknown: draft to rule 3 as before.
 2. **Last, after the job's own checks:**
    `python growth.py cc finish --job KIND --envelope FILE --queue .scratch/queue.json --deliver`
    (the numbers job adds `--observations .scratch/observations.json`). It

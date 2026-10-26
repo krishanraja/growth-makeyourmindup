@@ -52,6 +52,7 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    - What I don't know yet, when the piece says so.
    - The full piece: one link from
      `python growth.py link <piece URL> substack daily --asset <asset_id> --placement answer-piece --variant a`.
+   Write it under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`, "His approved voice rules" in `AGENTS.md`): how it is written only, never what it is about, and never in a score or review.
    Apply `knowledge/COPY-DOCTRINE.md` and the house rules. No percentages,
    no em dashes, no invented numbers or first-hand testing the piece does
    not show. The draft is new useful text that answers one question; it is
