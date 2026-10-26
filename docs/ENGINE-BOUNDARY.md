@@ -30,6 +30,35 @@ renderer, creative-standard register or content-production learning system.
 | Distribution measurement, experiments and outcome learning | Growth |
 | Creative acceptance and publishing authority | Krish under the applicable approval rules |
 
+## Growth originates the opportunities
+
+Clarification, Krish, 26 October 2026: Growth is proactive. It does not wait
+for Krish to request a carousel, choose a new channel or supply a posting
+plan. The idea to turn a published piece into another format originates
+here, along with the decision about where to propagate it, including useful
+placements and channels Krish is not using himself.
+
+Growth owns current channel best practices: native format choice, posting
+cadence, captions and links, discovery, engagement tactics, account health,
+timing, distribution experiments and the practical plan to gain followers
+and engagement across publication and named personal accounts. It researches
+and verifies those practices, tests them and improves them from results.
+It proposes new placements with a reason and the access/action required;
+discovering a channel does not silently authorise creating an account there.
+
+Content-engine owns production standards for ALL formats, not only visual
+standards for this carousel. Growth draws on those standards and its existing
+production route to execute the selected format at the required quality.
+For example, Growth decides whether an article needs a carousel or a video,
+which opening to test and where to place it; content-engine governs the
+clarity, narrative craft, visual treatment and production QA of that asset.
+
+Channel/posting best practices stay in Growth. Production craft and quality
+standards stay in content-engine. Native post packaging and engagement
+drafts remain Growth's social-management work, applying the accepted
+production/voice standards without inventing a competing canon. Creative
+feedback improves content-engine; channel results improve Growth's strategy.
+
 ## Source to distribution
 
 1. Growth identifies the published article/video and canonical identity.
@@ -70,6 +99,9 @@ Production rules live in
 The receiving contract is
 [content-engine/docs/GROWTH-HANDOFF.md](https://github.com/krishanraja/content-engine/blob/main/docs/GROWTH-HANDOFF.md).
 
-The existing Grok Bot vs Muse pilot is historical review evidence from this
-chat. Its full revision 02 still awaits creative acceptance. Preserve its
-provenance; this transfer is not pilot approval or proof of integration.
+Krish approved the complete eight-card Grok Bot vs Muse revision 03 as the
+production pilot on 26 October 2026, after accepting its revised final card.
+The exact ordered asset hashes and approval evidence stay private. Growth
+may prepare the channel-specific posting package. This approval establishes
+the production reference; it does not approve a publication payload or prove
+a deployed handoff, runtime learning capture or automatic posting.

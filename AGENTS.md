@@ -60,12 +60,19 @@ This go-live exception holds only for an approved go-live decision the engine re
 This repository owns posting strategy, amplification planning, social media
 management and authorised automatic distribution for the publication and
 Krish's named personal accounts. Read docs/ENGINE-BOUNDARY.md before work.
+Growth originates amplification ideas from published work, finds useful
+channels/placements Krish is missing, and owns current social/channel best
+practices and experiments. Do not wait for him to request each carousel or
+distribution opportunity. Turn observations into a concrete native posting
+plan. Production standards for every format remain in content-engine.
 Content-engine alone owns content production and production standards.
 Commission the required carousel, Short or other edition there, receive a
 checked asset package, then manage its platform delivery and measurement
 here. Return content defects and creative feedback to content-engine.
-Do not render creative or maintain a competing production-quality system
-in Growth. Legacy local pilot assets remain historical review evidence.
+Growth drives the amplification work and invokes content-engine's production
+capabilities and standards as needed. Do not build a parallel production
+pipeline or quality canon in Growth. Keep responsibility for progress and
+delivery here. Legacy local pilot assets retain their review provenance.
 
 Growth strategy is self-contained here. Content-engine supplies production
 assets; Control Center is the eventual unified review surface. Scheduled
@@ -151,10 +158,11 @@ that it runs there:
    a draft comes from an article `python3 growth.py pieces
    --full` prints, or from the thread you are replying to. Never invent a
    number, a quote or a result. If you are unsure, leave it out.
-3. **Production copy has one owner.** Content-engine owns creative copy and
-   its voice/production standards. Consume its accepted channel copy rather
-   than rebuilding the creative here. Growth's operational metadata and
-   engagement drafts use the applicable krish-voice guidance. Existing-field
+3. **Standards have one production owner.** Content-engine owns production
+   and voice standards for every format. Growth owns channel strategy,
+   native posting packages, captions/links and engagement preparation,
+   applying those accepted standards and the applicable krish-voice guidance.
+   Use the established production route for finished creative. Existing-field
    repairs preserve meaning and voice; never invent experience or a claim.
 4. **Say something real.** A reply responds to the actual thread in ordinary
    human language. A specific observation, honest reaction or relevant
