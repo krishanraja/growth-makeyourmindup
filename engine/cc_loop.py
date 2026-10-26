@@ -532,6 +532,9 @@ def cli(args, root, make_client, out=print, checks=None):
     job = args.job
     run_id = args.run_id or run_id_for(job, now)
     saved = state_path(root, job + '.state.json')
+    voice_file = state_path(root, VOICE_RULES_FILE)
+    if args.cc_cmd in ('start', 'run') and voice_file.exists():
+        voice_file.unlink()  # Never let yesterday's rules stand in for today's, even on a dry run.
 
     def build(directive):
         return workspace_report(job, run_id, clock(), _load_many(args.envelope),
@@ -557,9 +560,8 @@ def cli(args, root, make_client, out=print, checks=None):
             loop = Loop.resume(client, state, clock)
     if loop is None:
         loop = Loop(client, job, run_id, clock)
-        voice_file = state_path(root, VOICE_RULES_FILE)
         if voice_file.exists():
-            voice_file.unlink()  # Never let yesterday's rules stand in for today's.
+            voice_file.unlink()  # A fresh start pulls today's rules.
         try:
             write_json(saved, loop.start())
         except ProtocolError as error:

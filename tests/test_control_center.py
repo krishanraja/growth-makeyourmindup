@@ -638,6 +638,17 @@ class VoiceRuleCliTests(unittest.TestCase):
         self.assertEqual(code, 0, text)
         self.assertIn('Could not be read today', saved)
 
+    def test_dry_run_start_clears_stale_rules(self):
+        with tempfile.TemporaryDirectory() as folder:
+            self.workspace(folder)
+            stale = Path(folder) / '.scratch/cc/voice-rules.txt'
+            stale.parent.mkdir(parents=True, exist_ok=True)
+            stale.write_text('yesterday', encoding='utf-8')
+            with patch.object(growth, 'engine_client', side_effect=AssertionError('key read')), \
+                    patch.object(growth, 'ROOT', Path(folder)), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(growth.main(['cc', 'start', '--job', 'daily']), 0)
+            self.assertFalse(stale.exists())
+
     def test_runner_never_prints_the_rules(self):
         with StandIn() as stand, tempfile.TemporaryDirectory() as folder:
             self.workspace(folder)
