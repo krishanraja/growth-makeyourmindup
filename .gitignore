@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .scratch/
 pack*.json
+!social/schemas/package.schema.json
 .growth/
 .env
 .env.*

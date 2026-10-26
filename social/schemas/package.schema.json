@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "type": "integer"
+    },
+    "kind": {
+      "const": "package",
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "channel": {
+      "type": "string",
+      "minLength": 1
+    },
+    "account_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "account_context": {
+      "type": "string",
+      "enum": [
+        "personal",
+        "publication"
+      ]
+    },
+    "format": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tool": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "caption": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "alt_text": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "alt_text"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "production": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "const": "content-engine",
+          "type": "string"
+        },
+        "approved": {
+          "type": "boolean"
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "owner",
+        "approved",
+        "evidence_ref"
+      ],
+      "additionalProperties": false
+    },
+    "voice_review_passed": {
+      "type": "boolean"
+    },
+    "proposed_due_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "publication_approval": {
+      "type": "object",
+      "properties": {
+        "approved": {
+          "type": "boolean"
+        },
+        "payload_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evidence_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "required": [
+        "approved",
+        "payload_sha256",
+        "evidence_ref"
+      ],
+      "additionalProperties": false
+    },
+    "platform_metadata": {
+      "type": "object",
+      "properties": {
+        "ai_generated": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "share_to_feed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "post_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "link_preview_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "required": [
+        "ai_generated",
+        "share_to_feed",
+        "post_type",
+        "link_preview_url"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "channel",
+    "account_url",
+    "account_context",
+    "format",
+    "tool",
+    "source_url",
+    "caption",
+    "assets",
+    "production",
+    "voice_review_passed",
+    "proposed_due_at",
+    "publication_approval",
+    "platform_metadata"
+  ],
+  "additionalProperties": false
+}
