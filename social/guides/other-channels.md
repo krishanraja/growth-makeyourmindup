@@ -7,9 +7,9 @@ findings there are not current live facts.
 
 | Channel | Growth's job | Current pilot boundary |
 |---|---|---|
-| Facebook branded Page | Approved native Page editions with a useful full-test continuation | Manage Page ownership and eight-image backend draft verified; native Buffer presentation remains held after connection timeouts. |
-| X personal | A compact useful finding, selected visual or native thread; genuine response options | Personal voice applies. No pilot release or selected-format capability is implied. |
-| TikTok personal | Commission native photo/video discovery editions and test their next step | Personal voice applies. Verify format and actual link capabilities; do not assume Instagram transfers. |
+| Facebook branded Page | Approved native Page editions with a useful full-test continuation | Eight-image feed and three ordered Stories published and reopened natively on 26 October. |
+| X personal | A compact useful finding, selected visual or native thread; genuine response options | One approved scorecard image and source-linked personal caption published and reopened natively on 26 October. Other formats remain unverified. |
+| TikTok personal | Commission native photo/video discovery editions and test their next step | Eight-image photo edition published and reopened natively on 26 October. Buffer's video-form URL redirected to the actual photo URL; preserve that native identity. |
 | YouTube publication | Commission an accepted Short and connect it to its exact matching full video | A still carousel is not a Short. Verify upload/related-video support live. |
 | Substack publication | Audit source-to-reader and free-subscription journeys, related reading and continued attention | Never open Stripe. Leave paid pricing/benefits unchanged; body/offer work retains approval boundaries. |
 

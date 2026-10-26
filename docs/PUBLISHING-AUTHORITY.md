@@ -26,6 +26,8 @@ URL/content/account and a dated readback. Preserve uncertain outcomes.
 
 Krish's LinkedIn is unscheduled drafts only. Never queue, schedule, publish,
 submit comments, like, follow or message. He reviews and makes the final click.
+Do not edit live LinkedIn posts or profile fields. This latest boundary also
+applies to the older existing-field audit permission.
 There is no daily LinkedIn quota. Its confirmed North Star is trusted
 commercial-AI judgment and relevant professional relationships first; reach
 and publication subscribers are secondary. Other personal identities, such as

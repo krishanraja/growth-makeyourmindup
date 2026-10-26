@@ -24,7 +24,7 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 ## Where it is right now (as of 2026-10-26)
 
-<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": null, "current_as_of": null, "current_source": null, "urgency": 4, "urgency_reason": "not measured yet"} --> **North Star number: U4, far behind.** New publication subscribers a week from organic posts and shares, zero paid: not measured yet, against 25 this week, on the way to 2,500 by 28 December 2026. A bold swing every day; work that does not move the number waits.
+<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-26", "current_source": "Native Substack Growth sources, New subscribers, trailing 7 days, all categories: no subscribers found; this bounds week-to-date to zero. Private fresh-owner/substack-seven-day-sources.txt", "urgency": 4, "urgency_reason": "0 of 25; under 40%"} --> **North Star number: U4, far behind.** No new subscribers appear in the native trailing-seven-day source report on 26 October, so week-to-date organic subscribers are zero against 25 this week. This is the displayed measurement, not proof that reporting is instantaneous or that the new posts have had time to work.
 
 Lifecycle: live. The detail is in `README.md`.
 
@@ -47,16 +47,21 @@ The approved eight-card Grok Bot vs Muse carousel was scheduled on publication
 Instagram and Facebook for 26 October at 18:30 Europe/London. Both now read
 Sent with native links: Facebook at 18:30:57 and Instagram at 18:32:27. Both
 native posts were independently reopened with the correct account/caption/art.
-Six native Story drafts are saved (three per Meta channel), with creative
-approval but a technical hold: Instagram's account header overlaps frame 1's
-wordmark. The exact screenshot and producer fix are in the private closeout.
-LinkedIn remains unscheduled manual publication only. X/TikTok also remain
-saved drafts, but Krish's latest explicit ruling now permits approved content
-to be posted on them with the same gates as branded Instagram, preserving
-personal voice. All public illustration boilerplate was removed. The paid
-offer is unchanged. A tool refresh briefly removed the connector and cleared browser tabs. Buffer
-was restored signed in through the known Codex URL; connector access also
-returned. Reopen known URLs in Codex, never another browser.
+The fresh social-manager chat published the existing X scorecard and TikTok
+eight-photo draft at 20:44 and 20:46 London, then all six existing Story drafts
+at 20:55-20:56 in hook/proof/action order on both Meta accounts. Every native
+destination was reopened. Content Engine's frame-1 repair clears header and
+reply controls; frames 2 and 3 retain their original hashes. Facebook's live
+AI-content overlay touches the final frame's small wordmark, recorded for the
+next production pass. The approved continuation points to the live carousel;
+Buffer's Instagram Link sticker requires Notify Me, so it was not added.
+LinkedIn remains an unscheduled draft for Krish's final click, with no live
+edits. There are no duplicate feeds or public illustration boilerplate.
+The paid offer is unchanged. Buffer MCP and all scoped owner browser surfaces
+were accessible. Browser work uses only Codex in-app tabs, never native desktop
+apps or OS dialogs. Private receipts are in the existing pilot's fresh-owner/.
+Daily 09:00 and Saturday 12:00 London automations now target the fresh owner;
+the existing schedules were preserved and no duplicate automation was created.
 The structured registry now separates voice context from publication authority,
 and adds native Story delivery checks plus a public boilerplate guard.
 The full local suite passed 168 tests. Private state, all candidate assets,
@@ -86,7 +91,7 @@ publication, follower growth or financial ROI.
 
 ## What is next and what is waiting on Krish
 
-- This chat owns the carousel pilot and social amplification; Friday video production stays with its existing chat. Reconcile actual IG/FB delivery, repair and preview Story frame 1 through Content Engine, then execute the daily follower-growth job. Use the saved X/TikTok drafts under their newly delegated cadence; LinkedIn stays manual.
+- Next: at the daily run, read the live pilot's follower, profile-visit and subscriber results, then progress the prepared Content Engine brief for the next approved native edition. No additional approved daily supply is queued. Friday production remains with its existing chat; LinkedIn stays manual. Private fresh-owner/CLOSEOUT.md holds the baseline, experiment and exact delivery receipts.
 - North Star check (2026-10-26): holds.
 
 ## Read next
