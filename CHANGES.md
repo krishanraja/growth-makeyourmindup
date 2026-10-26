@@ -1,5 +1,16 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-26: Control Center's daily directive (protocol 1.5.0, control-center
+  PR #561) now carries `taste`: the voice rules Krish approved or reworded in
+  Control Center. `growth.py cc start` prints them as a block headed
+  "KRISH'S APPROVED VOICE RULES" and keeps it in `.scratch/cc/voice-rules.txt`.
+  The drafting steps of every job (`AGENTS.md`, "His approved voice rules")
+  follow them for how a draft is written, never to choose what it is about.
+  They never feed `growth.py check`, a rubric, the breakout score, the queue
+  or the report. An empty list means none is approved yet and none is
+  invented; absent means they could not be read. The engine accepts any 1.x
+  directive; the report stays at 1.0.0.
+
 - 2026-10-21 (later): Krish: "surely you can leave notes in the growth
   repos for those engines, do the makeyourmindup one yourself". The setup
   he would otherwise do by hand is now an "Open setup" list at the top of

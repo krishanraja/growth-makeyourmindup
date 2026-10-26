@@ -18,8 +18,8 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 import growth
 from engine import cc_loop
-from engine.cc_loop import (Loop, completion_events, new_subscribers, run, runner_report,
-                            week_start, workspace_report)
+from engine.cc_loop import (Loop, completion_events, describe, new_subscribers, run, runner_report,
+                            voice_block, voice_rules, week_start, workspace_report)
 from engine.control_center import (ENGINE_ID, Client, ProtocolError, build_report, canonical_json,
                                    load_schema, match_decisions, objective, payload_digest, proposal,
                                    report_digest, schema_errors, validate_report, whole)
@@ -42,6 +42,7 @@ class StandIn:
         self.decisions = []
         self.inactive = False
         self.redirect = False
+        self.directive_extra = {}
         stand = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -85,7 +86,8 @@ class StandIn:
                         'engine_id': ENGINE_ID, 'for_date': '2026-10-17', 'aim': None, 'objectives': [],
                         'next_action': {'proposal_id': None, 'instruction': PRIVATE, 'why': PRIVATE,
                                         'close_condition': None},
-                        'decisions_since': [], 'constraints': {'walls': 'fixture', 'spend_cap_usd': 0, 'max_actions': 5}}})
+                        'decisions_since': [], 'constraints': {'walls': 'fixture', 'spend_cap_usd': 0, 'max_actions': 5},
+                        **stand.directive_extra}})
                 if method == 'POST' and route == 'reports':
                     if self.headers.get('Idempotency-Key') != body.get('run_id') or report_digest(body) != body.get('payload_sha256'):
                         return self.reply(400, {'error': 'bad_request'})
@@ -549,6 +551,113 @@ class CliTests(unittest.TestCase):
                        'python growth.py cc runner --deliver'):
             self.assertIn(needle, text)
         self.assertNotIn('upload-artifact', text)
+
+
+# Protocol 1.5.0: Krish's approved voice rules ride the directive. Synthetic rules only.
+TASTE_RULE = 'Follow these for how it is written, never to choose what it is about.'
+SYNTHETIC_RULE = {'layer': 'sentence', 'rule': 'Synthetic rule: lead with the noun', 'his_words': 'synthetic words',
+                  'what_it_means': 'Synthetic meaning for the fixture'}
+
+
+def directive_with(**extra):
+    body = {'schema_version': '1.5.0', 'directive_id': 'makeyourmindup:2026-10-26', 'engine_id': ENGINE_ID,
+            'for_date': '2026-10-26', 'aim': None, 'objectives': [],
+            'next_action': {'proposal_id': None, 'instruction': 'fixture', 'why': 'fixture', 'close_condition': None},
+            'decisions_since': [], 'constraints': {'walls': 'fixture', 'spend_cap_usd': 0, 'max_actions': 5}}
+    body.update(extra)
+    return {'ok': True, 'chosen_by': 'rule', 'directive': body}
+
+
+class VoiceRuleTests(unittest.TestCase):
+    def test_approved_rules_reach_drafting_as_a_labelled_block(self):
+        directive = directive_with(taste={'rule': TASTE_RULE, 'approved_voice_rules': [SYNTHETIC_RULE]})
+        self.assertEqual(voice_rules(directive)[0], 'rules')
+        text = '\n'.join(describe(directive))
+        self.assertIn("KRISH'S APPROVED VOICE RULES", text)
+        self.assertIn('[sentence] Synthetic rule: lead with the noun', text)
+        self.assertIn('his words: "synthetic words"', text)
+        self.assertIn('what it means: Synthetic meaning for the fixture', text)
+        self.assertIn('never to choose what it is about', text)
+        self.assertIn('never to judge, score, rank or check a draft', text)
+        self.assertIn(TASTE_RULE, text)
+
+    def test_empty_means_none_approved_and_nothing_is_invented(self):
+        directive = directive_with(taste={'rule': TASTE_RULE, 'approved_voice_rules': []})
+        self.assertEqual(voice_rules(directive), ('none', TASTE_RULE, []))
+        text = '\n'.join(voice_block(directive))
+        self.assertIn('None approved yet. Do not invent one', text)
+        self.assertNotIn('1. ', text)
+
+    def test_absent_or_malformed_means_unknown(self):
+        for directive in (directive_with(), directive_with(taste=None), directive_with(taste={'rule': 'x'}),
+                          directive_with(taste='rules'), {}, None):
+            self.assertEqual(voice_rules(directive)[0], 'absent')
+            self.assertIn('Could not be read today', '\n'.join(voice_block(directive)))
+        partial = directive_with(taste={'rule': TASTE_RULE, 'approved_voice_rules': [{'rule': ''}, 'x', SYNTHETIC_RULE]})
+        self.assertEqual(len(voice_rules(partial)[2]), 1)
+
+    def test_rules_never_feed_a_judge_scorer_ranker_or_gate(self):
+        # The check, the queue (ranker) and the report builder never read the directive's taste.
+        for name in ('engine/packs.py', 'engine/operations.py', 'engine/control_center.py', 'engine/core.py'):
+            text = (ROOT / name).read_text(encoding='utf-8')
+            self.assertNotIn('taste', text, name)
+            self.assertNotIn('voice_rules', text, name)
+        source = (ROOT / 'engine/cc_loop.py').read_text(encoding='utf-8')
+        for name in ('def workspace_report', 'def runner_report', 'def item_proposal', 'def _items'):
+            start = source.index(name)
+            end = source.index('\ndef ', start + 1)
+            self.assertNotIn('voice', source[start:end], name)
+        plain = workspace_report('daily', 'makeyourmindup:2026-10-17:daily', NOW, [envelope()], rev='x')[0]
+        self.assertEqual(plain, workspace_report('daily', 'makeyourmindup:2026-10-17:daily', NOW, [envelope()], rev='x')[0])
+
+
+class VoiceRuleCliTests(unittest.TestCase):
+    capture = CliTests.capture
+    workspace = CliTests.workspace
+
+    def run_start(self, extra):
+        with StandIn() as stand, tempfile.TemporaryDirectory() as folder:
+            self.workspace(folder)
+            stand.directive_extra = extra
+            code, text = self.capture(['cc', 'start', '--job', 'daily', '--deliver', '--mode', 'synthetic', '--now', NOW],
+                                      stand, folder)
+            path = Path(folder) / '.scratch/cc/voice-rules.txt'
+            saved = path.read_text(encoding='utf-8') if path.exists() else None
+        return code, text, saved
+
+    def test_schema_1_5_0_with_taste_and_unknown_fields_is_accepted_and_printed(self):
+        code, text, saved = self.run_start({'schema_version': '1.5.0', 'some_future_field': {'x': 1},
+                                            'taste': {'rule': TASTE_RULE, 'approved_voice_rules': [SYNTHETIC_RULE]}})
+        self.assertEqual(code, 0, text)
+        self.assertIn('Synthetic rule: lead with the noun', text)
+        self.assertIn('Synthetic rule: lead with the noun', saved)
+        self.assertNotIn(TOKEN, text + saved)
+
+    def test_directive_without_taste_is_accepted_and_says_unknown(self):
+        code, text, saved = self.run_start({'schema_version': '1.5.0'})
+        self.assertEqual(code, 0, text)
+        self.assertIn('Could not be read today', saved)
+
+    def test_dry_run_start_clears_stale_rules(self):
+        with tempfile.TemporaryDirectory() as folder:
+            self.workspace(folder)
+            stale = Path(folder) / '.scratch/cc/voice-rules.txt'
+            stale.parent.mkdir(parents=True, exist_ok=True)
+            stale.write_text('yesterday', encoding='utf-8')
+            with patch.object(growth, 'engine_client', side_effect=AssertionError('key read')), \
+                    patch.object(growth, 'ROOT', Path(folder)), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(growth.main(['cc', 'start', '--job', 'daily']), 0)
+            self.assertFalse(stale.exists())
+
+    def test_runner_never_prints_the_rules(self):
+        with StandIn() as stand, tempfile.TemporaryDirectory() as folder:
+            self.workspace(folder)
+            stand.directive_extra = {'schema_version': '1.5.0',
+                                     'taste': {'rule': TASTE_RULE, 'approved_voice_rules': [SYNTHETIC_RULE]}}
+            code, text = self.capture(['cc', 'runner', '--deliver', '--mode', 'synthetic', '--now', NOW], stand, folder)
+            self.assertEqual(code, 0, text)
+            self.assertNotIn('synthetic words', text)
+            self.assertNotIn('voice', canonical_json(stand.posts('reports')[0]['body']).lower())
 
 
 if __name__ == '__main__':

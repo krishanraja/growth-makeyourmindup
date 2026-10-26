@@ -13,7 +13,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    using `growth.py relationship EVENTS.json PERSON_ID --cooldown-days 90`.
    Unsent drafts do not mean the host was pitched. Respect declines and
    pending conversations. Do not redraft the same unsent offer every week.
-3. One personalised draft under 150 words, built on the direct outreach
+3. Write it under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`, "His approved voice rules" in `AGENTS.md`): how it is written only, never what it is about, and never in a score or review.
+   One personalised draft under 150 words, built on the direct outreach
    structure and proof hierarchy in `knowledge/COPY-DOCTRINE.md`: a precise point from their work,
    a listener problem, supported talk points, a real companion asset from
    the published finding/source list and one easy next step. No promise to
