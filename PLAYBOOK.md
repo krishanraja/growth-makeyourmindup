@@ -27,6 +27,11 @@ other door. The eventual destination is the owned reader relationship.
 
 ## Channel roles and ownership
 
+Account context comes first: apply docs/ACCOUNT-VOICE.md to personal-account
+sharing and engagement. Publication Instagram keeps its editorial register.
+This is Growth's account-management requirement, passed into content-engine
+briefs; production standards continue to live solely in content-engine.
+
 | Channel | Growth work | Useful next step |
 |---|---|---|
 | Substack | About, subscribe and welcome fixes, start-here path, referrals, genuine recommendations | read a relevant piece, subscribe, then forward when useful |
@@ -40,9 +45,13 @@ other door. The eventual destination is the owned reader relationship.
 | Communities | Answer the actual question, disclose authorship when linking, follow local rules | useful answer; link only when welcome |
 | Partners | Named quote kit, guest offer, co-made asset and genuine recommendation | matched landing with a distinct placement |
 
-The content engine owns the publish-board captions, descriptions, scripts,
-articles and media production. Read published sources here. Add distribution
-assets without creating a second editorial pipeline. Never send or publish.
+Content-engine owns captions, scripts, articles, media production and all
+production standards. Growth chooses amplification opportunities and briefs
+the required native editions, then owns platform packaging, posting and
+distribution learning. Read docs/ENGINE-BOUNDARY.md; do not create a second
+editorial or rendering pipeline here. Existing-field browser
+repairs follow the scoped 2026-10-21 ruling in AGENTS.md and
+jobs/channel-audit.md. Other sends/publication remain behind their gates.
 No Notes, WhatsApp, paid boosts or automated outreach.
 
 ## Copy doctrine

@@ -28,6 +28,33 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 Lifecycle: live. The detail is in `README.md`.
 
+Growth owns amplification ideas, channel strategy, social management,
+authorised distribution and measurement. Content-engine alone owns
+production and production standards for every format. Growth passes account
+context into its briefs rather than maintaining a parallel production canon.
+
+The first Grok Bot vs Muse experiment has two saved, unscheduled Buffer
+drafts: the full eight-card publication Instagram carousel and a personal
+LinkedIn post with its approved scorecard image. Both were independently
+reopened in Codex after saved-state readback. All eight uploaded images match
+the accepted source pixels; copy, alt text, image order and the full-test
+link were checked. Existing draft IDs were updated without duplicates.
+Neither post is scheduled or published. Exact payloads, proposed London slots
+and review evidence remain in ignored .scratch/channel-audit.
+
+Personal-account voice is now non-negotiable in docs/ACCOUNT-VOICE.md:
+sincere, warm, humble and pleased to share something useful. Publication
+Instagram retains its editorial voice. BROWSER.md covers supported draft
+operations and preserves the separate publication approval gate.
+
+The channel audit remains partial; incomplete account windows and checkpoints
+stay open in private evidence. The Substack typo reads "I put" in its saved
+editor and rendered paragraph; no further Save was needed. The live paid
+offer is unchanged. Use only the signed-in Codex browser; never Skyvern,
+Chrome, cookie export or Stripe. Daily work and trial observations are
+recorded privately; scheduled wakeups and prepared drafts are not proof of
+publication, follower growth or financial ROI.
+
 ## What changed recently
 
 - 2026-10-26 **Drafts follow Krish's approved voice rules from the daily directive.** Control Center protocol 1.5.0 adds `taste` to the directive; `cc start` prints the approved rules as one labelled block and keeps it in `.scratch/cc/voice-rules.txt` for the drafting steps: how a draft is written, never what it is about, never fed to a check, score or queue. None approved yet means none invented; absent means unknown.
@@ -35,8 +62,8 @@ Lifecycle: live. The detail is in `README.md`.
 
 ## What is next and what is waiting on Krish
 
-- Measure the North Star number and record it on the first line under "Where it is right now".
-- North Star check (2026-10-26): holds. Drafts written to his approved voice are more likely to be shared, the first half of the North Star; the number is still not measured.
+- Obtain exact publication approval for the two verified drafts and their proposed London slots. Before go-live, capture available baselines and the North Star subscriber-by-source measure; retain unknown values. Then deliver the approved payloads, verify native publication and record follow-up at 24 hours, 72 hours and seven days.
+- North Star check (2026-10-26): holds.
 
 ## Read next
 
@@ -45,4 +72,4 @@ Lifecycle: live. The detail is in `README.md`.
 
 ## Do not trust
 
-Nothing at the moment.
+Do not treat old draft IDs as immutable creative approvals: the Instagram and LinkedIn pilot revisions supersede their preserved before states. The rejected TikTok image revision and prior X draft remain held. Do not infer completed audit coverage, live automated posting or financial ROI from a prepared review pack.

@@ -49,6 +49,19 @@ Today's live report (2026-10-19) was `held`:
 
 ## The build
 
+Priority ruling, Krish, 2026-10-21: channel-specific live browser audit and
+repair comes first. This supersedes the old first-unticked ordering for this
+task. The original technical backlog below remains open, not silently done.
+
+- [x] **Weekly audit implementation.** Accepted scope, standing metadata
+  authority, browser job, per-account coverage guards and pending-write
+  reconciliation, with synthetic regression checks. See docs/CHANNEL-AUDIT.md.
+  This implementation does not prove live repairs or subscriber growth.
+- [ ] **Complete the live baseline.** Profiles, pins and 30 days of posts on
+  every configured account, including saved-page readback of repairs.
+  Signed-out/public-only sessions and connection failures are partial
+  coverage. Never tick from a schedule, public profile or passing test suite.
+
 - [ ] **Step 0.** Correct the status line at the top of docs/CONTROL-CENTER-BRIEF.md: the first live run on 2026-10-19 succeeded, so it is no longer only tested against a local stand-in.
 - [ ] **Step 0.5 (added 2026-10-22).** Pick up docs/briefs/2026-10-22-heygen-short.md: put the founder-visibility question on Krish's list as `wall: strategy` first. Only on his yes, propose one HeyGen short trailing a published piece as a plan. Render nothing before then.
 - [ ] **Step 1.** The autonomy loop above (plan, go-live, the go-live step, check-ins) on protocol 1.1.0, proved against the stand-in: an approved plan never goes live, an approved go-live goes live once with exactly its payload, an amended one goes live in his words, a declined check-in stops its plan. Then the creative review every go-live passes: the doctrine it was checked against, at least two alternatives made, and why this one wins, in its evidence. Krish has a low tolerance for poor creative output, so a weak go-live is held, not proposed.

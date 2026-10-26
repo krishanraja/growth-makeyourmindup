@@ -570,7 +570,13 @@ class RuntimeTests(unittest.TestCase):
         config = read_json(ROOT / 'automations.json')
         self.assertEqual(config['timezone'], 'America/New_York')
         self.assertEqual(len(config['automations']), 9)
-        self.assertEqual({r['job'] for r in config['automations']}, {'jobs/' + p.name for p in (ROOT / 'jobs').glob('*.md')})
+        # Every job file is scheduled except channel-audit.md, which the conversion slot runs first.
+        self.assertEqual({r['job'] for r in config['automations']},
+                         {'jobs/' + p.name for p in (ROOT / 'jobs').glob('*.md') if p.name != 'channel-audit.md'})
+        self.assertIn('jobs/channel-audit.md', (ROOT / 'jobs/conversion.md').read_text())
+        conversion = next(r for r in config['automations'] if r['job'] == 'jobs/conversion.md')
+        self.assertEqual(conversion['timezone'], 'Europe/London')
+        self.assertEqual(conversion['schedule'], 'RRULE:FREQ=WEEKLY;BYDAY=SA;BYHOUR=12;BYMINUTE=0')
 
 
     def test_corrupt_feed_does_not_replace_catalog(self):

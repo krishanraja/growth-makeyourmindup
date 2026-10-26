@@ -33,6 +33,35 @@
   added. Nothing is published; the new scheduled task exists only after he
   says "create the automations" again.
 
+- 2026-10-21: Krish approved making the two named recent articles free,
+  correcting the About schedule and linking the Muse and Suno Shorts to
+  their matching full videos. He then ruled: "disable for now but as we get
+  more followers we are going to need to implement a paid benefits strategy".
+  Disable automatic archive paywalling for now; retain paid benefits as a
+  future owner decision. These exact approvals do not broaden the standing
+  weekly repair authority or authorise changing subscription prices.
+  Saved YouTube descriptions can be read back in the reopened native-ID
+  Studio editor because public watch pages truncate visible link text.
+
+- 2026-10-21: Krish: "I signed in through your browser. Can you use those
+  existing sessions so we can get on with the audit?" Reuse the existing
+  Codex in-app browser tabs. Do not infer their authentication from a
+  separate cloud session or require another login. YouTube Studio native-ID
+  matching now joins the public post to its real editor. A proved no-op save
+  can retry once after readback; unknown writes still cannot retry.
+
+- 2026-10-21: Krish agreed: "Fix broken profile links and align subscription
+  links autonomously, but bring bio, positioning and pinned-content changes
+  to me for approval. Let's get going." He also authorised existing post
+  titles, captions, descriptions and links, with creative replacements and
+  re-uploads held for approval. Weekly audits must inspect actual pages in
+  browser. Start with profiles, pins and 30 days; then new posts and older
+  ones still getting attention. Target senior business leaders who are
+  themselves publicly visible on AI. This narrow ruling supersedes earlier
+  blanket browser read-only text, without changing unrelated authority.
+  jobs/channel-audit.md uses the conversion slot; growth.py audit checks
+  scope, private receipts, interrupted writes and complete-channel windows.
+
 - 2026-10-19: Krish: "all of these growth engines need to be imbued with this
   knowledge". Preserved The Copywriting, Offers and Demand Corpus and its
   summary byte for byte under `knowledge/corpus/`, added both to the

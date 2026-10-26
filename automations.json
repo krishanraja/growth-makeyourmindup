@@ -1,5 +1,5 @@
 {
- "_about": "The nine scheduled tasks this engine runs as, in one place. A Codex session asked to \"create the automations\" builds them from this file (AGENTS.md, \"When Krish says: create the automations\"); the README table is the same list for reading. Times are New York (America/New_York).",
+ "_about": "The nine scheduled tasks this engine runs as, in one place. A Codex session asked to \"create the automations\" builds them from this file (AGENTS.md, \"When Krish says: create the automations\"); the README table is the same list for reading. Times are New York (America/New_York), except the conversion slot, which runs the weekly live-browser channel audit under the 2026-10-21 ruling at Saturday 12:00 Europe/London; its own timezone overrides the default.",
  "timezone": "America/New_York",
  "run_in": "this local project (not a new worktree), so every run shares the lists and the token file",
  "access": "network on (the public feed, the channels, controlcenter.krishraja.com); the signed-in browser when available",
@@ -42,10 +42,11 @@
    "prompt": "Run jobs/swaps.md as AGENTS.md says."
   },
   {
-   "name": "Growth: front door",
-   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=SA;BYHOUR=7;BYMINUTE=0",
+   "name": "Growth: weekly channel audit",
+   "schedule": "RRULE:FREQ=WEEKLY;BYDAY=SA;BYHOUR=12;BYMINUTE=0",
    "job": "jobs/conversion.md",
-   "prompt": "Run jobs/conversion.md as AGENTS.md says."
+   "prompt": "Run jobs/conversion.md as AGENTS.md says, starting with jobs/channel-audit.md. Apply only standing-authority existing-field browser repairs; verify saved-page readback. Hold creative, re-upload, bio, positioning and pin changes for approval. Keep incomplete account windows open.",
+   "timezone": "Europe/London"
   },
   {
    "name": "Growth: answer piece",
