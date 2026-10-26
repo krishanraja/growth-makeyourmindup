@@ -65,6 +65,9 @@ feedback improves content-engine; channel results improve Growth's strategy.
 2. Growth briefs content-engine: source links, audience and starting context,
    goal, accounts, native formats, number of editions, timing, experiment,
    practical continuation and observed platform constraints.
+   Include the account-speaking context from ACCOUNT-VOICE.md: Krish's
+   personal accounts require warm, sincere, humble, useful sharing;
+   publication Instagram retains its editorial voice.
 3. Content-engine creates and checks the assets through its existing workflow.
    It returns stable references/hashes, order, dimensions/duration, exact
    channel copy, alt text, evidence, unresolved gaps and creative review state.

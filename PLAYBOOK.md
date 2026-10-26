@@ -27,6 +27,11 @@ other door. The eventual destination is the owned reader relationship.
 
 ## Channel roles and ownership
 
+Account context comes first: apply docs/ACCOUNT-VOICE.md to personal-account
+sharing and engagement. Publication Instagram keeps its editorial register.
+This is Growth's account-management requirement, passed into content-engine
+briefs; production standards continue to live solely in content-engine.
+
 | Channel | Growth work | Useful next step |
 |---|---|---|
 | Substack | About, subscribe and welcome fixes, start-here path, referrals, genuine recommendations | read a relevant piece, subscribe, then forward when useful |

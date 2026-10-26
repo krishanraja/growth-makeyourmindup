@@ -57,6 +57,13 @@ This go-live exception holds only for an approved go-live decision the engine re
 
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 
+**Personal-account voice is non-negotiable.** Read docs/ACCOUNT-VOICE.md
+before preparing anything for Krish's personal accounts. Be sincere, warm,
+humble and pleased to share something useful, especially on LinkedIn.
+No arrogance, lecture voice or performative humility. Publication Instagram
+makeyourmind.up uses its editorial voice and is explicitly excepted from
+that personal-sharing requirement. Classify the account before writing.
+
 This repository owns posting strategy, amplification planning, social media
 management and authorised automatic distribution for the publication and
 Krish's named personal accounts. Read docs/ENGINE-BOUNDARY.md before work.
@@ -152,8 +159,10 @@ that it runs there:
    into a platform's compose box. Never send an
    email: at most save a draft. Never spend money. If a step seems to need
    any of that, write the draft and stop. `BROWSER.md` has the full line.
-   Exceptions are the scoped weekly browser-audit edits above and an
-   approved go-live taken live by the engine's go-live step.
+   Exceptions are the scoped weekly browser-audit edits above, the explicit
+   unscheduled Buffer draft preparation in BROWSER.md, and an approved
+   go-live taken live by the engine's go-live step. Draft saves never
+   authorise scheduling or publication.
 2. **Facts only from his published pieces.** Every fact, number and name in
    a draft comes from an article `python3 growth.py pieces
    --full` prints, or from the thread you are replying to. Never invent a

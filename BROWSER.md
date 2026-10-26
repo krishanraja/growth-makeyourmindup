@@ -9,14 +9,62 @@ align subscription links. Follow jobs/channel-audit.md and its local guards.
 Verify owner, exact before/after and persisted saved-page readback.
 Creative replacement, re-upload, bios, positioning and pins need approval.
 
+## Codex browser only (Ruling, Krish, 2026-10-24)
+
+Use the Codex in-app browser beside this chat, reusing its signed-in tabs.
+This applies to Buffer as well as the social audit. Do not use Chrome or
+another external browser as a fallback, even if it has an existing login.
+Skyvern is excluded from this task: no session listing, connection checks,
+cloud browser, workflow, profile export or fallback through that provider.
+Never infer that these accounts are signed out from another browser.
+Do not export cookies or credentials. Do not open Stripe.
+
+If session-level tool instructions force the excluded provider, record an
+instruction-routing hold. Do not call it an account-login failure, silently
+switch providers, or claim browser access is restored. The Codex browser
+must be available through an allowed tool before live work resumes.
+
+Krish also authorises preparing a suggested comment in the actual LinkedIn
+comment box for him to review and post himself. Verify the account, exact
+post and parent comment first. Preserve any existing human draft and do not
+press Enter, Comment, Reply, Post or any shortcut that submits. Load one
+candidate at a time when handing it over; never leave multiple stale drafts.
+If safe prefill is unavailable, show the exact copy beside the open post.
+This exception permits draft preparation only, never automatic engagement.
+
+## Buffer draft operations (Ruling, Krish, 2026-10-26)
+
+For the approved carousel experiment and the daily draft-preparation job,
+upload accepted media and prepare/update unscheduled Buffer drafts for the
+verified scoped accounts. Record account identity, before state, exact copy,
+asset hashes/order, alt text and intended metadata before saving. Use
+saveToDraft=true with no due time through the connector, or the actual Save
+Draft control in Codex. This is draft authority, not scheduling/publication
+authority. Reopen the saved draft and independently read back native state.
+
+On 26 October the browser file-chooser event failed to hand off local files.
+Pasting approved PNGs through the documented tab clipboard and composer
+worked. All eight uploaded images were downloaded through the observed
+page media and their decoded pixels matched the approved originals. Use
+that supported image-paste route when needed, verify every attachment and
+record returned media URLs in private evidence. Do not infer PDF/document
+upload support from successful image uploads. Do not operate a desktop-wide
+file dialog whose target ownership cannot be established reliably.
+
+Prefer Buffer's domain tools for final draft metadata. A domain tool may
+reject a nullable clear that the inspected provider schema supports. Use an
+introspected narrow GraphQL operation only for that uncovered operation,
+after authoritative readback establishes the prior state. Preserve journals
+and the retry budget; never treat an uncertain save as failure and retry it.
+
 ## The line you never cross
 
 In a signed-in browser you may open pages, scroll, search, sort and filter,
-open analytics, and copy text out. Outside those scoped existing-field
-audit edits you may **never**:
+open analytics, and copy text out. Outside scoped existing-field audit edits,
+the explicit Buffer draft authority and LinkedIn preparation above, you may **never**:
 
-- type into a post, comment, reply, message, note or chat box (not even to
-  "prepare" a draft there; drafts live in the pack);
+- type into a post, comment, reply, message, note or chat box, except the
+  explicitly authorised LinkedIn comment preparation above;
 - press Post, Publish, Send, Reply, Like, Repost, Restack, Follow, Connect,
   Subscribe, Join, Save, Schedule, Boost, Promote or Pay;
 - change a setting, a profile, a bio, a link, a welcome page, an email, a
