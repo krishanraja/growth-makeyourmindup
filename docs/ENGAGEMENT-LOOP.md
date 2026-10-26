@@ -5,7 +5,9 @@ Status: daily work authorised; draft preparation and live audit active.
 A daily 09:00 London heartbeat was created on 2026-10-24 under Krish's
 instruction to work every day. jobs/daily-growth.md owns that routine.
 Buffer is connected by Krish and in a Team trial ending 7 November.
-No new publication or paid subscription is authorised by this document.
+Publication follows the later docs/PUBLISHING-AUTHORITY.md ruling: delegated
+cadence for approved branded content and scoped X/TikTok; LinkedIn is unscheduled
+drafts for Krish's manual publication. No paid subscription is authorised.
 The earlier free three-channel pilot is superseded by this live trial.
 Seven channels are connected, with the publication YouTube channel in place
 of the mind/make LinkedIn Page. Krish's personal LinkedIn remains connected.

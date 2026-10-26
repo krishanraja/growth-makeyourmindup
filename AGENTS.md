@@ -78,6 +78,15 @@ This go-live exception holds only for an approved go-live decision the engine re
 
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 
+**Publishing authority: latest ruling, 26 October.** Read
+docs/PUBLISHING-AUTHORITY.md. Approved content has delegated packaging and
+cadence on branded channels and scoped X/TikTok, aiming for one useful daily
+post where an approved native edition exists. X/TikTok retain personal voice.
+LinkedIn stays unscheduled drafts for Krish's final click, with no daily quota.
+Other connected personal identities are not automatically in scope. This
+supersedes older contradictory publication rules, preserving all spend,
+engagement, creative-approval and account-setting boundaries.
+
 **Use structured operating contracts.** Start social execution at social/README.md
 and run `python growth.py social route CHANNEL FORMAT`. The channel, format,
 tool and evidence-linked lesson records own their respective instructions.

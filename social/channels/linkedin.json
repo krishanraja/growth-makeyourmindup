@@ -4,7 +4,7 @@
   "id": "linkedin",
   "account_url": "https://www.linkedin.com/in/krish-raja/",
   "account_context": "personal",
-  "mission": "Share useful tested findings warmly with relevant professional readers; prepare human engagement for the final human click.",
+  "mission": "Build trusted commercial-AI judgment and relevant professional relationships first. Reach and publication subscribers are secondary. No daily volume quota; Krish reviews and manually publishes.",
   "formats": [
     "carousel",
     "single-image",
@@ -24,6 +24,11 @@
     "personal-account-register",
     "linkedin-scorecard-edition",
     "document-upload-unverified",
-    "nullable-preview-clear"
-  ]
+    "nullable-preview-clear",
+    "publishing-authority-split"
+  ],
+  "publication_mode": "human_publish_only",
+  "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
+  "daily_posts_target": null,
+  "daily_drafts_max": null
 }

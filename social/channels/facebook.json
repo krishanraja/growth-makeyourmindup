@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "kind": "channel",
+  "id": "facebook",
+  "account_url": "https://facebook.com/1364858250042525",
+  "account_context": "publication",
+  "mission": "Use approved native branded Page editions to earn useful reach and full-test readership; keep the account distinct from Krish personal profiles.",
+  "formats": [
+    "carousel",
+    "single-image",
+    "short-video",
+    "text",
+    "story"
+  ],
+  "guide": "social/guides/other-channels.md",
+  "voice_policy": "docs/ACCOUNT-VOICE.md",
+  "live_checks": [
+    "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
+    "Read current queue, drafts and native identities; preserve existing human work.",
+    "Verify the exact destination, visibility and available account capabilities before the selected action."
+  ],
+  "lessons": [
+    "publication-register",
+    "publishing-authority-split",
+    "revision-identity",
+    "growth-measurement",
+    "facebook-native-check-held",
+    "public-copy-and-stories"
+  ],
+  "publication_mode": "approved_brand_content",
+  "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
+  "daily_posts_target": 1,
+  "daily_drafts_max": null
+}

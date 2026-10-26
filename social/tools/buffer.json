@@ -17,98 +17,172 @@
       "format": "carousel",
       "status": "verified",
       "verified_at": "2026-10-26",
-      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md"
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md",
+      "verified_operations": [
+        "draft",
+        "schedule"
+      ]
     },
     {
       "channel": "instagram",
       "format": "single-image",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "instagram",
       "format": "short-video",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "linkedin",
       "format": "carousel",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "linkedin",
       "format": "single-image",
       "status": "verified",
       "verified_at": "2026-10-26",
-      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md"
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md",
+      "verified_operations": [
+        "draft"
+      ]
     },
     {
       "channel": "linkedin",
       "format": "text",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "linkedin",
       "format": "short-video",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "x",
       "format": "single-image",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "x",
       "format": "text",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "x",
       "format": "short-video",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "tiktok",
       "format": "carousel",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "tiktok",
       "format": "short-video",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "youtube",
       "format": "short-video",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
     },
     {
       "channel": "substack",
       "format": "article",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": []
+    },
+    {
+      "channel": "facebook",
+      "format": "carousel",
+      "status": "verified",
+      "verified_at": "2026-10-26",
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/facebook-queue-current.png",
+      "verified_operations": [
+        "draft",
+        "schedule"
+      ]
+    },
+    {
+      "channel": "facebook",
+      "format": "single-image",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified in this pilot.",
+      "verified_operations": []
+    },
+    {
+      "channel": "facebook",
+      "format": "short-video",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified in this pilot.",
+      "verified_operations": []
+    },
+    {
+      "channel": "facebook",
+      "format": "text",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified in this pilot.",
+      "verified_operations": []
+    },
+    {
+      "channel": "instagram",
+      "format": "story",
+      "status": "verified",
+      "verified_at": "2026-10-26",
+      "verified_operations": [
+        "draft"
+      ],
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/story-launch-current.json"
+    },
+    {
+      "channel": "facebook",
+      "format": "story",
+      "status": "verified",
+      "verified_at": "2026-10-26",
+      "verified_operations": [
+        "draft"
+      ],
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/story-launch-current.json"
     }
   ],
   "lessons": [
@@ -116,6 +190,10 @@
     "clipboard-image-upload",
     "file-chooser-handoff",
     "document-upload-unverified",
-    "nullable-preview-clear"
+    "nullable-preview-clear",
+    "publishing-authority-split",
+    "schedule-full-payload",
+    "tiktok-photo-disclosure",
+    "facebook-native-check-held"
   ]
 }

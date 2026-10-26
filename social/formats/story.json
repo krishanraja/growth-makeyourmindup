@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "story",
+  "production_owner": "content-engine",
+  "production_reference": "https://github.com/krishanraja/content-engine/blob/main/docs/GROWTH-HANDOFF.md",
+  "channels": [
+    "instagram",
+    "facebook"
+  ],
+  "guide": "social/guides/buffer.md",
+  "min_assets": 1,
+  "max_assets": 1,
+  "delivery_checks": [
+    "Use accepted native Story artwork from Content Engine, not a feed crop.",
+    "Verify actual native presentation, one frame per post, sequence, account and continuation.",
+    "No invented interactive controls, illustration boilerplate or unsupported sticker assumptions.",
+    "Keep paired Meta outputs deduplicated; verify feed delivery before the continuation runs."
+  ],
+  "measurements": [
+    "Exposed first/last-frame reach, exits, replies and continuation taps; preserve unavailable values.",
+    "Compare relevant follower and attributable subscriber movement after actual delivery."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement"
+  ]
+}

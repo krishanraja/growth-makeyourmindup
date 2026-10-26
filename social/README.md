@@ -33,8 +33,11 @@ python growth.py social preflight .scratch/my-post/package.json
 
 The route command returns the narrow reading path, relevant learned rules,
 specific tested tool capability, remaining holds and mandatory live checks.
-Preflight verifies identity/context, format, production asset bytes and any
-stored exact-payload digest. It never authenticates approval or grants permission
+Preflight verifies identity/context, format, publication mode, production asset
+bytes and any stored exact-payload digest. Read docs/PUBLISHING-AUTHORITY.md:
+approved brand content and scoped X/TikTok have delegated cadence. LinkedIn
+remains an unscheduled draft for Krish's manual final publication.
+Preflight never authenticates approval or grants permission
 to publish. It has no network, write, schedule or publication capability.
 
 ## What is reusable and what must be refreshed

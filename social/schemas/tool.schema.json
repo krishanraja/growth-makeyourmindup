@@ -63,6 +63,18 @@
           "evidence_ref": {
             "type": "string",
             "minLength": 1
+          },
+          "verified_operations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "schedule",
+                "publish"
+              ]
+            },
+            "uniqueItems": true
           }
         },
         "required": [
@@ -70,7 +82,8 @@
           "format",
           "status",
           "verified_at",
-          "evidence_ref"
+          "evidence_ref",
+          "verified_operations"
         ],
         "additionalProperties": false
       },

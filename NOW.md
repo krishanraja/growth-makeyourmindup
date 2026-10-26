@@ -28,8 +28,8 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 Lifecycle: live. The detail is in `README.md`.
 
-The social operating system is structured under social/: six scoped channel
-profiles, five format delivery contracts, one Buffer tool profile, eleven
+The social operating system is structured under social/: seven scoped channel
+profiles, six format delivery contracts, one Buffer tool profile, dated
 evidence-linked lessons and five closed schemas. `growth.py social check`,
 `social route` and `social preflight` run offline without credentials or
 external writes. Routes reuse verified procedures and expose bounded
@@ -43,14 +43,28 @@ authorised distribution and measurement. Content-engine alone owns
 production and production standards for every format. Growth passes account
 context into its briefs rather than maintaining a parallel production canon.
 
-The first Grok Bot vs Muse experiment has two saved, unscheduled Buffer
-drafts: the full eight-card publication Instagram carousel and a personal
-LinkedIn post with its approved scorecard image. Both were independently
-reopened in Codex after saved-state readback. All eight uploaded images match
-the accepted source pixels; copy, alt text, image order and the full-test
-link were checked. Existing draft IDs were updated without duplicates.
-Neither post is scheduled or published. Exact payloads, proposed London slots
-and review evidence remain in ignored .scratch/channel-audit.
+The approved eight-card Grok Bot vs Muse carousel was scheduled on publication
+Instagram and Facebook for 26 October at 18:30 Europe/London. Both now read
+Sent with native links: Facebook at 18:30:57 and Instagram at 18:32:27. Both
+native posts were independently reopened with the correct account/caption/art.
+Six native Story drafts are saved (three per Meta channel), with creative
+approval but a technical hold: Instagram's account header overlaps frame 1's
+wordmark. The exact screenshot and producer fix are in the private closeout.
+LinkedIn remains unscheduled manual publication only. X/TikTok also remain
+saved drafts, but Krish's latest explicit ruling now permits approved content
+to be posted on them with the same gates as branded Instagram, preserving
+personal voice. All public illustration boilerplate was removed. The paid
+offer is unchanged. A tool refresh briefly removed the connector and cleared browser tabs. Buffer
+was restored signed in through the known Codex URL; connector access also
+returned. Reopen known URLs in Codex, never another browser.
+The structured registry now separates voice context from publication authority,
+and adds native Story delivery checks plus a public boilerplate guard.
+The full local suite passed 168 tests. Private state, all candidate assets,
+accepted hashes, journals and a zero-context handover are preserved on disk.
+Personal LinkedIn's goal is trust and relevant professional relationships,
+with no daily posting quota. Daily follower growth execution follows
+docs/FOLLOWER-GROWTH.md; new subscribers from useful organic sharing remains
+the publication North Star. See docs/SESSION-HANDOVER.md for continuation.
 
 Personal-account voice is now non-negotiable in docs/ACCOUNT-VOICE.md:
 sincere, warm, humble and pleased to share something useful. Publication
@@ -72,7 +86,7 @@ publication, follower growth or financial ROI.
 
 ## What is next and what is waiting on Krish
 
-- Merge the verified structured Growth operating contracts and Content Engine ownership changes, then prioritise Friday production. Exact publication approval for the two social drafts remains pending. Before go-live, capture available baselines and the North Star subscriber-by-source measure; retain unknown values. Then deliver the approved payloads, verify native publication and record follow-up at 24 hours, 72 hours and seven days.
+- This chat owns the carousel pilot and social amplification; Friday video production stays with its existing chat. Reconcile actual IG/FB delivery, repair and preview Story frame 1 through Content Engine, then execute the daily follower-growth job. Use the saved X/TikTok drafts under their newly delegated cadence; LinkedIn stays manual.
 - North Star check (2026-10-26): holds.
 
 ## Read next

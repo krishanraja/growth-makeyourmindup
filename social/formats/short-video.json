@@ -9,7 +9,8 @@
     "linkedin",
     "x",
     "tiktok",
-    "youtube"
+    "youtube",
+    "facebook"
   ],
   "guide": "social/guides/formats.md",
   "min_assets": 1,

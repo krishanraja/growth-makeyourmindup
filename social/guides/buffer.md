@@ -2,7 +2,9 @@
 
 Owner: Growth. Evidence baseline: 26 October 2026. Capability status and review
 interval live in `../tools/buffer.json`; do not duplicate a status table here.
-This procedure does not grant publication authority. Browser operations use
+Publication authority comes from docs/PUBLISHING-AUTHORITY.md. Approved branded
+content has delegated cadence; LinkedIn remains an unscheduled draft; scoped X/TikTok have delegated cadence.
+Browser operations use
 only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie export.
 
 ## Prepare and save an unscheduled draft
@@ -83,10 +85,45 @@ A subsequent intentional one-field correction to a fully verified save is a
 new journalled payload, not a blind retry. Retain the old payload and count.
 No delete/re-upload workaround, approval bypass or checkpoint advancement.
 
-## After exact go-live approval
+## Scheduling approved branded content
 
-Use the existing authorised delivery route with the exact account, text, media,
+For approved branded content, the current standing permission delegates timing;
+record it separately from creative approval. LinkedIn never enters this scheduling/publication procedure: Krish makes its final publication manually. X/TikTok are explicitly delegated for approved content.
+
+Use the authorised delivery route with the exact account, text, media,
 metadata and time. Do not infer permission from this guide or a boolean in a
 local file. Capture fresh available baselines first. A queued item proves only
 queue state; actual publication needs native post URL, correct account/content,
 working continuation and dated independent readback. Reconcile before retrying.
+
+On 26 October, scheduling-only `edit_post` with mode, dueAt and saveToDraft=false
+was rejected because text, media and Instagram type were required. Independent
+get_post proved the original draft unchanged. One retry with the complete
+accepted text, eight image/alt assets and Instagram metadata, plus
+`mode: customScheduled`, `schedulingType: automatic`, `saveToDraft: false` and
+the ISO dueAt succeeded. Reopened native Queue and get_post both showed the
+correct London time, scheduled state and unchanged accepted content. Use the
+complete validated payload for this route; preserve the two-attempt journal.
+
+TikTok photo drafts rejected isAiGenerated=true with an explicit unsupported
+photo-disclosure error. Readback proved the original unchanged; one retry
+omitted the unsupported field. The resulting draft saved, but no native AI
+label was applied. Krish subsequently prohibited public illustration
+boilerplate; that copy was removed and independently read back. Do not restore
+it as a workaround. Recheck supported native metadata before a live action.
+
+## Stories and paired Meta delivery
+
+One image per native Story post was accepted in the actual Facebook composer;
+selecting Story hides the text editor and disables further attachments. The
+known clipboard route can stage accepted images in an owned Post composer,
+then switch a single image to Story for preview. Preserve human unfinished
+work. Multiple DOM copies can be thumbnail/preview duplicates: deduplicate
+identical returned media URLs, not source files or Story frames.
+
+Use one-image payloads with instagram.type=story, shouldShareToFeed=false,
+or facebook.type=story. Verify each saved type, asset and account. A Story
+draft does not prove scheduling, delivery, music, polls or link stickers.
+Record only the operations actually verified. Follow up after feed delivery;
+do not route a Story to a missing/failed feed post. Keep IG/FB output paired,
+and reconcile native automatic sharing before creating a duplicate.
