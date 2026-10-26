@@ -40,9 +40,11 @@ other door. The eventual destination is the owned reader relationship.
 | Communities | Answer the actual question, disclose authorship when linking, follow local rules | useful answer; link only when welcome |
 | Partners | Named quote kit, guest offer, co-made asset and genuine recommendation | matched landing with a distinct placement |
 
-The content engine owns the publish-board captions, descriptions, scripts,
-articles and media production. Read published sources here. Add distribution
-assets without creating a second editorial pipeline. Existing-field browser
+Content-engine owns captions, scripts, articles, media production and all
+production standards. Growth chooses amplification opportunities and briefs
+the required native editions, then owns platform packaging, posting and
+distribution learning. Read docs/ENGINE-BOUNDARY.md; do not create a second
+editorial or rendering pipeline here. Existing-field browser
 repairs follow the scoped 2026-10-21 ruling in AGENTS.md and
 jobs/channel-audit.md. Other sends/publication remain behind their gates.
 No Notes, WhatsApp, paid boosts or automated outreach.

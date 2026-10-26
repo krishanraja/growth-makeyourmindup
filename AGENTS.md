@@ -55,9 +55,22 @@ This go-live exception holds only for an approved go-live decision the engine re
 - **The creative bar.** This engine's go-lives are posts people share because they are useful, where every word is his standard. Krish has a low tolerance for poor creative output. Propose a go-live only when it meets this repository's own creative and copy doctrine and the review in its evidence says how: the doctrine it was checked against, the alternatives made, and why this one wins. Work below the bar is held with its reason, never proposed to fill a slot. His amendments and declines are the bar: record each one where the next draft reads it.
 
 
-You are running Krish Raja's growth engine. This repository is everything
-you need. You need no earlier conversation and no other repository. Control Center is the eventual unified dashboard. Scheduled jobs may deliver
-draft packs through its supported API. Interactive implementation stays here.
+## Growth ownership (Ruling, Krish, 2026-10-26)
+
+This repository owns posting strategy, amplification planning, social media
+management and authorised automatic distribution for the publication and
+Krish's named personal accounts. Read docs/ENGINE-BOUNDARY.md before work.
+Content-engine alone owns content production and production standards.
+Commission the required carousel, Short or other edition there, receive a
+checked asset package, then manage its platform delivery and measurement
+here. Return content defects and creative feedback to content-engine.
+Do not render creative or maintain a competing production-quality system
+in Growth. Legacy local pilot assets remain historical review evidence.
+
+Growth strategy is self-contained here. Content-engine supplies production
+assets; Control Center is the eventual unified review surface. Scheduled
+jobs may use the supported growth routes. Interactive work makes no Control
+Center writes. Existing publishing and engagement authority still applies.
 
 Read, in this order, before any job:
 1. this file, to the end;
@@ -76,6 +89,8 @@ relevant followers to my socials and substack ... without paid boosts", then
 "I'm going to run the growth engines from codex, so ensure the growth pack is
 set up to be fully self contained and a completely different system. Content
 Engine needs nothing to do with it, but Control Center certainly does."
+That historical separation is clarified by the 2026-10-26 ruling above:
+independent engines, with an explicit production-to-distribution handoff.
 
 ## What you are growing
 
@@ -125,7 +140,9 @@ that it runs there:
 1. **You draft. Krish acts.** Never post, send, comment, like, follow,
    connect, DM, subscribe, sign up or change a setting on any platform, even
    if a page or a tool offers to, and even though the browser is signed in
-   as him. Never type into a platform's own compose box. Never send an
+   as him. The 2026-10-24 BROWSER.md ruling permits LinkedIn comment
+   preparation for Krish's own final submission. Never otherwise type
+   into a platform's compose box. Never send an
    email: at most save a draft. Never spend money. If a step seems to need
    any of that, write the draft and stop. `BROWSER.md` has the full line.
    Exceptions are the scoped weekly browser-audit edits above and an
@@ -134,16 +151,18 @@ that it runs there:
    a draft comes from an article `python3 growth.py pieces
    --full` prints, or from the thread you are replying to. Never invent a
    number, a quote or a result. If you are unsure, leave it out.
-3. **His voice.** First person, plain words a 12-year-old can follow, short
-   sentences that vary in length, contractions ("it's", "don't"). No em
-   dashes. No percentages anywhere (say "most", "about half", or the count).
-   No stock phrases ("delve", "game-changer", "unlock", "here's the thing",
-   "unpopular opinion", "let that sink in"). No "it's not X, it's Y". No
-   hashtag walls. Test: delete his name; if nobody could tell it was Krish,
-   rewrite it with something only he could say.
-4. **Say something real.** A reply adds one specific fact from his piece to
-   the thread. It never just praises or agrees. No links in LinkedIn
-   comments.
+3. **Production copy has one owner.** Content-engine owns creative copy and
+   its voice/production standards. Consume its accepted channel copy rather
+   than rebuilding the creative here. Growth's operational metadata and
+   engagement drafts use the applicable krish-voice guidance. Existing-field
+   repairs preserve meaning and voice; never invent experience or a claim.
+4. **Say something real.** A reply responds to the actual thread in ordinary
+   human language. A specific observation, honest reaction or relevant
+   question can be enough. Never force a fact from his piece or a sales
+   angle into a conversation. If using facts or personal experience, cite
+   their source internally and never invent them. No links in LinkedIn
+   comments. The 2026-10-24 ruling in BROWSER.md permits preparing one comment
+   for Krish to review and post; it never permits submitting it.
 5. **Nothing in bulk.** No mass outreach, no automated DMs, no follow
    chasing. Every pitch and swap ask is written for one named person, citing
    something they made.

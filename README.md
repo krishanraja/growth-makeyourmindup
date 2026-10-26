@@ -1,8 +1,12 @@
 # growth-makeyourmindup
 
-The independent growth engine for makeyourmindup. It finds
-useful distribution opportunities, preserves their evidence, tracks each
-placement, and fits the work into 20 minutes a day, 30 on Sunday. Krish
+The social media manager and distribution engine for makeyourmindup and
+Krish's named personal accounts. It owns posting strategy, amplification,
+authorised automatic posting, engagement preparation, live audits and
+channel performance. Content-engine owns production and all production
+standards. [The ownership and handoff contract](docs/ENGINE-BOUNDARY.md)
+keeps those responsibilities separate. Growth preserves evidence, tracks
+each placement and fits human review into 20 minutes a day, 30 on Sunday. Krish
 approves creative, positioning, bio and pinned-content changes. Weekly live
 browser audits may repair existing metadata and subscription links under
 the explicit scoped authority in AGENTS.md. Other publication stays gated.
