@@ -29,7 +29,7 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 Lifecycle: live. The detail is in `README.md`.
 
 The social operating system is structured under social/: seven scoped channel
-profiles, five format delivery contracts, one Buffer tool profile, dated
+profiles, six format delivery contracts, one Buffer tool profile, dated
 evidence-linked lessons and five closed schemas. `growth.py social check`,
 `social route` and `social preflight` run offline without credentials or
 external writes. Routes reuse verified procedures and expose bounded
