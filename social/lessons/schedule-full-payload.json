@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "schedule-full-payload",
+  "category": "tool",
+  "scope": [
+    "buffer",
+    "instagram"
+  ],
+  "status": "observed",
+  "finding": "Scheduling-only edit_post was rejected for missing text/media/Instagram type. Fresh get_post proved the original unchanged. One retry with the entire approved payload plus customScheduled, automatic, dueAt and saveToDraft=false persisted correctly.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/instagram-schedule-journal.json",
+    "observed_at": "2026-10-26",
+    "result": "Independent get_post and actual native Queue showed 18:30 London, eight accepted images and unchanged copy."
+  },
+  "revisit_when": "Provider schema or schedule behaviour changes.",
+  "supersedes": null
+}

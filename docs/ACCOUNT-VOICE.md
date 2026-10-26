@@ -49,4 +49,8 @@ more than the test establishes? Would it still sound human without emojis,
 hashtags or a compulsory engagement question? A failed answer holds the
 copy for revision. Review any cross-post separately in its account context.
 
-This rule does not widen posting, comment or account-setting authority.
+Publication authority is separate and governed by PUBLISHING-AUTHORITY.md:
+approved branded content plus scoped X and TikTok have delegated cadence;
+LinkedIn remains unscheduled drafts for Krish's manual publication. Personal LinkedIn has no
+volume quota or assumed publication-subscriber North Star. Comment and
+account-setting authority remains separate.

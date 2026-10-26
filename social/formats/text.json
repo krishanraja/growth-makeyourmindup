@@ -6,7 +6,8 @@
   "production_reference": "https://github.com/krishanraja/content-engine/blob/main/docs/GROWTH-HANDOFF.md",
   "channels": [
     "linkedin",
-    "x"
+    "x",
+    "facebook"
   ],
   "guide": "social/guides/formats.md",
   "min_assets": 0,

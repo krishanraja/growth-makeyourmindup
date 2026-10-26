@@ -17,6 +17,11 @@
   ],
   "lessons": [
     "revision-identity",
-    "growth-measurement"
-  ]
+    "growth-measurement",
+    "publishing-authority-split"
+  ],
+  "publication_mode": "approved_brand_content",
+  "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
+  "daily_posts_target": 1,
+  "daily_drafts_max": null
 }

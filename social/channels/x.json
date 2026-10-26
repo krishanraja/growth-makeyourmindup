@@ -20,6 +20,11 @@
   "lessons": [
     "revision-identity",
     "growth-measurement",
-    "personal-account-register"
-  ]
+    "personal-account-register",
+    "publishing-authority-split"
+  ],
+  "publication_mode": "approved_content_cadence",
+  "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
+  "daily_posts_target": 1,
+  "daily_drafts_max": null
 }

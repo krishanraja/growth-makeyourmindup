@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "facebook-native-check-held",
+  "category": "tool",
+  "scope": [
+    "buffer",
+    "facebook"
+  ],
+  "status": "observed",
+  "finding": "The actual Facebook Page showed Manage Page controls. Buffer saved an eight-image Page draft and independent get_post matched it; two Codex reopen attempts timed out. The edition stayed unscheduled pending native presentation readback.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/facebook-journal.json",
+    "observed_at": "2026-10-26",
+    "result": "Account ownership and backend draft are verified; native Buffer presentation and scheduling remain held. No login failure is inferred."
+  },
+  "revisit_when": "The browser connection responds after a known external refresh or session recovery.",
+  "supersedes": null
+}

@@ -12,7 +12,7 @@ from engine.social import ROOT, inventory, package_digest, preflight, route, val
 class SocialContractsTests(unittest.TestCase):
     def test_registry_and_known_channel_routes(self):
         records = inventory()
-        self.assertEqual(set(records['channel']), {'instagram', 'linkedin', 'x', 'tiktok', 'youtube', 'substack'})
+        self.assertEqual(set(records['channel']), {'instagram', 'facebook', 'linkedin', 'x', 'tiktok', 'youtube', 'substack'})
         ig = route('instagram', 'carousel', as_of='2026-10-26')
         self.assertEqual(ig['holds'], [])
         self.assertEqual(ig['channel']['account_context'], 'publication')
@@ -43,7 +43,7 @@ class SocialContractsTests(unittest.TestCase):
                 'assets': [{'path': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
                             'alt_text': 'Synthetic regression asset.'}],
                 'production': {'owner': 'content-engine', 'approved': True, 'evidence_ref': 'synthetic-only'},
-                'voice_review_passed': True, 'proposed_due_at': '2026-10-27T14:00:00+00:00',
+                'voice_review_passed': True, 'proposed_due_at': None,
                 'platform_metadata': {'ai_generated': None, 'share_to_feed': None,
                                       'post_type': None, 'link_preview_url': None},
                 'publication_approval': {'approved': False, 'payload_sha256': None, 'evidence_ref': None}}
@@ -76,6 +76,57 @@ class SocialContractsTests(unittest.TestCase):
                 p[field] = value
                 with self.assertRaises(ValueError):
                     preflight(p, '2026-10-26')
+
+    def test_personal_accounts_cannot_receive_a_scheduled_time(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self.fixture(Path(tmp) / 'asset.bin')
+            p['proposed_due_at'] = '2026-10-27T14:00:00+00:00'
+            with self.assertRaisesRegex(ValueError, 'remain unscheduled'):
+                preflight(p, '2026-10-26')
+            p['proposed_due_at'] = None
+            p['publication_approval'] = {'approved': True, 'payload_sha256': package_digest(p),
+                                        'evidence_ref': 'synthetic approval cannot widen authority'}
+            result = preflight(p, '2026-10-26')
+            self.assertIn('personal_account_human_final_publication_required', result['holds'])
+            self.assertFalse(result['publication_authorized'])
+
+    def test_approved_brand_content_has_delegated_cadence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self.fixture(Path(tmp) / 'asset.bin')
+            p.update(channel='instagram', account_url='https://www.instagram.com/makeyourmind.up',
+                     account_context='publication', proposed_due_at='2026-10-26T18:30:00+00:00')
+            result = preflight(p, '2026-10-26')
+            self.assertEqual(result['publication_mode'], 'approved_brand_content')
+            self.assertNotIn('exact_publication_approval_missing', result['holds'])
+            self.assertFalse(result['publication_authorized'])
+
+    def test_x_and_tiktok_have_explicit_delegated_cadence_but_personal_voice(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for channel, url, count in [('x', 'https://x.com/therealkrisho', 1),
+                                        ('tiktok', 'https://www.tiktok.com/@therealkrisho', 2)]:
+                p = self.fixture(Path(tmp) / 'asset.bin')
+                p.update(channel=channel, account_url=url, format='single-image' if count == 1 else 'carousel',
+                         proposed_due_at='2026-10-26T18:45:00+00:00')
+                if count == 2:
+                    p['assets'].append(copy.deepcopy(p['assets'][0]))
+                    p['assets'][1]['alt_text'] = 'Second frame in the synthetic test sequence.'
+                result = preflight(p, '2026-10-26')
+                self.assertEqual(result['publication_mode'], 'approved_content_cadence')
+                self.assertNotIn('personal_account_human_final_publication_required', result['holds'])
+                self.assertFalse(result['publication_authorized'])
+                self.assertEqual(route(channel, p['format'], as_of='2026-10-26')['channel']['account_context'], 'personal')
+
+    def test_public_illustration_boilerplate_is_rejected_without_banning_ai_topics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self.fixture(Path(tmp) / 'asset.bin')
+            for caption in ['The scorecard illustration was generated with AI.',
+                            'Scenes are AI-generated editorial illustrations.',
+                            'AI-generated illustrations.']:
+                p['caption'] = caption
+                with self.assertRaisesRegex(ValueError, 'boilerplate'):
+                    preflight(p, '2026-10-26')
+            p['caption'] = 'AI-generated music changes who gets paid.'
+            self.assertTrue(preflight(p, '2026-10-26')['structurally_valid'])
 
     def test_exact_approval_cannot_survive_caption_time_order_or_metadata_change(self):
         with tempfile.TemporaryDirectory() as tmp:

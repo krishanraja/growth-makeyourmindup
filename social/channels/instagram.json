@@ -8,7 +8,8 @@
   "formats": [
     "carousel",
     "single-image",
-    "short-video"
+    "short-video",
+    "story"
   ],
   "guide": "social/guides/instagram.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",
@@ -22,6 +23,13 @@
     "growth-measurement",
     "publication-register",
     "verified-image-carousel",
-    "save-oriented-caption"
-  ]
+    "save-oriented-caption",
+    "publishing-authority-split",
+    "schedule-full-payload",
+    "public-copy-and-stories"
+  ],
+  "publication_mode": "approved_brand_content",
+  "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
+  "daily_posts_target": 1,
+  "daily_drafts_max": null
 }

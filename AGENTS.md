@@ -78,6 +78,15 @@ This go-live exception holds only for an approved go-live decision the engine re
 
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 
+**Publishing authority: latest ruling, 26 October.** Read
+docs/PUBLISHING-AUTHORITY.md. Approved branded content may be packaged and
+posted at Growth's chosen cadence, aiming for one daily post per branded
+channel with an approved native edition. Approved X and TikTok content follows the same delegated cadence, while
+LinkedIn stays draft only. Never schedule or auto-post LinkedIn or unscoped personal
+LinkedIn, X or TikTok. X/TikTok may have one daily draft; LinkedIn has no
+volume quota. This supersedes older contradictory go-live rules below for
+these identities. Preserve all other account, spend and engagement boundaries.
+
 **Use structured operating contracts.** Start social execution at social/README.md
 and run `python growth.py social route CHANNEL FORMAT`. The channel, format,
 tool and evidence-linked lesson records own their respective instructions.

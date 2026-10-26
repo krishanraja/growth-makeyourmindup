@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "tiktok-photo-disclosure",
+  "category": "tool",
+  "scope": [
+    "buffer",
+    "tiktok"
+  ],
+  "status": "observed",
+  "finding": "TikTok photo draft save rejected isAiGenerated=true with \"TikTok photo posts do not support AI content disclosure.\" Independent readback proved the old six-image draft unchanged. One retry omitted that unsupported metadata field while retaining explicit AI-generated-illustrations wording. Later explicit user ruling prohibited public illustration boilerplate; that caption sentence was removed with independent readback. Do not restore it or claim a native label was applied.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/tiktok-personal-journal.json",
+    "observed_at": "2026-10-26",
+    "result": "Eight-image draft saved. Native metadata support remains unverified; approved X/TikTok cadence is now delegated separately from this historical save."
+  },
+  "revisit_when": "Native photo disclosure support or provider schema changes.",
+  "supersedes": null
+}

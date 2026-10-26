@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "public-copy-and-stories",
+  "category": "account",
+  "scope": [
+    "instagram",
+    "facebook",
+    "buffer"
+  ],
+  "status": "accepted",
+  "finding": "Never add public illustration-generation boilerplate. Coordinate branded IG/FB delivery, deduplicating native sharing. Plan Stories as native amplification; production remains in Content Engine. Native presentation is a release gate: the pilot preview exposed an account-header overlap invisible on standalone art.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "Krish rulings 26 October 2026; private native Story screenshot",
+    "observed_at": "2026-10-26",
+    "result": "Public boilerplate removed; paired feeds scheduled; six Story drafts preserved with layout hold."
+  },
+  "revisit_when": "Explicit user ruling or changed native capability.",
+  "supersedes": null
+}

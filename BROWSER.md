@@ -1,5 +1,11 @@
 # Browser access: inspect and make only authorised audit repairs
 
+The later 26 October ruling in docs/PUBLISHING-AUTHORITY.md also permits
+scheduling/publishing already approved branded content at Growth's cadence.
+LinkedIn remains unscheduled drafts for Krish's manual final click. Approved X and TikTok content has the same delegated cadence as branded Instagram; personal voice still applies.
+That specific exception supersedes the older blanket draft-only clauses below;
+all other browser, spending, account and engagement boundaries still apply.
+
 Krish runs this engine with a browser that is signed in to his channels. That
 lets a job read what only he can see: dashboards, his own feed, sources of
 subscribers. Most jobs remain read-only. The explicit 2026-10-21 weekly

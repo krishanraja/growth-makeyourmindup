@@ -100,6 +100,14 @@ def inventory(root=ROOT):
     for obj in result['channel'].values():
         local_ref(root, obj['guide'])
         local_ref(root, obj['voice_policy'])
+        local_ref(root, obj['authority_ref'])
+        expected_mode = ('approved_content_cadence' if obj['id'] in ('x', 'tiktok')
+                         else 'human_publish_only' if obj['account_context'] == 'personal'
+                         else 'approved_brand_content')
+        if obj['publication_mode'] != expected_mode:
+            raise ValueError('account context cannot expand publication authority')
+        if expected_mode == 'human_publish_only' and obj['daily_posts_target'] is not None:
+            raise ValueError('human-only accounts have no automatic posting quota')
         for name in obj['formats']:
             if name not in result['format'] or obj['id'] not in result['format'][name]['channels']:
                 raise ValueError('channel/format mismatch: ' + name)
@@ -123,6 +131,8 @@ def inventory(root=ROOT):
             keys.add(key)
             if cap['status'] == 'verified' and not cap['verified_at']:
                 raise ValueError('verified capability requires observation date')
+            if cap['status'] == 'verified' and not cap['verified_operations']:
+                raise ValueError('verified capability requires its specific tested operation')
     for obj in result['lesson'].values():
         if obj['status'] == 'accepted' and obj['evidence']['kind'] != 'user_ruling':
             raise ValueError('accepted rule needs a user ruling, not a performance inference')
@@ -154,7 +164,7 @@ def route(channel, format_id, tool='buffer', as_of=None, root=ROOT):
     lesson_ids = list(dict.fromkeys(c['lessons'] + f['lessons'] + t['lessons']))
     return {'local_only': True, 'publication_authorized': False,
             'channel': c, 'format': f, 'tool': t['id'],
-            'read': ['social/README.md', c['guide'], c['voice_policy'], f['guide'], t['guide']],
+            'read': ['social/README.md', c['guide'], c['voice_policy'], c['authority_ref'], f['guide'], t['guide']],
             'known_capability': caps[0] if caps else None,
             'live_checks': c['live_checks'] + t['always_live_checks'],
             'holds': holds, 'lessons': [records['lesson'][x] for x in lesson_ids
@@ -173,6 +183,10 @@ def preflight(package, as_of=None, root=ROOT):
     profile = decision['channel']
     if package['account_url'] != profile['account_url'] or package['account_context'] != profile['account_context']:
         raise ValueError('wrong account identity or speaking context')
+    if profile['publication_mode'] == 'human_publish_only' and package['proposed_due_at'] is not None:
+        raise ValueError('personal account packages must remain unscheduled for human publication')
+    if re.search(r'(?:illustrations?|artwork|scenes?|scorecard)\s+(?:(?:was|were|are|is)\s+)?(?:generated\s+(?:with|by)\s+AI|AI[- ]generated)|AI[- ]generated\s+(?:editorial\s+)?illustrations?', package['caption'], re.I):
+        raise ValueError('public illustration-disclaimer boilerplate is prohibited; retain private provenance and native metadata')
     if not package['voice_review_passed'] or not package['production']['approved']:
         raise ValueError('voice review and accepted production package are required')
     count = len(package['assets'])
@@ -189,11 +203,14 @@ def preflight(package, as_of=None, root=ROOT):
     if approval['approved'] and (approval['payload_sha256'] != digest or not approval['evidence_ref']):
         raise ValueError('publication approval does not bind this exact package')
     holds = list(decision['holds'])
-    if not approval['approved']:
+    if profile['publication_mode'] == 'human_publish_only':
+        holds.append('personal_account_human_final_publication_required')
+    if not approval['approved'] and profile['publication_mode'] == 'human_publish_only':
         holds.append('exact_publication_approval_missing')
     # Even a matching stored approval is not authenticated go-live permission.
     holds.append('live_identity_schema_and_authority_readback_required_before_external_action')
     return {'local_only': True, 'structurally_valid': True, 'publication_authorized': False,
+            'publication_mode': profile['publication_mode'],
             'package_id': package['id'], 'payload_sha256': digest, 'assets_checked': count,
             'holds': holds}
 

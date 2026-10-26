@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "publishing-authority-split",
+  "category": "account",
+  "scope": [
+    "instagram",
+    "facebook",
+    "youtube",
+    "substack",
+    "linkedin",
+    "x",
+    "tiktok"
+  ],
+  "status": "accepted",
+  "finding": "Latest ruling: approved content has delegated cadence on branded channels and scoped X/TikTok, preserving personal voice there. LinkedIn alone in current scope remains unscheduled human-publication drafts, prioritising trust and relevant professional relationships.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "User rulings, 26 October 2026",
+    "observed_at": "2026-10-26",
+    "result": "Latest scoped X/TikTok exception supersedes the earlier all-personal-drafts rule."
+  },
+  "revisit_when": "Krish explicitly changes the authority or personal North Star.",
+  "supersedes": null
+}

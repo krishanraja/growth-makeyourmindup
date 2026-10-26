@@ -67,6 +67,8 @@ format; it is not responsible for finding Growth's opportunities for it.
      insertion. Open and read actual posts; never invent candidate URLs.
    - Instagram: plan and commission carousel/Reel editions for a specific
      discovery or save/share goal and workable profile/Story continuation.
+   - Facebook branded Page: distribute an approved native edition after ownership,
+     presentation and continuation checks; keep it distinct from personal profiles.
    - TikTok: plan and commission photo/video editions for its audience;
      verify the account's real format and profile-link capabilities.
    - YouTube: commission native Shorts and their exact matching long-video
@@ -83,8 +85,14 @@ format; it is not responsible for finding Growth's opportunities for it.
    account, format, experiment identity, next step and review state. Use
    Buffer Save Draft only when the account and selected channels are proved.
    Independently reopen saved drafts, retain native IDs and exact readback.
-   Never count drafts as published. Never silently schedule or publish.
-   The user must approve the exact new go-live payload under AGENTS.md.
+   Never count drafts or scheduled posts as published. Apply the latest
+   docs/PUBLISHING-AUTHORITY.md: schedule/publish approved brand content at
+   Growth's cadence, aiming for one daily post per branded channel with an
+   accepted native edition. Record supply gaps rather than padding the queue.
+   LinkedIn remains unscheduled drafts; Krish publishes manually. Approved X/TikTok content follows delegated cadence with personal voice.
+   Personal X/TikTok may have one daily draft. LinkedIn has no volume quota,
+   and prioritises trusted judgment and relevant professional relationships;
+   reach and publication subscribers are secondary.
    Only the specified existing-field metadata repairs have standing authority.
    LinkedIn preparation never submits a comment, reaction, follow or message.
 6. Progress unfinished live audit ranges, recheck repairs and investigate

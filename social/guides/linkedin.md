@@ -29,4 +29,8 @@ Find actual relevant current posts and read them. Offer short contextual human
 responses; no forced sales insertion, fake experience, links or generic flattery.
 Follow `docs/ENGAGEMENT-LOOP.md` when available and BROWSER.md's preparation
 boundary. Preserve existing drafts. Krish performs the final Comment/Reply click.
-Posting this prepared asset remains behind its separate exact-payload gate.
+Posting this prepared asset is Krish's manual action. Keep it unscheduled;
+neither creative approval nor a prior go-live boolean permits auto-publication.
+There is no daily LinkedIn quota. His confirmed personal North Star is trusted commercial-AI judgment and
+relevant professional relationships first. Reach and publication subscribers
+are secondary; do not make the profile a volume-driven acquisition funnel.
