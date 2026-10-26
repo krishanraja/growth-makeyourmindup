@@ -41,8 +41,12 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    literal evidence, proposed copy/settings, owner, priority, estimated
    minutes, prerequisite and a success check. Access gaps are findings, not
    defects proven on a page you could not read. Queue the highest-impact
-   verified blocker within the shared 20-minute budget.
-7. Prepare/check and follow `AGENTS.md`. External profile/website/settings
+   verified blocker within the shared 20-minute budget. The voice rules
+   never inform this judging.
+7. Once the judging is done, write the proposed copy for each kept fix
+   under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`,
+   "His approved voice rules" in `AGENTS.md`): how it is written only,
+   never what it is about. Then prepare/check and follow `AGENTS.md`. External profile/website/settings
    changes and Control Centre UI work remain handoff items.
 8. Last, report to Control Center with this run's actual file names:
    `python growth.py cc finish --job conversion --envelope .scratch/conversion.json --queue .scratch/queue.json --deliver`.

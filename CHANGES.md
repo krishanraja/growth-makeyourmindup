@@ -1,5 +1,38 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-26: Control Center's daily directive (protocol 1.5.0, control-center
+  PR #561) now carries `taste`: the voice rules Krish approved or reworded in
+  Control Center. `growth.py cc start` prints them as a block headed
+  "KRISH'S APPROVED VOICE RULES" and keeps it in `.scratch/cc/voice-rules.txt`.
+  The drafting steps of every job (`AGENTS.md`, "His approved voice rules")
+  follow them for how a draft is written, never to choose what it is about.
+  They never feed `growth.py check`, a rubric, the breakout score, the queue
+  or the report. An empty list means none is approved yet and none is
+  invented; absent means they could not be read. The engine accepts any 1.x
+  directive; the report stays at 1.0.0.
+
+- 2026-10-21 (later): Krish: "surely you can leave notes in the growth
+  repos for those engines, do the makeyourmindup one yourself". The setup
+  he would otherwise do by hand is now an "Open setup" list at the top of
+  `AGENTS.md` for whichever session can do it: scheduling the ninth job,
+  and carrying each answer piece's question to AEO-Engine (the `answer`
+  job now prints it). The website half of the host checklist was applied
+  on www.makeyourmindup.ai in krishanraja/makeyourmindup#23; its status
+  is recorded in `docs/CHANNEL_PLAYBOOK.md`.
+
+- 2026-10-21: Krish asked, across his repositories, for a favicon, social
+  cards, a GEO and AEO strategy, AI crawler access and a recurring AEO
+  "blog" strategy visible to Google and AI (his request as relayed to this
+  session). This repository has no website, so the strategy and a host
+  checklist he applies himself went into `docs/CHANNEL_PLAYBOOK.md`
+  ("Search and AI answers: GEO and AEO"), with a pointer in `PLAYBOOK.md`.
+  A ninth job, `jobs/answer.md` (Saturday 09:00, kind `daily`), drafts one
+  answer-first piece a week from a real reader question and a published
+  piece; `check` enforces its shape and evidence. A planned
+  `answer-first-pieces` experiment and an `answer_piece` hook surface were
+  added. Nothing is published; the new scheduled task exists only after he
+  says "create the automations" again.
+
 - 2026-10-21: Krish approved making the two named recent articles free,
   correcting the About schedule and linking the Muse and Suno Shorts to
   their matching full videos. He then ruled: "disable for now but as we get

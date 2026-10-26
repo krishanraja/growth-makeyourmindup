@@ -40,6 +40,19 @@
       "sampling_note": "Six comparable observations is a review floor, not statistical power; set a power-based target when a baseline exists.",
       "start": null,
       "end": null
+    },
+    {
+      "experiment_id": "answer-first-pieces",
+      "status": "planned",
+      "hypothesis": "A weekly answer-first piece built on a real reader question can bring qualified visits from search and AI assistants to the matched article.",
+      "primary_metric": "visits",
+      "guardrail": "Subscriber quality, factual accuracy against the source piece, no duplicate pages for one question, and Krish time budget",
+      "decision_rule": "Compare referral visits from search and AI assistants to answered pieces against comparable unanswered pieces in matching windows; read AEO-Engine citations alongside; no causal claim from one citation.",
+      "owner": "Krish",
+      "minimum_observations": 6,
+      "sampling_note": "Six comparable observations is a review floor, not statistical power; set a power-based target when a baseline exists.",
+      "start": null,
+      "end": null
     }
   ]
 }

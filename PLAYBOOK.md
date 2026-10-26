@@ -15,7 +15,7 @@ Monday: follow.the.money. Wednesday: under.the.hood. Friday: mind.the.gap.
 | Precise promise | Make the benefit, reader and cadence clear at every entry | conversion |
 | Signature franchises | Extract a forwardable finding from a published piece | daily |
 | Conversion spine | Match the entry to a useful article, topic or start-here page, then subscribe | conversion |
-| Native discovery | Useful recommendations and platform-native continuation | swaps, daily |
+| Native discovery | Useful recommendations, platform-native continuation, answers search and AI assistants can cite | swaps, daily, answer |
 | Borrowed distribution | One relevant person, one useful offer, evidence of fit | pitches, partners, radar |
 | Word of mouth | Give a reader a specific reason to forward or refer | daily, conversion |
 | Learning | Observe comparable windows, test a hypothesis, review retention and effort | numbers, report |
@@ -82,9 +82,20 @@ a useful evergreen retrieval and a later call review. Each needs a distinct
 placement and a reason to exist. Recovery uses the next existing scheduled
 job. Do not add automatic posting or another scheduler.
 
+## Search and AI answers
+
+Readers increasingly meet a piece through a Google result or an AI
+assistant's answer before they meet Krish. The strategy, the host checklist
+Krish applies (crawler access, `llms.txt`, structured data, favicon, social
+cards) and the measurement are in `docs/CHANNEL_PLAYBOOK.md`, "Search and AI
+answers: GEO and AEO". The weekly `answer` job turns one real reader
+question and one published piece into an answer-first draft. Pages are the
+same for readers and crawlers: no cloaking, no hidden text, nothing written
+only for machines.
+
 ## Work allocation
 
-All eight jobs feed one daily queue. Budget: 20 estimated minutes in total,
+All nine jobs feed one daily queue. Budget: 20 estimated minutes in total,
 30 on Sunday. Priority 1 is highest; select a conversion blocker or useful
 live conversation before low-value repackaging. Expired replies, missing
 prerequisites, already handled work and excess effort are deferred with a

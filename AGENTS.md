@@ -8,8 +8,29 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Read it before any work, every session.
 - Before you start, say which part of it the task moves. If it moves nothing, say so first and let Krish decide.
 - Prefer the work that moves it furthest, and close by noting what moved.
+- Check the North Star number and its urgency (U1 to U5) on the first line under "Where it is right now" in `NOW.md`, and push at the intensity [the harness contract](https://github.com/krishanraja/ai-harness/blob/main/contract/north-star-metric.md) sets for that level. Update it whenever you can measure it; a number nobody measures is U4.
 - Only Krish changes it.
 <!-- north-star:end -->
+
+## Open setup: read before any other work
+
+Written 2026-10-21. Any session that can do one of these does it, then
+deletes its line here in the same commit. Leave a line in place if you
+cannot do it, and say why in one sentence at the end of your run.
+
+- **The ninth automation is not scheduled yet.** `automations.json` gained
+  "Growth: answer piece" (Saturdays 09:00 New York, `jobs/answer.md`) on
+  2026-10-21, after the other eight were created in Codex. A Codex session
+  that can create scheduled tasks runs steps 1, 2, 4 and 5 of "When Krish
+  says: create the automations" below for that one entry, updating rather
+  than duplicating. A session that cannot (the GitHub Actions runner, a
+  Claude session) reports it as a hold on Krish's list with reason
+  `automation_missing` and does not ask him to paste anything.
+- **The answer piece's question set.** Each answer piece's question also
+  belongs in AEO-Engine's question set (`krishanraja/AEO-Engine`), so the
+  fortnightly check measures whether it is cited. The `answer` job adds it
+  as a line in its final message; whoever next works in AEO-Engine commits
+  it there. Never run AEO-Engine from here.
 
 ## "Get going"
 
@@ -105,6 +126,10 @@ set up to be fully self contained and a completely different system. Content
 Engine needs nothing to do with it, but Control Center certainly does."
 That historical separation is clarified by the 2026-10-26 ruling above:
 independent engines, with an explicit production-to-distribution handoff.
+
+## Outreach belongs to Control Center (Ruling, Krish, 2026-10-21)
+
+Control Center's People tab (Guests, weighted 70 to this show) and Visibility already find, draft and track outreach to shows and guests, drafted from Jonny's mailbox. So this engine proposes posts and measures. It proposes no pitch, swap or partner note: `growth.py cc finish` holds that work with the reason "Control Center's People and Visibility own outreach to shows and guests". The Tuesday, Wednesday and Thursday jobs below may still prepare lists and research for Krish's own use, but nothing from them reaches his list. His list also shows one of this engine's asks at a time, a go-live first, then a check-in, then a plan, so never add a second ask of a kind that already waits.
 
 ## What you are growing
 
@@ -264,11 +289,24 @@ two steps; in short:
    amended): an approved plan is built up to go-live and proposed again as a
    go-live; only an approved go-live is taken live, by the go-live step
    ("Autonomy" above).
+
+   **His approved voice rules** (protocol 1.5.0). The directive may carry
+   `taste`: the voice rules Krish approved or reworded in Control Center.
+   `cc start` prints them as a block headed "KRISH'S APPROVED VOICE RULES"
+   and keeps the same block in `.scratch/cc/voice-rules.txt` for the
+   drafting step. Every draft in his name or for makeyourmindup follows
+   them for how it is written, alongside rule 3 below; where they disagree
+   on how to write, his approved rule wins, and rules 1, 2, 4, 5 and 6
+   still bind. They never choose what a draft is about. They never feed a
+   judge, a score, a rubric, the breakout score, the queue or
+   `growth.py check`: review and rank exactly as if they were not there.
+   An empty list means none is approved yet: never invent one. No block
+   ("Could not be read today") means unknown: draft to rule 3 as before.
 2. **Last, after the job's own checks:**
    `python growth.py cc finish --job KIND --envelope FILE --queue .scratch/queue.json --deliver`
    (the numbers job adds `--observations .scratch/observations.json`). It
    turns the selected drafts into proposals for Krish (posts and comments
-   behind the `post` wall, pitches and asks behind `send`, report
+   behind the `post` wall, pitches and asks held as Control Center's (above), report
    recommendations behind `strategy`, each with its exact words), deferred
    and blocked work into holds, reports with the run's stable id
    (`makeyourmindup:<New York date>:<kind>`), reads the report back by its
@@ -293,9 +331,10 @@ publication workspace".
 | Every day 06:00 | Numbers | `numbers` | `jobs/numbers.md` |
 | Every day 06:30 | Conversation radar | `radar` | `jobs/radar.md` |
 | Mon, Wed, Fri 13:30 (after the piece is out) | The day's pack | `daily` | `jobs/daily-pack.md` |
-| Tuesday 07:00 | Pitches | `pitches` | `jobs/pitches.md` |
-| Wednesday 07:00 | Partners | `partners` | `jobs/partners.md` |
-| Thursday 07:00 | Recommendations | `swaps` | `jobs/swaps.md` |
+| Tuesday 07:00 | Pitches (held: Control Center owns outreach) | `pitches` | `jobs/pitches.md` |
+| Wednesday 07:00 | Partners (held: Control Center owns outreach) | `partners` | `jobs/partners.md` |
+| Thursday 07:00 | Recommendations (held: Control Center owns outreach) | `swaps` | `jobs/swaps.md` |
+| Saturday 09:00 | The answer piece | `daily` | `jobs/answer.md` |
 | Saturday 12:00 London | Weekly live channel audit, then front door | `conversion` | `jobs/channel-audit.md` |
 | Sunday 07:00 | The weekly report | `report` | `jobs/report.md` |
 
@@ -327,7 +366,7 @@ this, in order, and nothing else:
    conversion into another local zone can drift around clock changes. If
    the scheduler cannot store the named zone, explain the limitation and
    arrange the required future adjustments; do not claim permanent parity.
-4. **Create the eight scheduled tasks** from `automations.json`, using
+4. **Create the nine scheduled tasks** from `automations.json`, using
    Codex's own scheduled tasks (a Codex chat can create and update them).
    For each entry:
    - name: the entry's `name`;
@@ -349,7 +388,7 @@ this, in order, and nothing else:
    as AGENTS.md says). Confirm it printed "stored in Control Center", then
    "readback digest matches" and "attempt succeeded" from its last step. Give
    Krish the link https://controlcenter.krishraja.com/#/growth?section=packs.
-7. **Finish** with one line: "8 automations live. First radar at 06:30
+7. **Finish** with one line: "9 automations live. First radar at 06:30
    tomorrow. Packs land in Control Center > Growth > Packs."
 
 If your Codex can't create scheduled tasks from a chat, say so in one line.
@@ -376,7 +415,10 @@ October 2026 (Krish, 2026-10-15: "happy with the fortnightly AI visiblity
 check"). Its results land in Control Center (`/api/aeo/*`, the growth view).
 The `report` job reads the latest result there on a week it ran and says
 which buyer questions makeyourmindup is missing from. Never run AEO-Engine from
-here: a run spends money and needs Krish's yes.
+here: a run spends money and needs Krish's yes. The strategy for being cited
+(answer-first pieces, the host checklist Krish applies, measurement) is in
+`docs/CHANNEL_PLAYBOOK.md`, "Search and AI answers: GEO and AEO"; the
+weekly `answer` job drafts one answer-first piece from a real question.
 
 ## Why it works this way
 
