@@ -17,10 +17,11 @@
       "format": "carousel",
       "status": "verified",
       "verified_at": "2026-10-26",
-      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md",
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md",
       "verified_operations": [
         "draft",
-        "schedule"
+        "schedule",
+        "publish"
       ]
     },
     {
@@ -76,10 +77,13 @@
     {
       "channel": "x",
       "format": "single-image",
-      "status": "unverified",
-      "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
-      "verified_operations": []
+      "status": "verified",
+      "verified_at": "2026-10-26",
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md",
+      "verified_operations": [
+        "draft",
+        "publish"
+      ]
     },
     {
       "channel": "x",
@@ -100,10 +104,13 @@
     {
       "channel": "tiktok",
       "format": "carousel",
-      "status": "unverified",
-      "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
-      "verified_operations": []
+      "status": "verified",
+      "verified_at": "2026-10-26",
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md",
+      "verified_operations": [
+        "draft",
+        "publish"
+      ]
     },
     {
       "channel": "tiktok",
@@ -134,10 +141,11 @@
       "format": "carousel",
       "status": "verified",
       "verified_at": "2026-10-26",
-      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/facebook-queue-current.png",
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md",
       "verified_operations": [
         "draft",
-        "schedule"
+        "schedule",
+        "publish"
       ]
     },
     {
@@ -170,9 +178,10 @@
       "status": "verified",
       "verified_at": "2026-10-26",
       "verified_operations": [
-        "draft"
+        "draft",
+        "publish"
       ],
-      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/story-launch-current.json"
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md"
     },
     {
       "channel": "facebook",
@@ -180,9 +189,10 @@
       "status": "verified",
       "verified_at": "2026-10-26",
       "verified_operations": [
-        "draft"
+        "draft",
+        "publish"
       ],
-      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/story-launch-current.json"
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md"
     }
   ],
   "lessons": [
@@ -194,6 +204,7 @@
     "publishing-authority-split",
     "schedule-full-payload",
     "tiktok-photo-disclosure",
-    "facebook-native-check-held"
+    "facebook-native-check-held",
+    "native-release-readback"
   ]
 }

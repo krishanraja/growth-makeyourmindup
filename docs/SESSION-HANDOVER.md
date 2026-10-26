@@ -2,6 +2,12 @@
 
 Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
+26 October closeout: the fresh manager owns both existing automations. Read
+the private pilot's `fresh-owner/CLOSEOUT.md` before acting: X/TikTok and all
+six Stories are now live. The first-frame repair is complete; the remaining
+Facebook final-frame small-wordmark overlay is recorded for future production.
+The historical first-run instructions below are not a reason to republish.
+
 ```text
 Take over daily social management and follower growth for makeyourmindup.
 Work from C:\Users\krish\dev\mindmake\growth-makeyourmindup, never the profile root.
@@ -70,8 +76,8 @@ merge completed engine changes after required checks, as already authorised.
 Do not re-interview Krish or ask again for approved cadence. Execute, show useful
 results, and raise only route-changing decisions or genuinely new access holds.
 
-Daily/weekly automations are still attached to the original social chat. If
-this new chat becomes the owner, inspect and UPDATE the existing automations'
-target to this chat through automation_update; preserve schedule and fields.
-Do not duplicate them or archive the original owner before continuity is verified.
+Daily/weekly automations were transferred to the fresh manager on 26 October.
+Read the private owner-transfer.json receipt, then verify current state if
+ownership changes again. Update the existing entries only; preserve schedules
+and fields. Never duplicate them or archive an owner before continuity is verified.
 ```

@@ -55,8 +55,8 @@ verifying the intended saved drafts. Reconcile draft counts to avoid duplicates.
 The pilot's eight uploaded PNGs matched accepted source pixels exactly after
 download through page media. No universal compression guarantee or image-count
 limit follows. PNG success does not prove PDF, video or another account's route.
-Do not target an OS-wide Open dialog without reliable window ownership. The
-failed chooser is dated evidence, not a permanent declaration of impossibility.
+Do not target an OS-wide Open dialog or native desktop app for this work.
+The current user boundary is Codex in-app browser only.
 
 ## Nullable preview clear
 
@@ -127,3 +127,11 @@ draft does not prove scheduling, delivery, music, polls or link stickers.
 Record only the operations actually verified. Follow up after feed delivery;
 do not route a Story to a missing/failed feed post. Keep IG/FB output paired,
 and reconcile native automatic sharing before creating a duplicate.
+
+The 26 October native release verified three ordered one-image Stories on
+each Meta account. Read back `sent` and each native URL before counting a
+release. The Instagram Link sticker switched Automatic to Notify Me in the
+actual composer; the test was not saved. Do not claim automatic link stickers.
+The approved continuation referred to the already-live carousel. Buffer preview
+did not reproduce Facebook's native AI-content overlay exactly; retain a
+native safe-area check for every frame, including small branding.

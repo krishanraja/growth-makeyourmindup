@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "native-release-readback",
+  "category": "tool",
+  "scope": ["buffer", "instagram", "facebook", "x", "tiktok"],
+  "status": "observed",
+  "finding": "Full shareNow payloads returned scheduled before sent. Existing X and TikTok drafts and six existing Meta Story drafts then published with native readback. Verify each destination and actual artwork; autoplay can move a screenshot to another item. Instagram Link sticker switched the composer to Notify Me and was not saved. Buffer preview did not exactly reproduce Facebook's AI-content overlay on the final Story's small wordmark.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md",
+    "observed_at": "2026-10-26",
+    "result": "X single-image, TikTok eight-photo and paired three-frame Meta Stories independently verified live. No automatic link-sticker claim, no duplicate feed posts, no subscriber-lift claim."
+  },
+  "revisit_when": "Provider schema or native overlays change; inspect each new edition before and after release.",
+  "supersedes": "facebook-native-check-held"
+}

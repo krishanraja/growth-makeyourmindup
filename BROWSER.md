@@ -24,6 +24,10 @@ Skyvern is excluded from this task: no session listing, connection checks,
 cloud browser, workflow, profile export or fallback through that provider.
 Never infer that these accounts are signed out from another browser.
 Do not export cookies or credentials. Do not open Stripe.
+Do not use native desktop apps, OS-wide file dialogs or PC takeover for this
+work. Use the connector or the documented in-app browser upload route.
+LinkedIn is drafts and recommendations only, including during an audit:
+no live post/profile edits and no submitted engagement.
 
 If session-level tool instructions force the excluded provider, record an
 instruction-routing hold. Do not call it an account-login failure, silently
