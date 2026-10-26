@@ -43,9 +43,11 @@ authorised distribution and measurement. Content-engine alone owns
 production and production standards for every format. Growth passes account
 context into its briefs rather than maintaining a parallel production canon.
 
-The approved eight-card Grok Bot vs Muse carousel is scheduled on publication
-Instagram and Facebook for 26 October at 18:30 Europe/London. Native queues
-and the connector proved scheduling; actual delivery remains to be checked.
+The approved eight-card Grok Bot vs Muse carousel was scheduled on publication
+Instagram and Facebook for 26 October at 18:30 Europe/London. Both now read
+Sent with native links: Facebook at 18:30:57 and Instagram at 18:32:27. The
+Instagram native post was independently reopened with the correct caption/art;
+Facebook native readback is being reconciled in the private current state.
 Six native Story drafts are saved (three per Meta channel), with creative
 approval but a technical hold: Instagram's account header overlaps frame 1's
 wordmark. The exact screenshot and producer fix are in the private closeout.
@@ -53,9 +55,9 @@ LinkedIn remains unscheduled manual publication only. X/TikTok also remain
 saved drafts, but Krish's latest explicit ruling now permits approved content
 to be posted on them with the same gates as branded Instagram, preserving
 personal voice. All public illustration boilerplate was removed. The paid
-offer is unchanged. A tool refresh removed the Buffer connector and cleared
-the browser tab inventory; this is an access/reconnection state, not proof of
-sign-out or failed delivery. Reopen known URLs in Codex, never another browser.
+offer is unchanged. A tool refresh briefly removed the connector and cleared browser tabs. Buffer
+was restored signed in through the known Codex URL; connector access also
+returned. Reopen known URLs in Codex, never another browser.
 The structured registry now separates voice context from publication authority,
 and adds native Story delivery checks plus a public boilerplate guard.
 The full local suite passed 168 tests. Private state, all candidate assets,
