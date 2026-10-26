@@ -18,7 +18,7 @@ from engine.core import (acquisition, calendar_date, canonical, identity, instan
 from engine.dry_run import run
 from engine.operations import (aggregate, daily_queue, experiment_decision,
                                relationship, validate_observation, yield_per_thousand)
-from engine.packs import check_pack, problems, seal, validate_envelope, wire_pack, x_weight
+from engine.packs import answer_piece_errors, check_pack, problems, seal, validate_envelope, wire_pack, x_weight
 
 ROOT = Path(__file__).resolve().parents[1]
 NOW = '2026-10-17T18:00:00Z'
@@ -261,6 +261,43 @@ class PackTests(unittest.TestCase):
         metadata[0]['expires_at'] = '2026-10-17T20:00:00Z'
         with self.assertRaisesRegex(ValueError, '12 hours'):
             seal(pack, evidence, metadata, NOW)
+
+    def test_answer_piece_fixture_prepares_and_checks(self):
+        source = read_json(ROOT / 'tests/fixtures/answer-input.json')
+        env = seal(source['pack'], source['evidence'], source['metadata'], NOW)
+        self.assertEqual(validate_envelope(env, NOW), env)
+        self.assertEqual(answer_piece_errors(source['pack']['items'][0]['text']), [])
+
+    def test_answer_piece_shape_is_enforced(self):
+        source = read_json(ROOT / 'tests/fixtures/answer-input.json')
+        text = source['pack']['items'][0]['text']
+        question, answer, rest = text.split('\n\n', 2)
+        link = rest.rsplit(' ', 1)[1]
+        for bad, reason in ((answer + '\n\n' + question + '\n\n' + rest, 'question'),
+                            (question + '\n\n' + ' '.join(['word'] * 61) + '\n\n' + rest, '60 words'),
+                            (question + '\n\n' + 'Did I answer?' + '\n\n' + rest, 'not ask'),
+                            (question + '\n\n' + answer + '\n\nNo link here.', 'links to the published piece')):
+            with self.subTest(reason=reason):
+                self.assertTrue(any(reason in e for e in answer_piece_errors(bad)))
+                pack = copy.deepcopy(source['pack'])
+                pack['items'][0]['text'] = bad
+                with self.assertRaises(ValueError):
+                    seal(pack, source['evidence'], source['metadata'], NOW)
+        self.assertIn('?utm_source=substack', link)
+
+    def test_answer_piece_needs_the_real_question_on_record(self):
+        source = read_json(ROOT / 'tests/fixtures/answer-input.json')
+        meta = copy.deepcopy(source['metadata'])
+        meta[0]['evidence_ids'] = [e['evidence_id'] for e in source['evidence'] if e['kind'] == 'published_piece']
+        with self.assertRaisesRegex(ValueError, 'real reader question'):
+            seal(source['pack'], source['evidence'], meta, NOW)
+
+    def test_answer_piece_is_a_substack_or_seo_draft(self):
+        source = read_json(ROOT / 'tests/fixtures/answer-input.json')
+        pack = copy.deepcopy(source['pack'])
+        pack['items'][0]['platform'] = 'linkedin'
+        with self.assertRaises(ValueError):
+            seal(pack, source['evidence'], source['metadata'], NOW)
 
     def test_v2_link_placement_must_match_metadata(self):
         pack, evidence, metadata = draft()
@@ -529,13 +566,13 @@ class RuntimeTests(unittest.TestCase):
                 clock.side_effect = lambda value=None: instant(value or NOW)
                 self.assertEqual(growth.main(['post', envelope]), 0)
 
-    def test_eight_existing_automations_preserved(self):
+    def test_nine_automations_one_per_job_file(self):
         config = read_json(ROOT / 'automations.json')
         self.assertEqual(config['timezone'], 'America/New_York')
-        self.assertEqual(len(config['automations']), 8)
-        self.assertEqual({r['job'] for r in config['automations']}, {
-            'jobs/' + name + '.md' for name in ('numbers', 'radar', 'daily-pack',
-                'pitches', 'partners', 'swaps', 'conversion', 'report')})
+        self.assertEqual(len(config['automations']), 9)
+        # Every job file is scheduled except channel-audit.md, which the conversion slot runs first.
+        self.assertEqual({r['job'] for r in config['automations']},
+                         {'jobs/' + p.name for p in (ROOT / 'jobs').glob('*.md') if p.name != 'channel-audit.md'})
         self.assertIn('jobs/channel-audit.md', (ROOT / 'jobs/conversion.md').read_text())
         conversion = next(r for r in config['automations'] if r['job'] == 'jobs/conversion.md')
         self.assertEqual(conversion['timezone'], 'Europe/London')

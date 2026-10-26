@@ -33,6 +33,10 @@ NO_SPEND = 'this engine has no spend authority, bought no boosts and does not re
 WALLS = {'daily': ('post', 'published'), 'radar': ('post', 'published'), 'conversion': ('post', 'applied'),
          'pitches': ('send', 'sent'), 'swaps': ('send', 'sent'), 'partners': ('send', 'sent'),
          'report': ('strategy', 'reviewed'), 'numbers': ('none', 'verified')}
+# Outreach to shows, guests, swaps and partners is Control Center's: People and Visibility
+# find, draft and track it (Ruling, Krish, 2026-10-21). That work is held, never proposed.
+CONTROL_CENTER_OWNS = frozenset({'pitches', 'swaps', 'partners'})
+OWNED_REASON = "Control Center's People and Visibility own outreach to shows and guests"
 COMPLETIONS = {'Published': 'published', 'Sent': 'sent', 'Applied': 'applied',
                'Verified': 'verified', 'Reviewed': 'reviewed'}
 NAMES = {'linkedin': 'LinkedIn', 'x': 'X', 'youtube': 'YouTube', 'tiktok': 'TikTok', 'seo': 'search',
@@ -329,6 +333,9 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
         if len(proposals) == 10:
             holds.append({'reason': 'Over the ten proposals one report carries', 'detail': item['item_id']})
             continue
+        if (item.get('pack_kind') or job) in CONTROL_CENTER_OWNS:
+            holds.append({'reason': OWNED_REASON, 'detail': item.get('item_id', '?') + ': open People in Control Center'})
+            continue
         try:
             proposals.append(item_proposal(item, job, evidence))
             minutes += item.get('minutes', 0)
@@ -400,6 +407,61 @@ def decisions_since(root, now):
         return instant(now) - dt.timedelta(days=7)
 
 
+VOICE_RULES_FILE = 'voice-rules.txt'
+VOICE_USE = ('Use them only for how anything you draft is written. Never use them to choose what it is about, '
+             'and never to judge, score, rank or check a draft: the review, the rubric scores, the breakout score, '
+             'the queue and growth.py check work exactly as if this block were not here.')
+
+
+def voice_rules(directive):
+    """Krish's approved voice rules from the directive (protocol 1.5.0 `taste`).
+
+    Returns (state, rule, rules). state is 'absent' when the directive carries
+    no readable taste (Control Center could not read them today, or speaks an
+    older 1.x), 'none' when the list is empty (none approved yet) and 'rules'
+    otherwise. Malformed entries are dropped, never repaired or invented.
+    These rules feed drafting only: nothing that judges, scores, ranks or
+    gates a draft (engine.packs, engine.operations, the report) reads them."""
+    body = directive.get('directive', {}) if isinstance(directive, dict) else {}
+    taste = body.get('taste') if isinstance(body, dict) else None
+    if not isinstance(taste, dict) or not isinstance(taste.get('approved_voice_rules'), list):
+        return 'absent', None, []
+    rule = taste.get('rule') if isinstance(taste.get('rule'), str) and taste['rule'].strip() else None
+    rules = []
+    for item in taste['approved_voice_rules']:
+        if not isinstance(item, dict) or not isinstance(item.get('rule'), str) or not item['rule'].strip():
+            continue
+        text = lambda key: item[key].strip() if isinstance(item.get(key), str) and item[key].strip() else None
+        rules.append({'layer': text('layer'), 'rule': item['rule'].strip(), 'his_words': text('his_words'),
+                      'what_it_means': text('what_it_means')})
+    return ('rules' if rules else 'none'), rule, rules
+
+
+def voice_block(directive):
+    """The labelled block a drafting step reads. Local only, never a public log."""
+    state, rule, rules = voice_rules(directive)
+    lines = ["KRISH'S APPROVED VOICE RULES (for drafting only; from today's directive)"]
+    if state == 'absent':
+        lines += ['  Could not be read today. Do not invent any: draft to the voice rules in AGENTS.md as before.']
+        return lines
+    lines.append('  ' + VOICE_USE)
+    if rule:
+        lines.append("  Control Center's rule: " + ' '.join(rule.split()))
+    if state == 'none':
+        lines.append('  None approved yet. Do not invent one: draft to the voice rules in AGENTS.md as before.')
+        return lines
+    lines.append('  Where one of these and AGENTS.md disagree on how to write, follow his approved rule;'
+                 ' the facts-only and no-action rules still bind.')
+    for number, item in enumerate(rules, 1):
+        lines.append('  ' + str(number) + '. ' + ('[' + item['layer'] + '] ' if item['layer'] else '') + ' '.join(item['rule'].split()))
+        if item['his_words']:
+            lines.append('     his words: "' + ' '.join(item['his_words'].split()) + '"')
+        if item['what_it_means']:
+            lines.append('     what it means: ' + ' '.join(item['what_it_means'].split()))
+    lines.append('END OF VOICE RULES')
+    return lines
+
+
 def describe(directive):
     """A short local summary of the directive. Never used on a public runner log."""
     body = directive.get('directive', {}) if isinstance(directive, dict) else {}
@@ -411,7 +473,7 @@ def describe(directive):
     for item in body.get('objectives', []):
         lines.append('objective ' + str(item.get('key')) + ': latest ' + str(item.get('latest')) + ' '
                      + str(item.get('unit')) + ', target ' + str(item.get('target')) + ', ' + str(item.get('availability')))
-    return lines
+    return lines + voice_block(directive)
 
 
 def summary(outcome, public=False, matched=None):
@@ -470,6 +532,9 @@ def cli(args, root, make_client, out=print, checks=None):
     job = args.job
     run_id = args.run_id or run_id_for(job, now)
     saved = state_path(root, job + '.state.json')
+    voice_file = state_path(root, VOICE_RULES_FILE)
+    if args.cc_cmd in ('start', 'run') and voice_file.exists():
+        voice_file.unlink()  # Never let yesterday's rules stand in for today's, even on a dry run.
 
     def build(directive):
         return workspace_report(job, run_id, clock(), _load_many(args.envelope),
@@ -495,12 +560,17 @@ def cli(args, root, make_client, out=print, checks=None):
             loop = Loop.resume(client, state, clock)
     if loop is None:
         loop = Loop(client, job, run_id, clock)
+        if voice_file.exists():
+            voice_file.unlink()  # A fresh start pulls today's rules.
         try:
             write_json(saved, loop.start())
         except ProtocolError as error:
             outcome = loop.end('failed', error.code)
             out(summary(outcome)[-1])
             return 1
+        # The drafting steps read this local, ignored file; nothing that checks,
+        # scores or queues a draft does.
+        voice_file.write_text('\n'.join(voice_block(loop.directive)) + '\n', encoding='utf-8')
         for line in describe(loop.directive):
             out(line)
         if args.cc_cmd == 'start':

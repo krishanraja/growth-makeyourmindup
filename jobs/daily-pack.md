@@ -19,7 +19,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    contain no facts. Do not infer them from titles.
 3. Choose distribution placements from `journeys.json`, using the reader's
    stage. Apply `knowledge/COPY-DOCTRINE.md` (lead by surface awareness,
-   headline grid against `hooks.json`, proof hierarchy). Draft a small candidate set, with one next action per placement:
+   headline grid against `hooks.json`, proof hierarchy). Draft a small candidate set, with one next action per placement.
+   Write it under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`, "His approved voice rules" in `AGENTS.md`): how it is written only, never what it is about, and never in a score or review.
    - LinkedIn: a useful first-person analysis, topic early, named stake,
      sourced finding and matched article link. A document outline is an
      optional once-weekly asset chosen from pieces already published. Do

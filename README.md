@@ -96,10 +96,12 @@ python growth.py cc runner
 
 ## Existing runtime
 
-There are still eight scheduled job definitions in `automations.json`.
-The weekly conversion slot now runs the channel audit at Saturday 12:00
-`Europe/London`; all other times are in `America/New_York`.
-Use the scheduler's named timezone so daylight-saving
+There are nine scheduled job definitions in `automations.json`. The ninth,
+the weekly answer piece, was added on 21 October 2026; Krish creates it in
+Codex by saying "create the automations" again, which updates the existing
+eight and adds the new one. The weekly conversion slot now runs the channel
+audit at Saturday 12:00 `Europe/London`; all other times are in
+`America/New_York`; use the scheduler's named timezone so daylight-saving
 changes follow New York, rather than storing a one-time local conversion.
 
 | Job | Time (New York unless stated) | Prompt |
@@ -110,6 +112,7 @@ changes follow New York, rather than storing a one-time local conversion.
 | Pitches | Tue 07:00 | `Run jobs/pitches.md as AGENTS.md says.` |
 | Partners | Wed 07:00 | `Run jobs/partners.md as AGENTS.md says.` |
 | Recommendations | Thu 07:00 | `Run jobs/swaps.md as AGENTS.md says.` |
+| Answer piece | Sat 09:00 | `Run jobs/answer.md as AGENTS.md says.` |
 | Weekly channel audit / front door | Sat 12:00 Europe/London | `Run jobs/conversion.md as AGENTS.md says, starting with jobs/channel-audit.md.` |
 | Report | Sun 07:00 | `Run jobs/report.md as AGENTS.md says.` |
 

@@ -78,6 +78,14 @@ python growth.py prepare tests/fixtures/prepare-input.json --out .scratch/exampl
 python growth.py check .scratch/example.json --now 2026-10-17T18:00:00Z
 ```
 
+An answer piece (`placement: "answer-piece"`, platform `substack` or
+`seo`, from `jobs/answer.md`) has extra checks at `prepare` and `check`:
+the reader's question alone on the first line ending in `?`, then an answer
+of at most 60 words that does not end in a question, and a link to an own
+host. Its evidence must include the `published_piece` and the record of the
+real question (`source_thread`, `dashboard` or `audit`).
+`tests/fixtures/answer-input.json` is a labelled synthetic example.
+
 ## Discovery and delayed publications
 
 `pieces` reads the public RSS feed, preserving published time, New York
@@ -226,13 +234,24 @@ terminal attempt (`succeeded`, or `failed` with a lower_snake code).
 
 | Command | What it does |
 |---|---|
-| `growth.py cc start --job KIND --deliver` | Journal the start, pull and print the directive, keep the attempt in `.scratch/cc/KIND.state.json` |
+| `growth.py cc start --job KIND --deliver` | Journal the start, pull and print the directive, keep the attempt in `.scratch/cc/KIND.state.json` and Krish's approved voice rules (protocol 1.5.0 `taste`) in `.scratch/cc/voice-rules.txt` for drafting only |
 | `growth.py cc finish --job KIND --envelope F --queue F [--observations F]... [--completions F] --deliver` | Build the report from the job's files, report, read back, read decisions, journal the end |
 | `growth.py cc run --job KIND ... --deliver` | Both in one call |
 | `growth.py cc runner --deliver` | The GitHub runner's loop (below) |
 
 Without `--deliver` nothing reads the key or calls the network: `finish`
 writes the report it would send to `.scratch/cc/report-KIND.json`.
+
+**The directive's version.** The client accepts any 1.x directive and
+ignores fields it does not know; it never checks `schema_version`. From
+1.5.0 the directive may carry `taste`, Krish's approved voice rules.
+`engine/cc_loop.py` (`voice_rules`, `voice_block`) turns them into one
+labelled block for the drafting steps: how a draft is written, never what
+it is about. Absent `taste` prints "Could not be read today"; an empty
+list prints "None approved yet" and nothing is invented. Nothing that
+checks, scores, queues or reports a draft reads them, and the GitHub
+runner never prints them. The report stays at 1.0.0: 1.5.0 adds nothing
+to it.
 
 **Identity.** Slug `makeyourmindup`, `engine_id` `growth-makeyourmindup`,
 `product_slug` `publication`. `run_id` is `makeyourmindup:<New York
