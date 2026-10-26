@@ -62,7 +62,7 @@ The full local suite passed 168 tests. Private state, all candidate assets,
 accepted hashes, journals and a zero-context handover are preserved on disk.
 Personal LinkedIn's goal is trust and relevant professional relationships,
 with no daily posting quota. Daily follower growth execution follows
-jobs/follower-growth.md; new subscribers from useful organic sharing remains
+docs/FOLLOWER-GROWTH.md; new subscribers from useful organic sharing remains
 the publication North Star. See docs/SESSION-HANDOVER.md for continuation.
 
 Personal-account voice is now non-negotiable in docs/ACCOUNT-VOICE.md:

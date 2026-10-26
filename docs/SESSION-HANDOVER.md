@@ -7,7 +7,7 @@ Take over daily social management and follower growth for makeyourmindup.
 Work from C:\Users\krish\dev\mindmake\growth-makeyourmindup, never the profile root.
 Read AGENTS.md, NOW.md, BROWSER.md, docs/NORTH_STAR.md,
 docs/PUBLISHING-AUTHORITY.md, docs/ACCOUNT-VOICE.md, social/README.md,
-jobs/daily-growth.md and jobs/follower-growth.md. Apply the canonical harness.
+jobs/daily-growth.md and docs/FOLLOWER-GROWTH.md. Apply the canonical harness.
 
 Then read the PRIVATE operational handover:
 .scratch/channel-audit/first-carousel-experiment-20261026/CURRENT-STATE.md
@@ -54,7 +54,7 @@ newly delegated cadence; reuse them rather than create duplicates. LinkedIn's
 saved scorecard draft stays for Krish's review/manual publication. Check every
 exact asset/order/alt/caption, current capability and approval before action.
 
-After reconciling the pilot, execute jobs/follower-growth.md relentlessly:
+After reconciling the pilot, execute docs/FOLLOWER-GROWTH.md relentlessly:
 baseline each channel; maintain approved daily supply; use channel-native
 hooks/Stories/search/continuation; bring useful LinkedIn engagement suggestions;
 measure follower and attributable subscriber changes; learn and improve daily.
