@@ -45,9 +45,8 @@ context into its briefs rather than maintaining a parallel production canon.
 
 The approved eight-card Grok Bot vs Muse carousel was scheduled on publication
 Instagram and Facebook for 26 October at 18:30 Europe/London. Both now read
-Sent with native links: Facebook at 18:30:57 and Instagram at 18:32:27. The
-Instagram native post was independently reopened with the correct caption/art;
-Facebook native readback is being reconciled in the private current state.
+Sent with native links: Facebook at 18:30:57 and Instagram at 18:32:27. Both
+native posts were independently reopened with the correct account/caption/art.
 Six native Story drafts are saved (three per Meta channel), with creative
 approval but a technical hold: Instagram's account header overlaps frame 1's
 wordmark. The exact screenshot and producer fix are in the private closeout.
