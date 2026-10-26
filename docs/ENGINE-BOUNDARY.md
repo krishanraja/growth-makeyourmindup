@@ -61,6 +61,10 @@ feedback improves content-engine; channel results improve Growth's strategy.
 
 ## Source to distribution
 
+Growth's typed channel/format/tool contracts are indexed at social/README.md.
+They govern destination fit, package identity, operation and distribution
+learning. They reference production standards without reproducing them.
+
 1. Growth identifies the published article/video and canonical identity.
 2. Growth briefs content-engine: source links, audience and starting context,
    goal, accounts, native formats, number of editions, timing, experiment,

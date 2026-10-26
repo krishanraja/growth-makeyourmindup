@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "publication-register",
+  "category": "account",
+  "scope": [
+    "instagram"
+  ],
+  "status": "accepted",
+  "finding": "Publication Instagram retains its editorial register; the personal-sharing register does not apply. Production standards still belong to content-engine.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "User ruling, 26 October 2026",
+    "observed_at": "2026-10-26",
+    "result": "Separate account context is explicit."
+  },
+  "revisit_when": "Account ownership or Krish changes the rule.",
+  "supersedes": null
+}

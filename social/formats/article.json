@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "article",
+  "production_owner": "content-engine",
+  "production_reference": "https://github.com/krishanraja/content-engine/blob/main/docs/GROWTH-HANDOFF.md",
+  "channels": [
+    "substack"
+  ],
+  "guide": "social/guides/formats.md",
+  "min_assets": 0,
+  "max_assets": 0,
+  "delivery_checks": [
+    "Audit free subscription and related-reading journeys live.",
+    "Body edits and the live paid offer retain their separate approval boundaries.",
+    "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Dated exposed reach and meaningful engagement, preserving missing values.",
+    "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
+    "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement"
+  ]
+}

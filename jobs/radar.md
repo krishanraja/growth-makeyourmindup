@@ -6,20 +6,30 @@ shares the global daily budget; there is no comment-volume target.
 First, before reading any source: `python growth.py cc start --job radar --deliver`.
 Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
 
-1. Read published pieces from the last 21 days and the partner lists. Use
+1. Read docs/ENGAGEMENT-LOOP.md, published pieces from the last 21 days and
+   the partner lists. Use
    the signed-in browser read-only when available. Find a few live threads
-   less than 12 hours old where a particular sourced finding answers the
-   actual question. Check LinkedIn, X, relevant YouTube/Substack discussions
+   less than 12 hours old where Krish can contribute naturally to the
+   actual conversation. A sourced finding is useful when relevant; a
+   specific observation or question can stand on its own. Check LinkedIn,
+   X, relevant YouTube/Substack discussions
    and communities whose rules permit the contribution. Skip blocked access.
 2. Save the thread URL, author, creation time, literal excerpt, observation
    time and any community rule. Cite the published piece as well when adding
    its facts. Never use follower estimates as evidence of quality. Rank by
    fit, usefulness, freshness and a genuine partner relationship.
-3. Draft at most five candidates, each at most 60 words. Add something
-   specific: one sourced fact that answers the thread, the small Secret
-   lead in `knowledge/COPY-DOCTRINE.md`. No flattery-only replies, invented experience or unwanted tags.
-   Write each draft under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`, "His approved voice rules" in `AGENTS.md`): how it is written only, never what it is about.
-   Then, as a separate pass, score each draft on the short rubric. The voice rules never inform the score.
+3. Draft at most five candidates, each at most 60 words. Prioritise three
+   LinkedIn candidates in the proposed daily review pack. Default to one
+   or two short sentences, with an optional question when genuinely useful.
+   Do not force a content hook, published fact, product mention or sales
+   angle. Use the thread as evidence for contextual reactions and questions;
+   cite a published piece internally when using its facts. Never fabricate
+   references to satisfy a validator. No generic flattery, invented
+   experience or unwanted tags.
+   Apply docs/ACCOUNT-VOICE.md and Krish's approved voice rules
+   (`.scratch/cc/voice-rules.txt`, "His approved voice rules" in AGENTS.md)
+   to how the draft is written, never what it is about. Score separately
+   on the short rubric; voice rules never inform the score.
    LinkedIn comments have no links, even when `kind_hint` is absent. On
    Reddit, disclose authorship if linking and follow the particular rules.
 4. Set `kind_hint: comment` for LinkedIn. Give every candidate `expires_at`

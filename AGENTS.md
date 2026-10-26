@@ -78,6 +78,13 @@ This go-live exception holds only for an approved go-live decision the engine re
 
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 
+**Use structured operating contracts.** Start social execution at social/README.md
+and run `python growth.py social route CHANNEL FORMAT`. The channel, format,
+tool and evidence-linked lesson records own their respective instructions.
+Reuse verified procedures; recheck only a named changed/unknown capability
+plus mandatory live identity/schema/authority checks. Capture consequential
+results in the owning record, not as another general instruction here.
+
 **Personal-account voice is non-negotiable.** Read docs/ACCOUNT-VOICE.md
 before preparing anything for Krish's personal accounts. Be sincere, warm,
 humble and pleased to share something useful, especially on LinkedIn.

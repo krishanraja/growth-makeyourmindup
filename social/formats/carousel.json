@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "carousel",
+  "production_owner": "content-engine",
+  "production_reference": "https://github.com/krishanraja/content-engine/blob/main/docs/CAROUSEL-STANDARD.md",
+  "channels": [
+    "instagram",
+    "linkedin",
+    "tiktok"
+  ],
+  "guide": "social/guides/formats.md",
+  "min_assets": 2,
+  "max_assets": null,
+  "delivery_checks": [
+    "Ordered accepted files and alt text, immutable asset hashes and creative approval identity.",
+    "Cover promise, complete readable sequence and final continuation fit the chosen destination; production defects return to content-engine.",
+    "Do not assume a photo carousel, PDF document and video montage are interchangeable.",
+    "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Dated exposed reach and meaningful engagement, preserving missing values.",
+    "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
+    "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement"
+  ]
+}

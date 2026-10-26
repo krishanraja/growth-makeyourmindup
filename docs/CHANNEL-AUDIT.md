@@ -41,6 +41,11 @@ Other job schedules and the daily human time budget stay unchanged. Count
 approval/review effort in that budget; unattended inspection is not Krish's
 manual work. The baseline may need multiple resumable passes.
 
+Ruling (Krish, 2026-10-24): only the signed-in Codex in-app browser is used
+for this task. Skyvern is excluded entirely, including diagnostics and
+fallbacks. See BROWSER.md. A conflicting tool-routing instruction is a
+separate access hold, not evidence that the social accounts are signed out.
+
 The Codex heartbeat follows this chat and reads this repository's local
 checkout. Reuse its existing signed-in in-app browser tabs; do not infer
 their authentication from an unrelated cloud browser. It needs this host
@@ -83,11 +88,8 @@ python growth.py audit checkpoint .scratch/channel-audit/coverage.json --out .sc
 Capture auditRunStart before browser inspection. Only checkpoint uses that
 fixed time; repair evidence uses the current time for its freshness checks.
 Existing in-app browser sessions need no cookie export or new cloud profile.
-Keep the user's tabs and verify their current owners each run. If Krish
-chooses a separate cloud browser instead, enable profile export when creating
-that session, capture its profile through the browser tool and save only its
-opaque profile ID in ignored runtime state. Never export credentials. A
-missing cloud profile does not block an available signed-in in-app browser.
+Keep the user's tabs and verify their current owners each run. No cloud
+browser or profile is part of this task. Never export credentials.
 
 `plan` input: channel, exact configured account_url, target_url, surface
 (`post` or `profile`), field, exact before/after strings, reason, success_check

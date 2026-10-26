@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "kind": "tool",
+  "id": "buffer",
+  "guide": "social/guides/buffer.md",
+  "recheck_after_days": 7,
+  "always_live_checks": [
+    "Verify get_account, organization and channel identity; never copy a historical ID blindly.",
+    "Inspect the current tool schema and current saved draft before a mutation.",
+    "Keep saveToDraft=true and dueAt absent/null for draft preparation; default queue behaviour is not draft authority.",
+    "Publication/scheduling needs the exact approved payload and the authorised go-live route.",
+    "Independently reopen native saved state in Codex; API success alone is insufficient."
+  ],
+  "capabilities": [
+    {
+      "channel": "instagram",
+      "format": "carousel",
+      "status": "verified",
+      "verified_at": "2026-10-26",
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md"
+    },
+    {
+      "channel": "instagram",
+      "format": "single-image",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "instagram",
+      "format": "short-video",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "linkedin",
+      "format": "carousel",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "linkedin",
+      "format": "single-image",
+      "status": "verified",
+      "verified_at": "2026-10-26",
+      "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md"
+    },
+    {
+      "channel": "linkedin",
+      "format": "text",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "linkedin",
+      "format": "short-video",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "x",
+      "format": "single-image",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "x",
+      "format": "text",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "x",
+      "format": "short-video",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "tiktok",
+      "format": "carousel",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "tiktok",
+      "format": "short-video",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "youtube",
+      "format": "short-video",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    },
+    {
+      "channel": "substack",
+      "format": "article",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check."
+    }
+  ],
+  "lessons": [
+    "revision-identity",
+    "clipboard-image-upload",
+    "file-chooser-handoff",
+    "document-upload-unverified",
+    "nullable-preview-clear"
+  ]
+}

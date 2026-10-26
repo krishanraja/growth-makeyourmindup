@@ -8,8 +8,10 @@ of 2026-10-21 supersedes older blanket read-only rules for this job only.
 1. Reuse the user's already-open signed-in Codex in-app browser tabs when
    present. Discover them with the in-app browser tool and bind the actual
    tabs; a separate Skyvern cloud session does not share their sign-ins.
-   Do not ask for another login based on a different browser's state. Use
-   a new cloud session only when no suitable existing browser is available.
+   Do not ask for another login based on a different browser's state.
+   Skyvern is excluded entirely under the 2026-10-24 ruling. Never create
+   a separate cloud session. If the current tool routing prevents using
+   the Codex browser, preserve coverage and report that exact hold.
    Verify the active account and ownership in the edit UI. Public
    viewing is not edit access. A login wall, connection error, missing
    permission or unsupported editor is a hold, not an empty successful audit.

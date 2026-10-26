@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "type": "integer"
+    },
+    "kind": {
+      "const": "channel",
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "account_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "account_context": {
+      "type": "string",
+      "enum": [
+        "personal",
+        "publication"
+      ]
+    },
+    "mission": {
+      "type": "string",
+      "minLength": 1
+    },
+    "formats": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "guide": {
+      "type": "string",
+      "minLength": 1
+    },
+    "voice_policy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "live_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "lessons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "account_url",
+    "account_context",
+    "mission",
+    "formats",
+    "guide",
+    "voice_policy",
+    "live_checks",
+    "lessons"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "verified-image-carousel",
+  "category": "tool",
+  "scope": [
+    "buffer",
+    "instagram",
+    "carousel"
+  ],
+  "status": "observed",
+  "finding": "The accepted eight-image sequence, alt text and AI-generated media metadata saved as an unscheduled Instagram draft. Reopened native state and all downloaded image pixels matched the originals.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/upload-pixel-verification.json",
+    "observed_at": "2026-10-26",
+    "result": "Eight images verified; this is not a universal media limit or evidence for other formats."
+  },
+  "revisit_when": "Tool schema, upload transform, account capabilities or native result changes.",
+  "supersedes": null
+}
