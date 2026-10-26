@@ -77,8 +77,9 @@ Instagram retains its editorial voice. BROWSER.md covers supported draft
 operations and preserves the separate publication approval gate.
 
 The channel audit remains partial; incomplete account windows and checkpoints
-stay open in private evidence. The Substack typo reads "I put" in its saved
-editor and rendered paragraph; no further Save was needed. The live paid
+stay open in private evidence. An earlier saved-editor check read "I put";
+the current linked video page renders "Iput", so the surfaces need reconciling
+before claiming that typo fixed everywhere. No new body save was made. The live paid
 offer is unchanged. Use only the signed-in Codex browser; never Skyvern,
 Chrome, cookie export or Stripe. Daily work and trial observations are
 recorded privately; scheduled wakeups and prepared drafts are not proof of
