@@ -28,6 +28,16 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 Lifecycle: live. The detail is in `README.md`.
 
+The social operating system is structured under social/: six scoped channel
+profiles, five format delivery contracts, one Buffer tool profile, eleven
+evidence-linked lessons and five closed schemas. `growth.py social check`,
+`social route` and `social preflight` run offline without credentials or
+external writes. Routes reuse verified procedures and expose bounded
+capability rechecks; preflight verifies exact package identity and asset
+bytes without authenticating approval or granting publication authority.
+Content-engine retains all creative production standards. Lessons distinguish
+accepted user rules, observed tool behaviour and untested growth hypotheses.
+
 Growth owns amplification ideas, channel strategy, social management,
 authorised distribution and measurement. Content-engine alone owns
 production and production standards for every format. Growth passes account
@@ -62,7 +72,7 @@ publication, follower growth or financial ROI.
 
 ## What is next and what is waiting on Krish
 
-- Obtain exact publication approval for the two verified drafts and their proposed London slots. Before go-live, capture available baselines and the North Star subscriber-by-source measure; retain unknown values. Then deliver the approved payloads, verify native publication and record follow-up at 24 hours, 72 hours and seven days.
+- Merge the verified structured Growth operating contracts and Content Engine ownership changes, then prioritise Friday production. Exact publication approval for the two social drafts remains pending. Before go-live, capture available baselines and the North Star subscriber-by-source measure; retain unknown values. Then deliver the approved payloads, verify native publication and record follow-up at 24 hours, 72 hours and seven days.
 - North Star check (2026-10-26): holds.
 
 ## Read next

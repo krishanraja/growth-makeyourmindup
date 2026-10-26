@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "kind": "channel",
+  "id": "x",
+  "account_url": "https://x.com/therealkrisho",
+  "account_context": "personal",
+  "mission": "Contribute a concrete sourced finding and relevant conversation in a native compact edition.",
+  "formats": [
+    "single-image",
+    "text",
+    "short-video"
+  ],
+  "guide": "social/guides/other-channels.md",
+  "voice_policy": "docs/ACCOUNT-VOICE.md",
+  "live_checks": [
+    "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
+    "Read current queue, drafts and native identities; preserve existing human work.",
+    "Verify the exact destination, visibility and available account capabilities before the selected action."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "personal-account-register"
+  ]
+}

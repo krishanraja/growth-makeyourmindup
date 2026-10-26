@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "revision-identity",
+  "category": "tool",
+  "scope": [
+    "buffer"
+  ],
+  "status": "observed",
+  "finding": "A saved draft ID can hold a new approved revision. Match current text and ordered asset hashes to approval; an old rejected revision does not permanently reject the draft ID.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/preimage-0.json",
+    "observed_at": "2026-10-26",
+    "result": "Existing rejected six-image Instagram draft was updated to the accepted eight-image revision, with original state preserved."
+  },
+  "revisit_when": "Draft contents, approval or account changes.",
+  "supersedes": null
+}

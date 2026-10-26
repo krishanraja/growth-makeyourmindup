@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "kind": "channel",
+  "id": "linkedin",
+  "account_url": "https://www.linkedin.com/in/krish-raja/",
+  "account_context": "personal",
+  "mission": "Share useful tested findings warmly with relevant professional readers; prepare human engagement for the final human click.",
+  "formats": [
+    "carousel",
+    "single-image",
+    "text",
+    "short-video"
+  ],
+  "guide": "social/guides/linkedin.md",
+  "voice_policy": "docs/ACCOUNT-VOICE.md",
+  "live_checks": [
+    "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
+    "Read current queue, drafts and native identities; preserve existing human work.",
+    "Verify the exact destination, visibility and available account capabilities before the selected action."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "personal-account-register",
+    "linkedin-scorecard-edition",
+    "document-upload-unverified",
+    "nullable-preview-clear"
+  ]
+}

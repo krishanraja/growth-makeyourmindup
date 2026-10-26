@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "kind": "channel",
+  "id": "tiktok",
+  "account_url": "https://www.tiktok.com/@therealkrisho",
+  "account_context": "personal",
+  "mission": "Test native photo/video discovery editions without assuming the Instagram package or capabilities transfer.",
+  "formats": [
+    "carousel",
+    "short-video"
+  ],
+  "guide": "social/guides/other-channels.md",
+  "voice_policy": "docs/ACCOUNT-VOICE.md",
+  "live_checks": [
+    "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
+    "Read current queue, drafts and native identities; preserve existing human work.",
+    "Verify the exact destination, visibility and available account capabilities before the selected action."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "personal-account-register"
+  ]
+}

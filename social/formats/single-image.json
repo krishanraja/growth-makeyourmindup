@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "single-image",
+  "production_owner": "content-engine",
+  "production_reference": "https://github.com/krishanraja/content-engine/blob/main/docs/GROWTH-HANDOFF.md",
+  "channels": [
+    "instagram",
+    "linkedin",
+    "x"
+  ],
+  "guide": "social/guides/formats.md",
+  "min_assets": 1,
+  "max_assets": 1,
+  "delivery_checks": [
+    "Select an approved image that stands alone for a newcomer.",
+    "Caption supplies necessary context without inventing experience; verify image and alt text.",
+    "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Dated exposed reach and meaningful engagement, preserving missing values.",
+    "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
+    "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement"
+  ]
+}

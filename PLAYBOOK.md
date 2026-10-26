@@ -27,6 +27,10 @@ other door. The eventual destination is the owned reader relationship.
 
 ## Channel roles and ownership
 
+Use social/README.md and the selected `growth.py social route` for execution.
+Channel profiles, format delivery contracts, tool procedures and dated lessons
+are separate validated records; do not accumulate another general playbook.
+
 Account context comes first: apply docs/ACCOUNT-VOICE.md to personal-account
 sharing and engagement. Publication Instagram keeps its editorial register.
 This is Growth's account-management requirement, passed into content-engine

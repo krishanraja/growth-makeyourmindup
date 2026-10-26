@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "growth-measurement",
+  "category": "channel",
+  "scope": [
+    "instagram",
+    "linkedin",
+    "x",
+    "tiktok",
+    "youtube",
+    "substack"
+  ],
+  "status": "accepted",
+  "finding": "Drafts, queued posts and impressions are not financial ROI. Preserve missing metrics, actual native identities and review time; distinguish attribution from causation.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "Daily growth/trial instructions, 24-26 October 2026",
+    "observed_at": "2026-10-26",
+    "result": "Trial ledger separates prepared, scheduled, published and measured work."
+  },
+  "revisit_when": "Krish changes the experiment goal; causal claims still require evidence.",
+  "supersedes": null
+}

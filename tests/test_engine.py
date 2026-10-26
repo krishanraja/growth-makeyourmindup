@@ -570,9 +570,11 @@ class RuntimeTests(unittest.TestCase):
         config = read_json(ROOT / 'automations.json')
         self.assertEqual(config['timezone'], 'America/New_York')
         self.assertEqual(len(config['automations']), 9)
-        # Every job file is scheduled except channel-audit.md, which the conversion slot runs first.
+        # Conversion runs the weekly audit. Daily browser work has its own
+        # Codex heartbeat, not an extra entry in this nine-job configuration.
         self.assertEqual({r['job'] for r in config['automations']},
-                         {'jobs/' + p.name for p in (ROOT / 'jobs').glob('*.md') if p.name != 'channel-audit.md'})
+                         {'jobs/' + p.name for p in (ROOT / 'jobs').glob('*.md')
+                          if p.name not in ('channel-audit.md', 'daily-growth.md')})
         self.assertIn('jobs/channel-audit.md', (ROOT / 'jobs/conversion.md').read_text())
         conversion = next(r for r in config['automations'] if r['job'] == 'jobs/conversion.md')
         self.assertEqual(conversion['timezone'], 'Europe/London')

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "personal-account-register",
+  "category": "account",
+  "scope": [
+    "linkedin",
+    "x",
+    "tiktok"
+  ],
+  "status": "accepted",
+  "finding": "Personal-account copy is sincere, warm, humble and quietly excited to help readers unpick the subject; never arrogant or performatively humble.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "User ruling, 26 October 2026",
+    "observed_at": "2026-10-26",
+    "result": "Encoded in docs/ACCOUNT-VOICE.md."
+  },
+  "revisit_when": "Krish changes this requirement.",
+  "supersedes": null
+}

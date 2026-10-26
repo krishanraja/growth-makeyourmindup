@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "nullable-preview-clear",
+  "category": "tool",
+  "scope": [
+    "buffer",
+    "linkedin"
+  ],
+  "status": "observed",
+  "finding": "The domain edit tool rejected null linkAttachment before provider mutation. Fresh readback proved unchanged state; one narrowly introspected editPost operation cleared the old preview and saved the exact draft.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/linkedin-final-readback.json",
+    "observed_at": "2026-10-26",
+    "result": "No uncertain save was retried blindly; the normal domain tool remained preferred."
+  },
+  "revisit_when": "Domain schema supports nullable clear, or provider schema changes.",
+  "supersedes": null
+}

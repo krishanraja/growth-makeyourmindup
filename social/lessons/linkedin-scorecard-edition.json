@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "linkedin-scorecard-edition",
+  "category": "channel",
+  "scope": [
+    "linkedin",
+    "single-image"
+  ],
+  "status": "hypothesis",
+  "finding": "A stand-alone scorecard with a warm personal account of a small test may prompt useful professional replies and full-test visits.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md",
+    "observed_at": "2026-10-26",
+    "result": "Draft prepared; no publication or performance outcome yet."
+  },
+  "revisit_when": "Review actual replies, visits and relevant audience changes at 24h, 72h and seven days.",
+  "supersedes": null
+}

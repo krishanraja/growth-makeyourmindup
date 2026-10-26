@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "document-upload-unverified",
+  "category": "tool",
+  "scope": [
+    "buffer",
+    "linkedin",
+    "carousel"
+  ],
+  "status": "observed",
+  "finding": "The pilot did not establish PDF/document upload support. A successful PNG route cannot stand in for document capability.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md",
+    "observed_at": "2026-10-26",
+    "result": "LinkedIn draft uses one accepted scorecard image, not a PDF."
+  },
+  "revisit_when": "One successful document upload with native persisted readback.",
+  "supersedes": null
+}

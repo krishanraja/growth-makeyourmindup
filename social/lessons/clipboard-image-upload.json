@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "clipboard-image-upload",
+  "category": "tool",
+  "scope": [
+    "buffer"
+  ],
+  "status": "observed",
+  "finding": "The documented Codex tab clipboard accepted image/png bytes pasted into the composer. Sequential image completion and downloaded-pixel comparisons established the actual result.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": ".scratch/channel-audit/first-carousel-experiment-20261026/REVIEW.md",
+    "observed_at": "2026-10-26",
+    "result": "Image route verified; it does not establish document upload support."
+  },
+  "revisit_when": "A direct supported upload route becomes available or clipboard behaviour changes.",
+  "supersedes": null
+}

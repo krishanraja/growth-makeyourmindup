@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "kind": "channel",
+  "id": "instagram",
+  "account_url": "https://www.instagram.com/makeyourmind.up",
+  "account_context": "publication",
+  "mission": "Turn a useful source into a saveable/shareable native discovery asset and a truthful next step.",
+  "formats": [
+    "carousel",
+    "single-image",
+    "short-video"
+  ],
+  "guide": "social/guides/instagram.md",
+  "voice_policy": "docs/ACCOUNT-VOICE.md",
+  "live_checks": [
+    "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
+    "Read current queue, drafts and native identities; preserve existing human work.",
+    "Verify the exact destination, visibility and available account capabilities before the selected action."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "publication-register",
+    "verified-image-carousel",
+    "save-oriented-caption"
+  ]
+}

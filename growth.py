@@ -120,9 +120,14 @@ def self_test():
 
 
 def main(argv=None):
+    social_args = list(argv) if argv is not None else sys.argv[1:]
+    if social_args and social_args[0] == 'social':
+        from engine.social import command
+        return command(social_args[1:])
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--self-test', action='store_true')
     sub = parser.add_subparsers(dest='cmd')
+    sub.add_parser('social', help='offline channel, format and tool operating contracts')
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     p.add_argument('--feed-file'); p.add_argument('--now'); p.add_argument('--json', action='store_true')
     c = sub.add_parser('check'); c.add_argument('file'); c.add_argument('--now')

@@ -42,20 +42,11 @@ saveToDraft=true with no due time through the connector, or the actual Save
 Draft control in Codex. This is draft authority, not scheduling/publication
 authority. Reopen the saved draft and independently read back native state.
 
-On 26 October the browser file-chooser event failed to hand off local files.
-Pasting approved PNGs through the documented tab clipboard and composer
-worked. All eight uploaded images were downloaded through the observed
-page media and their decoded pixels matched the approved originals. Use
-that supported image-paste route when needed, verify every attachment and
-record returned media URLs in private evidence. Do not infer PDF/document
-upload support from successful image uploads. Do not operate a desktop-wide
-file dialog whose target ownership cannot be established reliably.
-
-Prefer Buffer's domain tools for final draft metadata. A domain tool may
-reject a nullable clear that the inspected provider schema supports. Use an
-introspected narrow GraphQL operation only for that uncovered operation,
-after authoritative readback establishes the prior state. Preserve journals
-and the retry budget; never treat an uncertain save as failure and retry it.
+Tool mechanics and dated failure recovery live in social/guides/buffer.md;
+capability status lives in social/tools/buffer.json. Start from the selected
+channel/format route in social/README.md. Those records do not widen this
+authority. Never infer document support from image uploads, operate an
+unowned desktop dialog, or retry an uncertain save without readback.
 
 ## The line you never cross
 

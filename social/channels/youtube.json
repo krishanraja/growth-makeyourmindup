@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "channel",
+  "id": "youtube",
+  "account_url": "https://www.youtube.com/@makeyourmind-up",
+  "account_context": "publication",
+  "mission": "Use accepted Shorts to introduce an idea and connect to its verified matching full video.",
+  "formats": [
+    "short-video"
+  ],
+  "guide": "social/guides/other-channels.md",
+  "voice_policy": "docs/ACCOUNT-VOICE.md",
+  "live_checks": [
+    "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
+    "Read current queue, drafts and native identities; preserve existing human work.",
+    "Verify the exact destination, visibility and available account capabilities before the selected action."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement"
+  ]
+}
