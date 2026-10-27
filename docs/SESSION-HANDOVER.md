@@ -2,6 +2,15 @@
 
 Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
+27 October closeout takes precedence: read `docs/ASSET-STORAGE.md` and
+`.scratch/session-closeout-20261027/CLOSEOUT.md` first. All session assets and
+private evidence are preserved there. The approved shopping-agent v3 package
+is in the existing Drive 4 Growth library. Krish explicitly chose to publish
+it himself through Buffer. Do not publish, schedule, duplicate or edit either
+LinkedIn draft. Reconcile the eventual native post before further work.
+Read `.scratch/channel-audit/daily-20261027/REVIEW.md` for dated early metrics;
+these are not 24-hour results. Daily and weekly automation ownership continues.
+
 26 October closeout: the fresh manager owns both existing automations. Read
 the private pilot's `fresh-owner/CLOSEOUT.md` before acting: X/TikTok and all
 six Stories are now live. The first-frame repair is complete; the remaining
@@ -47,18 +56,18 @@ connector disappeared during tool reload on 26 October; rediscover available
 tools and prefer it when restored, otherwise use the authorised Codex browser.
 The browser session itself remained signed in after reopening Buffer.
 
-First reconcile actual IG/FB launch delivery from the saved post identities;
-never repost because a queue is empty. Preserve the six existing Story drafts.
-Their creative set is approved, but frame 1 has a native header/wordmark overlap:
-send the exact screenshot and asset to Content Engine for a surgical fix and
-native preview, then publish the sequence with a real continuation. Do not
-claim an illustration disclaimer is needed in public copy or restore one.
-Keep provenance private and supported native metadata. Never fake a poll/link.
+Reconcile actual native delivery from the latest private receipts. The eight-card
+IG/FB pilot, X/TikTok editions and six Meta Stories were published on 26 October;
+the first-frame Story repair is complete. Do not recreate or republish them.
+Facebook's final-frame wordmark overlay is feedback for the next production pass.
+Buffer's automatic Instagram Story route did not support the proposed Link sticker;
+never fake a link/poll or add public illustration-generation boilerplate.
 
-X/TikTok's existing source-matched drafts are ready for native preview and the
-newly delegated cadence; reuse them rather than create duplicates. LinkedIn's
-saved scorecard draft stays for Krish's review/manual publication. Check every
-exact asset/order/alt/caption, current capability and approval before action.
+The shopping-agent LinkedIn v3 six-page PDF, post text and background comment are
+preserved in the 27 October closeout and Drive library. Buffer stores identical
+bytes but its saved preview is blank; a native LinkedIn draft also contains six
+pages. Krish chooses Buffer and publishes himself. Do not retry uploads blindly
+or publish both copies. Keep the separate Grok/Muse LinkedIn draft untouched.
 
 After reconciling the pilot, execute docs/FOLLOWER-GROWTH.md relentlessly:
 baseline each channel; maintain approved daily supply; use channel-native

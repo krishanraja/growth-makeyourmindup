@@ -13,7 +13,9 @@ company Page as a substitute.
   enthusiasm; do not fabricate emotions or pad the copy with self-deprecation.
 - Choose a stand-alone useful visual or request a native document edition from
   content-engine. One accepted image and an uploaded PDF are different routes.
-  The pilot proved the image draft; document capability remains unverified.
+  The 27 October native LinkedIn route processed and preserved a six-page PDF
+  draft. Buffer stored the same PDF intact but its saved preview was blank;
+  see lesson buffer-document-preview-hold. Keep those outcomes separate.
 - Make the continuation match the promise. Open the exact tracked full-test
   destination; label tracking for the actual asset (scorecard versus document).
 - Inspect the saved preview: clear a stale link attachment when intended and

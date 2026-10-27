@@ -12,6 +12,16 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Only Krish changes it.
 <!-- north-star:end -->
 
+## Asset continuity (Krish, 27 October 2026)
+
+Read `docs/ASSET-STORAGE.md` and `docs/SESSION-HANDOVER.md` at the start of
+every session. Use the existing Drive **4 Growth** folder for structured,
+versioned distribution assets and clean delivery copy. Content Engine keeps
+its separate production home. Preserve private evidence and rejected versions
+locally with a dated hash inventory before closing or cleaning a workspace.
+The supplied Drive folder is link-editable: never upload private run backups
+there. Update the handover, NOW.md and owning structured lessons at closeout.
+
 ## Open setup: read before any other work
 
 Written 2026-10-21. Any session that can do one of these does it, then

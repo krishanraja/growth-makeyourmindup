@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "substack-filter-settle",
+  "category": "channel",
+  "scope": [
+    "substack"
+  ],
+  "status": "observed",
+  "finding": "Changing Growth sources from 90 days to 7 days updated the selected label before the old table disappeared. A later settled read showed no subscribers. Do not treat the previous table as the newly selected window.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": ".scratch/channel-audit/daily-20261027/substack-seven-day-sources.txt",
+    "observed_at": "2026-10-27",
+    "result": "7 days, New subscribers and All categories settled to no sources/no subscribers; transient old totals were excluded."
+  },
+  "revisit_when": "Analytics filter behavior changes; always verify settled labels and values together.",
+  "supersedes": null
+}
