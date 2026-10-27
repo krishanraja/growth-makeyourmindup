@@ -662,6 +662,110 @@ def join(capture, spec, config=None, now=None):
             'landing page across event rows, so a lower bound', 'slots': out, 'unmatched_content': unmatched}
 
 
+# Control Center's directive block (protocol 1.10.0) -------------------------
+# Krish, 27 Oct 2026: "just get google analytics from control center". Control
+# Center reads the mymu property daily and sends this engine `web_analytics`:
+# rows of dim_type source_medium, landing_page and utm_content, where a
+# utm_content value is "<content>|<source>|<event>" (split on the first and the
+# last bar). `users` never adds up across a post's events.
+
+DIRECTIVE_FILE = 'web-analytics.json'
+
+
+def directive_rows(block):
+    """The per-post rows of a web_analytics block, or None when it carries none."""
+    if not isinstance(block, dict) or not isinstance(block.get('rows'), list):
+        return None
+    out = []
+    for row in block['rows']:
+        if not isinstance(row, dict) or row.get('dim_type') != 'utm_content':
+            continue
+        value = row.get('value')
+        if not isinstance(value, str) or value.count('|') < 2:
+            raise ValueError('a utm_content row must read content|source|event')
+        first, last = value.index('|'), value.rindex('|')
+        content, source, event = value[:first], value[first + 1:last], value[last + 1:]
+        calendar_date(row.get('date'))
+        for key in ('sessions', 'key_events'):
+            count(row.get(key), key)
+        out.append({'date': row['date'], 'source': source, 'content': content, 'event_name': event,
+                    'sessions': row['sessions'], 'key_events': row['key_events']})
+    return out
+
+
+def _directive_outcome(rows, config, key, key_events):
+    try:
+        name = verified_event(config, key)
+    except ValueError as exc:
+        return {'value': None, 'event_name': None, 'basis': None, 'reason': str(exc)}
+    hits = [r for r in rows if r['event_name'] == name]
+    if name in key_events:
+        return {'value': sum(r['key_events'] for r in hits), 'event_name': name, 'basis': 'key events',
+                'reason': None}
+    # Not a key event: sessions in which it fired, a lower bound of how often.
+    return {'value': sum(r['sessions'] for r in hits), 'event_name': name,
+            'basis': 'sessions with the event', 'reason': None}
+
+
+def join_directive(block, spec, config=None):
+    """Per slot from Control Center's block: sessions, sign-ups and paid subscriptions.
+
+    An unreadable or empty block gives null with Control Center's reason, never
+    zero. Coverage travels with the result, so a partial window is never read as
+    a whole one.
+    """
+    config = load_config() if config is None else config
+    if not isinstance(block, dict) or block.get('measurement_id') != config['measurement_id']:
+        raise ValueError('web_analytics must be for ' + config['measurement_id'])
+    if not isinstance(spec, dict) or not isinstance(spec.get('slots'), list):
+        raise ValueError('spec needs a slots list')
+    coverage = block.get('coverage') if isinstance(block.get('coverage'), dict) else {}
+    rows = directive_rows(block)
+    events = block.get('events') if isinstance(block.get('events'), list) else []
+    key_events = {e.get('name') for e in events if isinstance(e, dict) and e.get('key_event') is True}
+    owners, slots = {}, []
+    for slot in spec['slots']:
+        if not isinstance(slot, dict) or not isinstance(slot.get('slot_id'), str) or not slot['slot_id']:
+            raise ValueError('each slot needs a slot_id')
+        links = own_links(slot.get('words'))
+        slots.append((slot['slot_id'], links))
+        for content in {link['utm_content'] for link in links if link['tracked']}:
+            owners.setdefault(content, []).append(slot['slot_id'])
+    unknown = coverage.get('reason') or 'Control Center sent no per-post rows'
+    out = []
+    for slot_id, links in slots:
+        contents = sorted({link['utm_content'] for link in links if link['tracked']})
+        shared = sorted(c for c in contents if len(owners[c]) > 1)
+        entry = {'slot_id': slot_id, 'utm_content': contents}
+        reason = None
+        if rows is None:
+            reason = unknown
+        elif not contents:
+            reason = 'no own link with all four UTMs in the slot words'
+        elif shared:
+            reason = 'utm_content shared with another slot: ' + ', '.join(shared)
+        if reason:
+            entry.update(sessions=None, sign_ups={'value': None, 'event_name': None, 'basis': None, 'reason': reason},
+                         paid_subscriptions={'value': None, 'event_name': None, 'basis': None, 'reason': reason},
+                         reason=reason)
+            out.append(entry)
+            continue
+        mine = [r for r in rows if r['content'] in contents]
+        groups = {}
+        for r in mine:
+            key = (r['date'], r['source'], r['content'])
+            groups[key] = max(groups.get(key, 0), r['sessions'])
+        entry.update(sessions=sum(groups.values()), sign_ups=_directive_outcome(mine, config, 'sign_up', key_events),
+                     paid_subscriptions=_directive_outcome(mine, config, 'paid_subscription', key_events), reason=None)
+        out.append(entry)
+    seen = {r['content'] for r in rows or []}
+    return {'local_only': True, 'source': 'control-center web_analytics', 'measurement_id': block['measurement_id'],
+            'through': block.get('through'), 'days': block.get('days'),
+            'coverage': {'complete': coverage.get('complete') is True, 'reason': coverage.get('reason')},
+            'join_key': 'utm_content', 'sessions_basis': 'largest per date, source and content across event rows, '
+            'so a lower bound', 'slots': out, 'unmatched_content': sorted(seen - set(owners))}
+
+
 def weekly_signups(capture, config=None, now=None):
     """The GA4 sign-ups for one seven-day capture, through the verified event name only.
 
@@ -746,7 +850,9 @@ def main(argv=None, transport=None, environ=None):
         command.add_argument('--now')
     j = what.add_parser('join')
     j.add_argument('capture'); j.add_argument('spec'); j.add_argument('--now')
-    for command in (e, r, j):
+    dj = what.add_parser('directive', help="join Control Center's web_analytics block to a spec")
+    dj.add_argument('spec'); dj.add_argument('--block', help='default: .scratch/cc/' + DIRECTIVE_FILE)
+    for command in (e, r, j, dj):
         command.add_argument('--root', default=str(ROOT))
     args = parser.parse_args(argv)
     try:
@@ -755,6 +861,9 @@ def main(argv=None, transport=None, environ=None):
         today = ny_time(args.now).date().isoformat()
         if args.what == 'join':
             result = join(read_json(args.capture), read_json(args.spec), config, args.now)
+        elif args.what == 'directive':
+            block = read_json(args.block or root / '.scratch' / 'cc' / DIRECTIVE_FILE)
+            result = join_directive(block, read_json(args.spec), config)
         elif args.what == 'events':
             body = events_request(args.days, today)
             if not args.live:

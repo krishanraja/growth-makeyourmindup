@@ -1022,9 +1022,14 @@
       "source_file": "CHANGES.md",
       "quote": "Google Analytics: \"just get google analytics from control center, might be easier.\" Control Center already reads GA4 property mymu (G-VC5V9LDE17) daily but does not pass it to engines or break it down by `utm_content`.",
       "enforced_by": [
-        "process"
+        "engine/run/ga4.py:join_directive",
+        "engine/cc_loop.py:keep_web_analytics"
       ],
-      "tests": []
+      "tests": [
+        "test_directive_block_joins_slots_by_utm_content",
+        "test_directive_unknown_block_is_null_not_zero",
+        "test_cc_start_keeps_web_analytics_block"
+      ]
     },
     {
       "id": "R90",

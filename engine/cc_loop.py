@@ -548,6 +548,24 @@ def decisions_since(root, now):
 
 
 VOICE_RULES_FILE = 'voice-rules.txt'
+WEB_ANALYTICS_FILE = 'web-analytics.json'
+
+
+def keep_web_analytics(root, directive):
+    """Keep today's `web_analytics` (protocol 1.10.0) for the Measurement Specialist.
+
+    The local, ignored file is replaced at every fresh start, and removed when
+    the directive carries no block, so yesterday's readings never stand in for
+    today's. The numbers stay private: they go back in the report, never into
+    this public repository.
+    """
+    path = state_path(root, WEB_ANALYTICS_FILE)
+    block = directive.get('web_analytics') if isinstance(directive, dict) else None
+    if isinstance(block, dict):
+        write_json(path, block)
+    elif path.exists():
+        path.unlink()
+    return path if isinstance(block, dict) else None
 VOICE_USE = ('Use them only for how anything you draft is written. Never use them to choose what it is about, '
              'and never to judge, score, rank or check a draft: the review, the rubric scores, the breakout score, '
              'the queue and growth.py check work exactly as if this block were not here.')
@@ -711,6 +729,7 @@ def cli(args, root, make_client, out=print, checks=None):
         # The drafting steps read this local, ignored file; nothing that checks,
         # scores or queues a draft does.
         voice_file.write_text('\n'.join(voice_block(loop.directive)) + '\n', encoding='utf-8')
+        keep_web_analytics(root, loop.directive)
         for line in describe(loop.directive):
             out(line)
         if args.cc_cmd == 'start':

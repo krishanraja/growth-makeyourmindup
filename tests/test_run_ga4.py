@@ -580,3 +580,56 @@ class OfflineTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class DirectiveBlockTests(unittest.TestCase):
+    """Krish, 27 Oct 2026: GA4 comes through Control Center (protocol 1.10.0)."""
+
+    def config(self):
+        return load_config(path=FIXTURES / 'config-verified.json')
+
+    def test_directive_block_joins_slots_by_utm_content(self):
+        block = load('directive-block.json')
+        result = ga4.join_directive(block, load('spec.json'), self.config())
+        slots = {s['slot_id']: s for s in result['slots']}
+        threads, note = slots['w45-mon-threads-1'], slots['w45-mon-note-1']
+        # Sessions count once per date, source and post across its event rows.
+        self.assertEqual(threads['sessions'], 8)
+        self.assertEqual((threads['sign_ups']['value'], threads['sign_ups']['basis']), (2, 'key events'))
+        self.assertEqual(note['sessions'], 4)
+        self.assertEqual((note['sign_ups']['value'], note['paid_subscriptions']['value']), (1, 1))
+        # Paid is not a key event here, so it is sessions in which it fired, and says so.
+        self.assertEqual(note['paid_subscriptions']['basis'], 'sessions with the event')
+        # A partial window travels with the result instead of reading as a whole one.
+        self.assertFalse(result['coverage']['complete'])
+        self.assertIn('2 of 28 days', result['coverage']['reason'])
+        self.assertEqual(result['unmatched_content'], ['placement_with'])
+
+    def test_directive_value_splits_on_first_and_last_bar(self):
+        rows = ga4.directive_rows(load('directive-block.json'))
+        odd = [r for r in rows if r['content'] == 'placement_with']
+        self.assertEqual((odd[0]['source'], odd[0]['event_name']), ('bar|in|it', 'page_view'))
+        with self.assertRaisesRegex(ValueError, 'content\\|source\\|event'):
+            ga4.directive_rows({'rows': [{'date': '2026-11-04', 'dim_type': 'utm_content', 'value': 'x|y',
+                                          'sessions': 1, 'users': 1, 'key_events': 0}]})
+
+    def test_directive_unknown_block_is_null_not_zero(self):
+        block = {'property': 'mymu', 'measurement_id': 'G-VC5V9LDE17', 'days': 28, 'through': None,
+                 'events': None, 'rows': None,
+                 'coverage': {'complete': False, 'reason': 'web_analytics_daily could not be read today, so nothing is known.',
+                              'dates': None}}
+        result = ga4.join_directive(block, load('spec.json'), self.config())
+        for slot in result['slots']:
+            self.assertIsNone(slot['sessions'])
+            self.assertIsNone(slot['sign_ups']['value'])
+            self.assertIn('could not be read', slot['reason'])
+        with self.assertRaisesRegex(ValueError, 'must be for G-VC5V9LDE17'):
+            ga4.join_directive(dict(block, measurement_id='G-SMXQH8E4CM'), load('spec.json'), self.config())
+
+    def test_directive_join_refuses_unverified_event_names(self):
+        config = load_config()  # the committed config: no event name verified yet
+        result = ga4.join_directive(load('directive-block.json'), load('spec.json'), config)
+        threads = {s['slot_id']: s for s in result['slots']}['w45-mon-threads-1']
+        self.assertEqual(threads['sessions'], 8)
+        self.assertIsNone(threads['sign_ups']['value'])
+        self.assertIsNotNone(threads['sign_ups']['reason'])

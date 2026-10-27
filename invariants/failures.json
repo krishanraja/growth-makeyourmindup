@@ -656,6 +656,20 @@
       "status": "tested"
     },
     {
+      "id": "F65",
+      "title": "GA4 readings come through Control Center's directive (protocol 1.10.0); an unread block is null, never zero, and a partial window says so",
+      "source": "CHANGES.md 2026-10-27 (\"just get google analytics from control center\"); krishanraja/control-center#578",
+      "guard": "engine/run/ga4.py:join_directive and engine/cc_loop.py:keep_web_analytics",
+      "tests": [
+        "test_directive_block_joins_slots_by_utm_content",
+        "test_directive_value_splits_on_first_and_last_bar",
+        "test_directive_unknown_block_is_null_not_zero",
+        "test_directive_join_refuses_unverified_event_names",
+        "test_cc_start_keeps_web_analytics_block"
+      ],
+      "status": "tested"
+    },
+    {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",

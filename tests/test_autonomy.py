@@ -7,6 +7,7 @@ check-in stops its plan. Every fixture is synthetic; nothing here posts.
 """
 import copy
 import hashlib
+import json
 from pathlib import Path
 import re
 import tempfile
@@ -405,3 +406,19 @@ class AutomationCountTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class WebAnalyticsKeepTests(unittest.TestCase):
+    """protocol 1.10.0: the directive's web_analytics block is kept privately, fresh each start."""
+
+    def test_cc_start_keeps_web_analytics_block(self):
+        from engine.cc_loop import keep_web_analytics, state_path, WEB_ANALYTICS_FILE
+        with tempfile.TemporaryDirectory() as folder:
+            block = {'property': 'mymu', 'measurement_id': 'G-VC5V9LDE17', 'rows': None,
+                     'coverage': {'complete': False, 'reason': 'synthetic', 'dates': None}}
+            path = keep_web_analytics(folder, {'web_analytics': block})
+            self.assertEqual(path, state_path(folder, WEB_ANALYTICS_FILE))
+            self.assertEqual(json.loads(path.read_text(encoding='utf-8')), block)
+            # A directive without the block removes yesterday's copy.
+            self.assertIsNone(keep_web_analytics(folder, {'schema_version': '1.10.0'}))
+            self.assertFalse(state_path(folder, WEB_ANALYTICS_FILE).exists())

@@ -1,0 +1,22 @@
+{
+  "property": "mymu",
+  "measurement_id": "G-VC5V9LDE17",
+  "through": "2026-11-04",
+  "days": 28,
+  "events": [
+    {"name": "page_view", "key_event": false, "count_28d": 9},
+    {"name": "synthetic_sign_up", "key_event": true, "count_28d": 3},
+    {"name": "synthetic_paid_subscription", "key_event": false, "count_28d": 1}
+  ],
+  "rows": [
+    {"date": "2026-11-03", "dim_type": "source_medium", "value": "threads / organic", "sessions": 7, "users": 6, "key_events": 2},
+    {"date": "2026-11-03", "dim_type": "utm_content", "value": "placement_bdc6f7e80a42d61ec2b6|threads|page_view", "sessions": 5, "users": 5, "key_events": 0},
+    {"date": "2026-11-03", "dim_type": "utm_content", "value": "placement_bdc6f7e80a42d61ec2b6|threads|synthetic_sign_up", "sessions": 2, "users": 2, "key_events": 2},
+    {"date": "2026-11-04", "dim_type": "utm_content", "value": "placement_bdc6f7e80a42d61ec2b6|threads|page_view", "sessions": 3, "users": 3, "key_events": 0},
+    {"date": "2026-11-04", "dim_type": "utm_content", "value": "placement_0a24e3f622234d0f452c|notes|page_view", "sessions": 4, "users": 4, "key_events": 0},
+    {"date": "2026-11-04", "dim_type": "utm_content", "value": "placement_0a24e3f622234d0f452c|notes|synthetic_sign_up", "sessions": 1, "users": 1, "key_events": 1},
+    {"date": "2026-11-04", "dim_type": "utm_content", "value": "placement_0a24e3f622234d0f452c|notes|synthetic_paid_subscription", "sessions": 1, "users": 1, "key_events": 0},
+    {"date": "2026-11-04", "dim_type": "utm_content", "value": "placement_with|bar|in|it|page_view", "sessions": 2, "users": 2, "key_events": 0}
+  ],
+  "coverage": {"complete": false, "reason": "Per-post rows on 2 of 28 days, from 2026-11-03.", "dates": null}
+}
