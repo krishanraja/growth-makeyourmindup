@@ -139,6 +139,17 @@ Check actual account features, full text and destinations before repairs.
 | X | Full post and media, relevant destination, profile link, pin freshness; never delete/repost to bypass edit restrictions |
 | LinkedIn | Full post before truncation, native reader value, Featured journey and subscription destination; no new comments |
 | Substack | Profile/About consistency, subscribe landing, article/video crosslinks and related reading; article-body, welcome or offer rewrites need approval |
+| Facebook (added 27 Oct 2026) | Full post and caption, Page About and links, pinned posts, pairing with Instagram; every edit is held for Krish (approval_required) |
+| Threads (added 27 Oct 2026) | Full post, profile link and bio, replies under his posts; every edit is held for Krish (approval_required) |
+
+Added 27 Oct 2026: Facebook and Threads are in the audit inventory and are
+observed like the accounts above, but Krish has not extended the 21 Oct
+audit authority to them, so every edit on them is held for him. LinkedIn
+edits are krish_only: the engine never saves them, not even after approval,
+and the LinkedIn row above is for inspection only. Substack Notes have no
+audit targets yet. Target hosts match their account with a leading "www."
+removed on both sides (threads.net counts as threads.com); any other host
+fails closed.
 
 YouTube distinguishes Shorts from long video links: URLs in Shorts
 descriptions/comments are not clickable; a related-video link or a channel

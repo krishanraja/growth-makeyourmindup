@@ -21,6 +21,12 @@ of 2026-10-21 supersedes older blanket read-only rules for this job only.
    Spotify needs an observed official show URL before it joins the audit;
    do not guess a show by name. Website subscription paths are read-only
    journey checks. Reddit/email/partners are not additional social accounts.
+   Added 27 Oct 2026: Facebook and Threads are also inventoried and observed
+   from channels.json. Krish has not extended the 21 Oct audit authority to
+   them, so every Facebook and Threads edit is held for him (`audit plan`
+   returns approval_required). LinkedIn edits are krish_only: the engine
+   never saves them, not even after approval (`audit begin` refuses them).
+   Substack Notes have no audit targets yet.
 3. Capture the run start in UTC, display dates in Europe/London. Pass this
    fixed timestamp as `--now` only to `audit checkpoint`. For each
    account inspect its profile, every pin/Featured placement and all posts

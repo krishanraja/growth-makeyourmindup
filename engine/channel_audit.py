@@ -21,11 +21,17 @@ ACCOUNTS = {
     'threads': 'https://www.threads.com/@krishraja1',
 }
 # Krish, 26 Oct 2026: no edits to live LinkedIn posts or profile fields; this
-# also covers the older existing-field audit permission. Krish, 27 Oct 2026:
-# Threads joins, and its audit edits are held the same way until he rules.
-HELD_FOR_KRISH = {'linkedin', 'threads'}
-AUTO ={'post': {'title', 'caption', 'description', 'link'},
+# also covers the older existing-field audit permission. LinkedIn is his own
+# final click (27 Oct), so the engine never saves a LinkedIn edit, not even
+# after approval.
+KRISH_ONLY = {'linkedin'}
+# Krish, 27 Oct 2026: Threads and Facebook join the inventory, but he has not
+# extended the 21 Oct audit authority to them. Every edit is held for him.
+HELD_FOR_KRISH = {'threads', 'facebook'}
+AUTO = {'post': {'title', 'caption', 'description', 'link'},
         'profile': {'link'}}
+# Hosts that serve the same account. Anything else fails closed.
+HOST_ALIASES = {'threads.net': 'threads.com'}
 PROTECTED = {'bio', 'positioning', 'pin', 'pinned_content', 'thumbnail',
              'overlay', 'video', 'image', 'audio', 'reupload', 'delete'}
 
@@ -37,6 +43,14 @@ def require(condition, message):
 
 def https(value):
     return http_url(value) and urlsplit(value).scheme == 'https'
+
+
+def host(url):
+    """Platform host with one leading www. removed, so www.facebook.com and facebook.com match."""
+    name = (urlsplit(url).hostname or '').lower()
+    if name.startswith('www.'):
+        name = name[len('www.'):]
+    return HOST_ALIASES.get(name, name)
 
 
 def same_target(left, right):
@@ -97,8 +111,7 @@ def repair_plan(change, now=None):
     require(channel in ACCOUNTS, 'unconfigured account; verify and configure it first')
     require(change.get('account_url') == ACCOUNTS[channel], 'account does not match configured owner')
     require(https(change.get('target_url')), 'exact target HTTPS URL required')
-    target_host = urlsplit(change['target_url']).hostname
-    require(target_host == urlsplit(ACCOUNTS[channel]).hostname, 'target is on another platform')
+    require(host(change['target_url']) == host(ACCOUNTS[channel]), 'target is on another platform')
     evidence(change.get('evidence'), now)
     require(canonical(change['evidence']['url']) == canonical(change['target_url']), 'evidence is for another target')
     require(isinstance(change.get('before'), str) and isinstance(change.get('after'), str), 'exact before/after strings required')
@@ -111,6 +124,8 @@ def repair_plan(change, now=None):
     field, surface = change.get('field'), change.get('surface')
     if (channel == 'youtube' and field == 'title') or (channel == 'x' and surface == 'profile' and field == 'link'):
         require(len(change['after']) <= 100, 'proposed value exceeds the observed platform field limit')
+    if channel in KRISH_ONLY:
+        return {**result, 'disposition': 'krish_only', 'reason': 'live edits on this account are Krish\'s alone; the engine never saves them'}
     if channel in HELD_FOR_KRISH:
         return {**result, 'disposition': 'approval_required', 'reason': 'live edits on this account are held for Krish'}
     if field in PROTECTED or field not in AUTO.get(surface, set()):
@@ -134,6 +149,7 @@ def repair_plan(change, now=None):
 def begin(journal, change, current, now=None):
     """Persist intent before using Save. Never retry an unresolved write blindly."""
     plan = repair_plan(change, now)
+    require(plan['channel'] not in KRISH_ONLY, 'edits on this account are Krish\'s alone; never save them')
     require(plan['disposition'] == 'autonomous', 'repair is not autonomously authorised')
     evidence(current, now)
     require(same_target(current['url'], plan['target_url']), 'current page is another target')
@@ -158,6 +174,8 @@ def begin(journal, change, current, now=None):
 
 
 def reconcile(record, readback, now=None):
+    require(record.get('channel') not in KRISH_ONLY, 'edits on this account are Krish\'s alone; never save them')
+    require(record.get('channel') not in HELD_FOR_KRISH, 'edits on this account are held for Krish')
     evidence(readback, now)
     require(same_target(readback['url'], record['target_url']), 'readback is for another target')
     require(readback.get('field') == record['field'], 'readback is for another field')
