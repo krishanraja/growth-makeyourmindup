@@ -139,12 +139,13 @@ Check actual account features, full text and destinations before repairs.
 | X | Full post and media, relevant destination, profile link, pin freshness; never delete/repost to bypass edit restrictions |
 | LinkedIn | Full post before truncation, native reader value, Featured journey and subscription destination; no new comments |
 | Substack | Profile/About consistency, subscribe landing, article/video crosslinks and related reading; article-body, welcome or offer rewrites need approval |
-| Facebook (added 27 Oct 2026) | Full post and caption, Page About and links, pinned posts, pairing with Instagram; every edit is held for Krish (approval_required) |
-| Threads (added 27 Oct 2026) | Full post, profile link and bio, replies under his posts; every edit is held for Krish (approval_required) |
+| Facebook (added 27 Oct 2026) | Full post and caption, Page About and links, pinned posts, pairing with Instagram; existing-field edits under the 21 Oct authority (extended 27 Oct), protected fields need approval |
+| Threads (added 27 Oct 2026) | Full post, profile link and bio, replies under his posts; existing-field edits under the 21 Oct authority (extended 27 Oct), protected fields need approval |
 
 Added 27 Oct 2026: Facebook and Threads are in the audit inventory and are
-observed like the accounts above, but Krish has not extended the 21 Oct
-audit authority to them, so every edit on them is held for him. LinkedIn
+observed like the accounts above. Krish extended the 21 Oct audit authority
+to them the same day ("yes extend"), so their existing fields follow the same
+rules as the other accounts and protected fields still need him. LinkedIn
 edits are krish_only: the engine never saves them, not even after approval,
 and the LinkedIn row above is for inspection only. Substack Notes have no
 audit targets yet. Target hosts match their account with a leading "www."

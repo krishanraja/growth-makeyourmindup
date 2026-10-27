@@ -691,7 +691,7 @@
         "doc-only"
       ],
       "tests": [
-        "test_threads_is_known_and_audit_edits_are_held",
+        "test_threads_is_known_and_follows_the_audit_authority",
         "test_notes_links_are_tracked",
         "test_threads_has_delegated_cadence_with_personal_voice"
       ]
@@ -948,23 +948,23 @@
     },
     {
       "id": "R83",
-      "statement": "GA4 property G-VC5V9LDE17 on home.makeyourmindup.ai is the Measurement Specialist's per-post attribution source, joined on utm_content and read directly with a read-only Viewer service account on that one property (Control Center's brief is the fallback); Substack Growth sources remain the North Star source.",
+      "statement": "GA4 property G-VC5V9LDE17 on home.makeyourmindup.ai is the Measurement Specialist's per-post attribution source, joined on utm_content; Substack Growth sources remain the North Star source. Krish later ruled that it comes through Control Center (R89); the direct reader in engine/run/ga4.py stays as an unused fallback.",
       "source_file": "CHANGES.md",
       "quote": "Later the same day: \"You have Google Analytics installed already and Control Centre can see that. Make sure this is a part of your Measurement Specialist.\" GA4 property G-VC5V9LDE17 runs on home.makeyourmindup.ai through Substack's native integration. It is now the Measurement Specialist's per-post attribution source, joined on `utm_content`; Substack Growth sources remain the North Star source. He then offered: \"Happy to let you read Google Analytics directly if you prefer.\" The engine reads GA4 directly with a read-only service account (Viewer on that one property); the Control Center brief (`docs/briefs/2026-10-27-control-center-ga4-read.md`) is kept as the fallback.",
       "enforced_by": [
-        "doc-only"
+        "engine/run/ga4.py:join",
+        "engine/run/ga4.py:reconcile",
+        "engine/run/ga4.py:verified_event"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_ga4_credentials_accept_raw_or_base64_json",
-        "test_rs256_signature_verifies_with_public_key",
+        "test_ga4_never_calls_network_without_live",
+        "test_ga4_reconcile_prefers_the_conservative_reading",
+        "test_ga4_report_joins_slots_by_utm_content",
         "test_ga4_transport_only_allows_google_origins_and_never_logs_secrets",
         "test_ga4_unverified_event_name_is_refused",
-        "test_ga4_report_joins_slots_by_utm_content",
-        "test_ga4_reconcile_prefers_the_conservative_reading",
-        "test_ga4_never_calls_network_without_live"
-      ],
-      "pending_item": "measure"
+        "test_rs256_signature_verifies_with_public_key"
+      ]
     },
     {
       "id": "R84",
@@ -1011,6 +1011,40 @@
       "statement": "Access is rechecked before sensitive material is uploaded; a folder named Private is never treated as an access boundary.",
       "source_file": "docs/ASSET-STORAGE.md",
       "quote": "Recheck access before uploading sensitive material; do not treat a folder named Private as an access boundary.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R89",
+      "statement": "GA4 readings reach this engine through Control Center (its daily mymu snapshot and the web_analytics directive block, protocol 1.10.0), not a direct GA credential.",
+      "source_file": "CHANGES.md",
+      "quote": "Google Analytics: \"just get google analytics from control center, might be easier.\" Control Center already reads GA4 property mymu (G-VC5V9LDE17) daily but does not pass it to engines or break it down by `utm_content`.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R90",
+      "statement": "The 21 Oct existing-field audit authority covers the Facebook Page and Threads; LinkedIn stays Krish's alone; protected fields still need his approval.",
+      "source_file": "CHANGES.md",
+      "quote": "Audit authority: \"yes extend\". The 2026-10-21 existing-field audit authority (titles, captions, descriptions, links, broken profile links, subscription-link alignment) now also covers the Facebook Page and Threads.",
+      "enforced_by": [
+        "engine/channel_audit.py:repair_plan"
+      ],
+      "tests": [
+        "test_facebook_and_threads_follow_the_audit_authority",
+        "test_threads_is_known_and_follows_the_audit_authority",
+        "test_linkedin_audit_is_krish_only_even_after_approval"
+      ]
+    },
+    {
+      "id": "R91",
+      "statement": "For the GA4 change only, Krish lifted rule 7 so this session applies it in krishanraja/control-center; every other Control Center rule holds.",
+      "source_file": "CHANGES.md",
+      "quote": "\"apply the Control Center change yourself\". For this one change only, rule 7 (stay in this repository) is lifted",
       "enforced_by": [
         "process"
       ],

@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 from urllib.parse import parse_qsl, urlsplit
 
-from engine.channel_audit import ACCOUNTS, begin, checkpoint, reconcile, repair_plan
+from engine.channel_audit import HELD_FOR_KRISH, ACCOUNTS, begin, checkpoint, reconcile, repair_plan
 from engine.core import PLATFORMS, read_json, tracked
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -86,37 +86,34 @@ class PlatformsAuditTests(unittest.TestCase):
                     'pins_checked': True, 'window_start': '2026-09-27T12:00:00+00:00', 'window_end': NOW}
         self.assertEqual(checkpoint(None, coverage, NOW), NOW)
 
-    def test_facebook_and_threads_audit_edits_are_held(self):
-        # Krish, 27 Oct 2026: Facebook and Threads are inventoried and observed,
-        # but he has not extended the 21 Oct audit authority to them.
+    def test_facebook_and_threads_follow_the_audit_authority(self):
+        # Krish, 27 Oct 2026 ("yes extend"): the 21 Oct existing-field audit
+        # authority now covers Facebook and Threads, exactly as on the others.
         targets = {'facebook': ('https://www.facebook.com/1364858250042525/posts/synthetic',
                                 'https://facebook.com/1364858250042525/posts/synthetic'),
                    'threads': ('https://www.threads.com/@krishraja1/post/synthetic',
                                'https://www.threads.net/@krishraja1/post/synthetic')}
+        self.assertEqual(HELD_FOR_KRISH, set())
         for channel, urls in targets.items():
             for target in urls:
-                for surface, field in (('post', 'title'), ('post', 'caption'), ('post', 'description'),
-                                       ('post', 'link'), ('post', 'bio'), ('profile', 'pin')):
-                    c = change(channel, target, surface=surface, field=field)
-                    plan = repair_plan(c, NOW)
-                    self.assertNotEqual(plan['disposition'], 'autonomous')
-                    self.assert_held(c)
-            self.assert_held(profile_link(channel, ACCOUNTS[channel]))
-            # A held record is never reconciled into a verified save.
-            c = change(channel, urls[0])
-            record = {**repair_plan(c, NOW), 'status': 'pending_readback', 'started_at': NOW, 'attempts': 1}
-            readback = {**c['evidence'], 'field': 'caption', 'value': c['after'], 'excerpt': c['after'], 'reopened': True}
-            with self.assertRaisesRegex(ValueError, 'held for Krish'):
-                reconcile(record, readback, NOW)
+                for field in ('title', 'caption', 'description'):
+                    plan = repair_plan(change(channel, target, field=field), NOW)
+                    self.assertEqual(plan['disposition'], 'autonomous', (channel, field))
+                for surface, field in (('post', 'bio'), ('profile', 'pin'), ('post', 'image')):
+                    plan = repair_plan(change(channel, target, surface=surface, field=field), NOW)
+                    self.assertEqual(plan['disposition'], 'approval_required', (channel, field))
+            self.assertEqual(repair_plan(profile_link(channel, ACCOUNTS[channel]), NOW)['disposition'], 'autonomous')
+        # LinkedIn is unchanged: never the engine's, not even after approval.
+        self.assert_krish_only(change('linkedin', 'https://www.linkedin.com/posts/synthetic'))
 
     def test_www_hosts_match_their_account(self):
         fb = repair_plan(change('facebook', 'https://www.facebook.com/1364858250042525/posts/synthetic'), NOW)
-        self.assertEqual(fb['disposition'], 'approval_required')
-        self.assertIn('held for Krish', fb['reason'])
+        self.assertEqual(fb['disposition'], 'autonomous')
         for channel, target in (('threads', 'https://threads.com/@krishraja1/post/synthetic'),
-                                ('threads', 'https://threads.net/@krishraja1/post/synthetic'),
-                                ('linkedin', 'https://linkedin.com/posts/synthetic')):
-            self.assertIn(repair_plan(change(channel, target), NOW)['disposition'], ('approval_required', 'krish_only'))
+                                ('threads', 'https://threads.net/@krishraja1/post/synthetic')):
+            self.assertEqual(repair_plan(change(channel, target), NOW)['disposition'], 'autonomous')
+        self.assertEqual(repair_plan(change('linkedin', 'https://linkedin.com/posts/synthetic'), NOW)['disposition'],
+                         'krish_only')
         # Removing www. never makes a lookalike or another platform match.
         for channel, target in (('facebook', 'https://www.instagram.com/p/synthetic'),
                                 ('facebook', 'https://m.facebook.com/1364858250042525/posts/synthetic'),
@@ -148,9 +145,9 @@ class PlatformsAuditTests(unittest.TestCase):
         query = dict(parse_qsl(urlsplit(tracked(URL, 'facebook', 'daily', '2026-10-27')).query))
         self.assertEqual(query['utm_source'], 'facebook')
         target = ACCOUNTS['facebook'] + '/posts/synthetic'
-        # Krish, 27 Oct 2026: the Page is inventoried, but the 21 Oct audit
-        # authority is not extended to it, so caption edits are held for him.
-        self.assertEqual(repair_plan(change('facebook', target), NOW)['disposition'], 'approval_required')
+        # Krish, 27 Oct 2026 ("yes extend"): the 21 Oct audit authority covers
+        # the Page, so existing captions follow it and protected fields do not.
+        self.assertEqual(repair_plan(change('facebook', target), NOW)['disposition'], 'autonomous')
         self.assertEqual(repair_plan(change('facebook', target, field='bio'), NOW)['disposition'], 'approval_required')
         with self.assertRaises(ValueError):
             repair_plan(change('facebook', 'https://www.instagram.com/p/synthetic'), NOW)
@@ -159,16 +156,19 @@ class PlatformsAuditTests(unittest.TestCase):
                     'pins_checked': True, 'window_start': '2026-09-27T12:00:00+00:00', 'window_end': NOW}
         self.assertEqual(checkpoint(None, coverage, NOW), NOW)
 
-    def test_threads_is_known_and_audit_edits_are_held(self):
-        # Krish, 27 Oct 2026: Threads joins; audit edits are held like LinkedIn
-        # until he rules otherwise.
+    def test_threads_is_known_and_follows_the_audit_authority(self):
+        # Krish, 27 Oct 2026: Threads joins, and "yes extend" brings it under
+        # the 21 Oct existing-field audit authority.
         self.assertIn('threads', PLATFORMS)
         self.assertEqual(ACCOUNTS['threads'], 'https://www.threads.com/@krishraja1')
         self.assertEqual(channel_rows()['threads']['url'], ACCOUNTS['threads'])
         query = dict(parse_qsl(urlsplit(tracked(URL, 'threads', 'daily', '2026-10-27')).query))
         self.assertEqual(query['utm_source'], 'threads')
-        self.assert_held(change('threads', 'https://www.threads.com/@krishraja1/post/synthetic'))
-        self.assert_held(profile_link('threads', ACCOUNTS['threads']))
+        self.assertEqual(repair_plan(change('threads', 'https://www.threads.com/@krishraja1/post/synthetic'), NOW)
+                         ['disposition'], 'autonomous')
+        self.assertEqual(repair_plan(change('threads', 'https://www.threads.com/@krishraja1/post/synthetic',
+                                            field='bio'), NOW)['disposition'], 'approval_required')
+        self.assertEqual(repair_plan(profile_link('threads', ACCOUNTS['threads']), NOW)['disposition'], 'autonomous')
 
     def test_notes_links_are_tracked(self):
         # Krish, 27 Oct 2026, superseding the 14 Oct "no Notes" ruling.

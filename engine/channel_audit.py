@@ -25,9 +25,10 @@ ACCOUNTS = {
 # final click (27 Oct), so the engine never saves a LinkedIn edit, not even
 # after approval.
 KRISH_ONLY = {'linkedin'}
-# Krish, 27 Oct 2026: Threads and Facebook join the inventory, but he has not
-# extended the 21 Oct audit authority to them. Every edit is held for him.
-HELD_FOR_KRISH = {'threads', 'facebook'}
+# Krish, 27 Oct 2026 ("yes extend"): the 21 Oct existing-field audit authority
+# now covers Facebook and Threads too. The hold stays available for an account
+# he has not authorised; none is held today.
+HELD_FOR_KRISH = set()
 AUTO = {'post': {'title', 'caption', 'description', 'link'},
         'profile': {'link'}}
 # Hosts that serve the same account. Anything else fails closed.

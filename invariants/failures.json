@@ -581,8 +581,7 @@
         "test_ga4_credentials_accept_raw_or_base64_json",
         "test_rs256_signature_verifies_with_public_key"
       ],
-      "status": "pending-build",
-      "pending_item": "measure"
+      "status": "tested"
     },
     {
       "id": "F58",
@@ -593,8 +592,7 @@
         "test_ga4_transport_only_allows_google_origins_and_never_logs_secrets",
         "test_ga4_never_calls_network_without_live"
       ],
-      "status": "pending-build",
-      "pending_item": "measure"
+      "status": "tested"
     },
     {
       "id": "F59",
@@ -604,8 +602,7 @@
       "tests": [
         "test_ga4_unverified_event_name_is_refused"
       ],
-      "status": "pending-build",
-      "pending_item": "measure"
+      "status": "tested"
     },
     {
       "id": "F60",
@@ -616,8 +613,7 @@
         "test_ga4_report_joins_slots_by_utm_content",
         "test_ga4_reconcile_prefers_the_conservative_reading"
       ],
-      "status": "pending-build",
-      "pending_item": "measure"
+      "status": "tested"
     },
     {
       "id": "F61",
@@ -627,8 +623,7 @@
       "tests": [
         "test_linkedin_audit_is_krish_only_even_after_approval"
       ],
-      "status": "pending-build",
-      "pending_item": "audit"
+      "status": "tested"
     },
     {
       "id": "F62",
@@ -636,10 +631,9 @@
       "source": "Phase 0-2 hardening review (item audit); Threads is a personal identity (R59)",
       "guard": "engine/channel_audit.py:repair_plan (item audit)",
       "tests": [
-        "test_facebook_and_threads_audit_edits_are_held"
+        "test_facebook_and_threads_follow_the_audit_authority"
       ],
-      "status": "pending-build",
-      "pending_item": "audit"
+      "status": "tested"
     },
     {
       "id": "F63",
@@ -649,8 +643,7 @@
       "tests": [
         "test_www_hosts_match_their_account"
       ],
-      "status": "pending-build",
-      "pending_item": "audit"
+      "status": "tested"
     },
     {
       "id": "F64",
@@ -660,8 +653,7 @@
       "tests": [
         "test_threads_text_limit_is_500"
       ],
-      "status": "pending-build",
-      "pending_item": "social"
+      "status": "tested"
     },
     {
       "id": "G1",

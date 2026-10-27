@@ -165,7 +165,7 @@ class FailureRegisterTests(unittest.TestCase):
         names = defined_tests()
         expected = [(t, 'measure') for t in GA4_TESTS] + [
             ('test_linkedin_audit_is_krish_only_even_after_approval', 'audit'),
-            ('test_facebook_and_threads_audit_edits_are_held', 'audit'),
+            ('test_facebook_and_threads_follow_the_audit_authority', 'audit'),
             ('test_www_hosts_match_their_account', 'audit'),
             ('test_threads_text_limit_is_500', 'social')]
         for name, item in expected:
