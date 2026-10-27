@@ -1,0 +1,45 @@
+{
+  "threads-1": {
+    "id": "bbbbbbbbbbbbbbbbbbbbbb01",
+    "channelId": "cccccccccccccccccccccc02",
+    "channelService": "threads",
+    "status": "sent",
+    "text": "Synthetic Threads post for tests. What would you ask first?",
+    "dueAt": "2026-11-02T12:00:00-05:00",
+    "sentAt": "2026-11-02T17:00:04Z",
+    "externalLink": "https://www.threads.com/@synthetic/post/SYNTHETIC1",
+    "via": "api",
+    "assets": [],
+    "schedulingType": "automatic",
+    "metadata": {
+      "type": "post",
+      "linkAttachment": null
+    }
+  },
+  "ig-story-1": {
+    "id": "aaaaaaaaaaaaaaaaaaaaaa01",
+    "channelId": "cccccccccccccccccccccc03",
+    "channelService": "instagram",
+    "status": "sent",
+    "text": "Synthetic Story frame one.",
+    "dueAt": "2026-11-02T18:00:00-05:00",
+    "sentAt": "2026-11-02T23:00:03Z",
+    "externalLink": "https://www.instagram.com/stories/synthetic/1/",
+    "via": "api",
+    "assets": [
+      {
+        "type": "image",
+        "source": "https://buffer.example.org/synthetic/frame-1.png",
+        "thumbnail": ""
+      }
+    ],
+    "schedulingType": "automatic",
+    "metadata": {
+      "type": "story",
+      "shouldShareToFeed": false,
+      "isAiGenerated": true,
+      "link": null,
+      "stickerFields": null
+    }
+  }
+}
