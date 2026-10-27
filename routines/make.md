@@ -77,15 +77,16 @@ A connector missing or signed out: stop and report which.
    exact words, asset order, no due time. Record its `buffer_draft_id`.
 8. **Propose the go-live manifest through the runner.** The manifest is
    `run_id` plus, per slot, `slot`, `channel`, `buffer_draft_id`,
-   `payload_sha256` and `per_item_review`: ids and hashes only, no words, no
-   figures. If a workflow under `.github/workflows/` on main lists the
-   `repository_dispatch` type `growth-go-live-manifest`, send it there with
-   `gh api repos/krishanraja/growth-makeyourmindup/dispatches --input
-   FILE`, where FILE holds `{"event_type": "growth-go-live-manifest",
-   "client_payload": MANIFEST}` (or the GitHub connector's dispatch tool).
-   The runner holds the token and proposes it to Control Center. No such
-   workflow: send nothing, hold `runner_path_missing`, and put the manifest
-   in your summary.
+   `payload_sha256`, `per_item_review` and the spec slot's `format`,
+   `due_at`, `link_placement` and `publish_mode`: ids, codes, times and
+   hashes only, no words. Send it as the `repository_dispatch` type
+   `growth-go-live-manifest` with `gh api
+   repos/krishanraja/growth-makeyourmindup/dispatches --input FILE`, where
+   FILE holds `{"event_type": "growth-go-live-manifest", "client_payload":
+   MANIFEST}` (or the GitHub connector's dispatch tool). The runner
+   (`.github/workflows/handoff.yml`) holds the token, checks each draft
+   against its hash and proposes it to Control Center. The dispatch fails:
+   hold `runner_path_missing` and put the manifest in your summary.
 9. **Meter yourself.** Run `python growth.py run cost self --claude-dir
    ~/.claude/projects --since <today>` and paste its one line. (The full
    aggregate is `python growth.py run cost baseline --claude-dir

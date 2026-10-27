@@ -57,17 +57,18 @@ A connector missing or signed out: stop and report which.
    only as an arm of a registered experiment in `experiments.json`, at most
    one experiment per channel; otherwise leave it out and say why. Lint
    errors hold the packet.
-6. **Propose the Sunday sign-off through the runner.** The proposal is the
-   `run_id`, the week number, the spec's lint digest and each slot's
-   `payload_sha256`: ids and hashes only. If a workflow under
-   `.github/workflows/` on main lists the `repository_dispatch` type
-   `growth-week-packet`, send it with `gh api
+6. **Propose the Sunday sign-off through the runner.** The packet is
+   `run_id`, `week` (W45, ...), `spec_sha256` (the spec's lint digest from
+   `run lint`) and `slots`, each `slot`, `channel` and `payload_sha256`: ids
+   and hashes only. Send it as the `repository_dispatch` type
+   `growth-week-packet` with `gh api
    repos/krishanraja/growth-makeyourmindup/dispatches --input FILE`, where
    FILE holds `{"event_type": "growth-week-packet", "client_payload":
-   PACKET}` (or the GitHub connector's dispatch tool). The runner holds the
-   token and proposes it as the Sunday sign-off (G-A). No such workflow:
-   send nothing, hold `runner_path_missing`, and put the packet in your
-   summary.
+   PACKET}` (or the GitHub connector's dispatch tool). The runner
+   (`.github/workflows/handoff.yml`) holds the token and proposes it as the
+   Sunday sign-off (G-A): a check-in on the open plan, or a plan when none
+   is open. The dispatch fails: hold `runner_path_missing` and put the
+   packet in your summary.
 7. **Meter yourself.** Run `python growth.py run cost self --claude-dir
    ~/.claude/projects --since <today>` and paste its one line.
 
