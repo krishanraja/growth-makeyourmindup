@@ -564,6 +564,17 @@ class ShowBeforePostTests(unittest.TestCase):
         (self.root / 'invariants').mkdir(exist_ok=True)
         (self.root / 'invariants' / 'authority.json').write_text(json.dumps(value), encoding='utf-8')
 
+    def test_the_real_authority_file_names_derivatives_and_opens_after_the_date(self):
+        # Krish, 27 Oct: derivatives of an approved piece go out everywhere once the preview weeks end.
+        from engine.run.autorelease import derivative_formats
+        real = derivative_formats()
+        self.assertTrue({'quote-card', 'receipt-card', 'note', 'story-frame', 'short-video'} <= real)
+        self.assertFalse({'carousel', 'meme'} & real, 'new formats need his eyes, item by item')
+        slot = {'format': 'quote-card'}
+        self.assertFalse(standing_derivative_allowed(slot, {'decision': 'approved'}, '2026-11-29'))
+        self.assertTrue(standing_derivative_allowed(slot, {'decision': 'approved'}, '2026-11-30'))
+        self.assertFalse(standing_derivative_allowed({'format': 'carousel'}, {'decision': 'approved'}, '2026-11-30'))
+
     def test_absent_file_defaults_and_stays_shut(self):
         self.assertEqual(show_before_post_until(self.root), '2026-11-29')
         for day in ('2026-11-03', '2026-11-29', '2026-11-30', '2027-01-01'):

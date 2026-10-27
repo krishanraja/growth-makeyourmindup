@@ -62,7 +62,7 @@
       ],
       "actions": [
         "release-signed-slots",
-        "read-back-native-url"
+        "read-back-scheduled"
       ],
       "secrets": [
         "CONTROL_CENTER_ENGINE_TOKEN",

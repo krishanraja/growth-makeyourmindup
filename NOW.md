@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-10-27
-head: fb61c1d
+head: 5f3485c
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -99,14 +99,15 @@ publication, follower growth or financial ROI.
 
 ## What changed recently
 
+- 2026-10-27 (evening) **V1 of the daily engine is built: it runs without a session, a token in a session, or the PC.** GitHub Actions holds both keys and runs everything mechanical: the Control Center loop (05:10 UTC, with a 05:40 backup), a daily key check (06:50), release of approved go-lives into Buffer every 30 minutes (exact signed bytes only, once, never LinkedIn), measurement at 07:00, 13:00 and 19:00 (per-post verdicts, Google Analytics joined on `utm_content`), and the handoff that turns the routines' Buffer drafts into one-press go-lives. Three Claude routines (make daily, plan on Sundays, watch three times a day) build assets from ten Canva templates in the "Make Your Mind Up" kit and save Buffer drafts. Lanes are machine-checked (`lanes.json`, `docs/LANES.md`). Rulings that day: derivatives of an approved piece post everywhere with no per-post sign-off, shown to him first until 29 November; new formats such as carousels need his eyes and plain, human, humble English; no session holds the engine token; cost is metered by every run. 461 tests on Python 3.9 and 3.12.
 - 2026-10-27 **The engine is rebuilt on the bulletproof architecture, phases 0 to 2** (`docs/plans/2026-10-27-engine-architecture.md`). One signed run spec per week or piece (`growth.py run new|lint|status|pack`), computed readiness, a Release Gate pinned to this engine's nine Buffer channels, the autonomy loop (plan, go-live once, his amended words, a declined check-in stops its plan), 12 crew cards with the What-Works Analyst and the Measurement Specialist, a failure register F01 to F65 and G1 to G9 and quoted rules R1 to R91, each guarded by a test (323 tests). Rulings that day: Substack Notes (from his profile, @mindmakerlive) and Threads join; sign the week with an express lane for meme posts; a full Canva brand kit by Cowork (`docs/briefs/2026-10-27-canva-brand-kit-cowork.md`); secondary targets for followers and paid subscribers; the audit authority covers Facebook and Threads; GA4 comes through Control Center, which now sends per-post readings in this engine's directive (protocol 1.10.0, krishanraja/control-center#578, merged).
 - 2026-10-26 **Drafts follow Krish's approved voice rules from the daily directive.** Control Center protocol 1.5.0 adds `taste` to the directive; `cc start` prints the approved rules as one labelled block and keeps it in `.scratch/cc/voice-rules.txt` for the drafting steps: how a draft is written, never what it is about, never fed to a check, score or queue. None approved yet means none invented; absent means unknown.
 - 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets how hard it pushes. The number is in `docs/NORTH_STAR.md`; contract: ai-harness `contract/north-star-metric.md`.
 
 ## What is next and what is waiting on Krish
 
-- Next: read back the first `web_analytics` directive after Control Center's 05:30 UTC snapshot on 28 October, confirm the sign-up and paid event names in `invariants/ga4.json`, then prepare W45's first signed week (standing W45 to W52 plan plus the Notes and Threads go-live) for Sunday 1 November through a scheduled run. The pilot measurements and Content Engine native editions continue as before; LinkedIn stays his own click.
-- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; new cloud scheduled tasks; merging this branch to main.
+- Next: create the three routines once this is on main, then run the first live loop: a routine drafts W45 Notes and Threads, the handoff proposes them, Krish approves, release schedules them. The Buffer value memo is due 30 October for his 31 October decision.
+- Waiting on Krish: the `BUFFER_API_KEY` GitHub secret (`docs/SETUP-ONCE.md`; release and measure do nothing with Buffer until it is set); optionally remove the wrong token variable from the Claude cloud environment; trash seven unused Canva drafts the template build left in the account root; the Buffer plan by 31 October; approving `invariants/sources.json` at G-A; whether "send" go-lives are held.
 - North Star check (2026-10-27): holds.
 
 ## Read next
