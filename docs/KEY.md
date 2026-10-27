@@ -23,7 +23,7 @@ GitHub Actions secret is only available inside a workflow explicitly
 configured to consume it; it does not automatically appear in a local
 Codex session. Never create a workflow to expose a secret. The check
 workflow deliberately uses no secrets and makes no Control Centre writes;
-only the Control Center loop below reads a secret.
+only the Control Center loop and the measure job below read secrets.
 
 For an already configured production runner, `python growth.py doctor`
 performs read-only checks. Missing key, HTTP 401, endpoint failure or absent
@@ -44,8 +44,16 @@ this engine alone, as `CONTROL_CENTER_ENGINE_TOKEN`. It is a different key
 from `GROWTH_ENGINE_TOKEN`. Control Center keeps only its SHA-256.
 
 - On GitHub it is already a repository secret, with `CONTROL_CENTER_URL` as
-  a repository variable. Only `.github/workflows/control-center.yml` reads
-  them.
+  a repository variable. Only `.github/workflows/control-center.yml` (the
+  05:10 UTC dispatch, with a 05:40 UTC backup that stops when the dispatch
+  already ran) and `.github/workflows/measure.yml` (07:00, 13:00 and 19:00
+  UTC, which also reads the `BUFFER_API_KEY` secret) read them. Each starts
+  with a key check, `python growth.py run keys`, that fails the run with
+  `cc_token_refused` or `buffer_key_refused` so GitHub emails Krish.
+- Sessions do not use it (27 October 2026). With no engine token present,
+  `python growth.py doctor` reports session mode as OK: Control Center is
+  reached by the GitHub runner. A token that is set but is not a `gen1_`
+  value is a warning, never printed and never used: remove it.
 - In the publication workspace, `growth.py cc ... --deliver` reads
   `CONTROL_CENTER_ENGINE_TOKEN` from the environment, or else the file
   `%USERPROFILE%\.config\growth-makeyourmindup\engine-token`, beside the

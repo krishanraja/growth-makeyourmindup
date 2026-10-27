@@ -20,12 +20,13 @@ import subprocess
 import sys
 import tempfile
 
+from . import meter
 from .control_center import (ENGINE_ID, SLUG, ProtocolError, action_key, build_report, golive_review, iso,
                              match_decisions, objective, proposal)
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
 from .operations import aggregate, daily_queue, validate_observation
 
-SECRET_ENV = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN')
+SECRET_ENV = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN', 'BUFFER_API_KEY', 'GITHUB_TOKEN')
 STATE_DIR = Path('.scratch') / 'cc'
 WORKSPACE_ONLY = 'Measured only in the publication workspace'
 NO_SPEND = 'this engine has no spend authority, bought no boosts and does not read platform ad spend'
@@ -212,7 +213,7 @@ def automation_count(root):
     return len(entries) if isinstance(entries, list) else None
 
 
-def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None):
+def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, extra_activity=()):
     root = Path(root)
     automations = automation_count(root)
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
@@ -246,6 +247,7 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     activity.append({'line': 'Read the committed plan: ' + str(len(channels)) + ' channels, ' + str(len(journeys))
                      + ' reader journeys, ' + str(len(experiments)) + ' experiment templates, '
                      + str(sum(e.get('status') == 'running' for e in experiments)) + ' running'})
+    activity += [{'line': line} for line in extra_activity]
     activity.append({'line': 'Posted, sent, published and spent nothing'})
     holds = [{'reason': 'Drafts and dashboard numbers are made only in the publication workspace',
               'detail': 'The automations defined in automations.json' + (' (' + str(automations) + ')' if automations is not None else '')
@@ -551,6 +553,16 @@ VOICE_RULES_FILE = 'voice-rules.txt'
 WEB_ANALYTICS_FILE = 'web-analytics.json'
 
 
+def web_analytics_block(directive):
+    """The `web_analytics` block (protocol 1.10.0) beside the directive or inside it, else None."""
+    if not isinstance(directive, dict):
+        return None
+    block = directive.get('web_analytics')
+    if not isinstance(block, dict) and isinstance(directive.get('directive'), dict):
+        block = directive['directive'].get('web_analytics')
+    return block if isinstance(block, dict) else None
+
+
 def keep_web_analytics(root, directive):
     """Keep today's `web_analytics` (protocol 1.10.0) for the Measurement Specialist.
 
@@ -560,12 +572,75 @@ def keep_web_analytics(root, directive):
     this public repository.
     """
     path = state_path(root, WEB_ANALYTICS_FILE)
-    block = directive.get('web_analytics') if isinstance(directive, dict) else None
+    block = web_analytics_block(directive)
     if isinstance(block, dict):
         write_json(path, block)
     elif path.exists():
         path.unlink()
     return path if isinstance(block, dict) else None
+
+
+WA_DIMS = ('source_medium', 'landing_page', 'utm_content')
+_WA_NAME = re.compile(r'^[A-Za-z][A-Za-z0-9_]{0,39}$')
+_WA_TEXT = re.compile(r'[^A-Za-z0-9 ,.:;()/_-]+')
+
+
+def _wa_text(value, limit=160):
+    """Control Center's words, one line, plain characters only, for a public log."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return ' '.join(_WA_TEXT.sub(' ', value).split())[:limit] or None
+
+
+def web_analytics_summary(block):
+    """What the runner may say about the block: shape only, never a value or a per-page count.
+
+    property, through and days; how many rows of each dim_type; whether coverage
+    is complete and why not; and the event names with their key_event flags.
+    """
+    if not isinstance(block, dict):
+        return {'present': False}
+    rows = block.get('rows')
+    counts = None
+    if isinstance(rows, list):
+        counts = {dim: sum(1 for r in rows if isinstance(r, dict) and r.get('dim_type') == dim) for dim in WA_DIMS}
+    coverage = block.get('coverage') if isinstance(block.get('coverage'), dict) else {}
+    events = block.get('events')
+    names = None
+    if isinstance(events, list):
+        names = [{'name': e['name'] if _WA_NAME.match(e['name']) else '(unreadable name)', 'key': e.get('key_event') is True}
+                 for e in events if isinstance(e, dict) and isinstance(e.get('name'), str)]
+    days = block.get('days')
+    through = block.get('through')
+    return {'present': True, 'property': _wa_text(block.get('property'), 40),
+            'through': through if isinstance(through, str) and re.match(r'^\d{4}-\d{2}-\d{2}$', through) else None,
+            'days': days if isinstance(days, int) and not isinstance(days, bool) else None,
+            'rows': counts, 'complete': coverage.get('complete') is True,
+            'reason': _wa_text(coverage.get('reason')), 'events': names}
+
+
+def web_analytics_line(summary):
+    """The one public log line: counts of rows per dim_type, coverage, event names. No values."""
+    if not summary.get('present'):
+        return "web_analytics: not in today's directive"
+    rows = summary['rows']
+    part = ('rows ' + ' '.join(dim + '=' + str(rows[dim]) for dim in WA_DIMS)) if rows is not None else 'rows not read'
+    coverage = 'complete' if summary['complete'] else 'incomplete' + (' (' + summary['reason'] + ')' if summary['reason'] else '')
+    events = summary['events']
+    names = ('none' if not events else ','.join(e['name'] + ('(key)' if e['key'] else '') for e in events)) \
+        if events is not None else 'not read'
+    return 'web_analytics: ' + part + '; coverage=' + coverage + '; events=' + names
+
+
+def web_analytics_activity(summary):
+    """The report's line: the same shape, with the property, end date and window."""
+    if not summary.get('present'):
+        return "Today's directive carried no web_analytics block, so nothing from GA4 was kept"
+    head = ('web_analytics for property ' + str(summary['property'] or 'unnamed') + ' through '
+            + str(summary['through'] or 'an unstated date') + ' over ' + (str(summary['days']) + ' days' if summary['days'] else 'an unstated window'))
+    return head + ': ' + web_analytics_line(summary)[len('web_analytics: '):]
+
+
 VOICE_USE = ('Use them only for how anything you draft is written. Never use them to choose what it is about, '
              'and never to judge, score, rank or check a draft: the review, the rubric scores, the breakout score, '
              'the queue and growth.py check work exactly as if this block were not here.')
@@ -674,17 +749,28 @@ def cli(args, root, make_client, out=print, checks=None):
         if dispatched and dispatched != ENGINE_ID:
             out('Not ready: the dispatch named another engine; nothing was run')
             return 1
-        run_id = args.run_id or run_id_for('runner', now)
+        # The 05:40 UTC backup reports under its own run_id, so it never conflicts with the dispatch's report.
+        run_id = args.run_id or run_id_for('runner-backup' if getattr(args, 'backup', False) else 'runner', now)
         if not args.deliver:
             report, error = runner_report(root, run_id, now, checks(root), args.mode)
             out('Dry run: no Control Center call. Report ' + report['status'] + ', payload_sha256 ' + report['payload_sha256'])
             return int(bool(error))
         client = make_client()
-        outcome = run(client, 'runner', run_id,
-                      lambda d: runner_report(root, run_id, clock(), checks(root), args.mode, True),
-                      now - dt.timedelta(days=7), clock)
+        seen = {}
+
+        def build(directive):
+            # Keep the block for the measure job, and say what it holds, shape only.
+            keep_web_analytics(root, directive)
+            seen['web'] = web_analytics_summary(web_analytics_block(directive))
+            lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web']), meter.cost_line('before this report')]
+            return runner_report(root, run_id, clock(), checks(root), args.mode, True, extra_activity=lines)
+
+        outcome = run(client, 'runner', run_id, build, now - dt.timedelta(days=7), clock)
+        if 'web' in seen:
+            out(web_analytics_line(seen['web']))
         for line in summary(outcome, public=True):
             out(line)
+        out(meter.cost_line('in all'))
         return int(outcome['status'] != 'succeeded')
 
     job = args.job

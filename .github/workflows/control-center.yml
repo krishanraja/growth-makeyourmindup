@@ -1,17 +1,26 @@
 name: control-center
 # Control Center wakes this engine every morning (05:10 UTC) with a
 # repository_dispatch of type cc-growth-directive. The runner journals the
-# attempt, pulls the directive, checks the engine offline, reports with a
-# readback, reads Krish's decisions and journals the end. It never posts,
-# sends, publishes or spends, and it uploads nothing: this repository is
-# public, so its log carries only counts, codes and digests.
+# attempt, pulls the directive, keeps its web_analytics block for the measure
+# job, checks the engine offline, reports with a readback, reads Krish's
+# decisions and journals the end. It never posts, sends, publishes or spends,
+# and it uploads nothing: this repository is public, so its log carries only
+# counts, codes and digests.
+#
+# The 05:40 UTC schedule is the backup: it first asks the GitHub API whether a
+# repository_dispatch run of this workflow already succeeded today (UTC). If
+# one did it stops with "dispatch already ran today"; otherwise it runs the
+# same loop under its own run_id.
 on:
   repository_dispatch:
     types: [cc-growth-directive]
+  schedule:
+    - cron: '40 5 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: control-center-loop
@@ -22,13 +31,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Start the run clock
+        run: echo "GROWTH_RUN_STARTED=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.12'
+      - name: Skip the backup when the dispatch already ran today
+        id: backup
+        if: github.event_name == 'schedule'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python growth.py run dispatch-check
       - name: Report to Control Center
+        if: steps.backup.outputs.skip != 'true'
         env:
           CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
           CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
@@ -42,4 +60,8 @@ jobs:
             echo "::error::The CONTROL_CENTER_URL repository variable is not set. Nothing was reported."
             exit 1
           fi
-          python growth.py cc runner --deliver
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            python growth.py cc runner --deliver --backup
+          else
+            python growth.py cc runner --deliver
+          fi
