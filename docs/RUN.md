@@ -29,6 +29,12 @@ A session does one job, then ends at a gate packet:
 No mid-turn questions: every question becomes a gate packet and the session
 ends. A run session commits nothing to `engine/`.
 
+## Lanes
+
+L0 Actions and L1 routines (`routines/`) run alone; L2 is one press in
+Control Center; L3 (LinkedIn, Buffer plan, set-up) is Krish's hands
+(`docs/LANES.md`, `lanes.json`).
+
 ## Commands
 
 All offline; none posts, sends, schedules or spends.
@@ -46,8 +52,8 @@ All offline; none posts, sends, schedules or spends.
   cards load by the registry flag for the run's week (such as `w45`), else by
   channel.
 - `python growth.py run card lint FILE`: a Codex task card, before dispatch.
-- `release`, `measure`, `northstar`, `verdict`, `cost`, `ga4`: each says "not
-  built yet" until its module lands.
+- `release`, `measure`, `northstar`, `verdict`, `ga4`: see `--help`. `cost
+  self --claude-dir DIR --since DATE`: the newest session's cost.
 
 Keep each real spec at `.scratch/runs/<run>/spec.json`, never in git: it holds
 unpublished words. The run folder is the `run_id` with each `:` as `_`.
@@ -57,7 +63,7 @@ unpublished words. The run folder is the `run_id` with each `:` as `_`.
 Schema errors; a `week_target` that is not the ladder rung in
 `docs/NORTH_STAR.md` for the Monday (New York) of `window.start`; a
 `payload_sha256` that does not recompute; words that fail `prose_errors`
-(em dashes, stock phrases and the other house rules); an unknown channel or
+(em dashes, stock phrases and other house rules); an unknown channel or
 format, or a format the channel does not take (`social/channels`,
 `social/formats`); `publish_mode` other than `krish_click` on a
 human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a `krish_click` slot with a `due_at`; `spend_usd` above 0; two
