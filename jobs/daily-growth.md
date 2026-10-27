@@ -98,12 +98,20 @@ format; it is not responsible for finding Growth's opportunities for it.
    Personal X/TikTok may have one daily draft. LinkedIn has no volume quota,
    and prioritises trusted judgment and relevant professional relationships;
    reach and publication subscribers are secondary.
+   27 October 2026 (`CHANGES.md`): signed exact payloads on X, TikTok,
+   Threads and Notes go out through the go-live step; LinkedIn stays his click.
+   - Threads: one a day, delegated cadence, Krish's personal voice.
+   - Substack Notes: up to two a day from Krish's profile @mindmakerlive, as
+     he signs.
    Only the specified existing-field metadata repairs have standing authority.
    LinkedIn preparation never submits a comment, reaction, follow or message.
 6. Progress unfinished live audit ranges, recheck repairs and investigate
    dated continuing attention. Use growth.py audit plan/begin/reconcile for
    autonomous metadata repairs, exact-payload journals for separately
    approved protected edits, and checkpoint only complete accounts.
+   krish_only items (LinkedIn, and accounts whose audit authority Krish has
+   not extended) go to his list as a described change; the engine never
+   journals or saves them.
 7. Update the private trial ledger with observed totals, post/draft IDs,
    native URLs, dates, denominators and missingness. Compare equivalent
    windows; do not infer subscriber attribution from a UTM alone. Separate

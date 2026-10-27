@@ -12,6 +12,9 @@ channel after the pilot closeout. The publication North Star is unchanged.
    scoped X/TikTok. Map published articles/videos to unused amplification angles,
    choose formats, and brief Content Engine for supply gaps. Do not post a still
    as a pretend YouTube video or reuse a weak asset to satisfy a quota.
+   27 October 2026 (`CHANGES.md`): Threads (one a day) and Substack Notes
+   from Krish's profile @mindmakerlive (up to two a day, as he signs) join
+   this floor with delegated cadence and his personal voice.
 4. For IG/FB, pair distribution and plan native Story continuation; check real
    platform presentation and actual interactive capabilities. For X, make one
    concrete finding legible in the feed. For TikTok/YouTube, select an accepted

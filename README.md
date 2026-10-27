@@ -125,3 +125,10 @@ an already configured secret. GitHub secrets cannot be read back.
 The content engine and AEO engine remain independent. No Notes, WhatsApp,
 paid boosts or automated outreach. Only the scoped existing-field audit
 repairs above may change social content without a fresh approval.
+
+27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
+"No Notes" above is superseded. Substack Notes are back, posted from Krish's
+profile @mindmakerlive at up to two a day as he signs, and Threads joins with
+delegated cadence. Signed exact payloads on X, TikTok, Threads and Notes go
+out through the go-live step; LinkedIn stays his click. A run session reads
+`docs/RUN.md`. WhatsApp, paid boosts and automated outreach stay off.

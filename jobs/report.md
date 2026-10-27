@@ -40,6 +40,11 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    cited sources, with run date/freshness. Missing or stale is explicit.
    Never run the paid AEO engine. Monthly, revisit deferred channels only
    against evidence and Krish's instructions; Notes/WhatsApp/paid stay off.
+   27 October 2026 (`CHANGES.md`): Notes are back, from Krish's profile
+   @mindmakerlive, and Threads joins; report both as channels, each with its
+   two-week baseline before any verdict. WhatsApp and paid stay off. The
+   What-Works Analyst's ledger (`crew/what-works/`) goes into the Sunday
+   check-in.
 7. Prepare/check the v2 report. Current Control Centre cannot show all rich
    fields; include essential context in card prose and retain full local
    records. Apply the `AGENTS.md` delivery rule. UI requirements are a brief,
