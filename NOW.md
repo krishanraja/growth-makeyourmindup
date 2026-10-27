@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
-as_of: 2026-10-26
+as_of: 2026-10-27
 head: 2fe4eb0
 lifecycle: live
 production_url: none
@@ -22,11 +22,23 @@ The makeyourmindup growth engine: it drafts the posts that bring new readers to 
 
 Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
 
-## Where it is right now (as of 2026-10-26)
+## Where it is right now (as of 2026-10-27)
 
-<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-26", "current_source": "Native Substack Growth sources, New subscribers, trailing 7 days, all categories: no subscribers found; this bounds week-to-date to zero. Private fresh-owner/substack-seven-day-sources.txt", "urgency": 4, "urgency_reason": "0 of 25; under 40%"} --> **North Star number: U4, far behind.** No new subscribers appear in the native trailing-seven-day source report on 26 October, so week-to-date organic subscribers are zero against 25 this week. This is the displayed measurement, not proof that reporting is instantaneous or that the new posts have had time to work.
+<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-27", "current_source": "Native Substack Growth sources, New subscribers, trailing 7 days, all categories: no subscribers found; this bounds week-to-date to zero. Private daily-20261027/substack-seven-day-sources.txt", "urgency": 4, "urgency_reason": "0 of 25; under 40%"} --> **North Star number: U4, far behind.** No new subscribers appear in the native trailing-seven-day source report on 27 October, so week-to-date organic subscribers are zero against 25 this week. This is the displayed measurement, not proof that reporting is instantaneous or that the new posts have had time to work.
 
 Lifecycle: live. The detail is in `README.md`.
+
+27 October session closeout: the existing Drive 4 Growth folder is the versioned
+distribution library, with the shopping-agent v3 PDF and copy preserved.
+`docs/ASSET-STORAGE.md` now governs every session; `docs/SESSION-HANDOVER.md`
+points to the private asset inventory and recovery archive. Private evidence
+stays local because the supplied Drive folder is editable by link. Content
+Engine production originals remain in their existing home. Krish will publish
+LinkedIn manually in Buffer; publication is not claimed. Existing daily/weekly
+automations continue and must follow the storage/closeout rule.
+
+27 October daily run: native early pilot metrics and all scoped audience baselines were refreshed. The pilot is only about 12-15 hours old; exact 24-hour comparisons remain pending. No additional approved native supply is queued. Shopping-agent LinkedIn document and background comment are prepared separately; Krish explicitly chose manual publication. Buffer stores the correct PDF but loses its saved preview; native LinkedIn processed and preserved six pages. One source-verified professional conversation and a specific native amplification brief are in the private daily-20261027/REVIEW.md. Existing Muse Short related-video continuation still persists. No public changes, engagement submission or paid-offer changes occurred.
+
 
 The social operating system is structured under social/: seven scoped channel
 profiles, six format delivery contracts, one Buffer tool profile, dated
@@ -92,8 +104,8 @@ publication, follower growth or financial ROI.
 
 ## What is next and what is waiting on Krish
 
-- Next: at the daily run, read the live pilot's follower, profile-visit and subscriber results, then progress the prepared Content Engine brief for the next approved native edition. No additional approved daily supply is queued. Friday production remains with its existing chat; LinkedIn stays manual. Private fresh-owner/CLOSEOUT.md holds the baseline, experiment and exact delivery receipts.
-- North Star check (2026-10-26): holds.
+- Next: obtain Content Engine native editions from the specific shopping-agent handoff and existing email-test Short brief, then secure creative review before distribution. Continue the pilot measurements at their actual elapsed ages. Krish alone publishes LinkedIn; one current conversation suggestion is ready privately.
+- North Star check (2026-10-27): holds.
 
 ## Read next
 

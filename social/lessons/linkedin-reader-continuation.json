@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "linkedin-reader-continuation",
+  "category": "channel",
+  "scope": ["linkedin", "carousel"],
+  "status": "accepted",
+  "finding": "A LinkedIn carousel must deliver a useful standalone argument and a coherent next action. For the shopping-agent edition, the final card introduces thinking effort and says Link in the post text; the caption contains that next-read link. The original shopping article belongs in a separately labelled background comment. Do not place a long raw URL on the card, depend on clickable image/PDF links, or promise the first comment will be visible. No engagement benefit for comment links has been established. Preserve personal voice and require human publication.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": ".scratch/session-closeout-20261027/CLOSEOUT.md",
+    "observed_at": "2026-10-27",
+    "result": "Krish rejected the robotic/raw-URL final card, required a seamless continuation, accepted preparation of v3, and explicitly chose manual Buffer publication. No live outcome inferred."
+  },
+  "revisit_when": "A new edition changes the promised destination, or a native post reveals a broken continuation; validate the full reader journey rather than mechanically copying the CTA.",
+  "supersedes": null
+}

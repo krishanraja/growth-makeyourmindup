@@ -6,6 +6,9 @@ production standards. Do not copy its visual or narrative canon into this tree.
 
 ## Locate the work before reading more
 
+Asset homes and mandatory closeout: `docs/ASSET-STORAGE.md`. Read it before
+creating or uploading a package; keep private evidence out of the shared library.
+
 | Question | Canonical owner |
 |---|---|
 | Which account, audience, register and purpose? | `channels/<channel>.json`, then its guide and `docs/ACCOUNT-VOICE.md` |
