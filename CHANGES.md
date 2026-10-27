@@ -1,5 +1,42 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-27: Krish adopted the reference architecture for this engine
+  (`docs/plans/2026-10-27-engine-architecture.md`) and ruled, in one
+  question batch and three messages:
+  - Channels: he chose to add **Substack Notes** and **Threads**. This
+    supersedes the 2026-10-14 "I don't think I need Substack notes" ruling
+    and the 2026-10-26 line that Threads is not in scope merely because
+    Buffer connects it.
+  - Go-live: "Sign the week, but I am likely to want to add in meme style
+    instagram and youtube and tiktok posts randomly too, so these need to be
+    queued properly even at short notice - I'll have an idea, send it
+    through, then the engine will build, show me for approval, and then
+    queue and post autonomously. content.krishraja.com can be expanded to
+    help me manage all of this stably and reliably with minimal copy
+    pasting or manual asking". LinkedIn stays his own final click.
+  - Canva: "yes its important you create a FULL brand kit in Canva for
+    use, You choose whatever the content-engine is not covering, and gives
+    maximum amplification and speed". For that Canva lane only, this
+    supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line;
+    content-engine keeps its formats and standards.
+  - "you can create the brand kit in Canva with computer use on my PC -
+    assets are all in H drive in Ventures folder. you can spin up a cowork
+    prompt to do it and I can open the right H Drive folder and log in to
+    Canva" (prompt: `docs/briefs/2026-10-27-canva-brand-kit-cowork.md`).
+  - Targets: he chose secondary targets (daily followers per channel,
+    weekly paid subscribers), proposed after two weeks of measured
+    baseline; the North Star stays the one number.
+  - "knowing what works and what doesnt is CRITICAL, make someone an owner
+    of that, or build a specialist for it in the engine if there is not
+    already one": the What-Works Analyst owns it.
+  - His aim for the engine: "obsessed with getting this media channel as
+    many subscribers on every channel possible, paid subscribers to my
+    substack and be my world class social media manager ensuring my use of
+    every social media platform is autonomously able to drive up followers
+    every single day".
+  Nothing in these rulings authorises a new connection, spend or
+  automation by itself; those stay his at the time (plan, "Decisions").
+
 - 2026-10-26: Control Center's daily directive (protocol 1.5.0, control-center
   PR #561) now carries `taste`: the voice rules Krish approved or reworded in
   Control Center. `growth.py cc start` prints them as a block headed

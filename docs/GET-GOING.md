@@ -70,6 +70,13 @@ task. The original technical backlog below remains open, not silently done.
 - [ ] **Step 4.** `paid_boosts_usd`: find out with evidence whether boost spend can be read (Substack or LinkedIn records). If it can, measure it. If it cannot, keep it missing with that exact reason.
 - [ ] **Step 5.** Make the daily recommendation the single post or experiment step most likely to add the right subscribers, prepared and tied to `new_subscribers`.
 
+## The architecture upgrade (2026-10-27)
+
+Krish adopted the bulletproof-engine reference for this repository. The plan,
+its phases and acceptance tests are in
+`docs/plans/2026-10-27-engine-architecture.md`. Until its Phase 6 cutover the
+build below and the current route keep running unchanged.
+
 ## Checks
 
 `python growth.py --self-test`, `doctor --offline`, the fixture `dry-run` and a `cc runner` dry run, on Python 3.9 and 3.12.
