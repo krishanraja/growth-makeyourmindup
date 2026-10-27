@@ -758,6 +758,288 @@
       "status": "tested"
     },
     {
+      "id": "F72",
+      "title": "A go-live schedules a Buffer draft that differs from what Krish signed by one word, one asset byte or an asset that cannot be downloaded",
+      "source": "V1 build, 27 Oct 2026: L0 release (engine/run/autorelease.py, .github/workflows/release.yml)",
+      "guard": "engine/run/autorelease.py:Run rebuilds each draft with engine/run/autorelease.py:_rebuilt_digest and engine/run/autorelease.py:draft_line and schedules only when the digest equals the signed payload_sha256; engine/run/autorelease.py:may_release",
+      "tests": [
+        "test_one_changed_asset_byte_holds",
+        "test_one_changed_word_holds",
+        "test_a_missing_asset_download_holds",
+        "test_happy_path_schedules_once_with_the_full_payload",
+        "test_an_unsigned_slot_is_never_touched",
+        "test_no_approved_go_live_touches_nothing",
+        "test_a_declined_go_live_stops",
+        "test_an_amended_decision_posts_his_version",
+        "test_an_amendment_with_a_bad_digest_releases_nothing",
+        "test_an_amendment_that_moves_the_draft_holds",
+        "test_a_past_due_time_holds",
+        "test_the_dry_run_sends_no_mutation"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F73",
+      "title": "A second release run schedules a post again, or a post scheduled in other words counts as done",
+      "source": "V1 build, 27 Oct 2026: L0 release; Buffer is the ledger, so no local state is needed",
+      "guard": "engine/run/autorelease.py:_matches counts a post already scheduled or sent in the signed words as done and holds any other",
+      "tests": [
+        "test_a_second_run_is_a_no_op",
+        "test_scheduled_in_other_words_is_held_loudly_not_counted"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F74",
+      "title": "An uncertain or refused Buffer edit is sent again instead of read back",
+      "source": "V1 build, 27 Oct 2026: L0 release",
+      "guard": "engine/run/autorelease.py:slot reads the post back once after a failed edit and never resends; engine/run/buffer_api.py:_transient retries one 5xx only",
+      "tests": [
+        "test_a_refused_edit_is_read_back_and_held_never_resent",
+        "test_one_retry_on_5xx_only"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F75",
+      "title": "A refused Buffer key is retried or passes quietly instead of failing the run",
+      "source": "V1 build, 27 Oct 2026: engine/run/buffer_api.py",
+      "guard": "engine/run/buffer_api.py:BufferAuthError (401, 403 and named refusals, never retried) stops engine/run/autorelease.py:autorelease with exit 1 before any Control Center read",
+      "tests": [
+        "test_a_refused_key_fails_loudly",
+        "test_401_and_403_are_auth_errors_never_retried",
+        "test_errors_carry_no_key_or_url"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F76",
+      "title": "Release acts on a go-live it did not read back from its own staged report by the digest Krish decided on",
+      "source": "V1 build, 27 Oct 2026: L0 release; the staged report convention in engine/run/autorelease.py",
+      "guard": "engine/run/autorelease.py:read_proposal at engine/run/autorelease.py:staged_report_run_id; engine/run/autorelease.py:parse_manifest recomputes every engine line",
+      "tests": [
+        "test_report_address_is_bound_to_the_decided_digest",
+        "test_an_unapproved_plan_or_missing_report_releases_nothing",
+        "test_engine_lines_must_recompute"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F77",
+      "title": "The Buffer client can publish now, add to the queue or delete",
+      "source": "V1 build, 27 Oct 2026: engine/run/buffer_api.py",
+      "guard": "engine/run/buffer_api.py:Buffer holds one mutation, engine/run/buffer_api.py:schedule_draft (editPost to customScheduled, a draft only); engine/run/buffer_api.py:edit_input; engine/run/buffer_api.py:download_sha256 pins asset URLs and caps their size",
+      "tests": [
+        "test_no_immediate_publish_or_removal_path_exists",
+        "test_only_a_draft_is_scheduled_and_documents_and_stickers_hold",
+        "test_the_endpoint_and_asset_urls_are_pinned",
+        "test_an_asset_over_the_cap_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F78",
+      "title": "Release looks up its Control Center token among every secret name and could send the Buffer key to Control Center",
+      "source": "V1 build, 27 Oct 2026: integration bug fixed in 52f1147: cc_loop.SECRET_ENV now lists BUFFER_API_KEY for redaction",
+      "guard": "engine/run/autorelease.py:_cc_client reads CONTROL_CENTER_ENGINE_TOKEN alone",
+      "tests": [
+        "test_the_cli_routes_and_refuses_without_a_key",
+        "test_the_workflow_names_only_the_expected_secrets"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F79",
+      "title": "The morning Control Center run is missed when the 05:10 dispatch does not arrive, or runs twice when it did",
+      "source": "V1 build, 27 Oct 2026: the backup cron in .github/workflows/control-center.yml",
+      "guard": "engine/run/backup.py:dispatch_succeeded_today and engine/run/backup.py:decide: the 05:40 UTC backup runs unless a repository_dispatch run succeeded today (UTC); an unreadable answer runs it",
+      "tests": [
+        "test_a_successful_dispatch_today_skips_the_backup",
+        "test_anything_else_runs_the_backup",
+        "test_the_request_asks_only_for_todays_successful_dispatches",
+        "test_an_unreadable_answer_runs_the_backup_and_prints_no_token",
+        "test_control_center_has_the_backup_schedule_and_gate",
+        "test_backup_runner_reports_under_its_own_run_id"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F80",
+      "title": "The runner drops the directive's web_analytics block or logs its values",
+      "source": "V1 build, 27 Oct 2026: the Control Center runner (engine/cc_loop.py), protocol 1.10.0",
+      "guard": "engine/cc_loop.py:web_analytics_block, engine/cc_loop.py:keep_web_analytics and engine/cc_loop.py:web_analytics_summary log the shape only: row counts, coverage and event names",
+      "tests": [
+        "test_summary_line_is_shape_only",
+        "test_absent_and_unread_parts_are_said",
+        "test_block_is_found_beside_or_inside_the_directive",
+        "test_runner_keeps_the_block_and_logs_its_shape"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F81",
+      "title": "A measure verdict is given too early, against another channel's history, or from a post that is not this engine's",
+      "source": "V1 build, 27 Oct 2026: L0 measure (engine/run/measure_auto.py, .github/workflows/measure.yml)",
+      "guard": "engine/run/measure_auto.py:verdicts judges each post against its own channel's median after its window, with no verdict for a channel's first 14 days; engine/run/buffer_reads.py:sent_posts reads only the pinned channels and skips imported posts",
+      "tests": [
+        "test_works_neutral_and_fails_against_the_channels_own_median",
+        "test_window_not_elapsed_and_thin_history_are_insufficient",
+        "test_a_new_channel_stays_insufficient_for_fourteen_days",
+        "test_a_zero_median_gives_no_verdict",
+        "test_only_this_engines_pinned_channels_and_no_imported_posts",
+        "test_metrics_come_from_get_post_only_when_the_list_has_none",
+        "test_without_buffer_it_still_runs_the_ga4_part",
+        "test_unverified_event_names_are_not_counted",
+        "test_a_buffer_failure_is_held_by_name_and_fails_the_run",
+        "test_deliver_reports_by_the_existing_path_with_a_readback",
+        "test_existing_measure_commands_still_route",
+        "test_measure_runs_three_times_a_day_after_a_key_check"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F82",
+      "title": "A refused or missing key passes the daily key check",
+      "source": "V1 build, 27 Oct 2026: L0 keys (engine/run/keys.py, .github/workflows/keys.yml)",
+      "guard": "engine/run/keys.py:check_cc and engine/run/keys.py:check_buffer; engine/run/keys.py:main exits 1 with the reason code and never prints the key",
+      "tests": [
+        "test_healthy_control_center_and_no_buffer_module_passes",
+        "test_refused_engine_token_exits_non_zero_with_its_code",
+        "test_missing_or_foreign_engine_token",
+        "test_refused_buffer_key_exits_non_zero_with_its_code",
+        "test_buffer_not_configured_and_a_healthy_buffer",
+        "test_keys_is_routed"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F83",
+      "title": "doctor calls a session with no engine token not ready, or prints or uses a foreign token",
+      "source": "V1 build, 27 Oct 2026: runner hardening; no session holds the engine key (R93)",
+      "guard": "growth.py:engine_token_mode and growth.py:doctor (session mode is OK, a foreign token is a warning); growth.py:engine_client refuses a token that is not gen1_. Outside engine/, so the register cannot check these paths",
+      "tests": [
+        "test_no_engine_token_is_session_mode_and_ready",
+        "test_a_foreign_token_is_a_warning_never_printed_or_used",
+        "test_the_engine_token_is_still_checked_read_only",
+        "test_engine_client_refuses_a_foreign_token"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F84",
+      "title": "A run or a routine reports no cost of its own",
+      "source": "V1 build, 27 Oct 2026: self-metering (R93: \"Same for the cost baseline\")",
+      "guard": "engine/meter.py:install counts every urllib call once and engine/meter.py:cost_line prints seconds and calls only; engine/run/cost.py:self_meter reads the latest session for run cost self",
+      "tests": [
+        "test_one_counter_sees_every_urllib_call",
+        "test_cost_line_is_seconds_and_calls_only",
+        "test_latest_session_only",
+        "test_one_line_without_text_or_paths",
+        "test_since_bounds_and_unknowns",
+        "test_codex_logs_are_read_only_when_named"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F85",
+      "title": "The handoff proposes a go-live from the routine's word instead of the live draft",
+      "source": "V1 build, 27 Oct 2026: L0 handoff (engine/run/handoff.py, .github/workflows/handoff.yml)",
+      "guard": "engine/run/handoff.py:rebuild reads each draft fresh and rebuilds its line with engine/run/autorelease.py:draft_line; a mismatch holds handoff_digest_mismatch",
+      "tests": [
+        "test_a_mismatched_digest_holds_that_slot",
+        "test_a_draft_that_is_no_longer_a_draft_holds",
+        "test_a_matching_manifest_is_proposed_and_autorelease_releases_it",
+        "test_a_second_handoff_of_the_same_manifest_reports_nothing_new",
+        "test_an_unknown_key_is_rejected_before_any_call",
+        "test_the_dry_run_sends_nothing",
+        "test_no_open_plan_proposes_nothing",
+        "test_a_week_packet_is_one_check_in_on_the_open_plan_or_a_plan",
+        "test_make_piece_is_recorded_and_proposes_nothing"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F86",
+      "title": "A LinkedIn slot reaches a go-live as an engine post, or release reads or schedules a LinkedIn draft",
+      "source": "V1 build, 27 Oct 2026: L0 handoff and release; LinkedIn stays his own final click (R62, R96)",
+      "guard": "engine/run/handoff.py:rebuild turns every LinkedIn line to krish_click with its own digest; engine/run/autorelease.py:slot makes no call for a krish_click slot",
+      "tests": [
+        "test_linkedin_always_goes_in_as_krish_click",
+        "test_linkedin_stays_a_draft_and_is_never_read"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F87",
+      "title": "A new kind of post rides in a batch go-live, or derivatives are read from a key authority.json does not use",
+      "source": "V1 build, 27 Oct 2026: merge e28626f: release and handoff read derivative formats one way (R92, R97)",
+      "guard": "engine/run/autorelease.py:derivative_formats reads the derivative classes of invariants/authority.json for both; engine/run/handoff.py:needs_own_review and engine/run/handoff.py:new_formats give every other format a go-live of its own",
+      "tests": [
+        "test_a_new_kind_of_post_is_its_own_go_live",
+        "test_authority_file_names_the_new_formats",
+        "test_routine_per_item_review_is_honoured",
+        "test_absent_file_defaults_and_stays_shut",
+        "test_both_sides_of_the_date",
+        "test_the_date_is_read_from_the_file"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F88",
+      "title": "An oversize go-live manifest is cut off or reordered",
+      "source": "V1 build, 27 Oct 2026: L0 handoff; Control Center caps an exact payload at 8,000 characters",
+      "guard": "engine/run/handoff.py:pack splits the lines in order into parts of PAYLOAD_CAP or less; engine/run/handoff.py:golive_proposals numbers them",
+      "tests": [
+        "test_an_oversize_manifest_splits_into_go_lives_in_order"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F89",
+      "title": "A routine's client_payload reaches a shell run line",
+      "source": "V1 build, 27 Oct 2026: .github/workflows/handoff.yml",
+      "guard": "The payload reaches the job only through the HANDOFF_PAYLOAD env var, written to a file by Python; engine/run/handoff.py:load_payload caps and parses it",
+      "tests": [
+        "test_the_payload_never_reaches_a_run_line",
+        "test_triggers_secrets_and_limits"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F90",
+      "title": "A public Actions log carries words, URLs, ids, digests or keys",
+      "source": "V1 build, 27 Oct 2026: every L0 job; the repository is public",
+      "guard": "engine/run/autorelease.py:autorelease, engine/run/handoff.py:_finish and engine/run/measure_auto.py:_counts_line print counts and reason codes only",
+      "tests": [
+        "test_the_summary_carries_no_words_urls_or_ids",
+        "test_the_log_carries_counts_and_codes_only",
+        "test_dry_run_reads_fakes_reports_locally_and_logs_only_counts"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F91",
+      "title": "A Story frame counts against a channel's daily feed cap",
+      "source": "V1 build, 27 Oct 2026: commit f7f8d78; the calendar's stories floor governs Story frames",
+      "guard": "engine/run/spec.py:lint skips STORY_FORMATS (the same tuple as engine/run/calendar.py) in the posts per day count",
+      "tests": [
+        "test_story_frames_do_not_count_against_the_feed_cap"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F92",
+      "title": "A routine grows past 6 KB or loses a wall",
+      "source": "V1 build, 27 Oct 2026: routines/make.md, plan.md and watch.md",
+      "guard": "tests/test_routines.py holds each routine at 6 KB or less with every wall; engine/run/cost.py:job_kind knows each standing line as its routine",
+      "tests": [
+        "test_each_routine_is_standalone_small_and_walled",
+        "test_make_names_its_sources_and_handoff",
+        "test_standing_text_is_a_routine_to_the_cost_meter"
+      ],
+      "status": "tested"
+    },
+    {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",

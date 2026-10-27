@@ -1103,6 +1103,54 @@
         "test_every_row_is_in_the_lane_authority_gives_it",
         "test_a_wrong_lane_is_refused"
       ]
+    },
+    {
+      "id": "R95",
+      "statement": "Release (L0) queues and posts only what Krish approved: a go-live he signed, read back from its own report by the digest he decided on, and each Buffer draft rebuilt to that exact digest. Anything else holds.",
+      "source_file": "CHANGES.md",
+      "quote": "then the engine will build, show me for approval, and then queue and post autonomously.",
+      "enforced_by": [
+        "engine/run/autorelease.py:may_release",
+        "engine/run/autorelease.py:read_proposal",
+        "engine/run/autorelease.py:_rebuilt_digest"
+      ],
+      "tests": [
+        "test_happy_path_schedules_once_with_the_full_payload",
+        "test_no_approved_go_live_touches_nothing",
+        "test_one_changed_word_holds",
+        "test_report_address_is_bound_to_the_decided_digest"
+      ]
+    },
+    {
+      "id": "R96",
+      "statement": "In the L0 handoff and release LinkedIn stays his own final click: every LinkedIn line goes into a go-live as krish_click, and release never reads or schedules it.",
+      "source_file": "CHANGES.md",
+      "quote": "pasting or manual asking\". LinkedIn stays his own final click.",
+      "enforced_by": [
+        "engine/run/handoff.py:rebuild",
+        "engine/run/autorelease.py:slot"
+      ],
+      "tests": [
+        "test_linkedin_always_goes_in_as_krish_click",
+        "test_linkedin_stays_a_draft_and_is_never_read"
+      ]
+    },
+    {
+      "id": "R97",
+      "statement": "Through 2026-11-29 nothing posts on the standing derivative approval: release needs a go-live he approved. After it only a derivative format of a piece whose board he approved may, and a new kind of post is always its own go-live.",
+      "source_file": "CHANGES.md",
+      "quote": "I would say that for the first 4 weeks you need to show me before you post.",
+      "enforced_by": [
+        "engine/run/autorelease.py:standing_derivative_allowed",
+        "engine/run/autorelease.py:derivative_formats",
+        "engine/run/handoff.py:needs_own_review"
+      ],
+      "tests": [
+        "test_absent_file_defaults_and_stays_shut",
+        "test_both_sides_of_the_date",
+        "test_the_date_is_read_from_the_file",
+        "test_a_new_kind_of_post_is_its_own_go_live"
+      ]
     }
   ]
 }

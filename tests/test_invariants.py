@@ -196,6 +196,25 @@ class FailureRegisterTests(unittest.TestCase):
             if name not in names:  # Still being built by its work item.
                 self.assertEqual((owner[name]['status'], owner[name]['pending_item']), ('pending-build', item), name)
 
+    def test_register_records_the_v1_build(self):
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[71:92]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[92]), ('F72', 'F92', 'G1'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F72', '_rebuilt_digest', 'test_one_changed_asset_byte_holds'),
+                ('F75', 'BufferAuthError', 'test_a_refused_key_fails_loudly'),
+                ('F78', '_cc_client', 'test_the_cli_routes_and_refuses_without_a_key'),
+                ('F85', 'handoff.py:rebuild', 'test_a_mismatched_digest_holds_that_slot'),
+                ('F91', 'spec.py:lint', 'test_story_frames_do_not_count_against_the_feed_cap'),
+                ('F92', 'test_routines.py', 'test_each_routine_is_standalone_small_and_walled')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
+        rules = {r['id']: r for r in load_rules()}
+        for rule_id, phrase in (('R95', 'queue and post autonomously'), ('R96', 'LinkedIn stays his own final click'),
+                                ('R97', 'show me before you post')):
+            self.assertIn(phrase, rules[rule_id]['quote'], rule_id)
+
     def test_missing_test_fails_the_register(self):
         with tempfile.TemporaryDirectory() as folder:
             source = 'def test_present_in_fixture(self):\n    pass\n'

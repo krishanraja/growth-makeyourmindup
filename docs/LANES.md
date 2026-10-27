@@ -17,12 +17,20 @@ Nobody has to be awake or online for these.
 
 | What | When (UTC) | When (London, winter) |
 |---|---|---|
-| The Control Center runner: reads the day's instructions, checks the engine, sends the report, reads Krish's answers | every day 05:10 | 05:10 |
+| The Control Center runner (`control-center.yml`): reads the day's instructions, checks the engine, sends the report, reads Krish's answers | every day 05:10, when Control Center wakes it; a backup at 05:40 runs only if that run has not worked today | 05:10, backup 05:40 |
+| The key check (`keys.yml`): checks that both keys still work. A refused or missing key fails the run, so GitHub emails Krish | every day 06:50 | 06:50 |
+| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte. Never LinkedIn | every 30 minutes | every 30 minutes |
+| Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
 | The handoff (`handoff.yml`): turns a routine's Buffer drafts or week packet into one ask on Krish's list, after checking each draft against its hash | when a routine wakes it | when a routine wakes it |
-| The test suite | on every push | on every push |
+| The test suite (`check.yml`) | on every push and pull request | on every push and pull request |
 
 Only this lane holds the Control Center engine key. It is a GitHub
 repository secret. No chat session holds it.
+
+The North Star line in `NOW.md` is not made here. The "Growth: numbers"
+automation on Krish's PC reads the Substack Growth sources page in his
+browser, and `growth.py run northstar` turns that capture into the line.
+GitHub Actions never reads Substack.
 
 ## L1: runs alone, as Claude cloud routines
 
@@ -36,9 +44,11 @@ sends, deletes or spends.
 | `plan` | builds next week's packet for Krish's Sunday sign-off | Sundays 05:30 | 05:30 |
 | `watch` | builds Krish's quick ideas from Buffer Ideas, starts `make` for newly approved pieces, reports what is held | every day 07:30, 12:30, 17:30 | 07:30, 12:30, 17:30 |
 
-Jobs on Krish's PC (the 09:00 London daily heartbeat, the Saturday 12:00
-London channel audit and the jobs in `README.md`) also run on their own,
-but only while his PC is on.
+Jobs on Krish's PC also run on their own, but only while his PC is on:
+the nine automations in `automations.json` (their times are in `README.md`;
+the channel audit is Saturday 12:00 London) and the 09:00 London daily
+heartbeat. They are kept until W46; `lanes.json` names the routine or job
+that takes over each one, where there is one.
 
 ## L2: waits for Krish's eyes (one press in Control Center)
 

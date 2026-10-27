@@ -30,7 +30,7 @@
       "id": "control-center",
       "lane": "L0_code",
       "workflow": "control-center.yml",
-      "trigger": "repository_dispatch cc-growth-directive from Control Center, 05:10 UTC daily; or by hand",
+      "trigger": "repository_dispatch cc-growth-directive from Control Center, 05:10 UTC daily; a 05:40 UTC backup that runs only when no dispatch run succeeded today; or by hand",
       "may_write": [
         "Control Center engine reports and attempt journal entries, read back by digest"
       ],
@@ -116,7 +116,7 @@
       "id": "handoff",
       "lane": "L0_code",
       "workflow": "handoff.yml",
-      "trigger": "repository_dispatch from a routine (growth-go-live-manifest, growth-week-packet, growth-make-piece), and by hand as a dry run",
+      "trigger": "repository_dispatch from a routine (growth-go-live-manifest, growth-week-packet, growth-make-piece), and by hand (a dry run unless deliver is ticked)",
       "may_write": [
         "a go-live, plan or check-in proposal to Control Center, built from Buffer drafts whose digest matches the routine's, with its readback"
       ],

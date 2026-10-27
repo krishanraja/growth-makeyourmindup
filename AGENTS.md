@@ -385,7 +385,9 @@ routine's Control Center traffic goes through the runner (`docs/LANES.md`).
 Separately, Control Center wakes `.github/workflows/control-center.yml`
 every morning; that GitHub runner checks the engine offline and reports
 what a clean runner can see. Its numbers are always "measured only in the
-publication workspace".
+publication workspace". GitHub Actions runs six workflows, all lane L0
+(`docs/LANES.md`): control-center, release, measure, keys, handoff and
+check. The nine automations below run on Krish's PC and are kept until W46.
 
 ## The schedule (New York time)
 
@@ -407,7 +409,7 @@ earlier selected work. An individual job has no separate 20-minute allowance.
 
 The channel-audit slot uses Europe/London; other rows remain New York time.
 It is explicitly authorised by the 2026-10-21 ruling and may be scheduled
-without creating the other seven jobs. Its heartbeat follows this chat.
+without creating the other eight jobs. Its heartbeat follows this chat.
 Its scoped metadata edits are also the exception to the older setup rule
 against automation prompts that edit platform content.
 

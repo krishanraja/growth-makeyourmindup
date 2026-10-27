@@ -22,8 +22,11 @@ lane"). Content-engine keeps every other format and all production standards.
 (L0 GitHub Actions, L1 the Claude cloud routines in `routines/`), what waits
 for one press in Control Center (L2) and what waits for Krish's hands (L3:
 LinkedIn, the Buffer plan, one-time set-up in
-[docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). Only the GitHub runner holds the
-Control Center engine key; sessions read Control Center through its connector.
+[docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs six
+workflows: control-center, release, measure, keys, handoff and check. The
+nine automations on Krish's PC (below) are kept until W46. Only the GitHub
+runner holds the Control Center engine key; sessions read Control Center
+through its connector.
 
 ## Weekly channel audit
 
@@ -110,7 +113,8 @@ python growth.py cc runner
 
 ## Existing runtime
 
-There are nine scheduled job definitions in `automations.json`. The ninth,
+There are nine scheduled job definitions in `automations.json`, run on
+Krish's PC and kept until W46 (`lanes.json`). The ninth,
 the weekly answer piece, was added on 21 October 2026; Krish creates it in
 Codex by saying "create the automations" again, which updates the existing
 eight and adds the new one. The weekly conversion slot now runs the channel

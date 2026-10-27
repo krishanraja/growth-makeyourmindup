@@ -23,7 +23,7 @@ GitHub Actions secret is only available inside a workflow explicitly
 configured to consume it; it does not automatically appear in a local
 Codex session. Never create a workflow to expose a secret. The check
 workflow deliberately uses no secrets and makes no Control Centre writes;
-only the Control Center loop and the measure job below read secrets.
+only the other L0 workflows below read secrets.
 
 For an already configured production runner, `python growth.py doctor`
 performs read-only checks. Missing key, HTTP 401, endpoint failure or absent
@@ -47,14 +47,15 @@ The GitHub repository secret is the one holder for automated runs; the only
 other copy is the file on Krish's PC for Codex workspace runs:
 
 - **The GitHub runner.** It is a repository secret, with
-  `CONTROL_CENTER_URL` as a repository variable. Only
-  `.github/workflows/control-center.yml` (the 05:10 UTC dispatch, with a
-  05:40 UTC backup that stops when the dispatch already ran),
-  `.github/workflows/measure.yml` (07:00, 13:00 and 19:00 UTC) and
-  `.github/workflows/release.yml` (every 30 minutes) read it; the last two
-  also read the `BUFFER_API_KEY` secret. Measure starts with a key check, and
-  release stops on a refused key; either fails the run with
-  `cc_token_refused` or `buffer_key_refused`, so GitHub emails Krish. All Control Center traffic from a cloud routine goes
+  `CONTROL_CENTER_URL` as a repository variable. Only the L0 workflows in
+  `.github/workflows/` read it: `control-center.yml` (the 05:10 UTC dispatch,
+  with a 05:40 UTC backup that stops when the dispatch already ran),
+  `keys.yml` (06:50 UTC), `measure.yml` (07:00, 13:00 and 19:00 UTC),
+  `release.yml` (every 30 minutes) and `handoff.yml` (when a routine wakes
+  it). All but the first also read the `BUFFER_API_KEY` secret. The key
+  check, measure (which checks first) and release fail the run on a refused
+  key with `cc_token_refused` or `buffer_key_refused`, so GitHub emails
+  Krish. All Control Center traffic from a cloud routine goes
   through this runner (`docs/LANES.md`).
 - **Krish's PC, for Codex workspace runs.** `growth.py cc ... --deliver`
   reads `CONTROL_CENTER_ENGINE_TOKEN` from the environment, or else the file

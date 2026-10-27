@@ -6,8 +6,11 @@ each key goes only where its step says.
 
 ## 1. Buffer API key, saved as a GitHub secret
 
-This lets the GitHub runner read the Buffer drafts the routines make, so it
-can check them against what you approved. It never posts with it.
+This lets the GitHub runner read the Buffer drafts the routines make, check
+them against what you approved, and put only those exact posts in Buffer's
+schedule. It never publishes at once, never deletes and never touches
+LinkedIn. A check at 06:50 UTC each day fails, and GitHub emails you, if
+Buffer refuses the key.
 
 1. Open Buffer (https://publish.buffer.com) and sign in.
 2. Click your profile picture (top right) to open the profile menu.
@@ -24,11 +27,12 @@ can check them against what you approved. It never posts with it.
 
 ## 2. Optional: remove the old engine key from the Claude cloud environment
 
-Sessions no longer use the Control Center engine key. Only the GitHub runner
-holds it, as the repository secret `CONTROL_CENTER_ENGINE_TOKEN`
-([KEY.md](KEY.md)); sessions read Control Center through its connector. If
-you once added `CONTROL_CENTER_ENGINE_TOKEN` to the Claude cloud
-environment, remove it:
+Sessions no longer use the Control Center engine key. The GitHub runner
+holds it as the repository secret `CONTROL_CENTER_ENGINE_TOKEN` (and your PC
+keeps a file for Codex runs; [KEY.md](KEY.md)); sessions read Control Center
+through its connector. If you once added `CONTROL_CENTER_ENGINE_TOKEN` to the
+Claude cloud environment, that is the wrong place for it. If it is not the
+engine's `gen1_` key, `growth.py doctor` warns and never uses it. Remove it:
 
 1. In a Claude Code session on claude.ai, open the cloud environment menu in
    the session's title bar and click **Edit**.
