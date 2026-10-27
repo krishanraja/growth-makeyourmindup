@@ -137,7 +137,8 @@ class RunPackTests(unittest.TestCase):
         self.assertLessEqual(len(narrowed.encode('utf-8')), MAX_BYTES, 'narrowing brings it back under')
 
     def test_run_doc_is_small_and_house_clean(self):
-        raw = (ROOT / 'docs' / 'RUN.md').read_bytes()
+        # Measured with LF endings: a Windows checkout adds a CR per line (F49).
+        raw = (ROOT / 'docs' / 'RUN.md').read_bytes().replace(b'\r\n', b'\n')
         self.assertLessEqual(len(raw), 8 * 1024)
         text = raw.decode('utf-8')
         self.assertFalse(EM_DASH.search(text))

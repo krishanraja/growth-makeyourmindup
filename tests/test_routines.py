@@ -25,7 +25,8 @@ class RoutineTests(unittest.TestCase):
     def test_each_routine_is_standalone_small_and_walled(self):
         for name in ROUTINES:
             path = ROOT / 'routines' / (name + '.md')
-            raw = path.read_bytes()
+            # Measured with LF endings: a Windows checkout adds a CR per line (F49).
+            raw = path.read_bytes().replace(b'\r\n', b'\n')
             self.assertLessEqual(len(raw), 6 * 1024, name)
             body = raw.decode('utf-8')
             self.assertIn(standing(name), body.replace('\n', ' ').replace('"', ''), name)
