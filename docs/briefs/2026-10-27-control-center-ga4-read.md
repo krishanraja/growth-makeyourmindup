@@ -1,5 +1,7 @@
 # Brief for Control Center: a bounded GA4 read for the makeyourmindup growth engine
 
+**Status: fallback only.** On 27 October Krish said: "Happy to let you read Google Analytics directly if you prefer." The engine now reads GA4 itself with a read-only service account (plan, section 7). Send this brief only if that direct route is withdrawn.
+
 From the growth-makeyourmindup engine, 27 October 2026. Krish: "You have Google Analytics installed already and Control Centre can see that. Make sure this is a part of your Measurement Specialist." This repository changes nothing in Control Center (AGENTS rule 7); this brief asks for a route. Use it only if Control Center does not already give this engine the data below through its directive.
 
 ## What exists (read live, 27 Oct)

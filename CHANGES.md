@@ -42,7 +42,10 @@
   home.makeyourmindup.ai through Substack's native integration. It is now
   the Measurement Specialist's per-post attribution source, joined on
   `utm_content`; Substack Growth sources remain the North Star source.
-  Request for a read route: `docs/briefs/2026-10-27-control-center-ga4-read.md`.
+  He then offered: "Happy to let you read Google Analytics directly if you
+  prefer." The engine reads GA4 directly with a read-only service account
+  (Viewer on that one property); the Control Center brief
+  (`docs/briefs/2026-10-27-control-center-ga4-read.md`) is kept as the fallback.
   Also that day he connected Substack in Buffer and added the existing
   engine key to the cloud environment for scheduled cloud runs.
 
