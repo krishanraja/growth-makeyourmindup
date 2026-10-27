@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "canva-lane-boundary",
+  "category": "format",
+  "scope": [
+    "note",
+    "meme",
+    "canva"
+  ],
+  "status": "accepted",
+  "finding": "Growth makes, in Canva, the formats content-engine does not cover: Notes and memes are production_owner growth-canva. It uses the brand kit and approved templates only and applies content-engine's standards by reference. Content-engine keeps its formats and standards. Canva never publishes.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "CHANGES.md, 2026-10-27 entry: \"Canva: \"yes its important you create a FULL brand kit in Canva for use, You choose whatever the content-engine is not covering, and gives maximum amplification and speed\". For that Canva lane only, this supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line; content-engine keeps its formats and standards.\"",
+    "observed_at": "2026-10-27",
+    "result": "format schema allows growth-canva; note.json and meme.json owned by growth-canva; social/guides/canva.md added."
+  },
+  "revisit_when": "Krish changes the Canva lane or content-engine starts covering one of these formats.",
+  "supersedes": null
+}

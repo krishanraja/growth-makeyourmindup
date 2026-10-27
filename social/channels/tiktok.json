@@ -7,7 +7,8 @@
   "mission": "Test native photo/video discovery editions without assuming the Instagram package or capabilities transfer.",
   "formats": [
     "carousel",
-    "short-video"
+    "short-video",
+    "meme"
   ],
   "guide": "social/guides/other-channels.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

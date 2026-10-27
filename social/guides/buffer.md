@@ -3,7 +3,7 @@
 Owner: Growth. Evidence baseline: 26 October 2026. Capability status and review
 interval live in `../tools/buffer.json`; do not duplicate a status table here.
 Publication authority comes from docs/PUBLISHING-AUTHORITY.md. Approved branded
-content has delegated cadence; LinkedIn remains an unscheduled draft; scoped X/TikTok have delegated cadence.
+content has delegated cadence; LinkedIn remains an unscheduled draft; scoped X, TikTok and Threads have delegated cadence.
 Browser operations use
 only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie export.
 
@@ -14,7 +14,8 @@ only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie expor
 2. Read the queue, draft list and native source post identities. Reuse an
    intended existing draft only after recording its current exact contents.
    Identify the revision by text and ordered asset hashes, not draft ID alone.
-3. Obtain the accepted package from content-engine. Record its approval
+3. Obtain the accepted package from content-engine or, for `growth-canva`
+   formats, from the Canva lane (`canva.md`). Record its approval
    evidence, immutable hashes, order and alt text. Apply the account voice rule.
    Keep the exact caption and proposed time in the private posting package.
 4. Inspect the current domain tool schema. Journal operation, target, payload,
@@ -99,7 +100,7 @@ No delete/re-upload workaround, approval bypass or checkpoint advancement.
 ## Scheduling approved branded content
 
 For approved branded content, the current standing permission delegates timing;
-record it separately from creative approval. LinkedIn never enters this scheduling/publication procedure: Krish makes its final publication manually. X/TikTok are explicitly delegated for approved content.
+record it separately from creative approval. LinkedIn never enters this scheduling/publication procedure: Krish makes its final publication manually. X, TikTok and Threads are explicitly delegated for approved content.
 
 Use the authorised delivery route with the exact account, text, media,
 metadata and time. Do not infer permission from this guide or a boolean in a

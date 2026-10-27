@@ -8,7 +8,8 @@
   "formats": [
     "single-image",
     "text",
-    "short-video"
+    "short-video",
+    "meme"
   ],
   "guide": "social/guides/other-channels.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

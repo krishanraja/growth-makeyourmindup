@@ -8,6 +8,10 @@ import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
+# Personal accounts Krish has scoped for delegated cadence of approved content:
+# X and TikTok (ruling of 26 Oct 2026) and Threads (ruling of 27 Oct 2026,
+# CHANGES.md). Every other personal account stays human_publish_only.
+DELEGATED_PERSONAL = ('x', 'tiktok', 'threads')
 
 
 def read(path):
@@ -101,13 +105,20 @@ def inventory(root=ROOT):
         local_ref(root, obj['guide'])
         local_ref(root, obj['voice_policy'])
         local_ref(root, obj['authority_ref'])
-        expected_mode = ('approved_content_cadence' if obj['id'] in ('x', 'tiktok')
-                         else 'human_publish_only' if obj['account_context'] == 'personal'
+        personal = obj['account_context'] == 'personal'
+        if obj['id'] in DELEGATED_PERSONAL and not personal:
+            raise ValueError('account context cannot expand publication authority')
+        expected_mode = ('approved_content_cadence' if personal and obj['id'] in DELEGATED_PERSONAL
+                         else 'human_publish_only' if personal
                          else 'approved_brand_content')
         if obj['publication_mode'] != expected_mode:
             raise ValueError('account context cannot expand publication authority')
         if expected_mode == 'human_publish_only' and obj['daily_posts_target'] is not None:
             raise ValueError('human-only accounts have no automatic posting quota')
+        if personal and (obj['daily_posts_target'] or 0) > 1:
+            raise ValueError('personal accounts have at most one automatic post a day')
+        if (obj['daily_posts_target'] or 0) > 1 and obj['id'] != 'substack-notes':
+            raise ValueError('only Substack Notes has a two-a-day target')
         for name in obj['formats']:
             if name not in result['format'] or obj['id'] not in result['format'][name]['channels']:
                 raise ValueError('channel/format mismatch: ' + name)
@@ -116,6 +127,8 @@ def inventory(root=ROOT):
                 raise ValueError('unknown channel lesson: ' + lesson)
     for obj in result['format'].values():
         local_ref(root, obj['guide'])
+        if obj['production_owner'] == 'growth-canva':
+            local_ref(root, obj['production_reference'])
         if obj['max_assets'] is not None and obj['min_assets'] > obj['max_assets']:
             raise ValueError('inconsistent format asset bounds')
         for name in obj['channels']:
@@ -189,8 +202,10 @@ def preflight(package, as_of=None, root=ROOT):
         raise ValueError('public illustration-disclaimer boilerplate is prohibited; retain private provenance and native metadata')
     if not package['voice_review_passed'] or not package['production']['approved']:
         raise ValueError('voice review and accepted production package are required')
-    count = len(package['assets'])
     f = decision['format']
+    if package['production']['owner'] != f['production_owner']:
+        raise ValueError('production owner does not match the selected format')
+    count = len(package['assets'])
     if count < f['min_assets'] or (f['max_assets'] is not None and count > f['max_assets']):
         raise ValueError('wrong asset count for selected format')
     for asset in package['assets']:

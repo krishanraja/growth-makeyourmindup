@@ -6,7 +6,8 @@
   "account_context": "publication",
   "mission": "Use accepted Shorts to introduce an idea and connect to its verified matching full video.",
   "formats": [
-    "short-video"
+    "short-video",
+    "meme"
   ],
   "guide": "social/guides/other-channels.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

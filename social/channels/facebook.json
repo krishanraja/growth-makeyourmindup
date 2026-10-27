@@ -10,7 +10,8 @@
     "single-image",
     "short-video",
     "text",
-    "story"
+    "story",
+    "meme"
   ],
   "guide": "social/guides/other-channels.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

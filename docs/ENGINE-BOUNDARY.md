@@ -112,3 +112,16 @@ The exact ordered asset hashes and approval evidence stay private. Growth
 may prepare the channel-specific posting package. This approval establishes
 the production reference; it does not approve a publication payload or prove
 a deployed handoff, runtime learning capture or automatic posting.
+
+## 27 October 2026: the Canva lane
+
+Ruling: Krish, 27 October 2026 (`CHANGES.md`). Growth makes, in Canva, the
+formats content-engine does not cover, for amplification and speed: today
+Substack Notes and memes, whose `production_owner` is `growth-canva` in
+`social/formats/`. For that lane only, this supersedes the line above that
+Growth does not run a competing renderer or creative-standard register.
+Content-engine keeps its formats and standards, and the lane applies them by
+reference. Brand kit and approved templates only; every quote matches the
+published piece; Canva never publishes. Approved exports and manifests go to
+the Drive 4 Growth library per `docs/ASSET-STORAGE.md`. Creative acceptance
+stays with Krish. Guide: `social/guides/canva.md`.
