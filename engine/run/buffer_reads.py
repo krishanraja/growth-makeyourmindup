@@ -55,13 +55,39 @@ def buffer_client(environ=None):
     buffer_api = buffer_module()
     if buffer_api is None:
         return None, NOT_INSTALLED
-    for name in ('from_env', 'client_from_env'):
-        if callable(getattr(buffer_api, name, None)):
-            return getattr(buffer_api, name)(environ), None
-    for name in ('BufferClient', 'Client'):
-        if callable(getattr(buffer_api, name, None)):
-            return getattr(buffer_api, name)(key), None
+    if callable(getattr(buffer_api, 'Buffer', None)):
+        return Reader(buffer_api.Buffer(key)), None
+    if callable(getattr(buffer_api, 'Client', None)):  # a stand-in with the reader's shape
+        return buffer_api.Client(key), None
     return None, 'buffer_api has no client constructor this engine knows'
+
+
+class Reader:
+    """The measure job's view of buffer_api.Buffer: posts across the key's organisations.
+
+    The key belongs to one person and may see several organisations; posts are
+    read from each, and channel pinning (release.BUFFER_NAME) happens later.
+    """
+
+    def __init__(self, buffer):
+        self.buffer = buffer
+        self._orgs = None
+
+    def account_check(self):
+        result = self.buffer.account_check()
+        self._orgs = list(result.get('organization_ids') or [])
+        return result
+
+    def list_posts(self, status=None, since=None):
+        if self._orgs is None:
+            self.account_check()
+        posts = []
+        for org in self._orgs:
+            posts += self.buffer.list_posts(org, status=status, since=since)
+        return posts
+
+    def get_post(self, post_id):
+        return self.buffer.get_post(post_id)
 
 
 def _posts(listed):

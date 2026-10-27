@@ -52,9 +52,9 @@ other copy is the file on Krish's PC for Codex workspace runs:
   05:40 UTC backup that stops when the dispatch already ran),
   `.github/workflows/measure.yml` (07:00, 13:00 and 19:00 UTC) and
   `.github/workflows/release.yml` (every 30 minutes) read it; the last two
-  also read the `BUFFER_API_KEY` secret. Each starts with a key check that
-  fails the run with `cc_token_refused` or `buffer_key_refused`, so GitHub
-  emails Krish. All Control Center traffic from a cloud routine goes
+  also read the `BUFFER_API_KEY` secret. Measure starts with a key check, and
+  release stops on a refused key; either fails the run with
+  `cc_token_refused` or `buffer_key_refused`, so GitHub emails Krish. All Control Center traffic from a cloud routine goes
   through this runner (`docs/LANES.md`).
 - **Krish's PC, for Codex workspace runs.** `growth.py cc ... --deliver`
   reads `CONTROL_CENTER_ENGINE_TOKEN` from the environment, or else the file

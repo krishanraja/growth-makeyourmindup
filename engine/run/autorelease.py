@@ -49,7 +49,7 @@ import re
 import sys
 import tempfile
 
-from engine.cc_loop import SECRET_ENV, claim_golives, decisions_since
+from engine.cc_loop import claim_golives, decisions_since
 from engine.control_center import (APPROVED_ORIGIN, RUN_ID, Client, ProtocolError, _latest, report_digest)
 from engine.core import instant, read_json, today
 from engine.run import buffer_api
@@ -421,12 +421,14 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
     return summary, code
 
 
+CC_TOKEN_ENV = 'CONTROL_CENTER_ENGINE_TOKEN'
+
+
 def _cc_client():
     key = ''
-    for name in SECRET_ENV:
-        key = os.environ.get(name, '').strip()
-        if key:
-            break
+    # Only the engine's own bearer. cc_loop.SECRET_ENV lists every secret name
+    # for redaction (it includes BUFFER_API_KEY), so it must never pick the key.
+    key = os.environ.get(CC_TOKEN_ENV, '').strip()
     if not key:
         raise ProtocolError('missing_token')
     return Client(key, os.environ.get('CONTROL_CENTER_URL', '').strip() or APPROVED_ORIGIN)
