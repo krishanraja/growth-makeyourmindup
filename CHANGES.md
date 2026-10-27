@@ -1,5 +1,23 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-27 (later): three more rulings.
+  - Google Analytics: "just get google analytics from control center, might
+    be easier." Control Center already reads GA4 property mymu
+    (G-VC5V9LDE17) daily but does not pass it to engines or break it down by
+    `utm_content`. The exact change is briefed in
+    `docs/briefs/2026-10-27-control-center-ga4-read.md` (primary route). The
+    direct reader stays as an unused fallback with no credentials set.
+  - Substack handle: "substack handle should be mindmake". Checked 27 Oct:
+    @mindmake already belongs to a Substack profile named Mindmake that is
+    neither of the two profiles tied to makeyourmindup (mindmakerlive, the
+    owner, and krishraja1). The rename waits until Krish confirms that
+    profile is his and frees the handle, or names another.
+  - Audit authority: "yes extend". The 2026-10-21 existing-field audit
+    authority (titles, captions, descriptions, links, broken profile links,
+    subscription-link alignment) now also covers the Facebook Page and
+    Threads. LinkedIn stays his own: the engine never edits it. Bio,
+    positioning, pins, creative and re-uploads still need his approval.
+
 - 2026-10-27: Krish adopted the reference architecture for this engine
   (`docs/plans/2026-10-27-engine-architecture.md`) and ruled, in one
   question batch and three messages:
