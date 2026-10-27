@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "channel",
+  "id": "substack-notes",
+  "account_url": "https://home.makeyourmindup.ai",
+  "account_context": "publication",
+  "mission": "Use approved Notes to put the publication's useful findings in front of Substack readers and convert that attention to free subscribers.",
+  "formats": [
+    "note"
+  ],
+  "guide": "social/guides/other-channels.md",
+  "voice_policy": "docs/ACCOUNT-VOICE.md",
+  "live_checks": [
+    "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
+    "Read current queue, drafts and native identities; preserve existing human work.",
+    "Verify the exact destination, visibility and available account capabilities before the selected action.",
+    "Before first use, open the native Notes profile and verify which handle posts as the publication; the publication URL alone does not prove the Notes identity.",
+    "Check whether Substack is connected in Buffer; it was not on 27 October 2026, and connecting it is Krish's decision."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "publishing-authority-split",
+    "substack-filter-settle",
+    "notes-threads-in-scope"
+  ],
+  "publication_mode": "approved_brand_content",
+  "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
+  "daily_posts_target": 2,
+  "daily_drafts_max": null
+}

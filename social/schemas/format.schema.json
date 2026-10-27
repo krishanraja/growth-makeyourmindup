@@ -15,8 +15,11 @@
       "pattern": "^[a-z0-9][a-z0-9-]*$"
     },
     "production_owner": {
-      "const": "content-engine",
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "content-engine",
+        "growth-canva"
+      ]
     },
     "production_reference": {
       "type": "string",

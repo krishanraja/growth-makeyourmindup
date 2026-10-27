@@ -12,7 +12,9 @@ from engine.social import ROOT, inventory, package_digest, preflight, route, val
 class SocialContractsTests(unittest.TestCase):
     def test_registry_and_known_channel_routes(self):
         records = inventory()
-        self.assertEqual(set(records['channel']), {'instagram', 'facebook', 'linkedin', 'x', 'tiktok', 'youtube', 'substack'})
+        # Threads and Substack Notes joined the live set on 27 Oct 2026 (CHANGES.md).
+        self.assertEqual(set(records['channel']), {'instagram', 'facebook', 'linkedin', 'x', 'tiktok', 'youtube',
+                                                   'substack', 'substack-notes', 'threads'})
         ig = route('instagram', 'carousel', as_of='2026-10-26')
         self.assertEqual(ig['holds'], [])
         self.assertEqual(ig['channel']['account_context'], 'publication')

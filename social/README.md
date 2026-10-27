@@ -3,6 +3,9 @@
 Start here for distribution work. Growth owns channel strategy, amplification,
 delivery, tool operation and learning. Content-engine owns production and all
 production standards. Do not copy its visual or narrative canon into this tree.
+The one exception is the Canva lane (Krish, 27 October 2026): Growth makes the
+formats content-engine does not cover, today `note` and `meme`, under
+`guides/canva.md`, applying content-engine's standards by reference.
 
 ## Locate the work before reading more
 
@@ -17,6 +20,7 @@ creating or uploading a package; keep private evidence out of the shared library
 | What actually worked, failed, or remains a hypothesis? | One evidence-linked record per lesson in `lessons/` |
 | What exact post is proposed? | Private package conforming to `schemas/package.schema.json` |
 | How is creative made and judged? | Content-engine's production contract; see `docs/ENGINE-BOUNDARY.md` |
+| How are Notes and memes made? | `guides/canva.md` (format `production_owner` is `growth-canva`) |
 | What is live right now? | Actual owned native pages and tool readback; private run evidence |
 
 These are typed contracts, not a second queue or publishing orchestrator. They
@@ -31,6 +35,7 @@ From the repository, with no token or network:
 python growth.py social check
 python growth.py social route instagram carousel
 python growth.py social route linkedin single-image
+python growth.py social route threads text
 python growth.py social preflight .scratch/my-post/package.json
 ```
 
@@ -38,7 +43,7 @@ The route command returns the narrow reading path, relevant learned rules,
 specific tested tool capability, remaining holds and mandatory live checks.
 Preflight verifies identity/context, format, publication mode, production asset
 bytes and any stored exact-payload digest. Read docs/PUBLISHING-AUTHORITY.md:
-approved brand content and scoped X/TikTok have delegated cadence. LinkedIn
+approved brand content and scoped X, TikTok and Threads have delegated cadence. LinkedIn
 remains an unscheduled draft for Krish's manual final publication.
 Preflight never authenticates approval or grants permission
 to publish. It has no network, write, schedule or publication capability.

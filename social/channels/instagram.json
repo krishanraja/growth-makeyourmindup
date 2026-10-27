@@ -9,7 +9,8 @@
     "carousel",
     "single-image",
     "short-video",
-    "story"
+    "story",
+    "meme"
   ],
   "guide": "social/guides/instagram.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

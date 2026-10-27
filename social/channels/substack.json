@@ -23,6 +23,6 @@
   ],
   "publication_mode": "approved_brand_content",
   "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
-  "daily_posts_target": 1,
+  "daily_posts_target": null,
   "daily_drafts_max": null
 }
