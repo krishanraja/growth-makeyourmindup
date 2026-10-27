@@ -16,6 +16,7 @@ import urllib.error
 import urllib.request
 
 from engine.catalog import FEED, discover, pieces, parse_feed, strip_html
+from engine.cc_loop import CONTROL_CENTER_OWNS
 from engine.control_center import APPROVED_ORIGIN, Client, NoRedirect, ProtocolError, opener
 from engine.core import (KINDS, PLATFORMS, http_url, identity, instant, locked,
                          read_json, today, tracked, write_json)
@@ -28,6 +29,21 @@ BASE = os.environ.get('CONTROL_CENTER_URL', 'https://controlcenter.krishraja.com
 TOKEN_FILE = Path.home() / '.config' / 'growth-makeyourmindup' / 'token'
 # The protocol bearer (gen1_) is a different key from the packs key above.
 ENGINE_TOKEN_FILE = TOKEN_FILE.parent / 'engine-token'
+# Control Center's People and Visibility own outreach to shows and guests
+# (Krish, 21 Oct 2026; AGENTS.md "Outreach belongs to Control Center"). These
+# packs never leave here.
+OUTREACH = CONTROL_CENTER_OWNS  # one source: pitches, partners and swaps
+OUTREACH_HELD = ("Control Center's People and Visibility own outreach to shows and guests; "
+                 'pitches, partners and swaps packs are never delivered from this engine')
+
+
+def outreach_kind(value):
+    """The pack kind of an envelope, legacy pack or wire body when it is outreach."""
+    if not isinstance(value, dict):
+        return None
+    pack = value.get('pack') if isinstance(value.get('pack'), dict) else value
+    kind = pack.get('kind')
+    return kind if isinstance(kind, str) and kind in OUTREACH else None
 
 
 def token():
@@ -59,6 +75,8 @@ def call(method, path, body=None, deliver=False):
         raise ValueError('only the supported packs endpoint is allowed')
     if method == 'POST' and (not deliver or path != '/api/growth/packs'):
         raise ValueError('Control Centre writes require explicit --deliver')
+    if method == 'POST' and outreach_kind(body):
+        raise ValueError(OUTREACH_HELD)
     key = token()
     if not key:
         raise ValueError('No Control Centre key: use the existing configured GROWTH_ENGINE_TOKEN or token file. Do not rotate or print it. See docs/KEY.md.')
@@ -124,10 +142,14 @@ def main(argv=None):
     if social_args and social_args[0] == 'social':
         from engine.social import command
         return command(social_args[1:])
+    if social_args and social_args[0] == 'run':
+        from engine.run.cli import main as run
+        return run(social_args[1:])
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--self-test', action='store_true')
     sub = parser.add_subparsers(dest='cmd')
     sub.add_parser('social', help='offline channel, format and tool operating contracts')
+    sub.add_parser('run', help='offline run specs, packs and task cards (see docs/RUN.md)')
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     p.add_argument('--feed-file'); p.add_argument('--now'); p.add_argument('--json', action='store_true')
     c = sub.add_parser('check'); c.add_argument('file'); c.add_argument('--now')
@@ -228,6 +250,8 @@ def main(argv=None):
         print('legacy pack exported locally: ' + args.out + '; full provenance remains in envelope; no external write'); return 0
     if args.cmd == 'post':
         envelope = read_json(args.file)
+        if args.deliver and outreach_kind(envelope):
+            raise ValueError(OUTREACH_HELD)
         wire = wire_pack(envelope)
         if not args.deliver:
             print('Dry run: validated; no Control Centre write. Scheduled authorised delivery requires --deliver.'); return 0

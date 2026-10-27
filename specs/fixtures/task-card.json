@@ -1,0 +1,39 @@
+{
+  "schema": "growth-task-card/1",
+  "id": "synthetic-card",
+  "task": "TEST FIXTURE ONLY. Add one pure function and its unit test; change nothing else.",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "max_minutes": 20,
+  "max_calls": 30,
+  "worktree": {
+    "path": "../growth-wt/synthetic-card",
+    "branch": "codex/synthetic-card"
+  },
+  "write_allow": [
+    "engine/run/example.py",
+    "tests/test_run_example.py"
+  ],
+  "read_files": [
+    "engine/core.py",
+    "docs/RUN.md"
+  ],
+  "never": [
+    "git",
+    "network",
+    "mcp",
+    "publishing",
+    "new-dependencies",
+    "edits-outside-write-allow"
+  ],
+  "interface": "def example(value: str) -> str: returns value stripped; raises ValueError when empty.",
+  "acceptance": [
+    "python growth.py --self-test",
+    "python growth.py doctor --offline"
+  ],
+  "return_shape": {
+    "files_changed": "list of paths",
+    "tests_added": "list of test names",
+    "all_checks_passed": "boolean"
+  }
+}
