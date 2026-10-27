@@ -3,6 +3,7 @@
 The later 26 October ruling in docs/PUBLISHING-AUTHORITY.md also permits
 scheduling/publishing already approved branded content at Growth's cadence.
 LinkedIn remains unscheduled drafts for Krish's manual final click. Approved X and TikTok content has the same delegated cadence as branded Instagram; personal voice still applies.
+27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`): Threads and Substack Notes join X and TikTok's delegated cadence through the go-live step (Buffer); the never-cross list below still governs the browser.
 That specific exception supersedes the older blanket draft-only clauses below;
 all other browser, spending, account and engagement boundaries still apply.
 
