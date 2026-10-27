@@ -58,7 +58,18 @@ limit follows. PNG success does not prove PDF, video or another account's route.
 Do not target an OS-wide Open dialog or native desktop app for this work.
 The current user boundary is Codex in-app browser only.
 
-## Nullable preview clear
+## Document draft preview, observed 27 October
+
+A supported in-app file chooser uploaded the accepted six-page PDF. The stored
+file matched its original bytes, but Buffer's reopened draft omitted the carousel
+and returned zero pages. Reattachment and connector re-save did not repair it.
+Native LinkedIn processed all six pages and preserved an unscheduled draft.
+Do not repeat those attempts or call Buffer's saved preview verified. Reconcile
+the exact native draft before any new work; Krish alone publishes LinkedIn.
+The earlier file-chooser failure describes its old attempt, not a universal ban
+on the now-observed supported chooser. No native desktop or OS dialog is allowed.
+
+## Nullable preview clear procedure
 
 The domain tool rejected `metadata.linkedin.linkAttachment: null` in input
 validation. Fresh `get_post` proved that the original value remained unchanged.

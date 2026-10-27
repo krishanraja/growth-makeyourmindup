@@ -1,5 +1,10 @@
 # Daily channel work and Buffer trial
 
+Read `docs/ASSET-STORAGE.md` and `docs/SESSION-HANDOVER.md` first. Store exact
+approved distribution assets in the existing structured Growth library; keep
+production originals in Content Engine and private evidence locally. Complete
+the documented inventory, readback and learning closeout after consequential work.
+
 Ruling (Krish, 2026-10-24): work every day, strategically and in the native
 form of each channel. A daily heartbeat runs at 09:00 Europe/London, seven
 days a week. The existing weekly live audit remains on Saturday at noon.

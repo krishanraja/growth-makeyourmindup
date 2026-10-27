@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "buffer-document-preview-hold",
+  "category": "tool",
+  "scope": [
+    "buffer",
+    "linkedin",
+    "carousel"
+  ],
+  "status": "observed",
+  "finding": "A supported in-app file chooser uploaded a six-page PDF and the stored attachment matched the original bytes. Buffer rendered all pages before save but returned numPages 0 and a blank carousel preview after reopening. One reattachment and connector re-save reproduced the issue. Native LinkedIn processed all six pages and preserved a manually saved draft. Treat Buffer document preview as unresolved; never infer publication or retry blindly.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": ".scratch/channel-audit/daily-20261027/shopping-agent-reader-flow-v3.md",
+    "observed_at": "2026-10-27",
+    "result": "Draft and source-file integrity verified; Buffer saved preview incomplete; native unscheduled draft verified. Krish retains final publication."
+  },
+  "revisit_when": "Buffer saved document metadata/preview changes; perform a bounded check on the exact draft and never duplicate or publish to test.",
+  "supersedes": "document-upload-unverified"
+}

@@ -25,7 +25,9 @@
     "linkedin-scorecard-edition",
     "document-upload-unverified",
     "nullable-preview-clear",
-    "publishing-authority-split"
+    "publishing-authority-split",
+    "buffer-document-preview-hold",
+    "linkedin-reader-continuation"
   ],
   "publication_mode": "human_publish_only",
   "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
