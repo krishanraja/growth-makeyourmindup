@@ -115,8 +115,8 @@ def inventory(root=ROOT):
             raise ValueError('account context cannot expand publication authority')
         if expected_mode == 'human_publish_only' and obj['daily_posts_target'] is not None:
             raise ValueError('human-only accounts have no automatic posting quota')
-        # Notes run the corpus P1 ladder (two to three a day) from Krish's own
-        # profile; every other account, personal or branded, stays at one a day.
+        # Notes post from Krish's own Substack profile at up to two a day as he
+        # signs (27 Oct); every other account stays at one a day.
         if (obj['daily_posts_target'] or 0) > 1 and obj['id'] != 'substack-notes':
             raise ValueError('only Substack Notes has a two-a-day target')
         for name in obj['formats']:
