@@ -1054,6 +1054,55 @@
         "process"
       ],
       "tests": []
+    },
+    {
+      "id": "R92",
+      "statement": "Derivatives of a piece whose publish board (article, assets, video recordings) Krish approved post on every channel but LinkedIn without per-post sign-off. On or before 2026-11-29 (W45 to W48) each batch is shown to him first. Carousels, memes, opinion and reactive posts, and any class not on the derivatives list, need his approval item by item, and carousel copy must be plain English, human and humble (invariants/authority.json, engine/run/plain.py).",
+      "source_file": "CHANGES.md",
+      "quote": "Derivatives of approved pieces. That actually includes Instagram as well as YouTube and TikTok. Once I'm happy with the publish board (article, the assets and video recordings), you should be able to just go for gold everywhere else. I would say that for the first 4 weeks you need to show me before you post. However I think you're going to be creating new formats like carousels. The last one that went up on Make Your Mind Up Instagram was good but could have been better. It wasn't plain English and human and humble enough.",
+      "enforced_by": [
+        "engine/run/invariants.py:load_authority",
+        "engine/run/invariants.py:may_post_alone",
+        "engine/run/calendar.py:lint",
+        "engine/run/plain.py:lint_carousel"
+      ],
+      "tests": [
+        "test_authority_encodes_the_27_october_standing_approval",
+        "test_derivatives_wait_for_board_and_preview_then_post_alone",
+        "test_new_formats_and_unlisted_classes_need_eyes",
+        "test_linkedin_is_never_posted_alone",
+        "test_a_carousel_needs_a_humble_human_line_and_six_to_eight_cards",
+        "test_run_lint_blocks_an_unplain_carousel_and_warns_on_other_captions"
+      ]
+    },
+    {
+      "id": "R93",
+      "statement": "No session holds the Control Center engine key. Only L0 jobs on the GitHub Actions runner may read it (lanes.json), a CI job never does, and the measure job meters each run's own cost.",
+      "source_file": "CHANGES.md",
+      "quote": "Surely we can have a less fragile way of doing this than a session engine token ... Give me the bulletproof version of this. Same for the cost baseline.",
+      "enforced_by": [
+        "engine/run/invariants.py:check_lanes"
+      ],
+      "tests": [
+        "test_the_engine_key_lives_only_on_the_github_runner"
+      ]
+    },
+    {
+      "id": "R94",
+      "statement": "Every workflow, job and routine sits in exactly one lane of lanes.json: L0 code on GitHub Actions, L1 Claude routines (make, plan, watch), L2 his eyes (one press) and L3 his hands (LinkedIn, the Buffer plan, one-time set-up). No L0 or L1 job holds an action from his hands or his eyes, and every calendar row's lane is derived from invariants/authority.json.",
+      "source_file": "CHANGES.md",
+      "quote": "set yourself daily autonomous tasks that don't really rely on me. Separate your daily autonomous work ... from the things that you need my eyes on to just approve versus the things that you need me to push manually, like my personal LinkedIn posts that you've drafted.",
+      "enforced_by": [
+        "engine/run/invariants.py:check_lanes",
+        "engine/run/calendar.py:lint"
+      ],
+      "tests": [
+        "test_every_workflow_job_and_routine_is_in_one_lane",
+        "test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes",
+        "test_no_l0_or_l1_job_holds_his_hands_or_his_eyes",
+        "test_every_row_is_in_the_lane_authority_gives_it",
+        "test_a_wrong_lane_is_refused"
+      ]
     }
   ]
 }

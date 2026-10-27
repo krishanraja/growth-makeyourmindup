@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "scorecard",
+  "production_owner": "growth-canva",
+  "production_reference": "social/guides/canva.md",
+  "channels": [
+    "x",
+    "threads"
+  ],
+  "guide": "social/guides/formats.md",
+  "min_assets": 1,
+  "max_assets": 1,
+  "delivery_checks": [
+    "One number from the approved piece, with its source and denominator, on one card; never a figure the piece does not state.",
+    "Brand kit and an approved template only, sized for the selected channel.",
+    "Not on the derivatives list, so each scorecard needs Krish's approval as an item until he adds it (invariants/authority.json).",
+    "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Dated exposed reach and meaningful engagement, preserving missing values.",
+    "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
+    "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "canva-lane-boundary"
+  ]
+}

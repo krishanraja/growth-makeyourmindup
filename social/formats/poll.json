@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "poll",
+  "production_owner": "growth-canva",
+  "production_reference": "social/guides/canva.md",
+  "channels": [
+    "x",
+    "threads"
+  ],
+  "guide": "social/guides/formats.md",
+  "min_assets": 0,
+  "max_assets": 1,
+  "delivery_checks": [
+    "A native poll asking the piece's own question in plain words; the result card, when made, reports only the counts the platform shows.",
+    "The result card uses the brand kit and an approved template; the poll itself carries no image.",
+    "Not on the derivatives list, so each poll needs Krish's approval as an item until he adds it (invariants/authority.json).",
+    "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Dated exposed reach and meaningful engagement, preserving missing values.",
+    "Votes as the platform reports them, with the time read; preserve missing values.",
+    "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "canva-lane-boundary"
+  ]
+}

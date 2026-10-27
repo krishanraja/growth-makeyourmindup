@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "kind": "lanes",
+  "note": "Every job in exactly one lane, under Krish's 27 Oct 2026 lanes ruling (CHANGES.md, rule R94). What a lane may post comes from invariants/authority.json. engine/run/invariants.py:check_lanes proves every workflow, job and routine is here once, and that no L0 or L1 job holds his hands or his eyes.",
+  "authority": "invariants/authority.json",
+  "lanes": {
+    "L0_code": {"who": "code, no model", "runs_on": "GitHub Actions runner", "model": false},
+    "L1_judgement": {"who": "Claude routines", "runs_on": "Claude scheduled routines", "model": true},
+    "L2_eyes": {"who": "Krish, one press", "runs_on": "Control Center", "model": false},
+    "L3_hands": {"who": "Krish", "runs_on": "the native apps", "model": false}
+  },
+  "jobs": [
+    {
+      "id": "control-center",
+      "lane": "L0_code",
+      "workflow": "control-center.yml",
+      "trigger": "repository_dispatch cc-growth-directive from Control Center, 05:10 UTC daily; or by hand",
+      "may_write": ["Control Center engine reports and attempt journal entries, read back by digest"],
+      "never": ["post, send, publish or spend", "upload an artifact or log a figure from this public repository"],
+      "actions": ["read-directive", "report-to-control-center", "read-decisions"],
+      "secrets": ["CONTROL_CENTER_ENGINE_TOKEN"]
+    },
+    {
+      "id": "release",
+      "lane": "L0_code",
+      "workflow": "release.yml",
+      "trigger": "after a signed go-live or an approved item is read from Control Center",
+      "may_write": ["Buffer posts whose bytes equal the signed manifest line, with their readback"],
+      "never": ["release an unsigned or changed byte", "post to LinkedIn", "retry an uncertain save blindly"],
+      "actions": ["release-signed-slots", "read-back-native-url"],
+      "secrets": ["CONTROL_CENTER_ENGINE_TOKEN"]
+    },
+    {
+      "id": "measure",
+      "lane": "L0_code",
+      "workflow": "measure.yml",
+      "trigger": "daily, after the morning Control Center run",
+      "may_write": ["the measurement report to Control Center", "each run's own cost reading"],
+      "never": ["count a draft as an outcome", "write a business figure into this public repository"],
+      "actions": ["read-metrics", "meter-run-cost", "report-to-control-center"],
+      "secrets": ["CONTROL_CENTER_ENGINE_TOKEN"]
+    },
+    {
+      "id": "keys",
+      "lane": "L0_code",
+      "workflow": "keys.yml",
+      "trigger": "daily on the runner, before release and measure",
+      "may_write": ["a pass or fail line naming which key is missing, never its value"],
+      "never": ["print, rotate or create a key", "copy a key out of the runner"],
+      "actions": ["check-key-present"],
+      "secrets": ["CONTROL_CENTER_ENGINE_TOKEN"]
+    },
+    {
+      "id": "northstar",
+      "lane": "L0_code",
+      "workflow": "northstar.yml",
+      "trigger": "weekly, after measure",
+      "may_write": ["the North Star state line in NOW.md, and only that line"],
+      "never": ["change the North Star itself", "write a private figure"],
+      "actions": ["write-northstar-line"],
+      "secrets": ["CONTROL_CENTER_ENGINE_TOKEN"]
+    },
+    {
+      "id": "check",
+      "lane": "L0_code",
+      "workflow": "check.yml",
+      "trigger": "every push and pull request",
+      "may_write": ["the CI result"],
+      "never": ["read a key", "reach Control Center or any platform"],
+      "actions": ["self-test"],
+      "secrets": []
+    },
+    {
+      "id": "make",
+      "lane": "L1_judgement",
+      "workflow": null,
+      "trigger": "daily",
+      "may_write": ["drafts and Canva exports for the day's calendar rows", "Buffer drafts with no due time", "gate packets for Control Center"],
+      "never": ["post a new format before Krish approves that item", "post a derivative before its publish board is approved", "post through 2026-11-29 before the batch preview is approved", "post or schedule on LinkedIn", "hold the engine key", "spend, connect an account or create a key"],
+      "actions": ["draft-derivatives", "build-canva-assets", "queue-buffer-drafts", "prepare-gate-packet"],
+      "secrets": []
+    },
+    {
+      "id": "plan",
+      "lane": "L1_judgement",
+      "workflow": null,
+      "trigger": "Sundays",
+      "may_write": ["the draft week from calendar/v1.json", "the Sunday sign-off packet and the what-works ledger"],
+      "never": ["sign the week for Krish", "change invariants/authority.json", "hold the engine key"],
+      "actions": ["draft-week", "prepare-gate-packet"],
+      "secrets": []
+    },
+    {
+      "id": "watch",
+      "lane": "L1_judgement",
+      "workflow": null,
+      "trigger": "three times a day",
+      "may_write": ["express items built from his Buffer Ideas", "publish-board status notes"],
+      "never": ["treat an idea as approval", "post anything", "hold the engine key"],
+      "actions": ["read-buffer-ideas", "read-publish-boards", "prepare-gate-packet"],
+      "secrets": []
+    },
+    {
+      "id": "publish-board",
+      "lane": "L2_eyes",
+      "workflow": null,
+      "trigger": "a piece's article, assets and video recordings are ready",
+      "may_write": ["his approval of the board, bound to its digest"],
+      "never": ["be pressed by the engine"],
+      "actions": ["approve-publish-board"],
+      "secrets": []
+    },
+    {
+      "id": "preview-packet",
+      "lane": "L2_eyes",
+      "workflow": null,
+      "trigger": "each batch of derivatives, on or before 2026-11-29",
+      "may_write": ["his approval or amendment of the batch"],
+      "never": ["be pressed by the engine", "be skipped before 2026-11-29"],
+      "actions": ["approve-preview-packet"],
+      "secrets": []
+    },
+    {
+      "id": "new-format-item",
+      "lane": "L2_eyes",
+      "workflow": null,
+      "trigger": "each carousel, meme, opinion, reactive or other new-format item",
+      "may_write": ["his approval of that one item, bound to its digest"],
+      "never": ["be pressed by the engine", "approve a batch of new-format items at once"],
+      "actions": ["approve-new-format-item"],
+      "secrets": []
+    },
+    {
+      "id": "week-sign-off",
+      "lane": "L2_eyes",
+      "workflow": null,
+      "trigger": "Sundays",
+      "may_write": ["his signature on the week's go-live"],
+      "never": ["be pressed by the engine"],
+      "actions": ["sign-week"],
+      "secrets": []
+    },
+    {
+      "id": "linkedin-posting",
+      "lane": "L3_hands",
+      "workflow": null,
+      "trigger": "when he chooses, from the drafts the engine left him",
+      "may_write": ["his own LinkedIn post"],
+      "never": ["be scheduled or posted by the engine"],
+      "actions": ["linkedin-posting"],
+      "secrets": []
+    },
+    {
+      "id": "buffer-plan",
+      "lane": "L3_hands",
+      "workflow": null,
+      "trigger": "when a plan decision falls due",
+      "may_write": ["his Buffer plan"],
+      "never": ["be bought or changed by the engine"],
+      "actions": ["plan-purchase"],
+      "secrets": []
+    },
+    {
+      "id": "one-time-setup",
+      "lane": "L3_hands",
+      "workflow": null,
+      "trigger": "once per account or key",
+      "may_write": ["account connections and keys, placed by him"],
+      "never": ["be done by the engine"],
+      "actions": ["credential-creation", "account-connection"],
+      "secrets": []
+    }
+  ],
+  "automations": [
+    {"name": "Growth: numbers", "source": "automations.json", "jobs": ["jobs/numbers.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": "measure"},
+    {"name": "Growth: radar", "source": "automations.json", "jobs": ["jobs/radar.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": "plan"},
+    {"name": "Growth: day pack", "source": "automations.json", "jobs": ["jobs/daily-pack.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": "make"},
+    {"name": "Growth: pitches", "source": "automations.json", "jobs": ["jobs/pitches.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": null},
+    {"name": "Growth: partners", "source": "automations.json", "jobs": ["jobs/partners.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": null},
+    {"name": "Growth: recommendations", "source": "automations.json", "jobs": ["jobs/swaps.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": null},
+    {"name": "Growth: weekly channel audit", "source": "automations.json", "jobs": ["jobs/conversion.md", "jobs/channel-audit.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": null},
+    {"name": "Growth: answer piece", "source": "automations.json", "jobs": ["jobs/answer.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": "make"},
+    {"name": "Growth: report", "source": "automations.json", "jobs": ["jobs/report.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": "plan"},
+    {"name": "Growth: daily heartbeat", "source": "heartbeat", "jobs": ["jobs/daily-growth.md"], "lane": "L1_judgement", "status": "kept-until-W46", "successor": "make"}
+  ]
+}

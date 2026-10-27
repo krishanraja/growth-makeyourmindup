@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "receipt-card",
+  "production_owner": "growth-canva",
+  "production_reference": "social/guides/canva.md",
+  "channels": [
+    "x",
+    "threads"
+  ],
+  "guide": "social/guides/formats.md",
+  "min_assets": 1,
+  "max_assets": 1,
+  "delivery_checks": [
+    "One sourced fact from the approved piece on one card, with a one-line claim in the post and the link in the first reply.",
+    "Brand kit and an approved template only; every quote is a literal match to the published piece (engine/run/canva.py).",
+    "A derivative of an approved piece: it posts once the publish board is approved, after the batch preview through 2026-11-29 (invariants/authority.json).",
+    "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Dated exposed reach and meaningful engagement, preserving missing values.",
+    "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
+    "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "canva-lane-boundary"
+  ]
+}

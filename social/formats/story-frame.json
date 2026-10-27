@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "story-frame",
+  "production_owner": "growth-canva",
+  "production_reference": "social/guides/canva.md",
+  "channels": [
+    "instagram",
+    "facebook"
+  ],
+  "guide": "social/guides/buffer.md",
+  "min_assets": 1,
+  "max_assets": 1,
+  "delivery_checks": [
+    "One frame of a three-frame Story (hook, proof, action), built in Canva only from the piece's approved assets; Story artwork itself stays content-engine's.",
+    "One frame per post, in order; no invented interactive controls, illustration boilerplate or link-sticker claim.",
+    "Keep paired Meta outputs deduplicated; verify feed delivery before the Story runs.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Exposed first/last-frame reach, exits, replies and continuation taps; preserve unavailable values.",
+    "Compare relevant follower and attributable subscriber movement after actual delivery."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "canva-lane-boundary"
+  ]
+}
