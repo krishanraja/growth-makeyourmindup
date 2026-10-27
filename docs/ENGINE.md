@@ -352,5 +352,8 @@ caller passes every decision on each open plan, not only the latest read. The
 ledger is local, so the step never runs on the GitHub runner.
 
 **Objective.** Substack scope `publication` is all sources and wins;
-`source:<name>` rows are added per source and summed. Any other scope makes
-`new_subscribers` missing, never a guess.
+`source:<name>` rows are added per source and summed, but only when a
+`source:direct` row (any case) is among them: the numbers job records
+attributed sources separately and leaves Direct unattributed, so without it
+the sum would undercount. Any other scope, or attributed rows without the
+all-source or direct row, makes `new_subscribers` missing, never a guess.

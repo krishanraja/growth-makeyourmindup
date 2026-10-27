@@ -40,7 +40,8 @@ OWNED_REASON = "Control Center's People and Visibility own outreach to shows and
 COMPLETIONS = {'Published': 'published', 'Sent': 'sent', 'Applied': 'applied',
                'Verified': 'verified', 'Reviewed': 'reviewed'}
 NAMES = {'linkedin': 'LinkedIn', 'x': 'X', 'youtube': 'YouTube', 'tiktok': 'TikTok', 'seo': 'search',
-         'substack': 'Substack', 'instagram': 'Instagram', 'spotify': 'Spotify', 'reddit': 'Reddit'}
+         'substack': 'Substack', 'instagram': 'Instagram', 'spotify': 'Spotify', 'reddit': 'Reddit',
+         'facebook': 'Facebook', 'threads': 'Threads', 'notes': 'Substack Notes'}
 
 
 def count(number, noun):
@@ -263,6 +264,9 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
 
 ALL_SOURCES = 'publication'
 SOURCE_PREFIX = 'source:'
+# jobs/numbers.md records attributed sources separately and leaves Direct unattributed, so
+# per-source rows cover every subscriber only when Direct is among them.
+DIRECT_SOURCE = 'direct'
 
 
 def _in_week(row, start, now):
@@ -287,7 +291,9 @@ def new_subscribers(observations, now):
 
     Scope 'publication' is the all-source reading; 'source:<name>' is one
     source. Without an all-source row, per-source rows are added within each
-    source and the sources summed, which means the same. Both together would
+    source and the sources summed, which means the same only when a
+    'source:direct' row (any case) is among them; without it the attributed
+    sources alone would undercount, so the week is missing. Both together would
     count people twice, so the all-source reading wins. Any other scope (a post,
     say) is not a part of the sum, so the week is missing, never guessed."""
     rows, current, unreadable, start = _substack_week(observations, now)
@@ -309,6 +315,9 @@ def new_subscribers(observations, now):
     if other:
         return objective('new_subscribers', reason='Substack rows this week have a scope that is neither the '
                                                    'publication nor a source: ' + ', '.join(sorted(other)))
+    if ALL_SOURCES not in sources and not any(k[len(SOURCE_PREFIX):].strip().lower() == DIRECT_SOURCE
+                                              for k in sources):
+        return objective('new_subscribers', reason='per-source rows without the all-source or direct row would undercount')
     parts = [sources[ALL_SOURCES]] if ALL_SOURCES in sources else [sources[k] for k in sorted(sources, key=str)]
     totals = []
     for part in parts:

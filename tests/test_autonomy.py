@@ -324,7 +324,7 @@ class NorthStarTests(unittest.TestCase):
         monday, tuesday, wednesday = '2026-10-12T04:00:00Z', '2026-10-13T04:00:00Z', '2026-10-14T04:00:00Z'
         network = [dict(observation(monday, tuesday, 1), scope='source:fixture-network'),
                    dict(observation(tuesday, wednesday, 2), scope='source:fixture-network')]
-        direct = [dict(observation(monday, wednesday, 2), scope='source:fixture-direct')]
+        direct = [dict(observation(monday, wednesday, 2), scope='source:direct')]
         with self.assertRaises(ValueError):
             aggregate(network + direct)  # Why the objective used to go missing.
         item = new_subscribers(network + direct, NOW)
@@ -334,7 +334,7 @@ class NorthStarTests(unittest.TestCase):
         whole = [observation(monday, wednesday, 5)]
         self.assertEqual(new_subscribers(whole + network + direct, NOW)['value'], 5)
         # Sources over different windows cannot be added, and that is missing, never a raise.
-        short = [dict(observation(monday, tuesday, 2), scope='source:fixture-direct')]
+        short = [dict(observation(monday, tuesday, 2), scope='source:direct')]
         uneven = new_subscribers(network + short, NOW)
         self.assertEqual((uneven['value'], uneven['availability']), (None, 'missing'))
         self.assertIn('different times', uneven['reason'])
@@ -346,6 +346,23 @@ class NorthStarTests(unittest.TestCase):
                 item = new_subscribers(rows, NOW)
                 self.assertEqual((item['value'], item['availability']), (None, 'missing'))
                 self.assertIn('neither the publication nor a source', item['reason'])
+
+    def test_north_star_attributed_sources_without_direct_are_missing(self):
+        # jobs/numbers.md records attributed sources separately and leaves Direct unattributed,
+        # so attributed rows alone would undercount the all-source objective.
+        monday, wednesday = '2026-10-12T04:00:00Z', '2026-10-14T04:00:00Z'
+        attributed = [dict(observation(monday, wednesday, 3), scope='source:notes'),
+                      dict(observation(monday, wednesday, 4), scope='source:recommendations')]
+        item = new_subscribers(attributed, NOW)
+        self.assertEqual((item['value'], item['availability']), (None, 'missing'))
+        self.assertEqual(item['reason'], 'per-source rows without the all-source or direct row would undercount')
+        # The direct row, in any case, completes the sources; the all-source row needs none.
+        for name in ('direct', 'Direct', ' DIRECT '):
+            rows = attributed + [dict(observation(monday, wednesday, 2), scope='source:' + name)]
+            item = new_subscribers(rows, NOW)
+            self.assertEqual((item['value'], item['availability']), (9, 'measured'))
+        whole = [observation(monday, wednesday, 8)]
+        self.assertEqual(new_subscribers(whole + attributed, NOW)['value'], 8)
 
 
 class HonestLineTests(unittest.TestCase):
