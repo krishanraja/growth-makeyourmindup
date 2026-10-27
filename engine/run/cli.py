@@ -7,7 +7,7 @@ import sys
 
 ROUTES = {'new': 'spec', 'lint': 'spec', 'status': 'spec', 'pack': 'pack', 'card': 'cards',
           'release': 'release', 'measure': 'measure', 'northstar': 'measure', 'verdict': 'measure',
-          'cost': 'cost'}
+          'cost': 'cost', 'ga4': 'ga4'}
 
 
 def main(argv=None):

@@ -44,6 +44,23 @@
           }
         ]
       }
+    },
+    {
+      "package_id": "synthetic-package-w45-unapproved",
+      "origin": "canva-lane",
+      "piece_url": null,
+      "creative_approval_ref": null,
+      "manifest": {
+        "revision": "draft v1 (synthetic)",
+        "approval_scope": "TEST FIXTURE ONLY",
+        "files": [
+          {
+            "name": "synthetic-unapproved-frame.png",
+            "bytes": 36,
+            "sha256": "35767e7bcefe2aa383a72e0a170d17b86d520bbb9e81f92aecff4dbc65400ad3"
+          }
+        ]
+      }
     }
   ],
   "slots": [
@@ -284,6 +301,29 @@
       "publish_mode": "engine",
       "buffer_draft_id": null,
       "payload_sha256": "05e106db5a603f48a1fc8cb01421ff1eb46a8b7565280fce0fe745eb3ed20d01"
+    },
+    {
+      "slot_id": "w45-thu-threads-image-1",
+      "channel": "threads",
+      "format": "single-image",
+      "play": null,
+      "due_at": "2026-11-05T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. An image nobody approved.",
+      "assets": [
+        {
+          "name": "synthetic-unapproved-frame.png",
+          "sha256": "35767e7bcefe2aa383a72e0a170d17b86d520bbb9e81f92aecff4dbc65400ad3",
+          "url": null,
+          "bytes": 36
+        }
+      ],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "0a79469372da528506eaac96528c655852cbd1d68af5882f9563e0afe8064960"
     }
   ],
   "experiments": [

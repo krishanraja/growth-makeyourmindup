@@ -46,8 +46,8 @@ All offline; none posts, sends, schedules or spends.
   cards load by the registry flag for the run's week (such as `w45`), else by
   channel.
 - `python growth.py run card lint FILE`: a Codex task card, before dispatch.
-- `release`, `measure`, `northstar`, `verdict`, `cost`: each says "not built
-  yet" until its module lands.
+- `release`, `measure`, `northstar`, `verdict`, `cost`, `ga4`: each says "not
+  built yet" until its module lands.
 
 Keep each real spec at `.scratch/runs/<run>/spec.json`, never in git: it holds
 unpublished words. The run folder is the `run_id` with each `:` as `_`.
@@ -62,10 +62,12 @@ format, or a format the channel does not take (`social/channels`,
 `social/formats`); `publish_mode` other than `krish_click` on a
 human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a `krish_click` slot with a `due_at`; `spend_usd` above 0; two
 experiments on one channel; an arm that is not registered; an asset hash that
-is not 64 lowercase hex; more than 3 Notes on one New York day; a window
+is not 64 lowercase hex; more scheduled slots on a New York day than the
+channel's `daily_posts_target` (null: no cap); an engine slot asset in no
+manifest with a `creative_approval_ref` (release holds it too); a window
 that is not New York midnights 7 (week, from a Monday), 8 (piece) or 1
 (express) days long. Warnings include an engine slot with no `due_at`: it
-cannot release, and the Notes cap counts only scheduled Notes.
+cannot release, and the daily cap counts only scheduled slots.
 
 A slot's `payload_sha256` covers exactly `channel`, `format`, `words`, the
 ordered asset hashes, `link_placement`, `due_at` and `publish_mode`, as

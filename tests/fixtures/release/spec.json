@@ -3,6 +3,25 @@
   "run_id": "synthetic:2026-W45:week",
   "kind": "week",
   "parent_run_id": null,
+  "inputs": [
+    {
+      "package_id": "synthetic-release-package",
+      "origin": "content-engine",
+      "piece_url": null,
+      "creative_approval_ref": "synthetic-release-approval",
+      "manifest": {
+        "revision": "approved v1 (synthetic)",
+        "approval_scope": "TEST FIXTURE ONLY",
+        "files": [
+          {"name": "frame-1.png", "bytes": 34, "sha256": "08ef523a2094c191daab36e94b658c49e05eb90a402627b6daa616d1af0eaca7"},
+          {"name": "frame-2.png", "bytes": 34, "sha256": "37a2a0888af44a4e67e73d5e149aec5d3272aaa6c21010498a6371adfa522c30"},
+          {"name": "frame-3.png", "bytes": 34, "sha256": "6de93a159e389350409d36cf61316b1e602673d88c4f26a238bd474127204739"},
+          {"name": "frame-4.png", "bytes": 34, "sha256": "5a806107f736ece03fb46dba93eb3722bfa5b3a65fc7c44519b8c8fb65858c43"},
+          {"name": "frame-5.png", "bytes": 34, "sha256": "2af8201f46f1f62223c55124101d104f206c416af92f1602b40b7d422b48a787"}
+        ]
+      }
+    }
+  ],
   "slots": [
     {
       "slot_id": "notes-1",

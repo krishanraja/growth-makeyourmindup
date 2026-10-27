@@ -6,6 +6,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -16,7 +17,6 @@ from engine.run import cli
 from engine.run import spec as spec_module
 from engine.run.spec import (computed, lint, lint_digest, main, payload_sha256, run_dir, skeleton,
                              social_records, status, week_target)
-from engine.social import inventory
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / 'specs' / 'fixtures'
@@ -76,8 +76,6 @@ class RunSpecLintTests(SyntheticLadder):
         channels = {s['channel'] for s in fixture('w45-week')['slots']}
         self.assertEqual(channels, {'substack-notes', 'threads'})
 
-    @unittest.skipUnless({'substack-notes', 'threads'} <= set(inventory()['channel']),
-                         'the Notes and Threads records are another work item (27 Oct ruling)')
     def test_good_spec_lints_clean_against_repo_records(self):
         self.assertEqual(lint(fixture('w45-week'), social_records(ROOT))['errors'], [])
 
@@ -87,7 +85,7 @@ class RunSpecLintTests(SyntheticLadder):
                          {'week_target', 'payload_sha256', 'prose', 'unknown_channel', 'unknown_format',
                           'format_not_allowed',
                           'publish_mode', 'krish_click_due_at', 'spend', 'experiment_per_channel',
-                          'experiment_arm', 'asset_sha256', 'notes_per_day'})
+                          'experiment_arm', 'asset_sha256', 'posts_per_day', 'creative_not_approved'})
         by_code = {}
         for e in result['errors']:
             by_code.setdefault(e['code'], []).append(e)
@@ -95,6 +93,9 @@ class RunSpecLintTests(SyntheticLadder):
         self.assertEqual([e['slot_id'] for e in by_code['publish_mode']], ['w45-linkedin-1'])
         self.assertEqual(len(by_code['prose']), 3)
         self.assertEqual([e['slot_id'] for e in by_code['unknown_format']], ['w45-x-hologram-1'])
+        self.assertEqual([e['slot_id'] for e in by_code['creative_not_approved']], ['w45-thu-threads-image-1'])
+        self.assertEqual(sorted(e['message'].split(' slots on ')[0] for e in by_code['posts_per_day']),
+                         ['2 scheduled x', '4 scheduled substack-notes'])
         with contextlib.redirect_stdout(io.StringIO()) as out:
             self.assertEqual(main(['lint', str(FIXTURES / 'bad-spec.json')]), 1)
         self.assertFalse(json.loads(out.getvalue())['valid'])
@@ -147,6 +148,8 @@ class RunSpecLintTests(SyntheticLadder):
         self.assertEqual(payload_sha256(first), expected)
         self.assertEqual(first['payload_sha256'], expected)
         before = payload_sha256(first)
+        # The swapped asset below is approved creative too, so only the digest is at issue.
+        spec['inputs'][0]['manifest']['files'].append({'name': 'synthetic-swap.png', 'bytes': 1, 'sha256': 'a' * 64})
         for key, value in (('forward_line', 'TEST FIXTURE ONLY. Someone else forwards it.'), ('play', 'P2'),
                            ('cta', True), ('buffer_draft_id', 'synthetic-draft')):
             changed = dict(first, **{key: value})
@@ -182,16 +185,51 @@ class RunSpecLintTests(SyntheticLadder):
         self.assertEqual(codes(computed(spec)), {'publish_mode'}, 'Threads is engine, not krish_click')
 
     def test_notes_per_day_counts_new_york_days(self):
+        # 27 Oct correction (docs/PUBLISHING-AUTHORITY.md): Notes post up to two a day, as their record says.
         spec = fixture('w45-week')
-        extra = copy.deepcopy(spec['slots'][1])
-        extra.update(slot_id='w45-mon-note-3', due_at='2026-11-02T18:00:00-05:00')
-        spec['slots'].append(extra)
-        self.assertEqual(codes(computed(spec)), set(), 'three Notes on one day are allowed')
-        late = copy.deepcopy(extra)
+        self.assertEqual(sum(s['due_at'][:10] == '2026-11-02' for s in spec['slots']
+                             if s['channel'] == 'substack-notes'), 2)
+        self.assertEqual(codes(computed(spec)), set(), 'two Notes on one day are allowed')
+        late = copy.deepcopy(spec['slots'][1])
         # 02:00 UTC on Tuesday is still Monday evening in New York.
-        late.update(slot_id='w45-mon-note-4', due_at='2026-11-03T02:00:00Z')
+        late.update(slot_id='w45-mon-note-3', due_at='2026-11-03T02:00:00Z')
         spec['slots'].append(late)
-        self.assertEqual(codes(computed(spec)), {'notes_per_day'})
+        self.assertEqual(codes(computed(spec)), {'posts_per_day'}, 'a third Note on one New York day fails')
+        late['due_at'] = '2026-11-03T05:00:00Z'
+        self.assertEqual(codes(computed(spec)), set(), 'midnight in New York starts Tuesday')
+
+    def test_every_channel_is_capped_by_its_record(self):
+        spec = fixture('w45-week')
+        second = copy.deepcopy(slot(spec, 'w45-mon-threads-1'))
+        second.update(slot_id='w45-mon-threads-2', due_at='2026-11-02T20:00:00-05:00', experiment_arm=None)
+        spec['slots'].append(second)
+        errors = lint(computed(spec), RECORDS)['errors']
+        self.assertEqual([e['code'] for e in errors], ['posts_per_day'], 'a second Threads slot on one day fails')
+        self.assertIn('2 scheduled threads slots on 2026-11-02', errors[0]['message'])
+        self.assertEqual(codes(computed(spec), social_records(ROOT)), {'posts_per_day'}, 'the repo record caps it too')
+        second['due_at'] = None
+        result = lint(computed(spec), RECORDS)
+        self.assertEqual(result['errors'], [], 'an unscheduled slot is not counted')
+        self.assertIn('threads cap of 1 a day', result['warnings'][0]['message'])
+        records = copy.deepcopy(RECORDS)
+        records['channel']['threads']['daily_posts_target'] = 2
+        second['due_at'] = '2026-11-02T20:00:00-05:00'
+        self.assertEqual(codes(computed(spec), records), set(), 'the cap is read from the record, not the code')
+        records['channel']['threads']['daily_posts_target'] = None
+        self.assertEqual(codes(computed(spec), records), set(), 'a null target sets no engine cap')
+
+    def test_engine_slot_needs_approved_creative(self):
+        spec = fixture('w45-week')
+        spec['inputs'][0]['creative_approval_ref'] = None
+        errors = lint(spec, RECORDS)['errors']
+        self.assertEqual([(e['code'], e['slot_id']) for e in errors], [('creative_not_approved', 'w45-mon-note-1')],
+                         'a manifest without an approval ref approves nothing')
+        spec['inputs'][0]['manifest'] = None
+        self.assertEqual(codes(spec), {'creative_not_approved'})
+        spec = fixture('w45-week')
+        spec['inputs'].append(dict(spec['inputs'][0], package_id='synthetic-package-w45-draft',
+                                   creative_approval_ref=None))
+        self.assertEqual(codes(spec), set(), 'one approved manifest line is enough')
 
     def test_cli_new_writes_computed_fields_and_never_replaces_a_skeleton(self):
         with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
@@ -211,10 +249,14 @@ class RunSpecLintTests(SyntheticLadder):
         self.assertEqual(out.getvalue().strip(), 'zzz: not built yet')
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(cli.main([]), 2)
+        # ga4 routes to engine.run.ga4.main; until that module lands it says so and exits 2.
+        self.assertEqual(cli.ROUTES['ga4'], 'ga4')
+        with patch.dict(sys.modules, {'engine.run.ga4': None}), contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(cli.main(['ga4', 'x']), 2)
+        self.assertEqual(out.getvalue().strip(), 'ga4: not built yet')
         import growth
         with contextlib.redirect_stdout(io.StringIO()) as out:
-            self.assertEqual(growth.main(['run', 'lint', str(FIXTURES / 'w45-week.json')]),
-                             int(not {'substack-notes', 'threads'} <= set(inventory()['channel'])))
+            self.assertEqual(growth.main(['run', 'lint', str(FIXTURES / 'w45-week.json')]), 0)
         self.assertIn('"errors"', out.getvalue())
 
     def test_run_new_without_a_rung_writes_the_skeleton_and_lint_reports_it(self):
@@ -251,12 +293,18 @@ class RunSpecLintTests(SyntheticLadder):
         self.assertEqual(result['errors'], [])
         self.assertEqual([(w['code'], w['slot_id']) for w in result['warnings']],
                          [('engine_unscheduled', 'w45-tue-note-1')])
+        # An engine slot's unlisted asset is now an error (creative_not_approved); a krish_click
+        # draft, which Krish posts himself, keeps the warning.
         spec = fixture('w45-week')
         spec['inputs'] = []
-        result = lint(spec, RECORDS)
+        self.assertEqual(codes(spec), {'creative_not_approved'})
+        spec['slots'].append(dict(spec['slots'][0], slot_id='w45-linkedin-1', channel='linkedin', format='single-image',
+                                  due_at=None, publish_mode='krish_click', experiment_arm=None))
+        spec['slots'] = spec['slots'][1:]
+        result = lint(computed(spec), RECORDS)
         self.assertEqual(result['errors'], [])
         self.assertEqual([(w['code'], w['slot_id']) for w in result['warnings']],
-                         [('asset_not_in_manifest', 'w45-mon-note-1')], 'no manifest at all still warns')
+                         [('asset_not_in_manifest', 'w45-linkedin-1')], 'no manifest at all still warns')
 
 
 class RunStatusTests(SyntheticLadder):
@@ -305,8 +353,7 @@ class RunStatusTests(SyntheticLadder):
             main(['lint', str(FIXTURES / 'w45-week.json'), '--record', '--runs-dir', self.runs])
         lint_record = json.loads((self.folder / 'lint.json').read_text(encoding='utf-8'))
         self.assertEqual(lint_record['spec_sha256'], lint_digest(self.spec))
-        if lint_record['errors']:  # Live records lack Notes or Threads until that work item lands.
-            self.put('lint.json', dict(lint_record, errors=[]))
+        self.assertEqual(lint_record['errors'], [])
         self.assertEqual(self.stage()[0], 'linted')
         self.put('review/' + sid + '.json', {'verdict': 'fail', 'lens': 'threads'})
         self.assertEqual(self.stage()[0], 'linted')

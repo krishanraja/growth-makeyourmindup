@@ -318,6 +318,25 @@ class ReleaseTests(unittest.TestCase):
         unchecked = release.release_plan(self.spec, self.decision, None, None, self.channels, NOW, self.targets)
         self.assertEqual({c['slot_id'] for c in unchecked['calls']}, {'notes-1', 'threads-1'})
 
+    def test_release_holds_unapproved_creative(self):
+        """An engine slot releases only assets listed in an input manifest that names its creative approval."""
+        spec = copy.deepcopy(self.spec)
+        spec['inputs'][0]['creative_approval_ref'] = None
+        result = self.plan(spec)
+        holds = self.holds(result)
+        for sid in ('ig-story-1', 'tiktok-photo-1', 'x-1'):
+            self.assertEqual(holds[sid], 'creative_not_approved')
+            self.assertNotIn(sid, result['ledger']['released'])
+        self.assertEqual(set(self.by_slot(result)), {'notes-1', 'threads-1', 'linkedin-1'},
+                         'slots with no assets, and the krish_click draft Krish posts himself, still plan')
+        spec = copy.deepcopy(self.spec)
+        files = spec['inputs'][0]['manifest']['files']
+        files[:] = [f for f in files if f['name'] != 'frame-3.png']
+        self.assertEqual(self.holds(self.plan(spec)), {'tiktok-photo-1': 'creative_not_approved'},
+                         'every asset in a slot must be approved, not just the first')
+        del spec['inputs']
+        self.assertEqual(set(self.holds(self.plan(spec))), {'ig-story-1', 'tiktok-photo-1', 'x-1'})
+
     def test_release_once_per_slot(self):
         first = self.plan()
         self.assertEqual(len(first['calls']), len(self.slots))

@@ -24,8 +24,6 @@ RUN_ID = re.compile(r'^[A-Za-z0-9](?:[A-Za-z0-9:.-]{0,118}[A-Za-z0-9])?$')
 LENS = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 WINDOW = re.compile(r'^[1-9][0-9]*[hd]$')
 RUNG = re.compile(r'^\s*-\s*\[(\d{4}-\d{2}-\d{2}),\s*(\d+)\]\s*$')
-NOTES = 'substack-notes'
-NOTES_PER_DAY = 3
 KRISH_MIN = {'weekday': 20, 'sunday': 30}
 VERDICTS = ('works', 'neutral', 'fails', 'insufficient')
 LENGTH = {'week': 7, 'piece': 8, 'express': 1}
@@ -155,6 +153,15 @@ def social_records(root=ROOT):
     return {'channel': found['channel'], 'format': found['format']}
 
 
+def daily_cap(record):
+    """Scheduled posts a channel takes per New York day, from its record; None means no engine cap.
+
+    A human-only channel (LinkedIn) records null: its slots are unscheduled drafts.
+    """
+    cap = record.get('daily_posts_target') if isinstance(record, dict) else None
+    return cap if isinstance(cap, int) and not isinstance(cap, bool) else None
+
+
 def _slot(slot, at, channels, formats, tests, manifest, window):
     errors, warnings = [], []
     sid = slot['slot_id']
@@ -177,11 +184,16 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
     errors += [finding('prose', at + '.words', 'words ' + e, sid) for e in prose_errors(slot['words'])]
     warnings += [finding('forward_line_prose', at + '.forward_line', 'forward_line ' + e, sid)
                  for e in prose_errors(slot['forward_line'])]
+    listed, approved = manifest
     for j, asset in enumerate(slot['assets']):
         if not SHA.match(asset['sha256']):
             errors.append(finding('asset_sha256', at + '.assets[%d].sha256' % j,
                                   'asset sha256 must be 64 lowercase hex characters', sid))
-        elif asset['sha256'] not in manifest:
+        elif slot['publish_mode'] == 'engine' and asset['sha256'] not in approved:
+            errors.append(finding('creative_not_approved', at + '.assets[%d]' % j,
+                                  'an engine slot uses only approved creative: this asset is in no manifest'
+                                  ' of an input with a creative_approval_ref (docs/PUBLISHING-AUTHORITY.md)', sid))
+        elif asset['sha256'] not in listed:
             warnings.append(finding('asset_not_in_manifest', at + '.assets[%d]' % j,
                                     'asset is not listed in any input manifest', sid))
     if fmt and (len(slot['assets']) < fmt['min_assets']
@@ -197,9 +209,11 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
     if slot['due_at'] is not None and not window[0] <= instant(slot['due_at']) < window[1]:
         warnings.append(finding('due_outside_window', at + '.due_at', 'due_at falls outside the run window', sid))
     if slot['publish_mode'] == 'engine' and slot['due_at'] is None:
+        cap = daily_cap(channel)
         warnings.append(finding('engine_unscheduled', at + '.due_at',
-                                'an engine slot needs a due_at to release, and only scheduled Notes count'
-                                ' towards the cap of ' + str(NOTES_PER_DAY) + ' a day', sid))
+                                'an engine slot needs a due_at to release'
+                                + ('' if cap is None else ', and only scheduled slots count towards the '
+                                   + slot['channel'] + ' cap of ' + str(cap) + ' a day'), sid))
     return errors, warnings
 
 
@@ -237,28 +251,32 @@ def lint(spec, records=None, root=ROOT):
             errors.append(finding('experiment_per_channel', at, 'at most one experiment per channel: ' + test['channel']))
         else:
             tests[test['channel']] = test
-    manifest = set()
+    listed, approved = set(), set()
     for i, item in enumerate(spec['inputs']):
         for j, entry in enumerate((item['manifest'] or {}).get('files', [])):
             if not SHA.match(entry['sha256']):
                 errors.append(finding('asset_sha256', '$.inputs[%d].manifest.files[%d].sha256' % (i, j),
                                       'manifest sha256 must be 64 lowercase hex characters'))
-            manifest.add(entry['sha256'])
-    seen, notes = set(), {}
+            listed.add(entry['sha256'])
+            if item['creative_approval_ref'] is not None:
+                approved.add(entry['sha256'])
+    seen, per_day = set(), {}
     for i, slot in enumerate(spec['slots']):
         at = '$.slots[%d]' % i
         if slot['slot_id'] in seen:
             errors.append(finding('duplicate_slot_id', at + '.slot_id', 'slot_id must be unique', slot['slot_id']))
         seen.add(slot['slot_id'])
-        more, soft = _slot(slot, at, channels, formats, tests, manifest, window)
+        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window)
         errors += more
         warnings += soft
-        if slot['channel'] == NOTES and slot['due_at'] is not None:
-            notes.setdefault(ny_time(slot['due_at']).date().isoformat(), []).append(slot['slot_id'])
-    for day, ids in sorted(notes.items()):
-        if len(ids) > NOTES_PER_DAY:
-            errors.append(finding('notes_per_day', '$.slots', str(len(ids)) + ' substack-notes slots on ' + day
-                                  + ' (New York); at most ' + str(NOTES_PER_DAY)))
+        if slot['due_at'] is not None:
+            key = (slot['channel'], ny_time(slot['due_at']).date().isoformat())
+            per_day.setdefault(key, []).append(slot['slot_id'])
+    for (channel, day), ids in sorted(per_day.items()):
+        cap = daily_cap(channels.get(channel))
+        if cap is not None and len(ids) > cap:
+            errors.append(finding('posts_per_day', '$.slots', str(len(ids)) + ' scheduled ' + channel + ' slots on '
+                                  + day + ' (New York); its record allows at most ' + str(cap) + ' a day'))
     for channel, test in sorted(tests.items()):
         if not any(s['channel'] == channel and s['experiment_arm'] for s in spec['slots']):
             warnings.append(finding('experiment_unused', '$.experiments', 'experiment ' + test['id'] + ' has no slot on an arm'))
