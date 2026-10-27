@@ -103,8 +103,11 @@ class TrackingTests(unittest.TestCase):
         for url in ('javascript:alert(1)', 'https://user:secret@example.com', 'https://example.com/has space'):
             with self.subTest(url=url), self.assertRaises(ValueError):
                 tracked(url, 'x', 'daily')
+        # Krish, 27 Oct 2026, superseding the 14 Oct "no Notes" ruling: Notes
+        # links are tracked; an unknown platform is still refused.
+        self.assertIn('utm_source=notes', tracked(URL, 'notes', 'daily', '2026-10-27'))
         with self.assertRaises(ValueError):
-            tracked(URL, 'notes', 'daily')
+            tracked(URL, 'myspace', 'daily')
 
     def test_canonical_identity_ignores_tags_not_referral_code(self):
         self.assertEqual(canonical(URL + '?utm_source=x#x'), URL)
@@ -595,7 +598,7 @@ class RuntimeTests(unittest.TestCase):
     def test_configuration_describes_conditional_surfaces_not_verified_access(self):
         channels = read_json(ROOT / 'channels.json')['channels']
         self.assertTrue(all(r['access'] == 'not_verified_in_runtime' for r in channels))
-        self.assertEqual({r['channel'] for r in channels}, {'substack', 'website', 'linkedin', 'x', 'youtube', 'instagram', 'tiktok', 'spotify', 'reddit', 'email', 'partner'})
+        self.assertEqual({r['channel'] for r in channels}, {'substack', 'website', 'linkedin', 'x', 'youtube', 'instagram', 'facebook', 'tiktok', 'threads', 'spotify', 'reddit', 'email', 'partner'})
         self.assertTrue(all(r['status'] == 'planned' and r['start'] is None for r in read_json(ROOT / 'experiments.json')['experiments']))
 
 
