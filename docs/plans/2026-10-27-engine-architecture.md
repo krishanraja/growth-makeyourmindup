@@ -40,7 +40,8 @@ Status: building (27 Oct 2026). Krish ended plan mode on this plan, which the se
 - **Control Center protocol 1.5.0.**
 - **The 26 Oct live pilot.**
 - **Private receipts** in `.scratch/` and `fresh-owner/` on his PC.
-- **The failure register:** 51 past fixes or learnings (F01 to F51, appendix). About 25 are doc-only.
+- **The failure register:** 54 past fixes or learnings (F01 to F54, appendix). About 25 are doc-only.
+- **The 27 Oct asset-storage ruling** (`docs/ASSET-STORAGE.md`): the Drive 4 Growth library, private evidence kept local, and a closeout routine every session.
 
 **Gaps in code (each gets a fix plus a test):**
 - **G1.** `channel_audit.py:18-22` allows autonomous LinkedIn edits, against the 26 Oct ruling.
@@ -95,23 +96,25 @@ Hand edits to the computed fields (`week_target`, each `payload_sha256`) are ref
 
 Per run there are two gates: a go-live and a check-in. LinkedIn stays his own click.
 
-**Where unpublished words live.** They never go into git.
-- **Buffer drafts** (`saveToDraft`, already authorised) hold the words and media.
-- **Control Center** holds the decisions.
-- **A private Drive folder**, `Ventures/growth-makeyourmindup/runs/`, holds the run state and evidence: an approval at action time.
+**Where unpublished words live.** They never go into git. This follows `docs/ASSET-STORAGE.md` (Krish, 27 Oct 2026).
+- **Approved delivery assets and exact copy** go in the existing Drive **4 Growth** library, one `YYYY-MM-DD - Topic - Channel` folder per campaign, each with its checksum manifest. The manifest shape is the one the 27 Oct shopping-agent package already uses: `revision`, `approval_scope`, `publication_status`, `source_article`, `next_read` and `files[{name, bytes, sha256}]`. Slot `assets` point at those entries.
+- **Buffer drafts** (`saveToDraft`, already authorised) hold the queued words and media.
+- **Control Center** holds the decisions and the reported numbers.
+- **Private evidence** (raw readbacks, journals, account inventories) stays in local `.scratch/` on Krish's PC. It never goes in 4 Growth, which anyone with the link can edit.
+- **No other Growth root** is created.
 
-Release checks each slot's Buffer draft bytes against its signed manifest line.
+Because 4 Growth is link-editable, release checks each slot's bytes at release time against the sha256 in the signed manifest line. It never trusts the file just because of where it lives.
 
 ## 2. Repo structure (additive)
 
 ```
-docs/plans/2026-10-27-engine-architecture.md   this plan, with the F01-F51 / G1-G9 register appendix
+docs/plans/2026-10-27-engine-architecture.md   this plan, with the F01-F54 / G1-G9 register appendix
 docs/RUN.md                     ≤8 KB: the only standing doc a run session reads
 specs/schema/                   run-spec, gate, verdict, card, ve-package schemas
 crew/registry.json              specialist -> spec section, lint fn, check fn, card, lens
 crew/<id>/card.md (≤3 KB), crew/<id>/lens.md (≤1 KB)
 invariants/rules.json           each rule with its verbatim source quote + file; a test fails if the quote drifts
-invariants/failures.json        F01-F51, G1-G9 -> guard + test; CI fails if a guard or test disappears
+invariants/failures.json        F01-F54, G1-G9 -> guard + test; CI fails if a guard or test disappears
 invariants/sources.json         Substack source -> organic | unattributed (Krish approves at G-A)
 invariants/boundary.json        format -> production owner (content-engine | canva-lane)
 engine/run/spec.py              schema, lint, computed status
@@ -327,7 +330,7 @@ No session writes a stage.
 1. **Today: connect Substack in Buffer** (a new connection). Until then, W45 Notes are drafted for him to post by hand.
 2. **Codex.** The existing automations may be drawing paid credits until about 2 Nov.
    - **My recommendation:** keep numbers and the 09:00 heartbeat; pause pitches, partners and swaps (they only produce holds), plus radar and answer, until the reset.
-3. **Cloud run access.** Place the **existing** engine token (not regenerated) as a Claude environment secret, allow controlcenter.krishraja.com in the network policy, and create the private Drive runs folder.
+3. **Cloud run access.** Place the **existing** engine token (not regenerated) as a Claude environment secret, and allow controlcenter.krishraja.com in the network policy. Cloud runs keep no private evidence; anything private is produced only by PC sessions, in `.scratch/`.
 4. **The standing W45 to W52 plan, `sources.json`, and each G-A, G-B and G-X:** posting.
 5. **Buffer's Team plan by 31 Oct:** spend.
 6. **New Claude cloud scheduled tasks** (release, measure): new automations.
@@ -340,7 +343,7 @@ No session writes a stage.
 - **What works:** each W45 post gets a verdict or "insufficient" with its denominator. The first ledger comes in the 8 Nov check-in.
 - **Close-out:** a verification-loop pass with observable evidence, and NOW.md notes what moved.
 
-## Appendix: failure register (F01-F51 from inventory, G1-G9 from code)
+## Appendix: failure register (F01-F54 from inventory, G1-G9 from code)
 
 **Buffer and native delivery**
 - **New tests:** F01 scheduling-only edit rejected; F02 TikTok photo AI flag; F03 null link attachment; F04 file chooser and OS dialogs; F06 draft id reused as approval identity (partly tested already); F07 Facebook reopen timeout; F08 scheduled shown before sent; F09 Instagram link sticker; F10 Facebook AI overlay (open; flag to production); F11 Story frame overlap; F13 default queue mode; F14 Story composer quirks; F15 Buffer connector instability (fallback in pack); F16 TikTok URL redirect; F17 imported posts misread; F18 uncertain saves (Buffer side).
@@ -359,5 +362,10 @@ No session writes a stage.
 - **Workflow config:** F44 CI Python 3.9.
 - **Doc only, with the Windows timezone tested:** F46 Mac commands on Windows.
 - **Config tested:** F47 the ninth automation; scheduling it stays open.
+
+**Added by the 27 Oct closeout session (main, `ab1c852`):**
+- F52 `buffer-document-preview-hold` (supersedes `document-upload-unverified`): Buffer loses a saved PDF preview. Hold, never blind retry.
+- F53 `linkedin-reader-continuation`: the reader journey is validated end to end; no raw URL on a card.
+- F54 `substack-filter-settle`: a Growth-sources read counts only once the selected window label and the values have settled together. The Phase 1 capture schema records both.
 
 **Code gaps:** G1 to G9, as listed in Context, each with a fix plus a test.
