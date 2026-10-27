@@ -290,7 +290,7 @@ LANES = ('L0_code', 'L1_judgement', 'L2_eyes', 'L3_hands')
 LANE_JOB_FIELDS = ('id', 'lane', 'workflow', 'trigger', 'may_write', 'never', 'actions', 'secrets')
 AUTOMATION_FIELDS = ('name', 'source', 'jobs', 'lane', 'status', 'successor')
 # The jobs Krish's lanes ruling names (CHANGES.md, 27 Oct evening); each is in lanes.json exactly once.
-LANE_JOBS = {'L0_code': ('control-center', 'release', 'measure', 'keys'),
+LANE_JOBS = {'L0_code': ('control-center', 'release', 'measure', 'keys', 'handoff'),
              'L1_judgement': ('make', 'plan', 'watch'),
              'L2_eyes': ('publish-board', 'preview-packet', 'new-format-item', 'week-sign-off'),
              'L3_hands': ('linkedin-posting', 'buffer-plan', 'one-time-setup')}

@@ -38,7 +38,8 @@ each line {slot_id, channel, format, due_at, link_placement, publish_mode,
 buffer_draft_id, words, assets: [sha256, ...], payload_sha256}, where
 payload_sha256 is release.slot_digest of the line. Krish may amend a line's
 words or due_at, or drop a line, or turn a line to krish_click; any other
-amendment holds.
+amendment holds. engine.run.handoff is the builder: it turns a routine's
+dispatch into such a go-live, rebuilding each line with draft_line below.
 """
 import argparse
 import datetime as dt
@@ -69,8 +70,7 @@ MAX_REPORT_READS = 24
 SERVICE_CHANNEL = {service: channel for channel, (service, _) in CHANNELS.items()}
 AUTHORITY_FILE = Path('invariants') / 'authority.json'
 SHOW_BEFORE_POST_DEFAULT = '2026-11-29'
-# Where authority.json lists derivative format classes. Another work item
-# writes that file; these are the shapes read. Verify against the file.
+# Where invariants/authority.json lists the derivative classes (each with its formats).
 DERIVATIVE_KEYS = ('derivative_formats', 'derivatives')
 
 
@@ -92,14 +92,26 @@ def show_before_post_until(root=None):
     return SHOW_BEFORE_POST_DEFAULT
 
 
+def _format_names(entries):
+    """Format names from a list of names, or of classes each listing its formats."""
+    names = set()
+    for entry in entries if isinstance(entries, list) else []:
+        if isinstance(entry, str):
+            names.add(entry)
+        elif isinstance(entry, dict):
+            names.update(f for f in entry.get('formats') or [] if isinstance(f, str))
+    return names
+
+
 def derivative_formats(root=None):
+    """Formats invariants/authority.json lists as derivatives of an approved piece."""
     auth = _authority(root)
     for key in DERIVATIVE_KEYS:
         if isinstance(auth.get(key), list):
-            return {f for f in auth[key] if isinstance(f, str)}
+            return _format_names(auth[key])
     classes = auth.get('format_classes')
-    if isinstance(classes, dict) and isinstance(classes.get('derivative'), list):
-        return {f for f in classes['derivative'] if isinstance(f, str)}
+    if isinstance(classes, dict):
+        return _format_names(classes.get('derivative'))
     return set()
 
 
@@ -132,6 +144,27 @@ def may_release(slot, golive_decision, board_decision, today, root=None):
 
 def line_digest(line):
     return slot_digest({**line, 'assets': [{'sha256': h} for h in line['assets']]})
+
+
+def draft_line(post, fields, fetch):
+    """The manifest line one Buffer draft makes, rebuilt from the draft itself.
+
+    Its channel comes from the draft's service, its words from the draft's
+    text and each asset hash from the bytes downloaded now (fetch(url) returns
+    (sha256, size) or raises BufferError). Every other digest field (format,
+    due_at, link_placement, publish_mode) comes from fields, and
+    payload_sha256 is the rebuilt line's own digest. Shared by the release
+    (autorelease) and the handoff that proposes the go-live (engine.run.handoff),
+    so both rebuild a slot exactly the same way."""
+    hashes = []
+    for asset in post.get('assets') or []:
+        source = asset.get('source') if isinstance(asset, dict) else None
+        digest, _ = fetch(source)
+        hashes.append(digest)
+    line = {**fields, 'channel': SERVICE_CHANNEL.get(post.get('channelService')), 'words': post.get('text'),
+            'assets': hashes}
+    line['payload_sha256'] = line_digest(line)
+    return line
 
 
 def parse_manifest(text, engine=True):
@@ -262,16 +295,10 @@ class Run:
         self.holds[code] = self.holds.get(code, 0) + 1
 
     def _rebuilt_digest(self, post, engine_line):
-        channel = SERVICE_CHANNEL.get(post.get('channelService'))
-        hashes = []
-        for asset in post.get('assets') or []:
-            source = asset.get('source') if isinstance(asset, dict) else None
-            digest, _ = self.fetch(source)
-            hashes.append(digest)
-        if len(hashes) != len(engine_line['assets']):
+        rebuilt = draft_line(post, engine_line, self.fetch)
+        if len(rebuilt['assets']) != len(engine_line['assets']):
             raise CarryHold('asset_count_differs')
-        rebuilt = {**engine_line, 'channel': channel, 'words': post.get('text'), 'assets': hashes}
-        return line_digest(rebuilt)
+        return rebuilt['payload_sha256']
 
     def _matches(self, post, signed):
         if post.get('text') != signed['words']:

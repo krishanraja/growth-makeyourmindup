@@ -113,6 +113,28 @@
       ]
     },
     {
+      "id": "handoff",
+      "lane": "L0_code",
+      "workflow": "handoff.yml",
+      "trigger": "repository_dispatch from a routine (growth-go-live-manifest, growth-week-packet, growth-make-piece), and by hand as a dry run",
+      "may_write": [
+        "a go-live, plan or check-in proposal to Control Center, built from Buffer drafts whose digest matches the routine's, with its readback"
+      ],
+      "never": [
+        "schedule or post anything",
+        "propose a slot whose draft differs from the routine's digest",
+        "put LinkedIn in as anything but his click"
+      ],
+      "actions": [
+        "propose-go-live",
+        "propose-week"
+      ],
+      "secrets": [
+        "CONTROL_CENTER_ENGINE_TOKEN",
+        "BUFFER_API_KEY"
+      ]
+    },
+    {
       "id": "check",
       "lane": "L0_code",
       "workflow": "check.yml",

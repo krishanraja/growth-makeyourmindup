@@ -1,0 +1,78 @@
+name: handoff
+# Lane L0. The Claude routines (L1) save Buffer drafts and then wake this
+# workflow with a repository_dispatch. They never hold the Control Center
+# token, so this runner turns their handoff into a Control Center proposal
+# Krish approves with one press: it reads each Buffer draft, rebuilds its
+# digest and proposes the go-live (or the week's ask), with a readback. It
+# never schedules, publishes, sends or spends; release.yml acts only after he
+# approves. This repository is public, so the log carries only counts and
+# reason codes: no words, URLs, ids or keys, and nothing is uploaded. The
+# client_payload reaches the job only through an environment variable that
+# Python writes to a file; it is never placed in a shell line.
+on:
+  repository_dispatch:
+    types: [growth-go-live-manifest, growth-week-packet, growth-make-piece]
+  workflow_dispatch:
+    inputs:
+      event:
+        description: 'The handoff type to test'
+        required: true
+        type: choice
+        options: [growth-go-live-manifest, growth-week-packet, growth-make-piece]
+      payload:
+        description: 'The client_payload as JSON (synthetic for a test)'
+        required: true
+        type: string
+      deliver:
+        description: 'Report to Control Center (off: a dry run that reports nothing)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: handoff
+  cancel-in-progress: false
+
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HANDOFF_EVENT: ${{ github.event_name == 'repository_dispatch' && github.event.action || inputs.event }}
+      HANDOFF_DELIVER: ${{ github.event_name == 'repository_dispatch' || inputs.deliver }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Write the payload to a file
+        env:
+          HANDOFF_PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJson(github.event.client_payload) || inputs.payload }}
+        run: |
+          python - <<'PY'
+          import os
+          path = os.path.join(os.environ['RUNNER_TEMP'], 'handoff-payload.json')
+          with open(path, 'w', encoding='utf-8') as handle:
+              handle.write(os.environ.get('HANDOFF_PAYLOAD', ''))
+          PY
+      - name: Propose to Control Center
+        env:
+          CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
+          CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+        run: |
+          HANDOFF_FILE="$RUNNER_TEMP/handoff-payload.json"
+          if [ "$HANDOFF_EVENT" != "growth-make-piece" ] && [ -z "$CONTROL_CENTER_ENGINE_TOKEN" ]; then
+            echo "::error::The CONTROL_CENTER_ENGINE_TOKEN secret is not set for this repository. Nothing was proposed."
+            exit 1
+          fi
+          if [ "$HANDOFF_DELIVER" = "true" ]; then
+            python growth.py run handoff --event "$HANDOFF_EVENT" --payload "$HANDOFF_FILE" --deliver
+          else
+            python growth.py run handoff --event "$HANDOFF_EVENT" --payload "$HANDOFF_FILE"
+          fi

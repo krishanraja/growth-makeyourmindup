@@ -47,18 +47,16 @@ A connector missing or signed out: stop and report which.
    needs his eyes per item. Then make the G-X preview: the drafts' ids, the
    channels and each `payload_sha256` in `.scratch/runs/<run>/`, and
    propose it through the runner exactly as `routines/make.md` step 8 says,
-   with event type `growth-go-live-manifest` and `"express": true`. No
-   runner workflow for it: hold `runner_path_missing` with the preview in
-   your summary.
+   with event type `growth-go-live-manifest` and `"express": true` beside
+   `run_id`. The dispatch fails: hold `runner_path_missing` with the preview
+   in your summary.
 4. **Newly approved publish boards.** Through the Control Center connector,
    read the publish boards Krish approved since the last watch. For each,
-   kick make for that piece: if a workflow under `.github/workflows/` on
-   main lists the `repository_dispatch` type `growth-make-piece`, send
-   `{"event_type": "growth-make-piece", "client_payload": {"piece_id":
+   send `{"event_type": "growth-make-piece", "client_payload": {"piece_id":
    ID}}` with `gh api repos/krishanraja/growth-makeyourmindup/dispatches
-   --input FILE` (or the GitHub connector's dispatch tool). Otherwise
-   follow `routines/make.md` steps 3 to 8 for that one piece in this
-   session.
+   --input FILE` (or the GitHub connector's dispatch tool); the runner only
+   records it. Then follow `routines/make.md` steps 3 to 8 for that one
+   piece in this session.
 5. **Report anything held.** List every slot, idea or board held, from this
    run and from Control Center's holds for this engine, each with its
    reason code.

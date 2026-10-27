@@ -9,7 +9,7 @@ ROUTES = {'new': 'spec', 'lint': 'spec', 'status': 'spec', 'pack': 'pack', 'card
           'release': 'release', 'measure': 'measure', 'northstar': 'measure', 'verdict': 'measure',
           'cost': 'cost', 'ga4': 'ga4', 'autorelease': 'autorelease', 'keys': 'keys',
           'dispatch-check': 'backup', 'calendar': 'calendar', 'carousel': 'plain', 'plain': 'plain',
-          'canva': 'canva'}
+          'canva': 'canva', 'handoff': 'handoff'}
 
 
 def main(argv=None):

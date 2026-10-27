@@ -18,6 +18,7 @@ Nobody has to be awake or online for these.
 | What | When (UTC) | When (London, winter) |
 |---|---|---|
 | The Control Center runner: reads the day's instructions, checks the engine, sends the report, reads Krish's answers | every day 05:10 | 05:10 |
+| The handoff (`handoff.yml`): turns a routine's Buffer drafts or week packet into one ask on Krish's list, after checking each draft against its hash | when a routine wakes it | when a routine wakes it |
 | The test suite | on every push | on every push |
 
 Only this lane holds the Control Center engine key. It is a GitHub
