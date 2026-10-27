@@ -36,6 +36,15 @@
     every single day".
   Nothing in these rulings authorises a new connection, spend or
   automation by itself; those stay his at the time (plan, "Decisions").
+  Later the same day: "You have Google Analytics installed already and
+  Control Centre can see that. Make sure this is a part of your
+  Measurement Specialist." GA4 property G-VC5V9LDE17 runs on
+  home.makeyourmindup.ai through Substack's native integration. It is now
+  the Measurement Specialist's per-post attribution source, joined on
+  `utm_content`; Substack Growth sources remain the North Star source.
+  Request for a read route: `docs/briefs/2026-10-27-control-center-ga4-read.md`.
+  Also that day he connected Substack in Buffer and added the existing
+  engine key to the cloud environment for scheduled cloud runs.
 
 - 2026-10-26: Control Center's daily directive (protocol 1.5.0, control-center
   PR #561) now carries `taste`: the voice rules Krish approved or reworded in
