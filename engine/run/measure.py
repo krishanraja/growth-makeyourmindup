@@ -128,9 +128,9 @@ def validate_capture(capture, now=None):
             raise ValueError('each row needs exactly source, new_free and new_paid')
         if not isinstance(row['source'], str) or not row['source'].strip():
             raise ValueError('each row needs the source label the page showed')
-        if row['source'] in seen:
+        if label_key(row['source']) in seen:
             raise ValueError('duplicate source row: ' + row['source'])
-        seen.add(row['source'])
+        seen.add(label_key(row['source']))
         count(row['new_free'], 'new_free')
         count(row['new_paid'], 'new_paid')
     total = count(capture['total_new_free'], 'total_new_free')
@@ -158,8 +158,9 @@ def label_key(label):
 def load_sources(sources_path='invariants/sources.json', root=ROOT):
     """Return (label key -> category, approved, reason). The map counts only once approved.
 
-    One schema with engine/run/invariants.py: the map lives under "categories",
-    keyed by lower-case labels; an unapproved file names no approver.
+    The same rules as engine/run/invariants.py load_sources: approved,
+    approved_by, approved_at, note and a non-empty "categories" map keyed by
+    lower-case labels; an unapproved file names no approver.
     """
     path = Path(sources_path)
     path = path if path.is_absolute() else Path(root) / path
@@ -168,16 +169,20 @@ def load_sources(sources_path='invariants/sources.json', root=ROOT):
     value = read_json(path)
     if not isinstance(value, dict) or not isinstance(value.get('approved'), bool) or not isinstance(value.get('categories'), dict):
         raise ValueError('sources file needs approved (true or false) and a categories map')
-    if value['approved'] is not True and (value.get('approved_by') is not None or value.get('approved_at') is not None):
+    for field in ('approved_by', 'approved_at', 'note'):
+        if field not in value:
+            raise ValueError('sources file needs ' + field)
+    if not value['categories']:
+        raise ValueError('sources file needs categories')
+    if value['approved'] is not True and (value['approved_by'] is not None or value['approved_at'] is not None):
         raise ValueError('an unapproved classification names no approver')
     mapping = {}
     for label, category in value['categories'].items():
         if not isinstance(label, str) or not label.strip() or category not in CATEGORIES:
             raise ValueError('sources map labels to organic, unattributed or paid only')
-        key = label_key(label)
-        if mapping.get(key, category) != category:
-            raise ValueError('source ' + repr(label) + ' is classified twice')
-        mapping[key] = category
+        if label != label_key(label):
+            raise ValueError('source ' + repr(label) + ' must be lower-case with no outer spaces')
+        mapping[label] = category
     if value['approved'] is not True:
         return mapping, False, AWAITS
     return mapping, True, None

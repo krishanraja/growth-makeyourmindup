@@ -142,9 +142,12 @@ class SourcesTests(unittest.TestCase):
         for result in (classify(capture), classify(capture, 'invariants/sources.json', ROOT)):
             self.assertEqual(result['all_source'], {'value': 5, 'reason': None})
             self.assertEqual(result['unknown_labels'], ['Synthetic Mystery'])
-            self.assertIsNone(result['organic']['value'])
-            self.assertEqual(result['organic']['reason'], AWAITS)
             self.assertEqual(result['approved'], repo['approved'])
+            if repo['approved'] is not True:
+                self.assertIsNone(result['organic']['value'])
+                self.assertEqual(result['organic']['reason'], AWAITS)
+            else:
+                self.assertEqual(result['organic']['value'], 2)
         if repo['approved'] is not True:
             with tempfile.TemporaryDirectory() as tmp:
                 approved = dict(repo, approved=True, approved_by='Synthetic approver', approved_at='2026-10-27')
@@ -159,10 +162,19 @@ class SourcesTests(unittest.TestCase):
                 path.write_text(json.dumps(dict(repo, approved_by='Someone')), encoding='utf-8')
                 with self.assertRaisesRegex(ValueError, 'names no approver'):
                     classify(capture, path)
-                path.write_text(json.dumps(dict(approved, categories={'Direct': 'organic', 'direct': 'unattributed'})),
-                                encoding='utf-8')
-                with self.assertRaisesRegex(ValueError, 'classified twice'):
-                    classify(capture, path)
+                # The same rules as invariants.py: lower-case labels, a note, a non-empty map.
+                for broken, message in ((dict(approved, categories={'Direct': 'organic'}), 'lower-case'),
+                                        (dict(approved, categories={' direct': 'organic'}), 'lower-case'),
+                                        (dict(approved, categories={}), 'categories'),
+                                        ({k: v for k, v in approved.items() if k != 'note'}, 'note')):
+                    path.write_text(json.dumps(broken), encoding='utf-8')
+                    with self.assertRaisesRegex(ValueError, message):
+                        classify(capture, path)
+        # Rows the page shows as 'Direct' and 'direct ' are one source, read twice.
+        doubled = copy.deepcopy(capture)
+        doubled['rows'][1]['source'] = 'direct '
+        with self.assertRaisesRegex(ValueError, 'duplicate source row'):
+            validate_capture(doubled, NOW)
 
     def test_followers_per_channel_per_day(self):
         def snap(day, value, captured='T23:00:00-05:00', availability='available'):

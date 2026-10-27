@@ -17,13 +17,18 @@ command prints what it would request and exits 0. Event names are confirmed
 from the live GA4 Events report and recorded in invariants/ga4.json, never
 guessed: a report or join that relies on an unverified event name is refused.
 Numbers go to .scratch/ and the Control Center report, never into this
-public repository.
+public repository, and a dated reading is never overwritten.
+
+    python -m engine.run.ga4 ga4 events --days 28 --live
+    python -m engine.run.ga4 ga4 report --start YYYY-MM-DD --end YYYY-MM-DD --live
+    python -m engine.run.ga4 ga4 join CAPTURE SPEC
 """
 import argparse
 import base64
 import binascii
 import datetime as dt
 import hashlib
+import http.client
 import json
 import os
 from pathlib import Path
@@ -67,14 +72,16 @@ TOKEN_SECONDS = 3600
 CODE = re.compile(r'^[a-z][a-z0-9_]{0,63}$')
 PROPERTY = re.compile(r'^[0-9]{1,20}$')
 MEASUREMENT = re.compile(r'^G-[A-Z0-9]{4,20}$')
+DATA_PATH = re.compile(r'^/v1beta/properties/[0-9]{1,20}:runReport$')
 EVENT_NAME = re.compile(r'^[A-Za-z][A-Za-z0-9_]{0,39}$')
 PEM = re.compile(r'-----BEGIN (RSA )?PRIVATE KEY-----\s*([A-Za-z0-9+/=\s]+?)\s*-----END (RSA )?PRIVATE KEY-----')
 RSA_OID = '1.2.840.113549.1.1.1'
 # DER of DigestInfo { AlgorithmIdentifier { id-sha256, NULL }, OCTET STRING (32) }: RFC 8017, 9.2 note 1.
 SHA256_DIGEST_INFO = bytes.fromhex('3031300d060960864801650304020105000420')
 STATUS_CODES = {400: 'bad_request', 401: 'unauthorized', 403: 'forbidden', 404: 'not_found', 429: 'rate_limited'}
+EVENTS_COMMAND = 'python -m engine.run.ga4 ga4 events --days 28 --live'
 UNVERIFIED = ('refused: the {} event name is not verified; confirm it from the live GA4 Events report '
-              '(growth.py run ga4 events --live) and record it in invariants/ga4.json, never guessed')
+              '(' + EVENTS_COMMAND + ') and record it in invariants/ga4.json, never guessed')
 
 
 class GA4Error(ValueError):
@@ -168,14 +175,14 @@ class Credentials:
 
 
 def _service_account(raw):
-    text = raw.strip()
+    text = raw.lstrip('\ufeff').strip()  # a key file saved by Notepad starts with a byte order mark
     if not text.startswith('{'):
         compact = re.sub(r'\s+', '', text)
         compact += '=' * (-len(compact) % 4)
         try:
             decoded = (base64.b64decode(compact, validate=True) if re.fullmatch(r'[A-Za-z0-9+/=]*', compact)
                        else base64.urlsafe_b64decode(compact))
-            text = decoded.decode('utf-8').strip()
+            text = decoded.decode('utf-8').lstrip('\ufeff').strip()
         except (binascii.Error, ValueError, UnicodeDecodeError):
             raise GA4Error('bad_credentials') from None
     try:
@@ -249,8 +256,8 @@ def _integer(data, part):
 
 
 def _oid(raw):
-    if not raw:
-        raise GA4Error('bad_private_key')
+    if not raw or raw[-1] & 0x80:
+        raise GA4Error('bad_private_key')  # empty, or the last arc never ends
     parts, value = [], 0
     for byte in raw:
         value = (value << 7) | (byte & 0x7f)
@@ -331,6 +338,11 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     """A redirect could carry the bearer elsewhere, so none is followed."""
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
+        try:
+            if fp is not None:
+                fp.close()  # unread: the redirect body is never looked at
+        except (OSError, AttributeError):
+            pass
         raise GA4Error('redirect_refused', code)
 
 
@@ -339,7 +351,7 @@ def opener():
 
 
 def allowed(url):
-    """True only for a path on one of the two https origins, with no userinfo or port trick."""
+    """True only for the token endpoint or a property's runReport: the transport itself is read-only."""
     if not isinstance(url, str) or any(c.isspace() for c in url):
         return False
     try:
@@ -348,8 +360,10 @@ def allowed(url):
     except ValueError:
         return False
     origin = u.scheme + '://' + u.netloc
-    return (u.scheme == 'https' and origin in ORIGINS and port is None and not u.username and not u.password
-            and u.path.startswith('/'))
+    if (u.scheme != 'https' or origin not in ORIGINS or port is not None or u.username or u.password
+            or u.query or u.fragment):
+        return False
+    return url == TOKEN_URL or (origin == DATA_ORIGIN and bool(DATA_PATH.match(u.path)))
 
 
 class Transport:
@@ -380,7 +394,7 @@ class Transport:
                 pass
             code = STATUS_CODES.get(error.code, 'server_error' if error.code >= 500 else 'http_error')
             raise GA4Error(code, error.code) from None
-        except (urllib.error.URLError, OSError, ValueError) as error:
+        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as error:
             reason = getattr(error, 'reason', error)
             raise GA4Error('timeout' if isinstance(reason, socket.timeout) else 'unreachable') from None
         if final != url:
@@ -427,37 +441,31 @@ def run_report(creds, transport, body, now=None):
 # Requests -------------------------------------------------------------------
 
 def date_range(start, end, today):
-    """At most 90 days, inclusive, ending no later than today in New York."""
+    """At most 90 days, inclusive, ending before today in New York: today is still being processed."""
     start, end = calendar_date(start), calendar_date(end)
     today = calendar_date(today)
     if end < start:
         raise ValueError('the date range ends before it starts')
-    if end > today:
-        raise ValueError('the date range ends after today')
+    if end >= today:
+        raise ValueError('the date range must end before today; GA4 is still processing today')
     if (end - start).days + 1 > MAX_DAYS:
         raise ValueError('the date range is longer than ' + str(MAX_DAYS) + ' days')
     return start.isoformat(), end.isoformat()
 
 
-def _event_filter(names):
-    return {'filter': {'fieldName': 'eventName', 'inListFilter': {'values': list(names), 'caseSensitive': True}}}
-
-
-def report_request(start, end, today, event_names=()):
+def report_request(start, end, today):
+    """Every event row for the range, unfiltered, so per-slot sessions are never narrowed by an event."""
     start, end = date_range(start, end, today)
-    body = {'dateRanges': [{'startDate': start, 'endDate': end}],
+    return {'dateRanges': [{'startDate': start, 'endDate': end}],
             'dimensions': [{'name': d} for d in DIMENSIONS],
             'metrics': [{'name': m} for m in METRICS],
             'limit': MAX_ROWS, 'keepEmptyRows': False}
-    if event_names:
-        body['dimensionFilter'] = _event_filter(event_names)
-    return body
 
 
 def events_request(days, today):
     if isinstance(days, bool) or not isinstance(days, int) or not 1 <= days <= MAX_DAYS:
         raise ValueError('--days must be from 1 to ' + str(MAX_DAYS))
-    end = calendar_date(today)
+    end = calendar_date(today) - dt.timedelta(days=1)  # today is still being processed
     start = end - dt.timedelta(days=days - 1)
     return {'dateRanges': [{'startDate': start.isoformat(), 'endDate': end.isoformat()}],
             'dimensions': [{'name': 'eventName'}], 'metrics': [{'name': 'eventCount'}],
@@ -475,6 +483,12 @@ def _table(response, dimensions, metrics):
     """(dimension values, metric values) per row, refusing anything partial or reordered."""
     if not isinstance(response, dict):
         raise GA4Error('bad_response')
+    metadata = response.get('metadata') or {}
+    if not isinstance(metadata, dict):
+        raise GA4Error('bad_response')
+    if metadata.get('dataLossFromOtherRow') or metadata.get('samplingMetadatas'):
+        raise ValueError('GA4 rolled rows into (other) or sampled this report, so its counts are not whole; '
+                         'narrow the date range and read again')
     heads = [h.get('name') if isinstance(h, dict) else None for h in response.get('dimensionHeaders') or []]
     measures = [h.get('name') if isinstance(h, dict) else None for h in response.get('metricHeaders') or []]
     rows = response.get('rows') or []
@@ -487,7 +501,7 @@ def _table(response, dimensions, metrics):
         raise GA4Error('bad_response')
     if total > len(rows) or len(rows) > MAX_ROWS:
         raise ValueError('the report has more than ' + '{:,}'.format(MAX_ROWS)
-                         + ' rows; narrow the date range or pass --event so nothing is cut off')
+                         + ' rows; narrow the date range so nothing is cut off')
     out = []
     for row in rows:
         dims = [v.get('value') if isinstance(v, dict) else None for v in (row.get('dimensionValues') or [])]
@@ -605,12 +619,13 @@ def _outcome(rows, config, key):
             'reason': None}
 
 
-def join(capture, spec, config, now=None):
+def join(capture, spec, config=None, now=None):
     """Per slot: sessions, sign-ups and paid subscriptions by the slot's own utm_content.
 
     Sign-ups and paid subscriptions come only through verified event names. A
     capture content value no slot claims is listed, never assigned.
     """
+    config = load_config() if config is None else config
     validate_capture(capture, config, now)
     if not isinstance(spec, dict) or not isinstance(spec.get('slots'), list):
         raise ValueError('spec needs a slots list')
@@ -647,6 +662,21 @@ def join(capture, spec, config, now=None):
             'landing page across event rows, so a lower bound', 'slots': out, 'unmatched_content': unmatched}
 
 
+def weekly_signups(capture, config=None, now=None):
+    """The GA4 sign-ups for one seven-day capture, through the verified event name only.
+
+    Returns {value, event_name, reason}, the shape reconcile() accepts; value is
+    None with the refusal while the sign_up name is unverified.
+    """
+    config = load_config() if config is None else config
+    validate_capture(capture, config, now)
+    window = capture['date_range']
+    days = (calendar_date(window['end']) - calendar_date(window['start'])).days + 1
+    if days != 7:
+        raise ValueError('a weekly sign-up reading needs a seven-day capture, not ' + str(days) + ' days')
+    return _outcome(capture['rows'], config, 'sign_up')
+
+
 def reconcile(ga4_weekly_signups, substack_all_source):
     """Both readings and the gap; the more conservative one is labelled as the one to use."""
     readings = {}
@@ -666,25 +696,33 @@ def reconcile(ga4_weekly_signups, substack_all_source):
     out['gap'] = ga4 - substack
     if ga4 < substack:
         out.update(use='ga4', value=ga4, reason='GA4 reads lower, so it is the more conservative reading; '
-                   'the gap is logged')
+                   'the gap is reported')
     else:
         out.update(use='substack', value=substack,
                    reason='Substack reads lower or the same, so it is the more conservative reading'
-                   + ('; the gap is logged' if ga4 != substack else ''))
+                   + ('; the gap is reported' if ga4 != substack else ''))
     return out
 
 
 # Command line ------------------------------------------------------------------
 
 def _private_path(path, root, default):
-    """Numbers stay out of git: inside the repository only under .scratch/."""
+    """Numbers stay out of git: inside --root or this repository only under .scratch/, and never overwritten."""
     path = Path(path) if path else Path(root) / default
     path = path if path.is_absolute() else Path.cwd() / path
-    resolved, base = path.resolve(), Path(root).resolve()
-    scratch = (base / '.scratch').resolve()
-    if (resolved == base or base in resolved.parents) and scratch not in resolved.parents:
-        raise ValueError('GA4 numbers stay out of the public repository; write under .scratch/')
+    resolved = path.resolve()
+    for base in {Path(root).resolve(), ROOT.resolve()}:
+        scratch = (base / '.scratch').resolve()
+        if (resolved == base or base in resolved.parents) and scratch not in resolved.parents:
+            raise ValueError('GA4 numbers stay out of the public repository; write under .scratch/')
+    if path.exists():
+        raise ValueError(str(path) + ' exists; GA4 readings are never overwritten, choose another --out')
     return path
+
+
+def _stamp(now):
+    """The capture instant in UTC for a file name, so a later reading never replaces an earlier one."""
+    return instant(now).astimezone(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
 
 
 def _would(body):
@@ -695,7 +733,7 @@ def _would(body):
 
 
 def main(argv=None, transport=None, environ=None):
-    parser = argparse.ArgumentParser(prog='growth.py run ga4', description=__doc__.split('\n')[0])
+    parser = argparse.ArgumentParser(prog='python -m engine.run.ga4', description=__doc__.split('\n')[0])
     sub = parser.add_subparsers(dest='cmd', required=True)
     top = sub.add_parser('ga4')
     what = top.add_subparsers(dest='what', required=True)
@@ -703,8 +741,6 @@ def main(argv=None, transport=None, environ=None):
     e.add_argument('--days', type=int, default=28)
     r = what.add_parser('report')
     r.add_argument('--start', required=True); r.add_argument('--end', required=True); r.add_argument('--out')
-    r.add_argument('--event', action='append', choices=EVENT_KEYS, default=[],
-                   help='filter to a verified event (sign_up or paid_subscription); refused while unverified')
     for command in (e, r):
         command.add_argument('--live', action='store_true')
         command.add_argument('--now')
@@ -724,9 +760,10 @@ def main(argv=None, transport=None, environ=None):
             if not args.live:
                 result = _would(body)
             else:
+                path = _private_path(None, root, SCRATCH / ('events-' + _stamp(args.now) + '.json'))
                 creds = credentials(environ)
                 names = events_from_response(run_report(creds, transport or Transport(), body, args.now))
-                path = _private_path(None, root, SCRATCH / ('events-' + today + '.json'))
+                _private_path(path, root, None)  # still new after the read
                 write_json(path, {'kind': 'ga4_events', 'measurement_id': config['measurement_id'],
                                   'captured_at': instant(args.now).isoformat(), 'date_range': body['dateRanges'][0],
                                   'events': names,
@@ -734,17 +771,18 @@ def main(argv=None, transport=None, environ=None):
                                           'paid_subscription, then records them in invariants/ga4.json'})
                 result = {'live': True, 'written': str(path), 'event_names': len(names)}
         else:
-            names = [verified_event(config, key) for key in args.event]
-            body = report_request(args.start, args.end, today, names)
+            body = report_request(args.start, args.end, today)
             if not args.live:
                 result = _would(body)
             else:
-                path = _private_path(args.out, root, SCRATCH / ('report-' + args.start + '-' + args.end + '.json'))
+                path = _private_path(args.out, root, SCRATCH / ('report-' + args.start + '-' + args.end + '-'
+                                                                + _stamp(args.now) + '.json'))
                 creds = credentials(environ)
                 captured_at = instant(args.now).isoformat()
                 capture = capture_from_response(run_report(creds, transport or Transport(), body, args.now),
                                                 config, creds.property_id, captured_at, *date_range(
                                                     args.start, args.end, today))
+                _private_path(path, root, None)  # still new after the read
                 write_json(path, capture)
                 result = {'live': True, 'written': str(path), 'rows': len(capture['rows'])}
     except (ValueError, KeyError, TypeError, OSError) as exc:

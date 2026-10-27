@@ -8,6 +8,7 @@ import base64
 import contextlib
 import copy
 import hashlib
+import http.client
 import io
 import json
 from pathlib import Path
@@ -21,7 +22,8 @@ import urllib.request
 from engine.core import tracked
 from engine.run import ga4
 from engine.run.ga4 import (GA4Error, Transport, assertion, capture_from_response, credentials, join, load_config,
-                            main, own_links, private_key, reconcile, rs256, validate_capture, verified_event)
+                            main, own_links, private_key, reconcile, rs256, validate_capture, verified_event,
+                            weekly_signups)
 
 FIXTURES = Path(__file__).resolve().parent / 'fixtures' / 'ga4'
 ROOT = Path(__file__).resolve().parents[1]
@@ -140,6 +142,14 @@ def run(argv, transport=None, env=None):
     return code, out.getvalue() + err.getvalue()
 
 
+def unverified_config():
+    """The committed ga4.json with nothing verified, whatever the committed file says today."""
+    config = copy.deepcopy(load_config(ROOT))
+    config['events'] = {k: {'name': None, 'verified': False} for k in ga4.EVENT_KEYS}
+    config['verified_at'] = None
+    return config
+
+
 def verified_root(tmp):
     (Path(tmp) / 'invariants').mkdir()
     (Path(tmp) / 'invariants' / 'ga4.json').write_text(json.dumps(load('config-verified.json')), encoding='utf-8')
@@ -153,7 +163,8 @@ class CredentialTests(unittest.TestCase):
         wrapped = '\n'.join(encoded[i:i + 76] for i in range(0, len(encoded), 76))
         urlsafe = base64.urlsafe_b64encode(raw.encode('utf-8')).decode('ascii').rstrip('=')
         escaped = account(PEM8.replace('\n', '\\n'))
-        for value in (raw, '  ' + raw + '\n', encoded, wrapped, urlsafe, escaped, account(PEM1)):
+        bom = base64.b64encode(('\ufeff' + raw).encode('utf-8')).decode('ascii')
+        for value in (raw, '  ' + raw + '\n', encoded, wrapped, urlsafe, escaped, account(PEM1), '\ufeff' + raw, bom):
             creds = credentials(environ(value))
             self.assertEqual((creds.client_email, creds.property_id), (EMAIL, PROPERTY_ID))
             self.assertEqual(creds.sign(b'x'), rs256(b'x', N, D))
@@ -216,6 +227,11 @@ class CredentialTests(unittest.TestCase):
         with self.assertRaises(GA4Error) as caught:
             private_key(swapped)
         self.assertEqual(caught.exception.code, 'key_not_rsa')
+        # An object identifier whose last arc never ends is a refused key, not a crash.
+        broken = der(0x30, der_int(0) + der(0x30, der(0x06, b'\x81') + der(0x05, b'')) + der(0x04, pkcs1))
+        with self.assertRaises(GA4Error) as caught:
+            private_key(PEM8.replace(inner, '\n' + base64.b64encode(broken).decode('ascii') + '\n'))
+        self.assertEqual(caught.exception.code, 'bad_private_key')
         with self.assertRaises(GA4Error) as caught:
             rs256(message, 3233, 2753)
         self.assertEqual(caught.exception.code, 'key_too_short')
@@ -228,7 +244,10 @@ class TransportTests(unittest.TestCase):
         for url in ('http://oauth2.googleapis.com/token', 'https://evil.example/token',
                     'https://oauth2.googleapis.com.evil.example/token', 'https://user@oauth2.googleapis.com/token',
                     'https://oauth2.googleapis.com:8443/token', 'https://www.googleapis.com/token',
-                    'https://analyticsdata.googleapis.com', 'https://analyticsdata.googleapis.com/x y', None):
+                    'https://analyticsdata.googleapis.com', 'https://analyticsdata.googleapis.com/x y',
+                    'https://analyticsdata.googleapis.com/v1beta/properties/1/audienceExports',
+                    'https://analyticsdata.googleapis.com/v1beta/properties/1:runReport?alt=media',
+                    'https://oauth2.googleapis.com/revoke', None):
             with self.assertRaises(GA4Error) as caught:
                 transport.post(url, b'{}', {})
             self.assertEqual(caught.exception.code, 'origin_refused', url)
@@ -236,9 +255,11 @@ class TransportTests(unittest.TestCase):
         self.assertEqual(transport.post(ga4.TOKEN_URL, b'x', {})['access_token'], TOKEN)
         self.assertEqual(fake.requests[0][1], 7)
         # No redirect is followed, whether the handler sees it or the final URL moved.
+        redirect_body = io.BytesIO(b'moved')
         with self.assertRaises(GA4Error) as caught:
-            ga4.NoRedirect().redirect_request(None, None, 302, 'Found', {}, 'https://evil.example/')
+            ga4.NoRedirect().redirect_request(None, redirect_body, 302, 'Found', {}, 'https://evil.example/')
         self.assertEqual(caught.exception.code, 'redirect_refused')
+        self.assertTrue(redirect_body.closed)
         self.assertTrue(any(isinstance(h, ga4.NoRedirect) for h in ga4.opener().handlers))
         moved = Transport(lambda request, timeout=None: Response({}, request.full_url, final='https://evil.example/'))
         with self.assertRaises(GA4Error) as caught:
@@ -262,7 +283,10 @@ class TransportTests(unittest.TestCase):
 
         def slow(request):
             return urllib.error.URLError(socket.timeout('timed out'))
-        for fail, code in ((forbidden, 'forbidden'), (slow, 'timeout')):
+
+        def cut(request):
+            return http.client.IncompleteRead(b'partial ' + TOKEN.encode('ascii'))
+        for fail, code in ((forbidden, 'forbidden'), (slow, 'timeout'), (cut, 'unreachable')):
             with self.assertRaises(GA4Error) as caught:
                 Transport(FakeGoogle(fail=fail)).post(ga4.TOKEN_URL, b'x', {})
             self.assertEqual(caught.exception.code, code)
@@ -308,6 +332,13 @@ class TransportTests(unittest.TestCase):
                              Transport(FakeGoogle()), env)
             self.assertEqual(code, 1)
             self.assertIn('.scratch', text)
+            # Nor in this repository, whatever --root says.
+            code, text = run(['ga4', 'report', '--start', '2026-11-02', '--end', '2026-11-04', '--live',
+                              '--root', str(root), '--now', NOW, '--out', str(ROOT / 'lists' / 'ga4-synthetic.json')],
+                             Transport(FakeGoogle()), env)
+            self.assertEqual(code, 1)
+            self.assertIn('.scratch', text)
+            self.assertFalse((ROOT / 'lists' / 'ga4-synthetic.json').exists())
             # The events listing goes to .scratch/ga4/ only and prints a count, not the names.
             fake = FakeGoogle(report={'dimensionHeaders': [{'name': 'eventName'}],
                                       'metricHeaders': [{'name': 'eventCount'}], 'rowCount': 2,
@@ -325,14 +356,47 @@ class TransportTests(unittest.TestCase):
             self.assertEqual(Path(json.loads(text)['written']).parent, root / '.scratch' / 'ga4')
 
 
+class EvidenceTests(unittest.TestCase):
+    def test_ga4_live_readings_are_never_overwritten(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = verified_root(tmp)
+            argv = ['ga4', 'report', '--start', '2026-11-02', '--end', '2026-11-04', '--live', '--root', str(root),
+                    '--now', NOW]
+            code, text = run(argv, Transport(FakeGoogle()), environ())
+            self.assertEqual(code, 0, text)
+            first = Path(json.loads(text)['written'])
+            self.assertIn('20261105T170000Z', first.name)  # the capture instant names the file
+            before = first.read_bytes()
+            fake = FakeGoogle(report=api_response(dict(load('capture.json'), rows=[])))
+            code, text = run(argv, Transport(fake), environ())
+            self.assertEqual(code, 1)
+            self.assertIn('never overwritten', text)
+            self.assertEqual(fake.requests, [])  # refused before any request
+            self.assertEqual(first.read_bytes(), before)
+            # A later reading of the same range lands beside it.
+            code, text = run(argv[:-1] + ['2026-11-05T18:00:00Z'], Transport(fake), environ())
+            self.assertEqual(code, 0, text)
+            self.assertNotEqual(Path(json.loads(text)['written']), first)
+            self.assertEqual(first.read_bytes(), before)
+            # An explicit --out that exists is refused the same way.
+            code, text = run(argv + ['--out', str(first)], Transport(FakeGoogle()), environ())
+            self.assertEqual(code, 1)
+            self.assertEqual(first.read_bytes(), before)
+
+
 class EventTests(unittest.TestCase):
     def test_ga4_unverified_event_name_is_refused(self):
-        config = load_config(ROOT)  # the committed file: nothing verified yet
-        self.assertEqual(config['measurement_id'], 'G-VC5V9LDE17')
+        committed = load_config(ROOT)
+        self.assertEqual(committed['measurement_id'], 'G-VC5V9LDE17')
         for key in ('sign_up', 'paid_subscription'):
-            self.assertIsNone(config['events'][key]['name'])
+            if committed['events'][key]['verified'] is not True:
+                with self.assertRaisesRegex(ValueError, 'not verified'):
+                    verified_event(committed, key)
+        config = unverified_config()
+        for key in ('sign_up', 'paid_subscription'):
             with self.assertRaisesRegex(ValueError, 'not verified'):
                 verified_event(config, key)
+        self.assertIn('python -m engine.run.ga4 ga4 events', ga4.UNVERIFIED)
         named = copy.deepcopy(config)
         named['events']['sign_up']['name'] = 'sign_up'  # a plausible name is still a guess until verified
         with self.assertRaisesRegex(ValueError, 'never guessed'):
@@ -344,12 +408,8 @@ class EventTests(unittest.TestCase):
         for name in ('sign_ups', 'paid_subscriptions'):
             self.assertIsNone(slot[name]['value'])
             self.assertTrue(slot[name]['reason'].startswith('refused'))
-        # A report filtered on an unverified event is refused before any network call.
-        fake = FakeGoogle()
-        code, text = run(['ga4', 'report', '--start', '2026-11-02', '--end', '2026-11-04', '--event', 'sign_up',
-                          '--live', '--now', NOW], Transport(fake), environ())
-        self.assertEqual((code, fake.requests), (1, []))
-        self.assertIn('not verified', text)
+        # With no config given, the join reads the committed file and still counts sessions.
+        self.assertEqual(join(load('capture.json'), load('spec.json'), now=NOW)['slots'][0]['sessions'], 8)
         # The config itself: verified needs a name and a date; a name alone is not verified.
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'ga4.json'
@@ -367,8 +427,8 @@ class EventTests(unittest.TestCase):
                     load_config(path=path)
         verified = load_config(path=FIXTURES / 'config-verified.json')
         self.assertEqual(verified_event(verified, 'sign_up'), 'synthetic_sign_up')
-        filtered = ga4.report_request('2026-11-02', '2026-11-04', '2026-11-05', ['synthetic_sign_up'])
-        self.assertEqual(filtered['dimensionFilter']['filter']['inListFilter']['values'], ['synthetic_sign_up'])
+        # The report is never filtered by event, so per-slot sessions are never narrowed.
+        self.assertNotIn('dimensionFilter', ga4.report_request('2026-11-02', '2026-11-04', '2026-11-05'))
 
 
 class JoinTests(unittest.TestCase):
@@ -429,8 +489,16 @@ class JoinTests(unittest.TestCase):
         with self.assertRaises(GA4Error):
             capture_from_response(dict(response, metricHeaders=response['metricHeaders'][::-1]), config, '100000001',
                                   NOW, '2026-11-02', '2026-11-04')
+        for metadata in ({'dataLossFromOtherRow': True}, {'samplingMetadatas': [{'samplesReadCount': '1'}]}):
+            with self.assertRaisesRegex(ValueError, 'sampled'):
+                capture_from_response(dict(response, metadata=metadata), config, '100000001', NOW,
+                                      '2026-11-02', '2026-11-04')
         with self.assertRaisesRegex(ValueError, '90 days'):
             ga4.report_request('2026-08-01', '2026-11-04', '2026-11-05')
+        with self.assertRaisesRegex(ValueError, 'still processing today'):
+            ga4.report_request('2026-11-02', '2026-11-05', '2026-11-05')
+        self.assertEqual(ga4.events_request(28, '2026-11-05')['dateRanges'],
+                         [{'startDate': '2026-10-08', 'endDate': '2026-11-04'}])
         # The command line join reads the same files.
         with tempfile.TemporaryDirectory() as tmp:
             code, text = run(['ga4', 'join', str(FIXTURES / 'capture.json'), str(FIXTURES / 'spec.json'),
@@ -458,6 +526,20 @@ class JoinTests(unittest.TestCase):
         for bad in ((-1, 3), (True, 3), (2.5, 3), (3, '4')):
             with self.assertRaises(ValueError):
                 reconcile(*bad)
+        # The GA4 weekly figure comes from a seven-day capture through the verified name only.
+        week = load('capture.json')
+        week['date_range'] = {'start': '2026-10-29', 'end': '2026-11-04'}
+        verified = load_config(path=FIXTURES / 'config-verified.json')
+        expected = sum(r['event_count'] for r in week['rows'] if r['event_name'] == 'synthetic_sign_up')
+        reading = weekly_signups(week, verified, NOW)
+        self.assertEqual((reading['value'], reading['event_name']), (expected, 'synthetic_sign_up'))
+        self.assertEqual(reconcile(reading, expected + 3)['use'], 'ga4')
+        unverified = weekly_signups(week, unverified_config(), NOW)
+        self.assertIsNone(unverified['value'])
+        self.assertTrue(unverified['reason'].startswith('refused'))
+        self.assertEqual((reconcile(unverified, 9)['use'], reconcile(unverified, 9)['gap']), ('substack', None))
+        with self.assertRaisesRegex(ValueError, 'seven-day'):
+            weekly_signups(load('capture.json'), verified, NOW)
 
 
 class OfflineTests(unittest.TestCase):
@@ -488,6 +570,11 @@ class OfflineTests(unittest.TestCase):
             self.assertIn('missing_credentials', text)
             code, text = run(['ga4', 'events', '--days', '91', '--now', NOW], Transport(fake), environ())
             self.assertEqual(code, 1)
+            # The default transport stays offline too.
+            for argv in (['ga4', 'events'], ['ga4', 'report', '--start', '2026-11-02', '--end', '2026-11-04']):
+                code, text = run(argv + ['--now', NOW], None, environ())
+                self.assertEqual(code, 0, text)
+                self.assertFalse(json.loads(text)['live'])
         self.assertEqual(fake.requests, [])
 
 
