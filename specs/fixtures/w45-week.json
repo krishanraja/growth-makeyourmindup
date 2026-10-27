@@ -1,0 +1,157 @@
+{
+  "schema": "growth-run-spec/1",
+  "run_id": "makeyourmindup:2026-W45:week",
+  "kind": "week",
+  "parent_run_id": null,
+  "window": {
+    "start": "2026-11-02T00:00:00-05:00",
+    "end": "2026-11-09T00:00:00-05:00",
+    "tz": "America/New_York"
+  },
+  "north_star": {
+    "week_target": 86
+  },
+  "secondary_targets": [
+    {
+      "metric": "followers_net",
+      "channel": "threads",
+      "per": "day",
+      "target": null,
+      "status": "baseline_pending"
+    },
+    {
+      "metric": "paid_subscribers",
+      "channel": null,
+      "per": "week",
+      "target": null,
+      "status": "baseline_pending"
+    }
+  ],
+  "inputs": [
+    {
+      "package_id": "synthetic-package-w45",
+      "origin": "content-engine",
+      "piece_url": "https://home.makeyourmindup.ai/p/test-fixture",
+      "creative_approval_ref": "synthetic-approval-ref",
+      "manifest": {
+        "revision": "approved v1 (synthetic)",
+        "approval_scope": "TEST FIXTURE ONLY",
+        "files": [
+          {
+            "name": "synthetic-note-image.png",
+            "bytes": 39,
+            "sha256": "15e38318af61f2f53d9b4253e2c287e246b7f0711aa6aceaa5f1020c5f41962b"
+          }
+        ]
+      }
+    }
+  ],
+  "slots": [
+    {
+      "slot_id": "w45-mon-note-1",
+      "channel": "substack-notes",
+      "format": "note",
+      "play": "P1",
+      "due_at": "2026-11-02T09:30:00-05:00",
+      "words": "TEST FIXTURE ONLY. One leader asked how long a pilot should run before it earns a budget line. Our answer was six weeks, with one number agreed on the first day.",
+      "assets": [
+        {
+          "name": "synthetic-note-image.png",
+          "sha256": "15e38318af61f2f53d9b4253e2c287e246b7f0711aa6aceaa5f1020c5f41962b",
+          "url": null,
+          "bytes": 39
+        }
+      ],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "81d325f4864e23b36365927cf0abcd28fd470e9d679ea587c5862c5acca9fddd"
+    },
+    {
+      "slot_id": "w45-mon-note-2",
+      "channel": "substack-notes",
+      "format": "note",
+      "play": "P9",
+      "due_at": "2026-11-02T15:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. If this helped, the full piece is free to read and free to subscribe to.",
+      "assets": [],
+      "link_placement": "subscribe-path",
+      "cta": true,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "0ebf0424459d07b9c8501be92928b9e51bbee364d7623454e5f0e839d5b7f84b"
+    },
+    {
+      "slot_id": "w45-tue-note-1",
+      "channel": "substack-notes",
+      "format": "note",
+      "play": "P1",
+      "due_at": "2026-11-03T09:30:00-05:00",
+      "words": "TEST FIXTURE ONLY. Three questions to ask before a second AI pilot. Which one would you add?",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "3182bcc8e53ff790e7dd2abc505ecccdc7cd501ac3ee314c565fe38f62284732"
+    },
+    {
+      "slot_id": "w45-mon-threads-1",
+      "channel": "threads",
+      "format": "text",
+      "play": null,
+      "due_at": "2026-11-02T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. We timed a pilot review at six weeks and it changed the budget talk. https://home.makeyourmindup.ai/p/test-fixture",
+      "assets": [],
+      "link_placement": "in_post",
+      "cta": true,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": "in_post",
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "2609d86d2ef38dfb6b7d4f448f7d8ce449edfca26b6708364803f4ebdf10e4f1"
+    },
+    {
+      "slot_id": "w45-wed-threads-1",
+      "channel": "threads",
+      "format": "text",
+      "play": null,
+      "due_at": "2026-11-04T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. What did your last pilot measure on day one? The worked example is in the first reply.",
+      "assets": [],
+      "link_placement": "first_reply",
+      "cta": true,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": "first_reply",
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "ceb5a45d84c86d769353f0c7337cf0714d2dd47b41763dcc247818a76bbeb556"
+    }
+  ],
+  "experiments": [
+    {
+      "id": "threads-link-placement",
+      "channel": "threads",
+      "variable": "link_placement",
+      "arms": [
+        "in_post",
+        "first_reply"
+      ]
+    }
+  ],
+  "budgets": {
+    "krish_min": {
+      "weekday": 20,
+      "sunday": 30
+    },
+    "spend_usd": 0
+  },
+  "signature": null
+}

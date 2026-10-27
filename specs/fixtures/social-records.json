@@ -1,0 +1,66 @@
+{
+  "description": "Synthetic social records for run-spec tests: the shape of social/channels and social/formats, reduced to the fields run lint reads. Not the live records.",
+  "channel": {
+    "linkedin": {
+      "id": "linkedin",
+      "formats": [
+        "text",
+        "single-image"
+      ],
+      "publication_mode": "human_publish_only"
+    },
+    "substack-notes": {
+      "id": "substack-notes",
+      "formats": [
+        "note"
+      ],
+      "publication_mode": "approved_brand_content"
+    },
+    "threads": {
+      "id": "threads",
+      "formats": [
+        "text",
+        "single-image"
+      ],
+      "publication_mode": "approved_content_cadence"
+    },
+    "x": {
+      "id": "x",
+      "formats": [
+        "text",
+        "single-image"
+      ],
+      "publication_mode": "approved_content_cadence"
+    }
+  },
+  "format": {
+    "note": {
+      "id": "note",
+      "channels": [
+        "substack-notes"
+      ],
+      "min_assets": 0,
+      "max_assets": 1
+    },
+    "single-image": {
+      "id": "single-image",
+      "channels": [
+        "linkedin",
+        "threads",
+        "x"
+      ],
+      "min_assets": 1,
+      "max_assets": 1
+    },
+    "text": {
+      "id": "text",
+      "channels": [
+        "linkedin",
+        "threads",
+        "x"
+      ],
+      "min_assets": 0,
+      "max_assets": 0
+    }
+  }
+}
