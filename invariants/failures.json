@@ -670,6 +670,94 @@
       "status": "tested"
     },
     {
+      "id": "F66",
+      "title": "A derivative posts before its publish board or the four-week preview, or a new format posts without its own approval",
+      "source": "CHANGES.md 2026-10-27 (evening), standing approval for derivatives (R92)",
+      "guard": "engine/run/invariants.py:load_authority and engine/run/invariants.py:may_post_alone",
+      "tests": [
+        "test_authority_encodes_the_27_october_standing_approval",
+        "test_authority_refuses_a_malformed_register",
+        "test_derivatives_wait_for_board_and_preview_then_post_alone",
+        "test_new_formats_and_unlisted_classes_need_eyes",
+        "test_linkedin_is_never_posted_alone",
+        "test_authority_formats_and_hands_exist_in_the_social_records"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F67",
+      "title": "A workflow, job or routine runs in no lane, or an L0 or L1 job holds an action from his hands or his eyes",
+      "source": "CHANGES.md 2026-10-27 (evening), lanes ruling (R94)",
+      "guard": "engine/run/invariants.py:check_lanes and engine/run/invariants.py:load_lanes",
+      "tests": [
+        "test_every_workflow_job_and_routine_is_in_one_lane",
+        "test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes",
+        "test_every_job_file_and_automation_is_named_exactly_once",
+        "test_no_l0_or_l1_job_holds_his_hands_or_his_eyes",
+        "test_lanes_register_refuses_a_bad_shape"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F68",
+      "title": "A session or a CI job holds the Control Center engine key",
+      "source": "CHANGES.md 2026-10-27 (evening), keys ruling (R93)",
+      "guard": "engine/run/invariants.py:check_lanes (engine key per workflow)",
+      "tests": [
+        "test_the_engine_key_lives_only_on_the_github_runner"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F69",
+      "title": "A posting calendar row lands in the wrong lane or format, or the resolved week misses a floor or passes a quoted cap",
+      "source": "calendar/v1.json, the V1 posting calendar (R92, R94)",
+      "guard": "engine/run/calendar.py:lint and engine/run/calendar.py:resolve",
+      "tests": [
+        "test_v1_calendar_lints_clean_and_meets_its_floors",
+        "test_every_row_is_in_the_lane_authority_gives_it",
+        "test_a_wrong_lane_is_refused",
+        "test_formats_producers_and_templates_must_exist",
+        "test_floors_and_caps_are_checked_on_the_resolved_week",
+        "test_caps_are_quoted_from_the_corpus",
+        "test_a_result_card_runs_only_after_its_poll",
+        "test_timezone_and_preview_date_are_checked",
+        "test_calendar_lint_is_a_run_route"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F70",
+      "title": "A carousel or caption is not plain English, human and humble",
+      "source": "CHANGES.md 2026-10-27 (evening) (R92); social/lessons/carousel-plain-english.json",
+      "guard": "engine/run/plain.py:lint_carousel and engine/run/plain.py:lint_text",
+      "tests": [
+        "test_good_synthetic_carousel_passes",
+        "test_long_sentences_and_long_averages_are_refused",
+        "test_jargon_and_em_dashes_are_refused",
+        "test_stacked_two_word_fragments_are_refused",
+        "test_a_carousel_needs_a_humble_human_line_and_six_to_eight_cards",
+        "test_carousel_lint_is_a_run_route",
+        "test_run_lint_blocks_an_unplain_carousel_and_warns_on_other_captions"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F71",
+      "title": "A Canva export is off the brand kit, the wrong size for its channel, carries boilerplate or quotes words the piece does not contain",
+      "source": "social/guides/canva.md; social/brand/kit.json (kit kAHZOJ-K6I8)",
+      "guard": "engine/run/canva.py:lint_design and engine/social.py:has_boilerplate",
+      "tests": [
+        "test_kit_holds_the_makeyourmindup_brand",
+        "test_an_on_kit_design_passes",
+        "test_off_kit_colour_font_and_size_are_refused",
+        "test_a_quote_must_be_a_literal_match_to_the_piece",
+        "test_boilerplate_and_unapproved_templates_are_refused",
+        "test_canva_lint_is_a_run_route"
+      ],
+      "status": "tested"
+    },
+    {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",

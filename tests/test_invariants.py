@@ -106,6 +106,29 @@ class RuleTests(unittest.TestCase):
         if waiting:
             self.assertEqual(rule['pending_item'], 'measure')
 
+    def test_27_october_evening_rulings_are_quoted_and_guarded(self):
+        rules = {r['id']: r for r in load_rules()}
+        anchors = {'R92': ('Derivatives of approved pieces.', 'show me before you post',
+                           "It wasn't plain English and human and humble enough."),
+                   'R93': ('less fragile way of doing this than a session engine token',
+                           'Same for the cost baseline.'),
+                   'R94': ('set yourself daily autonomous tasks', 'like my personal LinkedIn posts')}
+        for rule_id, phrases in anchors.items():
+            self.assertEqual(rules[rule_id]['source_file'], 'CHANGES.md')
+            for phrase in phrases:
+                self.assertIn(phrase, collapse(rules[rule_id]['quote']), rule_id)
+            self.assertTrue(rules[rule_id]['tests'], rule_id)
+        self.assertIn('engine/run/invariants.py:check_lanes', rules['R93']['enforced_by'])
+        failures = {f['id']: f for f in load_failures()}
+        self.assertEqual(FAILURE_IDS[65:71], ('F66', 'F67', 'F68', 'F69', 'F70', 'F71'))
+        for fid, guard in (('F66', 'may_post_alone'), ('F67', 'check_lanes'), ('F68', 'check_lanes'),
+                           ('F69', 'calendar.py:lint'), ('F70', 'plain.py:lint_carousel'),
+                           ('F71', 'canva.py:lint_design')):
+            self.assertEqual(failures[fid]['status'], 'tested', fid)
+            self.assertIn(guard, failures[fid]['guard'], fid)
+        for path in (ROOT / 'invariants' / 'authority.json', ROOT / 'lanes.json', ROOT / 'calendar' / 'v1.json'):
+            self.assertEqual(house_errors(path.read_text(encoding='utf-8')), [], path.name)
+
     def test_notes_identity_and_asset_storage_rules_are_quoted(self):
         rules = {r['id']: r for r in load_rules()}
         notes = rules['R81']

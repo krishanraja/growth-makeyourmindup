@@ -1,5 +1,36 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-27 (evening): three rulings on what the engine may do alone.
+  - Standing approval for derivatives: "Derivatives of approved pieces.
+    That actually includes Instagram as well as YouTube and TikTok. Once I'm
+    happy with the publish board (article, the assets and video recordings),
+    you should be able to just go for gold everywhere else. I would say that
+    for the first 4 weeks you need to show me before you post. However I
+    think you're going to be creating new formats like carousels. The last
+    one that went up on Make Your Mind Up Instagram was good but could have
+    been better. It wasn't plain English and human and humble enough."
+    `invariants/authority.json` holds it as data: the derivative formats
+    that post on every channel once he approves a piece's publish board;
+    each batch shown to him first through 2026-11-29 (W45 to W48, four
+    weeks from the first signed week); carousels, memes, opinion, reactive
+    posts and any other new format need his eyes item by item; carousel and
+    caption copy passes the plain-English lint (`engine/run/plain.py`).
+  - Keys: "Surely we can have a less fragile way of doing this than a
+    session engine token ... Give me the bulletproof version of this. Same
+    for the cost baseline." No session holds the engine key. Control Center
+    traffic runs only from the GitHub Actions runner, which reads the key as
+    a repository secret, and every run meters its own cost.
+  - Lanes: "set yourself daily autonomous tasks that don't really rely on
+    me. Separate your daily autonomous work ... from the things that you
+    need my eyes on to just approve versus the things that you need me to
+    push manually, like my personal LinkedIn posts that you've drafted."
+    `lanes.json` puts every job in exactly one lane: L0 code on GitHub
+    Actions (no model), L1 Claude routines (make, plan, watch), L2 his eyes
+    (one press in Control Center) and L3 his hands (LinkedIn, the Buffer
+    plan, one-time set-up). The nine automations keep running until the W46
+    cut-over. `calendar/v1.json` is the V1 posting calendar built on those
+    lanes, checked by `growth.py run calendar lint`.
+
 - 2026-10-27 (later still): "apply the Control Center change yourself". For
   this one change only, rule 7 (stay in this repository) is lifted: the
   session implements the GA4 brief in krishanraja/control-center on branch

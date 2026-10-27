@@ -13,6 +13,7 @@ from ..control_center import sha256_hex
 from ..core import TIMEZONE, UTC, calendar_date, http_url, instant, ny_time, read_json, write_json
 from ..packs import prose_errors
 from ..social import inventory, validate
+from .plain import lint_text as plain_lint
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = ROOT / 'specs' / 'schema' / 'run-spec.schema.json'
@@ -182,6 +183,11 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
         errors.append(finding('krish_click_due_at', at + '.due_at',
                               'a krish_click slot stays an unscheduled draft: due_at must be null', sid))
     errors += [finding('prose', at + '.words', 'words ' + e, sid) for e in prose_errors(slot['words'])]
+    # Plain English on every caption (Krish, 27 Oct 2026, R92): it blocks a carousel, the new
+    # format he named, and is guidance elsewhere until he widens it.
+    plain = [finding('plain_' + f['code'], at + '.words', 'words: ' + f['detail'], sid)
+             for f in plain_lint(slot['words'])]
+    (errors if slot['format'] == 'carousel' else warnings).extend(plain)
     warnings += [finding('forward_line_prose', at + '.forward_line', 'forward_line ' + e, sid)
                  for e in prose_errors(slot['forward_line'])]
     listed, approved = manifest

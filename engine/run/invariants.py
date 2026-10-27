@@ -4,6 +4,7 @@ Each loader raises ValueError on a malformed file; each check returns a list
 of problems, empty when the invariant holds. Nothing here reads the network,
 writes a file or acts on any platform.
 """
+import datetime
 import json
 from pathlib import Path
 import re
@@ -15,7 +16,7 @@ RULE_FIELDS = ('id', 'statement', 'source_file', 'quote', 'enforced_by', 'tests'
 FAILURE_FIELDS = ('id', 'title', 'source', 'guard', 'tests', 'status')
 STATUSES = ('tested', 'doc-only', 'process', 'open', 'superseded', 'pending-build')
 # F01 to F54 and G1 to G9 are the plan appendix; F55 onwards were learned after it.
-LAST_F = 65
+LAST_F = 71
 FAILURE_IDS = (tuple('F{:02d}'.format(n) for n in range(1, LAST_F + 1))
                + tuple('G{}'.format(n) for n in range(1, 10)))
 CREW_FIELDS = ('id', 'name', 'owns', 'channels', 'formats', 'lint', 'check', 'card', 'lens', 'w45')
@@ -274,3 +275,252 @@ def load_boundary(root=ROOT):
     if not isinstance(data['owners'], dict) or any(v not in OWNERS for v in data['owners'].values()):
         raise ValueError('every format names content-engine, growth-canva or growth-copy')
     return data
+
+
+# Authority and lanes (Krish, 27 Oct 2026: rules R92 to R94) -----------------
+
+AUTHORITY_FIELDS = ('schema_version', 'kind', 'note', 'source_file', 'first_signed_week', 'show_before_post_until',
+                    'publish_board', 'derivative_formats', 'new_formats_need_eyes', 'any_other_class', 'krish_hands')
+BOARD = ('article', 'assets', 'video-recordings')
+HANDS = ('linkedin-posting', 'plan-purchase', 'credential-creation', 'account-connection')
+NEW_FORMATS = ('carousel', 'meme', 'opinion', 'reactive')
+ID = re.compile(r'^[a-z0-9][a-z0-9-]*$')
+ISO_WEEK = re.compile(r'^(\d{4})-W(\d{2})$')
+LANES = ('L0_code', 'L1_judgement', 'L2_eyes', 'L3_hands')
+LANE_JOB_FIELDS = ('id', 'lane', 'workflow', 'trigger', 'may_write', 'never', 'actions', 'secrets')
+AUTOMATION_FIELDS = ('name', 'source', 'jobs', 'lane', 'status', 'successor')
+# The jobs Krish's lanes ruling names (CHANGES.md, 27 Oct evening); each is in lanes.json exactly once.
+LANE_JOBS = {'L0_code': ('control-center', 'release', 'measure', 'keys', 'northstar'),
+             'L1_judgement': ('make', 'plan', 'watch'),
+             'L2_eyes': ('publish-board', 'preview-packet', 'new-format-item', 'week-sign-off'),
+             'L3_hands': ('linkedin-posting', 'buffer-plan', 'one-time-setup')}
+ENGINE_KEYS = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN')
+
+
+def _closed(value, fields, at):
+    if not isinstance(value, dict) or set(value) != set(fields):
+        raise ValueError(at + ' needs exactly ' + ', '.join(fields))
+
+
+def _classes(entries, at):
+    if not isinstance(entries, list) or not entries:
+        raise ValueError(at + ' needs a nonempty list')
+    for entry in entries:
+        _closed(entry, ('class', 'what', 'formats'), at)
+        if not isinstance(entry['class'], str) or not ID.match(entry['class']):
+            raise ValueError(at + ': class must be a lower-case id')
+        if not isinstance(entry['what'], str) or not entry['what'].strip():
+            raise ValueError(at + ': ' + entry['class'] + ' says what it is')
+        _strings(entry['formats'], 'formats', at + '.' + entry['class'])
+        if not entry['formats'] or not all(ID.match(f) for f in entry['formats']):
+            raise ValueError(at + '.' + entry['class'] + ': formats are social/formats ids')
+    return [entry['class'] for entry in entries]
+
+
+def preview_end(first_week):
+    """The Sunday that ends the fourth signed week (Monday-start New York weeks, ISO numbered)."""
+    match = ISO_WEEK.match(first_week) if isinstance(first_week, str) else None
+    if not match:
+        raise ValueError('first_signed_week must look like 2026-W45')
+    start = datetime.date.fromisocalendar(int(match.group(1)), int(match.group(2)), 1)
+    return start + datetime.timedelta(days=27)
+
+
+def load_authority(root=ROOT):
+    """invariants/authority.json in its closed shape. Raises ValueError when malformed."""
+    data = read(Path(root) / 'invariants' / 'authority.json')
+    _closed(data, AUTHORITY_FIELDS, 'authority.json')
+    if data['schema_version'] != 1 or data['kind'] != 'authority':
+        raise ValueError('authority.json is schema_version 1, kind authority')
+    if data['source_file'] not in RULE_SOURCES:
+        raise ValueError('authority.json cites a rule source file')
+    try:
+        until = datetime.date.fromisoformat(data['show_before_post_until'])
+    except (TypeError, ValueError):
+        raise ValueError('show_before_post_until must be YYYY-MM-DD') from None
+    if until != preview_end(data['first_signed_week']):
+        raise ValueError('show_before_post_until is four weeks from the first signed week: '
+                         + preview_end(data['first_signed_week']).isoformat())
+    board = data['publish_board']
+    _closed(board, ('includes', 'approved_in', 'unlocks'), 'publish_board')
+    if not isinstance(board['includes'], list) or tuple(board['includes']) != BOARD:
+        raise ValueError('a publish board includes the article, the assets and the video recordings')
+    derivative = _classes(data['derivative_formats'], 'derivative_formats')
+    new = _classes(data['new_formats_need_eyes'], 'new_formats_need_eyes')
+    if len(set(derivative + new)) != len(derivative) + len(new):
+        raise ValueError('a class is either a derivative or a new format, once')
+    if not set(NEW_FORMATS) <= set(new):
+        raise ValueError('carousel, meme, opinion and reactive always need his eyes')
+    if data['any_other_class'] != 'needs_eyes':
+        raise ValueError('any class not listed as a derivative needs his eyes')
+    hands = data['krish_hands']
+    if not isinstance(hands, list):
+        raise ValueError('krish_hands needs a list')
+    for entry in hands:
+        _closed(entry, ('id', 'what', 'channels'), 'krish_hands')
+        if not isinstance(entry['channels'], list) or not all(isinstance(c, str) for c in entry['channels']):
+            raise ValueError('krish_hands.' + str(entry['id']) + ': channels is a list')
+    ids = [entry['id'] for entry in hands]
+    if len(ids) != len(set(ids)) or not set(HANDS) <= set(ids):
+        raise ValueError('krish_hands names ' + ', '.join(HANDS) + ', once each')
+    if 'linkedin' not in hands_channels(data):
+        raise ValueError('LinkedIn posting stays in his hands')
+    return data
+
+
+def hands_channels(authority):
+    return {c for entry in authority['krish_hands'] for c in entry['channels']}
+
+
+def check_authority(authority, root=ROOT):
+    """Every named format and channel exists, and every human-only channel stays in his hands."""
+    from ..social import inventory
+    records = inventory(root)
+    errors = []
+    for field in ('derivative_formats', 'new_formats_need_eyes'):
+        for entry in authority[field]:
+            errors += [field + '.' + entry['class'] + ': unknown format ' + f
+                       for f in entry['formats'] if f not in records['format']]
+    errors += ['krish_hands: unknown channel ' + c for c in sorted(hands_channels(authority))
+               if c not in records['channel']]
+    errors += [c + ' is human_publish_only but not in krish_hands' for c, obj in sorted(records['channel'].items())
+               if obj['publication_mode'] == 'human_publish_only' and c not in hands_channels(authority)]
+    return errors
+
+
+def class_of(authority, name):
+    """('derivative' | 'new', formats) for a listed class; ('new', None) for any other."""
+    for kind, field in (('derivative', 'derivative_formats'), ('new', 'new_formats_need_eyes')):
+        for entry in authority[field]:
+            if entry['class'] == name:
+                return kind, entry['formats']
+    return 'new', None
+
+
+def posting_lane(authority, name, channel, format_id=None):
+    """The lane a post of this class lands in. An unknown or mismatched class needs his eyes."""
+    if channel in hands_channels(authority):
+        return 'L3_hands'
+    kind, formats = class_of(authority, name)
+    if kind == 'derivative' and (format_id is None or format_id in formats):
+        return 'L1_judgement'
+    return 'L2_eyes'
+
+
+def needs_preview(authority, day):
+    """True on or before show_before_post_until: each batch is shown to Krish first."""
+    day = day if isinstance(day, datetime.date) else datetime.date.fromisoformat(day)
+    return day <= datetime.date.fromisoformat(authority['show_before_post_until'])
+
+
+def may_post_alone(authority, name, channel, format_id, day, board_approved=False, preview_approved=False,
+                   item_approved=False):
+    """(allowed, reason) for one post. Never for his hands; a new format needs its own approval."""
+    lane = posting_lane(authority, name, channel, format_id)
+    if lane == 'L3_hands':
+        return False, 'krish_hands'
+    if lane == 'L2_eyes':
+        return (True, 'item_approved') if item_approved else (False, 'needs_eyes')
+    if not board_approved:
+        return False, 'publish_board_not_approved'
+    if needs_preview(authority, day) and not preview_approved:
+        return False, 'preview_packet_needed'
+    return True, 'derivative'
+
+
+def load_lanes(root=ROOT):
+    """lanes.json in its closed shape. Raises ValueError when malformed."""
+    data = read(Path(root) / 'lanes.json')
+    _closed(data, ('schema_version', 'kind', 'note', 'authority', 'lanes', 'jobs', 'automations'), 'lanes.json')
+    if data['schema_version'] != 1 or data['kind'] != 'lanes' or data['authority'] != 'invariants/authority.json':
+        raise ValueError('lanes.json is schema_version 1, kind lanes, reading invariants/authority.json')
+    if not isinstance(data['lanes'], dict) or tuple(data['lanes']) != LANES:
+        raise ValueError('lanes are ' + ', '.join(LANES) + ', in order')
+    for name, lane in data['lanes'].items():
+        _closed(lane, ('who', 'runs_on', 'model'), 'lanes.' + name)
+        if type(lane['model']) is not bool or lane['model'] != (name == 'L1_judgement'):
+            raise ValueError('lanes.' + name + ': only L1 runs a model')
+    if not isinstance(data['jobs'], list) or not isinstance(data['automations'], list):
+        raise ValueError('jobs and automations are lists')
+    for job in data['jobs']:
+        _closed(job, LANE_JOB_FIELDS, 'job ' + str(job.get('id') if isinstance(job, dict) else '?'))
+        at = 'job ' + str(job['id'])
+        if not isinstance(job['id'], str) or not ID.match(job['id']) or job['lane'] not in LANES:
+            raise ValueError(at + ': id is lower-case and lane is one of ' + ', '.join(LANES))
+        if not isinstance(job['trigger'], str) or not job['trigger'].strip():
+            raise ValueError(at + ': trigger required')
+        for field in ('may_write', 'never', 'actions', 'secrets'):
+            if not isinstance(job[field], list) or not all(isinstance(x, str) and x.strip() for x in job[field]):
+                raise ValueError(at + ': ' + field + ' is a list of strings')
+        if not job['never']:
+            raise ValueError(at + ': says what it must never do')
+        if (job['lane'] == 'L0_code') != isinstance(job['workflow'], str):
+            raise ValueError(at + ': an L0 job names its workflow file; no other lane has one')
+        if isinstance(job['workflow'], str) and not re.match(r'^[a-z0-9][a-z0-9-]*\.yml$', job['workflow']):
+            raise ValueError(at + ': workflow is a file name in .github/workflows')
+    for entry in data['automations']:
+        _closed(entry, AUTOMATION_FIELDS, 'automation ' + str(entry.get('name') if isinstance(entry, dict) else '?'))
+        at = 'automation ' + str(entry['name'])
+        if entry['lane'] not in LANES or entry['status'] != 'kept-until-W46':
+            raise ValueError(at + ': a lane, and status kept-until-W46')
+        _strings(entry['jobs'], 'jobs', at)
+        if entry['source'] not in ('automations.json', 'heartbeat'):
+            raise ValueError(at + ': source is automations.json or heartbeat')
+    return data
+
+
+def check_lanes(lanes, authority, root=ROOT):
+    """Every workflow, job and routine sits in exactly one lane; no L0 or L1 job holds his hands or his eyes.
+
+    A workflow lanes.json declares but that does not exist yet passes (another
+    item may still be building it); a workflow file lanes.json does not name fails.
+    """
+    root = Path(root)
+    errors = []
+    ids = [job['id'] for job in lanes['jobs']]
+    everything = ids + [entry['name'] for entry in lanes['automations']]
+    errors += ['named more than once: ' + n for n in sorted({n for n in everything if everything.count(n) > 1})]
+    by_id = {job['id']: job for job in lanes['jobs']}
+    for lane, wanted in sorted(LANE_JOBS.items()):
+        for name in wanted:
+            if name not in by_id:
+                errors.append('missing job ' + name)
+            elif by_id[name]['lane'] != lane:
+                errors.append(name + ' belongs in ' + lane)
+    declared = [job['workflow'] for job in lanes['jobs'] if job['workflow']]
+    errors += ['workflow in two jobs: ' + w for w in sorted({w for w in declared if declared.count(w) > 1})]
+    folder = root / '.github' / 'workflows'
+    files = sorted(folder.glob('*.y*ml')) if folder.is_dir() else []
+    for path in files:
+        if path.name not in declared:
+            errors.append('workflow not in lanes.json: ' + path.name)
+            continue
+        job = next(j for j in lanes['jobs'] if j['workflow'] == path.name)
+        text = path.read_text(encoding='utf-8')
+        errors += [path.name + ' reads ' + key + ' but job ' + job['id'] + ' does not declare it'
+                   for key in ENGINE_KEYS if key in text and key not in job['secrets']]
+    errors += [job['id'] + ': only L0 code on the GitHub runner holds a key'
+               for job in lanes['jobs'] if job['lane'] != 'L0_code' and job['secrets']]
+    hands = {entry['id'] for entry in authority['krish_hands']}
+    eyes = {a for job in lanes['jobs'] if job['lane'] == 'L2_eyes' for a in job['actions']}
+    for job in lanes['jobs']:
+        if job['lane'] in ('L0_code', 'L1_judgement'):
+            errors += [job['id'] + ' (' + job['lane'] + ') holds his hands: ' + a for a in job['actions'] if a in hands]
+            errors += [job['id'] + ' (' + job['lane'] + ') holds his eyes: ' + a for a in job['actions'] if a in eyes]
+        if job['lane'] == 'L3_hands':
+            errors += [job['id'] + ': an L3 action is a krish_hands id, not ' + a
+                       for a in job['actions'] if a not in hands]
+    held = {a for job in lanes['jobs'] if job['lane'] == 'L3_hands' for a in job['actions']}
+    errors += ['no L3 job holds ' + h for h in sorted(hands - held)]
+    config = read(root / 'automations.json')['automations']
+    listed = [entry['name'] for entry in lanes['automations'] if entry['source'] == 'automations.json']
+    if sorted(listed) != sorted(entry['name'] for entry in config):
+        errors.append('lanes.json automations must name every automations.json entry once')
+    files_named = [f for entry in lanes['automations'] for f in entry['jobs']]
+    on_disk = sorted('jobs/' + p.name for p in (root / 'jobs').glob('*.md'))
+    errors += ['job file in no lane: ' + f for f in on_disk if f not in files_named]
+    errors += ['job file named more than once: ' + f for f in sorted(set(files_named)) if files_named.count(f) > 1]
+    errors += ['job file missing: ' + f for f in sorted(set(files_named)) if f not in on_disk]
+    errors += [entry['name'] + ': successor ' + str(entry['successor']) + ' is not a lanes.json job'
+               for entry in lanes['automations'] if entry['successor'] is not None and entry['successor'] not in by_id]
+    return errors

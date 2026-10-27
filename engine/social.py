@@ -184,6 +184,16 @@ def route(channel, format_id, tool='buffer', as_of=None, root=ROOT):
                                       if records['lesson'][x]['status'] != 'superseded']}
 
 
+BOILERPLATE = re.compile(r'(?:illustrations?|artwork|scenes?|scorecard)\s+(?:(?:was|were|are|is)\s+)?'
+                         r'(?:generated\s+(?:with|by)\s+AI|AI[- ]generated)|AI[- ]generated\s+(?:editorial\s+)?'
+                         r'illustrations?', re.I)
+
+
+def has_boilerplate(text):
+    """Public illustration-disclaimer boilerplate (F12): never in a caption or on a design."""
+    return bool(BOILERPLATE.search(text))
+
+
 def package_digest(package):
     body = {k: v for k, v in package.items() if k != 'publication_approval'}
     return hashlib.sha256(json.dumps(body, ensure_ascii=False, sort_keys=True,
@@ -198,7 +208,7 @@ def preflight(package, as_of=None, root=ROOT):
         raise ValueError('wrong account identity or speaking context')
     if profile['publication_mode'] == 'human_publish_only' and package['proposed_due_at'] is not None:
         raise ValueError('personal account packages must remain unscheduled for human publication')
-    if re.search(r'(?:illustrations?|artwork|scenes?|scorecard)\s+(?:(?:was|were|are|is)\s+)?(?:generated\s+(?:with|by)\s+AI|AI[- ]generated)|AI[- ]generated\s+(?:editorial\s+)?illustrations?', package['caption'], re.I):
+    if has_boilerplate(package['caption']):
         raise ValueError('public illustration-disclaimer boilerplate is prohibited; retain private provenance and native metadata')
     if not package['voice_review_passed'] or not package['production']['approved']:
         raise ValueError('voice review and accepted production package are required')
