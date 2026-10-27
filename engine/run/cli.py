@@ -5,7 +5,7 @@ Every module's main(argv) receives the whole argv, command word first.
 import importlib
 import sys
 
-ROUTES = {'new': 'spec', 'lint': 'spec', 'status': 'spec', 'pack': 'pack', 'card': 'cards',
+ROUTES = {'new': 'spec', 'drafts': 'spec', 'lint': 'spec', 'status': 'spec', 'pack': 'pack', 'card': 'cards',
           'release': 'release', 'measure': 'measure', 'northstar': 'measure', 'verdict': 'measure',
           'cost': 'cost', 'ga4': 'ga4', 'autorelease': 'autorelease', 'keys': 'keys',
           'dispatch-check': 'backup', 'calendar': 'calendar', 'carousel': 'plain', 'plain': 'plain',

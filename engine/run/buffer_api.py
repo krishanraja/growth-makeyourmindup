@@ -21,12 +21,15 @@ Schema facts relied on, read with the read-only introspect_schema on
   UnexpectedError | RestProxyError | LimitReachedError | InvalidInputError.
   EditPostInput has no channelId: the post id pins its channel.
 - Post: id status text dueAt channelId channelService schedulingType via
-  assets metadata (a union per service). PostStatus: draft, needs_approval,
-  scheduled, sending, sent, error.
+  assets metadata (a union per service) and channel: Channel! (id name
+  service isDisconnected isLocked), read again on 27 October 2026 for the
+  account pin. PostStatus: draft, needs_approval, scheduled, sending, sent,
+  error.
 - AssetInput is exactly one of image {url, metadata {altText, userTags}},
   video {url, metadata {title, thumbnailOffset}} or document.
 """
 import hashlib
+import http.client
 import json
 import re
 import socket
@@ -59,7 +62,10 @@ METADATA_FIELDS = '''__typename
       ... on YoutubePostMetadata { type title category { categoryId } privacy madeForKids notifySubscribers
         embeddable license isAiGenerated }
       ... on SubstackPostMetadata { type linkAttachment { url } }'''
-POST_FIELDS = '''id status text dueAt channelId channelService schedulingType via
+# The account a post is on. Field names verified with introspect_schema on
+# 27 October 2026; verify against live schema after a provider change.
+CHANNEL_FIELDS = 'channel { id name service isDisconnected isLocked }'
+POST_FIELDS = '''id status text dueAt channelId channelService schedulingType via ''' + CHANNEL_FIELDS + '''
     assets { type source mimeType
       ... on ImageAsset { image { altText userTags { handle x y } } }
       ... on VideoAsset { video { title thumbnailOffset } } }
@@ -119,7 +125,9 @@ class _HttpsRedirectOnly(urllib.request.HTTPRedirectHandler):
 def _transient(error):
     if isinstance(error, urllib.error.HTTPError):
         return error.code >= 500
-    return isinstance(error, (urllib.error.URLError, socket.timeout, ConnectionError, TimeoutError))
+    # A cut-off body (IncompleteRead) is an HTTPException, not an OSError.
+    return isinstance(error, (urllib.error.URLError, socket.timeout, ConnectionError, TimeoutError,
+                              http.client.HTTPException))
 
 
 class Buffer:
@@ -179,7 +187,7 @@ class Buffer:
                 if status == 429:
                     raise BufferError('buffer_rate_limited', status) from None
                 raise BufferError('buffer_server_error' if status >= 500 else 'buffer_rejected', status) from None
-            except (urllib.error.URLError, OSError) as error:
+            except (urllib.error.URLError, OSError, http.client.HTTPException) as error:
                 if attempt == 1 and _transient(error):
                     continue
                 reason = getattr(error, 'reason', error)
@@ -364,6 +372,17 @@ def _metadata_input(post):
     raise CarryHold('unknown_metadata')
 
 
+def carried(post):
+    """Everything an edit sends besides the post id, words, dueAt and mode:
+    every asset with its metadata, the post metadata and the fixed flags."""
+    out = {'assets': [_asset_input(a) for a in post.get('assets') or []],
+           'schedulingType': 'automatic', 'saveToDraft': False}
+    meta = _metadata_input(post)
+    if meta:
+        out['metadata'] = meta
+    return out
+
+
 def edit_input(post, due_at, text=None):
     """EditPostInput for one draft: id, words, every asset, metadata, exact time."""
     if not isinstance(post.get('id'), str) or not BUFFER_ID.match(post['id']):
@@ -371,12 +390,40 @@ def edit_input(post, due_at, text=None):
     words = post.get('text') if text is None else text
     if not isinstance(words, str) or not words.strip():
         raise CarryHold('no_words')
-    payload = {'id': post['id'], 'text': words, 'assets': [_asset_input(a) for a in post.get('assets') or []],
-               'mode': SCHEDULE_MODE, 'dueAt': due_at, 'schedulingType': 'automatic', 'saveToDraft': False}
-    meta = _metadata_input(post)
-    if meta:
-        payload['metadata'] = meta
+    payload = {'id': post['id'], 'text': words, 'mode': SCHEDULE_MODE, 'dueAt': due_at}
+    payload.update(carried(post))
     return payload
+
+
+def _plain_numbers(value):
+    """Floats (user tag positions) as their repr, so canonical JSON never refuses them."""
+    if isinstance(value, float):
+        return repr(value)
+    if isinstance(value, dict):
+        return {key: _plain_numbers(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_plain_numbers(item) for item in value]
+    return value
+
+
+def signed_meta(post, hashes):
+    """What Krish signs beside the words: exactly what edit_input sends, less the
+    post id, text, dueAt and mode, with each asset url replaced by the sha256 of
+    its bytes (hashes, in asset order). None when the draft cannot be carried
+    forward at all (that slot is held or stays Krish's click)."""
+    try:
+        body = carried(post)
+    except CarryHold:
+        return None
+    if len(hashes) != len(body['assets']):
+        return None
+    assets = []
+    for asset, digest in zip(body['assets'], hashes):
+        (kind, inner), = asset.items()
+        inner = {('sha256' if key == 'url' else key): (digest if key == 'url' else item) for key, item in inner.items()}
+        assets.append({kind: inner})
+    body['assets'] = assets
+    return _plain_numbers(body)
 
 
 # Media bytes -----------------------------------------------------------------
@@ -403,7 +450,7 @@ def download_sha256(url, cap=ASSET_CAP, timeout=ASSET_TIMEOUT, loopback_for_test
                 digest.update(chunk)
     except BufferError:
         raise
-    except (urllib.error.URLError, OSError, ValueError):
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException):
         raise BufferError('asset_download_failed') from None
     if size == 0:
         raise BufferError('asset_download_failed')

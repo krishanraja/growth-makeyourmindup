@@ -19,7 +19,7 @@ Nobody has to be awake or online for these.
 |---|---|---|
 | The Control Center runner (`control-center.yml`): reads the day's instructions, checks the engine, sends the report, reads Krish's answers | every day 05:10, when Control Center wakes it; a backup at 05:40 runs only if that run has not worked today | 05:10, backup 05:40 |
 | The key check (`keys.yml`): checks that both keys still work. A refused or missing key fails the run, so GitHub emails Krish | every day 06:50 | 06:50 |
-| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte. Never LinkedIn | every 30 minutes | every 30 minutes |
+| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). A post still scheduled after a No fails the run, so GitHub emails Krish. Never LinkedIn | every 30 minutes | every 30 minutes |
 | Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
 | The handoff (`handoff.yml`): turns a routine's Buffer drafts or week packet into one ask on Krish's list, after checking each draft against its hash | when a routine wakes it | when a routine wakes it |
 | The test suite (`check.yml`) | on every push and pull request | on every push and pull request |

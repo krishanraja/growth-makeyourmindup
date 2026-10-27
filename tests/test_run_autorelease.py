@@ -7,6 +7,7 @@ import contextlib
 import copy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import hashlib
+import http.client
 import io
 import json
 from pathlib import Path
@@ -26,9 +27,10 @@ from engine.run import autorelease, buffer_api
 from engine.run.autorelease import (line_digest, may_release, parse_manifest, show_before_post_until,
                                     staged_report_run_id, standing_derivative_allowed)
 from engine.run.buffer_api import Buffer, BufferAuthError, BufferError, CarryHold
+from engine.run.release import BUFFER_NAME, CHANNELS
 
 ROOT = Path(__file__).resolve().parents[1]
-NOW = '2026-11-03T15:00:00Z'
+NOW = '2026-11-04T13:00:00Z'  # an hour before DUE: inside the release window
 DUE = '2026-11-04T14:00:00Z'
 BKEY = 'buffer-stand-in-key-' + 'NeverReal' * 3
 PLAN = 'makeyourmindup:plan:w45-w52'
@@ -36,6 +38,7 @@ GOLIVE = 'makeyourmindup:golive:2026-W45:week'
 P_THREADS, P_X, P_LINKEDIN, P_UNSIGNED = ('aaaaaaaaaaaaaaaaaaaaaa01', 'aaaaaaaaaaaaaaaaaaaaaa02',
                                           'aaaaaaaaaaaaaaaaaaaaaa03', 'aaaaaaaaaaaaaaaaaaaaaa09')
 CH_THREADS, CH_X, CH_LINKEDIN = ('cccccccccccccccccccccc01', 'cccccccccccccccccccccc02', 'cccccccccccccccccccccc03')
+CH_FOR = {'threads': CH_THREADS, 'x': CH_X, 'linkedin': CH_LINKEDIN}
 WORDS_THREADS = 'Synthetic fixture words for the threads slot.'
 WORDS_X = 'Synthetic fixture words for the x slot.'
 WORDS_LINKEDIN = 'Synthetic fixture words for the linkedin slot.'
@@ -54,6 +57,7 @@ class BufferStandIn:
         self.posts, self.media, self.calls = {}, {}, []
         self.fail_next = []  # HTTP statuses to answer before the real reply
         self.refuse_edit = None
+        self.on_schedule = None  # a callable that changes the stored post as Buffer saves the edit
         stand = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -102,6 +106,8 @@ class BufferStandIn:
                         return self.reply(200, {'data': {'editPost': {'__typename': stand.refuse_edit, 'message': 'x'}}})
                     post = stand.posts[data['id']]
                     post.update(text=data['text'], dueAt=data['dueAt'].replace('Z', '.000Z'), status='scheduled')
+                    if stand.on_schedule:
+                        stand.on_schedule(post)
                     return self.reply(200, {'data': {'editPost': {'__typename': 'PostActionSuccess',
                                                                   'post': copy.deepcopy(post)}}})
                 return self.reply(400, {'errors': [{'message': 'unknown operation'}]})
@@ -115,6 +121,7 @@ class BufferStandIn:
 
     def reset(self):
         self.posts, self.media, self.calls, self.fail_next, self.refuse_edit = {}, {}, [], [], None
+        self.on_schedule = None
 
     def client(self, key=BKEY):
         return Buffer(key, self.base, timeout=5, loopback_for_tests=True)
@@ -138,12 +145,22 @@ def fetch(url):
     return buffer_api.download_sha256(url, loopback_for_tests=True)
 
 
-def line(slot_id, channel, words, draft, assets=(), mode='engine', due=DUE):
+def account(channel, channel_id=None):
+    """The Buffer channel a post is on, as get_post reads it back."""
+    return {'id': channel_id or CH_FOR[channel], 'name': BUFFER_NAME[channel], 'service': CHANNELS[channel][0],
+            'isDisconnected': False, 'isLocked': False}
+
+
+def line(slot_id, channel, words, draft, assets=(), mode='engine', due=DUE, meta=None, channel_id=None):
     item = {'slot_id': slot_id, 'channel': channel, 'format': 'post', 'due_at': due, 'link_placement': None,
             'publish_mode': mode, 'buffer_draft_id': draft, 'words': words, 'assets': list(assets),
-            'payload_sha256': None}
+            'meta': meta, 'buffer_channel_id': channel_id or CH_FOR.get(channel, CH_THREADS), 'payload_sha256': None}
     item['payload_sha256'] = line_digest(item)
     return item
+
+
+def meta_of(post, hashes=()):
+    return buffer_api.signed_meta(post, list(hashes))
 
 
 def manifest(lines):
@@ -166,23 +183,27 @@ class Fixture:
     def __init__(self, cc, buf):
         self.cc, self.buf = cc, buf
         buf.media['img1.png'] = IMAGE
-        self.lines = [line('threads-1', 'threads', WORDS_THREADS, P_THREADS, [sha(IMAGE)]),
-                      line('x-1', 'x', WORDS_X, P_X),
-                      line('linkedin-1', 'linkedin', WORDS_LINKEDIN, P_LINKEDIN, mode='krish_click', due=None)]
         image = {'type': 'image', 'source': buf.base + '/media/img1.png', 'mimeType': 'image/png',
                  'image': {'altText': 'Synthetic alt text', 'userTags': None}}
         common = {'status': 'draft', 'dueAt': None, 'schedulingType': 'automatic', 'via': 'api'}
         buf.posts = {
             P_THREADS: dict(common, id=P_THREADS, text=WORDS_THREADS, channelId=CH_THREADS, channelService='threads',
-                            assets=[image], metadata={'__typename': 'ThreadsPostMetadata', 'type': 'post',
-                                                      'threadCount': 0, 'linkAttachment': None}),
-            P_X: dict(common, id=P_X, text=WORDS_X, channelId=CH_X, channelService='twitter', assets=[],
-                      metadata={'__typename': 'TwitterPostMetadata', 'type': 'post', 'isAiGenerated': False,
-                                'threadCount': 0, 'retweet': None}),
+                            channel=account('threads'), assets=[image],
+                            metadata={'__typename': 'ThreadsPostMetadata', 'type': 'post', 'threadCount': 0,
+                                      'linkAttachment': None, 'topic': None, 'locationId': None, 'locationName': None}),
+            P_X: dict(common, id=P_X, text=WORDS_X, channelId=CH_X, channelService='twitter', channel=account('x'),
+                      assets=[], metadata={'__typename': 'TwitterPostMetadata', 'type': 'post', 'isAiGenerated': False,
+                                           'threadCount': 0, 'retweet': None}),
             P_LINKEDIN: dict(common, id=P_LINKEDIN, text=WORDS_LINKEDIN, channelId=CH_LINKEDIN,
-                             channelService='linkedin', assets=[], metadata=None),
+                             channelService='linkedin', channel=account('linkedin'), assets=[], metadata=None),
             P_UNSIGNED: dict(common, id=P_UNSIGNED, text='Synthetic unsigned draft.', channelId=CH_THREADS,
-                             channelService='threads', assets=[], metadata=None)}
+                             channelService='threads', channel=account('threads'), assets=[], metadata=None)}
+        posts = buf.posts
+        self.lines = [line('threads-1', 'threads', WORDS_THREADS, P_THREADS, [sha(IMAGE)],
+                           meta=meta_of(posts[P_THREADS], [sha(IMAGE)])),
+                      line('x-1', 'x', WORDS_X, P_X, meta=meta_of(posts[P_X])),
+                      line('linkedin-1', 'linkedin', WORDS_LINKEDIN, P_LINKEDIN, mode='krish_click', due=None,
+                           meta=meta_of(posts[P_LINKEDIN]))]
         self.plan = proposal(PLAN, 'Synthetic standing plan', 'Synthetic why', 'advice', 'strategy', 'reviewed',
                              exact_payload='Synthetic standing plan words.', stage='plan')
         self.publish(self.lines)
@@ -363,9 +384,11 @@ class AutoreleaseTests(unittest.TestCase):
         self.assertEqual(self.buf.posts[P_LINKEDIN]['status'], 'draft')
 
     def test_a_past_due_time_holds(self):
-        summary, _ = self.run_once(now='2026-11-04T13:56:00Z')
+        summary, code = self.run_once(now='2026-11-04T13:56:00Z')
         self.assertEqual(summary['holds'], {'due_time_passed': 2})
         self.assertEqual(self.buf.mutations(), [])
+        # S1: a signed draft still unscheduled at its time is held loudly, so GitHub emails Krish.
+        self.assertEqual((code, summary['loud']), (1, ['due_time_passed']))
 
     def test_a_refused_key_fails_loudly(self):
         summary, code = self.run_once(buffer=self.buf.client('buffer-wrong-key'))
@@ -390,8 +413,9 @@ class AutoreleaseTests(unittest.TestCase):
 
     def test_scheduled_in_other_words_is_held_loudly_not_counted(self):
         self.buf.posts[P_X].update(status='scheduled', dueAt=DUE, text='Synthetic words someone else scheduled.')
-        summary, _ = self.run_once()
+        summary, code = self.run_once()
         self.assertEqual(summary['holds'], {'live_post_differs_from_signed': 1})
+        self.assertEqual((code, summary['loud']), (1, ['live_post_differs_from_signed']))
 
     def test_the_summary_carries_no_words_urls_or_ids(self):
         out = io.StringIO()
@@ -404,6 +428,180 @@ class AutoreleaseTests(unittest.TestCase):
         for secret in (WORDS_THREADS, WORDS_X, WORDS_LINKEDIN, 'http', P_THREADS, P_X, CH_THREADS, GOLIVE, PLAN,
                        BKEY, TOKEN, self.fix.golive['payload_sha256']):
             self.assertNotIn(secret, text)
+
+    # B1: the digest covers everything the edit sends ------------------------------
+
+    def test_a_metadata_change_after_approval_holds(self):
+        # Krish approved the post with no topic, no tags and this alt text. A topic,
+        # a tagged account or other alt text added in Buffer after his yes is not his.
+        for change in (lambda p: p['metadata'].update(topic='Synthetic topic added later'),
+                       lambda p: p['assets'][0]['image'].update(userTags=[{'handle': 'synthetic.someone',
+                                                                            'x': 0.5, 'y': 0.25}]),
+                       lambda p: p['assets'][0]['image'].update(altText='Synthetic other alt text')):
+            self.setUp()
+            change(self.buf.posts[P_THREADS])
+            summary, _ = self.run_once()
+            self.assertEqual(summary['holds'], {'draft_differs_from_signed': 1})
+            self.assertEqual(self.buf.posts[P_THREADS]['status'], 'draft')
+            self.assertEqual(summary['slots'].get('scheduled'), 1)
+
+    # B2: the account, not just the service ----------------------------------------
+
+    def test_a_draft_on_another_account_holds(self):
+        # Same service, another venture's channel in the shared organisation.
+        self.buf.posts[P_X]['channel']['name'] = 'synthetic-other-venture'
+        summary, _ = self.run_once()
+        self.assertEqual(summary['holds'], {'wrong_account': 1})
+        self.assertNotIn(P_X, json.dumps([c['variables'] for c in self.buf.mutations()]))
+        # The right name on another channel id than the one Krish signed holds too.
+        self.setUp()
+        other = 'cccccccccccccccccccccc09'
+        self.buf.posts[P_X].update(channelId=other, channel=account('x', other))
+        summary, _ = self.run_once()
+        self.assertEqual(summary['holds'], {'wrong_account': 1})
+        self.assertEqual(self.buf.posts[P_X]['status'], 'draft')
+
+    # S1: schedule only near the due time ----------------------------------------------
+
+    def test_a_slot_more_than_ninety_minutes_out_is_never_read_or_edited(self):
+        summary, code = self.run_once(now='2026-11-04T12:29:00Z')  # 91 minutes before DUE
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['slots'], {'krish_click': 1, 'not_yet_due': 2})
+        self.assertEqual([c for c in self.buf.calls if c['op'] in ('GetPost', 'media', 'ScheduleDraft')], [])
+        summary, code = self.run_once(now='2026-11-04T12:30:00Z')  # exactly 90 minutes
+        self.assertEqual(summary['slots'], {'krish_click': 1, 'scheduled': 2})
+
+    def test_a_no_before_the_window_stops_it(self):
+        summary, _ = self.run_once(now='2026-11-04T11:00:00Z')
+        self.assertEqual(summary['slots']['not_yet_due'], 2)
+        self.cc.decisions.append(Fixture.decision(self.fix.golive, '2026-11-04T11:30:00Z', decision='declined'))
+        summary, code = self.run_once()
+        self.assertEqual((code, summary['golives']['releasable']), (0, 0))
+        self.assertEqual(self.buf.mutations(), [])
+        self.assertEqual(self.buf.posts[P_THREADS]['status'], 'draft')
+
+    # S4: the scheduled-after-decline alarm ----------------------------------------------
+
+    def test_a_no_after_scheduling_is_loud_and_never_unscheduled(self):
+        self.run_once()
+        self.assertEqual(self.buf.posts[P_X]['status'], 'scheduled')
+        self.cc.decisions.append(Fixture.decision(self.fix.golive, '2026-11-04T13:10:00Z', decision='declined'))
+        summary, code = self.run_once(now='2026-11-04T13:20:00Z')
+        self.assertEqual(code, 1, summary)
+        self.assertEqual(summary['loud'], ['scheduled_after_decline'])
+        self.assertEqual(summary['holds'], {'scheduled_after_decline': 2})
+        self.assertEqual(summary['mutations'], 0)
+        # Krish unschedules it himself; the engine has no removal path.
+        self.assertEqual((self.buf.posts[P_THREADS]['status'], self.buf.posts[P_X]['status']), ('scheduled', 'scheduled'))
+
+    def test_a_changed_approval_after_scheduling_is_loud(self):
+        self.run_once()
+        his_words = 'Synthetic words Krish amended after the first yes.'
+        text = manifest([dict(self.fix.lines[0], words=his_words), self.fix.lines[1], self.fix.lines[2]])
+        self.cc.decisions.append(Fixture.decision(self.fix.golive, '2026-11-04T13:10:00Z', amended=True,
+                                                  exact_payload=text, amount_usd=None,
+                                                  amended_sha256=amended_digest(None, text)))
+        summary, code = self.run_once(now='2026-11-04T13:20:00Z')
+        self.assertEqual(code, 1, summary)
+        self.assertIn('scheduled_after_decline', summary['loud'])
+        # Only the post whose approved version changed; x is exactly what he still approves.
+        self.assertEqual(summary['holds']['scheduled_after_decline'], 1)
+        self.assertEqual(summary['slots'].get('already_scheduled'), 1)
+        self.assertEqual(summary['mutations'], 0)
+
+    def test_a_stopped_plan_after_scheduling_is_loud(self):
+        self.run_once()
+        self.cc.decisions.append(Fixture.decision(self.fix.plan, '2026-11-04T13:10:00Z', decision='declined'))
+        summary, code = self.run_once(now='2026-11-04T13:20:00Z')
+        self.assertEqual(code, 1, summary)
+        self.assertEqual(summary['golives']['held'], {'plan_stopped': 1})
+        self.assertEqual(summary['holds'], {'scheduled_after_decline': 2})
+
+    def test_no_alarm_when_nothing_was_scheduled(self):
+        self.cc.decisions.append(Fixture.decision(self.fix.golive, '2026-11-04T12:00:00Z', decision='declined'))
+        summary, code = self.run_once()
+        self.assertEqual((code, summary['loud'], summary['holds']), (0, [], {}))
+
+    # S3: read order -----------------------------------------------------------------------
+
+    def old_golives(self, prefix, count=30):
+        for n in range(count):
+            item = proposal(prefix + '%02d' % n, 'Synthetic old go-live', 'Synthetic why', 'prepared', 'post',
+                            'published', channel='buffer', exact_payload='Synthetic old manifest %d.' % n,
+                            stage='go_live', parent_proposal_id=PLAN)
+            self.cc.decisions.insert(1, Fixture.decision(item, '2026-11-02T%02d:%02d:00Z' % (n // 60, n % 60)))
+
+    def test_old_go_lives_never_starve_a_new_one(self):
+        # 30 older approvals, still in date, whose ids sort before the new one's.
+        self.old_golives('makeyourmindup:golive:2026-11-02:piece:')
+        summary, code = self.run_once()
+        self.assertEqual(summary['slots'], {'krish_click': 1, 'scheduled': 2}, summary)
+        self.assertEqual(summary['golives']['releasable'], 1)
+
+    def test_an_ended_go_live_is_skipped_before_it_uses_a_read(self):
+        self.old_golives('makeyourmindup:golive:2026-W43:week:')  # its run ended on 26 October
+        summary, _ = self.run_once()
+        self.assertEqual(summary['golives']['held'], {'golive_ended_unread': 30})
+        reads = [c for c in self.cc.calls if c['method'] == 'GET' and '/reports/' in c['path']]
+        self.assertEqual(len(reads), 2)  # the new go-live and its plan
+        self.assertEqual(summary['slots']['scheduled'], 2)
+
+    # S5: an impossible date ------------------------------------------------------------------
+
+    def test_an_impossible_due_date_holds_that_slot_only(self):
+        lines = [dict(self.fix.lines[0], due_at='2026-02-30T14:00:00Z'), self.fix.lines[1], self.fix.lines[2]]
+        lines[0]['payload_sha256'] = line_digest(lines[0])
+        golive = self.fix.publish(lines)
+        self.cc.decisions[-1] = Fixture.decision(golive, '2026-11-03T14:00:00Z')
+        summary, code = self.run_once()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'bad_due_at': 1})
+        self.assertEqual(summary['slots'], {'held': 1, 'krish_click': 1, 'scheduled': 1})
+        self.assertEqual(self.buf.posts[P_THREADS]['status'], 'draft')
+        # Krish's amended line with an impossible date holds alone too.
+        self.setUp()
+        text = manifest([dict(self.fix.lines[0], due_at='2026-11-31T14:00:00Z'), self.fix.lines[1]])
+        self.cc.decisions[-1] = Fixture.decision(self.fix.golive, '2026-11-03T14:00:00Z', amended=True,
+                                                 exact_payload=text, amount_usd=None,
+                                                 amended_sha256=amended_digest(None, text))
+        summary, code = self.run_once()
+        self.assertEqual((code, summary['holds']), (0, {'bad_due_at': 1}))
+        self.assertEqual(summary['slots'].get('scheduled'), 1)
+
+    # Nits ---------------------------------------------------------------------------------------
+
+    def test_already_scheduled_means_the_full_digest_not_words_and_time(self):
+        self.run_once()
+        # Scheduled in the signed words at the signed time, but the image bytes behind it changed.
+        self.buf.media['img1.png'] = IMAGE + b'changed after scheduling\n'
+        summary, code = self.run_once()
+        self.assertEqual(summary['holds'], {'live_post_differs_from_signed': 1})
+        self.assertEqual(summary['slots']['already_scheduled'], 1)
+        self.assertEqual(code, 1)
+        # And with the bytes back, a first comment added to the scheduled post is not his either.
+        self.buf.media['img1.png'] = IMAGE
+        self.buf.posts[P_THREADS]['metadata']['topic'] = 'Synthetic topic added to the scheduled post'
+        summary, _ = self.run_once()
+        self.assertEqual(summary['holds'], {'live_post_differs_from_signed': 1})
+
+    def test_the_clock_is_read_again_before_each_margin_check(self):
+        from engine.core import instant
+        late = instant('2026-11-04T13:57:00Z')
+
+        def clock():
+            # The asset download took long: by the time it is done the slot is within five minutes.
+            return late if any(c['op'] == 'media' for c in self.buf.calls) else instant(NOW)
+        summary, code = autorelease.autorelease(self.cc.client(), self.buf.client(), None, True, fetch, clock=clock)
+        self.assertEqual(summary['holds'], {'due_time_passed': 2}, summary)
+        self.assertEqual(self.buf.mutations(), [])
+        self.assertEqual(code, 1)
+
+    def test_the_readback_checks_the_meta(self):
+        self.buf.on_schedule = lambda post: (post.get('metadata') or {}).update(topic='Synthetic topic Buffer added')
+        summary, code = self.run_once()
+        self.assertEqual((code, summary['loud']), (1, ['readback_mismatch']))
+        self.assertEqual(summary['holds'], {'readback_mismatch': 1})
+        self.assertEqual(summary['slots']['scheduled'], 1)
 
 
 class BufferClientTests(unittest.TestCase):
@@ -484,10 +682,86 @@ class BufferClientTests(unittest.TestCase):
         with self.assertRaisesRegex(BufferError, 'asset_url_refused'):
             buffer_api.download_sha256('http://example.invalid/a.png')
 
+    def test_a_cut_off_body_is_transient_and_carries_a_code(self):
+        api = self.buf.client()
+        real, cuts = api._send, [http.client.IncompleteRead(b'')]
+
+        def send(body):
+            if cuts:
+                raise cuts.pop()
+            return real(body)
+        api._send = send
+        self.assertEqual(api.get_post(P_X)['id'], P_X)  # one retry, as for any transient failure
+        api = self.buf.client()
+        api._send = lambda body: (_ for _ in ()).throw(http.client.IncompleteRead(b''))
+        with self.assertRaises(BufferError) as caught:
+            api.get_post(P_X)
+        self.assertEqual(caught.exception.code, 'buffer_unreachable')
+
     def test_an_asset_over_the_cap_holds(self):
         with self.assertRaisesRegex(BufferError, 'asset_too_large'):
             buffer_api.download_sha256(self.buf.base + '/media/img1.png', cap=4, loopback_for_tests=True)
 
+
+
+class SignedMetaTests(unittest.TestCase):
+    """B1: the review's probe, as tests. Every field the edit sends moves the digest."""
+    FIELDS = {'slot_id': 's1', 'format': 'post', 'due_at': DUE, 'link_placement': None, 'publish_mode': 'engine',
+              'buffer_draft_id': 'a' * 24}
+
+    @staticmethod
+    def fetch(url):
+        return 'a' * 64, 10
+
+    def base(self, service, assets, metadata):
+        return {'id': 'a' * 24, 'status': 'draft', 'text': 'Synthetic words.', 'channelService': service,
+                'channelId': 'c' * 24, 'via': 'api', 'assets': assets, 'metadata': metadata}
+
+    def digest(self, post):
+        return autorelease.draft_line(post, self.FIELDS, self.fetch)['payload_sha256']
+
+    def instagram(self, kind, first_comment, tags=None):
+        image = {'type': 'image', 'source': 'https://example.invalid/a.png',
+                 'image': {'altText': 'Synthetic alt', 'userTags': tags}}
+        return self.base('instagram', [image], {'__typename': 'InstagramPostMetadata', 'type': kind,
+                                                'shouldShareToFeed': True, 'isAiGenerated': None,
+                                                'firstComment': first_comment, 'link': None,
+                                                'stickerFields': None, 'geolocation': None})
+
+    def youtube(self, title, privacy):
+        video = {'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {'title': None,
+                                                                                       'thumbnailOffset': None}}
+        return self.base('youtube', [video], {'__typename': 'YoutubePostMetadata', 'title': title,
+                                              'category': {'categoryId': '22'}, 'privacy': privacy})
+
+    def test_the_probe_cases_change_the_digest(self):
+        plain = self.instagram('post', None)
+        story = self.instagram('story', 'Synthetic first comment https://example.invalid',
+                               [{'handle': 'synthetic.someone', 'x': 0.1, 'y': 0.1}])
+        self.assertNotEqual(self.digest(plain), self.digest(story))
+        self.assertNotEqual(self.digest(plain), self.digest(self.instagram('post', 'Synthetic first comment')))
+        self.assertNotEqual(self.digest(self.youtube('Synthetic title', 'private')),
+                            self.digest(self.youtube('Synthetic other title', 'private')))
+        self.assertNotEqual(self.digest(self.youtube('Synthetic title', 'private')),
+                            self.digest(self.youtube('Synthetic title', 'public')))
+        tiktok = self.base('tiktok', [{'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {}}],
+                           {'__typename': 'TiktokPostMetadata', 'title': 'Synthetic title', 'isAiGenerated': False})
+        self.assertNotEqual(self.digest(tiktok), self.digest(dict(tiktok, metadata=dict(tiktok['metadata'], title='Other'))))
+        # The Buffer account is signed too.
+        self.assertNotEqual(self.digest(plain), self.digest(dict(plain, channelId='d' * 24)))
+
+    def test_the_signed_meta_is_exactly_what_the_edit_sends(self):
+        for post in (self.instagram('story', 'Synthetic comment', [{'handle': 'synthetic.someone', 'x': 0.5, 'y': 1.0}]),
+                     self.youtube('Synthetic title', 'unlisted')):
+            sent = buffer_api.edit_input(post, DUE, 'Synthetic words.')
+            for key in ('id', 'text', 'dueAt', 'mode'):
+                sent.pop(key)
+            for asset in sent['assets']:
+                (inner,) = asset.values()
+                inner['sha256'] = 'a' * 64
+                del inner['url']
+            expected = json.loads(json.dumps(sent), parse_float=str)
+            self.assertEqual(buffer_api.signed_meta(post, ['a' * 64]), expected)
 
 class StandInless:
     def __init__(self):

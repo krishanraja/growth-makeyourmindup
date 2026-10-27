@@ -10,15 +10,31 @@ Center and Buffer and prints the plan as counts, and sends no mutation.
    engine.cc_loop.claim_golives decides which go-lives may act (approved on
    the exact digest, plan open and not stopped, in date; an amended yes acts
    in his words, by amended_sha256).
-2. Each signed slot. Its Buffer draft is read fresh and the slot digest
-   (engine.run.release.slot_digest) is rebuilt from the draft: its text, its
-   channel, the signed format, link placement, due time and publish mode, and
-   the sha256 of each asset's bytes downloaded now (capped at 50 MB; any
-   failure holds). It must equal the payload_sha256 the engine signed.
+2. Each signed slot, only once it is near: more than 90 minutes before its
+   due time it is `not_yet_due` and nothing is read or edited, so a No, an
+   amendment or a changed asset file before then stops it (the workflow runs
+   every 30 minutes and GitHub cron can run late, so 90 minutes is the
+   window). Then its Buffer draft is read fresh, it must be on this engine's
+   own Buffer account (release.BUFFER_NAME, else `wrong_account`), and the
+   slot digest (engine.run.release.slot_digest) is rebuilt from the draft:
+   its text, its channel and Buffer channel id, the signed format, link
+   placement, due time and publish mode, the sha256 of each asset's bytes
+   downloaded now (capped at 50 MB; any failure holds), and `meta`: exactly
+   what the edit will send besides the words and the time (first comment,
+   titles, privacy, tags, alt text and the rest; buffer_api.signed_meta). It
+   must equal the payload_sha256 the engine signed.
 3. Match, still a draft, due more than five minutes ahead: one editPost to
    customScheduled at the signed due_at, carrying the whole draft forward,
-   then a fresh readback that must say scheduled at that time, in those words.
-4. Anything else holds with a reason code. Nothing is retried blindly and
+   then a fresh readback that must say scheduled at that time, in those
+   words, with that meta. A draft still unscheduled within five minutes of
+   its time holds loudly (`due_time_passed`).
+4. The alarm. A go-live whose latest decision is no longer an approval (or
+   approves another version), or whose plan was stopped, may already have
+   drafts scheduled from the earlier yes. Each such draft still scheduled,
+   and not exactly the version he now approves, is reported loudly as
+   `scheduled_after_decline`: the run exits non-zero so GitHub emails Krish.
+   It is never unscheduled here; that is his call.
+5. Anything else holds with a reason code. Nothing is retried blindly and
    nothing without a signed decision is touched. LinkedIn and every
    krish_click slot stay drafts for Krish. A post already scheduled or sent in
    the signed words counts as done: Buffer is the ledger, so a second run is
@@ -35,10 +51,11 @@ finds exactly the version Krish decided on. A go-live is a `post` wall with
 target null; its exact_payload is the manifest, canonical JSON of
 {"schema": "growth-golive-manifest/1", "run_id": ..., "slots": [line, ...]},
 each line {slot_id, channel, format, due_at, link_placement, publish_mode,
-buffer_draft_id, words, assets: [sha256, ...], payload_sha256}, where
-payload_sha256 is release.slot_digest of the line. Krish may amend a line's
-words or due_at, or drop a line, or turn a line to krish_click; any other
-amendment holds. engine.run.handoff is the builder: it turns a routine's
+buffer_draft_id, buffer_channel_id, words, assets: [sha256, ...], meta,
+payload_sha256}, where payload_sha256 is release.slot_digest of the line.
+Krish may amend a line's words or due_at, or drop a line, or turn a line to
+krish_click; any other amendment holds. A line whose due_at is not a real
+date holds alone (`bad_due_at`). engine.run.handoff is the builder: it turns a routine's
 dispatch into such a go-live, rebuilding each line with draft_line below.
 """
 import argparse
@@ -51,22 +68,30 @@ import sys
 import tempfile
 
 from engine.cc_loop import claim_golives, decisions_since
-from engine.control_center import (APPROVED_ORIGIN, RUN_ID, Client, ProtocolError, _latest, report_digest)
-from engine.core import instant, read_json, today
+from engine.control_center import (APPROVED_ORIGIN, RUN_ID, Client, ProtocolError, _decided_at, _latest,
+                                   amendment_ok, report_digest)
+from engine.core import calendar_date, instant, read_json, today
 from engine.run import buffer_api
 from engine.run.buffer_api import Buffer, BufferAuthError, BufferError, CarryHold
-from engine.run.release import BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, slot_digest
+from engine.run.release import BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, account_hold, slot_digest
+from engine.run.spec import LENGTH, ny_midnight
 
 ROOT = Path(__file__).resolve().parents[2]
 BUFFER_KEY_ENV = 'BUFFER_API_KEY'
 MANIFEST_SCHEMA = 'growth-golive-manifest/1'
 LINE_KEYS = frozenset({'slot_id', 'channel', 'format', 'due_at', 'link_placement', 'publish_mode',
-                       'buffer_draft_id', 'words', 'assets', 'payload_sha256'})
+                       'buffer_draft_id', 'buffer_channel_id', 'words', 'assets', 'meta', 'payload_sha256'})
 # Fields Krish may change in his amended manifest; any other change holds.
 AMENDABLE = frozenset({'words', 'due_at', 'publish_mode', 'payload_sha256'})
 LOOKBACK = dt.timedelta(days=70)  # a standing plan is approved once for eight weeks
 DUE_MARGIN = dt.timedelta(minutes=5)
+# A draft is scheduled only when DUE_MARGIN < due_at - now <= SCHEDULE_WINDOW. The
+# workflow runs every 30 minutes and GitHub cron can run late, so 90 minutes.
+SCHEDULE_WINDOW = dt.timedelta(minutes=90)
 MAX_REPORT_READS = 24
+MAX_ALARM_READS = 12
+# A go-live's id names its run (engine.run.handoff): the run window bounds every due_at in it.
+GOLIVE_RUN = re.compile(r'^makeyourmindup:(?:golive:)?(\d{4}-W\d{2}|\d{4}-\d{2}-\d{2}):(week|piece|express)(?::|$)')
 SERVICE_CHANNEL = {service: channel for channel, (service, _) in CHANNELS.items()}
 AUTHORITY_FILE = Path('invariants') / 'authority.json'
 SHOW_BEFORE_POST_DEFAULT = '2026-11-29'
@@ -146,30 +171,66 @@ def line_digest(line):
     return slot_digest({**line, 'assets': [{'sha256': h} for h in line['assets']]})
 
 
+def run_window(run_id):
+    """(start, end) of the run a run_id or go-live id names, or None when it names none."""
+    match = GOLIVE_RUN.match(run_id) if isinstance(run_id, str) else None
+    if not match:
+        return None
+    first, kind = match.groups()
+    try:
+        if '-W' in first:
+            day = dt.date.fromisocalendar(int(first[:4]), int(first[6:]), 1)
+        else:
+            day = calendar_date(first)
+        if kind == 'week':
+            day -= dt.timedelta(days=day.weekday())
+        return ny_midnight(day), ny_midnight(day + dt.timedelta(days=LENGTH[kind]))
+    except (ValueError, OverflowError):
+        return None
+
+
+def asset_sources(post):
+    return [a.get('source') if isinstance(a, dict) else None for a in post.get('assets') or []]
+
+
 def draft_line(post, fields, fetch):
     """The manifest line one Buffer draft makes, rebuilt from the draft itself.
 
-    Its channel comes from the draft's service, its words from the draft's
-    text and each asset hash from the bytes downloaded now (fetch(url) returns
-    (sha256, size) or raises BufferError). Every other digest field (format,
-    due_at, link_placement, publish_mode) comes from fields, and
-    payload_sha256 is the rebuilt line's own digest. Shared by the release
-    (autorelease) and the handoff that proposes the go-live (engine.run.handoff),
-    so both rebuild a slot exactly the same way."""
+    Its channel comes from the draft's service, its Buffer channel id, words
+    and meta (buffer_api.signed_meta: everything the edit sends besides the
+    words and the time) from the draft, and each asset hash from the bytes
+    downloaded now (fetch(url) returns (sha256, size) or raises BufferError).
+    Every other digest field (format, due_at, link_placement, publish_mode)
+    comes from fields, and payload_sha256 is the rebuilt line's own digest.
+    Shared by the release (autorelease) and the handoff that proposes the
+    go-live (engine.run.handoff), so both rebuild a slot exactly the same way."""
     hashes = []
-    for asset in post.get('assets') or []:
-        source = asset.get('source') if isinstance(asset, dict) else None
+    for source in asset_sources(post):
         digest, _ = fetch(source)
         hashes.append(digest)
+    channel_id = post.get('channelId')
     line = {**fields, 'channel': SERVICE_CHANNEL.get(post.get('channelService')), 'words': post.get('text'),
-            'assets': hashes}
+            'assets': hashes, 'meta': buffer_api.signed_meta(post, hashes),
+            'buffer_channel_id': channel_id if isinstance(channel_id, str) and BUFFER_ID.match(channel_id) else None}
     line['payload_sha256'] = line_digest(line)
     return line
 
 
-def parse_manifest(text, engine=True):
+def due_instant(value):
+    """The instant of a due_at, or None when it is not a real date (2026-02-30)."""
+    try:
+        return instant(value)
+    except (ValueError, TypeError, OverflowError):
+        return None
+
+
+def parse_manifest(text, engine=True, bad=None):
     """The manifest's lines by slot_id. The engine's own lines must each
-    recompute to their payload_sha256; Krish's amended lines are recomputed."""
+    recompute to their payload_sha256; Krish's amended lines are recomputed.
+
+    A line whose due_at is shaped right but is no real date is that slot's
+    problem alone: with a bad dict it is left out and recorded there as
+    bad_due_at; without one it raises bad_due_at."""
     try:
         value = json.loads(text) if isinstance(text, str) else None
     except ValueError:
@@ -186,6 +247,8 @@ def parse_manifest(text, engine=True):
               and (line['link_placement'] is None or isinstance(line['link_placement'], str))
               and line['publish_mode'] in ('engine', 'krish_click')
               and isinstance(line['buffer_draft_id'], str) and BUFFER_ID.match(line['buffer_draft_id'])
+              and isinstance(line['buffer_channel_id'], str) and BUFFER_ID.match(line['buffer_channel_id'])
+              and (line['meta'] is None or isinstance(line['meta'], dict))
               and isinstance(line['words'], str) and line['words'].strip()
               and isinstance(line['assets'], list)
               and all(isinstance(h, str) and HEX64.match(h) for h in line['assets']))
@@ -195,6 +258,11 @@ def parse_manifest(text, engine=True):
             raise ValueError('manifest_duplicate_slot')
         if engine and line['payload_sha256'] != line_digest(line):
             raise ValueError('manifest_line_digest_mismatch')
+        if line['due_at'] is not None and due_instant(line['due_at']) is None:
+            if bad is None:
+                raise ValueError('bad_due_at')
+            bad[line['slot_id']] = 'bad_due_at'
+            continue
         lines[line['slot_id']] = line
     return lines
 
@@ -235,11 +303,24 @@ def read_proposal(cc, proposal_id, payload_sha256):
     return None, 'golive_not_in_report'
 
 
-def signed_golives(cc, decisions, holds):
-    """The staged proposals the go-live review needs, read back by digest."""
+def golive_ended(pid, now):
+    """True when the run a go-live id names has ended, so every due_at in it has passed
+    and the go-live is expired: it is skipped before it costs a read."""
+    window = run_window(pid)
+    return now is not None and window is not None and window[1] <= instant(now)
+
+
+def signed_golives(cc, decisions, holds, now=None):
+    """The staged proposals the go-live review needs, read back by digest.
+
+    Reads are capped at MAX_REPORT_READS, so their order matters: declined
+    check-ins first (an unknown stop holds everything), then approved go-lives
+    newest first by decision time, each with its plan. A go-live whose run has
+    ended is skipped before it uses a read, so old ones never starve a new one."""
     latest, _ = _latest(decisions)
-    wanted = [(pid, d['payload_sha256']) for pid, d in sorted(latest.items())
-              if d.get('stage') == 'go_live' and d.get('decision') == 'approved']
+    approved = [(_decided_at(d), pid) for pid, d in latest.items()
+                if d.get('stage') == 'go_live' and d.get('decision') == 'approved']
+    wanted = [(pid, latest[pid]['payload_sha256']) for _, pid in sorted(approved, reverse=True)]
     found, reads = {}, 0
 
     def fetch(pid, sha, code_prefix):
@@ -254,7 +335,16 @@ def signed_golives(cc, decisions, holds):
             holds[code] = holds.get(code, 0) + 1
         return item
 
+    for d in decisions or []:
+        if isinstance(d, dict) and d.get('decision') == 'declined' and d.get('stage') == 'check_in' \
+                and d.get('proposal_id') not in found and isinstance(d.get('payload_sha256'), str):
+            item = fetch(d['proposal_id'], d['payload_sha256'], 'check_in_')
+            if item is not None:
+                found[d['proposal_id']] = item
     for pid, sha in wanted:
+        if golive_ended(pid, now):
+            holds['golive_ended_unread'] = holds.get('golive_ended_unread', 0) + 1
+            continue
         item = fetch(pid, sha, '')
         if item is None or item.get('stage') != 'go_live':
             continue
@@ -265,50 +355,103 @@ def signed_golives(cc, decisions, holds):
             plan = fetch(parent, plan_decision['payload_sha256'], 'plan_')
             if plan is not None:
                 found[parent] = plan
-    for d in decisions or []:
-        if isinstance(d, dict) and d.get('decision') == 'declined' and d.get('stage') == 'check_in' \
-                and d.get('proposal_id') not in found and isinstance(d.get('payload_sha256'), str):
-            item = fetch(d['proposal_id'], d['payload_sha256'], 'check_in_')
-            if item is not None:
-                found[d['proposal_id']] = item
     return list(found.values())
+
+
+def _version(decision):
+    amended = decision.get('amended') is True
+    return decision.get('payload_sha256'), decision.get('amended_sha256') if amended else None
+
+
+def revoked_versions(decisions):
+    """Earlier approvals of a go-live that no longer stand, newest first: the
+    latest decision on it is not an approval, or approves another version."""
+    by_pid = {}
+    for index, d in enumerate(decisions or []):
+        if not isinstance(d, dict) or d.get('stage') != 'go_live' or not isinstance(d.get('proposal_id'), str):
+            continue
+        at = _decided_at(d)
+        if at is not None:
+            by_pid.setdefault(d['proposal_id'], []).append(((at, index), d))
+    out = []
+    for pid, rows in by_pid.items():
+        rows.sort(key=lambda row: row[0])
+        latest = rows[-1][1]
+        current = _version(latest) if latest.get('decision') == 'approved' else None
+        seen = set()
+        for key, d in rows[:-1]:
+            version = _version(d)
+            if d.get('decision') != 'approved' or version == current or version in seen \
+                    or not isinstance(d.get('payload_sha256'), str):
+                continue
+            seen.add(version)
+            out.append((key, pid, d))
+    return [(pid, d) for _, pid, d in sorted(out, key=lambda row: row[0], reverse=True)]
 
 
 # One slot ------------------------------------------------------------------------
 
 class Run:
-    def __init__(self, buffer, now, deliver, fetch, root=None):
+    def __init__(self, buffer, now, deliver, fetch, root=None, clock=None):
         self.buffer = buffer
         self.now = instant(now)
+        # The clock is read again before each margin check: downloads take time.
+        self.clock = clock or (lambda: self.now)
         self.deliver = deliver
         self.fetch = fetch
         self.root = root
         self.slots = {}
         self.holds = {}
         self.loud = []
+        self.signed = {}  # buffer_draft_id -> the engine line a standing approval signs for it
+        self.alarm_checked = set()
 
     def count(self, outcome):
         self.slots[outcome] = self.slots.get(outcome, 0) + 1
 
-    def hold(self, code):
+    def hold(self, code, loud=False):
         self.count('held')
         self.holds[code] = self.holds.get(code, 0) + 1
+        if loud:
+            self.loud.append(code)
+
+    def _matches(self, post, signed):
+        """The full rebuilt digest (words, channel, Buffer account, asset bytes and
+        meta) and, when scheduled, the time: never words and time alone."""
+        rebuilt = draft_line(post, signed, self.fetch)
+        if rebuilt['payload_sha256'] != line_digest(signed):
+            return False
+        if post.get('status') == 'scheduled':
+            due = due_instant(post.get('dueAt'))
+            return due is not None and due == due_instant(signed['due_at'])
+        return True
 
     def _rebuilt_digest(self, post, engine_line):
+        """The line the draft makes now (its payload_sha256 is the rebuilt digest)."""
         rebuilt = draft_line(post, engine_line, self.fetch)
         if len(rebuilt['assets']) != len(engine_line['assets']):
             raise CarryHold('asset_count_differs')
-        return rebuilt['payload_sha256']
+        return rebuilt
 
-    def _matches(self, post, signed):
-        if post.get('text') != signed['words']:
+    def _readback_ok(self, back, post, signed, rebuilt):
+        """The readback after the edit: scheduled at the signed time, in the signed
+        words, on the same channel, the same asset sources and the signed meta."""
+        if back.get('status') != 'scheduled' or back.get('text') != signed['words']:
             return False
-        if post.get('status') == 'scheduled':
-            try:
-                return bool(post.get('dueAt')) and instant(post['dueAt']) == instant(signed['due_at'])
-            except (ValueError, TypeError):
-                return False
-        return True
+        due = due_instant(back.get('dueAt'))
+        if due is None or due != due_instant(signed['due_at']) or back.get('channelId') != post.get('channelId'):
+            return False
+        if asset_sources(back) != asset_sources(post):
+            return False
+        return buffer_api.signed_meta(back, rebuilt['assets']) == rebuilt['meta']
+
+    def _read(self, post_id):
+        try:
+            return self.buffer.get_post(post_id), None
+        except BufferAuthError:
+            raise
+        except BufferError as error:
+            return None, error.code
 
     def slot(self, signed, engine_line, golive_decision):
         """Release one signed line, or count why not."""
@@ -325,27 +468,43 @@ class Run:
             return self.count('krish_click')  # LinkedIn and every krish_click slot stay drafts; no call at all.
         if signed['due_at'] is None:
             return self.hold('no_due_at')
-        try:
-            post = self.buffer.get_post(signed['buffer_draft_id'])
-        except BufferAuthError:
-            raise
-        except BufferError as error:
-            return self.hold(error.code)
+        due = due_instant(signed['due_at'])
+        if due is None:
+            return self.hold('bad_due_at')
+        self.signed[signed['buffer_draft_id']] = signed
+        if due - self.clock() > SCHEDULE_WINDOW:
+            # Further out it stays a draft with no read and no edit: a No, an
+            # amendment or a changed file before then stops it.
+            return self.count('not_yet_due')
+        post, code = self._read(signed['buffer_draft_id'])
+        if code:
+            return self.hold(code)
         service = CHANNELS[signed['channel']][0]
         if post.get('via') == 'network':
             return self.hold('imported_post')
         if post.get('channelService') != service:
             return self.hold('draft_on_another_service')
+        if account_hold(signed['channel'], post) or post.get('channelId') != signed['buffer_channel_id']:
+            return self.hold('wrong_account')
         status = post.get('status')
         if status in ('scheduled', 'sent'):
-            if self._matches(post, signed):
+            try:
+                same = self._matches(post, signed)
+            except BufferAuthError:
+                raise
+            except BufferError as error:
+                return self.hold(error.code if error.code.startswith('asset_') else 'asset_download_failed')
+            if same:
                 return self.count('already_' + status)
-            return self.hold('live_post_differs_from_signed')
+            return self.hold('live_post_differs_from_signed', loud=True)
         if status != 'draft':
             return self.hold({'sending': 'still_sending', 'error': 'buffer_post_error',
                               'needs_approval': 'needs_approval'}.get(status, 'unknown_status'))
+        if due - self.clock() <= DUE_MARGIN:
+            return self.hold('due_time_passed', loud=True)
         try:
-            if self._rebuilt_digest(post, engine_line) != engine_line['payload_sha256']:
+            rebuilt = self._rebuilt_digest(post, engine_line)
+            if rebuilt['payload_sha256'] != engine_line['payload_sha256']:
                 return self.hold('draft_differs_from_signed')
             buffer_api.edit_input(post, signed['due_at'], signed['words'])
         except CarryHold as hold:
@@ -354,8 +513,8 @@ class Run:
             raise
         except BufferError as error:
             return self.hold(error.code if error.code.startswith('asset_') else 'asset_download_failed')
-        if instant(signed['due_at']) - self.now <= DUE_MARGIN:
-            return self.hold('due_time_passed')
+        if due - self.clock() <= DUE_MARGIN:
+            return self.hold('due_time_passed', loud=True)
         if not self.deliver:
             return self.count('would_schedule')
         try:
@@ -365,54 +524,116 @@ class Run:
         except (BufferError, CarryHold) as error:
             # Read back once: an uncertain edit may have landed. Never resend.
             code = getattr(error, 'code', 'edit_failed')
-            try:
-                again = self.buffer.get_post(post['id'])
-            except BufferError:
-                self.loud.append('uncertain_edit')
-                return self.hold('uncertain_edit')
-            if again.get('status') == 'scheduled' and self._matches(again, signed):
+            again, failed = self._read(post['id'])
+            if failed:
+                return self.hold('uncertain_edit', loud=True)
+            if self._readback_ok(again, post, signed, rebuilt):
                 return self.count('scheduled')
             if again.get('status') != 'draft':
-                self.loud.append('uncertain_edit')
-                return self.hold('uncertain_edit')
+                return self.hold('uncertain_edit', loud=True)
             return self.hold(code)
-        try:
-            back = self.buffer.get_post(post['id'])
-        except BufferError:
-            self.loud.append('readback_failed')
-            return self.hold('readback_failed')
-        if back.get('status') != 'scheduled' or not self._matches(back, signed) \
-                or back.get('channelId') != post.get('channelId') \
-                or len(back.get('assets') or []) != len(post.get('assets') or []):
-            self.loud.append('readback_mismatch')
-            return self.hold('readback_mismatch')
+        back, failed = self._read(post['id'])
+        if failed:
+            return self.hold('readback_failed', loud=True)
+        if not self._readback_ok(back, post, signed, rebuilt):
+            return self.hold('readback_mismatch', loud=True)
         return self.count('scheduled')
 
     def golive(self, action, proposal):
         """Every line of one approved go-live. Lines he dropped are never touched."""
+        bad = {}
         try:
-            engine_lines = parse_manifest(proposal.get('exact_payload'), engine=True)
-            signed_lines = parse_manifest(action['exact_payload'], engine=False) if action['amended'] else engine_lines
+            engine_lines = parse_manifest(proposal.get('exact_payload'), engine=True, bad=bad)
+            signed_lines = (parse_manifest(action['exact_payload'], engine=False, bad=bad) if action['amended']
+                            else engine_lines)
         except ValueError as error:
             return self.hold(str(error))
         decision = {'decision': 'approved', 'stage': 'go_live'}
+        for sid in sorted(bad):
+            self.hold(bad[sid])
         for sid in sorted(engine_lines):
-            if sid not in signed_lines:
+            if sid not in signed_lines and sid not in bad:
                 self.count('unsigned')
         for sid in sorted(signed_lines):
-            self.slot(signed_lines[sid], engine_lines.get(sid), decision)
+            if sid not in bad:
+                self.slot(signed_lines[sid], engine_lines.get(sid), decision)
+
+    def check_scheduled(self, line):
+        """The alarm for one line of a yes that no longer stands: its draft must
+        not be scheduled unless exactly as the standing approval signs it."""
+        draft = line['buffer_draft_id']
+        if draft in self.alarm_checked:
+            return
+        self.alarm_checked.add(draft)
+        post, code = self._read(draft)
+        if code:
+            self.holds['revoked_unreadable'] = self.holds.get('revoked_unreadable', 0) + 1
+            self.loud.append('revoked_unreadable')
+            return
+        if post.get('status') not in ('scheduled', 'sending'):
+            return
+        current = self.signed.get(draft)
+        if current is not None and post.get('status') == 'scheduled':
+            try:
+                if self._matches(post, current):
+                    return
+            except BufferAuthError:
+                raise
+            except BufferError:
+                pass
+        self.holds['scheduled_after_decline'] = self.holds.get('scheduled_after_decline', 0) + 1
+        self.loud.append('scheduled_after_decline')
+
+
+def check_revoked(cc, run, decisions, stopped, now, held):
+    """Every yes that no longer stands, and every go-live whose plan was stopped:
+    report loudly each of their drafts that is still scheduled. Never unschedules."""
+    reads = 0
+    for pid, decision, item in [(pid, d, None) for pid, d in revoked_versions(decisions)] + list(stopped):
+        if golive_ended(pid, now):
+            continue
+        if item is None:
+            if reads >= MAX_ALARM_READS:
+                held['revoked_too_many_reads'] = held.get('revoked_too_many_reads', 0) + 1
+                run.loud.append('revoked_unchecked')
+                continue
+            reads += 1
+            item, reason = read_proposal(cc, pid, decision['payload_sha256'])
+            if item is None:
+                code = 'revoked_' + reason.replace('golive_', '')
+                held[code] = held.get(code, 0) + 1
+                run.loud.append('revoked_unchecked')
+                continue
+        amended = decision.get('amended') is True
+        if amended and not amendment_ok(decision):
+            continue  # an amendment that never recomputed never acted
+        try:
+            lines = parse_manifest(decision.get('exact_payload') if amended else item.get('exact_payload'),
+                                   engine=not amended, bad={})
+        except ValueError:
+            held['revoked_manifest_unreadable'] = held.get('revoked_manifest_unreadable', 0) + 1
+            run.loud.append('revoked_unchecked')
+            continue
+        for line in lines.values():
+            if line['publish_mode'] == 'engine' and line['channel'] not in KRISH_CLICK_ONLY:
+                run.check_scheduled(line)
 
 
 # The run ----------------------------------------------------------------------------
 
-def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None, root=None):
-    """Returns (summary, exit_code). summary holds counts and codes only."""
-    now = instant(now)
+def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None, root=None, clock=None):
+    """Returns (summary, exit_code). summary holds counts and codes only.
+
+    now fixes the clock (tests, --now); without it the clock is read again
+    before each slot's margin check."""
+    if clock is None:
+        clock = (lambda: instant(now)) if now is not None else (lambda: instant(None))
+    now = clock()
     fetch = fetch or (lambda url: buffer_api.download_sha256(url))
     summary = {'lane': 'L0', 'command': 'autorelease', 'deliver': bool(deliver), 'decisions_read': 0,
                'golives': {'releasable': 0, 'held': {}}, 'slots': {}, 'holds': {}, 'mutations': 0,
                'loud': [], 'error': None}
-    run = Run(buffer, now, deliver, fetch, root)
+    run = Run(buffer, now, deliver, fetch, root, clock)
     folder = None
     try:
         buffer.account_check()
@@ -423,7 +644,7 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
         decisions = cc.decisions(since)
         summary['decisions_read'] = len(decisions)
         held = summary['golives']['held']
-        proposals = signed_golives(cc, decisions, held)
+        proposals = signed_golives(cc, decisions, held, now)
         review = claim_golives(state_root, proposals, decisions, now)
         for item in review['holds']:
             held[item['reason']] = held.get(item['reason'], 0) + 1
@@ -431,6 +652,11 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
         summary['golives']['releasable'] = len(review['actions'])
         for action in review['actions']:
             run.golive(action, by_id[action['proposal_id']])
+        latest, _ = _latest(decisions)
+        stopped = [(item['proposal_id'], latest[item['proposal_id']], by_id[item['proposal_id']])
+                   for item in review['holds'] if item['reason'] == 'plan_stopped'
+                   and item['proposal_id'] in by_id and item['proposal_id'] in latest]
+        check_revoked(cc, run, decisions, stopped, now, held)
     except BufferAuthError as error:
         summary['error'] = error.code
     except BufferError as error:
@@ -472,7 +698,8 @@ def main(argv=None, make_cc=None, make_buffer=None, fetch=None, out=print):
     parser = argparse.ArgumentParser(prog='growth.py run autorelease', description=__doc__.split('\n')[0])
     parser.add_argument('--deliver', action='store_true', help='schedule in Buffer; without it, a dry run')
     parser.add_argument('--now', help='a fixed clock, for tests')
-    parser.add_argument('--state', help='a folder for the claim ledger; default a throwaway one (Buffer is the ledger)')
+    parser.add_argument('--state', help='a folder for the claim ledger, for tests; default a throwaway one (Buffer is '
+                        'the ledger). A kept ledger claims a go-live once, so a slot not yet due then never releases')
     args = parser.parse_args(argv)
     summary = {'lane': 'L0', 'command': 'autorelease', 'deliver': args.deliver}
     try:

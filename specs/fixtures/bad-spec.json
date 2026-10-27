@@ -70,7 +70,7 @@
       "format": "note",
       "play": "P1",
       "due_at": "2026-11-02T09:30:00-05:00",
-      "words": "TEST FIXTURE ONLY. We leverage pilots \u2014 and 40\u0025 of them stall.",
+      "words": "TEST FIXTURE ONLY. We leverage pilots — and 40% of them stall.",
       "assets": [
         {
           "name": "synthetic-note-image.png",
@@ -85,7 +85,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "aebb8a69dc5ca6a5635cfc3d8ab4f0613e7152522f0a1aa0a37d72029bdd75e4"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "bc4312f69cdc1f8e08c599bf2e80200a879861cf994031222827e50cca5348f0"
     },
     {
       "slot_id": "w45-mon-note-2",
@@ -101,6 +103,8 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "meta": null,
+      "buffer_channel_id": null,
       "payload_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
     },
     {
@@ -117,7 +121,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "3182bcc8e53ff790e7dd2abc505ecccdc7cd501ac3ee314c565fe38f62284732"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "065a9b8d24f995c458983720ada984a6d8425b1b058fce17e47c4375572093b6"
     },
     {
       "slot_id": "w45-mon-threads-1",
@@ -133,7 +139,9 @@
       "experiment_arm": "in_post",
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "2609d86d2ef38dfb6b7d4f448f7d8ce449edfca26b6708364803f4ebdf10e4f1"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "394444d2036cfcb12e56c03e46c2d07fca4a71b161e720916263c2389f5236b1"
     },
     {
       "slot_id": "w45-wed-threads-1",
@@ -149,7 +157,9 @@
       "experiment_arm": "first_reply",
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "ceb5a45d84c86d769353f0c7337cf0714d2dd47b41763dcc247818a76bbeb556"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "e12616b81dec7da296f5ed8b780b91a286946f778e5fc65223c3f68f7411d3c6"
     },
     {
       "slot_id": "w45-mon-note-3",
@@ -165,7 +175,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "e13068ee1040f596e9e14c20af0f17deafd22a399c6f2ee84d72fac792e5ad03"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "810f235964e53d305fc4776f85a0203dfb7cba6d53dc277de9190f76f2ccf5d5"
     },
     {
       "slot_id": "w45-mon-note-4",
@@ -181,7 +193,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "d7170c55986c674e333b05c3d05d3c113f21bb0f6220c72df16d27cc76d168ec"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "1461fe5a1da808b59f0b20487c9cb0975eec84937acd57ca91799ea8b80ac6b2"
     },
     {
       "slot_id": "w45-myspace-1",
@@ -197,7 +211,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "ed700c47c511f30c27eea78a3197a3dd96c30f32adb872cd359d8230c22f9227"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "8d42c2bc122dfaff8bf5fbc04d997167f4275e86434bf422a476993c124e10d0"
     },
     {
       "slot_id": "w45-x-note-1",
@@ -213,7 +229,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "3c03ecc8781631ebf2a363457aa3c03c07c72d861be3dac436f58748137b81d6"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "e898abfd83534e0df206db6f546427b02ee612681ef974dc0c2551dc590fae3a"
     },
     {
       "slot_id": "w45-linkedin-1",
@@ -229,7 +247,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "f81032607af7654fff92195de178f7678752a3d672e32e5245bd9e3b6686232d"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "5161526675167fb0cee3beeac46cb9c8d810f4bcae8f578bf3f3ece442bbad35"
     },
     {
       "slot_id": "w45-linkedin-2",
@@ -245,7 +265,9 @@
       "experiment_arm": null,
       "publish_mode": "krish_click",
       "buffer_draft_id": null,
-      "payload_sha256": "e6535fae188a96883aa1be8d2dfd339ee4e56be7c42b29cecbdf0ed8590f9cdf"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "f60aa551fbd0b8ab80413dfa9eae16439274f7ee1008aff39da413f3e2e729ce"
     },
     {
       "slot_id": "w45-x-arm-1",
@@ -261,7 +283,9 @@
       "experiment_arm": "headline",
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "3527dbedd545d2ee50ab8ed521235973d392e953d1786002613c07e769ba295f"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "60b5e139039381b0249cdcadf8bef8ac71228a85f661c37f873922824934d117"
     },
     {
       "slot_id": "w45-x-image-1",
@@ -284,7 +308,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "5b3f24b4a848d9d5c18402bbe5dd862341dc6c5a87fd53a734792ad62738f65c"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "dc2fb5ef686e5b475a6216f0d0f5ccf7fac0a5260078afd3f0842a888f0cbca1"
     },
     {
       "slot_id": "w45-x-hologram-1",
@@ -300,7 +326,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "05e106db5a603f48a1fc8cb01421ff1eb46a8b7565280fce0fe745eb3ed20d01"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "199ac5c4a3607743539da1d72a7b5e34792bef9c9980abf9623a4ffacb79ad83"
     },
     {
       "slot_id": "w45-thu-threads-image-1",
@@ -323,7 +351,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "0a79469372da528506eaac96528c655852cbd1d68af5882f9563e0afe8064960"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "b3c6199f001f93dd8dddb75f285df03bec6e725fbc3ae6f6bf6057b0b0575e49"
     }
   ],
   "experiments": [

@@ -782,10 +782,11 @@
       "id": "F73",
       "title": "A second release run schedules a post again, or a post scheduled in other words counts as done",
       "source": "V1 build, 27 Oct 2026: L0 release; Buffer is the ledger, so no local state is needed",
-      "guard": "engine/run/autorelease.py:_matches counts a post already scheduled or sent in the signed words as done and holds any other",
+      "guard": "engine/run/autorelease.py:_matches counts a post already scheduled or sent as done only when its full rebuilt digest (words, account, asset bytes and meta) and its time equal the signed line, and holds any other loudly",
       "tests": [
         "test_a_second_run_is_a_no_op",
-        "test_scheduled_in_other_words_is_held_loudly_not_counted"
+        "test_scheduled_in_other_words_is_held_loudly_not_counted",
+        "test_already_scheduled_means_the_full_digest_not_words_and_time"
       ],
       "status": "tested"
     },
@@ -793,10 +794,11 @@
       "id": "F74",
       "title": "An uncertain or refused Buffer edit is sent again instead of read back",
       "source": "V1 build, 27 Oct 2026: L0 release",
-      "guard": "engine/run/autorelease.py:slot reads the post back once after a failed edit and never resends; engine/run/buffer_api.py:_transient retries one 5xx only",
+      "guard": "engine/run/autorelease.py:slot reads the post back once after a failed edit and never resends; engine/run/buffer_api.py:_transient retries one 5xx only; a cut-off body (http.client.IncompleteRead) is transient too",
       "tests": [
         "test_a_refused_edit_is_read_back_and_held_never_resent",
-        "test_one_retry_on_5xx_only"
+        "test_one_retry_on_5xx_only",
+        "test_a_cut_off_body_is_transient_and_carries_a_code"
       ],
       "status": "tested"
     },
@@ -1036,6 +1038,100 @@
         "test_each_routine_is_standalone_small_and_walled",
         "test_make_names_its_sources_and_handoff",
         "test_standing_text_is_a_routine_to_the_cost_meter"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F93",
+      "title": "The signed digest misses what the edit sends besides the words: a first comment, a title, privacy, a topic, a location, alt text or a tagged account changed after Krish's yes still goes out",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: buffer_api.edit_input carried the draft's metadata, but slot_digest covered only channel, format, words, link placement, due time, publish mode and asset bytes",
+      "guard": "engine/run/buffer_api.py:signed_meta is exactly what engine/run/buffer_api.py:carried sends (asset urls as byte sha256), and the meta field sits in engine/run/release.py:slot_digest, engine/run/autorelease.py:draft_line, engine/run/spec.py:payload and the manifest line; engine/run/handoff.py:meta_words shows it to Krish in plain words, and engine/run/autorelease.py:_readback_ok checks it after the edit",
+      "tests": [
+        "test_a_metadata_change_after_approval_holds",
+        "test_the_probe_cases_change_the_digest",
+        "test_the_signed_meta_is_exactly_what_the_edit_sends",
+        "test_the_why_names_what_goes_out_with_the_words",
+        "test_a_metadata_change_after_the_routine_holds",
+        "test_details_that_cannot_be_shown_whole_are_never_proposed",
+        "test_the_spec_digest_equals_the_handoff_digest",
+        "test_the_readback_checks_the_meta",
+        "test_a_signed_account_or_meta_that_differs_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F94",
+      "title": "A draft on another venture's Buffer channel in the shared organisation is proposed or scheduled because only its service was checked",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: handoff and autorelease pinned channelService only; the Buffer organisation is shared with other ventures",
+      "guard": "engine/run/release.py:account_hold resolves the post's own channel (engine/run/buffer_api.py CHANNEL_FIELDS) against release.BUFFER_NAME with engine/run/release.py:resolve_channel; engine/run/handoff.py:rebuild and engine/run/autorelease.py:slot hold wrong_account, and buffer_channel_id is in the manifest line and the digest",
+      "tests": [
+        "test_a_draft_on_another_account_holds",
+        "test_a_draft_on_another_account_is_never_proposed",
+        "test_the_spec_digest_equals_the_handoff_digest",
+        "test_the_probe_cases_change_the_digest",
+        "test_a_signed_account_or_meta_that_differs_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F95",
+      "title": "Release schedules an approved draft days before it is due, so a later No, amendment or changed asset file cannot stop it",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: autorelease scheduled every approved slot on its first run after the yes",
+      "guard": "engine/run/autorelease.py:slot schedules only when DUE_MARGIN < due_at - now <= SCHEDULE_WINDOW (90 minutes), reading the clock again before each margin check; further out it is not_yet_due with no read and no edit, and a draft still unscheduled at its time holds loudly (due_time_passed); engine/run/handoff.py:golive_words says a yes schedules each post about an hour before it is due",
+      "tests": [
+        "test_a_slot_more_than_ninety_minutes_out_is_never_read_or_edited",
+        "test_a_no_before_the_window_stops_it",
+        "test_a_past_due_time_holds",
+        "test_the_clock_is_read_again_before_each_margin_check",
+        "test_a_matching_manifest_is_proposed_and_autorelease_releases_it"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F96",
+      "title": "A post scheduled under a yes that Krish later declined, changed or stopped goes out silently",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: nothing looked back at go-lives whose approval no longer stands",
+      "guard": "engine/run/autorelease.py:revoked_versions and engine/run/autorelease.py:check_revoked read each draft of a yes that no longer stands (and of a go-live whose plan was stopped) and report one still scheduled, unless exactly as the standing approval signs it, as scheduled_after_decline: loud, exit 1, never unscheduled",
+      "tests": [
+        "test_a_no_after_scheduling_is_loud_and_never_unscheduled",
+        "test_a_changed_approval_after_scheduling_is_loud",
+        "test_a_stopped_plan_after_scheduling_is_loud",
+        "test_no_alarm_when_nothing_was_scheduled"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F97",
+      "title": "The handoff's dispatch payload is placed in a step env, which GitHub prints in the public log header",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: .github/workflows/handoff.yml passed client_payload through HANDOFF_PAYLOAD",
+      "guard": ".github/workflows/handoff.yml reads the payload in Python from GITHUB_EVENT_PATH (client_payload, or inputs.payload) and writes it to RUNNER_TEMP; tests/test_run_handoff.py holds every step env free of it",
+      "tests": [
+        "test_no_step_env_carries_the_payload",
+        "test_the_payload_step_writes_the_event_payload",
+        "test_the_payload_never_reaches_a_run_line"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F98",
+      "title": "Old approved go-lives use up the report reads so a new one is never read and never released",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: signed_golives read approved go-lives in proposal id order under MAX_REPORT_READS, and declined check-ins last",
+      "guard": "engine/run/autorelease.py:signed_golives reads declined check-ins first, then approved go-lives newest first by decision time, and skips a go-live whose run has ended (engine/run/autorelease.py:golive_ended, engine/run/autorelease.py:run_window) before it uses a read; engine/run/handoff.py:rebuild keeps every due_at inside that run window (due_outside_run_window)",
+      "tests": [
+        "test_old_go_lives_never_starve_a_new_one",
+        "test_an_ended_go_live_is_skipped_before_it_uses_a_read",
+        "test_a_due_outside_the_run_window_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F99",
+      "title": "A due_at shaped right but no real date (2026-02-30) crashes the release or the handoff run",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: parse_manifest and validate_manifest checked the shape only; instant() raised mid-run",
+      "guard": "engine/run/autorelease.py:parse_manifest and engine/run/autorelease.py:due_instant parse due_at with core.instant and hold that slot alone as bad_due_at; engine/run/handoff.py:rebuild does the same",
+      "tests": [
+        "test_an_impossible_due_date_holds_that_slot_only",
+        "test_an_impossible_due_date_holds_that_slot_in_the_handoff"
       ],
       "status": "tested"
     },

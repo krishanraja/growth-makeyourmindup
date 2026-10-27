@@ -74,7 +74,9 @@ A connector missing or signed out: stop and report which.
    needs a lasting public https URL; without one, hold `asset_url_missing`.
    LinkedIn slots go in as drafts too, `publish_mode` `krish_click`: Krish
    publishes them himself. Read each back with `get_post`: status draft, the
-   exact words, asset order, no due time. Record its `buffer_draft_id`.
+   exact words, asset order, no due time. Save each readback to
+   `.scratch/runs/<run>/posts/<slot>.json`, then run `python growth.py run
+   drafts SPEC --posts .scratch/runs/<run>/posts` and lint again.
 8. **Propose the go-live manifest through the runner.** The manifest is
    `run_id` plus, per slot, `slot`, `channel`, `buffer_draft_id`,
    `payload_sha256`, `per_item_review` and the spec slot's `format`,

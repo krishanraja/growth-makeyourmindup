@@ -51,12 +51,14 @@
       "id": "release",
       "lane": "L0_code",
       "workflow": "release.yml",
-      "trigger": "every 30 minutes and by hand; acts only on go-lives Krish approved in Control Center",
+      "trigger": "every 30 minutes and by hand; acts only on go-lives Krish approved in Control Center, each draft only 5 to 90 minutes before it is due",
       "may_write": [
         "Buffer posts whose bytes equal the signed manifest line, with their readback"
       ],
       "never": [
         "release an unsigned or changed byte",
+        "schedule a draft more than 90 minutes before it is due",
+        "unschedule a post: one scheduled after a No is reported loudly for Krish",
         "post to LinkedIn",
         "retry an uncertain save blindly"
       ],

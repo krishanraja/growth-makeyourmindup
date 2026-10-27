@@ -68,7 +68,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "81d325f4864e23b36365927cf0abcd28fd470e9d679ea587c5862c5acca9fddd"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "9ccca8cf8e55feba33a3b1b3fb637d1911b31f7aec445b75cea49ae94b81a468"
     },
     {
       "slot_id": "w45-mon-note-2",
@@ -84,7 +86,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "0ebf0424459d07b9c8501be92928b9e51bbee364d7623454e5f0e839d5b7f84b"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "fc6c48bdde8fbf30c7a102673a0485c6a9dcde874a5dc8f9f180d47db1282237"
     },
     {
       "slot_id": "w45-tue-note-1",
@@ -100,7 +104,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "3182bcc8e53ff790e7dd2abc505ecccdc7cd501ac3ee314c565fe38f62284732"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "065a9b8d24f995c458983720ada984a6d8425b1b058fce17e47c4375572093b6"
     },
     {
       "slot_id": "w45-mon-threads-1",
@@ -116,7 +122,9 @@
       "experiment_arm": "in_post",
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "2609d86d2ef38dfb6b7d4f448f7d8ce449edfca26b6708364803f4ebdf10e4f1"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "394444d2036cfcb12e56c03e46c2d07fca4a71b161e720916263c2389f5236b1"
     },
     {
       "slot_id": "w45-wed-threads-1",
@@ -132,7 +140,9 @@
       "experiment_arm": "first_reply",
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "ceb5a45d84c86d769353f0c7337cf0714d2dd47b41763dcc247818a76bbeb556"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "e12616b81dec7da296f5ed8b780b91a286946f778e5fc65223c3f68f7411d3c6"
     }
   ],
   "experiments": [

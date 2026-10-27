@@ -14,10 +14,16 @@ Three event types, each with a closed client_payload (unknown keys refused):
   "buffer_draft_id", "payload_sha256", "per_item_review", "format", "due_at",
   "link_placement", "publish_mode"}], "express"?}. Ids, codes, times and
   hashes only, never words. For each slot the Buffer draft is read fresh
-  (status must be draft) and the slot digest is rebuilt from it exactly as
-  autorelease rebuilds it (autorelease.draft_line). A slot whose rebuilt
-  digest is not the routine's payload_sha256 is held
-  (`handoff_digest_mismatch`), as is any slot autorelease could not carry.
+  (status must be draft, on this engine's own Buffer account, else
+  `wrong_account`) and the slot digest is rebuilt from it exactly as
+  autorelease rebuilds it (autorelease.draft_line, which covers the draft's
+  Buffer channel id and its meta: everything the edit sends besides the
+  words and the time). A slot whose rebuilt digest is not the routine's
+  payload_sha256 is held (`handoff_digest_mismatch`), as is any slot
+  autorelease could not carry, a due_at that is no real date (`bad_due_at`)
+  and one outside the run window its run_id names (`due_outside_run_window`).
+  The why Krish reads names, in plain words, the first comment, titles,
+  privacy, location, AI label and tagged accounts that go out with each post.
   LinkedIn always goes in as krish_click. The slots that pass become the
   `growth-golive-manifest/1` exact_payload autorelease reads, each go-live a
   `post` wall with target null under the newest open plan Krish approved,
@@ -53,9 +59,10 @@ from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _
 from engine.core import instant, today, write_json
 from engine.run import autorelease, buffer_api
 from engine.run.autorelease import (DUE_MARGIN, LINE_KEYS, MANIFEST_SCHEMA, MAX_REPORT_READS, _authority, draft_line,
-                                    line_digest, read_proposal, show_before_post_until, staged_report_run_id)
+                                    due_instant, line_digest, read_proposal, run_window, show_before_post_until,
+                                    staged_report_run_id)
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
-from engine.run.release import BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY
+from engine.run.release import BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, account_hold
 from engine.run.spec import RUN_ID as SPEC_RUN_ID
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,6 +71,7 @@ EVENTS = (GO_LIVE, WEEK_PACKET, MAKE_PIECE)
 MAX_PAYLOAD_BYTES = 65536
 MAX_SLOTS = 60
 PAYLOAD_CAP = 8000
+WHY_CAP = 1000  # control_center.proposal clips why here; a why that would be cut is never sent
 SLOT_ID = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$')
 FORMAT = re.compile(r'^[a-z0-9][a-z0-9_-]{0,47}$')
 PLACEMENT = re.compile(r'^[a-z][a-z0-9_]{0,31}$')
@@ -281,8 +289,14 @@ class Slots:
         self.holds[code] = self.holds.get(code, 0) + 1
 
 
-def rebuild(buffer, slot, fetch, now):
-    """(manifest line, None) for one slot whose draft matches, or (None, hold code)."""
+def rebuild(buffer, slot, fetch, now, window=None):
+    """(manifest line, None) for one slot whose draft matches, or (None, hold code).
+    window is the (start, end) of the run the run_id names, when it names one."""
+    due = None
+    if slot['due_at'] is not None:
+        due = due_instant(slot['due_at'])
+        if due is None:
+            return None, 'bad_due_at'
     try:
         post = buffer.get_post(slot['buffer_draft_id'])
     except BufferAuthError:
@@ -293,6 +307,8 @@ def rebuild(buffer, slot, fetch, now):
         return None, 'imported_post'
     if post.get('channelService') != CHANNELS[slot['channel']][0]:
         return None, 'draft_on_another_service'
+    if account_hold(slot['channel'], post):
+        return None, 'wrong_account'
     if post.get('status') != 'draft':
         return None, 'not_a_draft'
     fields = {'slot_id': slot['slot'], 'format': slot['format'], 'due_at': slot['due_at'],
@@ -319,8 +335,10 @@ def rebuild(buffer, slot, fetch, now):
             buffer_api.edit_input(post, line['due_at'], line['words'])  # what autorelease would carry
         except CarryHold as hold:
             return None, hold.code
-        if instant(line['due_at']) - instant(now) <= DUE_MARGIN:
+        if due - instant(now) <= DUE_MARGIN:
             return None, 'due_time_passed'
+        if window is not None and not window[0] <= due < window[1]:
+            return None, 'due_outside_run_window'
     if set(line) != LINE_KEYS:
         return None, 'line_malformed'
     return line, None
@@ -330,14 +348,19 @@ def manifest_text(run_id, lines):
     return canonical_json({'schema': MANIFEST_SCHEMA, 'run_id': run_id, 'slots': lines})
 
 
-def pack(run_id, lines, slots):
-    """Lines in order, packed into manifests of PAYLOAD_CAP characters or less."""
+def pack(run_id, lines, slots, fits=None):
+    """Lines in order, packed into manifests of PAYLOAD_CAP characters or less,
+    each group also passing fits (its why must be shown whole)."""
+    fits = fits or (lambda group: True)
     parts, current = [], []
     for line in lines:
         if len(manifest_text(run_id, [line])) > PAYLOAD_CAP:
             slots.hold('slot_over_payload_cap')
             continue
-        if current and len(manifest_text(run_id, current + [line])) > PAYLOAD_CAP:
+        if not fits([line]):
+            slots.hold('details_too_long')
+            continue
+        if current and (len(manifest_text(run_id, current + [line])) > PAYLOAD_CAP or not fits(current + [line])):
             parts.append(current)
             current = []
         current.append(line)
@@ -363,6 +386,56 @@ def _posts(number):
     return str(number) + (' post' if number == 1 else ' posts')
 
 
+def _quoted(text):
+    return '"' + ' '.join(str(text).split()) + '"'
+
+
+def meta_words(line):
+    """In plain words, what goes out with a post besides its words, or None."""
+    meta = line.get('meta') or {}
+    bits = []
+    for service, fields in sorted((meta.get('metadata') or {}).items()):
+        fields = fields if isinstance(fields, dict) else {}
+        if fields.get('firstComment'):
+            bits.append('first comment ' + _quoted(fields['firstComment']))
+        if fields.get('title'):
+            bits.append(('YouTube' if service == 'youtube' else 'TikTok' if service == 'tiktok' else 'post')
+                        + ' title ' + _quoted(fields['title']))
+        if fields.get('privacy'):
+            bits.append('privacy ' + str(fields['privacy']))
+        if fields.get('categoryId'):
+            bits.append('YouTube category ' + str(fields['categoryId']))
+        if fields.get('madeForKids') is True:
+            bits.append('marked made for kids')
+        if fields.get('notifySubscribers') is False:
+            bits.append('subscribers not notified')
+        if fields.get('license'):
+            bits.append('licence ' + str(fields['license']))
+        if fields.get('topic'):
+            bits.append('topic ' + _quoted(fields['topic']))
+        place = fields.get('locationName') or (fields.get('geolocation') or {}).get('text')
+        if place:
+            bits.append('location ' + _quoted(place))
+        if fields.get('isAiGenerated') is True:
+            bits.append('labelled as made with AI')
+        if service == 'instagram' and fields.get('shouldShareToFeed') is False and fields.get('type') != 'story':
+            bits.append('not shared to the feed')
+    tags, titles = [], []
+    for asset in meta.get('assets') or []:
+        inner = next(iter(asset.values())) if isinstance(asset, dict) and len(asset) == 1 else {}
+        extra = (inner or {}).get('metadata') or {}
+        tags += ['@' + str(t.get('handle')) for t in extra.get('userTags') or [] if isinstance(t, dict)]
+        if extra.get('title'):
+            titles.append(_quoted(extra['title']))
+    if tags:
+        bits.append('tags ' + ', '.join(tags))
+    if titles:
+        bits.append('video title ' + ', '.join(titles))
+    if not bits:
+        return None
+    return NAMES.get(line['channel'], line['channel']) + ' post ' + line['slot_id'] + ': ' + '; '.join(bits) + '.'
+
+
 def golive_words(lines, kind, part, parts, day, root, express):
     """The title and why: in plain words, what his yes does."""
     where = _channels(lines)
@@ -383,14 +456,19 @@ def golive_words(lines, kind, part, parts, day, root, express):
     clicks = len(lines) - len(engine)
     if engine:
         why += ('Yes schedules ' + ('this exact post' if len(engine) == 1 else 'these ' + str(len(engine)) + ' exact posts')
-                + ' in Buffer at the time shown, once. ')
+                + ' in Buffer for the time shown, once. A yes schedules each post about an hour before it is due. '
+                'Until then, No stops it. ')
     if clicks:
         why += (_posts(clicks) + (' stays' if clicks == 1 else ' stay') + ' a draft in Buffer for you to publish yourself'
                 + (', as LinkedIn always does. ' if any(line['channel'] in KRISH_CLICK_ONLY for line in lines) else '. '))
     if day <= show_before_post_until(root):
         why += 'Until ' + _long_date(show_before_post_until(root)) + ' you see every batch before it goes out. '
-    why += ('You can change the words or a time, or take a post out, before you say yes. '
-            'No stops it: nothing in it goes out.')
+    details = [text for text in (meta_words(line) for line in lines) if text]
+    if details:
+        why += 'Also going out with the words: ' + ' '.join(details) + ' '
+    why += 'You can change the words or a time, or take a post out, before you say yes.'
+    if not engine:
+        why += ' No stops it: nothing in it goes out.'
     return title, why
 
 
@@ -409,9 +487,15 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
     review = {line['slot_id'] for line, slot in lines if needs_own_review(slot, formats)}
     batch = [line for line, _ in lines if line['slot_id'] not in review]
     items = [line for line, _ in lines if line['slot_id'] in review]
-    groups = [('batch', part) for part in pack(run_id, batch, slots)]
-    groups += [('item', part) for line in items for part in pack(run_id, [line], slots)]
-    out, day = [], today(now)
+    day = today(now)
+
+    def fits(kind):
+        # Worst-case numbering, so a group that fits here fits once it is numbered.
+        return lambda group: len(' '.join(golive_words(group, kind, 99, 99, day, root, express)[1].split())) <= WHY_CAP
+
+    groups = [('batch', part) for part in pack(run_id, batch, slots, fits('batch'))]
+    groups += [('item', part) for line in items for part in pack(run_id, [line], slots, fits('item'))]
+    out = []
     batches = sum(kind == 'batch' for kind, _ in groups)
     numbers = {'batch': 0, 'item': 0}
     for kind, group in groups:
@@ -546,8 +630,9 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             fetch = fetch or (lambda url: buffer_api.download_sha256(url))
             lines = []
             if plan is not None:
+                window = run_window(payload['run_id'])
                 for slot in payload['slots']:
-                    line, code = rebuild(buffer, slot, fetch, now)
+                    line, code = rebuild(buffer, slot, fetch, now, window)
                     if code:
                         slots.hold(code)
                     else:

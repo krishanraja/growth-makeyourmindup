@@ -199,7 +199,7 @@ class FailureRegisterTests(unittest.TestCase):
     def test_register_records_the_v1_build(self):
         failures = {f['id']: f for f in load_failures()}
         new = FAILURE_IDS[71:92]
-        self.assertEqual((new[0], new[-1], FAILURE_IDS[92]), ('F72', 'F92', 'G1'))
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[92]), ('F72', 'F92', 'F93'))
         self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
         for fid, guard, test in (
                 ('F72', '_rebuilt_digest', 'test_one_changed_asset_byte_holds'),
@@ -214,6 +214,24 @@ class FailureRegisterTests(unittest.TestCase):
         for rule_id, phrase in (('R95', 'queue and post autonomously'), ('R96', 'LinkedIn stays his own final click'),
                                 ('R97', 'show me before you post')):
             self.assertIn(phrase, rules[rule_id]['quote'], rule_id)
+
+    def test_register_records_the_posting_path_review(self):
+        # The adversarial review of PR #19: nothing is posted unless Krish approved exactly
+        # that content, on this engine's own account.
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[92:99]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[99]), ('F93', 'F99', 'G1'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F93', 'buffer_api.py:signed_meta', 'test_a_metadata_change_after_approval_holds'),
+                ('F94', 'release.py:account_hold', 'test_a_draft_on_another_account_holds'),
+                ('F95', 'SCHEDULE_WINDOW', 'test_a_slot_more_than_ninety_minutes_out_is_never_read_or_edited'),
+                ('F96', 'autorelease.py:check_revoked', 'test_a_no_after_scheduling_is_loud_and_never_unscheduled'),
+                ('F97', 'GITHUB_EVENT_PATH', 'test_no_step_env_carries_the_payload'),
+                ('F98', 'autorelease.py:signed_golives', 'test_old_go_lives_never_starve_a_new_one'),
+                ('F99', 'autorelease.py:due_instant', 'test_an_impossible_due_date_holds_that_slot_only')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
 
     def test_missing_test_fails_the_register(self):
         with tempfile.TemporaryDirectory() as folder:

@@ -15,12 +15,14 @@ A session does one job, then ends at a gate packet:
 
 - **Release:** only the L0 job `release.yml` (`run autorelease`), and only
   for a go-live Krish approved, read from Control Center in its own run.
-  `decision.json` is written only from that readback, never by hand. A
-  session never schedules a Buffer post and never uses `--deliver`; routines
-  save drafts only. Scheduled is never live.
+  `decision.json` is written only from that readback, never by hand. Every
+  30 minutes it schedules a signed draft only 5 to 90 minutes before its time,
+  so a No before then stops it; one still scheduled after a No fails the run.
+  A session never schedules a Buffer post and never uses `--deliver`;
+  routines save drafts only. Scheduled is never live.
 - **Measure:** L0 `measure.yml` gives verdicts three times a day. A session
   reads back "sent" and the native URL and checks the express intake.
-- **Express:** build one approved idea into the waiting go-live, or its own.
+- **Express:** one approved idea into the waiting go-live, or its own.
 
 No mid-turn questions: every question becomes a gate packet and the session
 ends. A run session commits nothing to `engine/`.
@@ -38,13 +40,14 @@ A session's commands are offline: none posts, sends, schedules or spends.
   a skeleton with its computed fields.
 - `python growth.py run new --from DRAFT --out SPEC`: fill `week_target` and
   every `payload_sha256` from their sources. Never type them by hand.
+- `run drafts SPEC --posts DIR`: fill `buffer_draft_id`, `buffer_channel_id`
+  and `meta` from each `get_post` readback; lint again.
 - `python growth.py run lint SPEC [--record]`: errors (exit 1) and warnings as
   JSON. `--record` writes `lint.json` for status.
 - `python growth.py run status SPEC`: each slot's stage, computed from evidence.
 - `python growth.py run pack SPEC [--day YYYY-MM-DD] [--channel ID]`: this pack.
   Over 36 KB, or a part over its budget (`engine/run/pack.py`), is refused;
-  narrow it. Crew cards load by the week's registry flag (`w45`), else by
-  channel.
+  narrow it. Crew cards load by the week's flag (`w45`), else by channel.
 - `python growth.py run card lint FILE`: a Codex task card, before dispatch.
 - `run calendar lint [FILE]`: the V1 calendar.
 - `run plain lint FILE` (or `run carousel lint`): plain English.
@@ -76,8 +79,9 @@ Warnings include an engine slot with no `due_at`: it cannot release, and the
 daily cap counts only scheduled slots.
 
 A slot's `payload_sha256` covers exactly `channel`, `format`, `words`, the
-ordered asset hashes, `link_placement`, `due_at` and `publish_mode`, as
-canonical JSON (`engine/control_center.py` `canonical_json`).
+ordered asset hashes, `link_placement`, `due_at`, `publish_mode`, `meta`
+(what the edit sends besides words and time) and `buffer_channel_id`, as
+canonical JSON (`canonical_json`).
 
 ## Readiness is computed, never written
 
@@ -118,8 +122,7 @@ Draft counts are never outcomes.
 - **Check-ins:** Sunday (with the What-Works ledger) and Wednesday.
 
 Control Center shows one ask per engine at a time. Release checks each slot's
-bytes against the signed manifest line at release time; a file in 4 Growth is
-never trusted for where it lives.
+bytes at release time; a 4 Growth file is never trusted for where it lives.
 
 ## Budgets (provisional until the Phase 0 baseline)
 
@@ -136,21 +139,16 @@ never trusted for where it lives.
 2. Private evidence (readbacks, journals, inventories) stays in `.scratch/`;
    never in 4 Growth, which anyone with its link can edit.
 3. Lessons go to `social/lessons/`; run `python growth.py social check`.
-4. Creative feedback goes to Content Engine through its existing handoff;
-   Growth records the distribution need, Content Engine owns the craft.
+4. Creative feedback goes to Content Engine through its handoff.
 5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:
    what is draft, approved, scheduled, published, held or unknown.
-6. Snapshot run evidence before workspace cleanup; a local archive is not an
-   off-device backup.
-7. If an automation changed, verify its owner and schedule; update existing
-   jobs, never duplicate them.
+6. Snapshot run evidence before cleanup.
+7. A changed automation: verify its owner and schedule; never duplicate it.
 
 ## Rules live elsewhere
 
 - `invariants/rules.json`: each rule with its verbatim source quote.
 - `docs/PUBLISHING-AUTHORITY.md`: who may publish where.
-- `docs/ACCOUNT-VOICE.md`: X, TikTok and Threads are Krish's personal
-  accounts and keep his personal voice: sincere, warm, humble. LinkedIn too,
-  and LinkedIn is his click only.
+- `docs/ACCOUNT-VOICE.md`: each account's voice; LinkedIn is his click only.
 - `AGENTS.md`: outreach belongs to Control Center; this engine never delivers
   pitches, partners or swaps packs (`post --deliver` refuses them).
