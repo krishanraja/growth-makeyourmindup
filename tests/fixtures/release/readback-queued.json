@@ -1,0 +1,30 @@
+{
+  "threads-1": {
+    "id": "bbbbbbbbbbbbbbbbbbbbbb01",
+    "channelService": "threads",
+    "status": "scheduled",
+    "text": "Synthetic Threads post for tests. What would you ask first?",
+    "dueAt": "2026-11-02T12:00:00-05:00",
+    "sentAt": null,
+    "externalLink": null,
+    "via": "api",
+    "assets": []
+  },
+  "ig-story-1": {
+    "id": "aaaaaaaaaaaaaaaaaaaaaa01",
+    "channelService": "instagram",
+    "status": "scheduled",
+    "text": "Synthetic Story frame one.",
+    "dueAt": "2026-11-02T18:00:00-05:00",
+    "sentAt": null,
+    "externalLink": null,
+    "via": "api",
+    "assets": [
+      {
+        "type": "image",
+        "source": "https://buffer.example.org/synthetic/frame-1.png",
+        "thumbnail": ""
+      }
+    ]
+  }
+}
