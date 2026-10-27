@@ -130,6 +130,40 @@ class SourcesTests(unittest.TestCase):
         self.assertEqual(result['unknown_labels'], ['Synthetic Mystery'])
         self.assertEqual(result['organic']['value'], 4)  # an unknown zero cannot change any count
 
+    def test_classify_reads_repo_sources_json(self):
+        # The committed map keeps lower-case labels under "categories"; the page shows "Direct".
+        capture = validate_capture(load('capture-settled.json'), NOW)
+        capture['rows'] = [{'source': 'Direct', 'new_free': 3, 'new_paid': 0},
+                           {'source': 'Substack Notes', 'new_free': 2, 'new_paid': 1},
+                           {'source': 'Synthetic Mystery', 'new_free': 0, 'new_paid': 0}]
+        capture['total_new_free'] = 5
+        repo = json.loads((ROOT / 'invariants' / 'sources.json').read_text(encoding='utf-8'))
+        self.assertIn('categories', repo)
+        for result in (classify(capture), classify(capture, 'invariants/sources.json', ROOT)):
+            self.assertEqual(result['all_source'], {'value': 5, 'reason': None})
+            self.assertEqual(result['unknown_labels'], ['Synthetic Mystery'])
+            self.assertIsNone(result['organic']['value'])
+            self.assertEqual(result['organic']['reason'], AWAITS)
+            self.assertEqual(result['approved'], repo['approved'])
+        if repo['approved'] is not True:
+            with tempfile.TemporaryDirectory() as tmp:
+                approved = dict(repo, approved=True, approved_by='Synthetic approver', approved_at='2026-10-27')
+                path = Path(tmp) / 'sources.json'
+                path.write_text(json.dumps(approved), encoding='utf-8')
+                capture['rows'][0]['source'] = ' DIRECT '
+                result = classify(capture, path)
+                self.assertEqual((result['organic']['value'], result['unattributed']['value']), (2, 3))
+                path.write_text(json.dumps({'approved': True, 'sources': {'direct': 'unattributed'}}), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, 'categories'):
+                    classify(capture, path)
+                path.write_text(json.dumps(dict(repo, approved_by='Someone')), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, 'names no approver'):
+                    classify(capture, path)
+                path.write_text(json.dumps(dict(approved, categories={'Direct': 'organic', 'direct': 'unattributed'})),
+                                encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, 'classified twice'):
+                    classify(capture, path)
+
     def test_followers_per_channel_per_day(self):
         def snap(day, value, captured='T23:00:00-05:00', availability='available'):
             return {'platform': 'threads', 'source': 'https://example.com/insights', 'scope': 'synthetic',

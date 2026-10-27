@@ -150,28 +150,44 @@ def all_source(capture):
     return {'value': sum(r['new_free'] for r in capture['rows']), 'reason': None}
 
 
+def label_key(label):
+    """Source labels match whatever case or spacing the page shows ('Direct', 'direct ')."""
+    return label.strip().casefold()
+
+
 def load_sources(sources_path='invariants/sources.json', root=ROOT):
-    """Return (label -> category, approved, reason). The map counts only once approved."""
+    """Return (label key -> category, approved, reason). The map counts only once approved.
+
+    One schema with engine/run/invariants.py: the map lives under "categories",
+    keyed by lower-case labels; an unapproved file names no approver.
+    """
     path = Path(sources_path)
     path = path if path.is_absolute() else Path(root) / path
     if not path.is_file():
         return None, None, AWAITS
     value = read_json(path)
-    if not isinstance(value, dict) or not isinstance(value.get('approved'), bool) or not isinstance(value.get('sources'), dict):
-        raise ValueError('sources file needs approved (true or false) and a sources map')
-    for label, category in value['sources'].items():
-        if not label.strip() or category not in CATEGORIES:
+    if not isinstance(value, dict) or not isinstance(value.get('approved'), bool) or not isinstance(value.get('categories'), dict):
+        raise ValueError('sources file needs approved (true or false) and a categories map')
+    if value['approved'] is not True and (value.get('approved_by') is not None or value.get('approved_at') is not None):
+        raise ValueError('an unapproved classification names no approver')
+    mapping = {}
+    for label, category in value['categories'].items():
+        if not isinstance(label, str) or not label.strip() or category not in CATEGORIES:
             raise ValueError('sources map labels to organic, unattributed or paid only')
+        key = label_key(label)
+        if mapping.get(key, category) != category:
+            raise ValueError('source ' + repr(label) + ' is classified twice')
+        mapping[key] = category
     if value['approved'] is not True:
-        return value['sources'], False, AWAITS
-    return value['sources'], True, None
+        return mapping, False, AWAITS
+    return mapping, True, None
 
 
 def classify(capture, sources_path='invariants/sources.json', root=ROOT):
     """All-source total always; organic, unattributed and paid only when approved."""
     mapping, approved, reason = load_sources(sources_path, root)
     labels = [r['source'] for r in capture['rows']]
-    unknown = sorted(x for x in labels if mapping is None or x not in mapping)
+    unknown = sorted(x for x in labels if mapping is None or label_key(x) not in mapping)
     result = {'all_source': all_source(capture), 'unknown_labels': unknown, 'approved': bool(approved)}
     if not approved:
         result.update({name: {'value': None, 'reason': reason} for name in CATEGORIES})
@@ -181,7 +197,7 @@ def classify(capture, sources_path='invariants/sources.json', root=ROOT):
         if blocking:
             result[name] = {'value': None, 'reason': 'unknown source labels need classification: ' + ', '.join(sorted(blocking))}
             continue
-        rows = [r for r in capture['rows'] if mapping.get(r['source']) == name]
+        rows = [r for r in capture['rows'] if mapping.get(label_key(r['source'])) == name]
         if any(r['new_free'] is None for r in rows):
             result[name] = {'value': None, 'reason': 'a ' + name + ' source shows no count'}
         else:
