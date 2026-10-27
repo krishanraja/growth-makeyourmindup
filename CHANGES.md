@@ -1,5 +1,12 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-27 (later still): "apply the Control Center change yourself". For
+  this one change only, rule 7 (stay in this repository) is lifted: the
+  session implements the GA4 brief in krishanraja/control-center on branch
+  `claude/growth-mymu-ga4-engine` (a utm_content and event breakdown in the
+  mymu snapshot, and `web_analytics` in this engine's directive, protocol
+  1.10.0). Every other Control Center rule still holds.
+
 - 2026-10-27 (later): three more rulings.
   - Google Analytics: "just get google analytics from control center, might
     be easier." Control Center already reads GA4 property mymu
