@@ -60,11 +60,29 @@ def engine_token():
     return value
 
 
+ENGINE_PREFIX = 'gen1_'
+SESSION_MODE = ('session mode: Control Center is reached by the GitHub runner (repository secret); '
+                'no token is needed here')
+FOREIGN_TOKEN = ("a token is set in this environment but is not the engine's gen1_ token; it is not used; "
+                 'remove it')
+
+
+def engine_token_mode():
+    """'session' (no engine token here), 'foreign' (a value that is not gen1_) or 'engine'. Never the value."""
+    key = engine_token()
+    if not key:
+        return 'session'
+    return 'engine' if key.startswith(ENGINE_PREFIX) else 'foreign'
+
+
 def engine_client():
     key = engine_token()
     if not key:
         raise ValueError('No Control Center engine key: set CONTROL_CENTER_ENGINE_TOKEN or the engine-token file. '
                          'Do not rotate or print it. See docs/KEY.md.')
+    if not key.startswith(ENGINE_PREFIX):
+        raise ValueError('The Control Center key in this environment is not the engine gen1_ token, so it is not used. '
+                         'Remove it; GitHub Actions reaches Control Center with the repository secret. See docs/KEY.md.')
     return Client(key, os.environ.get('CONTROL_CENTER_URL', '').strip() or APPROVED_ORIGIN)
 
 
@@ -112,10 +130,17 @@ def doctor(offline=False):
             read_json(ROOT / name)
     except (KeyError, ValueError, OSError) as error:
         errors.append('configuration: ' + str(error))
+    mode = engine_token_mode()
+    if mode == 'session':
+        print('OK ' + SESSION_MODE)
+    elif mode == 'foreign':
+        print('WARNING ' + FOREIGN_TOKEN)
     if not offline:
-        for label, action in (('Control Centre read access', lambda: call('GET', '/api/growth/packs?days=1')),
-                              ('Control Center engine protocol read access', lambda: engine_client().capabilities()),
-                              ('public feed', lambda: pieces(30))):
+        checks = [('Control Centre read access', lambda: call('GET', '/api/growth/packs?days=1')),
+                  ('public feed', lambda: pieces(30))]
+        if mode == 'engine':
+            checks.insert(1, ('Control Center engine protocol read access', lambda: engine_client().capabilities()))
+        for label, action in checks:
             try:
                 result = action()
                 if not result:
@@ -138,6 +163,8 @@ def self_test():
 
 
 def main(argv=None):
+    from engine import meter
+    meter.install()  # one counter for the cost line: every urllib call this run makes
     social_args = list(argv) if argv is not None else sys.argv[1:]
     if social_args and social_args[0] == 'social':
         from engine.social import command
@@ -183,6 +210,8 @@ def main(argv=None):
             x.add_argument('--job', required=True, choices=KINDS)
             x.add_argument('--envelope', action='append', default=[]); x.add_argument('--queue')
             x.add_argument('--observations', action='append', default=[]); x.add_argument('--completions')
+        else:
+            x.add_argument('--backup', action='store_true', help="the scheduled backup of Control Center's morning dispatch")
         x.add_argument('--deliver', action='store_true'); x.add_argument('--mode', choices=('live', 'synthetic'), default='live')
         x.add_argument('--run-id'); x.add_argument('--now')
     args = parser.parse_args(argv)

@@ -1,6 +1,7 @@
 """North Star attribution, secondary counts and What-Works verdicts.
 
-Local only. It reads captures a browser session saved and the repository's
+Local only (`run measure auto`, the scheduled job that reads Buffer and Control
+Center, lives in measure_auto.py). It reads captures a browser session saved and the repository's
 own files; it never opens a network connection. It builds, validates and
 records: the only files it can change are NOW.md's state line and the
 lists/northstar-history.jsonl ledger beside it, and only with an explicit
@@ -642,6 +643,11 @@ def verdict(post, history, window_hours, elapsed_hours):
 # Command line ------------------------------------------------------------
 
 def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv[:2] == ['measure', 'auto']:
+        # The scheduled job reads Buffer and Control Center, so it lives apart from this local module.
+        from .measure_auto import main as auto
+        return auto(argv[2:])
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     sub = parser.add_subparsers(dest='cmd', required=True)
     m = sub.add_parser('measure')
