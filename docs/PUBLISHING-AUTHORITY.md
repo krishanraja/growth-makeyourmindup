@@ -89,3 +89,12 @@ rulings above; everything else above stands.
 - No spending, new connections (including connecting Substack in Buffer),
   new automation or engagement submission follows from these rulings.
   Those stay his decisions at the time.
+
+Correction, 27 October 2026 (later the same day). Substack Notes post from a
+person's profile, not the publication. Krish connected Substack in Buffer as
+the profile named Krish, the publication owner, whose handle is mindmakerlive
+(lesson `substack-notes-identity`). Notes therefore keep his personal voice
+and take the same delegated cadence as X, TikTok and Threads, at up to two a
+day as signed. The bullet above saying Notes "post as the publication under
+approved brand content" is superseded by this paragraph. Renaming the
+retired mindmakerlive handle is a profile change held for him.

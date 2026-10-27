@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "substack-notes-identity",
+  "category": "channel",
+  "scope": [
+    "substack-notes",
+    "buffer"
+  ],
+  "status": "observed",
+  "finding": "Substack Notes post from a person's profile, not the publication. Buffer's Substack channel, connected on 27 October 2026, is the profile named Krish, the publication owner, whose handle is mindmakerlive. The publication page also lists a second admin profile, Krish Raja (krishraja1). Notes therefore speak in Krish's personal voice under the retired mindmakerlive handle until he renames it.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": "Buffer list_channels and the home.makeyourmindup.ai page data, read 2026-10-27",
+    "observed_at": "2026-10-27",
+    "result": "Buffer substack channel name Krish; publication owner profile handle mindmakerlive; second admin krishraja1."
+  },
+  "revisit_when": "Krish renames the Substack handle, or Buffer's Substack channel changes; confirm the Notes identity before the next release.",
+  "supersedes": null
+}

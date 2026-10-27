@@ -2,9 +2,9 @@
   "schema_version": 1,
   "kind": "channel",
   "id": "substack-notes",
-  "account_url": "https://home.makeyourmindup.ai",
-  "account_context": "publication",
-  "mission": "Use approved Notes to put the publication's useful findings in front of Substack readers and convert that attention to free subscribers.",
+  "account_url": "https://substack.com/@mindmakerlive",
+  "account_context": "personal",
+  "mission": "Share a useful finding from a published piece as a Note from Krish's own Substack profile, sincere and pleased to share, so Substack readers find the publication and subscribe free.",
   "formats": [
     "note"
   ],
@@ -14,17 +14,18 @@
     "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
     "Read current queue, drafts and native identities; preserve existing human work.",
     "Verify the exact destination, visibility and available account capabilities before the selected action.",
-    "Before first use, open the native Notes profile and verify which handle posts as the publication; the publication URL alone does not prove the Notes identity.",
-    "Check whether Substack is connected in Buffer; it was not on 27 October 2026, and connecting it is Krish's decision."
+    "Notes post from Krish's Substack profile: Buffer channel Krish (substack), handle @mindmakerlive, the publication owner. Confirm the Buffer channel name and the profile handle before first use.",
+    "The handle mindmakerlive is a retired name (growth corpus, Channel Auditor): renaming it is a profile change held for Krish, never made here."
   ],
   "lessons": [
     "revision-identity",
     "growth-measurement",
     "publishing-authority-split",
     "substack-filter-settle",
-    "notes-threads-in-scope"
+    "notes-threads-in-scope",
+    "substack-notes-identity"
   ],
-  "publication_mode": "approved_brand_content",
+  "publication_mode": "approved_content_cadence",
   "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
   "daily_posts_target": 2,
   "daily_drafts_max": null

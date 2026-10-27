@@ -215,7 +215,7 @@
       "format": "note",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified. Substack is not connected in Buffer as of 27 October 2026; connecting it is Krish's decision.",
+      "evidence_ref": "Not verified. Krish connected Substack in Buffer on 27 October 2026 (channel Krish, service substack); posting a Note has not been checked yet.",
       "verified_operations": []
     },
     {

@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # Personal accounts Krish has scoped for delegated cadence of approved content:
 # X and TikTok (ruling of 26 Oct 2026) and Threads (ruling of 27 Oct 2026,
 # CHANGES.md). Every other personal account stays human_publish_only.
-DELEGATED_PERSONAL = ('x', 'tiktok', 'threads')
+DELEGATED_PERSONAL = ('x', 'tiktok', 'threads', 'substack-notes')
 
 
 def read(path):
@@ -115,8 +115,8 @@ def inventory(root=ROOT):
             raise ValueError('account context cannot expand publication authority')
         if expected_mode == 'human_publish_only' and obj['daily_posts_target'] is not None:
             raise ValueError('human-only accounts have no automatic posting quota')
-        if personal and (obj['daily_posts_target'] or 0) > 1:
-            raise ValueError('personal accounts have at most one automatic post a day')
+        # Notes run the corpus P1 ladder (two to three a day) from Krish's own
+        # profile; every other account, personal or branded, stays at one a day.
         if (obj['daily_posts_target'] or 0) > 1 and obj['id'] != 'substack-notes':
             raise ValueError('only Substack Notes has a two-a-day target')
         for name in obj['formats']:

@@ -44,21 +44,26 @@ class NewChannelsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'speaking context'):
             preflight(p, '2026-10-27')
 
-    def test_substack_notes_is_publication_cadence(self):
+    def test_substack_notes_is_personal_cadence(self):
+        # Notes post from Krish's own Substack profile (substack-notes-identity, 27 Oct).
         notes = inventory()['channel']['substack-notes']
-        self.assertEqual(notes['account_url'], 'https://home.makeyourmindup.ai')
-        self.assertEqual(notes['account_context'], 'publication')
-        self.assertEqual(notes['publication_mode'], 'approved_brand_content')
+        self.assertEqual(notes['account_url'], 'https://substack.com/@mindmakerlive')
+        self.assertEqual(notes['account_context'], 'personal')
+        self.assertEqual(notes['publication_mode'], 'approved_content_cadence')
         self.assertEqual(notes['daily_posts_target'], 2)
         self.assertEqual(notes['formats'], ['note'])
-        self.assertTrue(any('Notes profile' in x and 'handle' in x for x in notes['live_checks']))
+        self.assertTrue(any('mindmakerlive' in x and 'held for Krish' in x for x in notes['live_checks']))
         self.assertIn('notes-threads-in-scope', notes['lessons'])
-        p = package('substack-notes', notes['account_url'], 'publication', 'note',
+        self.assertIn('substack-notes-identity', notes['lessons'])
+        p = package('substack-notes', notes['account_url'], 'personal', 'note',
                     owner='growth-canva', due='2026-11-02T13:00:00+00:00')
         result = preflight(p, '2026-10-27')
-        self.assertEqual(result['publication_mode'], 'approved_brand_content')
-        self.assertNotIn('exact_publication_approval_missing', result['holds'])
+        self.assertEqual(result['publication_mode'], 'approved_content_cadence')
+        self.assertNotIn('personal_account_human_final_publication_required', result['holds'])
         self.assertFalse(result['publication_authorized'])
+        p['account_context'] = 'publication'
+        with self.assertRaisesRegex(ValueError, 'speaking context'):
+            preflight(p, '2026-10-27')
 
     def test_meme_and_note_are_owned_by_growth_canva(self):
         records = inventory()
@@ -136,7 +141,7 @@ class NewChannelsTests(unittest.TestCase):
             threads = json.loads(threads_path.read_text(encoding='utf-8'))
             threads['daily_posts_target'] = 2
             threads_path.write_text(json.dumps(threads, indent=2), encoding='utf-8')
-            with self.assertRaisesRegex(ValueError, 'at most one automatic post'):
+            with self.assertRaisesRegex(ValueError, 'only Substack Notes has a two-a-day target'):
                 inventory(root)
             # A delegated personal identity cannot be relabelled as a publication.
             threads.update(daily_posts_target=1, account_context='publication',
@@ -174,7 +179,7 @@ class NewChannelsTests(unittest.TestCase):
             self.assertEqual((c['status'], c['verified_at'], c['verified_operations']), ('unverified', None, []))
             self.assertIn('Not verified', c['evidence_ref'])
         notes = next(c for c in new if c['channel'] == 'substack-notes')
-        self.assertIn('not connected in Buffer', notes['evidence_ref'])
+        self.assertIn('Not verified', notes['evidence_ref'])  # connected 27 Oct; posting still unchecked
 
 
 if __name__ == '__main__':

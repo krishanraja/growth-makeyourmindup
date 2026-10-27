@@ -83,11 +83,18 @@ CHANNELS = {
     'youtube': ('youtube', ('youtube.com', 'www.youtube.com', 'm.youtube.com')),
     'linkedin': ('linkedin', ('linkedin.com', 'www.linkedin.com')),
 }
-# Channel id -> social/channels profile id, where one exists.
-CHANNEL_PROFILE = {'substack-notes': 'substack', 'threads': None, 'x': 'x', 'instagram': 'instagram',
+# Channel id -> social/channels profile id.
+CHANNEL_PROFILE = {'substack-notes': 'substack-notes', 'threads': 'threads', 'x': 'x', 'instagram': 'instagram',
                    'facebook': 'facebook', 'tiktok': 'tiktok', 'youtube': 'youtube', 'linkedin': 'linkedin'}
+# Channel id -> the one Buffer channel name this engine may use (read from
+# list_channels on 2026-10-27). The Buffer organisation is shared with other
+# ventures, so a service alone never identifies this engine's account; a renamed
+# or missing channel holds instead of guessing.
+BUFFER_NAME = {'substack-notes': 'Krish', 'threads': 'krishraja1', 'x': 'TheRealKrisho',
+               'instagram': 'makeyourmind.up', 'facebook': 'Makeyourmind/up', 'tiktok': 'therealkrisho',
+               'youtube': 'makeyourmindup', 'linkedin': 'krish-raja'}
 # Native post URLs that carry the account handle as their first path segment.
-HANDLE_IN_PATH = ('x', 'tiktok')
+HANDLE_IN_PATH = ('x', 'tiktok', 'threads', 'substack-notes')
 KRISH_CLICK_ONLY = ('linkedin',)
 # A placement that lives entirely in `words`, so one Buffer call carries it.
 EXPRESSIBLE_LINK_PLACEMENTS = (None, 'none', 'in_post')
@@ -267,13 +274,15 @@ def service_meta(post, service):
 
 
 def resolve_channel(slot, channels):
-    """The one Buffer channel of this slot's service in a list_channels readback."""
+    """This engine's one Buffer channel for the slot, pinned by service and name."""
     if isinstance(channels, dict):
         channels = channels.get('channels')
     service = CHANNELS[slot['channel']][0]
-    found = [c for c in (channels or []) if isinstance(c, dict) and c.get('service') == service]
+    name = BUFFER_NAME[slot['channel']]
+    found = [c for c in (channels or []) if isinstance(c, dict) and c.get('service') == service
+             and c.get('name') == name]
     if not found:
-        raise ValueError('no Buffer channel for ' + service + ' in the list_channels readback; never guess')
+        raise ValueError('no Buffer channel ' + service + '/' + name + ' in the list_channels readback; never guess')
     if len(found) > 1:
         raise ValueError('more than one Buffer channel for ' + service + '; name the one intended')
     channel = found[0]

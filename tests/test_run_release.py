@@ -187,7 +187,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(evidence['status'], 'scheduled')
         self.assertIs(evidence['published'], False)
         self.assertIsNone(evidence['native_url'])
-        scheduled['externalLink'] = 'https://www.threads.com/@synthetic/post/SYNTHETIC1'
+        scheduled['externalLink'] = 'https://www.threads.com/@krishraja1/post/SYNTHETIC1'
         with self.assertRaisesRegex(ValueError, 'scheduled is never sent'):
             release.check_readback(slot, scheduled, 'live', ledger)
         live = release.check_readback(slot, load('readback-live')['threads-1'], 'live', ledger)
@@ -439,12 +439,29 @@ class ReleaseTests(unittest.TestCase):
         for path in sorted((ROOT / 'social' / 'channels').glob('*.json')):
             profile = json.loads(path.read_text(encoding='utf-8'))
             channels = [c for c, p in release.CHANNEL_PROFILE.items() if p == profile['id']]
+            if profile['formats'] == ['article']:
+                # Substack articles keep their editorial rhythm; release never posts them.
+                self.assertEqual(channels, [], profile['id'])
+                continue
             self.assertTrue(channels, profile['id'])
             if profile['publication_mode'] == 'human_publish_only':
                 for channel in channels:
                     self.assertIn(channel, release.KRISH_CLICK_ONLY)
         self.assertEqual(set(release.CHANNEL_PROFILE), set(release.CHANNELS))
         self.assertNotEqual(release.safe_name('a:b'), release.safe_name('a_b'))
+
+    def test_release_is_pinned_to_this_engines_buffer_channels(self):
+        # The Buffer organisation is shared with other ventures (27 Oct 2026).
+        others = [{'id': 'dddddddddddddddddddddd01', 'service': 'tiktok', 'name': 'fulltime.fm',
+                   'isDisconnected': False, 'isLocked': False},
+                  {'id': 'dddddddddddddddddddddd02', 'service': 'instagram', 'name': 'yourdoghasnotes',
+                   'isDisconnected': False, 'isLocked': False}]
+        slot = {'channel': 'tiktok'}
+        self.assertEqual(release.resolve_channel(slot, others + self.channels)['id'], 'cccccccccccccccccccccc04')
+        only_others = others + [c for c in self.channels if c['service'] != 'tiktok']
+        with self.assertRaisesRegex(ValueError, 'therealkrisho.*never guess'):
+            release.resolve_channel(slot, only_others)
+        self.assertEqual(set(release.BUFFER_NAME), set(release.CHANNELS))
 
     def test_cli_writes_ledger_and_evidence_only_under_scratch(self):
         root = self.dir / 'repo'
