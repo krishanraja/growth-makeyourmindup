@@ -24,6 +24,7 @@ SHA = re.compile(r'^[0-9a-f]{64}$')
 RUN_ID = re.compile(r'^[A-Za-z0-9](?:[A-Za-z0-9:.-]{0,118}[A-Za-z0-9])?$')
 LENS = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 WINDOW = re.compile(r'^[1-9][0-9]*[hd]$')
+STORY_FORMATS = ('story', 'story-frame')  # mirrors engine/run/calendar.py STORY_FORMATS
 RUNG = re.compile(r'^\s*-\s*\[(\d{4}-\d{2}-\d{2}),\s*(\d+)\]\s*$')
 KRISH_MIN = {'weekday': 20, 'sunday': 30}
 VERDICTS = ('works', 'neutral', 'fails', 'insufficient')
@@ -275,7 +276,9 @@ def lint(spec, records=None, root=ROOT):
         more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window)
         errors += more
         warnings += soft
-        if slot['due_at'] is not None:
+        # Story frames are not feed posts: the calendar's stories floor governs
+        # them (engine/run/calendar.py STORY_FORMATS), so the feed cap skips them.
+        if slot['due_at'] is not None and slot['format'] not in STORY_FORMATS:
             key = (slot['channel'], ny_time(slot['due_at']).date().isoformat())
             per_day.setdefault(key, []).append(slot['slot_id'])
     for (channel, day), ids in sorted(per_day.items()):

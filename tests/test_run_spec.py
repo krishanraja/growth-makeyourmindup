@@ -198,6 +198,16 @@ class RunSpecLintTests(SyntheticLadder):
         late['due_at'] = '2026-11-03T05:00:00Z'
         self.assertEqual(codes(computed(spec)), set(), 'midnight in New York starts Tuesday')
 
+    def test_story_frames_do_not_count_against_the_feed_cap(self):
+        # The calendar's stories floor governs Story frames; the feed cap counts feed posts only.
+        from engine.run import calendar as cal, spec as spec_module
+        self.assertEqual(spec_module.STORY_FORMATS, cal.STORY_FORMATS)
+        spec = fixture('w45-week')
+        third = copy.deepcopy(spec['slots'][1])
+        third.update(slot_id='w45-mon-note-story', due_at='2026-11-02T22:00:00Z', format='story-frame')
+        spec['slots'].append(third)
+        self.assertNotIn('posts_per_day', codes(computed(spec)), 'a Story frame is not a third feed post')
+
     def test_every_channel_is_capped_by_its_record(self):
         spec = fixture('w45-week')
         second = copy.deepcopy(slot(spec, 'w45-mon-threads-1'))
