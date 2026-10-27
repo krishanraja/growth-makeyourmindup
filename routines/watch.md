@@ -12,7 +12,8 @@ repository is public. Lane L1 (`docs/LANES.md`).
 - **Control Center**: read only (publish boards, decisions,
   `get_venture_state`). No session holds the Control Center token: never
   look for it or ask for it. Writes reach Control Center only through the
-  GitHub runner. Call no Control Center write tool.
+  GitHub runner. Call no Control Center write tool but
+  `report_to_taste_engine` (`routines/taste.md`).
 - **GitHub**: only to wake this repository's own workflow.
 
 A connector missing or signed out: stop and report which.
@@ -57,10 +58,11 @@ A connector missing or signed out: stop and report which.
    --input FILE` (or the GitHub connector's dispatch tool); the runner only
    records it. Then follow `routines/make.md` steps 3 to 8 for that one
    piece in this session.
-5. **Report anything held.** List every slot, idea or board held, from this
+5. **Tell Inspiration House.** Send today's reports (`routines/taste.md`).
+6. **Report anything held.** List every slot, idea or board held, from this
    run and from Control Center's holds for this engine, each with its
    reason code.
-6. **Meter yourself.** Run `python growth.py run cost self --claude-dir
+7. **Meter yourself.** Run `python growth.py run cost self --claude-dir
    ~/.claude/projects --since <today>` and paste its one line.
 
 ## Summary (your last message)

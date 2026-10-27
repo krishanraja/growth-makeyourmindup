@@ -10,7 +10,8 @@ repository is public. Lane L1 (`docs/LANES.md`).
 - **Control Center**: read only (approved pieces, publish boards, decisions,
   `get_venture_state`). No session holds the Control Center token: never look
   for it or ask for it. Writes reach Control Center only through the GitHub
-  runner (step 8). Call no Control Center write tool.
+  runner (step 8). Call no Control Center write tool but
+  `report_to_taste_engine` (`routines/taste.md`).
 - **Canva**: designs from the brand kit "Make Your Mind Up" (`kAHZOJ-K6I8`).
 - **Buffer**: drafts only.
 - **GitHub**: only to wake this repository's own workflow (step 8).
@@ -50,7 +51,8 @@ A connector missing or signed out: stop and report which.
    before needs his eyes per item: build it, mark it `per_item_review`, and
    keep its words plain English, human and humble. Unapproved board: hold
    `board_not_approved`.
-4. **Build in Canva.** Brand kit `kAHZOJ-K6I8`, templates only from
+4. **Taste.** Follow `routines/taste.md` (read, then record card ids).
+   **Build in Canva.** Brand kit `kAHZOJ-K6I8`, templates only from
    `social/brand/kit.json` (missing file or no template for the format: hold
    `template_missing`). Every quote is a literal match to the published
    piece. Use `autofill-design` and `resize-design`; never publish from

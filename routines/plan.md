@@ -11,9 +11,9 @@ repository is public. Lane L1 (`docs/LANES.md`).
   `get_venture_state`, the content-engine calendar). No session holds the
   Control Center token: never look for it or ask for it. Writes reach Control
   Center only through the GitHub runner (step 6). Call no Control Center
-  write tool.
+  write tool but `report_to_taste_engine` (`routines/taste.md`).
 - **Buffer**: read only (`list_posts`, `get_post`, `get_aggregated_post_metrics`).
-- **Canva**: read only, to check a template still exists.
+- **Canva**: read, plus at most one new template a week (`routines/taste.md`).
 - **GitHub**: only to wake this repository's own workflow (step 6).
 
 A connector missing or signed out: stop and report which.
@@ -56,7 +56,9 @@ A connector missing or signed out: stop and report which.
    stop, each slot, and any calendar change. A calendar change is allowed
    only as an arm of a registered experiment in `experiments.json`, at most
    one experiment per channel; otherwise leave it out and say why. Lint
-   errors hold the packet.
+   errors hold the packet. Then the weekly template refresh in
+   `routines/taste.md`; a proposed template rides in the packet as a
+   new-format item.
 6. **Propose the Sunday sign-off through the runner.** The packet is
    `run_id`, `week` (W45, ...), `spec_sha256` (the spec's lint digest from
    `run lint`) and `slots`, each `slot`, `channel` and `payload_sha256`: ids

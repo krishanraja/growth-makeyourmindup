@@ -1,5 +1,17 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-27 (late): the engine reads Inspiration House, robustly, both ways.
+  Krish: "Make sure you're wiring into the Inspiration House repository in a
+  way that is incredibly robust because that's where I put in videos or
+  content. I put it in when I either love the production, it could be a
+  template for us, or I like the specific content. I'm always commenting in
+  detail on why I like something in there." He approved the plan in which a
+  maker may read his production examples (cards he routed to study the style,
+  and his form signals) as context for making, never a rule and never to
+  judge. `routines/taste.md` is how the routines read his approved rules and
+  examples and report back; `tests/test_taste_wiring.py` keeps every judge
+  away from taste; the Control Center tool and the Inspiration House rule line
+  are briefs in `docs/briefs/2026-10-28-*`.
 - 2026-10-27 (evening): three rulings on what the engine may do alone.
   - Standing approval for derivatives: "Derivatives of approved pieces.
     That actually includes Instagram as well as YouTube and TikTok. Once I'm
