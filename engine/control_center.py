@@ -1,10 +1,12 @@
-"""The Control Center growth engine protocol, version 1.0.0: one transport.
+"""The Control Center growth engine protocol, versions 1.0.0 and 1.1.0: one transport.
 
 This module is the only place that talks to Control Center. It holds the
 bounded HTTPS transport (also used by the legacy packs call in growth.py),
 the canonical digest, a validator for the published report schema, the
-report builder and the client for the protocol routes. Nothing here can
-send, post, publish or spend: a report only describes and proposes.
+report builder, the client for the protocol routes and the pure go-live
+step of the autonomy loop. Nothing here can send, post, publish or spend:
+a report only describes and proposes, and the go-live step only says which
+exact approved payloads a separate release layer may act on.
 
 The bearer is held in memory by the client. It is never printed, logged,
 written to disk or included in an exception.
@@ -25,6 +27,12 @@ ENGINE_ID = 'growth-makeyourmindup'
 PRODUCT_SLUG = 'publication'
 APPROVED_ORIGIN = 'https://controlcenter.krishraja.com'
 SCHEMA_VERSION = '1.0.0'
+# 1.1.0 adds a proposal's stage and parent_proposal_id. A report is raised to it
+# only when a proposal uses one of them ("Raise yours only for a field you use").
+AUTONOMY_VERSION = '1.1.0'
+AUTONOMY_FIELDS = ('stage', 'parent_proposal_id')
+STAGES = ('plan', 'go_live', 'check_in')
+GO_LIVE_WALLS = ('send', 'post', 'spend')
 TIMEZONE = 'America/New_York'
 TIMEOUT = 20
 MAX_RESPONSE = 1000000
@@ -232,9 +240,44 @@ def objective(key, value=None, availability='missing', reason=None, window_start
             'reason': clip(reason, 500) if reason else None}
 
 
+def stage_errors(item):
+    """The autonomy rules for one proposal: a plan sits behind a wall, a go-live is
+    a send, post or spend under its plan, a check-in is a strategy call on its plan."""
+    pid = str(item.get('proposal_id'))
+    stage, parent = item.get('stage'), item.get('parent_proposal_id')
+    errors = []
+    if stage is None:
+        if parent is not None:
+            errors.append('proposal ' + pid + ' names a parent but no stage')
+        return errors
+    if stage not in STAGES:
+        return ['proposal ' + pid + ' has an unknown stage']
+    if stage == 'plan':
+        if parent is not None:
+            errors.append('plan ' + pid + ' cannot name a parent')
+        if item.get('wall') == 'none':
+            errors.append('plan ' + pid + ' must be behind a wall')
+    else:
+        if not isinstance(parent, str) or not RUN_ID.match(parent) or parent == item.get('proposal_id'):
+            errors.append(stage + ' ' + pid + ' needs parent_proposal_id naming its plan')
+        if stage == 'go_live' and item.get('wall') not in GO_LIVE_WALLS:
+            errors.append('go_live ' + pid + ' must be a send, post or spend')
+        if stage == 'check_in' and item.get('wall') != 'strategy':
+            errors.append('check_in ' + pid + ' must be a strategy call')
+    if stage in ('plan', 'check_in') and not item.get('exact_payload'):
+        errors.append(stage + ' ' + pid + ' needs its words in exact_payload')
+    return errors
+
+
+def report_version(proposals):
+    """1.1.0 only when a proposal uses a 1.1.0 field, else 1.0.0."""
+    used = any(key in item for item in proposals or [] if isinstance(item, dict) for key in AUTONOMY_FIELDS)
+    return AUTONOMY_VERSION if used else SCHEMA_VERSION
+
+
 def proposal(proposal_id, title, why, kind, wall, close_event, channel=None, exact_payload=None,
              target=None, amount_usd=None, objective_key='new_subscribers', evidence=(),
-             reference=None, expires_at=None, payload=None):
+             reference=None, expires_at=None, payload=None, stage=None, parent_proposal_id=None):
     if wall in ('send', 'post') and not exact_payload:
         raise ValueError('a send or post proposal needs its exact words')
     if wall == 'spend' and amount_usd is None:
@@ -243,17 +286,27 @@ def proposal(proposal_id, title, why, kind, wall, close_event, channel=None, exa
         raise ValueError('an autonomous proposal cannot be behind a wall')
     if exact_payload is not None and len(exact_payload) > 8000:
         raise ValueError('exact_payload is over 8000 characters; hold it instead of cutting the words')
-    return {'proposal_id': proposal_id, 'title': clip(title, 160), 'why': clip(why, 1000),
+    item = {'proposal_id': proposal_id, 'title': clip(title, 160), 'why': clip(why, 1000),
             'kind': kind, 'wall': wall, 'amount_usd': amount_usd, 'channel': channel,
             'objective_key': objective_key, 'exact_payload': exact_payload,
             'payload_sha256': payload_digest(wall, channel, exact_payload, target, amount_usd, payload),
             'evidence': [{'label': clip(e['label'], 500), 'url': e['url']} for e in list(evidence)[:12]],
             'close_condition': {'event': close_event, 'reference': clip(reference, 500) if reference else None},
             'expires_at': iso(expires_at) if expires_at else None}
+    if stage is not None or parent_proposal_id is not None:
+        # 1.1.0 fields appear only when used, so a 1.0.0 report never carries them.
+        item.update(stage=stage, parent_proposal_id=parent_proposal_id)
+        errors = stage_errors(item)
+        if errors:
+            raise ValueError('; '.join(errors))
+    return item
 
 
 def validate_report(report):
     errors = schema_errors(report, load_schema())
+    expected = report_version(report.get('proposals') if isinstance(report.get('proposals'), list) else [])
+    if report.get('schema_version') != expected:
+        errors.append('schema_version must be ' + expected + ': raise it only for a field a proposal uses')
     if report.get('engine_id') != ENGINE_ID or report.get('product_slug') != PRODUCT_SLUG:
         errors.append('report must name ' + ENGINE_ID + ' and ' + PRODUCT_SLUG)
     for item in report.get('objectives', []):
@@ -272,6 +325,9 @@ def validate_report(report):
             errors.append('proposal ' + str(item.get('proposal_id')) + ' needs amount_usd')
         if item.get('kind') == 'autonomous' and item.get('wall') != 'none':
             errors.append('proposal ' + str(item.get('proposal_id')) + ' is autonomous behind a wall')
+        if 'subject_ref' in item:
+            errors.append('proposal ' + str(item.get('proposal_id')) + ' carries subject_ref, a 1.2.0 field this engine does not speak')
+        errors += stage_errors(item)
     if report.get('payload_sha256') != report_digest(report):
         errors.append('payload_sha256 does not match the canonical report')
     if errors:
@@ -281,13 +337,14 @@ def validate_report(report):
 
 def build_report(run_id, mode, observed_at, revision, captured_at, status, objectives=(),
                  activity=(), proposals=(), events=(), holds=()):
+    proposals = list(proposals)
     report = whole({
-        'schema_version': SCHEMA_VERSION, 'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
+        'schema_version': report_version(proposals), 'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
         'run_id': run_id, 'mode': mode, 'observed_at': iso(observed_at),
         'source': {'revision': clip(revision, 128), 'captured_at': iso(captured_at)},
         'status': status, 'objectives': list(objectives),
         'activity': [{'line': clip(a['line'], 500), 'evidence_url': a.get('evidence_url')} for a in activity],
-        'proposals': list(proposals), 'events': list(events),
+        'proposals': proposals, 'events': list(events),
         'holds': [{'reason': clip(h['reason'], 200), 'detail': clip(h['detail'], 1000) if h.get('detail') else None}
                   for h in holds]})
     report['payload_sha256'] = report_digest(report)
@@ -362,6 +419,17 @@ class Client:
     def capabilities(self):
         return self._request('GET', 'capabilities')
 
+    def confirm_version(self, version):
+        """A report above 1.0.0 goes only where capabilities list its version.
+        Fails closed, never downgrades: the report is not sent."""
+        try:
+            offered = self.capabilities().get('schema_versions')
+        except ProtocolError as error:
+            raise ProtocolError('schema_version_unconfirmed', error.status) from None
+        if not isinstance(offered, list) or version not in offered:
+            raise ProtocolError('schema_version_unsupported')
+        return version
+
     def attempt(self, record):
         allowed = ('attempt_id', 'command', 'run_id', 'status', 'phase', 'error_code', 'started_at', 'finished_at')
         if set(record) - set(allowed) or record.get('status') not in ('started', 'succeeded', 'failed', 'unknown'):
@@ -387,6 +455,8 @@ class Client:
     def post_report(self, report):
         """Report once, then read it back. A 409 is read back, never retried."""
         validate_report(report)
+        if report['schema_version'] != SCHEMA_VERSION:
+            self.confirm_version(report['schema_version'])
         ours = report['payload_sha256']
         try:
             result = self._request('POST', 'reports', report, idempotency_key=report['run_id'])
@@ -415,10 +485,28 @@ class Client:
         return result['decisions']
 
 
+def amended_digest(amount_usd=None, exact_payload=None):
+    """SHA-256 of the canonical JSON of exactly {amount_usd, exact_payload}, null when absent."""
+    return sha256_hex(whole({'amount_usd': amount_usd, 'exact_payload': exact_payload}))
+
+
+def amendment_ok(decision):
+    """True when an amended decision's amended_sha256 is his version's digest.
+    An unreadable or mismatched amendment is refused, never repaired."""
+    if decision.get('amended') is not True:
+        return False
+    try:
+        digest = amended_digest(decision.get('amount_usd'), decision.get('exact_payload'))
+    except (ValueError, TypeError):
+        return False
+    return decision.get('amended_sha256') == digest
+
+
 def match_decisions(decisions, proposals):
     """Bind each decision to the payload it was made on. A yes on another
-    payload is a stale yes and is never acted on. Even an exact yes only
-    means Krish said yes to those words; Krish still posts and sends."""
+    payload is a stale yes and is never acted on, and an amendment whose
+    digest does not recompute is refused. Even an exact yes only means
+    Krish said yes to those words; Krish still posts and sends."""
     current = {p['proposal_id']: p['payload_sha256'] for p in proposals}
     out = []
     for item in decisions:
@@ -426,8 +514,190 @@ def match_decisions(decisions, proposals):
             continue
         pid = item.get('proposal_id')
         exact = pid in current and item.get('payload_sha256') == current[pid]
+        amended = item.get('amended') is True
+        sound = amendment_ok(item) if amended else True
         out.append({'proposal_id': pid, 'decision': item.get('decision'), 'decided_at': item.get('decided_at'),
                     'payload_sha256': item.get('payload_sha256'), 'known': pid in current,
-                    'matches_payload': exact,
-                    'usable_approval': exact and item.get('decision') == 'approved'})
+                    'matches_payload': exact, 'amended': amended, 'amendment_matches': sound if amended else None,
+                    'usable_approval': exact and sound and item.get('decision') == 'approved'})
     return out
+
+
+# The go-live step of the autonomy loop ------------------------------------
+
+def _decided_at(item):
+    """A decision's time, or None when it has none that can be read."""
+    if not isinstance(item.get('decided_at'), str):
+        return None  # instant(None) is now, which would make an undated decision the newest.
+    try:
+        return instant(item['decided_at'])
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+
+def _latest(decisions):
+    """Each proposal's latest dated decision (a later entry wins a tie), and the
+    ids with a decision whose time cannot be read: those are held, never guessed."""
+    out, undated = {}, set()
+    for index, item in enumerate(decisions or []):
+        if not isinstance(item, dict) or not isinstance(item.get('proposal_id'), str):
+            continue
+        at = _decided_at(item)
+        if at is None:
+            undated.add(item['proposal_id'])
+            continue
+        old = out.get(item['proposal_id'])
+        if old is None or (at, index) >= old[0]:
+            out[item['proposal_id']] = ((at, index), item)
+    return {pid: pair[1] for pid, pair in out.items()}, undated
+
+
+def _stops(proposals, decisions, ledger=None):
+    """Plans Krish stopped, and declined check-ins whose plan cannot be told yet.
+
+    A declined (purged) check-in stops its plan, and so does the plan itself
+    declined. A stop counts whatever digest or date it was made on, because
+    stopping is always safe, and once recorded in the ledger it stays (a plan
+    declined once stays stopped, even under a later changed version). A
+    declined check-in whose own record is not at hand is unresolved: while one
+    is, every go-live is held, because the plan it stops is unknown."""
+    by_id = {p.get('proposal_id'): p for p in proposals or []
+             if isinstance(p, dict) and isinstance(p.get('proposal_id'), str)}
+    stopped = dict((ledger or {}).get('stopped') or {})
+    pending = dict((ledger or {}).get('unresolved') or {})
+    for item in decisions or []:
+        if not isinstance(item, dict) or item.get('decision') != 'declined':
+            continue
+        pid = item.get('proposal_id')
+        if not isinstance(pid, str):
+            continue
+        found = by_id.get(pid) or {}
+        stage = found.get('stage') or item.get('stage')
+        if stage == 'plan':
+            stopped.setdefault(pid, {'by': pid, 'decided_at': item.get('decided_at')})
+        elif stage == 'check_in':
+            pending.setdefault(pid, {'decided_at': item.get('decided_at')})
+    for pid in sorted(pending):
+        found = by_id.get(pid) or {}
+        parent = found.get('parent_proposal_id')
+        if found.get('stage') == 'check_in' and isinstance(parent, str):
+            stopped.setdefault(parent, {'by': pid, 'decided_at': pending[pid].get('decided_at')})
+        if any(isinstance(why, dict) and why.get('by') == pid for why in stopped.values()):
+            del pending[pid]
+    return stopped, pending
+
+
+def stopped_plans(proposals, decisions, ledger=None):
+    """Plans Krish stopped: a declined (purged) check-in on the plan, or the plan itself declined."""
+    return _stops(proposals, decisions, ledger)[0]
+
+
+def action_key(action):
+    return action['proposal_id'] + '#' + action['action_sha256']
+
+
+def _plan_open(plan, decision):
+    if not plan or plan.get('stage') != 'plan' or not decision or decision.get('decision') != 'approved':
+        return False
+    if decision.get('payload_sha256') != plan.get('payload_sha256'):
+        return False
+    return decision.get('amended') is not True or amendment_ok(decision)
+
+
+def _expiry_hold(item, now):
+    """None while the go-live is in date; a hold code once it is not, or cannot be told."""
+    if not item.get('expires_at'):
+        return None
+    if now is None:
+        return 'expiry_unchecked'
+    try:
+        lapsed = instant(item['expires_at']) <= instant(now)
+    except (ValueError, TypeError, AttributeError):
+        return 'bad_expiry'
+    return 'expired' if lapsed else None
+
+
+def _linkedin(channel):
+    return isinstance(channel, str) and channel.strip().lower().startswith('linkedin')
+
+
+def golive_review(proposals, decisions, ledger=None, now=None):
+    """Which approved go-lives may act, and the reason code for each one held.
+
+    A go-live acts only when it is stage go_live; it has never been claimed;
+    every decision on it and its plan is dated; no declined check-in is
+    unresolved; its latest decision is an approval on the payload_sha256 its
+    own fields recompute to; an amended yes recomputes to amended_sha256, and
+    then his words and amount act, never the engine's; its parent plan is
+    approved on its current digest and not stopped; and it is in date (with
+    no now, an expiring go-live is held). Pure: no I/O."""
+    ledger = ledger or {}
+    acted = ledger.get('acted') or {}
+    claimed = {why.get('proposal_id') for why in acted.values() if isinstance(why, dict)}
+    by_id = {p.get('proposal_id'): p for p in proposals or []
+             if isinstance(p, dict) and isinstance(p.get('proposal_id'), str)}
+    latest, undated = _latest(decisions)
+    stopped, unresolved = _stops(proposals, decisions, ledger)
+    actions, holds = [], []
+    for pid in sorted(by_id):
+        item = by_id[pid]
+        if item.get('stage') != 'go_live':
+            continue
+        decision = latest.get(pid)
+        code = None
+        try:
+            own = payload_digest(item.get('wall'), item.get('channel'), item.get('exact_payload'),
+                                 item.get('target'), item.get('amount_usd'))
+        except (ValueError, TypeError):
+            own = None
+        words, amount = item.get('exact_payload'), item.get('amount_usd')
+        amended = bool(decision) and decision.get('amended') is True
+        parent = item.get('parent_proposal_id')
+        if not isinstance(parent, str):
+            parent = None
+        if pid in claimed:
+            code = 'already_acted'  # Each go-live acts once, whatever is approved on it later.
+        elif pid in undated or parent in undated:
+            code = 'undated_decision'
+        elif unresolved:
+            code = 'stop_unresolved'
+        elif decision is None or decision.get('decision') != 'approved':
+            code = 'not_approved'
+        elif own is None or own != item.get('payload_sha256') or decision.get('payload_sha256') != own:
+            code = 'stale_approval'
+        elif amended and not amendment_ok(decision):
+            code = 'amended_digest_mismatch'
+        elif parent is None or parent in stopped:
+            code = 'plan_stopped' if parent else 'plan_not_approved'
+        elif not _plan_open(by_id.get(parent), latest.get(parent)):
+            code = 'plan_not_approved'
+        else:
+            code = _expiry_hold(item, now)
+        if code is None and amended:
+            words, amount = decision.get('exact_payload'), decision.get('amount_usd')
+        if code is None and (item.get('wall') == 'spend' or amount not in (None, 0)):
+            code = 'no_spend_authority'
+        elif code is None and item.get('wall') in ('send', 'post') and not (isinstance(words, str) and words.strip()):
+            code = 'no_exact_words'
+        elif code is None and _linkedin(item.get('channel')):
+            code = 'linkedin_is_krish_click'
+        if code is None:
+            action = {'proposal_id': pid, 'parent_proposal_id': parent, 'wall': item['wall'],
+                      'channel': item.get('channel'), 'target': item.get('target'), 'exact_payload': words,
+                      'amount_usd': amount, 'amended': amended, 'payload_sha256': own,
+                      'amended_sha256': decision.get('amended_sha256') if amended else None,
+                      'decided_at': decision.get('decided_at')}
+            action['action_sha256'] = sha256_hex(whole({key: action[key] for key in
+                                                        ('channel', 'target', 'exact_payload', 'amount_usd')}))
+            if action_key(action) in acted:
+                code = 'already_acted'
+            else:
+                actions.append(action)
+        if code:
+            holds.append({'proposal_id': pid, 'reason': code})
+    return {'actions': actions, 'holds': holds, 'stopped': stopped, 'unresolved': unresolved}
+
+
+def golive_actions(proposals, decisions, ledger=None, now=None):
+    """The exact payloads a separate release layer may act on, each once. Acts on nothing."""
+    return golive_review(proposals, decisions, ledger, now)['actions']
