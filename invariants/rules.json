@@ -1,0 +1,808 @@
+{
+  "schema_version": 1,
+  "kind": "rules",
+  "note": "Standing rules with a verbatim quote from their source; tests/test_invariants.py fails when a quote drifts.",
+  "rules": [
+    {
+      "id": "R01",
+      "statement": "Draft only; Krish acts. The engine never posts, sends, comments, likes, follows, connects, messages, subscribes or changes a setting on any platform, outside the named exceptions.",
+      "source_file": "AGENTS.md",
+      "quote": "Never post, send, comment, like, follow, connect, DM, subscribe, sign up or change a setting on any platform",
+      "enforced_by": [
+        "engine/packs.py:check_pack",
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_real_date_and_acting_keys",
+        "test_missing_approval_survives_valid_preflight"
+      ]
+    },
+    {
+      "id": "R02",
+      "statement": "No email leaves the engine (a saved draft at most) and no money is spent.",
+      "source_file": "AGENTS.md",
+      "quote": "Never send an email: at most save a draft. Never spend money.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R03",
+      "statement": "Saving a draft never authorises scheduling or publication.",
+      "source_file": "AGENTS.md",
+      "quote": "Draft saves never authorise scheduling or publication.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_missing_approval_survives_valid_preflight"
+      ],
+      "pending_tests": [
+        "test_draft_save_sets_saveToDraft_without_dueAt"
+      ],
+      "pending_item": "D2"
+    },
+    {
+      "id": "R04",
+      "statement": "Every fact, number and name comes from a published piece or the thread being answered; nothing is invented.",
+      "source_file": "AGENTS.md",
+      "quote": "Never invent a number, a quote or a result. If you are unsure, leave it out.",
+      "enforced_by": [
+        "engine/packs.py:seal"
+      ],
+      "tests": [
+        "test_missing_evidence_and_fake_excerpt_rejected",
+        "test_quotes_must_exist_in_cited_excerpt"
+      ]
+    },
+    {
+      "id": "R05",
+      "statement": "Content-engine owns production and voice standards for every format; Growth applies them (the Canva lane is the 27 Oct exception, R63).",
+      "source_file": "AGENTS.md",
+      "quote": "Content-engine owns production and voice standards for every format.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_wrong_account_context_and_unreviewed_voice_are_rejected"
+      ]
+    },
+    {
+      "id": "R06",
+      "statement": "A LinkedIn comment carries no link.",
+      "source_file": "AGENTS.md",
+      "quote": "cite their source internally and never invent them. No links in LinkedIn comments.",
+      "enforced_by": [
+        "engine/packs.py:check_pack"
+      ],
+      "tests": [
+        "test_radar_linkedin_rule_cannot_be_bypassed_by_missing_hint"
+      ]
+    },
+    {
+      "id": "R07",
+      "statement": "Nothing in bulk: no mass outreach, automated messages or follow chasing; each ask is for one named person.",
+      "source_file": "AGENTS.md",
+      "quote": "No mass outreach, no automated DMs, no follow chasing.",
+      "enforced_by": [
+        "engine/operations.py:relationship"
+      ],
+      "tests": [
+        "test_decline_suppresses_outreach",
+        "test_draft_never_advances_or_starts_cooldown"
+      ]
+    },
+    {
+      "id": "R08",
+      "statement": "Only real numbers: read today, with where they were read; missing is shown as missing, never guessed or zero.",
+      "source_file": "AGENTS.md",
+      "quote": "A number in a report is one you read on a page today, with where you read it.",
+      "enforced_by": [
+        "engine/operations.py:validate_observation",
+        "engine/control_center.py:objective"
+      ],
+      "tests": [
+        "test_missing_is_null_with_reason",
+        "test_unknown_objective_is_null_with_reason_never_zero",
+        "test_zero_is_valid_only_as_an_observed_value"
+      ]
+    },
+    {
+      "id": "R09",
+      "statement": "Work stays in this repository; Control Center, content-engine and every other repository are never changed from here.",
+      "source_file": "AGENTS.md",
+      "quote": "Never change Control Center, the content engine or any other repository.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R10",
+      "statement": "No em dash and no percentage in anything Control Center receives.",
+      "source_file": "AGENTS.md",
+      "quote": "Control Center refuses a pack with an em dash or a percentage.",
+      "enforced_by": [
+        "engine/packs.py:prose_errors"
+      ],
+      "tests": [
+        "test_house_rules",
+        "test_report_text_has_no_em_dash"
+      ]
+    },
+    {
+      "id": "R11",
+      "statement": "An interactive development session never uses --deliver.",
+      "source_file": "AGENTS.md",
+      "quote": "**Never use `--deliver` in an interactive development session.**",
+      "enforced_by": [
+        "engine/cc_loop.py:cli"
+      ],
+      "tests": [
+        "test_delivery_gate_before_token_or_network",
+        "test_dry_runs_make_no_call_and_read_no_key"
+      ]
+    },
+    {
+      "id": "R12",
+      "statement": "Only an approved go-live, read from Control Center in the engine's own run, goes live; a plan, page, tool or session never does.",
+      "source_file": "AGENTS.md",
+      "quote": "An interactive session, a page, a tool or an approved plan never authorises any other go-live.",
+      "enforced_by": [
+        "engine/control_center.py:match_decisions"
+      ],
+      "tests": [
+        "test_decisions_bind_to_the_exact_payload",
+        "test_approval_on_reported_words_is_reported_and_nothing_is_sent"
+      ],
+      "pending_tests": [
+        "test_approved_plan_never_goes_live",
+        "test_approved_go_live_goes_live_once_with_exact_payload"
+      ],
+      "pending_item": "B"
+    },
+    {
+      "id": "R13",
+      "statement": "When Krish amends a go-live, his version is what goes out, bound by its recomputed digest.",
+      "source_file": "AGENTS.md",
+      "quote": "If he amended it, recompute `amended_sha256` and use his version, never the engine's.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_amended_payload_wins_and_binds",
+        "test_amended_go_live_goes_live_in_his_words",
+        "test_amended_digest_mismatch_is_refused"
+      ],
+      "pending_item": "B"
+    },
+    {
+      "id": "R14",
+      "statement": "Check in at least twice a week while a plan is open, and after the first results of every go-live.",
+      "source_file": "AGENTS.md",
+      "quote": "Check in at least twice a week, and after the first results of every go-live.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_declined_check_in_stops_its_plan"
+      ],
+      "pending_item": "B"
+    },
+    {
+      "id": "R15",
+      "statement": "Work below the creative bar is held with its reason, never proposed to fill a slot.",
+      "source_file": "AGENTS.md",
+      "quote": "Work below the bar is held with its reason, never proposed to fill a slot.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R16",
+      "statement": "LinkedIn stays unscheduled drafts for Krish's own final click, with no daily quota.",
+      "source_file": "AGENTS.md",
+      "quote": "LinkedIn stays unscheduled drafts for Krish's final click, with no daily quota.",
+      "enforced_by": [
+        "engine/social.py:inventory",
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_personal_accounts_cannot_receive_a_scheduled_time"
+      ]
+    },
+    {
+      "id": "R17",
+      "statement": "A connected personal identity is not in scope until Krish names it.",
+      "source_file": "AGENTS.md",
+      "quote": "Other connected personal identities are not automatically in scope.",
+      "enforced_by": [
+        "engine/social.py:inventory"
+      ],
+      "tests": [
+        "test_registry_and_known_channel_routes"
+      ]
+    },
+    {
+      "id": "R18",
+      "statement": "No parallel production pipeline or quality canon in Growth; superseded for the Canva lane only by R63.",
+      "source_file": "AGENTS.md",
+      "quote": "Do not build a parallel production pipeline or quality canon in Growth.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R19",
+      "statement": "Interactive work makes no Control Center writes.",
+      "source_file": "AGENTS.md",
+      "quote": "Interactive work makes no Control Center writes.",
+      "enforced_by": [
+        "engine/cc_loop.py:cli"
+      ],
+      "tests": [
+        "test_dry_runs_make_no_call_and_read_no_key"
+      ]
+    },
+    {
+      "id": "R20",
+      "statement": "Outreach to shows and guests is Control Center's: this engine proposes posts and measures, and holds every pitch, swap and partner note.",
+      "source_file": "AGENTS.md",
+      "quote": "So this engine proposes posts and measures. It proposes no pitch, swap or partner note",
+      "enforced_by": [
+        "engine/cc_loop.py:workspace_report"
+      ],
+      "tests": [
+        "test_outreach_is_control_centers_so_pitches_swaps_and_partners_are_held"
+      ],
+      "pending_tests": [
+        "test_post_deliver_refuses_outreach_kinds"
+      ],
+      "pending_item": "D1"
+    },
+    {
+      "id": "R21",
+      "statement": "One ask of each kind waits on Krish's list at a time.",
+      "source_file": "AGENTS.md",
+      "quote": "never add a second ask of a kind that already waits.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R22",
+      "statement": "The 4 Growth Drive folder is link-editable, so private run backups never go there.",
+      "source_file": "AGENTS.md",
+      "quote": "The supplied Drive folder is link-editable: never upload private run backups there.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R23",
+      "statement": "In the weekly audit, creative replacement, re-upload, bio, positioning and pinned-content changes need Krish's approval.",
+      "source_file": "AGENTS.md",
+      "quote": "Creative replacement, re-upload, bio, positioning and pinned-content changes require his approval.",
+      "enforced_by": [
+        "engine/channel_audit.py:repair_plan"
+      ],
+      "tests": [
+        "test_metadata_and_protected_fields_are_separate"
+      ]
+    },
+    {
+      "id": "R24",
+      "statement": "Only the Codex in-app browser; no external browser as a fallback.",
+      "source_file": "BROWSER.md",
+      "quote": "Do not use Chrome or another external browser as a fallback, even if it has an existing login.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R25",
+      "statement": "Skyvern is never used, for anything.",
+      "source_file": "BROWSER.md",
+      "quote": "Skyvern is excluded from this task: no session listing, connection checks, cloud browser, workflow, profile export or fallback through that provider.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R26",
+      "statement": "No cookie or credential export, and Stripe is never opened.",
+      "source_file": "BROWSER.md",
+      "quote": "Do not export cookies or credentials. Do not open Stripe.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R27",
+      "statement": "No native desktop apps, OS-wide file dialogs or PC takeover.",
+      "source_file": "BROWSER.md",
+      "quote": "Do not use native desktop apps, OS-wide file dialogs or PC takeover for this work.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R28",
+      "statement": "LinkedIn is drafts and recommendations only, during an audit too.",
+      "source_file": "BROWSER.md",
+      "quote": "LinkedIn is drafts and recommendations only, including during an audit: no live post/profile edits and no submitted engagement.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_linkedin_audit_edit_is_held"
+      ],
+      "pending_item": "A"
+    },
+    {
+      "id": "R29",
+      "statement": "A prepared LinkedIn comment is left for Krish; nothing that submits is pressed.",
+      "source_file": "BROWSER.md",
+      "quote": "do not press Enter, Comment, Reply, Post or any shortcut that submits.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R30",
+      "statement": "Buffer draft authority is draft authority, not scheduling or publication authority.",
+      "source_file": "BROWSER.md",
+      "quote": "This is draft authority, not scheduling/publication authority.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_draft_save_sets_saveToDraft_without_dueAt"
+      ],
+      "pending_item": "D2"
+    },
+    {
+      "id": "R31",
+      "statement": "Document support is never inferred from image uploads, and an uncertain save is never retried without readback.",
+      "source_file": "BROWSER.md",
+      "quote": "Never infer document support from image uploads, operate an unowned desktop dialog, or retry an uncertain save without readback.",
+      "enforced_by": [
+        "engine/social.py:route",
+        "engine/channel_audit.py:begin"
+      ],
+      "tests": [
+        "test_unknown_document_route_is_not_inferred_from_png_success",
+        "test_timeout_never_retries_pending_write"
+      ]
+    },
+    {
+      "id": "R32",
+      "statement": "A signed-out channel stays signed out; note it and read the public page.",
+      "source_file": "BROWSER.md",
+      "quote": "If a channel shows you signed out, don't sign in.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R33",
+      "statement": "Missing edit support means hold; never delete and repost.",
+      "source_file": "BROWSER.md",
+      "quote": "Missing edit support means hold; never delete and repost as a workaround.",
+      "enforced_by": [
+        "engine/channel_audit.py:repair_plan"
+      ],
+      "tests": [
+        "test_metadata_and_protected_fields_are_separate"
+      ]
+    },
+    {
+      "id": "R34",
+      "statement": "Without dashboards, say so in the headline and never fill a gap with an estimate.",
+      "source_file": "BROWSER.md",
+      "quote": "say in the pack's headline that the dashboards were not available. Never fill a gap with an estimate.",
+      "enforced_by": [
+        "engine/operations.py:validate_observation"
+      ],
+      "tests": [
+        "test_missing_is_null_with_reason"
+      ]
+    },
+    {
+      "id": "R35",
+      "statement": "Approved content may get one useful daily post per channel where an approved native edition exists.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Aim for one useful daily post per channel where an approved native edition exists.",
+      "enforced_by": [
+        "engine/social.py:inventory"
+      ],
+      "tests": [
+        "test_approved_brand_content_has_delegated_cadence",
+        "test_x_and_tiktok_have_explicit_delegated_cadence_but_personal_voice"
+      ]
+    },
+    {
+      "id": "R36",
+      "statement": "Substack articles keep their editorial rhythm, with no daily target.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Substack retains its approved editorial rhythm.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_substack_article_has_no_daily_target"
+      ],
+      "pending_item": "C"
+    },
+    {
+      "id": "R37",
+      "statement": "A slot without approved creative stays empty and is recorded; never filled with unapproved work or duplicates.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Record missing supply/capability; never fill a slot with unapproved creative or duplicates.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R38",
+      "statement": "Scheduled is not published: publication needs the native URL, content, account and a dated readback.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Scheduling proves only a scheduled post. Actual publication needs the native URL/content/account and a dated readback.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_scheduled_is_not_sent",
+        "test_live_needs_native_url_per_destination",
+        "test_scheduled_never_counts_as_live"
+      ],
+      "pending_item": "D1, D2"
+    },
+    {
+      "id": "R39",
+      "statement": "Krish's LinkedIn is never queued, scheduled or published by the engine, and no engagement is submitted.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Krish's LinkedIn is unscheduled drafts only. Never queue, schedule, publish, submit comments, like, follow or message.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_personal_accounts_cannot_receive_a_scheduled_time"
+      ]
+    },
+    {
+      "id": "R40",
+      "statement": "A Buffer connection never brings a personal identity into scope; Threads entered scope by Krish's 27 Oct ruling (R59), not by its connection.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "are not in scope merely because Buffer connects them.",
+      "enforced_by": [
+        "engine/social.py:inventory"
+      ],
+      "tests": [
+        "test_registry_and_known_channel_routes"
+      ]
+    },
+    {
+      "id": "R41",
+      "statement": "Instagram and Facebook are a verified pair, deduplicated against native cross-sharing.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Verify both outputs independently and deduplicate against native cross-sharing.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_story_one_frame_per_post_dedupe_by_media_url"
+      ],
+      "pending_item": "D2"
+    },
+    {
+      "id": "R42",
+      "statement": "Stories never show fake interactive controls or claim poll or link-sticker support.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "never draw fake interactive controls or invent poll/link-sticker support.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_link_sticker_never_claimed_automatic"
+      ],
+      "pending_item": "D2"
+    },
+    {
+      "id": "R43",
+      "statement": "No illustration-generation boilerplate in public art, captions or descriptions.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Never add illustration-generation boilerplate to public art, captions or descriptions.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_public_illustration_boilerplate_is_rejected_without_banning_ai_topics"
+      ]
+    },
+    {
+      "id": "R44",
+      "statement": "Publishing permission brings no spend, new connection, deletion, engagement or paid-offer change.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "No spending, new connections, deletion, engagement submission or live paid-offer change follows from this publishing permission.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R45",
+      "statement": "Offline validation never authenticates approval or acts externally.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Offline validation never authenticates approval or performs an external action.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_missing_approval_survives_valid_preflight"
+      ]
+    },
+    {
+      "id": "R46",
+      "statement": "Reuse the 4 Growth folder; no other Growth root.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Reuse this existing folder. Do not create another Growth root.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R47",
+      "statement": "No private run or session backup goes into a shared asset folder.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Never upload an entire private run or session backup into a shared asset folder.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R48",
+      "statement": "No internal metrics, inventories, raw evidence, credentials or journals in the asset library.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Do not put internal metrics, account inventories, raw browser evidence, credentials or operational journals in this library.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R49",
+      "statement": "Creative approval is not publication or scheduling approval.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Approval of creative does not imply publication or scheduling.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_missing_approval_survives_valid_preflight"
+      ]
+    },
+    {
+      "id": "R50",
+      "statement": "A changed approved file is a new revision needing its own review; release checks the bytes.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "If an approved file changes, create a new revision and obtain the required review.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_asset_change_and_missing_alt_text_are_rejected"
+      ],
+      "pending_tests": [
+        "test_release_refuses_changed_asset_bytes"
+      ],
+      "pending_item": "D2"
+    },
+    {
+      "id": "R51",
+      "statement": "An upload request or a local copy is not a verified cloud archive.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "A local copy or successful upload request alone is not proof of a verified cloud archive.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R52",
+      "statement": "Reusable lessons go in social/lessons, linked from their owner, and social check passes.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Store reusable distribution lessons in `social/lessons/`, link them from their owning channel/format/tool, and run `python growth.py social check`.",
+      "enforced_by": [
+        "engine/social.py:inventory"
+      ],
+      "tests": [
+        "test_registry_and_known_channel_routes"
+      ]
+    },
+    {
+      "id": "R53",
+      "statement": "A local archive is never described as an off-device backup.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "A local archive is not an off-device backup; do not describe it as one.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R54",
+      "statement": "Krish's personal accounts sound sincere, warm, humble and pleased to share something useful.",
+      "source_file": "docs/ACCOUNT-VOICE.md",
+      "quote": "Anything posted or prepared under Krish Raja's personal identity must sound sincere, warm, humble and pleased to share something useful.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_wrong_account_context_and_unreviewed_voice_are_rejected"
+      ],
+      "pending_tests": [
+        "test_threads_has_delegated_cadence_with_personal_voice"
+      ],
+      "pending_item": "C"
+    },
+    {
+      "id": "R55",
+      "statement": "Classify the owner and byline before choosing a voice.",
+      "source_file": "docs/ACCOUNT-VOICE.md",
+      "quote": "Identify the actual owner and byline before selecting a voice; connection to Buffer is not permission to add an account to scope.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_wrong_account_context_and_unreviewed_voice_are_rejected"
+      ]
+    },
+    {
+      "id": "R56",
+      "statement": "Warmth is never manufactured from an invented feeling, experience or result.",
+      "source_file": "docs/ACCOUNT-VOICE.md",
+      "quote": "Never invent a personal feeling, experience, result, relationship or confession to manufacture warmth.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R57",
+      "statement": "The publication Instagram speaks as makeyourmindup, never as Krish.",
+      "source_file": "docs/ACCOUNT-VOICE.md",
+      "quote": "Do not impersonate Krish or force a humble first-person introduction onto this publication account.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R58",
+      "statement": "Copy that fails the voice review is held for revision.",
+      "source_file": "docs/ACCOUNT-VOICE.md",
+      "quote": "A failed answer holds the copy for revision.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_wrong_account_context_and_unreviewed_voice_are_rejected"
+      ]
+    },
+    {
+      "id": "R59",
+      "statement": "Substack Notes and Threads are in scope (27 Oct), superseding the 14 Oct and 26 Oct lines.",
+      "source_file": "CHANGES.md",
+      "quote": "Channels: he chose to add **Substack Notes** and **Threads**.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_threads_is_known_and_audit_edits_are_held",
+        "test_notes_links_are_tracked",
+        "test_threads_has_delegated_cadence_with_personal_voice"
+      ],
+      "pending_item": "A, C"
+    },
+    {
+      "id": "R60",
+      "statement": "Krish signs the week: signed exact payloads go out autonomously; anything else waits for his signature.",
+      "source_file": "CHANGES.md",
+      "quote": "Sign the week, but I am likely to want to add in meme style instagram and youtube and tiktok posts randomly too",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R61",
+      "statement": "An ad-hoc idea is built, shown to Krish, and queued only once he approves it.",
+      "source_file": "CHANGES.md",
+      "quote": "then the engine will build, show me for approval, and then queue and post autonomously.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R62",
+      "statement": "LinkedIn stays Krish's own final click under the signed week.",
+      "source_file": "CHANGES.md",
+      "quote": "pasting or manual asking\". LinkedIn stays his own final click.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_personal_accounts_cannot_receive_a_scheduled_time"
+      ]
+    },
+    {
+      "id": "R63",
+      "statement": "The Canva lane (growth-canva) may produce what content-engine does not cover; content-engine keeps its formats and standards (invariants/boundary.json).",
+      "source_file": "CHANGES.md",
+      "quote": "For that Canva lane only, this supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line; content-engine keeps its formats and standards.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": [
+        "test_boundary_follows_the_canva_ruling"
+      ]
+    },
+    {
+      "id": "R64",
+      "statement": "Secondary targets come after two weeks of measured baseline; the North Star stays the one number.",
+      "source_file": "CHANGES.md",
+      "quote": "proposed after two weeks of measured baseline; the North Star stays the one number.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R65",
+      "statement": "The What-Works Analyst owns knowing what works.",
+      "source_file": "CHANGES.md",
+      "quote": "make someone an owner of that, or build a specialist for it in the engine if there is not already one\": the What-Works Analyst owns it.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": [
+        "test_what_works_card_carries_its_verdict_rules"
+      ]
+    },
+    {
+      "id": "R66",
+      "statement": "The 27 Oct rulings authorise no new connection, spend or automation by themselves.",
+      "source_file": "CHANGES.md",
+      "quote": "Nothing in these rulings authorises a new connection, spend or automation by itself",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    }
+  ]
+}
