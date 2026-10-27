@@ -1,0 +1,11 @@
+{
+  "approved": true,
+  "approved_by": "Synthetic approver",
+  "approved_at": "2026-10-27",
+  "note": "Synthetic test fixture in the invariants/sources.json schema",
+  "categories": {
+    "synthetic direct": "unattributed",
+    "synthetic notes": "organic",
+    "synthetic paid boost": "paid"
+  }
+}

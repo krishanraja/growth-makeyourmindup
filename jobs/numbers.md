@@ -26,6 +26,12 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    unattributed. Never assign it to owned social merely because it is direct.
    Capture source export/window and delayed reporting. Preserve original
    acquisition separately from subsequent internal placements.
+   Record the Substack all-source new-subscriber reading as `platform:
+   substack`, `metric: new_free`, scope `publication` (rows with any other
+   platform or metric are not counted); per-source rows use `source:<label>`, and Direct is
+   recorded as `source:direct` whenever source rows are recorded without the
+   publication row. Any other scope makes the weekly count missing
+   (`docs/ENGINE.md`, "Objective").
 5. Validate `python growth.py measure .scratch/observations.json`.
    Use `--aggregate` only for a comparable series of disjoint contiguous
    interval windows. Never add daily captures of the same rolling week or
@@ -47,3 +53,32 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    unread day reports the count as missing with its reason, never as zero.
    It must print "readback digest matches" and "attempt succeeded". If it
    prints a failure code instead, name that code in the final message.
+
+## 27 October 2026: GA4 and the North Star line
+
+Krish, 27 October 2026 (`CHANGES.md`;
+`docs/plans/2026-10-27-engine-architecture.md`, sections 3 and 7). The
+Measurement Specialist reads Google Analytics 4 directly, read-only, through
+`python growth.py run ga4`: sessions, free sign-ups and paid subscriptions by
+source, medium, campaign and `utm_content`, joined per post on `utm_content`
+(the slot's placement identity). The steps:
+
+1. `python growth.py run ga4 events --days 28 --live` lists the event names
+   GA4 sees; record the confirmed sign-up and paid names in
+   `invariants/ga4.json`. A report or join that relies on an unverified event
+   name is refused; record those rows as missing with that refusal as reason.
+2. `python growth.py run ga4 report --start YYYY-MM-DD --end YYYY-MM-DD --live`
+   writes a new reading under `.scratch/ga4/` (or `--out FILE`).
+3. `python growth.py run ga4 join CAPTURE SPEC` joins that reading per post.
+
+Network happens only with `--live`, and only to Google's token and Data API
+origins; without it the command prints what it would request. If this
+checkout does not list `ga4` among the `growth.py run` commands yet, record
+those rows as missing with reason `not_connected`; if the GA4 credentials are
+not set, with reason `missing_credentials`. Never estimate them. GA4 numbers stay local and in the
+Control Center report, never in the repository. Substack Growth sources stay
+the North Star source: a weekly reconciliation keeps the more conservative
+reading and logs the gap. `python growth.py run northstar --capture FILE`
+computes the NOW.md North Star line from a settled Growth-sources capture
+instead of a hand-written one. It only prints the line and the diff; NOW.md
+and `lists/northstar-history.jsonl` change only with `--write`.

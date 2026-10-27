@@ -315,3 +315,45 @@ stops the job with an error and nothing reported.
 `timeout`. Remote bodies are never echoed, and the bearer never appears in
 output, files or exceptions. `tests/test_control_center.py` proves the loop
 against a local stand-in server, including the worked example's digest.
+
+## Autonomy loop
+
+GET-GOING Step 1 on protocol 1.1.0 (`engine/control_center.py`,
+`engine/cc_loop.py`, proved in `tests/test_autonomy.py` against the stand-in).
+
+**Stages.** `proposal(..., stage=, parent_proposal_id=)` builds a `plan`, a
+`go_live` (a send, post or spend naming its plan) or a `check_in` (a strategy
+call naming its plan). A report is `1.1.0` only when a proposal uses those
+fields, else `1.0.0`; `validate_report` refuses any other pairing. A 1.1.0
+report goes only after capabilities list `1.1.0`, else the run fails closed
+(`schema_version_unsupported`, or `schema_version_unconfirmed` when they
+cannot be read) and nothing is downgraded or sent.
+
+**Amendments.** `amended_sha256` must recompute as the SHA-256 of the
+canonical JSON of exactly `{amount_usd, exact_payload}`, null when absent,
+or it is held (`amended_digest_mismatch`). When it matches, his version acts.
+
+**The go-live step.** `golive_actions(proposals, decisions, ledger, now)` is
+pure and acts on nothing; `golive_review` adds a reason code for each hold. A
+go-live acts only when never claimed, approved (latest dated decision) on the
+digest its reported fields recompute to, with its plan approved and not
+stopped, and in date. Holds fail closed: an undated decision on it or its plan
+(`undated_decision`), a declined check-in whose record is not at hand
+(`stop_unresolved`, every go-live), an expiry with no `now`
+(`expiry_unchecked`) or unreadable (`bad_expiry`). A declined check-in or plan
+stops the plan for good, even a later changed version. Spends and LinkedIn are
+always held. Reports carry no `target`, so a go-live built with one is held.
+
+**The ledger.** `claim_golives(root, ...)` reads the clock when given no
+`now`, merges the staged proposals `remember()` kept, and claims each go-live
+once by `proposal_id` in `.scratch/cc/golive-ledger.json` (`write_json` under
+`locked`) before anything acts, with its stops and unresolved check-ins. The
+caller passes every decision on each open plan, not only the latest read. The
+ledger is local, so the step never runs on the GitHub runner.
+
+**Objective.** Substack scope `publication` is all sources and wins;
+`source:<name>` rows are added per source and summed, but only when a
+`source:direct` row (any case) is among them: the numbers job records
+attributed sources separately and leaves Direct unattributed, so without it
+the sum would undercount. Any other scope, or attributed rows without the
+all-source or direct row, makes `new_subscribers` missing, never a guess.

@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-10-27
-head: 2fe4eb0
+head: fb61c1d
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -99,12 +99,14 @@ publication, follower growth or financial ROI.
 
 ## What changed recently
 
+- 2026-10-27 **The engine is rebuilt on the bulletproof architecture, phases 0 to 2** (`docs/plans/2026-10-27-engine-architecture.md`). One signed run spec per week or piece (`growth.py run new|lint|status|pack`), computed readiness, a Release Gate pinned to this engine's nine Buffer channels, the autonomy loop (plan, go-live once, his amended words, a declined check-in stops its plan), 12 crew cards with the What-Works Analyst and the Measurement Specialist, a failure register F01 to F65 and G1 to G9 and quoted rules R1 to R91, each guarded by a test (323 tests). Rulings that day: Substack Notes (from his profile, @mindmakerlive) and Threads join; sign the week with an express lane for meme posts; a full Canva brand kit by Cowork (`docs/briefs/2026-10-27-canva-brand-kit-cowork.md`); secondary targets for followers and paid subscribers; the audit authority covers Facebook and Threads; GA4 comes through Control Center, which now sends per-post readings in this engine's directive (protocol 1.10.0, krishanraja/control-center#578, merged).
 - 2026-10-26 **Drafts follow Krish's approved voice rules from the daily directive.** Control Center protocol 1.5.0 adds `taste` to the directive; `cc start` prints the approved rules as one labelled block and keeps it in `.scratch/cc/voice-rules.txt` for the drafting steps: how a draft is written, never what it is about, never fed to a check, score or queue. None approved yet means none invented; absent means unknown.
 - 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets how hard it pushes. The number is in `docs/NORTH_STAR.md`; contract: ai-harness `contract/north-star-metric.md`.
 
 ## What is next and what is waiting on Krish
 
-- Next: obtain Content Engine native editions from the specific shopping-agent handoff and existing email-test Short brief, then secure creative review before distribution. Continue the pilot measurements at their actual elapsed ages. Krish alone publishes LinkedIn; one current conversation suggestion is ready privately.
+- Next: read back the first `web_analytics` directive after Control Center's 05:30 UTC snapshot on 28 October, confirm the sign-up and paid event names in `invariants/ga4.json`, then prepare W45's first signed week (standing W45 to W52 plan plus the Notes and Threads go-live) for Sunday 1 November through a scheduled run. The pilot measurements and Content Engine native editions continue as before; LinkedIn stays his own click.
+- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; new cloud scheduled tasks; merging this branch to main.
 - North Star check (2026-10-27): holds.
 
 ## Read next

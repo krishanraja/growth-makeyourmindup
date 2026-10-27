@@ -1,0 +1,459 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "growth-run-spec/1",
+  "description": "What Krish signs. Typed fields only; rules live in code and invariants. north_star.week_target and every payload_sha256 are computed; run lint refuses hand edits.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "growth-run-spec/1"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9:.-]{0,118}[A-Za-z0-9])?$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "week",
+        "piece",
+        "express"
+      ]
+    },
+    "parent_run_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9:.-]{0,118}[A-Za-z0-9])?$"
+    },
+    "window": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tz": {
+          "type": "string",
+          "const": "America/New_York"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "tz"
+      ],
+      "additionalProperties": false
+    },
+    "north_star": {
+      "type": "object",
+      "properties": {
+        "week_target": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "week_target"
+      ],
+      "additionalProperties": false
+    },
+    "secondary_targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9_-]*$"
+          },
+          "channel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "per": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week"
+            ]
+          },
+          "target": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "baseline_pending",
+              "proposed",
+              "approved"
+            ]
+          }
+        },
+        "required": [
+          "metric",
+          "channel",
+          "per",
+          "target",
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "package_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "content-engine",
+              "canva-lane",
+              "krish-idea"
+            ]
+          },
+          "piece_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "pattern": "^https://\\S+$"
+          },
+          "creative_approval_ref": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "manifest": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "revision": {
+                "type": "string",
+                "minLength": 1
+              },
+              "approval_scope": {
+                "type": "string",
+                "minLength": 1
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "bytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "bytes",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "revision",
+              "approval_scope",
+              "files"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "package_id",
+          "origin",
+          "piece_url",
+          "creative_approval_ref",
+          "manifest"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "slots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "slot_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+          },
+          "channel": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "format": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "play": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "pattern": "^P[1-9]$"
+          },
+          "due_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "words": {
+            "type": "string",
+            "minLength": 1
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "pattern": "^https://\\S+$"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "name",
+                "sha256",
+                "url",
+                "bytes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "link_placement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "cta": {
+            "type": "boolean"
+          },
+          "forward_line": {
+            "type": "string",
+            "minLength": 1
+          },
+          "experiment_arm": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "publish_mode": {
+            "type": "string",
+            "enum": [
+              "engine",
+              "krish_click"
+            ]
+          },
+          "buffer_draft_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "payload_sha256": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "slot_id",
+          "channel",
+          "format",
+          "play",
+          "due_at",
+          "words",
+          "assets",
+          "link_placement",
+          "cta",
+          "forward_line",
+          "experiment_arm",
+          "publish_mode",
+          "buffer_draft_id",
+          "payload_sha256"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "experiments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "channel": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "variable": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9_-]*$"
+          },
+          "arms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 2,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "channel",
+          "variable",
+          "arms"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "properties": {
+        "krish_min": {
+          "type": "object",
+          "properties": {
+            "weekday": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sunday": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "weekday",
+            "sunday"
+          ],
+          "additionalProperties": false
+        },
+        "spend_usd": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "krish_min",
+        "spend_usd"
+      ],
+      "additionalProperties": false
+    },
+    "signature": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "go_live_proposal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_digest": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signed_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "go_live_proposal_id",
+        "decision_digest",
+        "signed_at"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema",
+    "run_id",
+    "kind",
+    "parent_run_id",
+    "window",
+    "north_star",
+    "secondary_targets",
+    "inputs",
+    "slots",
+    "experiments",
+    "budgets",
+    "signature"
+  ],
+  "additionalProperties": false
+}

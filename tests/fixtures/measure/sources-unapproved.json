@@ -1,0 +1,10 @@
+{
+  "approved": false,
+  "approved_by": null,
+  "approved_at": null,
+  "note": "Synthetic test fixture in the invariants/sources.json schema",
+  "categories": {
+    "synthetic direct": "unattributed",
+    "synthetic notes": "organic"
+  }
+}

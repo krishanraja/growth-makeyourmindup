@@ -77,8 +77,11 @@
       "type": "object",
       "properties": {
         "owner": {
-          "const": "content-engine",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "content-engine",
+            "growth-canva"
+          ]
         },
         "approved": {
           "type": "boolean"

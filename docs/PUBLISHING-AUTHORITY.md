@@ -65,3 +65,36 @@ rejects any other personal publishing expansion. Preflight holds LinkedIn
 publication, verifies package hashes, rejects public illustration boilerplate
 and always requires live identity/schema/authority checks. Offline validation
 never authenticates approval or performs an external action.
+
+## 27 October 2026: Notes, Threads and express posts
+
+Rulings: Krish, 27 October 2026 (`CHANGES.md`). They add to the 26 October
+rulings above; everything else above stands.
+
+- Substack Notes and Threads are added. Notes post as the publication under
+  approved brand content, at the cadence he signs. Threads has delegated cadence
+  for approved content, like X and TikTok, and keeps Krish's personal voice;
+  read ACCOUNT-VOICE.md. It stays a personal identity, not a publication.
+- The line above that other personal identities, "such as Threads, are not
+  in scope merely because Buffer connects them", is superseded for Threads
+  only. It still holds for every other personal identity. The structured
+  enforcement line "X/TikTok alone have approved_content_cadence" now reads
+  as X, TikTok and Threads.
+- LinkedIn is unchanged: unscheduled drafts, and his final click.
+- Signed exact payloads post autonomously only through the go-live step
+  (AGENTS.md, Autonomy), with the readback rules above.
+- Ad-hoc meme ideas are built, shown to him, then queued and posted only on
+  his approval of the exact payload.
+- Substack articles keep their approved editorial rhythm; no daily target.
+- No spending, new connections (including connecting Substack in Buffer),
+  new automation or engagement submission follows from these rulings.
+  Those stay his decisions at the time.
+
+Correction, 27 October 2026 (later the same day). Substack Notes post from a
+person's profile, not the publication. Krish connected Substack in Buffer as
+the profile named Krish, the publication owner, whose handle is mindmakerlive
+(lesson `substack-notes-identity`). Notes therefore keep his personal voice
+and take the same delegated cadence as X, TikTok and Threads, at up to two a
+day as signed. The bullet above saying Notes "post as the publication under
+approved brand content" is superseded by this paragraph. Renaming the
+retired mindmakerlive handle is a profile change held for him.

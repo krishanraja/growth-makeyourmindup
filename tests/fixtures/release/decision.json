@@ -1,0 +1,14 @@
+{
+  "run_id": "synthetic:2026-W45:week",
+  "proposal_id": "synthetic-go-live-1",
+  "decision": "approved",
+  "decided_at": "2026-11-01T10:00:00-05:00",
+  "slots": {
+    "notes-1": "de7c5259261e54246e78e90b766adb6c10befdd5722c20d228cfecd30d126f70",
+    "threads-1": "103812534e3dc28c243f09cee979d363ab3eafddb96527ecea9bf451ca6a5dda",
+    "ig-story-1": "cfda3222ea9865b8e85f8a002d1d4dd4b792b1734f059d076b2a66472a5cb9b6",
+    "tiktok-photo-1": "988445b7e60754ff6ed965b2cce65c8d400fa389b8b36775df3e2ee6241c1121",
+    "linkedin-1": "3a4d9502a0dbccf158a646cc1b8209a98a927c225ba56ed5216fa7ff89396db7",
+    "x-1": "bd73fb76298ef6e30abaee69e8b0329ac7116d61ccbae196cc6b6ae272e1a72a"
+  }
+}

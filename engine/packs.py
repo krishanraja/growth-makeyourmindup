@@ -71,7 +71,7 @@ def problems(item, kind=None):
         for i, part in enumerate(re.split(r'\n\s*\n', text.strip()), 1):
             if x_weight(part) > 280:
                 errors.append('X post ' + str(i) + ' exceeds 280 weighted characters')
-    limit = {'linkedin': 3000, 'reddit': 1500}.get(item.get('platform'))
+    limit = {'linkedin': 3000, 'reddit': 1500, 'threads': 500}.get(item.get('platform'))
     if limit and len(text) > limit:
         errors.append('exceeds the platform text limit')
     if item.get('platform') == 'linkedin' and (item.get('kind_hint') == 'comment' or kind == 'radar') and URL.search(text):

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "notes-threads-in-scope",
+  "category": "account",
+  "scope": [
+    "substack-notes",
+    "threads"
+  ],
+  "status": "accepted",
+  "finding": "Substack Notes and personal Threads are in scope. Notes post from Krish's own Substack profile (see substack-notes-identity), so they keep his personal voice and have delegated cadence for approved content, like X, TikTok and Threads, at up to two a day. LinkedIn is unchanged and stays his final click. This extends publishing-authority-split, whose 26 October text names only X and TikTok.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "CHANGES.md, 2026-10-27 entry: \"Channels: he chose to add **Substack Notes** and **Threads**. This supersedes the 2026-10-14 \"I don't think I need Substack notes\" ruling and the 2026-10-26 line that Threads is not in scope merely because Buffer connects it.\"",
+    "observed_at": "2026-10-27",
+    "result": "threads.json and substack-notes.json added; both joined the delegated personal set in engine/social.py; Buffer capabilities recorded as unverified."
+  },
+  "revisit_when": "Krish changes the channel set or the authority for either account.",
+  "supersedes": null
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "cccccccccccccccccccccc01",
+    "service": "substack",
+    "name": "Krish",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc02",
+    "service": "threads",
+    "name": "krishraja1",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc03",
+    "service": "instagram",
+    "name": "makeyourmind.up",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc04",
+    "service": "tiktok",
+    "name": "therealkrisho",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc05",
+    "service": "linkedin",
+    "name": "krish-raja",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc06",
+    "service": "twitter",
+    "name": "TheRealKrisho",
+    "isDisconnected": false,
+    "isLocked": false
+  }
+]

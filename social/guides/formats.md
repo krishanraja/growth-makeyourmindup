@@ -18,6 +18,13 @@ give it a native context wrapper. For Shorts, request the approved video edition
 and confirm exact matching long-video continuation. Text editions need native
 copy and sourced claims. Article work retains the separate body/paid-offer gates.
 
+Notes and memes are the Canva lane (`canva.md`, Krish's ruling of 27 October
+2026): their `production_owner` is `growth-canva`, not content-engine. A Note
+is native Notes copy with at most one approved image. A meme is one approved
+export per channel, built from Krish's idea and shown to him before it queues;
+on YouTube it must be a real video. Preflight refuses a package whose
+production owner differs from its format's owner.
+
 The exact posting package binds account, context, caption, source, ordered asset
 hashes/alt text, format, tool and proposed time. Every meaning-changing revision
 needs the corresponding approval; a native draft ID alone identifies no approval.

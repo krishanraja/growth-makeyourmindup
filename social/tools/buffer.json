@@ -193,6 +193,78 @@
         "publish"
       ],
       "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md"
+    },
+    {
+      "channel": "threads",
+      "format": "text",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified. Buffer listed a Threads channel on 27 October 2026; no draft, schedule or publish has been tested.",
+      "verified_operations": []
+    },
+    {
+      "channel": "threads",
+      "format": "single-image",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified. Buffer listed a Threads channel on 27 October 2026; no draft, schedule or publish has been tested.",
+      "verified_operations": []
+    },
+    {
+      "channel": "substack-notes",
+      "format": "note",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified. Krish connected Substack in Buffer on 27 October 2026 (channel Krish, service substack); posting a Note has not been checked yet.",
+      "verified_operations": []
+    },
+    {
+      "channel": "instagram",
+      "format": "meme",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
+      "verified_operations": []
+    },
+    {
+      "channel": "facebook",
+      "format": "meme",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
+      "verified_operations": []
+    },
+    {
+      "channel": "tiktok",
+      "format": "meme",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
+      "verified_operations": []
+    },
+    {
+      "channel": "youtube",
+      "format": "meme",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
+      "verified_operations": []
+    },
+    {
+      "channel": "x",
+      "format": "meme",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
+      "verified_operations": []
+    },
+    {
+      "channel": "threads",
+      "format": "meme",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified. Buffer listed a Threads channel on 27 October 2026; no draft, schedule or publish has been tested.",
+      "verified_operations": []
     }
   ],
   "lessons": [

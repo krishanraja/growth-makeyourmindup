@@ -1,0 +1,17 @@
+{
+  "measurement_id": "G-VC5V9LDE17",
+  "property_id_env": "GA4_PROPERTY_ID",
+  "credentials_env": "GA4_SERVICE_ACCOUNT_JSON",
+  "events": {
+    "sign_up": {
+      "name": null,
+      "verified": false
+    },
+    "paid_subscription": {
+      "name": null,
+      "verified": false
+    }
+  },
+  "verified_at": null,
+  "note": "Event names are confirmed from the live GA4 Events report, never guessed"
+}

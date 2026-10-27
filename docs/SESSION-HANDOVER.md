@@ -2,6 +2,8 @@
 
 Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
+27 October architecture upgrade: a run session reads `docs/RUN.md` and its pack (`python growth.py run pack SPEC`) instead of the standing docs; the plan is `docs/plans/2026-10-27-engine-architecture.md`. Every earlier instruction below still holds where the rulings recorded in `CHANGES.md` on 27 October do not supersede it.
+
 27 October closeout takes precedence: read `docs/ASSET-STORAGE.md` and
 `.scratch/session-closeout-20261027/CLOSEOUT.md` first. All session assets and
 private evidence are preserved there. The approved shopping-agent v3 package

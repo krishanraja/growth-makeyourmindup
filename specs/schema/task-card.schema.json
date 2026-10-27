@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "growth-task-card/1",
+  "description": "A Codex task card (at most 6 KB). run card lint enforces pinning, the never-list and the bounds.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "growth-task-card/1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "task": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model": {
+      "type": "string"
+    },
+    "effort": {
+      "type": "string"
+    },
+    "max_minutes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_calls": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "worktree": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "path",
+        "branch"
+      ],
+      "additionalProperties": false
+    },
+    "write_allow": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "read_files": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "never": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "interface": {
+      "type": "string",
+      "minLength": 1
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "return_shape": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "id",
+    "task",
+    "model",
+    "effort",
+    "max_minutes",
+    "max_calls",
+    "worktree",
+    "write_allow",
+    "read_files",
+    "never",
+    "interface",
+    "acceptance",
+    "return_shape"
+  ],
+  "additionalProperties": false
+}

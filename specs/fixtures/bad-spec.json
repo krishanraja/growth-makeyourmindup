@@ -1,0 +1,357 @@
+{
+  "schema": "growth-run-spec/1",
+  "run_id": "makeyourmindup:2026-W45:week",
+  "kind": "week",
+  "parent_run_id": null,
+  "window": {
+    "start": "2026-11-02T00:00:00-05:00",
+    "end": "2026-11-09T00:00:00-05:00",
+    "tz": "America/New_York"
+  },
+  "north_star": {
+    "week_target": 25
+  },
+  "secondary_targets": [
+    {
+      "metric": "followers_net",
+      "channel": "threads",
+      "per": "day",
+      "target": null,
+      "status": "baseline_pending"
+    },
+    {
+      "metric": "paid_subscribers",
+      "channel": null,
+      "per": "week",
+      "target": null,
+      "status": "baseline_pending"
+    }
+  ],
+  "inputs": [
+    {
+      "package_id": "synthetic-package-w45",
+      "origin": "content-engine",
+      "piece_url": "https://home.makeyourmindup.ai/p/test-fixture",
+      "creative_approval_ref": "synthetic-approval-ref",
+      "manifest": {
+        "revision": "approved v1 (synthetic)",
+        "approval_scope": "TEST FIXTURE ONLY",
+        "files": [
+          {
+            "name": "synthetic-note-image.png",
+            "bytes": 39,
+            "sha256": "15e38318af61f2f53d9b4253e2c287e246b7f0711aa6aceaa5f1020c5f41962b"
+          }
+        ]
+      }
+    },
+    {
+      "package_id": "synthetic-package-w45-unapproved",
+      "origin": "canva-lane",
+      "piece_url": null,
+      "creative_approval_ref": null,
+      "manifest": {
+        "revision": "draft v1 (synthetic)",
+        "approval_scope": "TEST FIXTURE ONLY",
+        "files": [
+          {
+            "name": "synthetic-unapproved-frame.png",
+            "bytes": 36,
+            "sha256": "35767e7bcefe2aa383a72e0a170d17b86d520bbb9e81f92aecff4dbc65400ad3"
+          }
+        ]
+      }
+    }
+  ],
+  "slots": [
+    {
+      "slot_id": "w45-mon-note-1",
+      "channel": "substack-notes",
+      "format": "note",
+      "play": "P1",
+      "due_at": "2026-11-02T09:30:00-05:00",
+      "words": "TEST FIXTURE ONLY. We leverage pilots \u2014 and 40\u0025 of them stall.",
+      "assets": [
+        {
+          "name": "synthetic-note-image.png",
+          "sha256": "15e38318af61f2f53d9b4253e2c287e246b7f0711aa6aceaa5f1020c5f41962b",
+          "url": null,
+          "bytes": 39
+        }
+      ],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "aebb8a69dc5ca6a5635cfc3d8ab4f0613e7152522f0a1aa0a37d72029bdd75e4"
+    },
+    {
+      "slot_id": "w45-mon-note-2",
+      "channel": "substack-notes",
+      "format": "note",
+      "play": "P9",
+      "due_at": "2026-11-02T15:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. If this helped, the full piece is free to read and free to subscribe to.",
+      "assets": [],
+      "link_placement": "subscribe-path",
+      "cta": true,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "slot_id": "w45-tue-note-1",
+      "channel": "substack-notes",
+      "format": "note",
+      "play": "P1",
+      "due_at": "2026-11-03T09:30:00-05:00",
+      "words": "TEST FIXTURE ONLY. Three questions to ask before a second AI pilot. Which one would you add?",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "3182bcc8e53ff790e7dd2abc505ecccdc7cd501ac3ee314c565fe38f62284732"
+    },
+    {
+      "slot_id": "w45-mon-threads-1",
+      "channel": "threads",
+      "format": "text",
+      "play": null,
+      "due_at": "2026-11-02T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. We timed a pilot review at six weeks and it changed the budget talk. https://home.makeyourmindup.ai/p/test-fixture",
+      "assets": [],
+      "link_placement": "in_post",
+      "cta": true,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": "in_post",
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "2609d86d2ef38dfb6b7d4f448f7d8ce449edfca26b6708364803f4ebdf10e4f1"
+    },
+    {
+      "slot_id": "w45-wed-threads-1",
+      "channel": "threads",
+      "format": "text",
+      "play": null,
+      "due_at": "2026-11-04T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. What did your last pilot measure on day one? The worked example is in the first reply.",
+      "assets": [],
+      "link_placement": "first_reply",
+      "cta": true,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": "first_reply",
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "ceb5a45d84c86d769353f0c7337cf0714d2dd47b41763dcc247818a76bbeb556"
+    },
+    {
+      "slot_id": "w45-mon-note-3",
+      "channel": "substack-notes",
+      "format": "note",
+      "play": null,
+      "due_at": "2026-11-02T17:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. A third Monday Note.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "e13068ee1040f596e9e14c20af0f17deafd22a399c6f2ee84d72fac792e5ad03"
+    },
+    {
+      "slot_id": "w45-mon-note-4",
+      "channel": "substack-notes",
+      "format": "note",
+      "play": null,
+      "due_at": "2026-11-02T19:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. A fourth Monday Note.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "d7170c55986c674e333b05c3d05d3c113f21bb0f6220c72df16d27cc76d168ec"
+    },
+    {
+      "slot_id": "w45-myspace-1",
+      "channel": "myspace",
+      "format": "text",
+      "play": null,
+      "due_at": "2026-11-03T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. An unknown channel.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "ed700c47c511f30c27eea78a3197a3dd96c30f32adb872cd359d8230c22f9227"
+    },
+    {
+      "slot_id": "w45-x-note-1",
+      "channel": "x",
+      "format": "note",
+      "play": null,
+      "due_at": "2026-11-03T13:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. A Note format on X.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "3c03ecc8781631ebf2a363457aa3c03c07c72d861be3dac436f58748137b81d6"
+    },
+    {
+      "slot_id": "w45-linkedin-1",
+      "channel": "linkedin",
+      "format": "text",
+      "play": null,
+      "due_at": null,
+      "words": "TEST FIXTURE ONLY. LinkedIn set to engine.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "f81032607af7654fff92195de178f7678752a3d672e32e5245bd9e3b6686232d"
+    },
+    {
+      "slot_id": "w45-linkedin-2",
+      "channel": "linkedin",
+      "format": "text",
+      "play": null,
+      "due_at": "2026-11-05T09:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. LinkedIn with a time.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "krish_click",
+      "buffer_draft_id": null,
+      "payload_sha256": "e6535fae188a96883aa1be8d2dfd339ee4e56be7c42b29cecbdf0ed8590f9cdf"
+    },
+    {
+      "slot_id": "w45-x-arm-1",
+      "channel": "x",
+      "format": "text",
+      "play": null,
+      "due_at": "2026-11-05T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. An unregistered arm.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": "headline",
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "3527dbedd545d2ee50ab8ed521235973d392e953d1786002613c07e769ba295f"
+    },
+    {
+      "slot_id": "w45-x-image-1",
+      "channel": "x",
+      "format": "single-image",
+      "play": null,
+      "due_at": "2026-11-06T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. An uppercase hash.",
+      "assets": [
+        {
+          "name": "synthetic-note-image.png",
+          "sha256": "15E38318AF61F2F53D9B4253E2C287E246B7F0711AA6ACEAA5F1020C5F41962B",
+          "url": null,
+          "bytes": 39
+        }
+      ],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "5b3f24b4a848d9d5c18402bbe5dd862341dc6c5a87fd53a734792ad62738f65c"
+    },
+    {
+      "slot_id": "w45-x-hologram-1",
+      "channel": "x",
+      "format": "hologram",
+      "play": null,
+      "due_at": "2026-11-06T15:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. A format no channel record knows.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "05e106db5a603f48a1fc8cb01421ff1eb46a8b7565280fce0fe745eb3ed20d01"
+    },
+    {
+      "slot_id": "w45-thu-threads-image-1",
+      "channel": "threads",
+      "format": "single-image",
+      "play": null,
+      "due_at": "2026-11-05T12:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. An image nobody approved.",
+      "assets": [
+        {
+          "name": "synthetic-unapproved-frame.png",
+          "sha256": "35767e7bcefe2aa383a72e0a170d17b86d520bbb9e81f92aecff4dbc65400ad3",
+          "url": null,
+          "bytes": 36
+        }
+      ],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "0a79469372da528506eaac96528c655852cbd1d68af5882f9563e0afe8064960"
+    }
+  ],
+  "experiments": [
+    {
+      "id": "threads-link-placement",
+      "channel": "threads",
+      "variable": "link_placement",
+      "arms": [
+        "in_post",
+        "first_reply"
+      ]
+    },
+    {
+      "id": "threads-cta",
+      "channel": "threads",
+      "variable": "cta",
+      "arms": [
+        "ask",
+        "none"
+      ]
+    }
+  ],
+  "budgets": {
+    "krish_min": {
+      "weekday": 20,
+      "sunday": 30
+    },
+    "spend_usd": 50
+  },
+  "signature": null
+}

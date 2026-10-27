@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "meme",
+  "production_owner": "growth-canva",
+  "production_reference": "social/guides/canva.md",
+  "channels": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube",
+    "x",
+    "threads"
+  ],
+  "guide": "social/guides/formats.md",
+  "min_assets": 1,
+  "max_assets": 1,
+  "delivery_checks": [
+    "An ad-hoc idea from Krish is built, shown to him, and queued only after he approves the exact payload.",
+    "Brand kit and an approved template only; every quote is a literal match to the published piece.",
+    "Where realistic synthetic media is present, apply the native AI label where the destination supports it; never add illustration boilerplate to public copy.",
+    "On YouTube a meme is a real video file, never a still posing as video.",
+    "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Dated exposed reach and meaningful engagement, preserving missing values.",
+    "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
+    "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "canva-lane-boundary"
+  ]
+}

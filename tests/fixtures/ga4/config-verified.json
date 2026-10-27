@@ -1,0 +1,17 @@
+{
+  "measurement_id": "G-VC5V9LDE17",
+  "property_id_env": "GA4_PROPERTY_ID",
+  "credentials_env": "GA4_SERVICE_ACCOUNT_JSON",
+  "events": {
+    "sign_up": {
+      "name": "synthetic_sign_up",
+      "verified": true
+    },
+    "paid_subscription": {
+      "name": "synthetic_paid_subscription",
+      "verified": true
+    }
+  },
+  "verified_at": "2026-10-27",
+  "note": "Synthetic test fixture: invented event names marked verified to exercise the join"
+}

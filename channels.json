@@ -17,6 +17,7 @@
         "welcome_email",
         "start_here",
         "article_footer",
+        "notes",
         "recommendations",
         "referrals"
       ],
@@ -57,7 +58,7 @@
     {
       "channel": "linkedin",
       "url": "https://www.linkedin.com/in/krish-raja/",
-      "role": "professional discussion and trust",
+      "role": "professional discussion and trust; audit edits are Krish's alone (krish_only)",
       "surfaces": [
         "headline",
         "banner",
@@ -152,6 +153,30 @@
       "owner": "Krish"
     },
     {
+      "channel": "facebook",
+      "url": "https://facebook.com/1364858250042525",
+      "role": "publication Page paired with Instagram for approved editions; existing-field audit edits under the 21 Oct authority, extended 27 Oct",
+      "surfaces": [
+        "page_name",
+        "about",
+        "page_link",
+        "post",
+        "carousel",
+        "reel",
+        "story"
+      ],
+      "primary_metrics": [
+        "reach",
+        "shares",
+        "visits",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
       "channel": "tiktok",
       "url": "https://www.tiktok.com/@therealkrisho",
       "role": "discovery and native continuation",
@@ -165,6 +190,28 @@
       ],
       "primary_metrics": [
         "views",
+        "visits",
+        "link_clicks",
+        "new_free"
+      ],
+      "access": "not_verified_in_runtime",
+      "feature_access": "verify_on_account",
+      "owner": "Krish"
+    },
+    {
+      "channel": "threads",
+      "url": "https://www.threads.com/@krishraja1",
+      "role": "personal conversation; existing-field audit edits under the 21 Oct authority, extended 27 Oct",
+      "surfaces": [
+        "name",
+        "bio",
+        "profile_link",
+        "post",
+        "reply"
+      ],
+      "primary_metrics": [
+        "views",
+        "replies",
         "visits",
         "link_clicks",
         "new_free"

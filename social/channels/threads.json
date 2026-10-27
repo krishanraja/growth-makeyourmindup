@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "kind": "channel",
+  "id": "threads",
+  "account_url": "https://www.threads.com/@krishraja1",
+  "account_context": "personal",
+  "mission": "Start a real conversation from one concrete finding in an approved piece, in Krish's own warm personal voice, with the link last.",
+  "formats": [
+    "text",
+    "single-image",
+    "meme"
+  ],
+  "guide": "social/guides/other-channels.md",
+  "voice_policy": "docs/ACCOUNT-VOICE.md",
+  "live_checks": [
+    "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
+    "Read current queue, drafts and native identities; preserve existing human work.",
+    "Verify the exact destination, visibility and available account capabilities before the selected action.",
+    "Confirm the Buffer Threads channel resolves to the personal krishraja1 profile before first use; record the native identity privately."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "personal-account-register",
+    "publishing-authority-split",
+    "notes-threads-in-scope"
+  ],
+  "publication_mode": "approved_content_cadence",
+  "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
+  "daily_posts_target": 1,
+  "daily_drafts_max": null
+}

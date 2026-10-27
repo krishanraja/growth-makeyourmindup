@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "kind": "crew",
+  "note": "The crew of plan section 3. lint and check name the planned function each card is enforced by; cards load only for the crew in play, and W45 loads rows 1, 6, 10, 11 and the Release Gate.",
+  "crew": [
+    {
+      "id": "substack",
+      "row": 1,
+      "name": "Substack (Home + Notes)",
+      "owns": [
+        "Notes",
+        "P1",
+        "P9"
+      ],
+      "channels": [
+        "substack",
+        "substack-notes"
+      ],
+      "formats": [
+        "note",
+        "article"
+      ],
+      "lint": "engine/run/spec.py:lint_substack",
+      "check": "engine/run/measure.py:check_substack",
+      "card": "crew/substack/card.md",
+      "lens": "crew/substack/lens.md",
+      "w45": true
+    },
+    {
+      "id": "meta",
+      "row": 2,
+      "name": "Meta (Instagram + Facebook, paired)",
+      "owns": [
+        "feed",
+        "carousel",
+        "Reels",
+        "Stories",
+        "memes"
+      ],
+      "channels": [
+        "instagram",
+        "facebook"
+      ],
+      "formats": [
+        "single-image",
+        "carousel",
+        "short-video",
+        "story",
+        "meme"
+      ],
+      "lint": "engine/social.py:preflight",
+      "check": "engine/run/measure.py:check_meta",
+      "card": "crew/meta/card.md",
+      "lens": "crew/meta/lens.md",
+      "w45": false
+    },
+    {
+      "id": "youtube",
+      "row": 3,
+      "name": "YouTube",
+      "owns": [
+        "Shorts",
+        "video memes"
+      ],
+      "channels": [
+        "youtube"
+      ],
+      "formats": [
+        "short-video",
+        "meme"
+      ],
+      "lint": "engine/run/spec.py:lint_youtube",
+      "check": "engine/run/measure.py:check_youtube",
+      "card": "crew/youtube/card.md",
+      "lens": "crew/youtube/lens.md",
+      "w45": false
+    },
+    {
+      "id": "tiktok",
+      "row": 4,
+      "name": "TikTok (personal)",
+      "owns": [
+        "photo",
+        "video",
+        "memes"
+      ],
+      "channels": [
+        "tiktok"
+      ],
+      "formats": [
+        "carousel",
+        "short-video",
+        "meme"
+      ],
+      "lint": "engine/run/spec.py:lint_tiktok",
+      "check": "engine/run/measure.py:check_tiktok",
+      "card": "crew/tiktok/card.md",
+      "lens": "crew/tiktok/lens.md",
+      "w45": false
+    },
+    {
+      "id": "x",
+      "row": 5,
+      "name": "X (personal)",
+      "owns": [
+        "receipt posts"
+      ],
+      "channels": [
+        "x"
+      ],
+      "formats": [
+        "single-image",
+        "text"
+      ],
+      "lint": "engine/run/spec.py:lint_x",
+      "check": "engine/run/measure.py:check_x",
+      "card": "crew/x/card.md",
+      "lens": "crew/x/lens.md",
+      "w45": false
+    },
+    {
+      "id": "threads",
+      "row": 6,
+      "name": "Threads (personal, new)",
+      "owns": [
+        "posts"
+      ],
+      "channels": [
+        "threads"
+      ],
+      "formats": [
+        "text",
+        "single-image"
+      ],
+      "lint": "engine/run/spec.py:lint_threads",
+      "check": "engine/run/measure.py:check_threads",
+      "card": "crew/threads/card.md",
+      "lens": "crew/threads/lens.md",
+      "w45": true
+    },
+    {
+      "id": "linkedin",
+      "row": 7,
+      "name": "LinkedIn (personal)",
+      "owns": [
+        "unscheduled drafts"
+      ],
+      "channels": [
+        "linkedin"
+      ],
+      "formats": [
+        "single-image",
+        "carousel",
+        "text"
+      ],
+      "lint": "engine/run/spec.py:lint_linkedin",
+      "check": "engine/run/measure.py:check_linkedin",
+      "card": "crew/linkedin/card.md",
+      "lens": "crew/linkedin/lens.md",
+      "w45": false
+    },
+    {
+      "id": "canva-studio",
+      "row": 8,
+      "name": "Canva Studio (new)",
+      "owns": [
+        "brand kit custody",
+        "memes",
+        "Note images",
+        "receipt and quote cards",
+        "scorecards",
+        "poll results",
+        "profile art",
+        "resizes"
+      ],
+      "channels": [
+        "instagram",
+        "facebook",
+        "youtube",
+        "tiktok",
+        "x",
+        "threads",
+        "substack-notes"
+      ],
+      "formats": [
+        "meme",
+        "note-image",
+        "receipt-card",
+        "quote-card",
+        "scorecard",
+        "poll-result",
+        "profile-art",
+        "highlight-art",
+        "platform-resize"
+      ],
+      "lint": "engine/run/canva.py:lint",
+      "check": "engine/run/measure.py:check_canva",
+      "card": "crew/canva-studio/card.md",
+      "lens": "crew/canva-studio/lens.md",
+      "w45": false
+    },
+    {
+      "id": "engagement",
+      "row": 9,
+      "name": "Engagement Preparer",
+      "owns": [
+        "Krish's reply list"
+      ],
+      "channels": [
+        "linkedin",
+        "x",
+        "threads",
+        "substack-notes"
+      ],
+      "formats": [
+        "reply",
+        "comment"
+      ],
+      "lint": "engine/packs.py:check_pack",
+      "check": "engine/run/measure.py:check_engagement",
+      "card": "crew/engagement/card.md",
+      "lens": "crew/engagement/lens.md",
+      "w45": false
+    },
+    {
+      "id": "attribution-ladder",
+      "row": 10,
+      "name": "Measurement Specialist",
+      "owns": [
+        "North Star",
+        "sources",
+        "links",
+        "GA4"
+      ],
+      "channels": [
+        "substack"
+      ],
+      "formats": [
+        "all"
+      ],
+      "lint": "engine/run/spec.py:lint_links",
+      "check": "engine/run/measure.py:check_ladder",
+      "card": "crew/attribution-ladder/card.md",
+      "lens": "crew/attribution-ladder/lens.md",
+      "w45": true
+    },
+    {
+      "id": "what-works",
+      "row": 11,
+      "name": "What-Works Analyst",
+      "owns": [
+        "experiments",
+        "verdicts",
+        "lessons",
+        "channel defaults"
+      ],
+      "channels": [
+        "substack-notes",
+        "threads",
+        "instagram",
+        "facebook",
+        "youtube",
+        "tiktok",
+        "x",
+        "linkedin"
+      ],
+      "formats": [
+        "all"
+      ],
+      "lint": "engine/run/spec.py:lint_experiments",
+      "check": "engine/operations.py:experiment_decision",
+      "card": "crew/what-works/card.md",
+      "lens": "crew/what-works/lens.md",
+      "w45": true
+    },
+    {
+      "id": "channel-auditor",
+      "row": 12,
+      "name": "Channel Auditor",
+      "owns": [
+        "Saturday audit"
+      ],
+      "channels": [
+        "substack",
+        "youtube",
+        "instagram",
+        "tiktok",
+        "x",
+        "linkedin",
+        "facebook",
+        "threads"
+      ],
+      "formats": [
+        "profile",
+        "post"
+      ],
+      "lint": "engine/channel_audit.py:repair_plan",
+      "check": "engine/channel_audit.py:reconcile",
+      "card": "crew/channel-auditor/card.md",
+      "lens": "crew/channel-auditor/lens.md",
+      "w45": false
+    },
+    {
+      "id": "release-gate",
+      "row": null,
+      "name": "Release Gate (code)",
+      "owns": [
+        "every publish"
+      ],
+      "channels": [
+        "substack-notes",
+        "threads",
+        "instagram",
+        "facebook",
+        "youtube",
+        "tiktok",
+        "x",
+        "linkedin"
+      ],
+      "formats": [
+        "all"
+      ],
+      "lint": "engine/run/release.py:check_slot",
+      "check": "engine/run/release.py:check_readback",
+      "card": "crew/release-gate/card.md",
+      "lens": "crew/release-gate/lens.md",
+      "w45": true
+    }
+  ]
+}

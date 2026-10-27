@@ -34,6 +34,13 @@ from content-engine, which alone owns production and production standards.
 Use its production capabilities and quality standards for the selected
 formats; do not build another production pipeline or canon in Growth.
 Keep responsibility for advancing the work and delivering it here.
+27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
+for the Canva lane only (`docs/ENGINE-BOUNDARY.md`, "the Canva lane"),
+Growth makes Substack Notes and memes in Canva, the formats content-engine
+does not cover, applying its standards by reference (`social/guides/canva.md`).
+For that lane only, this supersedes the "another orchestrator" and "another
+production pipeline" lines above. Every other format is still commissioned
+from content-engine.
 Originate amplification opportunities proactively: identify published pieces
 that deserve additional formats, placements or useful channels Krish is not
 using himself. Own current channel best practices and the daily follower/
@@ -98,12 +105,22 @@ format; it is not responsible for finding Growth's opportunities for it.
    Personal X/TikTok may have one daily draft. LinkedIn has no volume quota,
    and prioritises trusted judgment and relevant professional relationships;
    reach and publication subscribers are secondary.
+   27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
+   signed exact payloads on X, TikTok, Threads and Notes go out through the
+   go-live step; LinkedIn stays his click. Threads has one a day, delegated
+   cadence and Krish's personal voice. Substack Notes have up to two a day
+   from Krish's Substack profile (`social/channels/substack-notes.json`), as
+   he signs.
    Only the specified existing-field metadata repairs have standing authority.
    LinkedIn preparation never submits a comment, reaction, follow or message.
 6. Progress unfinished live audit ranges, recheck repairs and investigate
    dated continuing attention. Use growth.py audit plan/begin/reconcile for
    autonomous metadata repairs, exact-payload journals for separately
    approved protected edits, and checkpoint only complete accounts.
+   krish_only items (LinkedIn) and approval_required items on held accounts
+   (Threads and Facebook, whose audit authority Krish has not extended) go to
+   his list as a described change; the engine never journals or saves either
+   (`audit begin` and `reconcile` refuse them).
 7. Update the private trial ledger with observed totals, post/draft IDs,
    native URLs, dates, denominators and missingness. Compare equivalent
    windows; do not infer subscriber attribution from a UTM alone. Separate

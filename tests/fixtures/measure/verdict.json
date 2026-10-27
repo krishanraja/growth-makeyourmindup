@@ -1,0 +1,54 @@
+{
+  "post": {
+    "channel": "threads",
+    "format": "post",
+    "indicator": "replies",
+    "value": 9
+  },
+  "history": [
+    {
+      "channel": "threads",
+      "format": "post",
+      "indicator": "replies",
+      "value": 2
+    },
+    {
+      "channel": "threads",
+      "format": "post",
+      "indicator": "replies",
+      "value": 4
+    },
+    {
+      "channel": "threads",
+      "format": "post",
+      "indicator": "replies",
+      "value": 4
+    },
+    {
+      "channel": "threads",
+      "format": "post",
+      "indicator": "replies",
+      "value": 6
+    },
+    {
+      "channel": "threads",
+      "format": "post",
+      "indicator": "replies",
+      "value": 8
+    },
+    {
+      "channel": "threads",
+      "format": "post",
+      "indicator": "replies",
+      "value": 10
+    },
+    {
+      "channel": "x",
+      "format": "post",
+      "indicator": "replies",
+      "value": 100
+    }
+  ],
+  "window_hours": 48,
+  "elapsed_hours": 50
+}

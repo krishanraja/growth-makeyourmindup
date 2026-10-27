@@ -1,5 +1,79 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-27 (later still): "apply the Control Center change yourself". For
+  this one change only, rule 7 (stay in this repository) is lifted: the
+  session implements the GA4 brief in krishanraja/control-center on branch
+  `claude/growth-mymu-ga4-engine` (a utm_content and event breakdown in the
+  mymu snapshot, and `web_analytics` in this engine's directive, protocol
+  1.10.0). Every other Control Center rule still holds.
+
+- 2026-10-27 (later): three more rulings.
+  - Google Analytics: "just get google analytics from control center, might
+    be easier." Control Center already reads GA4 property mymu
+    (G-VC5V9LDE17) daily but does not pass it to engines or break it down by
+    `utm_content`. The exact change is briefed in
+    `docs/briefs/2026-10-27-control-center-ga4-read.md` (primary route). The
+    direct reader stays as an unused fallback with no credentials set.
+  - Substack handle: "substack handle should be mindmake". Checked 27 Oct:
+    @mindmake already belongs to a Substack profile named Mindmake that is
+    neither of the two profiles tied to makeyourmindup (mindmakerlive, the
+    owner, and krishraja1). The rename waits until Krish confirms that
+    profile is his and frees the handle, or names another.
+  - Audit authority: "yes extend". The 2026-10-21 existing-field audit
+    authority (titles, captions, descriptions, links, broken profile links,
+    subscription-link alignment) now also covers the Facebook Page and
+    Threads. LinkedIn stays his own: the engine never edits it. Bio,
+    positioning, pins, creative and re-uploads still need his approval.
+
+- 2026-10-27: Krish adopted the reference architecture for this engine
+  (`docs/plans/2026-10-27-engine-architecture.md`) and ruled, in one
+  question batch and three messages:
+  - Channels: he chose to add **Substack Notes** and **Threads**. This
+    supersedes the 2026-10-14 "I don't think I need Substack notes" ruling
+    and the 2026-10-26 line that Threads is not in scope merely because
+    Buffer connects it.
+  - Go-live: "Sign the week, but I am likely to want to add in meme style
+    instagram and youtube and tiktok posts randomly too, so these need to be
+    queued properly even at short notice - I'll have an idea, send it
+    through, then the engine will build, show me for approval, and then
+    queue and post autonomously. content.krishraja.com can be expanded to
+    help me manage all of this stably and reliably with minimal copy
+    pasting or manual asking". LinkedIn stays his own final click.
+  - Canva: "yes its important you create a FULL brand kit in Canva for
+    use, You choose whatever the content-engine is not covering, and gives
+    maximum amplification and speed". For that Canva lane only, this
+    supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line;
+    content-engine keeps its formats and standards.
+  - "you can create the brand kit in Canva with computer use on my PC -
+    assets are all in H drive in Ventures folder. you can spin up a cowork
+    prompt to do it and I can open the right H Drive folder and log in to
+    Canva" (prompt: `docs/briefs/2026-10-27-canva-brand-kit-cowork.md`).
+  - Targets: he chose secondary targets (daily followers per channel,
+    weekly paid subscribers), proposed after two weeks of measured
+    baseline; the North Star stays the one number.
+  - "knowing what works and what doesnt is CRITICAL, make someone an owner
+    of that, or build a specialist for it in the engine if there is not
+    already one": the What-Works Analyst owns it.
+  - His aim for the engine: "obsessed with getting this media channel as
+    many subscribers on every channel possible, paid subscribers to my
+    substack and be my world class social media manager ensuring my use of
+    every social media platform is autonomously able to drive up followers
+    every single day".
+  Nothing in these rulings authorises a new connection, spend or
+  automation by itself; those stay his at the time (plan, "Decisions").
+  Later the same day: "You have Google Analytics installed already and
+  Control Centre can see that. Make sure this is a part of your
+  Measurement Specialist." GA4 property G-VC5V9LDE17 runs on
+  home.makeyourmindup.ai through Substack's native integration. It is now
+  the Measurement Specialist's per-post attribution source, joined on
+  `utm_content`; Substack Growth sources remain the North Star source.
+  He then offered: "Happy to let you read Google Analytics directly if you
+  prefer." The engine reads GA4 directly with a read-only service account
+  (Viewer on that one property); the Control Center brief
+  (`docs/briefs/2026-10-27-control-center-ga4-read.md`) is kept as the fallback.
+  Also that day he connected Substack in Buffer and added the existing
+  engine key to the cloud environment for scheduled cloud runs.
+
 - 2026-10-26: Control Center's daily directive (protocol 1.5.0, control-center
   PR #561) now carries `taste`: the voice rules Krish approved or reworded in
   Control Center. `growth.py cc start` prints them as a block headed
