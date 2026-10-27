@@ -130,7 +130,7 @@ stays with Krish. Guide: `social/guides/canva.md`.
 
 Ruling: Krish, 27 October 2026 (`CHANGES.md`;
 `docs/plans/2026-10-27-engine-architecture.md`). Substack Notes, from Krish's
-profile @mindmakerlive at up to two a day as he signs, and Threads, at one a
+Substack profile at up to two a day as he signs, and Threads, at one a
 day in his personal voice, are scoped accounts by his ruling, not because
 Buffer connects them. The line above that a connected Buffer account alone
 never adds it to scope still holds for every other account.

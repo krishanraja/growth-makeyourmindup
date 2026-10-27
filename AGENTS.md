@@ -27,10 +27,11 @@ there. Update the handover, NOW.md and owning structured lessons at closeout.
 Krish adopted `docs/plans/2026-10-27-engine-architecture.md` (`CHANGES.md`,
 27 October 2026). A run session reads `docs/RUN.md` first: it is the only
 standing doc a run session reads, and `growth.py run pack` puts it on top.
-New channels: Substack Notes from Krish's profile @mindmakerlive (up to two a
-day, as he signs) and Threads (one a day, his personal voice); signed exact
-payloads go out through the go-live step and LinkedIn stays his click. The
-Canva lane makes what content-engine does not cover (`social/guides/canva.md`).
+New channels: Substack Notes from Krish's Substack profile (handle in
+`social/channels/substack-notes.json`; up to two a day, as he signs) and
+Threads (one a day, his personal voice); signed exact payloads go out through
+the go-live step and LinkedIn stays his click. The Canva lane makes what
+content-engine does not cover (`social/guides/canva.md`).
 The Measurement Specialist (`crew/attribution-ladder/`) owns the North Star:
 Substack Growth sources stay its source, `growth.py run northstar` computes
 the NOW.md line from a capture, and GA4 is read directly for per-post joins on
@@ -114,9 +115,10 @@ engagement, creative-approval and account-setting boundaries.
 
 27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
 Threads and Substack Notes join that delegated cadence with Krish's personal
-voice, Notes from his profile @mindmakerlive at up to two a day as he signs.
+voice, Notes from his Substack profile at up to two a day as he signs.
 The line above that other personal identities are not automatically in scope
-still holds for every identity except Threads.
+still holds for every identity except Threads and his Substack profile for
+Notes.
 
 **Use structured operating contracts.** Start social execution at social/README.md
 and run `python growth.py social route CHANNEL FORMAT`. The channel, format,
@@ -151,7 +153,7 @@ delivery here. Legacy local pilot assets retain their review provenance.
 
 27 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md`, "the Canva lane"):
 Growth now produces, in Canva, the formats content-engine does not cover
-(today Notes images and memes). For that lane only, this supersedes the
+(today Substack Notes and memes). For that lane only, this supersedes the
 parallel-production line above; content-engine keeps every other format and
 its standards, and the lane applies them by reference.
 
@@ -311,7 +313,8 @@ truth. First-person experience must be present in the published source.
    projection to `/api/growth/packs`. No social action occurs. If the key or
    endpoint fails, retain the ignored local envelope, report the failure,
    and never claim delivery. No database fallback or second write path.
-   27 October 2026: pitches, partners and swaps are held (Control Center owns
+   27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
+   pitches, partners and swaps are held (Control Center owns
    outreach): skip `post --deliver` for those kinds, which exits 1 with the
    outreach hold; `cc finish` still reports the hold.
 7. Every scheduled job then ends with `growth.py cc finish ... --deliver`
@@ -487,7 +490,7 @@ in `hooks.json`.
 
 27 October 2026: "no Notes" and "he does every post" are superseded
 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`). Substack Notes
-are back, posted from Krish's profile @mindmakerlive at up to two a day as he
+are back, posted from Krish's Substack profile at up to two a day as he
 signs, and Threads joins with delegated cadence. Signed exact payloads on X,
 TikTok, Threads and Notes go out through the go-live step; LinkedIn stays his
 click. No percentages still holds.

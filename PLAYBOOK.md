@@ -58,8 +58,8 @@ repairs follow the scoped 2026-10-21 ruling in AGENTS.md and
 jobs/channel-audit.md. Other sends/publication remain behind their gates.
 No Notes, WhatsApp, paid boosts or automated outreach.
 27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
-Substack Notes are back, from Krish's profile @mindmakerlive at up to two a
-day as he signs, and Threads joins with delegated cadence. The Canva lane
+Substack Notes are back, from Krish's Substack profile at up to two a day
+as he signs, and Threads joins with delegated cadence. The Canva lane
 (`docs/ENGINE-BOUNDARY.md`) produces what content-engine does not cover.
 WhatsApp, paid boosts and automated outreach stay off.
 

@@ -47,8 +47,8 @@ North Star by keeping the source material for useful, shareable work
 available to future sessions.
 
 27 October 2026: Notes are back (`CHANGES.md`;
-`docs/plans/2026-10-27-engine-architecture.md`), posted from Krish's profile
-@mindmakerlive at up to two a day as he signs. WhatsApp stays off.
+`docs/plans/2026-10-27-engine-architecture.md`), posted from Krish's Substack
+profile at up to two a day as he signs. WhatsApp stays off.
 
 ## Corpus supplied on 19 October 2026
 
@@ -70,8 +70,9 @@ overrides: no percentages, zero paid boosts, no Notes or WhatsApp, agents
 draft and Krish acts, facts only from published pieces, nothing invented,
 no fear or hype, his voice, real replies, nothing in bulk, editorial stays
 with Krish, money models only as Sunday proposals.
-27 October 2026: "no Notes" in that list is superseded (`CHANGES.md`); see
-override 1 below.
+27 October 2026: "no Notes" in that list is superseded and "agents draft and
+Krish acts" is narrowed (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`); see
+override 1 and the note after override 6 below.
 
 ## How the sources apply
 
@@ -94,7 +95,7 @@ no session "fixes" it back:
    so in his own words; record that in `CHANGES.md`.
    **27 October 2026: superseded.** He said so: Substack Notes are back
    (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`), posted
-   from Krish's profile @mindmakerlive at up to two a day as he signs, and
+   from Krish's Substack profile at up to two a day as he signs, and
    Threads joins with delegated cadence. Signed exact payloads on X, TikTok,
    Threads and Notes go out through the go-live step; LinkedIn stays his
    click. WhatsApp stays off.
@@ -117,8 +118,11 @@ no session "fixes" it back:
    90-minute growth block is the agent's work. Krish's part is to read the
    pack, post and send.
 
-Override 3 is narrowed by the 27 October 2026 rulings (`CHANGES.md`): signed
-exact payloads on X, TikTok, Threads and Notes go out through the go-live
-step, and LinkedIn stays his click. Override 5 is narrowed for the Canva lane
-only (`docs/ENGINE-BOUNDARY.md`): Growth makes Notes images and memes that
-content-engine does not cover, never articles or scripts.
+Override 3 is narrowed by the 27 October 2026 rulings (`CHANGES.md`;
+`docs/plans/2026-10-27-engine-architecture.md`): signed exact payloads on X, TikTok, Threads
+and Notes go out through the go-live step, and LinkedIn stays his click.
+Override 6 is narrowed the same way: Krish's part is to read the pack, sign
+and send, and the go-live step posts what he signed on those four channels.
+Override 5 is narrowed for the Canva lane only (`docs/ENGINE-BOUNDARY.md`):
+Growth makes Substack Notes and memes that content-engine does not cover,
+never articles or scripts.
