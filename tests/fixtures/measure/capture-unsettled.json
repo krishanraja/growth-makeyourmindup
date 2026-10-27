@@ -1,0 +1,34 @@
+{
+  "kind": "substack_growth_sources",
+  "captured_at": "2026-11-04T15:00:00-05:00",
+  "source_url": "https://example.substack.com/publish/stats/growth-sources",
+  "window": {
+    "label": "Custom",
+    "start": "2026-11-02",
+    "end": "2026-11-04",
+    "tz": "America/New_York"
+  },
+  "settled": {
+    "label_seen": "Custom",
+    "values_seen_after_label": false
+  },
+  "metric": "new_subscribers",
+  "rows": [
+    {
+      "source": "Synthetic Notes",
+      "new_free": 4,
+      "new_paid": 1
+    },
+    {
+      "source": "Synthetic Direct",
+      "new_free": 2,
+      "new_paid": 0
+    },
+    {
+      "source": "Synthetic Mystery",
+      "new_free": 1,
+      "new_paid": 0
+    }
+  ],
+  "total_new_free": 7
+}

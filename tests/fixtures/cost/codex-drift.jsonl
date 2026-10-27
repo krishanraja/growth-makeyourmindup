@@ -1,0 +1,9 @@
+{"timestamp": "2026-10-22T10:00:00.000000000Z", "type": "session_meta", "payload": {"cwd": "C:\\Users\\fixture\\growth-makeyourmindup"}}
+{"this line is not json
+{"timestamp": "2026-10-22T10:00:01Z", "type": "mystery_future_type", "payload": {"anything": 1}}
+{"timestamp": "2026-10-22T10:00:02Z", "type": "event_msg", "payload": {"no_type_here": true}}
+not json at all
+{"timestamp": "2026-10-22T10:00:03Z", "type": "event_msg", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": "lots", "output_tokens": 5}, "total_token_usage": {"input_tokens": null, "total_tokens": -1}, "model_context_window": 200000}}}
+{"timestamp": "2026-10-22T10:00:04Z", "type": "event_msg", "payload": {"type": "user_message", "message": "please look at this"}}
+{"timestamp": "2026-10-22T10:00:05Z", "type": "event_msg", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 500, "cached_input_tokens": 0, "output_tokens": 50, "reasoning_output_tokens": 0, "total_tokens": 550}, "total_token_usage": {"input_tokens": 500, "cached_input_tokens": 0, "output_tokens": 50, "reasoning_output_tokens": 0, "total_tokens": 550}, "model_context_window": 200000}}}
+{"timestamp": "2026-10-22T10:00:06Z", "type": "event_msg", "payload": {"type": "agent_message", "message": "ok"}}
