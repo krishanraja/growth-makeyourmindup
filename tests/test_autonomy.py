@@ -34,9 +34,9 @@ def plan():
                     exact_payload=PLAN_WORDS, stage='plan')
 
 
-def go_live(words=GO_WORDS, pid='makeyourmindup:golive:fixture-a', parent=PLAN_ID, channel='substack'):
+def go_live(words=GO_WORDS, pid='makeyourmindup:golive:fixture-a', parent=PLAN_ID, channel='substack', **extra):
     return proposal(pid, 'Go live with the fixture Note', 'Fixture go-live.', 'prepared', 'post', 'published',
-                    channel=channel, exact_payload=words, stage='go_live', parent_proposal_id=parent)
+                    channel=channel, exact_payload=words, stage='go_live', parent_proposal_id=parent, **extra)
 
 
 def check_in(pid='makeyourmindup:checkin:fixture'):
@@ -112,6 +112,21 @@ class AutonomyLoopTests(unittest.TestCase):
         # A go-live approved under a plan he has not approved does not act either.
         held = golive_review([plan(), go_live()], [decision(go_live())])
         self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'plan_not_approved'))
+        # An approval with no readable decided_at is never taken as the newest decision.
+        decline = decision(go_live(), 'declined', at='2026-10-17T19:00:00Z')
+        for when in ('missing', None, 'not a time'):
+            approval = decision(go_live())
+            if when == 'missing':
+                del approval['decided_at']
+            else:
+                approval['decided_at'] = when
+            held = golive_review([plan(), go_live()], [decision(plan()), decline, approval])
+            self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'undated_decision'))
+            self.assertEqual(golive_actions([plan(), go_live()], [decision(plan()), approval]), [])
+        # Nor does an undated decline let an earlier approval act.
+        late = dict(decision(go_live(), 'declined'), decided_at='yesterday')
+        held = golive_review([plan(), go_live()], [decision(plan()), decision(go_live()), late])
+        self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'undated_decision'))
 
     def test_approved_go_live_goes_live_once_with_exact_payload(self):
         reported, read = round_trip([plan(), go_live()], [decision(plan()), decision(go_live())])
@@ -132,6 +147,18 @@ class AutonomyLoopTests(unittest.TestCase):
             self.assertEqual(again['actions'], [])
             self.assertEqual(again['holds'], [{'proposal_id': action['proposal_id'], 'reason': 'already_acted'}])
             self.assertEqual(golive_actions(reported, read, golive_ledger(folder)), [])
+            self.assertEqual(len(read_json(path)['acted']), 1)
+            # Once claimed it never acts again: not on a later amendment of his...
+            later = amended(go_live(), HIS_WORDS, at='2026-10-17T20:00:00Z')
+            self.assertEqual(len(golive_actions(reported, read + [later])), 1, 'without the ledger it would act')
+            again = claim_golives(folder, reported, read + [later], NOW)
+            self.assertEqual((again['actions'], again['holds'][0]['reason']), ([], 'already_acted'))
+            # ...nor when the engine changes its words and he approves them again.
+            changed = go_live('TEST FIXTURE ONLY. The engine changed its words.')
+            decisions = [decision(plan()), decision(changed, at='2026-10-17T20:00:00Z')]
+            self.assertEqual(len(golive_actions([plan(), changed], decisions)), 1, 'without the ledger it would act')
+            again = claim_golives(folder, [plan(), changed], decisions, NOW)
+            self.assertEqual((again['actions'], again['holds'][0]['reason']), ([], 'already_acted'))
             self.assertEqual(len(read_json(path)['acted']), 1)
 
     def test_amended_go_live_goes_live_in_his_words(self):
@@ -161,6 +188,41 @@ class AutonomyLoopTests(unittest.TestCase):
             stopped = claim_golives(folder, proposals, decisions, NOW)
             self.assertEqual(stopped['actions'], [])
             self.assertEqual(stopped['holds'][0]['reason'], 'plan_stopped')
+        # A purged check-in whose own record is not at hand stops an unknown plan, so nothing acts.
+        purge = decision(check_in(), 'declined')
+        approvals = [decision(plan()), decision(go_live())]
+        blind = golive_review([plan(), go_live()], approvals + [purge])
+        self.assertEqual((blind['actions'], blind['holds'][0]['reason']), ([], 'stop_unresolved'))
+        self.assertIn(check_in()['proposal_id'], blind['unresolved'])
+        with tempfile.TemporaryDirectory() as folder:
+            held = claim_golives(folder, [plan(), go_live()], approvals + [purge], NOW)
+            self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'stop_unresolved'))
+            # It stays held after the decline leaves the decisions read.
+            held = claim_golives(folder, [plan(), go_live()], approvals, NOW)
+            self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'stop_unresolved'))
+            # The check-in reported earlier is read back from the workspace, and its plan stops.
+            cc_loop.remember(folder, fixture_report([plan(), go_live(), check_in()]), [], NOW)
+            held = claim_golives(folder, [plan(), go_live()], approvals, NOW)
+            self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'plan_stopped'))
+            ledger = golive_ledger(folder)
+            self.assertEqual((ledger['stopped'][PLAN_ID]['by'], ledger['unresolved']), (check_in()['proposal_id'], {}))
+            self.assertEqual(ledger['acted'], {})
+
+    def test_expired_go_live_never_goes_live(self):
+        old = go_live(expires_at='2026-10-16T18:00:00Z')
+        decisions = [decision(plan()), decision(old)]
+        with tempfile.TemporaryDirectory() as folder:
+            review = claim_golives(folder, [plan(), old], decisions)  # Its defaults: now is the clock.
+            self.assertEqual((review['actions'], review['holds'][0]['reason']), ([], 'expired'))
+            self.assertEqual(golive_ledger(folder)['acted'], {})
+        # Without a now an expiring go-live cannot be checked, so it is held, never offered.
+        held = golive_review([plan(), old], decisions)
+        self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'expiry_unchecked'))
+        in_date = go_live(expires_at='2026-10-18T18:00:00Z')
+        self.assertEqual(len(golive_actions([plan(), in_date], [decision(plan()), decision(in_date)], None, NOW)), 1)
+        unreadable = dict(in_date, expires_at='soon')
+        held = golive_review([plan(), unreadable], [decision(plan()), decision(in_date)], None, NOW)
+        self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'bad_expiry'))
 
     def test_amended_payload_wins_and_binds(self):
         decisions = [decision(plan()), amended(go_live(), HIS_WORDS)]
@@ -179,9 +241,10 @@ class AutonomyLoopTests(unittest.TestCase):
         spend = golive_review([plan(), go_live()], [decision(plan()), amended(go_live(), HIS_WORDS, 5)])
         self.assertEqual((spend['actions'], spend['holds'][0]['reason']), ([], 'no_spend_authority'))
         # LinkedIn stays his own click, approved or not.
-        linkedin = go_live(channel='linkedin')
-        held = golive_review([plan(), linkedin], [decision(plan()), decision(linkedin)])
-        self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'linkedin_is_krish_click'))
+        for channel in ('linkedin', 'LinkedIn ', 'linkedin_personal'):
+            linkedin = go_live(channel=channel)
+            held = golive_review([plan(), linkedin], [decision(plan()), decision(linkedin)])
+            self.assertEqual((held['actions'], held['holds'][0]['reason']), ([], 'linkedin_is_krish_click'))
 
     def test_amended_digest_mismatch_is_refused(self):
         # Exactly {amount_usd, exact_payload}, both keys, null when absent.
@@ -275,6 +338,14 @@ class NorthStarTests(unittest.TestCase):
         uneven = new_subscribers(network + short, NOW)
         self.assertEqual((uneven['value'], uneven['availability']), (None, 'missing'))
         self.assertIn('different times', uneven['reason'])
+        # Only 'publication' (all sources) and 'source:<name>' rows are parts of the sum. A row
+        # under any other scope, a post's say, makes the week missing rather than overstated.
+        for scope in ('post:fixture', 'publication:all', 'source:', ['source:fixture'], None):
+            odd = [dict(observation(monday, wednesday, 2), scope=scope)]
+            for rows in (odd + network + direct, odd + whole):
+                item = new_subscribers(rows, NOW)
+                self.assertEqual((item['value'], item['availability']), (None, 'missing'))
+                self.assertIn('neither the publication nor a source', item['reason'])
 
 
 class HonestLineTests(unittest.TestCase):
@@ -302,7 +373,8 @@ class AutomationCountTests(unittest.TestCase):
         report = runner_report(ROOT, 'r1', NOW, checks(), 'synthetic', True, 'fixture')[0]
         self.assertTrue(any(a['line'].startswith('Checked the ' + str(number) + ' automation definitions')
                             for a in report['activity']))
-        self.assertTrue(report['holds'][0]['detail'].startswith('The ' + str(number) + ' Codex automations'))
+        self.assertTrue(report['holds'][0]['detail'].startswith('The automations defined in automations.json ('
+                                                                + str(number) + ') draft'))
         source = (ROOT / 'engine/cc_loop.py').read_text(encoding='utf-8')
         words = r'\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+(Codex\s+)?(automation|jobs?\b)'
         self.assertIsNone(re.search(words, source, re.IGNORECASE))
@@ -311,6 +383,7 @@ class AutomationCountTests(unittest.TestCase):
                 (Path(folder) / name).write_text((ROOT / name).read_text(encoding='utf-8'), encoding='utf-8')
             bare = runner_report(folder, 'r1', NOW, checks(), 'synthetic', True, 'fixture')[0]
             self.assertTrue(any(a['line'].startswith('Checked the automation definitions') for a in bare['activity']))
+            self.assertTrue(bare['holds'][0]['detail'].startswith('The automations defined in automations.json draft'))
 
 
 if __name__ == '__main__':

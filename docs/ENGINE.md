@@ -321,38 +321,36 @@ against a local stand-in server, including the worked example's digest.
 GET-GOING Step 1 on protocol 1.1.0 (`engine/control_center.py`,
 `engine/cc_loop.py`, proved in `tests/test_autonomy.py` against the stand-in).
 
-**Stages.** `proposal(..., stage=, parent_proposal_id=)` builds a `plan`
-(behind a wall, its words in `exact_payload`), a `go_live` (a send, post or
-spend naming its plan) or a `check_in` (a strategy call naming its plan, its
-progress in `exact_payload`). A report is `1.1.0` only when a proposal uses
-one of those fields, else `1.0.0`, and `validate_report` refuses either
-version claimed without, or carried beside, its fields. Before a 1.1.0 report
-is sent, the client reads capabilities: without `1.1.0` in `schema_versions`
-the run fails closed, `schema_version_unsupported` (or
-`schema_version_unconfirmed` when capabilities cannot be read). Nothing is
-downgraded or sent.
+**Stages.** `proposal(..., stage=, parent_proposal_id=)` builds a `plan`, a
+`go_live` (a send, post or spend naming its plan) or a `check_in` (a strategy
+call naming its plan). A report is `1.1.0` only when a proposal uses those
+fields, else `1.0.0`; `validate_report` refuses any other pairing. A 1.1.0
+report goes only after capabilities list `1.1.0`, else the run fails closed
+(`schema_version_unsupported`, or `schema_version_unconfirmed` when they
+cannot be read) and nothing is downgraded or sent.
 
-**Amendments.** `amended_sha256` is recomputed as the SHA-256 of the
-canonical JSON of exactly `{amount_usd, exact_payload}`, null when absent.
-A mismatch is held (`amended_digest_mismatch`) and is never a usable approval.
-When it matches, his version acts, never the engine's.
+**Amendments.** `amended_sha256` must recompute as the SHA-256 of the
+canonical JSON of exactly `{amount_usd, exact_payload}`, null when absent,
+or it is held (`amended_digest_mismatch`). When it matches, his version acts.
 
-**The go-live step.** `golive_actions(proposals, decisions, ledger)` is pure
-and acts on nothing. It returns the exact payloads a separate release layer
-may act on: stage `go_live`, latest decision approved on the digest its own
-fields recompute to (his amended version when amended), parent plan approved
-on its current digest and not stopped, and not already in the ledger.
-`golive_review` gives the reason code for every go-live it holds. An
-approved plan never goes live. A declined check-in, or a declined plan, stops
-the plan, whatever digest the decline names. Spends (no spend authority) and
-LinkedIn (his own click) are always held.
+**The go-live step.** `golive_actions(proposals, decisions, ledger, now)` is
+pure and acts on nothing; `golive_review` adds a reason code for each hold. A
+go-live acts only when never claimed, approved (latest dated decision) on the
+digest its reported fields recompute to, with its plan approved and not
+stopped, and in date. Holds fail closed: an undated decision on it or its plan
+(`undated_decision`), a declined check-in whose record is not at hand
+(`stop_unresolved`, every go-live), an expiry with no `now`
+(`expiry_unchecked`) or unreadable (`bad_expiry`). A declined check-in or plan
+stops the plan for good, even a later changed version. Spends and LinkedIn are
+always held. Reports carry no `target`, so a go-live built with one is held.
 
-**The ledger.** `claim_golives(root, ...)` claims each action once in
-`.scratch/cc/golive-ledger.json`, written with `write_json` under `locked`,
-before anything acts, and records each stop so a purged plan stays stopped.
-A claimed action is never offered again; an uncertain outcome is read back,
-never repeated. The step reads `target` from the local proposal record (null
-when absent), because the report does not carry it.
+**The ledger.** `claim_golives(root, ...)` reads the clock when given no
+`now`, merges the staged proposals `remember()` kept, and claims each go-live
+once by `proposal_id` in `.scratch/cc/golive-ledger.json` (`write_json` under
+`locked`) before anything acts, with its stops and unresolved check-ins. The
+caller passes every decision on each open plan, not only the latest read. The
+ledger is local, so the step never runs on the GitHub runner.
 
-**Objective.** Per-source Substack rows are added within each source and
-summed into the all-source `new_subscribers`; an all-source row wins.
+**Objective.** Substack scope `publication` is all sources and wins;
+`source:<name>` rows are added per source and summed. Any other scope makes
+`new_subscribers` missing, never a guess.

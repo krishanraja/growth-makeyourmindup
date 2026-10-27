@@ -247,8 +247,8 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
                      + str(sum(e.get('status') == 'running' for e in experiments)) + ' running'})
     activity.append({'line': 'Posted, sent, published and spent nothing'})
     holds = [{'reason': 'Drafts and dashboard numbers are made only in the publication workspace',
-              'detail': defined[0].upper() + defined[1:] + 'Codex automations draft and read dashboards there and report as their own runs; '
-                        'this runner checks the engine offline.'}]
+              'detail': 'The automations defined in automations.json' + (' (' + str(automations) + ')' if automations is not None else '')
+                        + ' draft and read dashboards there and report as their own runs; this runner checks the engine offline.'}]
     if failed:
         holds.append({'reason': 'Offline checks failed on the runner', 'detail': ', '.join(failed)})
     objectives = [
@@ -262,6 +262,7 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
 # The publication workspace ------------------------------------------------
 
 ALL_SOURCES = 'publication'
+SOURCE_PREFIX = 'source:'
 
 
 def _in_week(row, start, now):
@@ -284,10 +285,11 @@ def _substack_week(observations, now):
 def new_subscribers(observations, now):
     """This New York week's all-source new free subscribers (Krish owns the metric).
 
-    Rows scoped to the whole publication are the all-source reading. Without
-    one, per-source rows are added within each source and the sources summed,
-    which means the same. Both together would count people twice, so the
-    all-source reading wins."""
+    Scope 'publication' is the all-source reading; 'source:<name>' is one
+    source. Without an all-source row, per-source rows are added within each
+    source and the sources summed, which means the same. Both together would
+    count people twice, so the all-source reading wins. Any other scope (a post,
+    say) is not a part of the sum, so the week is missing, never guessed."""
     rows, current, unreadable, start = _substack_week(observations, now)
     if not rows:
         return objective('new_subscribers', reason='No Substack new-subscriber reading was supplied to this run; '
@@ -296,9 +298,17 @@ def new_subscribers(observations, now):
         return objective('new_subscribers', reason='A Substack new-subscriber reading has no readable window')
     if not current:
         return objective('new_subscribers', reason='No Substack new-subscriber window inside this New York week yet')
-    sources = {}
+    sources, other = {}, set()
     for row in current:
-        sources.setdefault(row.get('scope'), []).append(row)
+        scope = row.get('scope')
+        if scope == ALL_SOURCES or (isinstance(scope, str) and scope.startswith(SOURCE_PREFIX)
+                                    and scope[len(SOURCE_PREFIX):].strip()):
+            sources.setdefault(scope, []).append(row)
+        else:
+            other.add(scope if isinstance(scope, str) else repr(scope))
+    if other:
+        return objective('new_subscribers', reason='Substack rows this week have a scope that is neither the '
+                                                   'publication nor a source: ' + ', '.join(sorted(other)))
     parts = [sources[ALL_SOURCES]] if ALL_SOURCES in sources else [sources[k] for k in sorted(sources, key=str)]
     totals = []
     for part in parts:
@@ -476,10 +486,19 @@ GOLIVE_LEDGER = 'golive-ledger.json'
 
 
 def golive_ledger(root):
-    """The local idempotency ledger: go-lives already claimed, and plans Krish stopped."""
+    """The local idempotency ledger: go-lives already claimed, plans Krish stopped,
+    and declined check-ins whose plan is not known yet."""
     path = state_path(root, GOLIVE_LEDGER)
     ledger = read_json(path) if path.exists() else {}
-    return {'acted': dict(ledger.get('acted') or {}), 'stopped': dict(ledger.get('stopped') or {})}
+    return {key: dict(ledger.get(key) or {}) for key in ('acted', 'stopped', 'unresolved')}
+
+
+def remembered_proposals(root):
+    """The staged proposals this workspace reported before, from remember()."""
+    path = state_path(root, 'proposals.json')
+    rows = read_json(path) if path.exists() else {}
+    return [dict(row, proposal_id=pid) for pid, row in sorted(rows.items())
+            if isinstance(row, dict) and 'stage' in row]
 
 
 def claim_golives(root, proposals, decisions, now=None):
@@ -487,20 +506,27 @@ def claim_golives(root, proposals, decisions, now=None):
 
     The returned actions are claimed before anything acts on them, so a lost or
     uncertain outcome is never repeated: the release layer reads back instead.
-    Stops are recorded too, so a purged plan stays stopped. Acts on nothing."""
+    Stops are recorded too, so a purged plan stays stopped, and the proposals
+    reported before are read back so a purged check-in is still known after
+    it leaves the report. now defaults to the clock, so expiry is always
+    checked. Acts on nothing."""
     path = state_path(root, GOLIVE_LEDGER)
+    now = instant(now)
     at = iso(now)
+    given = [p for p in proposals or [] if isinstance(p, dict)]
+    known = {p.get('proposal_id') for p in given}
+    merged = given + [p for p in remembered_proposals(root) if p['proposal_id'] not in known]
     with locked(path):
         ledger = golive_ledger(root)
-        review = golive_review(proposals, decisions, ledger, now)
+        review = golive_review(merged, decisions, ledger, now)
         ledger['stopped'].update({pid: why for pid, why in review['stopped'].items() if pid not in ledger['stopped']})
+        ledger['unresolved'] = dict(review['unresolved'])
         for action in review['actions']:
             ledger['acted'][action_key(action)] = {
                 'proposal_id': action['proposal_id'], 'parent_proposal_id': action['parent_proposal_id'],
                 'action_sha256': action['action_sha256'], 'amended': action['amended'],
                 'decided_at': action['decided_at'], 'claimed_at': at}
-        write_json(path, {'acted': dict(sorted(ledger['acted'].items())),
-                          'stopped': dict(sorted(ledger['stopped'].items()))})
+        write_json(path, {key: dict(sorted(ledger[key].items())) for key in ('acted', 'stopped', 'unresolved')})
     return review
 
 

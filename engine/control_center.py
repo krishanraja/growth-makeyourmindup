@@ -525,38 +525,71 @@ def match_decisions(decisions, proposals):
 
 # The go-live step of the autonomy loop ------------------------------------
 
+def _decided_at(item):
+    """A decision's time, or None when it has none that can be read."""
+    if not isinstance(item.get('decided_at'), str):
+        return None  # instant(None) is now, which would make an undated decision the newest.
+    try:
+        return instant(item['decided_at'])
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+
 def _latest(decisions):
-    """Each proposal's latest decision, by decided_at; a later entry wins a tie."""
-    out = {}
+    """Each proposal's latest dated decision (a later entry wins a tie), and the
+    ids with a decision whose time cannot be read: those are held, never guessed."""
+    out, undated = {}, set()
     for index, item in enumerate(decisions or []):
         if not isinstance(item, dict) or not isinstance(item.get('proposal_id'), str):
             continue
-        try:
-            at = instant(item.get('decided_at'))
-        except (ValueError, TypeError, AttributeError):
+        at = _decided_at(item)
+        if at is None:
+            undated.add(item['proposal_id'])
             continue
         old = out.get(item['proposal_id'])
         if old is None or (at, index) >= old[0]:
             out[item['proposal_id']] = ((at, index), item)
-    return {pid: pair[1] for pid, pair in out.items()}
+    return {pid: pair[1] for pid, pair in out.items()}, undated
 
 
-def stopped_plans(proposals, decisions, ledger=None):
-    """Plans Krish stopped: a declined (purged) check-in on the plan, or the plan
-    itself declined. A stop counts whatever digest it was made on, because
-    stopping is always safe, and once recorded in the ledger it stays."""
-    by_id = {p.get('proposal_id'): p for p in proposals or [] if isinstance(p, dict)}
+def _stops(proposals, decisions, ledger=None):
+    """Plans Krish stopped, and declined check-ins whose plan cannot be told yet.
+
+    A declined (purged) check-in stops its plan, and so does the plan itself
+    declined. A stop counts whatever digest or date it was made on, because
+    stopping is always safe, and once recorded in the ledger it stays (a plan
+    declined once stays stopped, even under a later changed version). A
+    declined check-in whose own record is not at hand is unresolved: while one
+    is, every go-live is held, because the plan it stops is unknown."""
+    by_id = {p.get('proposal_id'): p for p in proposals or []
+             if isinstance(p, dict) and isinstance(p.get('proposal_id'), str)}
     stopped = dict((ledger or {}).get('stopped') or {})
+    pending = dict((ledger or {}).get('unresolved') or {})
     for item in decisions or []:
         if not isinstance(item, dict) or item.get('decision') != 'declined':
             continue
-        found = by_id.get(item.get('proposal_id')) or {}
-        if found.get('stage') == 'check_in' and isinstance(found.get('parent_proposal_id'), str):
-            stopped.setdefault(found['parent_proposal_id'], {'by': found['proposal_id'],
-                                                             'decided_at': item.get('decided_at')})
-        elif found.get('stage') == 'plan':
-            stopped.setdefault(found['proposal_id'], {'by': found['proposal_id'], 'decided_at': item.get('decided_at')})
-    return stopped
+        pid = item.get('proposal_id')
+        if not isinstance(pid, str):
+            continue
+        found = by_id.get(pid) or {}
+        stage = found.get('stage') or item.get('stage')
+        if stage == 'plan':
+            stopped.setdefault(pid, {'by': pid, 'decided_at': item.get('decided_at')})
+        elif stage == 'check_in':
+            pending.setdefault(pid, {'decided_at': item.get('decided_at')})
+    for pid in sorted(pending):
+        found = by_id.get(pid) or {}
+        parent = found.get('parent_proposal_id')
+        if found.get('stage') == 'check_in' and isinstance(parent, str):
+            stopped.setdefault(parent, {'by': pid, 'decided_at': pending[pid].get('decided_at')})
+        if any(isinstance(why, dict) and why.get('by') == pid for why in stopped.values()):
+            del pending[pid]
+    return stopped, pending
+
+
+def stopped_plans(proposals, decisions, ledger=None):
+    """Plans Krish stopped: a declined (purged) check-in on the plan, or the plan itself declined."""
+    return _stops(proposals, decisions, ledger)[0]
 
 
 def action_key(action):
@@ -571,21 +604,42 @@ def _plan_open(plan, decision):
     return decision.get('amended') is not True or amendment_ok(decision)
 
 
+def _expiry_hold(item, now):
+    """None while the go-live is in date; a hold code once it is not, or cannot be told."""
+    if not item.get('expires_at'):
+        return None
+    if now is None:
+        return 'expiry_unchecked'
+    try:
+        lapsed = instant(item['expires_at']) <= instant(now)
+    except (ValueError, TypeError, AttributeError):
+        return 'bad_expiry'
+    return 'expired' if lapsed else None
+
+
+def _linkedin(channel):
+    return isinstance(channel, str) and channel.strip().lower().startswith('linkedin')
+
+
 def golive_review(proposals, decisions, ledger=None, now=None):
     """Which approved go-lives may act, and the reason code for each one held.
 
-    A go-live acts only when it is stage go_live; its latest decision is an
-    approval on the payload_sha256 its own fields recompute to; an amended yes
-    recomputes to amended_sha256, and then his words and amount act, never the
-    engine's; its parent plan is approved on its current digest and not stopped;
-    and the ledger does not already hold that exact action. Pure: no I/O."""
+    A go-live acts only when it is stage go_live; it has never been claimed;
+    every decision on it and its plan is dated; no declined check-in is
+    unresolved; its latest decision is an approval on the payload_sha256 its
+    own fields recompute to; an amended yes recomputes to amended_sha256, and
+    then his words and amount act, never the engine's; its parent plan is
+    approved on its current digest and not stopped; and it is in date (with
+    no now, an expiring go-live is held). Pure: no I/O."""
     ledger = ledger or {}
     acted = ledger.get('acted') or {}
-    by_id = {p.get('proposal_id'): p for p in proposals or [] if isinstance(p, dict)}
-    latest = _latest(decisions)
-    stopped = stopped_plans(proposals, decisions, ledger)
+    claimed = {why.get('proposal_id') for why in acted.values() if isinstance(why, dict)}
+    by_id = {p.get('proposal_id'): p for p in proposals or []
+             if isinstance(p, dict) and isinstance(p.get('proposal_id'), str)}
+    latest, undated = _latest(decisions)
+    stopped, unresolved = _stops(proposals, decisions, ledger)
     actions, holds = [], []
-    for pid in sorted(k for k in by_id if isinstance(k, str)):
+    for pid in sorted(by_id):
         item = by_id[pid]
         if item.get('stage') != 'go_live':
             continue
@@ -599,25 +653,33 @@ def golive_review(proposals, decisions, ledger=None, now=None):
         words, amount = item.get('exact_payload'), item.get('amount_usd')
         amended = bool(decision) and decision.get('amended') is True
         parent = item.get('parent_proposal_id')
-        if decision is None or decision.get('decision') != 'approved':
+        if not isinstance(parent, str):
+            parent = None
+        if pid in claimed:
+            code = 'already_acted'  # Each go-live acts once, whatever is approved on it later.
+        elif pid in undated or parent in undated:
+            code = 'undated_decision'
+        elif unresolved:
+            code = 'stop_unresolved'
+        elif decision is None or decision.get('decision') != 'approved':
             code = 'not_approved'
         elif own is None or own != item.get('payload_sha256') or decision.get('payload_sha256') != own:
             code = 'stale_approval'
         elif amended and not amendment_ok(decision):
             code = 'amended_digest_mismatch'
-        elif parent in stopped:
-            code = 'plan_stopped'
+        elif parent is None or parent in stopped:
+            code = 'plan_stopped' if parent else 'plan_not_approved'
         elif not _plan_open(by_id.get(parent), latest.get(parent)):
             code = 'plan_not_approved'
-        elif now is not None and item.get('expires_at') and instant(item['expires_at']) <= instant(now):
-            code = 'expired'
+        else:
+            code = _expiry_hold(item, now)
         if code is None and amended:
             words, amount = decision.get('exact_payload'), decision.get('amount_usd')
         if code is None and (item.get('wall') == 'spend' or amount not in (None, 0)):
             code = 'no_spend_authority'
         elif code is None and item.get('wall') in ('send', 'post') and not (isinstance(words, str) and words.strip()):
             code = 'no_exact_words'
-        elif code is None and item.get('channel') == 'linkedin':
+        elif code is None and _linkedin(item.get('channel')):
             code = 'linkedin_is_krish_click'
         if code is None:
             action = {'proposal_id': pid, 'parent_proposal_id': parent, 'wall': item['wall'],
@@ -633,7 +695,7 @@ def golive_review(proposals, decisions, ledger=None, now=None):
                 actions.append(action)
         if code:
             holds.append({'proposal_id': pid, 'reason': code})
-    return {'actions': actions, 'holds': holds, 'stopped': stopped}
+    return {'actions': actions, 'holds': holds, 'stopped': stopped, 'unresolved': unresolved}
 
 
 def golive_actions(proposals, decisions, ledger=None, now=None):
