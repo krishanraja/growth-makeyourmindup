@@ -12,8 +12,10 @@ UTC = dt.timezone.utc
 TIMEZONE = 'America/New_York'
 OWN_HOSTS = {'makeyourmindup.ai', 'www.makeyourmindup.ai', 'home.makeyourmindup.ai'}
 KINDS = ('daily', 'pitches', 'swaps', 'radar', 'numbers', 'report', 'conversion', 'partners')
-PLATFORMS = ('linkedin', 'x', 'substack', 'youtube', 'instagram', 'tiktok', 'spotify',
-             'reddit', 'email', 'seo', 'podcast', 'partner', 'other')
+# Krish, 27 Oct 2026: Substack Notes and Threads join. Own links from Notes are
+# tagged utm_source=notes, apart from the Substack publication itself.
+PLATFORMS = ('linkedin', 'x', 'substack', 'notes', 'youtube', 'instagram', 'facebook', 'tiktok',
+             'threads', 'spotify', 'reddit', 'email', 'seo', 'podcast', 'partner', 'other')
 
 
 def instant(value=None):

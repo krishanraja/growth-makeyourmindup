@@ -17,8 +17,14 @@ ACCOUNTS = {
     'x': 'https://x.com/therealkrisho',
     'linkedin': 'https://www.linkedin.com/in/krish-raja/',
     'substack': 'https://home.makeyourmindup.ai',
+    'facebook': 'https://facebook.com/1364858250042525',
+    'threads': 'https://www.threads.com/@krishraja1',
 }
-AUTO = {'post': {'title', 'caption', 'description', 'link'},
+# Krish, 26 Oct 2026: no edits to live LinkedIn posts or profile fields; this
+# also covers the older existing-field audit permission. Krish, 27 Oct 2026:
+# Threads joins, and its audit edits are held the same way until he rules.
+HELD_FOR_KRISH = {'linkedin', 'threads'}
+AUTO ={'post': {'title', 'caption', 'description', 'link'},
         'profile': {'link'}}
 PROTECTED = {'bio', 'positioning', 'pin', 'pinned_content', 'thumbnail',
              'overlay', 'video', 'image', 'audio', 'reupload', 'delete'}
@@ -105,6 +111,8 @@ def repair_plan(change, now=None):
     field, surface = change.get('field'), change.get('surface')
     if (channel == 'youtube' and field == 'title') or (channel == 'x' and surface == 'profile' and field == 'link'):
         require(len(change['after']) <= 100, 'proposed value exceeds the observed platform field limit')
+    if channel in HELD_FOR_KRISH:
+        return {**result, 'disposition': 'approval_required', 'reason': 'live edits on this account are held for Krish'}
     if field in PROTECTED or field not in AUTO.get(surface, set()):
         return {**result, 'disposition': 'approval_required', 'reason': 'outside standing edit authority'}
     for key in ('owner_verified', 'meaning_preserved', 'voice_checked', 'claims_checked', 'field_editable'):
