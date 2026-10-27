@@ -83,6 +83,23 @@ class CrewTests(unittest.TestCase):
             self.assertTrue(any('unknown rule R99' in e for e in errors))
             self.assertTrue(any('exactly one question' in e for e in errors))
 
+    def test_numbered_list_and_bad_row_are_refused(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = crew_root(folder, card=CARD + '\n1. Do not post links.\n')
+            self.assertTrue(any('free-text list' in e for e in check_cards(load_registry(root), root)))
+            data = json.loads((root / 'crew' / 'registry.json').read_text(encoding='utf-8'))
+            data['crew'][0]['row'] = 'one'
+            (root / 'crew' / 'registry.json').write_text(json.dumps(data), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'row'):
+                load_registry(root)
+
+    def test_every_experiment_needs_at_least_six_observations(self):
+        # The What-Works card promises the floor; engine.operations.experiment_decision takes any positive one.
+        experiments = json.loads((ROOT / 'experiments.json').read_text(encoding='utf-8'))['experiments']
+        self.assertTrue(experiments)
+        for experiment in experiments:
+            self.assertGreaterEqual(experiment['minimum_observations'], 6, experiment.get('id'))
+
     def test_missing_lens_and_wrong_w45_set_are_refused(self):
         with tempfile.TemporaryDirectory() as folder:
             root = crew_root(folder)

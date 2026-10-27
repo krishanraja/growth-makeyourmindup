@@ -14,16 +14,17 @@ RULE_SOURCES = ('AGENTS.md', 'BROWSER.md', 'CHANGES.md', 'docs/PUBLISHING-AUTHOR
 RULE_FIELDS = ('id', 'statement', 'source_file', 'quote', 'enforced_by', 'tests')
 FAILURE_FIELDS = ('id', 'title', 'source', 'guard', 'tests', 'status')
 STATUSES = ('tested', 'doc-only', 'process', 'open', 'superseded', 'pending-build')
-FAILURE_IDS = tuple('F%02d' % n for n in range(1, 55)) + tuple('G%d' % n for n in range(1, 10))
+FAILURE_IDS = tuple('F{:02d}'.format(n) for n in range(1, 55)) + tuple('G{}'.format(n) for n in range(1, 10))
 CREW_FIELDS = ('id', 'name', 'owns', 'channels', 'formats', 'lint', 'check', 'card', 'lens', 'w45')
 W45 = {'substack', 'threads', 'attribution-ladder', 'what-works', 'release-gate'}
 CARD_BYTES, LENS_BYTES = 3072, 1024
 MIN_QUOTE = 40
 SOURCE_CLASSES = ('organic', 'unattributed', 'paid')
 OWNERS = ('content-engine', 'growth-canva', 'growth-copy')
-GUARD = re.compile(r'^engine/[a-z_/]+\.py:[A-Za-z_][A-Za-z0-9_]*$')
+GUARD_PATH = r'engine/[a-z_/]+\.py:[A-Za-z_][A-Za-z0-9_]*'
+GUARD = re.compile('^' + GUARD_PATH + '$')
 TEST_DEF = re.compile(r'^\s*def (test_[A-Za-z0-9_]+)\(', re.M)
-HOUSE = re.compile('\u2014|%|\\bper ?cent\\b', re.I)
+HOUSE = re.compile('\u2014|\x25|\\bper ?cent\\b', re.I)
 PLAY = re.compile(r'\bP[1-9]\b')
 RULE_REF = re.compile(r'\bR\d\d\b')
 FAILURE_REF = re.compile(r'\b(?:F\d\d|G[1-9])\b')
@@ -169,7 +170,7 @@ def check_failures(failures, root=ROOT, allow_pending=True):
         if not allow_pending:
             wanted += entry.get('pending_tests', [])
         errors += [entry['id'] + ': test not found: ' + t for t in wanted if t not in names]
-        for guard in re.findall(r'engine/[a-z_]+\.py:[A-Za-z_][A-Za-z0-9_]*', entry['guard']):
+        for guard in re.findall(GUARD_PATH, entry['guard']):
             if entry['status'] == 'tested' and not guard_exists(guard, root):
                 errors.append(entry['id'] + ': guard not found: ' + guard)
     return errors
@@ -196,6 +197,8 @@ def load_registry(root=ROOT):
             raise ValueError(at + ': card and lens live in crew/<id>/')
         if type(entry['w45']) is not bool:
             raise ValueError(at + ': w45 must be true or false')
+        if 'row' in entry and entry['row'] is not None and (type(entry['row']) is not int or entry['row'] < 1):
+            raise ValueError(at + ': row is the plan section 3 row number, or null for the Release Gate')
     return crew
 
 
@@ -230,7 +233,7 @@ def _card_errors(text, rule_ids=None, failure_ids=None):
     rows = [line for line in lines if line.startswith('|') and not re.match(r'^\|\s*(If\s*\||-)', line)]
     if len(rows) < 3:
         errors.append('needs at least three decision rows')
-    if any(re.match(r'^\s*[-*]\s', line) for line in lines):
+    if any(re.match(r'^\s*(?:[-*+]|\d+[.)])\s', line) for line in lines):
         errors.append('has a free-text list; write it as decision rows')
     if not PLAY.search(text):
         errors.append('cites no play (P1 to P9)')

@@ -285,7 +285,9 @@
         "instagram",
         "tiktok",
         "x",
-        "linkedin"
+        "linkedin",
+        "facebook",
+        "threads"
       ],
       "formats": [
         "profile",

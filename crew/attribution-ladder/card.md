@@ -1,11 +1,11 @@
 # Card: Attribution & Ladder
 
-Owns the North Star count, Substack Growth sources and own-link tagging. The number is new free subscribers a week from organic posts and shares, zero paid.
+Owns the North Star count, Substack Growth sources and own-link tagging. The number is new publication subscribers a week from organic posts and shares, zero paid.
 
 | If | Then | Cite |
 |---|---|---|
 | An own link is placed | It carries its placement identity tag | F48, P1 |
-| The weekly count is reported | Report the all-source count and, separately, the organic count | R08, R64 |
+| The weekly count is reported and sources.json is approved | Report the all-source count and, separately, the organic count | R08, R64 |
 | invariants/sources.json is not approved | Report all-source counts only; organic waits for Krish at G-A | R08 |
 | A source label is not in sources.json | Count it as unattributed and list it for Krish | R08 |
 | A Growth-sources filter is changed | Count it only once the window label and the values have settled together | F54 |

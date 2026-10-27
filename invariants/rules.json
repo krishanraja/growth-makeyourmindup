@@ -329,7 +329,7 @@
     },
     {
       "id": "R27",
-      "statement": "No native desktop apps, OS-wide file dialogs or PC takeover.",
+      "statement": "No native desktop apps, OS-wide file dialogs or PC takeover (the one-off Cowork brand kit is the 27 Oct exception, R78).",
       "source_file": "BROWSER.md",
       "quote": "Do not use native desktop apps, OS-wide file dialogs or PC takeover for this work.",
       "enforced_by": [
@@ -408,6 +408,7 @@
         "engine/channel_audit.py:repair_plan"
       ],
       "tests": [
+        "test_missing_owner_and_editability_hold",
         "test_metadata_and_protected_fields_are_separate"
       ]
     },
@@ -714,7 +715,7 @@
     },
     {
       "id": "R59",
-      "statement": "Substack Notes and Threads are in scope (27 Oct), superseding the 14 Oct and 26 Oct lines.",
+      "statement": "Substack Notes and Threads are in scope (27 Oct), superseding the 14 Oct and 26 Oct lines; Threads is a personal identity (personal voice, R54).",
       "source_file": "CHANGES.md",
       "quote": "Channels: he chose to add **Substack Notes** and **Threads**.",
       "enforced_by": [
@@ -730,7 +731,7 @@
     },
     {
       "id": "R60",
-      "statement": "Krish signs the week: signed exact payloads go out autonomously; anything else waits for his signature.",
+      "statement": "Krish signs the week: signing is an approved go-live read in the engine's own run (R12); signed exact payloads go out autonomously, anything else waits for his signature; LinkedIn excepted (R62).",
       "source_file": "CHANGES.md",
       "quote": "Sign the week, but I am likely to want to add in meme style instagram and youtube and tiktok posts randomly too",
       "enforced_by": [
@@ -801,6 +802,160 @@
       "quote": "Nothing in these rulings authorises a new connection, spend or automation by itself",
       "enforced_by": [
         "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R67",
+      "statement": "Publishing, deploying, creating automations or rotating credentials is never an incidental step of other work.",
+      "source_file": "AGENTS.md",
+      "quote": "Never publish, deploy, create automations or rotate credentials as an incidental step.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R68",
+      "statement": "Say something real: a reply answers the actual thread and never forces in a fact from his piece or a sales angle.",
+      "source_file": "AGENTS.md",
+      "quote": "Never force a fact from his piece or a sales angle into a conversation.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R69",
+      "statement": "A purge on a go-live means stop: nothing goes live, and the closing event is reported with its evidence.",
+      "source_file": "AGENTS.md",
+      "quote": "Then report the closing event with its evidence. Purge on a go-live means stop.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_approved_go_live_goes_live_once_with_exact_payload"
+      ],
+      "pending_item": "B"
+    },
+    {
+      "id": "R70",
+      "statement": "At a check-in his yes keeps a plan going, his amendment redirects it and his no stops the plan for good.",
+      "source_file": "AGENTS.md",
+      "quote": "his yes keeps it going, his amendment redirects it, his no stops the plan for good.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_declined_check_in_stops_its_plan"
+      ],
+      "pending_item": "B"
+    },
+    {
+      "id": "R71",
+      "statement": "New creative, new claims and meaning-changing replacements need Krish's approval before they are used.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "New creative, claims or meaning-changing replacements require approval.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R72",
+      "statement": "X and TikTok stay personal identities: delegated cadence never changes their personal voice.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "X and TikTok remain personal identities for voice and reputation.",
+      "enforced_by": [
+        "engine/social.py:preflight"
+      ],
+      "tests": [
+        "test_x_and_tiktok_have_explicit_delegated_cadence_but_personal_voice"
+      ]
+    },
+    {
+      "id": "R73",
+      "statement": "Automatic cross-sharing is never claimed until it has been verified.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Do not claim automatic cross-sharing is enabled unless actually verified.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R74",
+      "statement": "Before any cleanup, the exact delivery package, its candidates and the feedback are preserved.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Preserve the exact delivery package, candidates and feedback before cleanup.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R75",
+      "statement": "Production originals are never moved or renamed, and Growth makes no competing production canon.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Never move or rename the production originals or make a competing production canon.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R76",
+      "statement": "An approved revision is never overwritten and its approval digest is never silently updated.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Do not overwrite the approved revision or silently update its approval digest.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_release_refuses_changed_asset_bytes"
+      ],
+      "pending_item": "D2"
+    },
+    {
+      "id": "R77",
+      "statement": "Automations are verified if changed; existing jobs are updated, never duplicated.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Verify automation ownership/schedule if changed. Update existing jobs, never duplicate them.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R78",
+      "statement": "The one-off brand kit may be built by Cowork computer use on Krish's PC, started by him; nothing else widens.",
+      "source_file": "CHANGES.md",
+      "quote": "you can create the brand kit in Canva with computer use on my PC",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R79",
+      "statement": "A signed-in browser may open, scroll, search, sort, filter, open analytics and copy text out; outside the named audit, Buffer draft and LinkedIn preparation exceptions it never types into a post or comment box, presses Post, Publish or Send, or changes a setting.",
+      "source_file": "BROWSER.md",
+      "quote": "In a signed-in browser you may open pages, scroll, search, sort and filter, open analytics, and copy text out.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R80",
+      "statement": "A signed-out state seen in another browser is never taken to mean these accounts are signed out.",
+      "source_file": "BROWSER.md",
+      "quote": "Never infer that these accounts are signed out from another browser.",
+      "enforced_by": [
+        "doc-only"
       ],
       "tests": []
     }

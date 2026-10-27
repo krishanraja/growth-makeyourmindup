@@ -12,6 +12,6 @@ Owns photo posts, video and memes on @therealkrisho, Krish's personal account wi
 | A file carries another platform's watermark | Hold it; upload the clean file | P6, D8 |
 | A post reaches 72 hours | Read watch time, profile visits and follows against its own median | P6, R08 |
 | Watch time stalls below the norm after eight weeks | Put the brand-account question to Krish; never switch accounts | P6, R17 |
-| A post beats the 90th percentile of the channel baseline at 24 hours | Hand it to P8 breakout amplification | P8 |
+| A post is in the top tenth of the channel baseline at 24 hours | Hand it to P8 breakout amplification | P8 |
 | A publication caption is to hand | Write a personal wrapper; never copy the publication caption | R54 |
 | No approved native edition exists for a slot | Leave the slot empty and record the gap | R37 |

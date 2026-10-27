@@ -15,5 +15,5 @@ Owns feed posts, carousels, Reels, Stories and memes on makeyourmind.up and the 
 | Receipt opens beat face opens on watch time and sends over six Reels | Propose receipt opens as the default through the What-Works Analyst | P6, R65 |
 | A your.call poll piece runs | Poll the same day, carousel the next day; no engagement-bait wording | P7 |
 | A post would carry more than five hashtags | Propose the cap at G-A with its citation; not imposed until approved | P6 |
-| A post beats the 90th percentile of the channel baseline at 24 hours | Hand it to P8 breakout amplification | P8 |
+| A post is in the top tenth of the channel baseline at 24 hours | Hand it to P8 breakout amplification | P8 |
 | No approved native edition exists for a slot | Leave the slot empty and record the gap | R37 |

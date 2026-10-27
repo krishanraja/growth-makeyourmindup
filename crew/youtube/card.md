@@ -12,6 +12,6 @@ Owns Shorts and video memes on @makeyourmind-up. Judge at 72 hours.
 | A file carries another platform's watermark | Hold it; upload the clean file | P6, D8 |
 | A Short reaches 72 hours | Read views, view duration, Short-to-long clicks and subscribers against its own median | P6, R08 |
 | A Short has no Related video set | Flag it as a P6 fix for the Channel Auditor | P6 |
-| A Short beats the 90th percentile of the channel baseline at 24 hours | Hand it to P8 breakout amplification | P8 |
+| A Short is in the top tenth of the channel baseline at 24 hours | Hand it to P8 breakout amplification | P8 |
 | The cut, captions or artwork need changing | Return the defect to content-engine; Growth does not re-cut | R05 |
 | No approved native edition exists for a slot | Leave the slot empty and record the gap | R37 |

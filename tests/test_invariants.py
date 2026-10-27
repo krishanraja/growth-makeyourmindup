@@ -64,9 +64,17 @@ class RuleTests(unittest.TestCase):
         for anchor in ('Never post, send, comment', 'Never invent a number', 'Content-engine owns production',
                        'No links in LinkedIn comments', 'No mass outreach', 'one you read on a page today',
                        'Never change Control Center', 'never authorises any other go-live',
-                       'LinkedIn stays unscheduled drafts', 'It proposes no pitch, swap or partner note'):
+                       'LinkedIn stays unscheduled drafts', 'It proposes no pitch, swap or partner note',
+                       'incidental step', 'Purge on a go-live', 'Never force a fact', 'his no stops the plan'):
             self.assertIn(anchor, agents)
         self.assertTrue(any('personal identity must sound sincere' in r['quote'] for r in rules))
+        quotes = ' '.join(r['quote'] for r in rules)
+        for anchor in ('X and TikTok remain personal identities', 'meaning-changing replacements require approval',
+                       'automatic cross-sharing', 'before cleanup', 'production originals',
+                       'Do not overwrite the approved revision', 'never duplicate them',
+                       'brand kit in Canva with computer use', 'In a signed-in browser you may open pages',
+                       'signed out from another browser'):
+            self.assertIn(anchor, quotes)
 
     def test_rule_guards_and_tests_exist(self):
         self.assertEqual(check_rule_links(load_rules()), [])
@@ -76,6 +84,8 @@ class RuleTests(unittest.TestCase):
         self.assertIn('R63', rules['R18']['statement'])
         self.assertIn('R59', rules['R40']['statement'])
         self.assertEqual(rules['R59']['source_file'], 'CHANGES.md')
+        self.assertIn('R78', rules['R27']['statement'])
+        self.assertEqual(rules['R78']['source_file'], 'CHANGES.md')
 
 
 class FailureRegisterTests(unittest.TestCase):
@@ -110,6 +120,18 @@ class FailureRegisterTests(unittest.TestCase):
             root = fixture_root(tempfile.mkdtemp(dir=folder), 'x' * 50, 'x' * 50, entries)
             with self.assertRaisesRegex(ValueError, 'pending_item'):
                 load_failures(root)
+
+    def test_tested_entry_guard_must_exist_nested_paths_too(self):
+        source = 'def test_present_in_fixture(self):\n    pass\n'
+        with tempfile.TemporaryDirectory() as folder:
+            entries = register(guard='engine/run/release.py:release_gate (fixture)')
+            root = fixture_root(folder, 'x' * 50, 'x' * 50, entries, source)
+            self.assertEqual(check_failures(load_failures(root), root),
+                             ['F01: guard not found: engine/run/release.py:release_gate'])
+            (root / 'engine' / 'run').mkdir(parents=True)
+            (root / 'engine' / 'run' / 'release.py').write_text('def release_gate(pack):\n    return pack\n',
+                                                                 encoding='utf-8')
+            self.assertEqual(check_failures(load_failures(root), root), [])
 
     def test_register_must_be_whole_and_in_order(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -153,6 +175,27 @@ class SourceAndBoundaryTests(unittest.TestCase):
             self.assertEqual(owners[name], 'growth-canva', name)
         self.assertEqual(owners['note-text'], 'growth-copy')
         self.assertEqual(owners['caption'], 'growth-copy')
+
+    def test_bad_source_labels_and_owners_are_refused(self):
+        sources = {'approved': False, 'approved_by': None, 'approved_at': None, 'note': 'Synthetic.',
+                   'categories': {'direct': 'unattributed'}}
+        boundary = {'source_file': 'CHANGES.md', 'quote': 'Synthetic quote.', 'owners': {'meme': 'growth-canva'}}
+        broken = [('sources', dict(sources, categories={'Direct': 'unattributed'}), 'lower-case'),
+                  ('sources', dict(sources, categories={'direct': 'owned'}), 'lower-case'),
+                  ('sources', dict(sources, approved_by='Someone'), 'names no approver'),
+                  ('sources', dict(sources, approved_at='2026-10-27'), 'names no approver'),
+                  ('boundary', dict(boundary, owners={'meme': 'growth-studio'}), 'growth-canva')]
+        with tempfile.TemporaryDirectory() as folder:
+            for name, data, message in broken:
+                root = Path(tempfile.mkdtemp(dir=folder))
+                (root / 'invariants').mkdir()
+                for kind, good in (('sources', sources), ('boundary', boundary)):
+                    (root / 'invariants' / (kind + '.json')).write_text(json.dumps(good), encoding='utf-8')
+                self.assertEqual(load_sources(root)['categories'], {'direct': 'unattributed'})
+                self.assertEqual(load_boundary(root)['owners'], {'meme': 'growth-canva'})
+                (root / 'invariants' / (name + '.json')).write_text(json.dumps(data), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, message):
+                    (load_sources if name == 'sources' else load_boundary)(root)
 
     def test_invariant_text_has_no_em_dash_or_percent(self):
         for name in ('rules.json', 'failures.json', 'sources.json', 'boundary.json'):
