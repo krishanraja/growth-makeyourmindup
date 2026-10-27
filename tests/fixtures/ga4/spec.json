@@ -1,0 +1,27 @@
+{
+  "schema": "growth-run-spec/1",
+  "run_id": "synthetic:2026-W45:week",
+  "kind": "week",
+  "slots": [
+    {
+      "slot_id": "w45-mon-threads-1",
+      "channel": "threads",
+      "words": "TEST FIXTURE ONLY. A synthetic Threads post. https://home.makeyourmindup.ai/p/synthetic-piece?utm_source=threads&utm_medium=organic&utm_campaign=growth&utm_content=placement_bdc6f7e80a42d61ec2b6"
+    },
+    {
+      "slot_id": "w45-mon-note-1",
+      "channel": "substack-notes",
+      "words": "TEST FIXTURE ONLY. A synthetic Note (https://home.makeyourmindup.ai/p/synthetic-piece?utm_source=notes&utm_medium=organic&utm_campaign=growth&utm_content=placement_0a24e3f622234d0f452c)."
+    },
+    {
+      "slot_id": "w45-tue-note-1",
+      "channel": "substack-notes",
+      "words": "TEST FIXTURE ONLY. A synthetic question with no link. Which one would you add?"
+    },
+    {
+      "slot_id": "w45-wed-threads-1",
+      "channel": "threads",
+      "words": "TEST FIXTURE ONLY. An untracked own link. https://home.makeyourmindup.ai/p/synthetic-piece and an outside one https://example.com/?utm_content=placement_ffffffffffffffffffff"
+    }
+  ]
+}
