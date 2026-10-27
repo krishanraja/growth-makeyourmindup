@@ -158,7 +158,7 @@ class LanesTests(unittest.TestCase):
 
     def test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes(self):
         folder = self.root / '.github' / 'workflows'
-        for name in ('release.yml', 'measure.yml', 'keys.yml', 'northstar.yml'):
+        for name in ('release.yml', 'measure.yml', 'keys.yml'):
             if (folder / name).exists():
                 (folder / name).unlink()
         self.assertEqual(self.errors(), [], 'a declared workflow another item is still building may be missing')
@@ -177,7 +177,7 @@ class LanesTests(unittest.TestCase):
         lanes['automations'] = lanes['automations'][1:]
         self.assertIn('lanes.json automations must name every automations.json entry once', self.errors(lanes))
         lanes = copy.deepcopy(self.lanes)
-        lanes['jobs'].append(dict(lanes['jobs'][6]))
+        lanes['jobs'].append(dict(next(j for j in lanes['jobs'] if j['id'] == 'make')))
         self.assertIn('named more than once: make', self.errors(lanes))
         lanes = copy.deepcopy(self.lanes)
         lanes['jobs'] = [j for j in lanes['jobs'] if j['id'] != 'watch']

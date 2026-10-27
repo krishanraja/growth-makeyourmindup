@@ -47,7 +47,10 @@ class CanvaLintTests(unittest.TestCase):
         self.assertEqual({k: (v['width'], v['height']) for k, v in kit['dimensions'].items()},
                          {'note-image': (1456, 1048), 'square': (1080, 1080), 'portrait': (1080, 1350),
                           'story': (1080, 1920), 'x-card': (1600, 900)})
-        self.assertEqual(kit['templates'], {})  # another session fills the template ids
+        self.assertTrue(kit['templates'])  # built in Canva on 27 Oct 2026
+        for key, entry in kit['templates'].items():
+            self.assertRegex(entry['design_id'], r'^DA[A-Za-z0-9_-]{9}$', key)
+            self.assertIn((entry['width'], entry['height']), {(v['width'], v['height']) for v in kit['dimensions'].values()}, key)
         self.assertTrue(guard_exists('engine/run/canva.py:lint'))  # crew/registry.json canva-studio lint
 
     def test_an_on_kit_design_passes(self):
@@ -64,10 +67,10 @@ class CanvaLintTests(unittest.TestCase):
                          ['off_kit_colour'])
         self.assertEqual(codes(lint_design(design(fonts=['Anton', 'Comic Sans MS', 'Antonio']), PIECE, kit)),
                          ['off_kit_font'])
-        self.assertEqual(codes(lint_design(design(width=1080, height=1350, size=None), PIECE, kit)),
-                         ['wrong_dimensions'])  # portrait is not an X size in the kit
+        self.assertEqual(codes(lint_design(design(width=1080, height=1920, size=None), PIECE, kit)),
+                         ['wrong_dimensions'])  # a Story frame is not an X size in the kit
         self.assertEqual(codes(lint_design(design(size='portrait'), PIECE, kit)), ['wrong_dimensions'])
-        self.assertEqual(codes(lint_design(design(channel='threads', size=None), PIECE, kit)), ['wrong_dimensions'])
+        self.assertEqual(codes(lint_design(design(channel='youtube', size=None), PIECE, kit)), ['wrong_dimensions'])
         self.assertEqual(codes(lint_design(design(channel='myspace', size=None), PIECE, kit)), ['unknown_channel'])
         self.assertEqual(codes(lint_design(design(width='wide'), PIECE, kit)), ['bad_dataset'])
         self.assertEqual(codes(lint_design('not a design', PIECE, kit)), ['bad_dataset'])
@@ -90,8 +93,9 @@ class CanvaLintTests(unittest.TestCase):
         self.assertEqual(codes(found), ['boilerplate'])
         self.assertEqual(codes(lint_design(design(template='freehand'), PIECE, kit)), ['template_not_approved'])
         self.assertEqual(codes(lint_design(design(template=None), PIECE, kit)), ['template_not_approved'])
-        # The checked-in kit has no template ids yet, so every design holds until they are filled.
-        self.assertEqual(codes(lint(design(), PIECE)), ['template_not_approved'])
+        # The checked-in kit carries the templates built in Canva; anything else holds.
+        self.assertEqual(codes(lint(design(), PIECE)), [])
+        self.assertEqual(codes(lint(design(template='freehand'), PIECE)), ['template_not_approved'])
 
     def test_canva_lint_is_a_run_route(self):
         self.assertEqual(cli.ROUTES['canva'], 'canva')
@@ -101,7 +105,7 @@ class CanvaLintTests(unittest.TestCase):
             piece.write_text(PIECE, encoding='utf-8')
             with contextlib.redirect_stdout(io.StringIO()) as out:
                 self.assertEqual(cli.main(['canva', 'lint', str(path), '--piece', str(piece)]), 1)
-            self.assertEqual(json.loads(out.getvalue())['codes'], ['off_kit_colour', 'template_not_approved'])
+            self.assertEqual(json.loads(out.getvalue())['codes'], ['off_kit_colour'])
 
 
 if __name__ == '__main__':

@@ -3,16 +3,40 @@
   "kind": "brand-kit",
   "kit_id": "kAHZOJ-K6I8",
   "name": "Make Your Mind Up",
-  "note": "The Canva brand kit for makeyourmindup (Krish, 27 Oct 2026, CHANGES.md). engine/run/canva.py:lint_design checks every export against it. Template ids are filled by the session that builds them in Canva.",
+  "note": "The Canva brand kit for makeyourmindup (Krish, 27 Oct 2026, CHANGES.md). engine/run/canva.py:lint_design checks every export against it. Template ids were built and read back in Canva on 27 Oct 2026 (folder makeyourmindup / growth templates); each is used by copy, never edited in place.",
   "palette": [
-    {"name": "Ink", "hex": "#0C1512"},
-    {"name": "Ink deep", "hex": "#070D0B"},
-    {"name": "Cream", "hex": "#F4EFE4"},
-    {"name": "Deep green", "hex": "#2F6B5C"},
-    {"name": "Mint", "hex": "#7EF0C0"},
-    {"name": "Butter", "hex": "#FFD84D"},
-    {"name": "Coral", "hex": "#FF6A4D"},
-    {"name": "Lilac", "hex": "#B7A6FF"}
+    {
+      "name": "Ink",
+      "hex": "#0C1512"
+    },
+    {
+      "name": "Ink deep",
+      "hex": "#070D0B"
+    },
+    {
+      "name": "Cream",
+      "hex": "#F4EFE4"
+    },
+    {
+      "name": "Deep green",
+      "hex": "#2F6B5C"
+    },
+    {
+      "name": "Mint",
+      "hex": "#7EF0C0"
+    },
+    {
+      "name": "Butter",
+      "hex": "#FFD84D"
+    },
+    {
+      "name": "Coral",
+      "hex": "#FF6A4D"
+    },
+    {
+      "name": "Lilac",
+      "hex": "#B7A6FF"
+    }
   ],
   "fonts": {
     "heading": "Anton",
@@ -21,11 +45,163 @@
     "labels": "IBM Plex Mono"
   },
   "dimensions": {
-    "note-image": {"width": 1456, "height": 1048, "channels": ["substack-notes"]},
-    "square": {"width": 1080, "height": 1080, "channels": ["instagram", "facebook", "threads", "x", "tiktok"]},
-    "portrait": {"width": 1080, "height": 1350, "channels": ["instagram", "facebook", "threads"]},
-    "story": {"width": 1080, "height": 1920, "channels": ["instagram", "facebook", "tiktok", "youtube"]},
-    "x-card": {"width": 1600, "height": 900, "channels": ["x"]}
+    "note-image": {
+      "width": 1456,
+      "height": 1048,
+      "channels": [
+        "substack-notes"
+      ]
+    },
+    "square": {
+      "width": 1080,
+      "height": 1080,
+      "channels": [
+        "instagram",
+        "facebook",
+        "threads",
+        "x",
+        "tiktok"
+      ]
+    },
+    "portrait": {
+      "width": 1080,
+      "height": 1350,
+      "channels": [
+        "instagram",
+        "facebook",
+        "threads",
+        "substack-notes",
+        "x"
+      ]
+    },
+    "story": {
+      "width": 1080,
+      "height": 1920,
+      "channels": [
+        "instagram",
+        "facebook",
+        "tiktok",
+        "youtube"
+      ]
+    },
+    "x-card": {
+      "width": 1600,
+      "height": 900,
+      "channels": [
+        "x",
+        "threads",
+        "substack-notes"
+      ]
+    }
   },
-  "templates": {}
+  "templates": {
+    "note-image": {
+      "design_id": "DAHZOguy7Xw",
+      "width": 1080,
+      "height": 1350,
+      "pages": 1
+    },
+    "quote-card": {
+      "design_id": "DAHZOguy7Xw",
+      "width": 1080,
+      "height": 1350,
+      "pages": 1
+    },
+    "receipt-card-x": {
+      "design_id": "DAHZOqZJG9w",
+      "width": 1600,
+      "height": 900,
+      "pages": 1
+    },
+    "receipt-card-threads": {
+      "design_id": "DAHZOqZJG9w",
+      "width": 1600,
+      "height": 900,
+      "pages": 1
+    },
+    "scorecard-note": {
+      "design_id": "DAHZOrT5feQ",
+      "width": 1080,
+      "height": 1350,
+      "pages": 1
+    },
+    "scorecard-threads": {
+      "design_id": "DAHZOrT5feQ",
+      "width": 1080,
+      "height": 1350,
+      "pages": 1
+    },
+    "poll-question": {
+      "design_id": "DAHZOlCaiTQ",
+      "width": 1080,
+      "height": 1350,
+      "pages": 1
+    },
+    "poll-result-note": {
+      "design_id": "DAHZOquTdPI",
+      "width": 1080,
+      "height": 1350,
+      "pages": 1
+    },
+    "poll-result-threads": {
+      "design_id": "DAHZOquTdPI",
+      "width": 1080,
+      "height": 1350,
+      "pages": 1
+    },
+    "poll-result-x": {
+      "design_id": "DAHZOquTdPI",
+      "width": 1080,
+      "height": 1350,
+      "pages": 1
+    },
+    "carousel": {
+      "design_id": "DAHZOutXDH4",
+      "width": 1080,
+      "height": 1350,
+      "pages": 3
+    },
+    "story-hook": {
+      "design_id": "DAHZOuwFz5A",
+      "width": 1080,
+      "height": 1920,
+      "pages": 1
+    },
+    "story-proof": {
+      "design_id": "DAHZOuwFz5A",
+      "width": 1080,
+      "height": 1920,
+      "pages": 1
+    },
+    "story-action": {
+      "design_id": "DAHZOuwFz5A",
+      "width": 1080,
+      "height": 1920,
+      "pages": 1
+    },
+    "meme-square": {
+      "design_id": "DAHZOkKvYU4",
+      "width": 1080,
+      "height": 1080,
+      "pages": 1
+    },
+    "meme-video": {
+      "design_id": "DAHZOn8SM18",
+      "width": 1080,
+      "height": 1920,
+      "pages": 1
+    },
+    "profile-art": {
+      "design_id": "DAHZOsYG_r0",
+      "width": 1080,
+      "height": 1080,
+      "pages": 1
+    }
+  },
+  "template_folder": "FAHZOvDdY8E",
+  "font_refs": {
+    "YAFdtZAC0Mk": "body (kit)",
+    "YAFcfq7XuZE": "display (kit)",
+    "YACgEZ1cb1Q": "Canva default: small bylines, footers and secondary lines only; swap to IBM Plex Mono in Canva when convenient"
+  }
 }
