@@ -315,3 +315,44 @@ stops the job with an error and nothing reported.
 `timeout`. Remote bodies are never echoed, and the bearer never appears in
 output, files or exceptions. `tests/test_control_center.py` proves the loop
 against a local stand-in server, including the worked example's digest.
+
+## Autonomy loop
+
+GET-GOING Step 1 on protocol 1.1.0 (`engine/control_center.py`,
+`engine/cc_loop.py`, proved in `tests/test_autonomy.py` against the stand-in).
+
+**Stages.** `proposal(..., stage=, parent_proposal_id=)` builds a `plan`
+(behind a wall, its words in `exact_payload`), a `go_live` (a send, post or
+spend naming its plan) or a `check_in` (a strategy call naming its plan, its
+progress in `exact_payload`). A report is `1.1.0` only when a proposal uses
+one of those fields, else `1.0.0`, and `validate_report` refuses either
+version claimed without, or carried beside, its fields. Before a 1.1.0 report
+is sent, the client reads capabilities: without `1.1.0` in `schema_versions`
+the run fails closed, `schema_version_unsupported` (or
+`schema_version_unconfirmed` when capabilities cannot be read). Nothing is
+downgraded or sent.
+
+**Amendments.** `amended_sha256` is recomputed as the SHA-256 of the
+canonical JSON of exactly `{amount_usd, exact_payload}`, null when absent.
+A mismatch is held (`amended_digest_mismatch`) and is never a usable approval.
+When it matches, his version acts, never the engine's.
+
+**The go-live step.** `golive_actions(proposals, decisions, ledger)` is pure
+and acts on nothing. It returns the exact payloads a separate release layer
+may act on: stage `go_live`, latest decision approved on the digest its own
+fields recompute to (his amended version when amended), parent plan approved
+on its current digest and not stopped, and not already in the ledger.
+`golive_review` gives the reason code for every go-live it holds. An
+approved plan never goes live. A declined check-in, or a declined plan, stops
+the plan, whatever digest the decline names. Spends (no spend authority) and
+LinkedIn (his own click) are always held.
+
+**The ledger.** `claim_golives(root, ...)` claims each action once in
+`.scratch/cc/golive-ledger.json`, written with `write_json` under `locked`,
+before anything acts, and records each stop so a purged plan stays stopped.
+A claimed action is never offered again; an uncertain outcome is read back,
+never repeated. The step reads `target` from the local proposal record (null
+when absent), because the report does not carry it.
+
+**Objective.** Per-source Substack rows are added within each source and
+summed into the all-source `new_subscribers`; an all-source row wins.

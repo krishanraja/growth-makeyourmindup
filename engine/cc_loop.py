@@ -1,7 +1,7 @@
 """The daily Control Center loop for this engine.
 
 Two entry points share one client (engine.control_center):
-- the publication workspace, where the eight Codex automations run: each
+- the publication workspace, where the Codex automations in automations.json run: each
   job starts with `growth.py cc start --job KIND --deliver` and ends with
   `growth.py cc finish --job KIND ... --deliver`;
 - the GitHub runner, woken by Control Center's `cc-growth-directive`
@@ -20,10 +20,10 @@ import subprocess
 import sys
 import tempfile
 
-from .control_center import (ENGINE_ID, SLUG, ProtocolError, build_report, iso,
+from .control_center import (ENGINE_ID, SLUG, ProtocolError, action_key, build_report, golive_review, iso,
                              match_decisions, objective, proposal)
-from .core import KINDS, UTC, http_url, instant, ny_time, read_json, today, write_json
-from .operations import aggregate, daily_queue
+from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
+from .operations import aggregate, daily_queue, validate_observation
 
 SECRET_ENV = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN')
 STATE_DIR = Path('.scratch') / 'cc'
@@ -202,8 +202,19 @@ def experiment_proposals(root):
     return out
 
 
+def automation_count(root):
+    """How many automations automations.json defines, or None when it cannot be read."""
+    try:
+        entries = read_json(Path(root) / 'automations.json')['automations']
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    return len(entries) if isinstance(entries, list) else None
+
+
 def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None):
     root = Path(root)
+    automations = automation_count(root)
+    defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
     by_name = {c['name']: c for c in checks}
     failed = [c['name'] for c in checks if not c['ok']]
     activity = []
@@ -216,7 +227,7 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
                          + ('passed' if tests['ok'] else 'failed') + (' (' + str(count) + ' tests)' if count else '')})
     doctor = by_name.get('doctor_offline')
     if doctor:
-        activity.append({'line': 'Checked the eight automation definitions, job files and config offline: '
+        activity.append({'line': 'Checked ' + defined + 'automation definitions, job files and config offline: '
                          + ('ready' if doctor['ok'] else 'not ready')})
     dry = by_name.get('dry_run')
     if dry:
@@ -236,7 +247,7 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
                      + str(sum(e.get('status') == 'running' for e in experiments)) + ' running'})
     activity.append({'line': 'Posted, sent, published and spent nothing'})
     holds = [{'reason': 'Drafts and dashboard numbers are made only in the publication workspace',
-              'detail': 'The eight Codex automations draft and read dashboards there and report as their own runs; '
+              'detail': defined[0].upper() + defined[1:] + 'Codex automations draft and read dashboards there and report as their own runs; '
                         'this runner checks the engine offline.'}]
     if failed:
         holds.append({'reason': 'Offline checks failed on the runner', 'detail': ', '.join(failed)})
@@ -250,24 +261,81 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
 
 # The publication workspace ------------------------------------------------
 
+ALL_SOURCES = 'publication'
+
+
+def _in_week(row, start, now):
+    """True inside this New York week, False outside it, None when the window is unreadable."""
+    try:
+        return instant(row['start']) >= start and instant(row['end']) <= instant(now)
+    except (KeyError, TypeError, ValueError, AttributeError):
+        return None
+
+
+def _substack_week(observations, now):
+    """All Substack new-free rows, this week's, the unreadable ones and the week's start."""
+    rows = [r for r in observations or [] if isinstance(r, dict)
+            and r.get('platform') == 'substack' and r.get('metric') == 'new_free']
+    start = week_start(now)
+    placed = [(r, _in_week(r, start, now)) for r in rows]
+    return rows, [r for r, inside in placed if inside], [r for r, inside in placed if inside is None], start
+
+
 def new_subscribers(observations, now):
-    rows = [r for r in observations or [] if r.get('platform') == 'substack' and r.get('metric') == 'new_free']
+    """This New York week's all-source new free subscribers (Krish owns the metric).
+
+    Rows scoped to the whole publication are the all-source reading. Without
+    one, per-source rows are added within each source and the sources summed,
+    which means the same. Both together would count people twice, so the
+    all-source reading wins."""
+    rows, current, unreadable, start = _substack_week(observations, now)
     if not rows:
         return objective('new_subscribers', reason='No Substack new-subscriber reading was supplied to this run; '
                                                    'the numbers job reads it from the dashboard')
-    start = week_start(now)
-    current = [r for r in rows if instant(r['start']) >= start and instant(r['end']) <= instant(now)]
+    if unreadable:
+        return objective('new_subscribers', reason='A Substack new-subscriber reading has no readable window')
     if not current:
         return objective('new_subscribers', reason='No Substack new-subscriber window inside this New York week yet')
-    try:
-        total = aggregate(current)
-    except ValueError as error:
-        return objective('new_subscribers', reason='Substack windows this week cannot be added: ' + str(error))
-    if total.get('value') is None:
-        return objective('new_subscribers', reason='Substack this week: ' + total.get('reason', 'not shown'))
-    if instant(total['start']) != start:
-        return objective('new_subscribers', reason='Substack windows this week do not start on Monday in New York')
-    return objective('new_subscribers', total['value'], 'measured', window_start=total['start'], window_end=total['end'])
+    sources = {}
+    for row in current:
+        sources.setdefault(row.get('scope'), []).append(row)
+    parts = [sources[ALL_SOURCES]] if ALL_SOURCES in sources else [sources[k] for k in sorted(sources, key=str)]
+    totals = []
+    for part in parts:
+        try:
+            total = aggregate(part)
+        except ValueError as error:
+            return objective('new_subscribers', reason='Substack windows this week cannot be added: ' + str(error))
+        if total.get('value') is None:
+            return objective('new_subscribers', reason='Substack this week: ' + total.get('reason', 'not shown'))
+        if instant(total['start']) != start:
+            return objective('new_subscribers', reason='Substack windows this week do not start on Monday in New York')
+        totals.append(total)
+    if len({instant(t['end']) for t in totals}) != 1:
+        return objective('new_subscribers', reason='Substack sources this week end at different times, so they cannot be added')
+    return objective('new_subscribers', sum(t['value'] for t in totals), 'measured',
+                     window_start=totals[0]['start'], window_end=totals[0]['end'])
+
+
+def observation_line(observations, now):
+    """Exactly what this report validated: only this week's Substack new-subscriber readings."""
+    observations = list(observations or [])
+    _, current, unreadable, _ = _substack_week(observations, now)
+    valid = 0
+    for row in current:
+        try:
+            validate_observation(row)
+            valid += 1
+        except (ValueError, TypeError, AttributeError):
+            pass
+    failed = len(current) - valid + len(unreadable)
+    rest = len(observations) - len(current) - len(unreadable)
+    line = 'Validated ' + count(valid, 'Substack new-subscriber reading') + ' inside this New York week'
+    if failed:
+        line += ', ' + str(failed) + ' failed validation'
+    if rest:
+        line += '; ' + count(rest, 'other supplied observation') + ' not checked'
+    return line
 
 
 def _items(envelopes, queue, now, job):
@@ -361,7 +429,7 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     if deferred:
         activity.append({'line': 'Deferred ' + count(len(deferred), 'draft') + ' for the budget, expiry or an unverified prerequisite'})
     if observations:
-        activity.append({'line': 'Validated ' + count(len(observations), 'dashboard observation')})
+        activity.append({'line': observation_line(observations, now)})
     if events:
         activity.append({'line': 'Recorded ' + count(len(events), 'completion') + ' Krish confirmed'})
     activity.append({'line': 'Posted, sent, published and spent nothing; Krish acts on each proposal himself'})
@@ -392,11 +460,48 @@ def remember(root, report, decisions, read_at):
         ledger[item['proposal_id']] = {'payload_sha256': item['payload_sha256'], 'title': item['title'],
                                        'wall': item['wall'], 'channel': item['channel'],
                                        'exact_payload': item['exact_payload'], 'reported_in': report['run_id']}
+        for key in ('stage', 'parent_proposal_id'):
+            if key in item:  # 1.1.0: the go-live step needs each stage and its plan.
+                ledger[item['proposal_id']][key] = item[key]
+        if 'stage' in item:
+            ledger[item['proposal_id']].update(amount_usd=item['amount_usd'], expires_at=item['expires_at'])
     write_json(path, ledger)
     known = [{'proposal_id': pid, 'payload_sha256': row['payload_sha256']} for pid, row in ledger.items()]
     matched = match_decisions(decisions or [], known)
     write_json(state_path(root, 'decisions.json'), {'read_at': iso(read_at), 'decisions': matched})
     return matched
+
+
+GOLIVE_LEDGER = 'golive-ledger.json'
+
+
+def golive_ledger(root):
+    """The local idempotency ledger: go-lives already claimed, and plans Krish stopped."""
+    path = state_path(root, GOLIVE_LEDGER)
+    ledger = read_json(path) if path.exists() else {}
+    return {'acted': dict(ledger.get('acted') or {}), 'stopped': dict(ledger.get('stopped') or {})}
+
+
+def claim_golives(root, proposals, decisions, now=None):
+    """Claim each approved go-live once, under the lock, and return the review.
+
+    The returned actions are claimed before anything acts on them, so a lost or
+    uncertain outcome is never repeated: the release layer reads back instead.
+    Stops are recorded too, so a purged plan stays stopped. Acts on nothing."""
+    path = state_path(root, GOLIVE_LEDGER)
+    at = iso(now)
+    with locked(path):
+        ledger = golive_ledger(root)
+        review = golive_review(proposals, decisions, ledger, now)
+        ledger['stopped'].update({pid: why for pid, why in review['stopped'].items() if pid not in ledger['stopped']})
+        for action in review['actions']:
+            ledger['acted'][action_key(action)] = {
+                'proposal_id': action['proposal_id'], 'parent_proposal_id': action['parent_proposal_id'],
+                'action_sha256': action['action_sha256'], 'amended': action['amended'],
+                'decided_at': action['decided_at'], 'claimed_at': at}
+        write_json(path, {'acted': dict(sorted(ledger['acted'].items())),
+                          'stopped': dict(sorted(ledger['stopped'].items()))})
+    return review
 
 
 def decisions_since(root, now):
