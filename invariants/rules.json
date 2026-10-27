@@ -162,7 +162,7 @@
       "source_file": "AGENTS.md",
       "quote": "If he amended it, recompute `amended_sha256` and use his version, never the engine's.",
       "enforced_by": [
-        "doc-only"
+        "engine/control_center.py:amendment_ok"
       ],
       "tests": [
         "test_amended_payload_wins_and_binds",
@@ -352,7 +352,7 @@
       "source_file": "BROWSER.md",
       "quote": "This is draft authority, not scheduling/publication authority.",
       "enforced_by": [
-        "doc-only"
+        "engine/run/release.py:argument_errors"
       ],
       "tests": [
         "test_draft_save_sets_saveToDraft_without_dueAt"
@@ -448,7 +448,7 @@
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Scheduling proves only a scheduled post. Actual publication needs the native URL/content/account and a dated readback.",
       "enforced_by": [
-        "doc-only"
+        "engine/run/release.py:check_readback"
       ],
       "tests": [
         "test_scheduled_is_not_sent",
@@ -498,7 +498,7 @@
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "never draw fake interactive controls or invent poll/link-sticker support.",
       "enforced_by": [
-        "doc-only"
+        "engine/run/release.py:check_slot"
       ],
       "tests": [
         "test_link_sticker_never_claimed_automatic"
@@ -810,7 +810,7 @@
       "source_file": "AGENTS.md",
       "quote": "his yes keeps it going, his amendment redirects it, his no stops the plan for good.",
       "enforced_by": [
-        "doc-only"
+        "engine/control_center.py:stopped_plans"
       ],
       "tests": [
         "test_declined_check_in_stops_its_plan"
@@ -874,7 +874,7 @@
       "source_file": "docs/ASSET-STORAGE.md",
       "quote": "Do not overwrite the approved revision or silently update its approval digest.",
       "enforced_by": [
-        "process"
+        "engine/run/release.py:verify_asset_bytes"
       ],
       "tests": [
         "test_release_refuses_changed_asset_bytes"
@@ -978,7 +978,7 @@
     },
     {
       "id": "R85",
-      "statement": "Every campaign stores a manifest with SHA-256, byte size, revision, source identity and approval scope beside its approved files.",
+      "statement": "Every campaign stores a manifest with SHA-256, byte size, revision, source identity and approval scope.",
       "source_file": "docs/ASSET-STORAGE.md",
       "quote": "Store a manifest with SHA-256, byte size, revision, source identity and approval scope.",
       "enforced_by": [

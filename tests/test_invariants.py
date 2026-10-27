@@ -131,22 +131,24 @@ class FailureRegisterTests(unittest.TestCase):
         failures = load_failures()
         self.assertEqual(tuple(f['id'] for f in failures), FAILURE_IDS)
         pending = [f for f in failures if f['status'] == 'pending-build']
-        self.assertTrue(pending and all(f['pending_item'] for f in pending))
+        # 27 Oct: entries flip to tested once their tests exist, so none need stay pending.
+        self.assertTrue(all(f.get('pending_item') for f in pending))
         self.assertTrue(all(f['tests'] for f in failures if f['status'] == 'tested'))
 
     def test_pending_build_stays_only_while_a_test_is_missing(self):
         # Once every named test exists, the entry is flipped to tested and its pending_item dropped.
         names = defined_tests()
+        offenders = []
         for kind, entries in (('failure', load_failures()), ('rule', load_rules())):
             for entry in entries:
                 pending = entry.get('pending_tests', [])
                 if kind == 'failure' and entry['status'] == 'pending-build':
                     pending = pending + entry['tests']
-                if pending:
-                    self.assertTrue(any(t not in names for t in pending),
-                                    entry['id'] + ': every pending test exists; flip it and drop pending_item')
-                else:
-                    self.assertNotIn('pending_item', entry, entry['id'])
+                if pending and all(t in names for t in pending):
+                    offenders.append(entry['id'] + ': every pending test exists; flip it and drop pending_item')
+                elif not pending and 'pending_item' in entry:
+                    offenders.append(entry['id'] + ': nothing is pending; drop pending_item')
+        self.assertEqual(offenders, [])
 
     def test_register_records_the_27_october_learnings(self):
         failures = {f['id']: f for f in load_failures()}
