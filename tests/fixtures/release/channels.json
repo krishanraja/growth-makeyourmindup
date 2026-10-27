@@ -1,8 +1,44 @@
-{
-  "substack-notes": "cccccccccccccccccccccc01",
-  "threads": "cccccccccccccccccccccc02",
-  "instagram": "cccccccccccccccccccccc03",
-  "tiktok": "cccccccccccccccccccccc04",
-  "linkedin": "cccccccccccccccccccccc05",
-  "x": "cccccccccccccccccccccc06"
-}
+[
+  {
+    "id": "cccccccccccccccccccccc01",
+    "service": "substack",
+    "name": "synthetic-notes",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc02",
+    "service": "threads",
+    "name": "synthetic-threads",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc03",
+    "service": "instagram",
+    "name": "synthetic-instagram",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc04",
+    "service": "tiktok",
+    "name": "synthetic-tiktok",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc05",
+    "service": "linkedin",
+    "name": "synthetic-linkedin",
+    "isDisconnected": false,
+    "isLocked": false
+  },
+  {
+    "id": "cccccccccccccccccccccc06",
+    "service": "twitter",
+    "name": "synthetic-x",
+    "isDisconnected": false,
+    "isLocked": false
+  }
+]

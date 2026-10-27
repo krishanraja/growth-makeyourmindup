@@ -2,39 +2,51 @@
 arguments, and a Buffer readback becomes local evidence. Offline only.
 
 This code never calls Buffer, Control Center or any network, and it never
-schedules, sends or posts. A session passes the emitted arguments verbatim to
-the named Buffer MCP tool, then feeds the get_post readback to `release check`.
-Uncertain outcomes are held for a readback, never retried blindly.
+schedules, sends or posts. A session passes the emitted `arguments` verbatim
+to the named Buffer MCP tool, then feeds the get_post readback to `release
+check`. Uncertain outcomes are held for a readback, never retried blindly.
 
 Buffer schema facts relied on, read on 27 October 2026 with the read-only
 introspect_schema and the create_post/edit_post/get_post tool definitions.
 Recheck them before trusting this after a provider change:
-- create_post requires channelId and schedulingType; edit_post requires postId.
-  Both take text, assets, metadata, mode, dueAt and saveToDraft. GraphQL:
-  createPost(input: CreatePostInput!) and editPost(input: EditPostInput!),
-  both returning PostActionPayload.
+- GraphQL createPost(input: CreatePostInput!) and editPost(input:
+  EditPostInput!) both return PostActionPayload. CreatePostInput needs
+  channelId, schedulingType and mode (ShareMode!, required), while the
+  create_post domain tool defaults mode to addToQueue; a draft create_post
+  therefore relies on saveToDraft true overriding that default, and every
+  scheduled call names customScheduled. EditPostInput needs only id.
 - ShareMode: addToQueue, customScheduled, shareNext, shareNow. dueAt is ISO
   8601 with an offset, only valid with customScheduled, and must be in the
   future. SchedulingType: automatic, notification.
 - Every edit_post is revalidated as a whole post, not merged with the stored
-  one, and sending a mode reschedules it.
-- An asset is exactly one of {image: {url, metadata: {altText}}},
-  {video: {url}} or {document: {url, title, thumbnailUrl}} (LinkedIn only).
-- Metadata: instagram {type story|reel|post, shouldShareToFeed (required),
-  isAiGenerated, link (the Story link sticker)}; facebook {type post|reel|
-  story}; tiktok {isAiGenerated (video only), title}; threads {type post|
-  ghost_post}; youtube requires title and categoryId. The domain tool offers
-  no null linkedin linkAttachment; GraphQL EditPostInput is the inspected
-  clear route.
-- PostStatus: draft, error, needs_approval, scheduled, sending, sent.
-  PostVia: api, buffer, network. A Post carries externalLink and sentAt.
-- Services used: substack, threads, twitter, instagram, facebook, tiktok,
-  youtube, linkedin.
+  one, and sending a mode reschedules it. Stored alt text and AI labels are
+  therefore read from the target draft and carried forward, or the edit holds.
+- AssetInput is exactly one of {image: {url, metadata: {altText}}},
+  {video: {url}} or {document: {url, title, thumbnailUrl}}. A returned
+  ImageAsset carries source and image.altText.
+- Metadata: instagram {type, shouldShareToFeed (required), isAiGenerated,
+  link (the Story link sticker), stickerFields}; facebook {type post|reel|
+  story}; tiktok {isAiGenerated, title}; twitter {isAiGenerated}; threads
+  {type}; youtube needs title and categoryId; linkedin, facebook, threads and
+  substack readbacks carry linkAttachment. The domain tool refuses a null
+  linkedin linkAttachment; GraphQL EditPostInput is the inspected clear route.
+- Post carries channelId, channelService, schedulingType, status, via,
+  externalLink and sentAt. PostStatus: draft, error, needs_approval,
+  scheduled, sending, sent. PostVia: api, buffer, network.
 
 The decision file is Krish's recorded go-live decision for one run:
 {"run_id", "proposal_id", "decision": "approved", "decided_at",
  "slots": {slot_id: payload_sha256}}. An amended slot carries his amended
-digest, so the amended version is the one that releases.
+digest, so the amended version is the one that releases. The spec's
+signature names that proposal and records decision_digest, the sha256 of the
+canonical JSON of the decision's slots map; both are required.
+
+A malformed or hand-edited slot refuses the whole run on purpose: the spec is
+signed as one document, so a bad line means the signing cannot be trusted.
+
+Asset bytes: --assets must be a folder of fresh downloads of each asset url,
+made into .scratch immediately before release. Buffer fetches the url, and
+the Drive 4 Growth library is editable by link, so older copies prove nothing.
 """
 import argparse
 import hashlib
@@ -45,23 +57,24 @@ import sys
 from urllib.parse import urlsplit
 
 from engine.control_center import sha256_hex
-from engine.core import instant, read_json, write_json
+from engine.core import instant, locked, read_json, write_json
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_CHECKED = '2026-10-27'
 SERVER = 'Buffer'
 HEX64 = re.compile(r'^[0-9a-f]{64}$')
 BUFFER_ID = re.compile(r'^[a-f0-9]{24}$')
-DUE_AT = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$')
+DUE_AT = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3}|\.\d{6})?(?:Z|[+-]\d{2}:\d{2})$')
 PLAY = re.compile(r'^P[1-9]$')
+ASSET_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9 ._-]*$')
 SAFE = re.compile(r'[^A-Za-z0-9._-]+')
 SLOT_KEYS = {'slot_id', 'channel', 'format', 'play', 'due_at', 'words', 'assets', 'link_placement',
              'cta', 'forward_line', 'experiment_arm', 'publish_mode', 'buffer_draft_id', 'payload_sha256'}
 ASSET_KEYS = {'name', 'sha256', 'url', 'bytes'}
 DIGEST_KEYS = ('channel', 'format', 'words', 'link_placement', 'due_at', 'publish_mode')
-# Channel id -> (Buffer service, native hosts). A leading dot allows subdomains.
+# Channel id -> (Buffer service, native hosts). Hosts match exactly.
 CHANNELS = {
-    'substack-notes': ('substack', ('substack.com', '.substack.com')),
+    'substack-notes': ('substack', ('substack.com', 'www.substack.com')),
     'threads': ('threads', ('threads.net', 'www.threads.net', 'threads.com', 'www.threads.com')),
     'x': ('twitter', ('x.com', 'www.x.com', 'twitter.com', 'www.twitter.com')),
     'instagram': ('instagram', ('instagram.com', 'www.instagram.com')),
@@ -70,15 +83,25 @@ CHANNELS = {
     'youtube': ('youtube', ('youtube.com', 'www.youtube.com', 'm.youtube.com')),
     'linkedin': ('linkedin', ('linkedin.com', 'www.linkedin.com')),
 }
+# Channel id -> social/channels profile id, where one exists.
+CHANNEL_PROFILE = {'substack-notes': 'substack', 'threads': None, 'x': 'x', 'instagram': 'instagram',
+                   'facebook': 'facebook', 'tiktok': 'tiktok', 'youtube': 'youtube', 'linkedin': 'linkedin'}
+# Native post URLs that carry the account handle as their first path segment.
+HANDLE_IN_PATH = ('x', 'tiktok')
 KRISH_CLICK_ONLY = ('linkedin',)
+# A placement that lives entirely in `words`, so one Buffer call carries it.
+EXPRESSIBLE_LINK_PLACEMENTS = (None, 'none', 'in_post')
 MEDIA = {'.png': 'image', '.jpg': 'image', '.jpeg': 'image', '.gif': 'image', '.webp': 'image',
          '.mp4': 'video', '.mov': 'video', '.webm': 'video', '.pdf': 'document'}
 NEEDS_MEDIA = ('instagram', 'tiktok', 'youtube')
+NO_MIXED_MEDIA = ('instagram', 'facebook', 'tiktok')
+STORY_TYPED = ('instagram', 'facebook')
 PREVIEW_CLEAR_ROUTE = {
     'tool': 'execute_mutation', 'server': SERVER,
     'mutation': 'editPost(input: $input)', 'input_type': 'EditPostInput!',
     'returns': 'PostActionPayload: PostActionSuccess { post { id status dueAt } } or MutationError { message }',
 }
+DROP_HOLD = 'edit_would_drop_alt_text_or_ai_label'
 
 
 # Slot identity -------------------------------------------------------------
@@ -95,6 +118,14 @@ def media_kind(asset):
     if kind is None:
         raise ValueError('unsupported asset type: ' + asset['name'])
     return kind
+
+
+def _squash(value):
+    return re.sub(r'[^a-z0-9]', '', (value or '').lower())
+
+
+def is_draft(slot):
+    return slot['publish_mode'] == 'krish_click' or slot['due_at'] is None
 
 
 def check_slot(slot):
@@ -136,7 +167,7 @@ def check_slot(slot):
     for asset in slot['assets']:
         if not isinstance(asset, dict) or set(asset) != ASSET_KEYS:
             raise ValueError(sid + ': each asset carries exactly name, sha256, url and bytes')
-        if not isinstance(asset['name'], str) or not asset['name'].strip() or Path(asset['name']).name != asset['name']:
+        if not isinstance(asset['name'], str) or not ASSET_NAME.match(asset['name']):
             raise ValueError(sid + ': asset name must be a plain file name')
         if not isinstance(asset['sha256'], str) or not HEX64.match(asset['sha256']):
             raise ValueError(sid + ': asset sha256 must be 64 lower-case hex characters')
@@ -148,7 +179,7 @@ def check_slot(slot):
     if slot['format'] == 'story' and len(slot['assets']) != 1:
         # F14: Stories are one frame per post; a sequence is several slots.
         raise ValueError(sid + ': a Story is one frame per post')
-    if slot['channel'] == 'instagram' and (slot['link_placement'] or '').replace('-', '_') == 'link_sticker':
+    if slot['channel'] in ('instagram', 'facebook') and 'sticker' in _squash(slot['link_placement']):
         # F09: the sticker switched Automatic to Notify Me in the composer.
         raise ValueError(sid + ': an Instagram Story link sticker is never set or claimed automatic')
     if slot['channel'] in NEEDS_MEDIA and not slot['assets']:
@@ -170,21 +201,41 @@ def https_url(value):
     return u.scheme == 'https' and bool(u.hostname) and not (u.username or u.password)
 
 
-def native_host(channel, url):
+def _first_segment(url):
+    parts = [p for p in urlsplit(url).path.split('/') if p]
+    return parts[0].lower() if parts else ''
+
+
+def native_host(channel, url, account_url=None):
+    """An https native URL on the channel's host and, where the native URL
+    carries the handle, on the expected account."""
     if not https_url(url):
         return False
-    host = urlsplit(url).hostname.lower()
-    for allowed in CHANNELS[channel][1]:
-        if host == allowed or (allowed.startswith('.') and host.endswith(allowed)):
-            return True
-    return False
+    if urlsplit(url).hostname.lower() not in CHANNELS[channel][1]:
+        return False
+    if account_url and channel in HANDLE_IN_PATH:
+        handle = _first_segment(account_url)
+        return bool(handle) and _first_segment(url) == handle
+    return True
+
+
+def load_accounts(root=None):
+    """Channel id -> account_url for channels whose native URLs carry the handle."""
+    folder = Path(root or ROOT) / 'social' / 'channels'
+    out = {}
+    for channel in HANDLE_IN_PATH:
+        path = folder / (CHANNEL_PROFILE[channel] + '.json')
+        if path.is_file():
+            out[channel] = read_json(path)['account_url']
+    return out
 
 
 def verify_asset_bytes(slot, paths):
     """Refuse unless every file, in order, has the signed bytes and sha256.
 
     The Drive 4 Growth library is editable by anyone with its link, so the
-    bytes are checked at release and never trusted for where they live.
+    bytes are checked at release and never trusted for where they live. The
+    files must be fresh downloads of each asset url made just before release.
     """
     paths = [Path(p) for p in paths]
     if len(paths) != len(slot['assets']):
@@ -198,55 +249,158 @@ def verify_asset_bytes(slot, paths):
     return True
 
 
+# Live Buffer state ---------------------------------------------------------
+
+def _post(value):
+    if isinstance(value, dict) and 'status' not in value and isinstance(value.get('post'), dict):
+        return value['post']
+    return value
+
+
+def service_meta(post, service):
+    """The post's metadata for one service, keyed or flat as the readback gives it."""
+    meta = post.get('metadata') or {}
+    if not isinstance(meta, dict):
+        return {}
+    keyed = meta.get(service)
+    return keyed if isinstance(keyed, dict) else meta
+
+
+def resolve_channel(slot, channels):
+    """The one Buffer channel of this slot's service in a list_channels readback."""
+    if isinstance(channels, dict):
+        channels = channels.get('channels')
+    service = CHANNELS[slot['channel']][0]
+    found = [c for c in (channels or []) if isinstance(c, dict) and c.get('service') == service]
+    if not found:
+        raise ValueError('no Buffer channel for ' + service + ' in the list_channels readback; never guess')
+    if len(found) > 1:
+        raise ValueError('more than one Buffer channel for ' + service + '; name the one intended')
+    channel = found[0]
+    if not (isinstance(channel.get('id'), str) and BUFFER_ID.match(channel['id'])):
+        raise ValueError('Buffer channelId is malformed in the list_channels readback')
+    if channel.get('isDisconnected') or channel.get('isLocked'):
+        raise ValueError('Buffer channel for ' + service + ' is disconnected or locked')
+    return channel
+
+
+def target_errors(slot, target, channel_id):
+    """F01 groundwork: an edit acts only on the intended, still-draft post."""
+    target = _post(target)
+    if not isinstance(target, dict):
+        return ['edit target was not read back with get_post']
+    out = []
+    if target.get('id') != slot['buffer_draft_id']:
+        out.append('edit target is not the signed draft')
+    if target.get('channelService') != CHANNELS[slot['channel']][0]:
+        out.append('edit target is on another service')
+    if target.get('channelId') != channel_id:
+        out.append('edit target is on another Buffer channel')
+    if target.get('status') != 'draft':
+        out.append('edit target is not a draft')
+    if target.get('via') == 'network':
+        out.append('edit target was imported from the network')
+    return out
+
+
+def _carried(slot, target):
+    """Alt text per signed asset url and the AI label stored on the target
+    draft, which a whole-post edit would otherwise drop. Raises a hold."""
+    alts, unmatched = {}, False
+    urls = [a['url'] for a in slot['assets']]
+    for asset in (target or {}).get('assets') or []:
+        alt = ((asset or {}).get('image') or {}).get('altText') if isinstance(asset, dict) else None
+        if not alt:
+            continue
+        if asset.get('source') in urls:
+            alts[asset['source']] = alt
+        else:
+            unmatched = True
+    if unmatched:
+        raise ValueError(DROP_HOLD)
+    service = CHANNELS[slot['channel']][0]
+    ai = target is not None and service_meta(target, service).get('isAiGenerated') is True
+    video = any(media_kind(a) == 'video' for a in slot['assets'])
+    if ai and not (service in ('instagram', 'twitter') or (service == 'tiktok' and video)):
+        # F02: a TikTok photo post can never carry it, so the edit holds.
+        raise ValueError(DROP_HOLD)
+    return alts, ai
+
+
 # Exact call arguments ------------------------------------------------------
 
-def _asset_input(asset):
+def _asset_input(asset, alts):
     kind = media_kind(asset)
     if kind == 'document':
         raise ValueError('document assets are held: Buffer lost a saved PDF preview (buffer-document-preview-hold)')
-    return {kind: {'url': asset['url']}}
+    body = {'url': asset['url']}
+    if kind == 'image' and alts.get(asset['url']):
+        body['metadata'] = {'altText': alts[asset['url']]}
+    return {kind: body}
 
 
-def _metadata(slot):
+def _metadata(slot, ai=False):
     channel, fmt = slot['channel'], slot['format']
     video = any(media_kind(a) == 'video' for a in slot['assets'])
     if channel == 'instagram':
         kind = 'story' if fmt == 'story' else 'reel' if video else 'post'
-        # Never `link` (F09) and never an AI flag the slot does not sign.
-        return {'instagram': {'type': kind, 'shouldShareToFeed': kind != 'story'}}
+        # Never `link` (F09). An AI label is only ever the stored one carried forward.
+        meta = {'type': kind, 'shouldShareToFeed': kind != 'story'}
+        if ai:
+            meta['isAiGenerated'] = True
+        return {'instagram': meta}
     if channel == 'facebook':
         return {'facebook': {'type': 'story' if fmt == 'story' else 'reel' if video else 'post'}}
     if channel == 'threads':
         return {'threads': {'type': 'post'}}
-    # TikTok photo posts never carry isAiGenerated (F02); X, Notes and
-    # LinkedIn need no metadata, and a link preview is never attached.
+    if ai and channel == 'x':
+        return {'twitter': {'isAiGenerated': True}}
+    if ai and channel == 'tiktok' and video:
+        return {'tiktok': {'isAiGenerated': True}}
+    # TikTok photo posts never carry isAiGenerated (F02); Notes and LinkedIn
+    # need no metadata, and a link preview is never attached.
     return None
 
 
-def call_arguments(slot, channel_id=None, now=None):
-    """The one exact Buffer call for a checked slot, or a ValueError hold."""
+def call_arguments(slot, channel, now=None, target=None):
+    """The one exact Buffer call for a checked slot, or a ValueError hold.
+
+    channel is this slot's entry from a live list_channels readback; target
+    is a fresh get_post of buffer_draft_id, required for every edit.
+    """
     sid = slot['slot_id']
+    service = CHANNELS[slot['channel']][0]
     if slot['channel'] == 'youtube':
         raise ValueError('youtube needs a signed title and categoryId, which the slot does not carry')
+    if slot['link_placement'] not in EXPRESSIBLE_LINK_PLACEMENTS:
+        raise ValueError('link_placement not expressible as one Buffer call: ' + slot['link_placement'])
+    kinds = {media_kind(a) for a in slot['assets']}
+    if slot['channel'] in NO_MIXED_MEDIA and {'image', 'video'} <= kinds:
+        raise ValueError('mixed images and video are held for ' + slot['channel'])
     for asset in slot['assets']:
         if asset['url'] is None:
             raise ValueError('asset has no public url yet: ' + asset['name'])
-    draft = slot['publish_mode'] == 'krish_click' or slot['due_at'] is None
+    if not isinstance(channel, dict) or channel.get('service') != service \
+            or not (isinstance(channel.get('id'), str) and BUFFER_ID.match(channel['id'])):
+        raise ValueError('Buffer channel must be the live ' + service + ' entry from list_channels')
+    draft = is_draft(slot)
     if not draft and instant(slot['due_at']) <= instant(now):
         raise ValueError('due_at is not in the future')
-    args = {}
+    args, alts, ai = {}, {}, False
     if slot['buffer_draft_id']:
         tool = 'edit_post'
+        errors = target_errors(slot, target, channel['id'])
+        if errors:
+            raise ValueError('; '.join(errors))
+        alts, ai = _carried(slot, _post(target))
         args['postId'] = slot['buffer_draft_id']
     else:
         tool = 'create_post'
-        if not (isinstance(channel_id, str) and BUFFER_ID.match(channel_id)):
-            raise ValueError('Buffer channelId unknown: read list_channels live; never guess')
-        args['channelId'] = channel_id
+        args['channelId'] = channel['id']
     # F01: an edit always carries the complete payload, never scheduling alone.
     args['text'] = slot['words']
-    args['assets'] = [_asset_input(a) for a in slot['assets']]
-    meta = _metadata(slot)
+    args['assets'] = [_asset_input(a, alts) for a in slot['assets']]
+    meta = _metadata(slot, ai)
     if meta:
         args['metadata'] = meta
     if draft:
@@ -257,8 +411,8 @@ def call_arguments(slot, channel_id=None, now=None):
     else:
         args.update({'mode': 'customScheduled', 'schedulingType': 'automatic',
                      'saveToDraft': False, 'dueAt': slot['due_at']})
-    call = {'server': SERVER, 'tool': tool, 'slot_id': sid,
-            'payload_sha256': slot['payload_sha256'], 'arguments': args}
+    call = {'server': SERVER, 'tool': tool, 'slot_id': sid, 'payload_sha256': slot['payload_sha256'],
+            'service': service, 'channel_id': channel['id'], 'arguments': args}
     errors = argument_errors(call, slot)
     if errors:
         raise ValueError('; '.join(errors))
@@ -279,9 +433,12 @@ def argument_errors(call, slot):
     """Guards on any Buffer call, however it was built."""
     args = call.get('arguments', {})
     meta = args.get('metadata') or {}
+    service = call.get('service', CHANNELS[slot['channel']][0])
     out = []
     if call.get('tool') not in ('create_post', 'edit_post'):
         out.append('only create_post or edit_post is emitted')
+    if service != CHANNELS[slot['channel']][0]:
+        out.append('the call is for another service than the slot')
     if args.get('mode') not in (None, 'customScheduled'):
         out.append('release uses an exact customScheduled time, never a queue or immediate mode')
     if call.get('tool') == 'edit_post' and ('text' not in args or 'assets' not in args
@@ -293,10 +450,14 @@ def argument_errors(call, slot):
         out.append('a scheduled release needs customScheduled and an exact dueAt; never rely on the default queue')
     if slot['publish_mode'] == 'krish_click' and (args.get('saveToDraft') is not True or 'dueAt' in args):
         out.append('a krish_click slot only ever gets an unscheduled draft')
+    if (service == 'linkedin' or slot['channel'] in KRISH_CLICK_ONLY) and args.get('saveToDraft') is not True:
+        out.append('LinkedIn is only ever an unscheduled draft; Krish makes the final click')
     if _has_null_link_attachment(args):
         out.append('a link preview is never cleared with linkAttachment null; use preview_clear_hold')
     if 'link' in (meta.get('instagram') or {}) or 'stickerFields' in (meta.get('instagram') or {}):
         out.append('an Instagram Story link sticker is never set or claimed automatic')
+    if args.get('schedulingType') not in (None, 'automatic'):
+        out.append('an engine release is automatic, never a notification post')
     tiktok_photo = slot['channel'] == 'tiktok' and not any(media_kind(a) == 'video' for a in slot['assets'])
     if tiktok_photo and 'isAiGenerated' in (meta.get('tiktok') or {}):
         out.append('TikTok photo posts never set the AI-generated flag')
@@ -314,28 +475,42 @@ def preview_clear_hold(slot):
             'before': 'inspect the live schema and read back get_post first; one bounded attempt, never a blind retry'}
 
 
+def stored_link_preview(slot, post):
+    return bool(service_meta(post, CHANNELS[slot['channel']][0]).get('linkAttachment'))
+
+
 # Plan ----------------------------------------------------------------------
+
+def decision_digest(decision):
+    return sha256_hex(decision.get('slots'))
+
 
 def _signed_digests(spec, decision):
     if not isinstance(decision, dict) or decision.get('decision') != 'approved':
         raise ValueError('no approved go-live decision: nothing releases')
     if decision.get('run_id') != spec.get('run_id'):
         raise ValueError('decision belongs to another run')
-    signature = spec.get('signature') or {}
-    if signature.get('go_live_proposal_id') and signature['go_live_proposal_id'] != decision.get('proposal_id'):
-        raise ValueError('decision is for another go-live proposal')
     slots = decision.get('slots')
     if not isinstance(slots, dict):
         raise ValueError('decision must map each signed slot_id to its payload_sha256')
+    signature = spec.get('signature') or {}
+    if not signature.get('go_live_proposal_id') or not signature.get('decision_digest'):
+        raise ValueError('run spec is not signed: it needs go_live_proposal_id and decision_digest')
+    if signature['go_live_proposal_id'] != decision.get('proposal_id'):
+        raise ValueError('decision is for another go-live proposal')
+    if signature['decision_digest'] != decision_digest(decision):
+        raise ValueError('decision does not match the signed decision_digest')
     return slots
 
 
-def release_plan(spec, decision, ledger=None, asset_paths=None, channel_ids=None, now=None):
+def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None):
     """Arguments for signed, unreleased slots only, once per slot.
 
     asset_paths maps slot_id to its ordered local files; without them a slot
-    with assets is held, because its bytes cannot be checked. Returns calls,
-    holds and the updated ledger; the caller saves the ledger.
+    with assets is held, because its bytes cannot be checked. channels is the
+    live list_channels readback; targets maps slot_id to a fresh get_post of
+    its buffer_draft_id. Returns calls, holds and the updated ledger; the
+    caller saves the ledger.
     """
     if not isinstance(spec, dict) or not isinstance(spec.get('slots'), list):
         raise ValueError('run spec needs a slots list')
@@ -344,7 +519,7 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channel_ids=None
     if ledger.get('run_id') != spec['run_id']:
         raise ValueError('ledger belongs to another run')
     asset_paths = asset_paths or {}
-    channel_ids = channel_ids or {}
+    targets = targets or {}
     seen, calls, holds = set(), [], []
     for slot in spec['slots']:
         check_slot(slot)
@@ -373,31 +548,47 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channel_ids=None
             except ValueError as exc:
                 hold(str(exc))
                 continue
+        target = _post(targets.get(sid)) if slot['buffer_draft_id'] else None
         try:
-            call = call_arguments(slot, channel_ids.get(slot['channel']), now)
+            channel = resolve_channel(slot, channels)
+            if slot['buffer_draft_id'] and not target_errors(slot, target, channel['id']) \
+                    and stored_link_preview(slot, target):
+                # F03: the saved preview is cleared only through the mutation route.
+                if slot['assets'] or slot['link_placement'] in (None, 'none'):
+                    holds.append(preview_clear_hold(slot))
+                else:
+                    hold('edit_would_drop_link_preview')
+                continue
+            call = call_arguments(slot, channel, now, target)
         except ValueError as exc:
             hold(str(exc))
             continue
         calls.append(call)
-        ledger['released'][sid] = {'payload_sha256': slot['payload_sha256'], 'tool': call['tool'],
-                                   'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat()}
+        entry = {'payload_sha256': slot['payload_sha256'], 'tool': call['tool'], 'channel': slot['channel'],
+                 'service': call['service'], 'channel_id': call['channel_id'],
+                 'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat()}
+        if target is not None:
+            # The before-state, journalled ahead of the mutation.
+            entry['target_sha256'] = _readback_digest(target)
+        ledger['released'][sid] = entry
     return {'calls': calls, 'holds': holds, 'ledger': ledger}
 
 
 # Readback ------------------------------------------------------------------
 
-def _post(value):
-    if isinstance(value, dict) and 'status' not in value and isinstance(value.get('post'), dict):
-        return value['post']
-    return value
+def _readback_digest(post):
+    return hashlib.sha256(json.dumps(post, sort_keys=True, separators=(',', ':'),
+                                     ensure_ascii=False).encode('utf-8')).hexdigest()
 
 
-def check_readback(slot, post, stage, ledger=None):
-    """Evidence from one get_post readback. queued proves only a queue state;
-    live needs status sent and an https native URL on the expected host."""
+def check_readback(slot, post, stage, ledger, accounts=None):
+    """Evidence from one get_post readback of a post in the release ledger.
+    queued proves only a queue state; live needs status sent and an https
+    native URL on the expected host and account."""
     check_slot(slot)
     post = _post(post)
     sid = slot['slot_id']
+    service = CHANNELS[slot['channel']][0]
     if stage not in ('queued', 'live'):
         raise ValueError('stage must be queued or live')
     if not isinstance(post, dict) or not isinstance(post.get('id'), str):
@@ -405,28 +596,55 @@ def check_readback(slot, post, stage, ledger=None):
     if post.get('via') == 'network':
         # F17: imported "sent via network" posts are not engine publications.
         raise ValueError(sid + ': post was imported from the network; not an engine publication')
-    if ledger is not None:
-        entry = (ledger.get('released') or {}).get(sid)
-        if not entry:
-            raise ValueError(sid + ': slot absent from the release ledger; not an engine publication')
-        if entry.get('post_id') and entry['post_id'] != post['id']:
+    entry = ((ledger or {}).get('released') or {}).get(sid)
+    if not entry:
+        raise ValueError(sid + ': slot absent from the release ledger; not an engine publication')
+    if entry.get('payload_sha256') != slot['payload_sha256']:
+        raise ValueError(sid + ': ledger released another payload for this slot')
+    if entry.get('post_id'):
+        if entry['post_id'] != post['id']:
             raise ValueError(sid + ': readback post is not the one the engine released')
+    elif stage == 'live':
+        raise ValueError(sid + ': no queued readback bound this slot to a Buffer post; check queued first')
+    elif post.get('via') != 'api':
+        raise ValueError(sid + ': a created post is bound only when Buffer says it came via the api')
     if slot['buffer_draft_id'] and slot['buffer_draft_id'] != post['id']:
         raise ValueError(sid + ': readback post is not the signed draft')
-    if post.get('channelService') and post['channelService'] != CHANNELS[slot['channel']][0]:
+    if not post.get('channelService'):
+        raise ValueError(sid + ': readback has no channelService; read it back in full')
+    if post['channelService'] != service:
         raise ValueError(sid + ': readback is on another service')
+    if not post.get('channelId') or post['channelId'] != entry.get('channel_id'):
+        raise ValueError(sid + ': readback is on another Buffer channel than the one released')
     if post.get('text') != slot['words']:
         raise ValueError(sid + ': readback text differs from the signed words')
     if len(post.get('assets') or []) != len(slot['assets']) and slot['format'] != 'story':
         raise ValueError(sid + ': readback asset count differs from the signed slot')
+    meta = service_meta(post, service)
     if slot['format'] == 'story':
         story_frame(post, sid)
+        if slot['channel'] in STORY_TYPED and meta.get('type') != 'story':
+            raise ValueError(sid + ': readback is not stored as a Story')
+    if slot['channel'] == 'instagram':
+        stickers = meta.get('stickerFields') or {}
+        if meta.get('link') or (isinstance(stickers, dict) and any(stickers.values())):
+            # F09: a stored link sticker is never claimed automatic.
+            raise ValueError(sid + ': an Instagram Story link sticker is never set or claimed automatic')
+    if stored_link_preview(slot, post) and (slot['assets'] or slot['link_placement'] in (None, 'none')):
+        raise ValueError(sid + ': the stored post still carries a link preview; clear it through '
+                         + PREVIEW_CLEAR_ROUTE['mutation'] + ', never linkAttachment null')
+    draft = is_draft(slot)
+    if draft:
+        if post.get('schedulingType') not in (None, 'automatic'):
+            raise ValueError(sid + ': draft is stored as a notification post')
+    elif post.get('schedulingType') != 'automatic':
+        raise ValueError(sid + ': an engine release must be automatic, found '
+                         + str(post.get('schedulingType')) + '; a notification post is never automatic')
     status = post.get('status')
     if status == 'error':
         raise ValueError(sid + ': Buffer reports an error; hold and diagnose, never retry blindly')
     if status == 'sending':
         raise ValueError(sid + ': still sending; uncertain, read back again later')
-    draft = slot['publish_mode'] == 'krish_click' or slot['due_at'] is None
     native = None
     if stage == 'queued':
         if draft:
@@ -442,13 +660,14 @@ def check_readback(slot, post, stage, ledger=None):
         if status != 'sent':
             raise ValueError(sid + ': not live; status is ' + str(status) + ', and scheduled is never sent')
         native = post.get('externalLink')
-        if not native_host(slot['channel'], native):
-            raise ValueError(sid + ': live needs an https native URL on the ' + slot['channel'] + ' host')
+        if not native_host(slot['channel'], native, (accounts or {}).get(slot['channel'])):
+            raise ValueError(sid + ': live needs an https native URL on the ' + slot['channel'] + ' host and account')
     evidence = {'slot_id': sid, 'stage': stage, 'channel': slot['channel'], 'post_id': post['id'],
-                'payload_sha256': slot['payload_sha256'], 'status': status, 'due_at': post.get('dueAt'),
-                'sent_at': post.get('sentAt'), 'native_url': native, 'via': post.get('via'),
-                'published': stage == 'live', 'readback_sha256': hashlib.sha256(json.dumps(
-                    post, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode('utf-8')).hexdigest()}
+                'channel_id': post['channelId'], 'payload_sha256': slot['payload_sha256'], 'status': status,
+                'due_at': post.get('dueAt'), 'sent_at': post.get('sentAt'), 'native_url': native,
+                'via': post.get('via'), 'published': stage == 'live',
+                'media_sources': [a.get('source') for a in post.get('assets') or [] if isinstance(a, dict)],
+                'readback_sha256': _readback_digest(post)}
     if slot['channel'] == 'instagram' and slot['format'] == 'story':
         evidence['link_sticker'] = 'not_set_not_claimed'
     return evidence
@@ -480,19 +699,34 @@ def story_sequence(posts):
     return frames
 
 
-def engine_publications(posts, ledger):
-    """Only posts the engine released count; imports and others never do."""
-    ids = {entry.get('post_id') for entry in (ledger.get('released') or {}).values() if entry.get('post_id')}
-    return [p for p in map(_post, posts)
-            if p.get('id') in ids and p.get('via') != 'network' and p.get('status') == 'sent']
+def engine_publications(posts, ledger, accounts=None):
+    """Only posts the engine released count, and only once live with a
+    native URL on their channel; imports and others never do."""
+    entries = {e.get('post_id'): e for e in (ledger.get('released') or {}).values()
+               if isinstance(e, dict) and e.get('post_id')}
+    out = []
+    for p in map(_post, posts):
+        entry = entries.get(p.get('id')) if isinstance(p, dict) else None
+        if not entry or p.get('via') == 'network' or p.get('status') != 'sent':
+            continue
+        channel = entry.get('channel')
+        if channel not in CHANNELS or p.get('channelService') != CHANNELS[channel][0]:
+            continue
+        if native_host(channel, p.get('externalLink'), (accounts or {}).get(channel)):
+            out.append(p)
+    return out
 
 
 # Command line --------------------------------------------------------------
 
 def safe_name(value):
-    name = SAFE.sub('_', str(value)).strip('._')
+    """A file name; a changed name gains a short digest so names never collide."""
+    raw = str(value)
+    name = SAFE.sub('_', raw).strip('._')
     if not name:
         raise ValueError('cannot make a safe file name from ' + repr(value))
+    if name != raw:
+        name = name[:111] + '-' + hashlib.sha256(raw.encode('utf-8')).hexdigest()[:8]
     return name[:120]
 
 
@@ -515,6 +749,21 @@ def _ordered_assets(spec, folder):
             for s in spec['slots'] if isinstance(s, dict) and isinstance(s.get('assets'), list)}
 
 
+def _check_all(spec, readback, stage, ledger, accounts, now):
+    slots = {s['slot_id']: s for s in spec.get('slots', []) if isinstance(s, dict) and 'slot_id' in s}
+    if not isinstance(readback, dict) or not readback:
+        raise ValueError('readback must map slot_id to its get_post result')
+    results = []
+    for sid, post in sorted(readback.items()):
+        if sid not in slots:
+            raise ValueError('readback names an unknown slot: ' + sid)
+        evidence = check_readback(slots[sid], post, stage, ledger, accounts)
+        evidence['run_id'] = spec['run_id']
+        evidence['checked_at'] = instant(now).isoformat()
+        results.append((sid, evidence))
+    return results
+
+
 def main(argv=None, root=None):
     root = Path(root) if root else ROOT
     argv = list(sys.argv[1:] if argv is None else argv)
@@ -524,8 +773,9 @@ def main(argv=None, root=None):
     sub = parser.add_subparsers(dest='action', required=True)
     p = sub.add_parser('plan')
     p.add_argument('spec'); p.add_argument('--decision', required=True); p.add_argument('--ledger')
-    p.add_argument('--assets', help='folder holding each signed asset by name')
-    p.add_argument('--channels', help='channel id to Buffer channelId, read live from list_channels')
+    p.add_argument('--assets', help='folder of fresh downloads of each asset url, made under .scratch just before release')
+    p.add_argument('--channels', help='the live list_channels readback: a list of {id, service}')
+    p.add_argument('--targets', help='slot_id to a fresh get_post of its buffer_draft_id')
     p.add_argument('--now')
     c = sub.add_parser('check')
     c.add_argument('spec'); c.add_argument('--readback', required=True)
@@ -537,36 +787,35 @@ def main(argv=None, root=None):
         if not isinstance(spec, dict) or not isinstance(spec.get('run_id'), str):
             raise ValueError('run spec needs a run_id')
         run_dir = Path('.scratch') / 'runs' / safe_name(spec['run_id'])
-        ledger_path = scratch_path(root, args.ledger or run_dir / 'ledger.json')
-        ledger = read_json(ledger_path) if ledger_path.exists() else None
-        if args.action == 'check' and ledger is None:
-            raise ValueError('no release ledger for this run: nothing here was released by the engine')
-        if args.action == 'plan':
-            result = release_plan(spec, read_json(args.decision), ledger, _ordered_assets(spec, args.assets),
-                                  read_json(args.channels) if args.channels else None, args.now)
-            if result['calls']:
-                write_json(ledger_path, result['ledger'])
-            if result['holds']:
-                print(json.dumps({'holds': result['holds']}, indent=2), file=sys.stderr)
-            print(json.dumps(result['calls'], ensure_ascii=False, indent=2))
-            return 0
-        slots = {s['slot_id']: s for s in spec.get('slots', []) if isinstance(s, dict) and 'slot_id' in s}
-        readback = read_json(args.readback)
-        if not isinstance(readback, dict) or not readback:
-            raise ValueError('readback must map slot_id to its get_post result')
-        written = []
-        for sid, post in sorted(readback.items()):
-            if sid not in slots:
-                raise ValueError('readback names an unknown slot: ' + sid)
-            evidence = check_readback(slots[sid], post, args.stage, ledger)
-            evidence['run_id'] = spec['run_id']
-            evidence['checked_at'] = instant(args.now).isoformat()
-            if args.stage == 'queued' and not ledger['released'][sid].get('post_id'):
-                ledger['released'][sid]['post_id'] = evidence['post_id']
-            out = scratch_path(root, run_dir / args.stage / (safe_name(sid) + '.json'))
-            write_json(out, evidence)
-            written.append(str(out))
-        if args.stage == 'queued':
+        ledger_path = scratch_path(root, run_dir / 'ledger.json')
+        if args.ledger and scratch_path(root, args.ledger) != ledger_path:
+            raise ValueError('the release ledger lives only at ' + str(run_dir / 'ledger.json'))
+        with locked(ledger_path):
+            ledger = read_json(ledger_path) if ledger_path.exists() else None
+            if ledger is not None and ledger.get('run_id') != spec['run_id']:
+                raise ValueError('ledger belongs to another run')
+            if args.action == 'plan':
+                result = release_plan(spec, read_json(args.decision), ledger, _ordered_assets(spec, args.assets),
+                                      read_json(args.channels) if args.channels else None, args.now,
+                                      read_json(args.targets) if args.targets else None)
+                if result['calls']:
+                    write_json(ledger_path, result['ledger'])
+                if result['holds']:
+                    print(json.dumps({'holds': result['holds']}, indent=2), file=sys.stderr)
+                print(json.dumps(result['calls'], ensure_ascii=False, indent=2))
+                return 0
+            if ledger is None:
+                raise ValueError('no release ledger for this run: nothing here was released by the engine')
+            results = _check_all(spec, read_json(args.readback), args.stage, ledger, load_accounts(), args.now)
+            written = []
+            for sid, evidence in results:
+                entry = ledger['released'][sid]
+                if not entry.get('post_id'):
+                    entry['post_id'] = evidence['post_id']
+                entry[args.stage + '_checked_at'] = evidence['checked_at']
+                out = scratch_path(root, run_dir / args.stage / (safe_name(sid) + '.json'))
+                write_json(out, evidence)
+                written.append(str(out))
             write_json(ledger_path, ledger)
         print(json.dumps({'valid': True, 'stage': args.stage, 'written': written}, indent=2))
         return 0

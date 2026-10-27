@@ -1,0 +1,77 @@
+{
+  "ig-story-1": {
+    "id": "aaaaaaaaaaaaaaaaaaaaaa01",
+    "channelId": "cccccccccccccccccccccc03",
+    "channelService": "instagram",
+    "status": "draft",
+    "via": "api",
+    "schedulingType": "automatic",
+    "dueAt": null,
+    "text": "Synthetic Story frame one.",
+    "assets": [
+      {
+        "type": "image",
+        "source": "https://example.org/synthetic/frame-1.png",
+        "thumbnail": "",
+        "image": {
+          "altText": "Synthetic alt text for frame one."
+        }
+      }
+    ],
+    "metadata": {
+      "type": "story",
+      "shouldShareToFeed": false,
+      "isAiGenerated": true,
+      "link": null,
+      "stickerFields": null
+    }
+  },
+  "linkedin-1": {
+    "id": "aaaaaaaaaaaaaaaaaaaaaa02",
+    "channelId": "cccccccccccccccccccccc05",
+    "channelService": "linkedin",
+    "status": "draft",
+    "via": "buffer",
+    "schedulingType": null,
+    "dueAt": null,
+    "text": "Synthetic LinkedIn draft for tests.",
+    "assets": [
+      {
+        "type": "image",
+        "source": "https://example.org/synthetic/frame-4.png",
+        "thumbnail": "",
+        "image": {
+          "altText": "Synthetic alt text for frame four."
+        }
+      }
+    ],
+    "metadata": {
+      "type": "post",
+      "linkAttachment": null
+    }
+  },
+  "x-1": {
+    "id": "aaaaaaaaaaaaaaaaaaaaaa03",
+    "channelId": "cccccccccccccccccccccc06",
+    "channelService": "twitter",
+    "status": "draft",
+    "via": "api",
+    "schedulingType": null,
+    "dueAt": null,
+    "text": "Synthetic X receipt post for tests.",
+    "assets": [
+      {
+        "type": "image",
+        "source": "https://example.org/synthetic/frame-5.png",
+        "thumbnail": "",
+        "image": {
+          "altText": ""
+        }
+      }
+    ],
+    "metadata": {
+      "type": "post",
+      "isAiGenerated": false
+    }
+  }
+}

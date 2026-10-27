@@ -137,7 +137,7 @@
   ],
   "signature": {
     "go_live_proposal_id": "synthetic-go-live-1",
-    "decision_digest": null,
+    "decision_digest": "8a4d2a84ef957217d075910f32e3c09041603bac5381970707233972f843afdf",
     "signed_at": "2026-11-01T10:00:00-05:00"
   }
 }
