@@ -225,11 +225,12 @@
     {
       "id": "attribution-ladder",
       "row": 10,
-      "name": "Attribution & Ladder",
+      "name": "Measurement Specialist",
       "owns": [
         "North Star",
         "sources",
-        "links"
+        "links",
+        "GA4"
       ],
       "channels": [
         "substack"

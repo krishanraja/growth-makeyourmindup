@@ -4,7 +4,8 @@ Owns Notes, P1 and P9. Judge a Note at 24 hours and subscriber impact at 7 days.
 
 | If | Then | Cite |
 |---|---|---|
-| A Note slot is due | Release only the signed words at the signed time; Notes per day as signed (the corpus default is two to three a day) | P1, R60 |
+| A Note slot is due | Release only the signed words at the signed time; Notes per day as signed, at most two a day | P1, R60, R81 |
+| A Note is drafted or released | It speaks in Krish's personal voice from his own profile @mindmakerlive (Buffer channel Krish), never as the publication; renaming the handle is a profile change held for Krish | R59, R54, R81, R82, F56 |
 | Promotional Notes this week would pass one in two, or fall below one in ten | Rebalance before the week is signed; a promotional Note asks clearly | P1, D4 |
 | A Note is meant to travel | No outside link; name the work in words; any question goes at the end, never as the opener | P1, D3, D6 |
 | It is publication day | One own-post embed Note for conversion | P1 |

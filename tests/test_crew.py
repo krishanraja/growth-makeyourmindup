@@ -67,6 +67,34 @@ class CrewTests(unittest.TestCase):
             self.assertIn(phrase, text)
         self.assertEqual(entry['check'], 'engine/operations.py:experiment_decision')
 
+    def test_substack_card_gives_notes_identity_and_cadence(self):
+        # 27 Oct correction: Notes post from Krish's profile, at most two a day (PUBLISHING-AUTHORITY.md).
+        text = (ROOT / 'crew' / 'substack' / 'card.md').read_text(encoding='utf-8')
+        self.assertNotIn('two to three', text)
+        rows = [line for line in text.splitlines() if line.startswith('| A Note slot is due')]
+        self.assertEqual(len(rows), 1)
+        self.assertIn('Notes per day as signed, at most two a day', rows[0])
+        identity = [line for line in text.splitlines() if '@mindmakerlive' in line]
+        self.assertEqual(len(identity), 1)
+        for phrase in ("Krish's personal voice", 'Buffer channel Krish', 'held for Krish', 'R59', 'R54'):
+            self.assertIn(phrase, identity[0])
+        self.assertTrue(any(line.startswith('| Buffer has no Substack channel connected') for line in text.splitlines()),
+                        'the not-connected fallback stays')
+
+    def test_measurement_specialist_card_carries_ga4(self):
+        entry = next(e for e in self.crew if e['id'] == 'attribution-ladder')
+        self.assertEqual(entry['name'], 'Measurement Specialist')
+        self.assertIn('GA4', entry['owns'])
+        self.assertTrue(entry['w45'])
+        card = collapse((ROOT / entry['card']).read_text(encoding='utf-8'))
+        for phrase in ('# Card: Measurement Specialist', 'Substack Growth sources stay the North Star source',
+                       'G-VC5V9LDE17', 'sessions, free sign-ups and paid subscriptions per post',
+                       'joined to slots on `utm_content`', 'the more conservative reading wins and the gap is logged',
+                       'never guess an event name', 'What-Works Analyst', 'R83'):
+            self.assertIn(phrase, card)
+        lens = (ROOT / entry['lens']).read_text(encoding='utf-8')
+        self.assertIn('do GA4 and Substack agree?', lens)
+
     def test_oversized_card_or_free_text_list_is_refused(self):
         with tempfile.TemporaryDirectory() as folder:
             root = crew_root(folder)
