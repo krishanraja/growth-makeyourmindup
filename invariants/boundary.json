@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "kind": "boundary",
+  "source_file": "CHANGES.md",
+  "quote": "For that Canva lane only, this supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line; content-engine keeps its formats and standards.",
+  "note": "Format to production owner under Krish's 27 Oct 2026 Canva ruling. Content-engine keeps its formats and standards; growth-canva produces only what content-engine does not cover; note and caption text is growth copy.",
+  "owners": {
+    "article": "content-engine",
+    "long-video": "content-engine",
+    "short-video": "content-engine",
+    "carousel": "content-engine",
+    "story-artwork": "content-engine",
+    "cover": "content-engine",
+    "thumbnail": "content-engine",
+    "note-image": "growth-canva",
+    "meme": "growth-canva",
+    "receipt-card": "growth-canva",
+    "quote-card": "growth-canva",
+    "scorecard": "growth-canva",
+    "poll-result": "growth-canva",
+    "profile-art": "growth-canva",
+    "highlight-art": "growth-canva",
+    "platform-resize": "growth-canva",
+    "note-text": "growth-copy",
+    "caption": "growth-copy"
+  }
+}
