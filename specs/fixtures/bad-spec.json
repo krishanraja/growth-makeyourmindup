@@ -268,6 +268,22 @@
       "publish_mode": "engine",
       "buffer_draft_id": null,
       "payload_sha256": "5b3f24b4a848d9d5c18402bbe5dd862341dc6c5a87fd53a734792ad62738f65c"
+    },
+    {
+      "slot_id": "w45-x-hologram-1",
+      "channel": "x",
+      "format": "hologram",
+      "play": null,
+      "due_at": "2026-11-06T15:00:00-05:00",
+      "words": "TEST FIXTURE ONLY. A format no channel record knows.",
+      "assets": [],
+      "link_placement": null,
+      "cta": false,
+      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "experiment_arm": null,
+      "publish_mode": "engine",
+      "buffer_draft_id": null,
+      "payload_sha256": "05e106db5a603f48a1fc8cb01421ff1eb46a8b7565280fce0fe745eb3ed20d01"
     }
   ],
   "experiments": [

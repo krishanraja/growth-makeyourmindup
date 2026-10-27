@@ -10,10 +10,13 @@ import sys
 
 from ..core import calendar_date, ny_time, read_json
 from ..social import validate
-from .spec import ROOT, SCHEMA, lint, status
+from .spec import ROOT, SCHEMA, lint, monday, status
 
 MAX_BYTES = 36 * 1024
 MAX_CARD = 3 * 1024
+# Plan section 4: RUN.md 8 KB, the spec slice 10 KB, the cards 12 KB, findings and status 6 KB.
+BUDGETS = (('docs/RUN.md', 8 * 1024), ('the spec slice', 10 * 1024), ('the crew cards', 12 * 1024),
+           ('findings and status', 6 * 1024))
 
 
 def spec_slice(spec, day=None, channel=None):
@@ -41,8 +44,24 @@ def _entries(registry):
     return [entry for entry in entries if isinstance(entry, dict) and isinstance(entry.get('id'), str)]
 
 
-def crew_cards(channels, root=ROOT):
-    """(cards, findings) for the crew whose channels are in play, or who are always in play."""
+def week_flag(spec):
+    """The registry flag for this run's week, such as "w45" for the week of 2 November 2026."""
+    return 'w%02d' % monday(spec['window']['start']).isocalendar()[1]
+
+
+def in_play(entry, channels, flag=None, narrowed=False):
+    """A crew member is in play when the registry flags it for this week, else by channel.
+
+    A week flag (true or false) overrides the channel match; --channel still narrows it.
+    """
+    overlap = bool(set(entry.get('channels') or []) & set(channels))
+    if flag and flag in entry:
+        return entry[flag] is True and (overlap or not narrowed)
+    return bool(entry.get('always')) or overlap
+
+
+def crew_cards(channels, root=ROOT, flag=None, narrowed=False):
+    """(cards, findings) for the crew in play (see in_play)."""
     root = Path(root)
     path = root / 'crew' / 'registry.json'
     if not path.is_file():
@@ -53,7 +72,7 @@ def crew_cards(channels, root=ROOT):
         return [], ['crew/registry.json is unreadable: ' + str(exc)]
     cards, findings = [], []
     for entry in entries:
-        if not (entry.get('always') or set(entry.get('channels') or []) & set(channels)):
+        if not in_play(entry, channels, flag, narrowed):
             continue
         ref = entry.get('card') or 'crew/' + entry['id'] + '/card.md'
         card = (root / ref).resolve()
@@ -82,21 +101,27 @@ def compile_pack(spec, day=None, channel=None, runs=None, root=ROOT, records=Non
         rows = [r for r in status(spec, runs, root)['slots'] if r['slot_id'] in ids]
     except (ValueError, OSError) as exc:
         rows, findings = [], ['status unavailable: ' + str(exc)]
-    cards, more = crew_cards(sorted({s['channel'] for s in part['slots']}), root)
+    cards, more = crew_cards(sorted({s['channel'] for s in part['slots']}), root, week_flag(spec),
+                             day is not None or channel is not None)
     findings += more
     run_doc = (Path(root) / 'docs' / 'RUN.md').read_text(encoding='utf-8-sig').strip()
+    parts = ['## docs/RUN.md\n\n' + run_doc,
+             '## Spec slice\n\n' + json.dumps(part, ensure_ascii=False, indent=1),
+             '## Crew cards in play\n\n' + ('\n\n'.join('### ' + ref + '\n\n' + text for ref, text in cards) or 'none loaded'),
+             '\n\n'.join(['## Lint findings for this slice\n\n' + (json.dumps(keep, ensure_ascii=False, indent=1) if keep else 'none'),
+                          '## Status (computed from evidence)\n\n' + (json.dumps(rows, indent=1) if rows else 'no slots'),
+                          '## Pack findings\n\n' + ('\n'.join('- ' + f for f in findings) or 'none')])]
     blocks = ['# Run pack: ' + spec['run_id'] + ' (day ' + (day or 'all') + ', channel ' + (channel or 'all') + ')',
-              'Lint: ' + str(len(found['errors'])) + ' errors, ' + str(len(found['warnings'])) + ' warnings in the whole spec.',
-              '## docs/RUN.md\n\n' + run_doc,
-              '## Spec slice\n\n' + json.dumps(part, ensure_ascii=False, indent=1),
-              '## Crew cards in play\n\n' + ('\n\n'.join('### ' + ref + '\n\n' + text for ref, text in cards) or 'none loaded'),
-              '## Lint findings for this slice\n\n' + (json.dumps(keep, ensure_ascii=False, indent=1) if keep else 'none'),
-              '## Status (computed from evidence)\n\n' + (json.dumps(rows, indent=1) if rows else 'no slots'),
-              '## Pack findings\n\n' + ('\n'.join('- ' + f for f in findings) or 'none')]
-    text = '\n\n'.join(blocks) + '\n'
+              'Lint: ' + str(len(found['errors'])) + ' errors, ' + str(len(found['warnings'])) + ' warnings in the whole spec.']
+    text = '\n\n'.join(blocks + parts) + '\n'
     size = len(text.encode('utf-8'))
     if size > MAX_BYTES:
         raise ValueError('pack is ' + str(size) + ' bytes; the limit is ' + str(MAX_BYTES) + '. Narrow it with --day or --channel')
+    for (name, budget), block in zip(BUDGETS, parts):
+        size = len(block.split('\n\n', 1)[1].encode('utf-8'))  # the body, without its heading
+        if size > budget:
+            raise ValueError(name + ' is ' + str(size) + ' bytes; its budget is ' + str(budget)
+                             + '. Narrow it with --day or --channel')
     return text
 
 

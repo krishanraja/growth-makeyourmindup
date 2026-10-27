@@ -16,6 +16,7 @@ import urllib.error
 import urllib.request
 
 from engine.catalog import FEED, discover, pieces, parse_feed, strip_html
+from engine.cc_loop import CONTROL_CENTER_OWNS
 from engine.control_center import APPROVED_ORIGIN, Client, NoRedirect, ProtocolError, opener
 from engine.core import (KINDS, PLATFORMS, http_url, identity, instant, locked,
                          read_json, today, tracked, write_json)
@@ -31,7 +32,7 @@ ENGINE_TOKEN_FILE = TOKEN_FILE.parent / 'engine-token'
 # Control Center's People and Visibility own outreach to shows and guests
 # (Krish, 21 Oct 2026; AGENTS.md "Outreach belongs to Control Center"). These
 # packs never leave here.
-OUTREACH = ('pitches', 'partners', 'swaps')
+OUTREACH = CONTROL_CENTER_OWNS  # one source: pitches, partners and swaps
 OUTREACH_HELD = ("Control Center's People and Visibility own outreach to shows and guests; "
                  'pitches, partners and swaps packs are never delivered from this engine')
 
@@ -41,7 +42,8 @@ def outreach_kind(value):
     if not isinstance(value, dict):
         return None
     pack = value.get('pack') if isinstance(value.get('pack'), dict) else value
-    return pack.get('kind') if pack.get('kind') in OUTREACH else None
+    kind = pack.get('kind')
+    return kind if isinstance(kind, str) and kind in OUTREACH else None
 
 
 def token():

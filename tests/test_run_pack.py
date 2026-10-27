@@ -11,12 +11,17 @@ from engine.core import write_json
 from engine.packs import EM_DASH, PERCENT
 from engine.run.cards import card_errors
 from engine.run.cards import main as card_main
-from engine.run.pack import MAX_BYTES, compile_pack
+from engine.run.pack import MAX_BYTES, compile_pack, week_flag
 from engine.run.pack import main as pack_main
 from engine.run.spec import computed
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / 'specs' / 'fixtures'
+NORTH_STAR = """```yaml north-star-metric
+ladder:
+  - [2026-11-02, 86]
+```
+"""
 RECORDS = json.loads((FIXTURES / 'social-records.json').read_text(encoding='utf-8'))
 
 
@@ -32,12 +37,12 @@ def card_bytes(**changes):
 
 class RunPackTests(unittest.TestCase):
     def setUp(self):
-        # A synthetic root: the real RUN.md and ladder, and a crew of our own.
+        # A synthetic root: the real RUN.md, a synthetic ladder and a crew of our own.
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
-        for name in ('docs/RUN.md', 'docs/NORTH_STAR.md'):
-            (self.root / name).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(str(ROOT / name), str(self.root / name))
+        (self.root / 'docs').mkdir()
+        shutil.copyfile(str(ROOT / 'docs' / 'RUN.md'), str(self.root / 'docs' / 'RUN.md'))
+        (self.root / 'docs' / 'NORTH_STAR.md').write_text(NORTH_STAR, encoding='utf-8')
         self.runs = str(self.root / 'runs')
 
     def tearDown(self):
@@ -78,6 +83,43 @@ class RunPackTests(unittest.TestCase):
         (crew / 'threads' / 'card.md').write_text('x' * (3 * 1024 + 1), encoding='utf-8')
         self.assertIn('card for threads is over 3 KB; not loaded', self.pack(fixture('w45-week')))
 
+    def test_pack_follows_the_registry_week_flag(self):
+        # The registry shape of crew/registry.json: a row per crew member and a flag per launch week.
+        crew = self.root / 'crew'
+        rows = [('substack', ['substack', 'substack-notes'], True), ('threads', ['threads'], True),
+                ('canva-studio', ['threads', 'substack-notes', 'instagram'], False),
+                ('engagement', ['threads', 'substack-notes'], False), ('attribution-ladder', ['substack'], True),
+                ('what-works', ['substack-notes', 'threads', 'x'], True), ('meta', ['instagram'], False),
+                ('release-gate', ['substack-notes', 'threads', 'x'], True)]
+        for cid, channels, _ in rows:
+            (crew / cid).mkdir(parents=True)
+            (crew / cid / 'card.md').write_text('CARD ' + cid + '\n', encoding='utf-8')
+        write_json(crew / 'registry.json', {'schema_version': 1, 'kind': 'crew', 'crew': [
+            {'id': cid, 'channels': channels, 'card': 'crew/' + cid + '/card.md', 'w45': flag}
+            for cid, channels, flag in rows]})
+        spec = fixture('w45-week')
+        self.assertEqual(week_flag(spec), 'w45')
+        text = self.pack(spec)
+        loaded = {cid for cid, _, _ in rows if 'CARD ' + cid + '\n' in text + '\n'}
+        self.assertEqual(loaded, {'substack', 'threads', 'attribution-ladder', 'what-works', 'release-gate'},
+                         'W45 loads rows 1, 6, 10, 11 and the Release Gate')
+        narrowed = self.pack(spec, channel='threads')
+        loaded = {cid for cid, _, _ in rows if 'CARD ' + cid + '\n' in narrowed + '\n'}
+        self.assertEqual(loaded, {'threads', 'what-works', 'release-gate'})
+        later = computed(dict(spec, window={'start': '2026-11-09T00:00:00-05:00', 'end': '2026-11-16T00:00:00-05:00',
+                                            'tz': 'America/New_York'}))
+        self.assertEqual(week_flag(later), 'w46')
+        self.assertIn('CARD engagement', self.pack(later), 'without a flag for the week, channels decide')
+
+    def test_pack_refuses_a_part_over_its_budget(self):
+        spec = fixture('w45-week')
+        for item in spec['slots']:
+            item['words'] = 'TEST FIXTURE ONLY. A long synthetic line. ' * 55
+        spec = computed(spec)
+        with self.assertRaisesRegex(ValueError, 'the spec slice is [0-9]+ bytes; its budget is 10240'):
+            self.pack(spec)
+        self.assertIn('# Run sessions', self.pack(spec, day='2026-11-02', channel='threads'))
+
     def test_pack_refuses_over_36kb(self):
         spec = fixture('w45-week')
         spec['slots'][0]['words'] = 'TEST FIXTURE ONLY. A long synthetic Note line. ' * 900
@@ -101,16 +143,18 @@ class RunPackTests(unittest.TestCase):
         self.assertFalse(EM_DASH.search(text))
         self.assertFalse(PERCENT.search(text))
         for command in ('run new', 'run lint', 'run status', 'run pack', 'run card lint', 'ASSET-STORAGE',
-                        'invariants/rules.json', '4 Growth'):
+                        'invariants/rules.json', '4 Growth', 'ACCOUNT-VOICE', 'run release', 'Content Engine',
+                        'automation'):
             self.assertIn(command, text)
 
 
 class TaskCardTests(unittest.TestCase):
     def test_card_lint_refuses_unpinned_model_and_oversize(self):
         self.assertEqual(card_errors((FIXTURES / 'task-card.json').read_bytes()), [])
-        for model in ('', '   ', 'latest', 'gpt-latest', 'default', 'auto'):
+        for model in ('', '   ', 'latest', 'gpt-latest', 'default', 'auto', 'gpt latest', ' gpt-6.1-sol',
+                      'gpt-6.1-sol ', 'gpt-latest-preview'):
             self.assertIn('model_unpinned', {e['code'] for e in card_errors(card_bytes(model=model))}, model)
-        for effort in ('', 'auto', 'max'):
+        for effort in ('', 'auto', 'max', 'medium ', ' high'):
             self.assertIn('effort_unpinned', {e['code'] for e in card_errors(card_bytes(effort=effort))}, effort)
         big = card_bytes(interface='def example(value): ' + 'x' * (6 * 1024))
         self.assertGreater(len(big), 6 * 1024)

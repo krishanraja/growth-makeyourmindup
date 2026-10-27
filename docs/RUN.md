@@ -1,8 +1,11 @@
 # Run sessions
 
-The only standing doc a run session reads. `growth.py run pack` puts it at the
+The standing doc a run session reads first. `growth.py run pack` puts it at the
 top of every session pack. The plan behind it is
 `docs/plans/2026-10-27-engine-architecture.md` (Krish, 27 Oct 2026).
+Until `invariants/rules.json` lands, a run session also reads AGENTS.md ("The
+rules that never bend", "Autonomy"), docs/PUBLISHING-AUTHORITY.md and
+docs/ACCOUNT-VOICE.md.
 
 ## What a run session does
 
@@ -13,9 +16,12 @@ and measures it. LinkedIn stays his own click. Nothing is spent.
 
 A session does one job, then ends at a gate packet:
 
-- **Release:** one short session per signed go-live. Create each signed slot in
-  Buffer with the exact `dueAt` from the manifest, then read back "scheduled".
-  Buffer does the posting. Scheduled is never live.
+- **Release:** only through `growth.py run release` (not built yet; until it
+  lands no session creates, schedules or edits a Buffer post), and only for an
+  approved go-live decision the engine reads from Control Center in its own
+  run. `decision.json` is written only from that readback, never by hand. An
+  interactive session never releases and never uses `--deliver`. Scheduled is
+  never live.
 - **Measure (daily):** read back "sent" and the native URL, capture metrics at
   their windows, write verdicts, check the express intake.
 - **Express:** build one approved idea into the waiting go-live, or its own.
@@ -35,7 +41,10 @@ All offline; none posts, sends, schedules or spends.
   JSON. `--record` writes `lint.json` for status.
 - `python growth.py run status SPEC`: each slot's stage, computed from evidence.
 - `python growth.py run pack SPEC [--day YYYY-MM-DD] [--channel ID]`: this pack.
-  Over 36 KB is refused; narrow it.
+  Over 36 KB is refused, and so is a part over its budget (this doc 8 KB, the
+  slice 10 KB, crew cards 12 KB, findings and status 6 KB); narrow it. Crew
+  cards load by the registry flag for the run's week (such as `w45`), else by
+  channel.
 - `python growth.py run card lint FILE`: a Codex task card, before dispatch.
 - `release`, `measure`, `northstar`, `verdict`, `cost`: each says "not built
   yet" until its module lands.
@@ -53,7 +62,10 @@ format, or a format the channel does not take (`social/channels`,
 `social/formats`); `publish_mode` other than `krish_click` on a
 human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a `krish_click` slot with a `due_at`; `spend_usd` above 0; two
 experiments on one channel; an arm that is not registered; an asset hash that
-is not 64 lowercase hex; more than 3 Notes on one New York day.
+is not 64 lowercase hex; more than 3 Notes on one New York day; a window
+that is not New York midnights 7 (week, from a Monday), 8 (piece) or 1
+(express) days long. Warnings include an engine slot with no `due_at`: it
+cannot release, and the Notes cap counts only scheduled Notes.
 
 A slot's `payload_sha256` covers exactly `channel`, `format`, `words`, the
 ordered asset hashes, `link_placement`, `due_at` and `publish_mode`, as
@@ -64,13 +76,18 @@ canonical JSON (`engine/control_center.py` `canonical_json`).
 `drafted, linted, reviewed, signed, queued, live, measured, verdict`. Each stage
 needs the previous one and its evidence under `.scratch/runs/<run>/`:
 
-- `lint.json`: written by `run lint --record`, bound to this exact spec, no errors.
-- `review/<slot>.json`: `verdict` "pass" and a `lens` id from a fresh-context
-  reviewer. A `payload_sha256`, if present, must match.
-- `decision.json`: `run_id` and `slots.<slot>` with `approved` true and a
-  `digest` equal to the slot's `payload_sha256`. If Krish amended it, `amended`
-  holds the amended payload and `digest` must recompute from it; his version
-  is what releases. A digest mismatch is never signed.
+- `lint.json`: written by `run lint --record`, no errors, bound to this spec
+  less `signature` and `buffer_draft_id` (signing and queueing keep it valid;
+  any other edit needs `--record` again).
+- `review/<slot>.json`: `verdict` "pass", a `lens` id from a fresh-context
+  reviewer and the `payload_sha256` it reviewed.
+- `decision.json` (the shape `run release` reads): `run_id`, `proposal_id`,
+  `decision` "approved", `decided_at`, `slots` {slot: signed digest} and,
+  optionally, `amended` {slot: Krish's amended payload}. The spec `signature`
+  must name `proposal_id` and hold `decision_digest`, the sha256 of the
+  canonical `slots` map. A slot's digest equals its `payload_sha256`, or
+  recomputes from its amended payload; his version is what releases, so
+  rewrite the slot with it before release. A mismatch is never signed.
 - `queued/<slot>.json`: `status` "scheduled" or "draft" (always "draft" for
   `krish_click`) and `payload_sha256` equal to the signed digest.
 - `live/<slot>.json`: `status` "sent" and an https `native_url` read back from
@@ -112,14 +129,21 @@ never trusted for where it lives.
 2. Private evidence (readbacks, journals, inventories) stays in `.scratch/`;
    never in 4 Growth, which anyone with its link can edit.
 3. Lessons go to `social/lessons/`; run `python growth.py social check`.
-4. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:
+4. Creative feedback goes to Content Engine through its existing handoff;
+   Growth records the distribution need, Content Engine owns the craft.
+5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:
    what is draft, approved, scheduled, published, held or unknown.
-5. Snapshot run evidence before workspace cleanup; a local archive is not an
+6. Snapshot run evidence before workspace cleanup; a local archive is not an
    off-device backup.
+7. If an automation changed, verify its owner and schedule; update existing
+   jobs, never duplicate them.
 
 ## Rules live elsewhere
 
 - `invariants/rules.json`: each rule with its verbatim source quote.
 - `docs/PUBLISHING-AUTHORITY.md`: who may publish where.
+- `docs/ACCOUNT-VOICE.md`: X, TikTok and Threads are Krish's personal
+  accounts and keep his personal voice: sincere, warm, humble. LinkedIn too,
+  and LinkedIn is his click only.
 - `AGENTS.md`: outreach belongs to Control Center; this engine never delivers
-  pitches, partners or swaps packs.
+  pitches, partners or swaps packs (`post --deliver` refuses them).

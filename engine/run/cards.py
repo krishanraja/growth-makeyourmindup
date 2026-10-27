@@ -12,7 +12,7 @@ MAX_BYTES = 6 * 1024
 MAX_READ = 5
 NEVER = ('git', 'network', 'mcp', 'publishing', 'new-dependencies', 'edits-outside-write-allow')
 EFFORTS = ('minimal', 'low', 'medium', 'high', 'xhigh')
-FLOATING = re.compile(r'(?:^|[-_.:/])(?:latest|default|auto|any|best|current)$', re.I)
+FLOATING = re.compile(r'(?:^|[-_.:/@\s])(?:latest|default|auto|any|best|current)(?:$|[-_.:/@\s])', re.I)
 CATCH_ALL = ('*', '**', '**/*', '.', './', './*', './**')
 
 
@@ -32,8 +32,9 @@ def card_errors(raw):
         validate(card, json.loads(SCHEMA.read_text(encoding='utf-8')))
     except ValueError as exc:
         return errors + [{'code': 'schema', 'message': str(exc)}]
-    model, effort = card['model'].strip(), card['effort'].strip()
-    if not model or FLOATING.search(model):
+    # Dispatch passes the raw values, so padding or inner spaces are never trimmed away here.
+    model, effort = card['model'], card['effort']
+    if not model.strip() or re.search(r'\s', model) or FLOATING.search(model):
         errors.append({'code': 'model_unpinned', 'message': 'model must name one pinned model, not ' + json.dumps(card['model'])})
     if effort not in EFFORTS:
         errors.append({'code': 'effort_unpinned', 'message': 'effort must be one of ' + ', '.join(EFFORTS)})

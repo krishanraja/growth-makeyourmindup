@@ -83,9 +83,15 @@ def ny_midnight(day):
 
 
 def computed(spec, root=ROOT):
-    """A copy with week_target and every payload_sha256 filled from their sources."""
+    """A copy with week_target and every payload_sha256 filled from their sources.
+
+    A week with no ladder rung keeps its week_target; lint reports it.
+    """
     spec = json.loads(json.dumps(spec))
-    spec['north_star'] = {'week_target': week_target(spec['window']['start'], root)}
+    try:
+        spec['north_star'] = {'week_target': week_target(spec['window']['start'], root)}
+    except ValueError:
+        pass
     for slot in spec['slots']:
         slot['payload_sha256'] = payload_sha256(slot)
     return spec
@@ -110,6 +116,35 @@ def skeleton(start, kind='week', run_id=None, root=ROOT):
 
 
 # Lint -----------------------------------------------------------------------
+
+def lint_digest(spec):
+    """What lint.json is bound to: the spec less its signature and Buffer draft ids.
+
+    Signing and queueing add those two fields later; neither changes what was linted.
+    """
+    spec = json.loads(json.dumps(spec))
+    spec.pop('signature', None)
+    for slot in spec.get('slots') or []:
+        if isinstance(slot, dict):
+            slot.pop('buffer_draft_id', None)
+    return sha256_hex(spec)
+
+
+def window_errors(spec):
+    """The window must match its kind: New York midnights, 7, 8 or 1 days, a week from Monday."""
+    start, end = ny_time(spec['window']['start']), instant(spec['window']['end'])
+    if end <= start:
+        return ['the window must end after it starts']
+    errors = []
+    if start.time() != dt.time(0, 0):
+        errors.append('window.start must be midnight in New York')
+    if spec['kind'] == 'week' and start.weekday() != 0:
+        errors.append('a week starts on a Monday in New York')
+    if end != ny_midnight(start.date() + dt.timedelta(days=LENGTH[spec['kind']])):
+        errors.append('a ' + spec['kind'] + ' window is ' + str(LENGTH[spec['kind']])
+                      + ' New York days, ending at midnight')
+    return errors
+
 
 def finding(code, at, message, slot_id=None):
     return {'code': code, 'at': at, 'slot_id': slot_id, 'message': message}
@@ -146,7 +181,7 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
         if not SHA.match(asset['sha256']):
             errors.append(finding('asset_sha256', at + '.assets[%d].sha256' % j,
                                   'asset sha256 must be 64 lowercase hex characters', sid))
-        elif manifest and asset['sha256'] not in manifest:
+        elif asset['sha256'] not in manifest:
             warnings.append(finding('asset_not_in_manifest', at + '.assets[%d]' % j,
                                     'asset is not listed in any input manifest', sid))
     if fmt and (len(slot['assets']) < fmt['min_assets']
@@ -161,6 +196,10 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
                               'payload_sha256 is computed; it does not match this slot (run new --from)', sid))
     if slot['due_at'] is not None and not window[0] <= instant(slot['due_at']) < window[1]:
         warnings.append(finding('due_outside_window', at + '.due_at', 'due_at falls outside the run window', sid))
+    if slot['publish_mode'] == 'engine' and slot['due_at'] is None:
+        warnings.append(finding('engine_unscheduled', at + '.due_at',
+                                'an engine slot needs a due_at to release, and only scheduled Notes count'
+                                ' towards the cap of ' + str(NOTES_PER_DAY) + ' a day', sid))
     return errors, warnings
 
 
@@ -174,8 +213,7 @@ def lint(spec, records=None, root=ROOT):
     channels, formats = records['channel'], records['format']
     errors, warnings = [], []
     window = (instant(spec['window']['start']), instant(spec['window']['end']))
-    if window[1] <= window[0]:
-        errors.append(finding('window', '$.window', 'the window must end after it starts'))
+    errors += [finding('window', '$.window', message) for message in window_errors(spec)]
     try:
         target = week_target(spec['window']['start'], root)
         if spec['north_star']['week_target'] != target:
@@ -230,8 +268,8 @@ def lint(spec, records=None, root=ROOT):
 def lint_report(spec, records=None, root=ROOT):
     result = lint(spec, records, root)
     try:
-        digest = sha256_hex(spec)
-    except ValueError:
+        digest = lint_digest(spec)
+    except (ValueError, AttributeError):
         digest = None
     return {'run_id': spec.get('run_id') if isinstance(spec, dict) else None, 'valid': not result['errors'],
             'spec_sha256': digest, 'errors': result['errors'], 'warnings': result['warnings']}
@@ -264,7 +302,7 @@ def _same(value, key, expected):
     return key not in value or value[key] == expected
 
 
-def amended_errors(slot, amended):
+def amended_errors(slot, amended, window=None):
     if not isinstance(amended, dict) or set(amended) != set(DIGESTED):
         return 'an amended payload carries exactly ' + ', '.join(DIGESTED)
     if any(amended[key] != slot[key] for key in ('channel', 'format', 'publish_mode')):
@@ -279,30 +317,63 @@ def amended_errors(slot, amended):
         if slot['publish_mode'] == 'krish_click':
             return 'a krish_click amendment stays unscheduled'
         try:
-            instant(amended['due_at'])
+            due = instant(amended['due_at'])
         except (ValueError, TypeError):
             return 'amended due_at needs an offset'
+        if window and not window[0] <= due < window[1]:
+            return 'amended due_at falls outside the run window'
     return None
 
 
-def signed_digest(slot, decision):
+def decision_errors(spec, decision):
+    """Why decision.json is not Krish's approved go-live for this signed spec, or None.
+
+    Shape (shared with engine/run/release.py): {"run_id", "proposal_id",
+    "decision": "approved", "decided_at", "slots": {slot_id: 64-hex digest},
+    "amended": {slot_id: amended payload}}; "amended" is optional. The spec's
+    signature names the proposal and holds decision_digest, the sha256 of the
+    canonical JSON of the slots map.
+    """
+    if decision.get('run_id') != spec['run_id']:
+        return 'decision.json is for another run'
+    if decision.get('decision') != 'approved':
+        return 'decision.json is not an approved go-live decision'
+    if not isinstance(decision.get('slots'), dict):
+        return 'decision.json slots must map each slot_id to its signed digest'
+    if decision.get('amended') is not None and not isinstance(decision['amended'], dict):
+        return 'decision.json amended must map slot_id to an amended payload'
+    signature = spec.get('signature')
+    if not signature:
+        return 'the spec has no signature naming this decision'
+    if signature['go_live_proposal_id'] != decision.get('proposal_id'):
+        return 'decision.json is for another go-live proposal'
+    try:
+        digest = sha256_hex(decision['slots'])
+    except ValueError:
+        return 'decision.json slots are not canonical JSON'
+    if signature['decision_digest'] != digest:
+        return 'decision.json slots do not match the signed decision_digest; a mismatch is never signed'
+    return None
+
+
+def signed_digest(slot, decision, window=None):
     """(digest Krish signed for this slot, None) or (None, reason). The amended version wins."""
-    entries = decision.get('slots')
-    entry = entries.get(slot['slot_id']) if isinstance(entries, dict) else None
-    if not isinstance(entry, dict):
+    digest = decision['slots'].get(slot['slot_id'])
+    if digest is None:
         return None, 'decision.json has no entry for this slot'
-    if entry.get('approved') is not True:
-        return None, 'decision.json does not approve this slot'
-    if entry.get('amended') is None:
-        if entry.get('digest') != slot['payload_sha256']:
-            return None, 'decision digest does not match payload_sha256; a mismatch is never signed'
-        return entry['digest'], None
-    reason = amended_errors(slot, entry['amended'])
+    if not isinstance(digest, str) or not SHA.match(digest):
+        return None, 'decision.json holds no 64-hex digest for this slot'
+    if digest == slot['payload_sha256']:
+        return digest, None
+    amended = (decision.get('amended') or {}).get(slot['slot_id'])
+    if amended is None:
+        return None, 'decision digest does not match payload_sha256; a mismatch is never signed'
+    reason = amended_errors(slot, amended, window)
     if reason:
         return None, reason
-    if entry.get('digest') != sha256_hex(entry['amended']):
+    if sha256_hex(amended) != digest:
         return None, 'decision digest does not recompute from the amended payload; never signed'
-    return entry['digest'], None
+    return digest, None
 
 
 def _measured(folder, slot):
@@ -327,7 +398,7 @@ def row(slot, stage, reason=None):
             'next': STAGES[index + 1] if index + 1 < len(STAGES) else None, 'reason': reason}
 
 
-def slot_status(slot, folder, lint_reason, decision, decision_reason):
+def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None):
     sid = slot['slot_id']
     if lint_reason:
         return row(slot, 'drafted', lint_reason)
@@ -336,13 +407,15 @@ def slot_status(slot, folder, lint_reason, decision, decision_reason):
     if review is not None and (review.get('verdict') != 'pass' or not isinstance(review.get('lens'), str)
                                or not LENS.match(review['lens'])):
         reason = label + ' needs verdict pass and a lens id'
-    elif review is not None and not (_same(review, 'slot_id', sid) and _same(review, 'payload_sha256', slot['payload_sha256'])):
-        reason = label + ' reviewed another slot or payload'
+    elif review is not None and review.get('payload_sha256') != slot['payload_sha256']:
+        reason = label + " must carry this slot's payload_sha256; a review of another payload never counts"
+    elif review is not None and not _same(review, 'slot_id', sid):
+        reason = label + ' reviewed another slot'
     if reason:
         return row(slot, 'linted', reason)
     if decision_reason:
         return row(slot, 'reviewed', decision_reason)
-    digest, reason = signed_digest(slot, decision)
+    digest, reason = signed_digest(slot, decision, window)
     if reason:
         return row(slot, 'reviewed', reason)
     label = 'queued/' + sid + '.json'
@@ -354,6 +427,8 @@ def slot_status(slot, folder, lint_reason, decision, decision_reason):
             reason = 'a krish_click slot is only ever an unscheduled draft'
         elif queued.get('payload_sha256') != digest or not _same(queued, 'slot_id', sid):
             reason = label + ' does not match the signed digest'
+    if reason and queued is None and digest != slot['payload_sha256']:
+        reason += '; signed as amended: rewrite the slot with the amended payload (run new --from) to release it'
     if reason:
         return row(slot, 'signed', reason)
     label = 'live/' + sid + '.json'
@@ -385,19 +460,21 @@ def status(spec, runs=None, root=ROOT):
     folder = run_dir(spec, runs, root)
     lint_record, lint_reason = _evidence(folder / 'lint.json', 'lint.json (run lint --record)')
     if lint_record is not None:
-        if lint_record.get('run_id') != spec['run_id'] or lint_record.get('spec_sha256') != sha256_hex(spec):
+        if lint_record.get('run_id') != spec['run_id'] or lint_record.get('spec_sha256') != lint_digest(spec):
             lint_reason = 'lint.json is for another version of this spec; run lint --record again'
         elif lint_record.get('errors') != []:
             lint_reason = 'lint.json records errors'
     decision, decision_reason = _evidence(folder / 'decision.json', 'decision.json')
-    if decision is not None and decision.get('run_id') != spec['run_id']:
-        decision, decision_reason = None, 'decision.json is for another run'
+    if decision is not None:
+        decision_reason = decision_errors(spec, decision)
+    window = (instant(spec['window']['start']), instant(spec['window']['end']))
     try:
         shown = folder.resolve().relative_to(Path(root).resolve()).as_posix()
     except ValueError:
         shown = folder.name
     return {'local_only': True, 'run_id': spec['run_id'], 'evidence': shown,
-            'slots': [slot_status(slot, folder, lint_reason, decision, decision_reason) for slot in spec['slots']]}
+            'slots': [slot_status(slot, folder, lint_reason, decision, decision_reason, window)
+                      for slot in spec['slots']]}
 
 
 # Command line ---------------------------------------------------------------

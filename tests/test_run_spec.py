@@ -1,6 +1,7 @@
 """Run spec lint and computed readiness, on synthetic fixtures only."""
 import contextlib
 import copy
+import datetime as dt
 import hashlib
 import io
 import json
@@ -9,15 +10,50 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from engine.control_center import sha256_hex
 from engine.core import write_json
 from engine.run import cli
-from engine.run.spec import (computed, lint, main, payload_sha256, run_dir, skeleton, status,
-                             week_target)
+from engine.run import spec as spec_module
+from engine.run.spec import (computed, lint, lint_digest, main, payload_sha256, run_dir, skeleton,
+                             social_records, status, week_target)
 from engine.social import inventory
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / 'specs' / 'fixtures'
 RECORDS = json.loads((FIXTURES / 'social-records.json').read_text(encoding='utf-8'))
+REAL_LADDER = spec_module.ladder
+# A synthetic ladder, so Krish can edit or extend docs/NORTH_STAR.md without turning CI red.
+NORTH_STAR = """# North Star (TEST FIXTURE ONLY)
+
+```yaml north-star-metric
+metric: "synthetic"
+ladder:
+  - [2026-10-26, 25]
+  - [2026-11-02, 86]
+  - [2026-11-09, 162]
+```
+"""
+PROPOSAL = 'synthetic-go-live-1'
+SIGNED_AT = '2026-11-01T18:00:00-05:00'
+
+
+def synthetic_root(folder, text=NORTH_STAR):
+    path = Path(folder) / 'docs' / 'NORTH_STAR.md'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding='utf-8')
+    return Path(folder)
+
+
+class SyntheticLadder(unittest.TestCase):
+    """Every week_target in these tests comes from the synthetic ladder above."""
+
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        self.root = synthetic_root(temp.name)
+        patcher = patch.object(spec_module, 'ladder', lambda root=None: REAL_LADDER(self.root))
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
 
 def fixture(name):
@@ -32,7 +68,7 @@ def slot(spec, slot_id):
     return next(s for s in spec['slots'] if s['slot_id'] == slot_id)
 
 
-class RunSpecLintTests(unittest.TestCase):
+class RunSpecLintTests(SyntheticLadder):
     def test_good_spec_lints_clean(self):
         result = lint(fixture('w45-week'), RECORDS)
         self.assertEqual(result['errors'], [])
@@ -43,12 +79,13 @@ class RunSpecLintTests(unittest.TestCase):
     @unittest.skipUnless({'substack-notes', 'threads'} <= set(inventory()['channel']),
                          'the Notes and Threads records are another work item (27 Oct ruling)')
     def test_good_spec_lints_clean_against_repo_records(self):
-        self.assertEqual(lint(fixture('w45-week'))['errors'], [])
+        self.assertEqual(lint(fixture('w45-week'), social_records(ROOT))['errors'], [])
 
     def test_seeded_bad_spec_fails_with_expected_errors(self):
         result = lint(fixture('bad-spec'), RECORDS)
         self.assertEqual({e['code'] for e in result['errors']},
-                         {'week_target', 'payload_sha256', 'prose', 'unknown_channel', 'format_not_allowed',
+                         {'week_target', 'payload_sha256', 'prose', 'unknown_channel', 'unknown_format',
+                          'format_not_allowed',
                           'publish_mode', 'krish_click_due_at', 'spend', 'experiment_per_channel',
                           'experiment_arm', 'asset_sha256', 'notes_per_day'})
         by_code = {}
@@ -57,6 +94,7 @@ class RunSpecLintTests(unittest.TestCase):
         self.assertEqual([e['slot_id'] for e in by_code['payload_sha256']], ['w45-mon-note-2'])
         self.assertEqual([e['slot_id'] for e in by_code['publish_mode']], ['w45-linkedin-1'])
         self.assertEqual(len(by_code['prose']), 3)
+        self.assertEqual([e['slot_id'] for e in by_code['unknown_format']], ['w45-x-hologram-1'])
         with contextlib.redirect_stdout(io.StringIO()) as out:
             self.assertEqual(main(['lint', str(FIXTURES / 'bad-spec.json')]), 1)
         self.assertFalse(json.loads(out.getvalue())['valid'])
@@ -80,6 +118,10 @@ class RunSpecLintTests(unittest.TestCase):
         self.assertEqual(week_target('2026-10-28T12:00:00-04:00'), 25)
         with self.assertRaisesRegex(ValueError, 'no North Star ladder rung'):
             week_target('2027-01-04T00:00:00-05:00')
+        # The rung is read from the file under the given root, not from anything typed in the spec.
+        with tempfile.TemporaryDirectory() as folder:
+            other = synthetic_root(folder, NORTH_STAR.replace('[2026-11-02, 86]', '[2026-11-02, 7]'))
+            self.assertEqual(REAL_LADDER(other)[dt.date(2026, 11, 2)], 7)
         spec = fixture('w45-week')
         spec['north_star']['week_target'] = 85
         self.assertEqual(codes(spec), {'week_target'})
@@ -119,6 +161,10 @@ class RunSpecLintTests(unittest.TestCase):
         reordered = copy.deepcopy(first)
         reordered['assets'] = [dict(first['assets'][0], name='renamed.png', url='https://example.com/a.png')]
         self.assertEqual(payload_sha256(reordered), before, 'only the asset bytes hash is signed')
+        pair = [dict(first['assets'][0], sha256='a' * 64), dict(first['assets'][0], sha256='b' * 64)]
+        swapped = dict(first, assets=list(reversed(pair)))
+        self.assertNotEqual(payload_sha256(dict(first, assets=pair)), payload_sha256(swapped),
+                            'asset hashes are signed in order')
 
     def test_linkedin_slot_must_be_krish_click(self):
         spec = fixture('w45-week')
@@ -171,17 +217,57 @@ class RunSpecLintTests(unittest.TestCase):
                              int(not {'substack-notes', 'threads'} <= set(inventory()['channel'])))
         self.assertIn('"errors"', out.getvalue())
 
+    def test_run_new_without_a_rung_writes_the_skeleton_and_lint_reports_it(self):
+        with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()) as out:
+            path = Path(folder) / 'spec.json'
+            self.assertEqual(main(['new', '--start', '2027-03-08', '--out', str(path)]), 0)
+            spec = json.loads(path.read_text(encoding='utf-8'))
+            self.assertEqual(main(['lint', str(path)]), 1)
+        self.assertEqual(spec['window']['start'], '2027-03-08T00:00:00-05:00')
+        self.assertEqual(spec['north_star']['week_target'], 0)
+        self.assertIn('no North Star ladder rung for the week of 2027-03-08', out.getvalue())
+        self.assertEqual(codes(spec), {'week_target'})
 
-class RunStatusTests(unittest.TestCase):
+    def test_window_must_match_its_kind(self):
+        for kind, start in (('week', '2026-11-04'), ('piece', '2026-11-04'), ('express', '2026-11-01')):
+            self.assertEqual(codes(skeleton(start, kind)), set(), kind)
+        spec = fixture('w45-week')
+        spec['window']['start'] = '2026-11-03T00:00:00-05:00'
+        self.assertEqual(codes(computed(spec)), {'window'}, 'a week starts on a Monday and runs 7 days')
+        spec = fixture('w45-week')
+        spec['window']['end'] = '2026-11-08T00:00:00-05:00'
+        self.assertEqual(codes(spec), {'window'})
+        spec = fixture('w45-week')
+        spec['window']['start'] = '2026-11-02T00:00:00Z'
+        self.assertEqual(codes(computed(spec)), {'window'}, 'midnight UTC is not midnight in New York')
+        spec = fixture('w45-week')
+        spec['kind'] = 'express'
+        self.assertEqual(codes(spec), {'window'}, 'an express window is one day')
+
+    def test_soft_guidance_is_a_warning_not_an_error(self):
+        spec = fixture('w45-week')
+        spec['slots'][2]['due_at'] = None
+        result = lint(computed(spec), RECORDS)
+        self.assertEqual(result['errors'], [])
+        self.assertEqual([(w['code'], w['slot_id']) for w in result['warnings']],
+                         [('engine_unscheduled', 'w45-tue-note-1')])
+        spec = fixture('w45-week')
+        spec['inputs'] = []
+        result = lint(spec, RECORDS)
+        self.assertEqual(result['errors'], [])
+        self.assertEqual([(w['code'], w['slot_id']) for w in result['warnings']],
+                         [('asset_not_in_manifest', 'w45-mon-note-1')], 'no manifest at all still warns')
+
+
+class RunStatusTests(SyntheticLadder):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
-        self.runs = self.temp.name
+        super().setUp()
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        self.runs = temp.name
         self.spec = fixture('w45-week')
         self.folder = run_dir(self.spec, self.runs)
         self.slot = slot(self.spec, 'w45-mon-threads-1')
-
-    def tearDown(self):
-        self.temp.cleanup()
 
     def put(self, name, value):
         write_json(self.folder / name, value)
@@ -190,13 +276,25 @@ class RunStatusTests(unittest.TestCase):
         rows = {r['slot_id']: r for r in status(self.spec, self.runs)['slots']}
         return rows[slot_id]['stage'], rows[slot_id]['reason']
 
-    def signed(self, digest=None, amended=None):
+    def reviewed(self):
         sid = self.slot['slot_id']
         self.put('lint.json', {'run_id': self.spec['run_id'], 'spec_sha256': lint_digest(self.spec),
                                'errors': [], 'warnings': []})
-        self.put('review/' + sid + '.json', {'slot_id': sid, 'verdict': 'pass', 'lens': 'threads'})
-        self.put('decision.json', {'run_id': self.spec['run_id'], 'slots': {sid: {
-            'approved': True, 'digest': digest or self.slot['payload_sha256'], 'amended': amended}}})
+        self.put('review/' + sid + '.json', {'slot_id': sid, 'verdict': 'pass', 'lens': 'threads',
+                                             'payload_sha256': self.slot['payload_sha256']})
+
+    def signed(self, digest=None, amended=None):
+        """Krish's go-live decision in the shape engine/run/release.py reads, and the spec signature."""
+        sid = self.slot['slot_id']
+        self.reviewed()
+        slots = {sid: digest or self.slot['payload_sha256']}
+        decision = {'run_id': self.spec['run_id'], 'proposal_id': PROPOSAL, 'decision': 'approved',
+                    'decided_at': SIGNED_AT, 'slots': slots}
+        if amended is not None:
+            decision['amended'] = {sid: amended}
+        self.put('decision.json', decision)
+        self.spec['signature'] = {'go_live_proposal_id': PROPOSAL, 'decision_digest': sha256_hex(slots),
+                                  'signed_at': SIGNED_AT}
 
     def test_status_walks_every_stage_from_evidence_only(self):
         sid = self.slot['slot_id']
@@ -211,6 +309,10 @@ class RunStatusTests(unittest.TestCase):
             self.put('lint.json', dict(lint_record, errors=[]))
         self.assertEqual(self.stage()[0], 'linted')
         self.put('review/' + sid + '.json', {'verdict': 'fail', 'lens': 'threads'})
+        self.assertEqual(self.stage()[0], 'linted')
+        self.put('review/' + sid + '.json', {'verdict': 'pass', 'lens': 'threads'})
+        self.assertEqual(self.stage()[0], 'linted', 'a review must say which payload it passed')
+        self.put('review/' + sid + '.json', {'verdict': 'pass', 'lens': 'threads', 'payload_sha256': 'a' * 64})
         self.assertEqual(self.stage()[0], 'linted')
         self.signed()
         self.assertEqual(self.stage()[0], 'signed')
@@ -227,6 +329,36 @@ class RunStatusTests(unittest.TestCase):
         self.put('verdict/' + sid + '.json', {'verdict': 'insufficient'})
         self.assertEqual(self.stage(), ('verdict', None))
         self.assertEqual(self.stage('w45-mon-note-1')[0], 'linted', 'other slots keep their own evidence')
+
+    def test_lint_record_survives_signing_and_queueing_only(self):
+        before = lint_digest(self.spec)
+        self.signed()
+        self.spec['slots'][3]['buffer_draft_id'] = 'synthetic-draft-1'
+        self.assertEqual(lint_digest(self.spec), before, 'signature and buffer_draft_id are added after lint')
+        self.assertEqual(self.stage()[0], 'signed')
+        self.spec['slots'][0]['words'] += ' One more line.'
+        self.assertNotEqual(lint_digest(self.spec), before)
+        self.assertEqual(self.stage()[0], 'drafted', 'any other edit needs lint --record again')
+
+    def test_release_shaped_decision_reaches_signed_then_queued(self):
+        sid = self.slot['slot_id']
+        self.reviewed()
+        # Literally the shape engine/run/release.py documents and reads.
+        slots = {sid: self.slot['payload_sha256'], 'w45-wed-threads-1': slot(self.spec, 'w45-wed-threads-1')['payload_sha256']}
+        self.put('decision.json', {'run_id': self.spec['run_id'], 'proposal_id': PROPOSAL, 'decision': 'approved',
+                                   'decided_at': SIGNED_AT, 'slots': slots})
+        self.assertEqual(self.stage(), ('reviewed', 'the spec has no signature naming this decision'))
+        self.spec['signature'] = {'go_live_proposal_id': PROPOSAL, 'decision_digest': sha256_hex(slots),
+                                  'signed_at': SIGNED_AT}
+        self.assertEqual(self.stage()[0], 'signed')
+        self.assertEqual(self.stage('w45-mon-note-1'), ('linted', 'no review/w45-mon-note-1.json'))
+        self.put('queued/' + sid + '.json', {'slot_id': sid, 'stage': 'queued', 'status': 'scheduled',
+                                             'payload_sha256': self.slot['payload_sha256']})
+        self.assertEqual(self.stage()[0], 'queued')
+        # The earlier nested shape is not what release reads, so it never signs.
+        self.put('decision.json', {'run_id': self.spec['run_id'], 'proposal_id': PROPOSAL, 'decision': 'approved',
+                                   'slots': {sid: {'approved': True, 'digest': self.slot['payload_sha256']}}})
+        self.assertEqual(self.stage()[0], 'reviewed')
 
     def test_scheduled_never_counts_as_live(self):
         sid = self.slot['slot_id']
@@ -257,18 +389,24 @@ class RunStatusTests(unittest.TestCase):
         self.signed(digest=other)
         self.assertEqual(self.stage()[0], 'reviewed', "another slot's digest never signs this one")
         self.signed()
-        self.put('decision.json', {'run_id': self.spec['run_id'], 'slots': {sid: {
-            'approved': False, 'digest': self.slot['payload_sha256']}}})
-        self.assertEqual(self.stage()[0], 'reviewed')
-        self.put('decision.json', {'run_id': 'makeyourmindup:2026-W46:week', 'slots': {sid: {
-            'approved': True, 'digest': self.slot['payload_sha256']}}})
-        self.assertEqual(self.stage()[0], 'reviewed')
+        self.assertEqual(self.stage()[0], 'signed')
+        self.spec['signature']['decision_digest'] = 'b' * 64
+        self.assertEqual(self.stage(), ('reviewed', 'decision.json slots do not match the signed decision_digest;'
+                                                    ' a mismatch is never signed'))
+        self.signed()
+        self.spec['signature']['go_live_proposal_id'] = 'synthetic-go-live-2'
+        self.assertEqual(self.stage(), ('reviewed', 'decision.json is for another go-live proposal'))
+        for change in ({'decision': 'declined'}, {'run_id': 'makeyourmindup:2026-W46:week'}, {'slots': [sid]}):
+            self.signed()
+            decision = json.loads((self.folder / 'decision.json').read_text(encoding='utf-8'))
+            self.put('decision.json', dict(decision, **change))
+            self.assertEqual(self.stage()[0], 'reviewed', change)
         # Krish amends: his version is what is signed, and only its digest may be queued.
         amended = {k: self.slot[k] for k in ('channel', 'format', 'link_placement', 'due_at', 'publish_mode')}
         amended.update(words='TEST FIXTURE ONLY. Krish reworded this line.', assets=[])
-        from engine.control_center import sha256_hex
         self.signed(digest=sha256_hex(amended), amended=amended)
         self.assertEqual(self.stage()[0], 'signed')
+        self.assertIn('rewrite the slot with the amended payload', self.stage()[1])
         self.put('queued/' + sid + '.json', {'status': 'scheduled', 'payload_sha256': self.slot['payload_sha256']})
         self.assertEqual(self.stage()[0], 'signed', 'the unamended payload is not what Krish signed')
         self.put('queued/' + sid + '.json', {'status': 'scheduled', 'payload_sha256': sha256_hex(amended)})
@@ -278,6 +416,9 @@ class RunStatusTests(unittest.TestCase):
         moved = dict(amended, channel='x')
         self.signed(digest=sha256_hex(moved), amended=moved)
         self.assertEqual(self.stage()[0], 'reviewed', 'an amendment cannot move the channel')
+        late = dict(amended, due_at='2026-11-12T12:00:00-05:00')
+        self.signed(digest=sha256_hex(late), amended=late)
+        self.assertEqual(self.stage(), ('reviewed', 'amended due_at falls outside the run window'))
 
     def test_krish_click_slot_is_only_ever_queued_as_a_draft(self):
         spec = fixture('w45-week')
@@ -290,11 +431,6 @@ class RunStatusTests(unittest.TestCase):
         self.assertEqual(self.stage('w45-linkedin-1'), ('signed', 'a krish_click slot is only ever an unscheduled draft'))
         self.put('queued/w45-linkedin-1.json', {'status': 'draft', 'payload_sha256': self.slot['payload_sha256']})
         self.assertEqual(self.stage('w45-linkedin-1')[0], 'queued')
-
-
-def lint_digest(spec):
-    from engine.control_center import sha256_hex
-    return sha256_hex(spec)
 
 
 if __name__ == '__main__':
