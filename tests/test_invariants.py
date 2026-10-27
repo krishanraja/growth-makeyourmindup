@@ -11,6 +11,12 @@ import unittest
 from engine.run.invariants import (FAILURE_IDS, RULE_SOURCES, ROOT, check_failures, check_quotes,
                                    check_rule_links, collapse, house_errors, load_boundary,
                                    load_failures, load_rules, load_sources)
+from engine.run.invariants import test_names as defined_tests  # not collected as a test
+
+GA4_TESTS = ('test_ga4_credentials_accept_raw_or_base64_json', 'test_rs256_signature_verifies_with_public_key',
+             'test_ga4_transport_only_allows_google_origins_and_never_logs_secrets',
+             'test_ga4_unverified_event_name_is_refused', 'test_ga4_report_joins_slots_by_utm_content',
+             'test_ga4_reconcile_prefers_the_conservative_reading', 'test_ga4_never_calls_network_without_live')
 
 
 def fixture_root(folder, source_text, rule_quote, failures=None, test_source=''):
@@ -87,6 +93,35 @@ class RuleTests(unittest.TestCase):
         self.assertIn('R78', rules['R27']['statement'])
         self.assertEqual(rules['R78']['source_file'], 'CHANGES.md')
 
+    def test_ga4_rule_quotes_the_27_october_ruling(self):
+        rule = {r['id']: r for r in load_rules()}['R83']
+        self.assertEqual(rule['source_file'], 'CHANGES.md')
+        for anchor in ('Make sure this is a part of your Measurement Specialist.', 'G-VC5V9LDE17',
+                       'joined on `utm_content`; Substack Growth sources remain the North Star source',
+                       'read-only service account (Viewer on that one property)', 'kept as the fallback'):
+            self.assertIn(anchor, collapse(rule['quote']))
+        names = defined_tests()
+        waiting = [t for t in GA4_TESTS if t not in names]
+        self.assertEqual(set(rule['tests']) | set(rule.get('pending_tests', [])), set(GA4_TESTS))
+        if waiting:
+            self.assertEqual(rule['pending_item'], 'measure')
+
+    def test_notes_identity_and_asset_storage_rules_are_quoted(self):
+        rules = {r['id']: r for r in load_rules()}
+        notes = rules['R81']
+        self.assertEqual(notes['source_file'], 'docs/PUBLISHING-AUTHORITY.md')
+        for anchor in ("Substack Notes post from a person's profile, not the publication.",
+                       'whose handle is mindmakerlive', 'at up to two a day as signed', 'is superseded by this paragraph'):
+            self.assertIn(anchor, collapse(notes['quote']))
+        self.assertIn('test_substack_notes_is_personal_cadence', notes['tests'])
+        self.assertIn('profile change held for him', rules['R82']['quote'])
+        self.assertIn('R81', rules['R59']['statement'])
+        storage = ' '.join(collapse(r['quote']) for r in rules.values() if r['source_file'] == 'docs/ASSET-STORAGE.md')
+        for anchor in ('Preserve session learning and assets in structured places every session.',
+                       'Store a manifest with SHA-256', 'without an explicit historical/rejected label',
+                       'independently read back names, parents and sizes', 'a folder named Private as an access boundary'):
+            self.assertIn(anchor, storage)
+
 
 class FailureRegisterTests(unittest.TestCase):
     def test_failure_register_tests_exist(self):
@@ -96,8 +131,47 @@ class FailureRegisterTests(unittest.TestCase):
         failures = load_failures()
         self.assertEqual(tuple(f['id'] for f in failures), FAILURE_IDS)
         pending = [f for f in failures if f['status'] == 'pending-build']
-        self.assertTrue(pending and all(f['pending_item'] for f in pending))
+        # 27 Oct: entries flip to tested once their tests exist, so none need stay pending.
+        self.assertTrue(all(f.get('pending_item') for f in pending))
         self.assertTrue(all(f['tests'] for f in failures if f['status'] == 'tested'))
+
+    def test_pending_build_stays_only_while_a_test_is_missing(self):
+        # Once every named test exists, the entry is flipped to tested and its pending_item dropped.
+        names = defined_tests()
+        offenders = []
+        for kind, entries in (('failure', load_failures()), ('rule', load_rules())):
+            for entry in entries:
+                pending = entry.get('pending_tests', [])
+                if kind == 'failure' and entry['status'] == 'pending-build':
+                    pending = pending + entry['tests']
+                if pending and all(t in names for t in pending):
+                    offenders.append(entry['id'] + ': every pending test exists; flip it and drop pending_item')
+                elif not pending and 'pending_item' in entry:
+                    offenders.append(entry['id'] + ': nothing is pending; drop pending_item')
+        self.assertEqual(offenders, [])
+
+    def test_register_records_the_27_october_learnings(self):
+        failures = {f['id']: f for f in load_failures()}
+        self.assertEqual(FAILURE_IDS[53:56], ('F54', 'F55', 'F56'))
+        buffer, notes = failures['F55'], failures['F56']
+        self.assertEqual((buffer['status'], buffer['tests']),
+                         ('tested', ['test_release_is_pinned_to_this_engines_buffer_channels']))
+        self.assertIn('engine/run/release.py:resolve_channel', buffer['guard'])
+        self.assertIn('other ventures', buffer['title'])
+        self.assertEqual((notes['status'], notes['tests']), ('tested', ['test_substack_notes_is_personal_cadence']))
+        self.assertIn('substack-notes-identity', notes['source'])
+        self.assertIn('mindmakerlive', notes['title'])
+        owner = {t: f for f in failures.values() for t in f['tests']}
+        names = defined_tests()
+        expected = [(t, 'measure') for t in GA4_TESTS] + [
+            ('test_linkedin_audit_is_krish_only_even_after_approval', 'audit'),
+            ('test_facebook_and_threads_audit_edits_are_held', 'audit'),
+            ('test_www_hosts_match_their_account', 'audit'),
+            ('test_threads_text_limit_is_500', 'social')]
+        for name, item in expected:
+            self.assertIn(name, owner)
+            if name not in names:  # Still being built by its work item.
+                self.assertEqual((owner[name]['status'], owner[name]['pending_item']), ('pending-build', item), name)
 
     def test_missing_test_fails_the_register(self):
         with tempfile.TemporaryDirectory() as folder:

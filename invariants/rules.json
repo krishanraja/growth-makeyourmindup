@@ -36,12 +36,9 @@
         "engine/social.py:preflight"
       ],
       "tests": [
-        "test_missing_approval_survives_valid_preflight"
-      ],
-      "pending_tests": [
+        "test_missing_approval_survives_valid_preflight",
         "test_draft_save_sets_saveToDraft_without_dueAt"
-      ],
-      "pending_item": "D2"
+      ]
     },
     {
       "id": "R04",
@@ -154,13 +151,10 @@
       ],
       "tests": [
         "test_decisions_bind_to_the_exact_payload",
-        "test_approval_on_reported_words_is_reported_and_nothing_is_sent"
-      ],
-      "pending_tests": [
+        "test_approval_on_reported_words_is_reported_and_nothing_is_sent",
         "test_approved_plan_never_goes_live",
         "test_approved_go_live_goes_live_once_with_exact_payload"
-      ],
-      "pending_item": "B"
+      ]
     },
     {
       "id": "R13",
@@ -168,15 +162,13 @@
       "source_file": "AGENTS.md",
       "quote": "If he amended it, recompute `amended_sha256` and use his version, never the engine's.",
       "enforced_by": [
-        "doc-only"
+        "engine/control_center.py:amendment_ok"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_amended_payload_wins_and_binds",
         "test_amended_go_live_goes_live_in_his_words",
         "test_amended_digest_mismatch_is_refused"
-      ],
-      "pending_item": "B"
+      ]
     },
     {
       "id": "R14",
@@ -186,11 +178,9 @@
       "enforced_by": [
         "process"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_declined_check_in_stops_its_plan"
-      ],
-      "pending_item": "B"
+      ]
     },
     {
       "id": "R15",
@@ -258,12 +248,9 @@
         "engine/cc_loop.py:workspace_report"
       ],
       "tests": [
-        "test_outreach_is_control_centers_so_pitches_swaps_and_partners_are_held"
-      ],
-      "pending_tests": [
+        "test_outreach_is_control_centers_so_pitches_swaps_and_partners_are_held",
         "test_post_deliver_refuses_outreach_kinds"
-      ],
-      "pending_item": "D1"
+      ]
     },
     {
       "id": "R21",
@@ -345,11 +332,9 @@
       "enforced_by": [
         "doc-only"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_linkedin_audit_edit_is_held"
-      ],
-      "pending_item": "A"
+      ]
     },
     {
       "id": "R29",
@@ -367,13 +352,11 @@
       "source_file": "BROWSER.md",
       "quote": "This is draft authority, not scheduling/publication authority.",
       "enforced_by": [
-        "doc-only"
+        "engine/run/release.py:argument_errors"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_draft_save_sets_saveToDraft_without_dueAt"
-      ],
-      "pending_item": "D2"
+      ]
     },
     {
       "id": "R31",
@@ -445,11 +428,9 @@
       "enforced_by": [
         "doc-only"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_substack_article_has_no_daily_target"
-      ],
-      "pending_item": "C"
+      ]
     },
     {
       "id": "R37",
@@ -467,15 +448,13 @@
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Scheduling proves only a scheduled post. Actual publication needs the native URL/content/account and a dated readback.",
       "enforced_by": [
-        "doc-only"
+        "engine/run/release.py:check_readback"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_scheduled_is_not_sent",
         "test_live_needs_native_url_per_destination",
         "test_scheduled_never_counts_as_live"
-      ],
-      "pending_item": "D1, D2"
+      ]
     },
     {
       "id": "R39",
@@ -509,11 +488,9 @@
       "enforced_by": [
         "doc-only"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_story_one_frame_per_post_dedupe_by_media_url"
-      ],
-      "pending_item": "D2"
+      ]
     },
     {
       "id": "R42",
@@ -521,13 +498,11 @@
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "never draw fake interactive controls or invent poll/link-sticker support.",
       "enforced_by": [
-        "doc-only"
+        "engine/run/release.py:check_slot"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_link_sticker_never_claimed_automatic"
-      ],
-      "pending_item": "D2"
+      ]
     },
     {
       "id": "R43",
@@ -614,12 +589,9 @@
         "engine/social.py:preflight"
       ],
       "tests": [
-        "test_asset_change_and_missing_alt_text_are_rejected"
-      ],
-      "pending_tests": [
+        "test_asset_change_and_missing_alt_text_are_rejected",
         "test_release_refuses_changed_asset_bytes"
-      ],
-      "pending_item": "D2"
+      ]
     },
     {
       "id": "R51",
@@ -662,12 +634,9 @@
         "engine/social.py:preflight"
       ],
       "tests": [
-        "test_wrong_account_context_and_unreviewed_voice_are_rejected"
-      ],
-      "pending_tests": [
+        "test_wrong_account_context_and_unreviewed_voice_are_rejected",
         "test_threads_has_delegated_cadence_with_personal_voice"
-      ],
-      "pending_item": "C"
+      ]
     },
     {
       "id": "R55",
@@ -715,19 +684,17 @@
     },
     {
       "id": "R59",
-      "statement": "Substack Notes and Threads are in scope (27 Oct), superseding the 14 Oct and 26 Oct lines; Threads is a personal identity (personal voice, R54).",
+      "statement": "Substack Notes and Threads are in scope (27 Oct), superseding the 14 Oct and 26 Oct lines; Threads is a personal identity (personal voice, R54), and so are Notes, which post from Krish's own profile (R81).",
       "source_file": "CHANGES.md",
       "quote": "Channels: he chose to add **Substack Notes** and **Threads**.",
       "enforced_by": [
         "doc-only"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_threads_is_known_and_audit_edits_are_held",
         "test_notes_links_are_tracked",
         "test_threads_has_delegated_cadence_with_personal_voice"
-      ],
-      "pending_item": "A, C"
+      ]
     },
     {
       "id": "R60",
@@ -833,11 +800,9 @@
       "enforced_by": [
         "doc-only"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_approved_go_live_goes_live_once_with_exact_payload"
-      ],
-      "pending_item": "B"
+      ]
     },
     {
       "id": "R70",
@@ -845,13 +810,11 @@
       "source_file": "AGENTS.md",
       "quote": "his yes keeps it going, his amendment redirects it, his no stops the plan for good.",
       "enforced_by": [
-        "doc-only"
+        "engine/control_center.py:stopped_plans"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_declined_check_in_stops_its_plan"
-      ],
-      "pending_item": "B"
+      ]
     },
     {
       "id": "R71",
@@ -911,13 +874,11 @@
       "source_file": "docs/ASSET-STORAGE.md",
       "quote": "Do not overwrite the approved revision or silently update its approval digest.",
       "enforced_by": [
-        "process"
+        "engine/run/release.py:verify_asset_bytes"
       ],
-      "tests": [],
-      "pending_tests": [
+      "tests": [
         "test_release_refuses_changed_asset_bytes"
-      ],
-      "pending_item": "D2"
+      ]
     },
     {
       "id": "R77",
@@ -956,6 +917,102 @@
       "quote": "Never infer that these accounts are signed out from another browser.",
       "enforced_by": [
         "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R81",
+      "statement": "Substack Notes post from Krish's own profile (Buffer channel Krish, handle mindmakerlive), not the publication: his personal voice (R54) and the delegated cadence of X, TikTok and Threads, at most two a day as signed. This supersedes the earlier 27 Oct bullet that Notes post as the publication.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Correction, 27 October 2026 (later the same day). Substack Notes post from a person's profile, not the publication. Krish connected Substack in Buffer as the profile named Krish, the publication owner, whose handle is mindmakerlive (lesson `substack-notes-identity`). Notes therefore keep his personal voice and take the same delegated cadence as X, TikTok and Threads, at up to two a day as signed. The bullet above saying Notes \"post as the publication under approved brand content\" is superseded by this paragraph.",
+      "enforced_by": [
+        "engine/social.py:preflight",
+        "engine/run/release.py:resolve_channel"
+      ],
+      "tests": [
+        "test_substack_notes_is_personal_cadence",
+        "test_release_is_pinned_to_this_engines_buffer_channels"
+      ]
+    },
+    {
+      "id": "R82",
+      "statement": "Renaming the retired mindmakerlive Substack handle is a profile change held for Krish; the engine never makes it.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "Renaming the retired mindmakerlive handle is a profile change held for him.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [
+        "test_substack_notes_is_personal_cadence"
+      ]
+    },
+    {
+      "id": "R83",
+      "statement": "GA4 property G-VC5V9LDE17 on home.makeyourmindup.ai is the Measurement Specialist's per-post attribution source, joined on utm_content and read directly with a read-only Viewer service account on that one property (Control Center's brief is the fallback); Substack Growth sources remain the North Star source.",
+      "source_file": "CHANGES.md",
+      "quote": "Later the same day: \"You have Google Analytics installed already and Control Centre can see that. Make sure this is a part of your Measurement Specialist.\" GA4 property G-VC5V9LDE17 runs on home.makeyourmindup.ai through Substack's native integration. It is now the Measurement Specialist's per-post attribution source, joined on `utm_content`; Substack Growth sources remain the North Star source. He then offered: \"Happy to let you read Google Analytics directly if you prefer.\" The engine reads GA4 directly with a read-only service account (Viewer on that one property); the Control Center brief (`docs/briefs/2026-10-27-control-center-ga4-read.md`) is kept as the fallback.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": [],
+      "pending_tests": [
+        "test_ga4_credentials_accept_raw_or_base64_json",
+        "test_rs256_signature_verifies_with_public_key",
+        "test_ga4_transport_only_allows_google_origins_and_never_logs_secrets",
+        "test_ga4_unverified_event_name_is_refused",
+        "test_ga4_report_joins_slots_by_utm_content",
+        "test_ga4_reconcile_prefers_the_conservative_reading",
+        "test_ga4_never_calls_network_without_live"
+      ],
+      "pending_item": "measure"
+    },
+    {
+      "id": "R84",
+      "statement": "Every session, interactive or scheduled, preserves its learning and assets in their structured places.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Ruling: Krish, 27 October 2026. Preserve session learning and assets in structured places every session. This applies to interactive work and scheduled jobs.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R85",
+      "statement": "Every campaign stores a manifest with SHA-256, byte size, revision, source identity and approval scope.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Store a manifest with SHA-256, byte size, revision, source identity and approval scope.",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R86",
+      "statement": "Candidates, rejections and production prompts stay in their owning private or Content Engine archive, never beside approved files without an explicit historical or rejected label.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Keep candidates/rejections and production prompts in their owning private or Content Engine archive. They must never appear beside approved files without an explicit historical/rejected label.",
+      "enforced_by": [
+        "doc-only"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R87",
+      "statement": "A Drive write inspects existing children first, prevents duplicates, uploads to the verified parent and reads back names, parents and sizes independently.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Use Drive tools to inspect existing children before writes, prevent duplicates, upload to the verified parent, and independently read back names, parents and sizes (checksums when exposed).",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": []
+    },
+    {
+      "id": "R88",
+      "statement": "Access is rechecked before sensitive material is uploaded; a folder named Private is never treated as an access boundary.",
+      "source_file": "docs/ASSET-STORAGE.md",
+      "quote": "Recheck access before uploading sensitive material; do not treat a folder named Private as an access boundary.",
+      "enforced_by": [
+        "process"
       ],
       "tests": []
     }

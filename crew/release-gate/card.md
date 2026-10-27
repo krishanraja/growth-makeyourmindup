@@ -11,7 +11,7 @@ Owns every release. It checks; it does not judge creative.
 | A slot was already released | Refuse a second release | R12 |
 | A slot is for LinkedIn | Save an unscheduled draft only; Krish clicks | R39, R62 |
 | A slot is a Buffer draft save | saveToDraft with no due time | R03, R30 |
-| A slot would pass its signed frequency (Notes per day as signed) | Hold the slot | P1, R60 |
+| A slot would pass its signed frequency (Notes per day as signed, at most two a day) | Hold the slot | P1, R60, R81 |
 | Buffer shows the post as scheduled | It is not live | R38 |
 | A post is to be counted as live | Buffer sent plus the native URL read back for each destination | R38 |
 | The outcome of a call is uncertain | Hold it; never retry blindly | R31 |

@@ -1,40 +1,37 @@
 {
   "schema_version": 1,
   "kind": "failures",
-  "note": "F01 to F54 and G1 to G9 from the appendix of docs/plans/2026-10-27-engine-architecture.md. A pending-build entry names the work item building its tests.",
+  "note": "F01 to F54 and G1 to G9 from the appendix of docs/plans/2026-10-27-engine-architecture.md; F55 onwards are learnings recorded after it, from the 27 Oct rulings and the Phase 0-2 hardening. A pending-build entry names the work item building its tests.",
   "failures": [
     {
       "id": "F01",
       "title": "A scheduling-only Buffer edit is rejected; an edit sends the complete payload",
       "source": "lesson schedule-full-payload",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:argument_errors refuses a scheduling-only edit; engine/run/release.py:call_arguments builds the complete payload",
       "tests": [
         "test_edit_sends_complete_payload"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F02",
       "title": "A TikTok photo post never sets the AI flag",
       "source": "lesson tiktok-photo-disclosure",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:argument_errors; engine/run/release.py:call_arguments",
       "tests": [
         "test_tiktok_photo_never_sets_ai_flag"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F03",
       "title": "A null link attachment does not clear a preview; use the clearing mutation",
       "source": "lesson nullable-preview-clear",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:preview_clear_hold; engine/run/release.py:argument_errors refuses linkAttachment null",
       "tests": [
         "test_preview_clear_uses_mutation_not_null"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F04",
@@ -71,35 +68,32 @@
       "id": "F07",
       "title": "A Facebook reopen timeout is not taken as live; each destination needs its native URL",
       "source": "lesson facebook-native-check-held",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:native_host; engine/run/release.py:check_readback",
       "tests": [
         "test_live_needs_native_url_per_destination"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F08",
       "title": "Buffer showing scheduled is not sent",
       "source": "lesson native-release-readback",
-      "guard": "engine/run/release.py (item D2); post --deliver (item D1)",
+      "guard": "engine/run/release.py:check_readback; engine/run/spec.py:slot_status",
       "tests": [
         "test_scheduled_is_not_sent",
         "test_scheduled_never_counts_as_live"
       ],
-      "status": "pending-build",
-      "pending_item": "D1, D2"
+      "status": "tested"
     },
     {
       "id": "F09",
       "title": "An Instagram link sticker is never claimed as automatic",
       "source": "lesson public-copy-and-stories",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:check_slot; engine/run/release.py:argument_errors",
       "tests": [
         "test_link_sticker_never_claimed_automatic"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F10",
@@ -113,12 +107,11 @@
       "id": "F11",
       "title": "Story frames overlap; one frame per post",
       "source": "lesson public-copy-and-stories",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:check_slot; engine/run/release.py:story_frame",
       "tests": [
         "test_story_one_frame_per_post_dedupe_by_media_url"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F12",
@@ -134,23 +127,21 @@
       "id": "F13",
       "title": "Buffer defaults to queue mode; a draft save sets saveToDraft with no due time",
       "source": "BROWSER.md Buffer draft operations (R30)",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:argument_errors; engine/run/release.py:call_arguments",
       "tests": [
         "test_draft_save_sets_saveToDraft_without_dueAt"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F14",
       "title": "Story composer quirks; dedupe frames by media URL",
       "source": "lesson public-copy-and-stories",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:check_slot; engine/run/release.py:story_frame",
       "tests": [
         "test_story_one_frame_per_post_dedupe_by_media_url"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F15",
@@ -172,12 +163,11 @@
       "id": "F17",
       "title": "Imported posts are misread as engine publications",
       "source": "docs/plans/2026-10-27-engine-architecture.md appendix",
-      "guard": "engine/run/release.py (item D2)",
+      "guard": "engine/run/release.py:engine_publications; engine/run/release.py:check_readback",
       "tests": [
         "test_imported_posts_not_engine_publications"
       ],
-      "status": "pending-build",
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F18",
@@ -212,16 +202,13 @@
       "id": "F21",
       "title": "Package integrity: changed bytes, order or metadata",
       "source": "docs/ASSET-STORAGE.md (R50)",
-      "guard": "engine/social.py:preflight",
+      "guard": "engine/social.py:preflight; engine/run/release.py:verify_asset_bytes",
       "tests": [
         "test_asset_change_and_missing_alt_text_are_rejected",
-        "test_exact_approval_cannot_survive_caption_time_order_or_metadata_change"
-      ],
-      "status": "tested",
-      "pending_tests": [
+        "test_exact_approval_cannot_survive_caption_time_order_or_metadata_change",
         "test_release_refuses_changed_asset_bytes"
       ],
-      "pending_item": "D2"
+      "status": "tested"
     },
     {
       "id": "F22",
@@ -304,17 +291,14 @@
     },
     {
       "id": "F30",
-      "title": "Field limits: the YouTube title limit (tested) and the X profile link limit (being built)",
+      "title": "Field limits: the YouTube title limit and the X profile link limit",
       "source": "docs/plans/2026-10-27-engine-architecture.md appendix (F30 is listed twice)",
       "guard": "engine/channel_audit.py:repair_plan",
       "tests": [
-        "test_youtube_title_limit_is_checked_before_edit_intent"
-      ],
-      "status": "tested",
-      "pending_tests": [
+        "test_youtube_title_limit_is_checked_before_edit_intent",
         "test_x_profile_link_limit_is_checked"
       ],
-      "pending_item": "A"
+      "status": "tested"
     },
     {
       "id": "F31",
@@ -562,115 +546,216 @@
       "id": "F54",
       "title": "A Growth-sources read counts only once the window label and values have settled together",
       "source": "lesson substack-filter-settle",
-      "guard": "engine/run/measure.py (item E)",
+      "guard": "engine/run/measure.py:validate_capture",
       "tests": [
         "test_growth_sources_read_must_be_settled"
       ],
+      "status": "tested"
+    },
+    {
+      "id": "F55",
+      "title": "The Buffer organisation is shared with other ventures' channels; a service alone never identifies this engine's account, so release is pinned by service and name",
+      "source": "Buffer list_channels read 2026-10-27 (engine/run/release.py BUFFER_NAME note)",
+      "guard": "engine/run/release.py:resolve_channel holds a renamed or missing channel instead of guessing",
+      "tests": [
+        "test_release_is_pinned_to_this_engines_buffer_channels"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F56",
+      "title": "Substack Notes post from Krish's profile (Buffer channel Krish, handle mindmakerlive), not the publication: personal voice, at most two a day",
+      "source": "lesson substack-notes-identity; docs/PUBLISHING-AUTHORITY.md 27 Oct correction (R81, R82)",
+      "guard": "social/channels/substack-notes.json; engine/social.py:preflight; engine/run/release.py:resolve_channel",
+      "tests": [
+        "test_substack_notes_is_personal_cadence"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F57",
+      "title": "GA4 credentials load from raw or base64 JSON and the service-account token is signed RS256 offline",
+      "source": "CHANGES.md 27 Oct GA4 ruling (R83); docs/plans/2026-10-27-engine-architecture.md Phase 1, GA4 attribution",
+      "guard": "engine/run/ga4.py (item measure)",
+      "tests": [
+        "test_ga4_credentials_accept_raw_or_base64_json",
+        "test_rs256_signature_verifies_with_public_key"
+      ],
       "status": "pending-build",
-      "pending_item": "E"
+      "pending_item": "measure"
+    },
+    {
+      "id": "F58",
+      "title": "GA4 transport reaches only Google origins, never logs a secret and never calls the network without --live",
+      "source": "CHANGES.md 27 Oct GA4 ruling (R83); docs/plans/2026-10-27-engine-architecture.md Phase 1, GA4 attribution",
+      "guard": "engine/run/ga4.py (item measure)",
+      "tests": [
+        "test_ga4_transport_only_allows_google_origins_and_never_logs_secrets",
+        "test_ga4_never_calls_network_without_live"
+      ],
+      "status": "pending-build",
+      "pending_item": "measure"
+    },
+    {
+      "id": "F59",
+      "title": "A GA4 event name is used only once it is verified from the live Events report, never guessed",
+      "source": "CHANGES.md 27 Oct GA4 ruling (R83); docs/plans/2026-10-27-engine-architecture.md Phase 1, GA4 attribution",
+      "guard": "engine/run/ga4.py; invariants/ga4.json (item measure)",
+      "tests": [
+        "test_ga4_unverified_event_name_is_refused"
+      ],
+      "status": "pending-build",
+      "pending_item": "measure"
+    },
+    {
+      "id": "F60",
+      "title": "GA4 rows join to slots by utm_content, and the weekly reconciliation with Substack Growth sources keeps the more conservative reading and logs the gap",
+      "source": "CHANGES.md 27 Oct GA4 ruling (R83); docs/plans/2026-10-27-engine-architecture.md Phase 1, GA4 attribution",
+      "guard": "engine/run/ga4.py; engine/run/measure.py (item measure)",
+      "tests": [
+        "test_ga4_report_joins_slots_by_utm_content",
+        "test_ga4_reconcile_prefers_the_conservative_reading"
+      ],
+      "status": "pending-build",
+      "pending_item": "measure"
+    },
+    {
+      "id": "F61",
+      "title": "A LinkedIn audit change stays Krish's own, even after an approval",
+      "source": "BROWSER.md LinkedIn audit line (R28); docs/PUBLISHING-AUTHORITY.md LinkedIn (R39)",
+      "guard": "engine/channel_audit.py:repair_plan (item audit)",
+      "tests": [
+        "test_linkedin_audit_is_krish_only_even_after_approval"
+      ],
+      "status": "pending-build",
+      "pending_item": "audit"
+    },
+    {
+      "id": "F62",
+      "title": "Facebook and Threads audit edits are held, never made autonomously",
+      "source": "Phase 0-2 hardening review (item audit); Threads is a personal identity (R59)",
+      "guard": "engine/channel_audit.py:repair_plan (item audit)",
+      "tests": [
+        "test_facebook_and_threads_audit_edits_are_held"
+      ],
+      "status": "pending-build",
+      "pending_item": "audit"
+    },
+    {
+      "id": "F63",
+      "title": "A www host is accepted only for the account it belongs to",
+      "source": "Phase 0-2 hardening review (audit accounts and native hosts)",
+      "guard": "engine/channel_audit.py (item audit)",
+      "tests": [
+        "test_www_hosts_match_their_account"
+      ],
+      "status": "pending-build",
+      "pending_item": "audit"
+    },
+    {
+      "id": "F64",
+      "title": "A Threads post holds at most 500 characters of text",
+      "source": "Phase 0-2 hardening review (Threads channel limits)",
+      "guard": "social/channels/threads.json; engine/social.py (item social)",
+      "tests": [
+        "test_threads_text_limit_is_500"
+      ],
+      "status": "pending-build",
+      "pending_item": "social"
     },
     {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",
-      "guard": "engine/channel_audit.py:repair_plan (item A)",
+      "guard": "engine/channel_audit.py:repair_plan",
       "tests": [
         "test_linkedin_audit_edit_is_held"
       ],
-      "status": "pending-build",
-      "pending_item": "A"
+      "status": "tested"
     },
     {
       "id": "G2",
       "title": "post --deliver still sends pitches, partners and swaps packs",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G2",
-      "guard": "growth.py post --deliver (item D1)",
+      "guard": "growth.py post --deliver refuses outreach kinds (OUTREACH_HELD)",
       "tests": [
         "test_post_deliver_refuses_outreach_kinds"
       ],
-      "status": "pending-build",
-      "pending_item": "D1"
+      "status": "tested"
     },
     {
       "id": "G3",
       "title": "Facebook is missing from the platforms, the audit accounts and channels.json",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G3",
-      "guard": "engine/core.py PLATFORMS; engine/channel_audit.py ACCOUNTS (item A)",
+      "guard": "engine/core.py PLATFORMS; engine/channel_audit.py ACCOUNTS; social/channels/facebook.json",
       "tests": [
         "test_facebook_is_a_known_platform"
       ],
-      "status": "pending-build",
-      "pending_item": "A"
+      "status": "tested"
     },
     {
       "id": "G4",
       "title": "The North Star objective sums every source",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G4",
-      "guard": "engine/cc_loop.py:new_subscribers (item B)",
+      "guard": "engine/cc_loop.py:new_subscribers",
       "tests": [
         "test_north_star_all_source_sum_survives_per_source_rows"
       ],
-      "status": "pending-build",
-      "pending_item": "B"
+      "status": "tested"
     },
     {
       "id": "G5",
       "title": "The \"Validated N observations\" message overstates what was checked",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G5",
-      "guard": "growth.py measure (item B)",
+      "guard": "engine/cc_loop.py:observation_line",
       "tests": [
         "test_validation_message_counts_only_what_was_validated"
       ],
-      "status": "pending-build",
-      "pending_item": "B"
+      "status": "tested"
     },
     {
       "id": "G6",
       "title": "amended_sha256 is documented, not coded",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G6",
-      "guard": "engine/control_center.py (item B)",
+      "guard": "engine/control_center.py:amendment_ok; engine/control_center.py:golive_actions",
       "tests": [
         "test_amended_payload_wins_and_binds",
         "test_amended_digest_mismatch_is_refused",
         "test_amended_go_live_goes_live_in_his_words"
       ],
-      "status": "pending-build",
-      "pending_item": "B"
+      "status": "tested"
     },
     {
       "id": "G7",
       "title": "Stale \"eight automations\" strings remain",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G7",
-      "guard": "automations.json count strings (item B)",
+      "guard": "engine/cc_loop.py:runner_report counts automations.json",
       "tests": [
         "test_automation_count_strings_match_automations_json"
       ],
-      "status": "pending-build",
-      "pending_item": "B"
+      "status": "tested"
     },
     {
       "id": "G8",
       "title": "substack.json sets a daily target that conflicts with editorial rhythm",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G8",
-      "guard": "social/channels/substack.json; engine/social.py:inventory (item C)",
+      "guard": "social/channels/substack.json; engine/social.py:inventory",
       "tests": [
         "test_substack_article_has_no_daily_target"
       ],
-      "status": "pending-build",
-      "pending_item": "C"
+      "status": "tested"
     },
     {
       "id": "G9",
       "title": "The autonomy loop is not coded: stage, parent_proposal_id, go-live, amendments",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G9",
-      "guard": "engine/cc_loop.py; engine/control_center.py (item B)",
+      "guard": "engine/control_center.py:golive_review; engine/control_center.py:stopped_plans; engine/cc_loop.py:claim_golives",
       "tests": [
         "test_approved_plan_never_goes_live",
         "test_approved_go_live_goes_live_once_with_exact_payload",
         "test_declined_check_in_stops_its_plan"
       ],
-      "status": "pending-build",
-      "pending_item": "B"
+      "status": "tested"
     }
   ]
 }

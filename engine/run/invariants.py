@@ -14,7 +14,10 @@ RULE_SOURCES = ('AGENTS.md', 'BROWSER.md', 'CHANGES.md', 'docs/PUBLISHING-AUTHOR
 RULE_FIELDS = ('id', 'statement', 'source_file', 'quote', 'enforced_by', 'tests')
 FAILURE_FIELDS = ('id', 'title', 'source', 'guard', 'tests', 'status')
 STATUSES = ('tested', 'doc-only', 'process', 'open', 'superseded', 'pending-build')
-FAILURE_IDS = tuple('F{:02d}'.format(n) for n in range(1, 55)) + tuple('G{}'.format(n) for n in range(1, 10))
+# F01 to F54 and G1 to G9 are the plan appendix; F55 onwards were learned after it.
+LAST_F = 64
+FAILURE_IDS = (tuple('F{:02d}'.format(n) for n in range(1, LAST_F + 1))
+               + tuple('G{}'.format(n) for n in range(1, 10)))
 CREW_FIELDS = ('id', 'name', 'owns', 'channels', 'formats', 'lint', 'check', 'card', 'lens', 'w45')
 W45 = {'substack', 'threads', 'attribution-ladder', 'what-works', 'release-gate'}
 CARD_BYTES, LENS_BYTES = 3072, 1024
@@ -137,7 +140,8 @@ def load_failures(root=ROOT):
         raise ValueError('failures.json needs a failures list')
     ids = [f.get('id') if isinstance(f, dict) else None for f in failures]
     if tuple(ids) != FAILURE_IDS:
-        raise ValueError('the register is F01 to F54 then G1 to G9, once each, in order')
+        raise ValueError('the register is F01 to F54 from the plan, F55 to F{} after it, then G1 to G9, '
+                         'once each, in order'.format(LAST_F))
     for entry in failures:
         at = entry['id']
         if any(f not in entry for f in FAILURE_FIELDS):
