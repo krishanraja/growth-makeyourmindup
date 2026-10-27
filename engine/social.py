@@ -106,6 +106,8 @@ def inventory(root=ROOT):
         local_ref(root, obj['voice_policy'])
         local_ref(root, obj['authority_ref'])
         personal = obj['account_context'] == 'personal'
+        if obj['id'] in DELEGATED_PERSONAL and not personal:
+            raise ValueError('account context cannot expand publication authority')
         expected_mode = ('approved_content_cadence' if personal and obj['id'] in DELEGATED_PERSONAL
                          else 'human_publish_only' if personal
                          else 'approved_brand_content')
@@ -115,6 +117,8 @@ def inventory(root=ROOT):
             raise ValueError('human-only accounts have no automatic posting quota')
         if personal and (obj['daily_posts_target'] or 0) > 1:
             raise ValueError('personal accounts have at most one automatic post a day')
+        if (obj['daily_posts_target'] or 0) > 1 and obj['id'] != 'substack-notes':
+            raise ValueError('only Substack Notes has a two-a-day target')
         for name in obj['formats']:
             if name not in result['format'] or obj['id'] not in result['format'][name]['channels']:
                 raise ValueError('channel/format mismatch: ' + name)

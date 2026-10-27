@@ -72,7 +72,7 @@ Rulings: Krish, 27 October 2026 (`CHANGES.md`). They add to the 26 October
 rulings above; everything else above stands.
 
 - Substack Notes and Threads are added. Notes post as the publication under
-  approved brand content, two a day as signed. Threads has delegated cadence
+  approved brand content, at the cadence he signs. Threads has delegated cadence
   for approved content, like X and TikTok, and keeps Krish's personal voice;
   read ACCOUNT-VOICE.md. It stays a personal identity, not a publication.
 - The line above that other personal identities, "such as Threads, are not
@@ -81,8 +81,8 @@ rulings above; everything else above stands.
   enforcement line "X/TikTok alone have approved_content_cadence" now reads
   as X, TikTok and Threads.
 - LinkedIn is unchanged: unscheduled drafts, and his final click.
-- Signed exact payloads post autonomously through the authorised route, with
-  the readback rules above.
+- Signed exact payloads post autonomously only through the go-live step
+  (AGENTS.md, Autonomy), with the readback rules above.
 - Ad-hoc meme ideas are built, shown to him, then queued and posted only on
   his approval of the exact payload.
 - Substack articles keep their approved editorial rhythm; no daily target.

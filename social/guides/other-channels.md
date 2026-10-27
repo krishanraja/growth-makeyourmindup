@@ -12,7 +12,7 @@ findings there are not current live facts.
 | TikTok personal | Commission native photo/video discovery editions and test their next step | Eight-image photo edition published and reopened natively on 26 October. Buffer's video-form URL redirected to the actual photo URL; preserve that native identity. |
 | YouTube publication | Commission an accepted Short and connect it to its exact matching full video | A still carousel is not a Short. Verify upload/related-video support live. |
 | Substack publication | Audit source-to-reader and free-subscription journeys, related reading and continued attention | Never open Stripe. Leave paid pricing/benefits unchanged; body/offer work retains approval boundaries. Articles keep their approved editorial rhythm; no daily target. |
-| Substack Notes publication | Approved Notes, two a day, that earn free subscribers on Substack | New on 27 October. Verify the Notes profile handle before first use. Substack is not connected in Buffer; until Krish connects it, Notes are drafted for him to post by hand. |
+| Substack Notes publication | Approved Notes, up to two a day as signed, that earn free subscribers on Substack | New on 27 October. Verify the Notes profile handle before first use. Substack is not connected in Buffer; until Krish connects it, Notes are drafted for him to post by hand. |
 | Threads personal | One conversation-starting post a day from an approved piece, link last | New on 27 October. Delegated cadence like X and TikTok, in Krish's personal voice (`docs/ACCOUNT-VOICE.md`). Every Buffer route is unverified. |
 
 The 26 October all-branded-social ruling includes the verified publication

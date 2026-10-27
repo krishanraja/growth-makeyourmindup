@@ -138,6 +138,22 @@ class NewChannelsTests(unittest.TestCase):
             threads_path.write_text(json.dumps(threads, indent=2), encoding='utf-8')
             with self.assertRaisesRegex(ValueError, 'at most one automatic post'):
                 inventory(root)
+            # A delegated personal identity cannot be relabelled as a publication.
+            threads.update(daily_posts_target=1, account_context='publication',
+                           publication_mode='approved_brand_content')
+            threads_path.write_text(json.dumps(threads, indent=2), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'cannot expand publication authority'):
+                inventory(root)
+            threads.update(account_context='personal', publication_mode='approved_content_cadence')
+            threads_path.write_text(json.dumps(threads, indent=2), encoding='utf-8')
+            inventory(root)
+            # Two a day belongs to Substack Notes alone, not to every branded channel.
+            insta_path = root / 'social' / 'channels' / 'instagram.json'
+            insta = json.loads(insta_path.read_text(encoding='utf-8'))
+            insta['daily_posts_target'] = 2
+            insta_path.write_text(json.dumps(insta, indent=2), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'only Substack Notes has a two-a-day target'):
+                inventory(root)
 
     def test_route_for_threads_text_holds_unverified_capability(self):
         decision = route('threads', 'text', as_of='2026-10-27')
