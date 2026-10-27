@@ -7,14 +7,16 @@
         "text",
         "single-image"
       ],
-      "publication_mode": "human_publish_only"
+      "publication_mode": "human_publish_only",
+      "daily_posts_target": null
     },
     "substack-notes": {
       "id": "substack-notes",
       "formats": [
         "note"
       ],
-      "publication_mode": "approved_brand_content"
+      "publication_mode": "approved_content_cadence",
+      "daily_posts_target": 2
     },
     "threads": {
       "id": "threads",
@@ -22,7 +24,8 @@
         "text",
         "single-image"
       ],
-      "publication_mode": "approved_content_cadence"
+      "publication_mode": "approved_content_cadence",
+      "daily_posts_target": 1
     },
     "x": {
       "id": "x",
@@ -30,7 +33,8 @@
         "text",
         "single-image"
       ],
-      "publication_mode": "approved_content_cadence"
+      "publication_mode": "approved_content_cadence",
+      "daily_posts_target": 1
     }
   },
   "format": {

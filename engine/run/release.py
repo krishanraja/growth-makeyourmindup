@@ -512,6 +512,23 @@ def _signed_digests(spec, decision):
     return slots
 
 
+def approved_creative(spec):
+    """Asset hashes in the manifest of an input that names its creative approval.
+
+    New creative needs Krish's approval before use (docs/PUBLISHING-AUTHORITY.md),
+    so a manifest without a creative_approval_ref approves nothing.
+    """
+    approved = set()
+    for item in spec.get('inputs') or []:
+        if not isinstance(item, dict) or not item.get('creative_approval_ref'):
+            continue
+        manifest = item.get('manifest')
+        for entry in (manifest.get('files') if isinstance(manifest, dict) else None) or []:
+            if isinstance(entry, dict) and isinstance(entry.get('sha256'), str) and HEX64.match(entry['sha256']):
+                approved.add(entry['sha256'])
+    return approved
+
+
 def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None):
     """Arguments for signed, unreleased slots only, once per slot.
 
@@ -529,6 +546,7 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
         raise ValueError('ledger belongs to another run')
     asset_paths = asset_paths or {}
     targets = targets or {}
+    approved = approved_creative(spec)
     seen, calls, holds = set(), [], []
     for slot in spec['slots']:
         check_slot(slot)
@@ -547,6 +565,9 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
         if done:
             hold('already_released_once' if done.get('payload_sha256') == slot['payload_sha256']
                  else 'released_earlier_with_another_payload')
+            continue
+        if slot['publish_mode'] == 'engine' and any(a['sha256'] not in approved for a in slot['assets']):
+            hold('creative_not_approved')
             continue
         if slot['assets']:
             if sid not in asset_paths:
