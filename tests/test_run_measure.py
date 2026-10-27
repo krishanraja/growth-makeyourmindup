@@ -1,6 +1,7 @@
 """North Star attribution, urgency and What-Works verdicts on synthetic fixtures."""
 import contextlib
 import copy
+import datetime as dt
 import io
 import json
 from pathlib import Path
@@ -8,10 +9,10 @@ import shutil
 import tempfile
 import unittest
 
-from engine.run.measure import (AWAITS, FAILS_AT_OR_BELOW, MIN_HISTORY, ROOT, WORKS_AT_OR_ABOVE, classify,
-                                current_state, followers_daily, judge, main, north_star, northstar,
-                                paid_week, state_line, urgency, validate_capture, verdict, week_target,
-                                write_now)
+from engine.run.measure import (AWAITS, FAILS_AT_OR_BELOW, LEDGER, MIN_HISTORY, ROOT, WORKS_AT_OR_ABOVE,
+                                classify, current_state, followers_daily, judge, main, north_star, northstar,
+                                paid_week, read_ledger, state_line, urgency, validate_capture, verdict,
+                                week_target, write_now)
 
 FIXTURES = Path(__file__).resolve().parent / 'fixtures' / 'measure'
 NOW = '2026-11-05T00:00:00Z'
@@ -40,6 +41,31 @@ SYNTHETIC_NOW = ('# Synthetic\r\n\r\n## Where it is right now (as of 2026-10-27)
                  '"current_as_of": "2026-10-27", "current_source": "synthetic", "urgency": 4, '
                  '"urgency_reason": "0 of 10; under two fifths"} --> **North Star number: U4, far behind.** Old.\r\n'
                  '\r\nLater text mentions <!-- north-star-state only inline.\r\n')
+
+
+def capture_on(day, start=None, rows=(), total=0):
+    """A settled synthetic capture read at 20:00 New York time on day."""
+    capture = load('capture-settled.json')
+    capture.update(captured_at=day + 'T20:00:00-05:00', rows=[dict(r) for r in rows], total_new_free=total)
+    capture['window'].update(start=start or day, end=day)
+    return capture
+
+
+def star_root(tmp, star=SYNTHETIC_STAR, now=SYNTHETIC_NOW):
+    (Path(tmp) / 'docs').mkdir()
+    (Path(tmp) / 'docs' / 'NORTH_STAR.md').write_text(star, encoding='utf-8')
+    (Path(tmp) / 'NOW.md').write_bytes(now.encode('utf-8'))
+
+
+def run_northstar(tmp, capture, day, *extra):
+    """Run the northstar command on a temp root; return (exit code, printed text)."""
+    path = Path(tmp) / 'capture.json'
+    path.write_text(json.dumps(capture), encoding='utf-8')
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        code = main(['northstar', '--capture', str(path), '--today', day, '--root', str(tmp),
+                     '--now', '2027-02-01T00:00:00Z'] + list(extra))
+    return code, out.getvalue()
 
 
 def load(name):
@@ -78,16 +104,19 @@ class SourcesTests(unittest.TestCase):
             self.assertEqual(result['all_source'], {'value': 7, 'reason': None})
             for name in ('organic', 'unattributed', 'paid'):
                 self.assertIsNone(result[name]['value'])
-                self.assertIn(AWAITS, result[name]['reason'])
+                self.assertEqual(result[name]['reason'], AWAITS)
         known = copy.deepcopy(capture)
         known['rows'] = [r for r in known['rows'] if r['source'] != 'Synthetic Mystery']
         known['total_new_free'] = 6
         result = classify(known, FIXTURES / 'sources-approved.json')
         self.assertEqual((result['organic']['value'], result['unattributed']['value'], result['paid']['value']), (4, 2, 0))
         self.assertTrue(result['approved'])
-        self.assertEqual(paid_week(capture), {'value': 1, 'reason': None})
+        self.assertEqual(paid_week(capture), {'value': 1, 'reason': None, 'window_start': '2026-11-02',
+                                              'window_end': '2026-11-04'})
         capture['rows'][1]['new_paid'] = None
         self.assertIsNone(paid_week(capture)['value'])
+        capture.update(rows=[], total_new_free=0)
+        self.assertEqual(paid_week(capture)['value'], 0)  # an empty table under a zero total
 
     def test_unknown_source_labels_are_listed(self):
         capture = validate_capture(load('capture-settled.json'), NOW)
@@ -118,12 +147,15 @@ class SourcesTests(unittest.TestCase):
 
 class NorthStarTests(unittest.TestCase):
     def test_ladder_parses_without_yaml(self):
+        # Krish owns the real ladder, so only its shape is checked here.
         metric = north_star()
-        self.assertEqual(week_target('2026-10-26', metric), 25)
-        self.assertEqual(week_target('2026-11-16', metric), 271)
-        self.assertEqual(metric['target'], 2500)
+        ladder = metric['ladder']
+        self.assertTrue(ladder)
+        self.assertEqual([d for d, _ in ladder], sorted(set(d for d, _ in ladder)))
+        self.assertTrue(all(d.weekday() == 0 and isinstance(v, int) and v > 0 for d, v in ladder))
+        self.assertEqual(week_target(ladder[0][0], metric), ladder[0][1])
         with self.assertRaises(ValueError):
-            week_target('2026-10-27', metric)
+            week_target(ladder[0][0] + dt.timedelta(days=1), metric)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'NORTH_STAR.md'
             path.write_text(SYNTHETIC_STAR, encoding='utf-8')
@@ -133,6 +165,11 @@ class NorthStarTests(unittest.TestCase):
             path.write_text(SYNTHETIC_STAR.replace('[2026-11-09, 50]', '[2026-11-10, 50]'), encoding='utf-8')
             with self.assertRaises(ValueError):
                 north_star(path)
+            # The contract's own example: a key whose value is only a comment.
+            path.write_text(SYNTHETIC_STAR.replace('ladder:\n', 'ladder:               # one row per week\n')
+                            .replace('ladder_shape: front-loaded', 'ladder_shape:   # front-loaded'), encoding='utf-8')
+            metric = north_star(path)
+            self.assertEqual((len(metric['ladder']), metric['ladder_shape']), (4, None))
 
     def test_urgency_levels_follow_the_contract(self):
         day = '2026-11-04'
@@ -222,7 +259,8 @@ class NorthStarTests(unittest.TestCase):
             result = northstar(capture, '2026-11-04', tmp, FIXTURES / 'sources-approved.json', [], NOW)
             self.assertIsNone(json.loads(result['line'].split(' ', 2)[2].split(' -->')[0])['current'])
             self.assertEqual(result['urgency']['urgency'], 4)
-            self.assertIn('Synthetic Mystery', result['line'])
+            self.assertIn('1 unknown source label needs classification', result['line'])
+            self.assertNotIn('Synthetic Mystery', result['line'])  # page text stays out of the state line
             capture['rows'] = []
             capture['total_new_free'] = 0
             result = northstar(capture, '2026-11-04', tmp, 'invariants/sources.json', [], NOW)
@@ -232,8 +270,8 @@ class NorthStarTests(unittest.TestCase):
             history.write_text('[]', encoding='utf-8')
             capture_file = Path(tmp) / 'capture.json'
             old = load('capture-settled.json')
-            old.update(captured_at='2026-10-26T20:00:00-04:00', rows=[], total_new_free=0)
-            old['window'].update(start='2026-10-20', end='2026-10-26')
+            old.update(captured_at='2026-10-27T20:00:00-04:00', rows=[], total_new_free=0)
+            old['window'].update(start='2026-10-21', end='2026-10-27')
             capture_file.write_text(json.dumps(old), encoding='utf-8')
             out = io.StringIO()
             with contextlib.redirect_stdout(out):
@@ -244,8 +282,99 @@ class NorthStarTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(main(['northstar', '--capture', str(capture_file), '--today', '2026-10-27',
                                        '--root', tmp, '--write', '--now', NOW]), 0)
-            self.assertEqual(current_state(tmp)['current_as_of'], '2026-10-26')
+            self.assertEqual(current_state(tmp)['current_as_of'], '2026-10-27')
             self.assertIn('U4, far behind', (Path(tmp) / 'NOW.md').read_text(encoding='utf-8'))
+            self.assertEqual(read_ledger(tmp), [current_state(tmp)])
+
+    def test_u5_holds_for_the_rest_of_the_week(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            star_root(tmp)  # last week: 0 of 10, under two fifths
+            for day in ('2026-11-02', '2026-11-03', '2026-11-04'):
+                code, text = run_northstar(tmp, capture_on(day, '2026-10-27'), day, '--write')
+                self.assertEqual(code, 0, text)
+                self.assertEqual((current_state(tmp)['urgency'], current_state(tmp)['urgency_reason']),
+                                 (5, '0 of 20; under two fifths two weeks running'), day)
+            self.assertEqual(len(read_ledger(tmp)), 3)
+            # Without the ledger, the stall NOW.md already shows still holds for the week.
+            (Path(tmp) / LEDGER).unlink()
+            code, text = run_northstar(tmp, capture_on('2026-11-05', '2026-10-30'), '2026-11-05', '--write')
+            self.assertEqual((code, current_state(tmp)['urgency']), (0, 5), text)
+        held = [{'week_of': '2026-11-02', 'week_target': 20, 'current': 0, 'current_as_of': '2026-11-02',
+                 'urgency': 5, 'urgency_reason': '0 of 20; under two fifths two weeks running'}]
+        self.assertEqual(urgency(1, 20, '2026-11-03', '2026-11-03', held)['urgency'], 5)
+        self.assertEqual(urgency(8, 20, '2026-11-03', '2026-11-03', held)['urgency'], 3)  # no longer under
+        held[0]['urgency_reason'] = '0 of 20; no movement for 14 days'
+        self.assertEqual(urgency(0, 20, '2026-11-04', '2026-11-04', held)['urgency'], 5)
+        self.assertEqual(urgency(1, 20, '2026-11-04', '2026-11-04', held)['urgency'], 4)  # it moved
+
+    def test_no_movement_for_14_days_from_daily_runs(self):
+        star = SYNTHETIC_STAR.replace('[2026-11-02, 20]', '[2026-11-02, 10]').replace('[2026-11-09, 50]', '[2026-11-09, 10]')
+        start = SYNTHETIC_NOW.replace('"week_of": "2026-10-26", "week_target": 10, "current": 0, "current_as_of": "2026-10-27"',
+                                      '"week_of": "2026-10-19", "week_target": 10, "current": null, "current_as_of": null')
+        organic = [{'source': 'Synthetic Notes', 'new_free': 5, 'new_paid': 0}]
+        with tempfile.TemporaryDirectory() as tmp:
+            star_root(tmp, star, start)
+            shutil.copyfile(FIXTURES / 'sources-approved.json', Path(tmp) / 'sources.json')
+            seen = []
+            for offset in range(15):
+                day = (dt.date(2026, 10, 26) + dt.timedelta(days=offset)).isoformat()
+                monday = (dt.date(2026, 10, 26) + dt.timedelta(days=offset - offset % 7)).isoformat()
+                code, text = run_northstar(tmp, capture_on(day, monday, organic, 5), day, '--write',
+                                           '--sources', 'sources.json')
+                self.assertEqual(code, 0, text)
+                seen.append(current_state(tmp)['urgency'])
+            self.assertEqual(seen[:14], [3] * 14)  # 5 of 10 each day, inside the fortnight
+            self.assertEqual((seen[14], current_state(tmp)['urgency_reason']), (5, '5 of 10; no movement for 14 days'))
+
+    def test_past_the_deadline_off_target_is_u5(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            star_root(tmp)  # deadline week of 16 November, last ladder row 100
+            result = northstar(capture_on('2026-11-24', '2026-11-17'), '2026-11-24', tmp, 'invariants/sources.json',
+                               [], '2026-11-26T00:00:00Z')
+            self.assertEqual((result['week_target'], result['urgency']['urgency']), (100, 5))
+            self.assertTrue(result['urgency']['urgency_reason'].startswith('0 of 100; past the deadline'))
+            code, text = run_northstar(tmp, capture_on('2026-11-24', '2026-11-17'), '2026-11-24')
+            self.assertEqual(code, 0, text)
+            self.assertIn('U5, stalled', text)
+            paused = SYNTHETIC_STAR.replace('status: active', 'status: paused')
+            (Path(tmp) / 'docs' / 'NORTH_STAR.md').write_text(paused, encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'paused'):
+                northstar(capture_on('2026-11-24', '2026-11-17'), '2026-11-24', tmp, now='2026-11-26T00:00:00Z')
+
+    def test_unmeasured_capture_never_replaces_a_reading(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            star_root(tmp)  # NOW.md holds 0 of 10 read on 27 October
+            before = (Path(tmp) / 'NOW.md').read_bytes()
+            uncounted = capture_on('2026-10-28', '2026-10-22', [{'source': 'Synthetic Notes', 'new_free': 2,
+                                                                  'new_paid': 0}], 2)
+            for flags in ((), ('--write',)):
+                code, text = run_northstar(tmp, uncounted, '2026-10-28', *flags)
+                self.assertEqual(code, 1, text)
+                self.assertIn('does not count', json.loads(text)['error'])
+                self.assertIn('27 October 2026 for this week stays', json.loads(text)['error'])
+                self.assertEqual((Path(tmp) / 'NOW.md').read_bytes(), before)
+            self.assertFalse((Path(tmp) / LEDGER).exists())
+            # Next week an unmeasured reading may stand: last week's reading is not this week's.
+            code, text = run_northstar(tmp, capture_on('2026-11-03', '2026-10-28', [{'source': 'Synthetic Notes',
+                                                                                    'new_free': 2, 'new_paid': 0}], 2),
+                                       '2026-11-03', '--write')
+            self.assertEqual(code, 0, text)
+            self.assertIsNone(current_state(tmp)['current'])
+
+    def test_older_capture_never_replaces_a_newer_reading(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            star_root(tmp)
+            code, text = run_northstar(tmp, capture_on('2026-11-04', '2026-10-29'), '2026-11-04', '--write')
+            self.assertEqual((code, current_state(tmp)['current_as_of']), (0, '2026-11-04'), text)
+            after = (Path(tmp) / 'NOW.md').read_bytes()
+            code, text = run_northstar(tmp, capture_on('2026-11-03', '2026-10-28'), '2026-11-04', '--write')
+            self.assertEqual(code, 1, text)
+            self.assertIn('older than the reading of 4 November 2026', text)
+            code, text = run_northstar(tmp, capture_on('2026-10-29', '2026-10-23'), '2026-10-29', '--write')
+            self.assertEqual(code, 1, text)
+            self.assertIn('earlier week', text)
+            self.assertEqual((Path(tmp) / 'NOW.md').read_bytes(), after)
+            self.assertEqual(len(read_ledger(tmp)), 1)
 
 
 class VerdictTests(unittest.TestCase):
@@ -270,6 +399,11 @@ class VerdictTests(unittest.TestCase):
         self.assertIn('proposed', result['bands']['status'])
         with self.assertRaises(ValueError):
             verdict(dict(case['post'], value=-1), case['history'], 48, 50)
+        for history in ([None] * 6, 'not a list'):
+            with self.assertRaises(ValueError):
+                verdict(case['post'], history, 48, 50)
+        zeros = [dict(r, value=0) for r in case['history']]
+        self.assertEqual(judge(dict(case['post'], value=3), zeros, 48, 50)['verdict'], 'insufficient')
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             self.assertEqual(main(['verdict', str(FIXTURES / 'verdict.json')]), 0)

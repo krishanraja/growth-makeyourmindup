@@ -24,7 +24,23 @@ CODEX_TYPES = {'session_meta', 'turn_context', 'event_msg', 'response_item', 'co
 CODEX_USAGE = ('input_tokens', 'cached_input_tokens', 'output_tokens', 'reasoning_output_tokens', 'total_tokens')
 CODEX_KINDS = {'input_tokens': 'input', 'cached_input_tokens': 'cached_input', 'output_tokens': 'output',
                'reasoning_output_tokens': 'reasoning_output', 'total_tokens': 'total'}
+# Known Codex subtypes; an unrecognised one is counted as unknown, so drift shows.
+CODEX_EVENTS = {'token_count', 'user_message', 'agent_message', 'task_started', 'task_complete', 'turn_aborted',
+                'agent_reasoning', 'agent_reasoning_raw_content', 'agent_reasoning_section_break',
+                'exec_command_begin', 'exec_command_end', 'exec_command_output_delta', 'exec_approval_request',
+                'apply_patch_approval_request', 'patch_apply_begin', 'patch_apply_end', 'mcp_tool_call_begin',
+                'mcp_tool_call_end', 'web_search_begin', 'web_search_end', 'view_image_tool_call', 'plan_update',
+                'turn_diff', 'background_event', 'stream_error', 'error', 'warning', 'session_configured',
+                'entered_review_mode', 'exited_review_mode', 'context_compacted', 'item_started', 'item_completed',
+                'shutdown_complete', 'get_history_entry_response', 'conversation_path', 'list_custom_prompts_response',
+                'mcp_list_tools_response', 'undo_started', 'undo_completed'}
+CODEX_ITEMS = {'message', 'reasoning', 'function_call', 'function_call_output', 'custom_tool_call',
+               'custom_tool_call_output', 'local_shell_call', 'web_search_call', 'ghost_snapshot', 'compaction',
+               'compaction_summary', 'other'}
 CLAUDE_TYPES = {'user', 'assistant', 'system', 'summary', 'file-history-snapshot', 'queue-operation'}
+# Routine Claude Code bookkeeping lines: known, carry no usage, never counted as drift.
+CLAUDE_IGNORED = {'attachment', 'last-prompt', 'custom-title', 'agent-name', 'mode', 'tools-used', 'atis-latch',
+                  'cost-state', 'started', 'result', 'progress'}
 CLAUDE_USAGE = ('input_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens', 'output_tokens')
 CLAUDE_KINDS = {'input_tokens': 'input', 'cache_creation_input_tokens': 'cache_creation_input',
                 'cache_read_input_tokens': 'cache_read_input', 'output_tokens': 'output'}
@@ -83,6 +99,7 @@ class Session:
     def __init__(self, tool):
         self.tool = tool
         self.cwd = None
+        self.repo_url = None
         self.models = set()
         self.first_prompt = None
         self.tokens = {}
@@ -145,6 +162,22 @@ class Session:
         if begun and last:
             self.engine += (last - begun).total_seconds()
 
+    def belongs(self, repo):
+        """True when the working folder, or the git remote, names the repository."""
+        return in_repo(self.cwd, repo) or in_repo(self.repo_url, repo)
+
+    def fold(self, other):
+        """Add a subagent transcript's usage to this session; its clocks stay the parent's."""
+        self.calls += other.calls
+        self.context += other.context
+        self.tool_seconds += other.tool_seconds
+        self.models |= other.models
+        self.lines += other.lines
+        self.unparseable += other.unparseable
+        self.unknown += other.unknown
+        for key, value in other.tokens.items():
+            self.tokens[key] = self.tokens.get(key, 0) + value
+
     def report(self):
         tokens = {kind: self.tokens.get(key) for key, kind in
                   (CODEX_KINDS if self.tool == 'codex' else CLAUDE_KINDS).items() if key in self.tokens}
@@ -164,6 +197,7 @@ def codex_session(path):
     s = Session('codex')
     total = None
     summed = {}
+    reached = None  # the highest cumulative total seen; a repeat of it is not a new call
     for row, ok in lines(path):
         s.lines += 1
         if not ok:
@@ -181,10 +215,16 @@ def codex_session(path):
                 s.cwd = payload['cwd']
             if isinstance(payload.get('model'), str):
                 s.models.add(payload['model'])
+            git = payload.get('git')
+            if isinstance(git, dict) and isinstance(git.get('repository_url'), str) and s.repo_url is None:
+                s.repo_url = git['repository_url']
             continue
         if kind == 'compacted':
             continue
         sub = payload.get('type')
+        if not isinstance(sub, str) or sub not in (CODEX_ITEMS if kind == 'response_item' else CODEX_EVENTS):
+            s.unknown += 1
+            continue
         if kind == 'response_item':
             if sub in TOOL_CALLS:
                 s.tool_start(payload.get('call_id'), when)
@@ -200,12 +240,15 @@ def codex_session(path):
                 whole = usage(info.get('total_token_usage') if isinstance(info, dict) else None, CODEX_USAGE)
                 if last is None and whole is None:
                     s.unknown += 1
-                    continue
-                if last is not None:
+                mark = whole.get('total_tokens') if whole else None
+                # A call counts only when the cumulative total advances; with no total, every usage counts.
+                if last is not None and (mark is None or reached is None or mark > reached):
                     s.calls += 1
                     s.context += last.get('input_tokens', 0)
                     for key, value in last.items():
                         summed[key] = summed.get(key, 0) + value
+                if mark is not None:
+                    reached = mark if reached is None else max(reached, mark)
                 if whole is not None and (total is None or whole.get('total_tokens', 0) >= total.get('total_tokens', 0)):
                     total = whole
             limits = payload.get('rate_limits')
@@ -218,11 +261,10 @@ def codex_session(path):
         elif sub == 'agent_message':
             if when:
                 s.events.append((when, 'activity'))
-        elif sub in ('task_started', 'task_complete'):
+        elif sub in ('task_started', 'task_complete', 'turn_aborted'):
+            # An interrupted turn ends its task like a completed one.
             if when:
                 s.events.append((when, 'start' if sub == 'task_started' else 'complete'))
-        elif not isinstance(sub, str):
-            s.unknown += 1
     # The cumulative total is the authority; summed last usages only fill a gap.
     s.tokens = total or summed
     s.clocks()
@@ -245,12 +287,14 @@ def allowance(limits, when):
         out[name + '_window_minutes'] = window if type(window) is int and window > 0 else None
         reset = part.get('resets_in_seconds')
         epoch = part.get('resets_at')
-        if type(reset) is int and reset >= 0:
-            out[name + '_resets_at'] = (when + dt.timedelta(seconds=reset)).isoformat()
-        elif type(epoch) is int and epoch > 0:
-            out[name + '_resets_at'] = dt.datetime.fromtimestamp(epoch, dt.timezone.utc).isoformat()
-        else:
-            out[name + '_resets_at'] = None
+        out[name + '_resets_at'] = None
+        try:
+            if type(reset) is int and reset >= 0:
+                out[name + '_resets_at'] = (when + dt.timedelta(seconds=reset)).isoformat()
+            elif type(epoch) is int and epoch > 0:
+                out[name + '_resets_at'] = dt.datetime.fromtimestamp(epoch, dt.timezone.utc).isoformat()
+        except (OverflowError, OSError, ValueError):
+            pass  # an impossible reset time is left unknown, never guessed
     return out if 'primary_used_percent' in out else None
 
 
@@ -275,6 +319,8 @@ def claude_session(path):
             s.unparseable += 1
             continue
         kind = row.get('type') if isinstance(row, dict) else None
+        if kind in CLAUDE_IGNORED:
+            continue
         if kind not in CLAUDE_TYPES:
             s.unknown += 1
             continue
@@ -319,6 +365,17 @@ def claude_session(path):
     return s
 
 
+def claude_with_subagents(path):
+    """One Claude session: <project>/<session>.jsonl plus its <session>/**/agent-*.jsonl subagents."""
+    s = claude_session(path)
+    s.subagents = 0
+    folder = path.parent / path.stem
+    for extra in sorted(folder.rglob('agent-*.jsonl')) if folder.is_dir() else []:
+        s.fold(claude_session(extra))
+        s.subagents += 1
+    return s
+
+
 def default_dirs():
     home = os.path.expanduser('~')
     if os.name == 'nt' and os.environ.get('USERPROFILE'):
@@ -328,8 +385,14 @@ def default_dirs():
     return os.path.join(codex, 'sessions'), os.path.join(claude, 'projects')
 
 
-def in_repo(cwd, repo):
-    return repo.casefold() in cwd.replace('\\', '/').casefold()
+def in_repo(where, repo):
+    """A whole path component (or remote name) equals the repository name."""
+    if not isinstance(where, str):
+        return False
+    parts = [p for p in where.replace('\\', '/').casefold().split('/') if p]
+    parts = [p[:-4] if p.endswith('.git') else p for p in parts]
+    parts += [p.rsplit(':', 1)[-1] for p in parts if ':' in p]  # git@host:owner/name
+    return repo.casefold() in parts
 
 
 def baseline(codex_dir=None, claude_dir=None, repo='growth-makeyourmindup', since=None, verified_posts=None):
@@ -337,14 +400,14 @@ def baseline(codex_dir=None, claude_dir=None, repo='growth-makeyourmindup', sinc
         raise ValueError('repo must be a bare repository name')
     since = calendar_date(since) if since else None
     default_codex, default_claude = default_dirs()
-    sources = [('codex', Path(codex_dir or default_codex), 'rollout-*.jsonl', codex_session),
-               ('claude', Path(claude_dir or default_claude), '*.jsonl', claude_session)]
+    sources = [('codex', Path(codex_dir or default_codex), '**/rollout-*.jsonl', codex_session),
+               ('claude', Path(claude_dir or default_claude), '*/*.jsonl', claude_with_subagents)]
     totals = {'lines': 0, 'unparseable': 0, 'unknown': 0}
     files, outside, no_cwd, earlier = {}, 0, 0, 0
     found = {}
     sessions, latest = [], None
     for tool, folder, pattern, read in sources:
-        paths = sorted(folder.rglob(pattern)) if folder.is_dir() else []
+        paths = sorted(folder.glob(pattern)) if folder.is_dir() else []
         files[tool] = len(paths)
         found[tool] = folder.is_dir()
         for path in paths:
@@ -356,12 +419,14 @@ def baseline(codex_dir=None, claude_dir=None, repo='growth-makeyourmindup', sinc
             totals['lines'] += s.lines
             totals['unparseable'] += s.unparseable
             totals['unknown'] += s.unknown
+            if tool == 'claude':
+                files['claude_subagents'] = files.get('claude_subagents', 0) + s.subagents
             reading = s.allowance
             if reading and (latest is None or reading['read_at'] > latest['read_at']):
                 latest = reading  # account-wide, so read from every session
-            if s.cwd is None:
+            if s.cwd is None and s.repo_url is None:
                 no_cwd += 1
-            elif not in_repo(s.cwd, repo):
+            elif not s.belongs(repo):
                 outside += 1
             elif since and (s.started is None or ny_time(s.started).date() < since):
                 earlier += 1

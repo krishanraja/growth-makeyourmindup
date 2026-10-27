@@ -2,8 +2,9 @@
 
 Local only. It reads captures a browser session saved and the repository's
 own files; it never opens a network connection. It builds, validates and
-records: the only file it can change is NOW.md's state line, and only with
-an explicit write flag.
+records: the only files it can change are NOW.md's state line and the
+lists/northstar-history.jsonl ledger beside it, and only with an explicit
+write flag.
 """
 import argparse
 import datetime as dt
@@ -30,8 +31,11 @@ ROW_KEYS = {'source', 'new_free', 'new_paid'}
 LABELS = {1: 'on pace', 2: 'behind', 3: 'well behind', 4: 'far behind', 5: 'stalled'}
 STALE_DAYS = 7
 STALL_DAYS = 14
+TWO_WEEKS = 'under two fifths two weeks running'
+NO_MOVEMENT = 'no movement for 14 days'
 HEADING = re.compile(r'^## Where it is right now\b')
 STATE_PREFIX = '<!-- north-star-state'
+LEDGER = Path('lists') / 'northstar-history.jsonl'
 STATE_KEYS = ('week_of', 'week_target', 'current', 'current_as_of', 'current_source', 'urgency', 'urgency_reason')
 MONTHS = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
           'September', 'October', 'November', 'December')
@@ -151,7 +155,7 @@ def load_sources(sources_path='invariants/sources.json', root=ROOT):
     path = Path(sources_path)
     path = path if path.is_absolute() else Path(root) / path
     if not path.is_file():
-        return None, None, 'no sources file yet; ' + AWAITS
+        return None, None, AWAITS
     value = read_json(path)
     if not isinstance(value, dict) or not isinstance(value.get('approved'), bool) or not isinstance(value.get('sources'), dict):
         raise ValueError('sources file needs approved (true or false) and a sources map')
@@ -186,19 +190,26 @@ def classify(capture, sources_path='invariants/sources.json', root=ROOT):
 
 
 def paid_week(capture):
-    """New paid subscribers in the window: summed only when every row shows it."""
+    """New paid subscribers in the capture window: summed only when every row shows it."""
     rows = capture['rows']
-    if not rows:
-        return {'value': None, 'reason': 'no source rows were shown to read paid counts from'}
-    if any(r['new_paid'] is None for r in rows):
-        return {'value': None, 'reason': 'the page did not show paid counts for every source'}
-    return {'value': sum(r['new_paid'] for r in rows), 'reason': None}
+    out = {'window_start': capture['window']['start'], 'window_end': capture['window']['end']}
+    if not rows and capture['total_new_free'] == 0:
+        out.update(value=0, reason=None)  # an empty table under a zero total: nobody came in
+    elif not rows:
+        out.update(value=None, reason='no source rows were shown to read paid counts from')
+    elif any(r['new_paid'] is None for r in rows):
+        out.update(value=None, reason='the page did not show paid counts for every source')
+    else:
+        out.update(value=sum(r['new_paid'] for r in rows), reason=None)
+    return out
 
 
 # Followers per channel per day ------------------------------------------
 
 def followers_daily(rows):
     """Daily follower snapshots per channel, via the shared metric registry."""
+    if not isinstance(rows, list):
+        raise ValueError('followers snapshots must be a JSON list')
     if 'followers' not in METRICS:
         raise ValueError('the followers metric is missing from the registry')
     latest = {}
@@ -229,6 +240,8 @@ def followers_daily(rows):
 
 def _scalar(text):
     text = text.strip()
+    if not text or text.startswith('#'):
+        return None  # "key:   # a comment" carries no value
     if text.startswith('"'):
         end = text.find('"', 1)
         while end != -1 and text[end - 1] == '\\':
@@ -267,7 +280,7 @@ def north_star(path=None):
         if key in metric or (key == 'ladder' and ladder is not None):
             raise ValueError('duplicate north-star-metric key: ' + key)
         if key == 'ladder':
-            value = _scalar(value) if value.strip() else None
+            value = _scalar(value)
             ladder = [] if value is None else value
             metric['ladder'] = ladder
         else:
@@ -301,8 +314,10 @@ def _reading(entry):
     current = count(entry.get('current'), 'history current')
     target = count(entry.get('week_target'), 'history week_target', nullable=False)
     as_of = as_date(entry['current_as_of'], 'history current_as_of') if entry.get('current_as_of') else None
+    reason = entry.get('urgency_reason')
     return {'week_of': as_date(entry.get('week_of'), 'history week_of'), 'week_target': target,
-            'current': current, 'as_of': as_of}
+            'current': current, 'as_of': as_of, 'urgency': entry.get('urgency'),
+            'reason': reason if isinstance(reason, str) else ''}
 
 
 def _under(current, target):
@@ -335,18 +350,24 @@ def urgency(current, week_target, current_as_of, today, history=(), deadline=Non
         return level(4, 'the reading of ' + human_date(as_of) + ' is more than 7 days old')
     if on_target:
         return level(1, "at or above this week's target")
+    # A stall found earlier this week holds for the rest of it while it still applies.
+    held = [r for r in readings if r['week_of'] == monday(today) and r['urgency'] == 5]
+    if _under(current, target) and any(r['reason'].endswith(TWO_WEEKS) for r in held):
+        return level(5, TWO_WEEKS)
+    if any(r['reason'].endswith(NO_MOVEMENT) and r['current'] == current for r in held):
+        return level(5, NO_MOVEMENT)
     previous = [r for r in readings if r['week_of'] == monday(today) - dt.timedelta(days=7)
                 and r['current'] is not None and r['as_of']]
     if _under(current, target) and previous:
         last = max(previous, key=lambda r: r['as_of'])
         if _under(last['current'], last['week_target']):
-            return level(5, 'under two fifths two weeks running')
+            return level(5, TWO_WEEKS)
     dated = [r for r in readings if r['current'] is not None and r['as_of'] and r['as_of'] <= as_of]
     anchors = [r for r in dated if r['as_of'] <= today - dt.timedelta(days=STALL_DAYS)]
     if anchors:
         anchor = max(anchors, key=lambda r: r['as_of'])
         if all(r['current'] == current for r in dated if r['as_of'] >= anchor['as_of']):
-            return level(5, 'no movement for 14 days')
+            return level(5, NO_MOVEMENT)
     if current * 4 >= target * 3:
         return level(2, 'at least three quarters')
     if not _under(current, target):
@@ -356,7 +377,7 @@ def urgency(current, week_target, current_as_of, today, history=(), deadline=Non
 
 def state_line(week_of, week_target, current, current_as_of, current_source, urgency, urgency_reason, sentence=None):
     """The one NOW.md line: machine JSON in a comment, then one plain sentence."""
-    if urgency not in LABELS:
+    if isinstance(urgency, bool) or urgency not in LABELS:
         raise ValueError('urgency must be 1 to 5')
     as_date(week_of, 'week_of')
     count(week_target, 'week_target', nullable=False)
@@ -397,11 +418,68 @@ def current_state(root=ROOT):
     """The state object NOW.md carries today, as history for the next reading."""
     with open(Path(root) / 'NOW.md', encoding='utf-8', newline='') as handle:
         lines = handle.read().splitlines(True)
-    line = lines[_state_index(lines)]
+    return state_of(lines[_state_index(lines)])
+
+
+def state_of(line):
+    """The JSON object inside one north-star-state line."""
     match = re.match(re.escape(STATE_PREFIX) + r' (\{.*?\}) -->', line)
     if not match:
-        raise ValueError('the NOW.md state line has no readable state')
-    return json.loads(match.group(1))
+        raise ValueError('the state line has no readable state')
+    try:
+        state = json.loads(match.group(1))
+    except ValueError:
+        raise ValueError('the state line has no readable state') from None
+    if not isinstance(state, dict):
+        raise ValueError('the state line has no readable state')
+    return state
+
+
+def read_ledger(root=ROOT):
+    """Every state written before, oldest first; the history urgency needs."""
+    path = Path(root) / LEDGER
+    if not path.is_file():
+        return []
+    out = []
+    with open(path, encoding='utf-8') as handle:
+        for number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            try:
+                entry = json.loads(line)
+            except ValueError:
+                raise ValueError(str(LEDGER.as_posix()) + ' line ' + str(number) + ' is not readable') from None
+            if not isinstance(entry, dict):
+                raise ValueError(str(LEDGER.as_posix()) + ' line ' + str(number) + ' is not a state object')
+            out.append(entry)
+    return out
+
+
+def append_ledger(root, state):
+    """Record one written state, one JSON line, so later runs keep their history."""
+    path = Path(root) / LEDGER
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'a', encoding='utf-8', newline='\n') as handle:
+        handle.write(json.dumps(dict((k, state.get(k)) for k in STATE_KEYS)) + '\n')
+
+
+def keeps(existing, state, why=None):
+    """Lose nothing: a new state never replaces a newer or a measured reading."""
+    if not isinstance(existing, dict) or not existing.get('week_of'):
+        return
+    old_week = as_date(existing['week_of'], 'existing week_of')
+    if as_date(state['week_of']) < old_week:
+        raise ValueError('this capture is for an earlier week than NOW.md holds; the reading for the week of '
+                         + human_date(old_week) + ' stays')
+    if as_date(state['week_of']) != old_week or existing.get('current') is None:
+        return
+    held = existing.get('current_as_of')
+    held = human_date(held) if held else 'an earlier day'
+    if state['current'] is None:
+        raise ValueError('this capture does not count (' + (why or 'not measured') + '); the existing reading of '
+                         + held + ' for this week stays')
+    if existing.get('current_as_of') and as_date(state['current_as_of']) < as_date(existing['current_as_of']):
+        raise ValueError('this capture is older than the reading of ' + held + ' for this week; that reading stays')
 
 
 def write_now(root, line, write=False):
@@ -446,6 +524,9 @@ def reading(capture, classified, week_of):
             return 0, None
         return None, 'the capture window starts before Monday, so it only bounds this week'
     if organic is None:
+        unknown = len([r for r in capture['rows'] if r['source'] in classified['unknown_labels'] and r['new_free'] != 0])
+        if classified['approved'] and unknown:  # a count, never the labels: they are page text
+            return None, '{} unknown source {} classification'.format(unknown, 'label needs' if unknown == 1 else 'labels need')
         return None, classified['organic']['reason']
     return organic, None
 
@@ -454,15 +535,22 @@ def northstar(capture, today=None, root=ROOT, sources_path='invariants/sources.j
     validate_capture(capture, now)
     day = as_date(today) if today else as_date(ny_today())
     metric = north_star(Path(root) / 'docs' / 'NORTH_STAR.md')
+    if metric.get('status') == 'paused':
+        raise ValueError('the North Star is paused, so it carries no urgency until Krish revives it')
     week = monday(day)
-    target = week_target(week, metric)
+    ladder = metric['ladder']
+    if isinstance(ladder, list) and ladder and week > ladder[-1][0]:
+        target = ladder[-1][1]  # after the last row the final target stands; the deadline rule applies
+    else:
+        target = week_target(week, metric)
     classified = classify(capture, sources_path, root)
     current, why = reading(capture, classified, week)
-    as_of = ny_time(capture['captured_at']).date()
+    read_on = ny_time(capture['captured_at']).date()
+    as_of = min(read_on, as_date(capture['window']['end']))  # never fresher than the data it covers
     window = capture['window']
     every = classified['all_source']['value']
     source = ('Substack Growth sources, new subscribers, {} ({} to {}), read {}: all sources {}, organic {}').format(
-        window['label'], window['start'], window['end'], as_of.isoformat(),
+        window['label'], window['start'], window['end'], read_on.isoformat(),
         'not shown' if every is None else every,
         'not classified' if classified['organic']['value'] is None else classified['organic']['value'])
     if current is None:
@@ -472,7 +560,7 @@ def northstar(capture, today=None, root=ROOT, sources_path='invariants/sources.j
     line = state_line(week, target, current, as_of if current is not None else None, source,
                       level['urgency'], level['urgency_reason'])
     return {'line': line, 'classification': classified, 'urgency': level, 'week_of': week.isoformat(),
-            'week_target': target, 'paid_subscribers': paid_week(capture)}
+            'week_target': target, 'paid_subscribers': paid_week(capture), 'not_counted_because': why}
 
 
 # What-Works verdicts -----------------------------------------------------
@@ -497,10 +585,13 @@ def judge(post, history, window_hours, elapsed_hours):
             raise ValueError(name + ' must be a non-negative number')
     if window_hours <= 0:
         raise ValueError('window_hours must be positive')
-    same = [_indicator(r, 'history row')['value'] for r in history
-            if all(r.get(k) == post[k] for k in ('channel', 'format', 'indicator'))]
+    if not isinstance(history, (list, tuple)):
+        raise ValueError('history must be a list')
+    rows = [_indicator(r, 'history row') for r in history]
+    same = [r['value'] for r in rows if all(r[k] == post[k] for k in ('channel', 'format', 'indicator'))]
     out = {'verdict': 'insufficient', 'observations': len(same), 'median': None, 'ratio': None,
            'bands': {'works_at_or_above': WORKS_AT_OR_ABOVE, 'fails_at_or_below': FAILS_AT_OR_BELOW,
+                     'zero_median': 'insufficient',
                      'status': "proposed defaults for Krish's approval at G-A"}}
     if elapsed_hours < window_hours:
         out['reason'] = 'the judge window has not elapsed'
@@ -513,8 +604,8 @@ def judge(post, history, window_hours, elapsed_hours):
     median = values[middle] if len(values) % 2 else (values[middle - 1] + values[middle]) / 2
     out['median'] = median
     if median == 0:
-        out['verdict'] = 'works' if post['value'] > 0 else 'neutral'
-        out['reason'] = 'the median is zero, so any reading above it counts as works'
+        # Proposed default for Krish at G-A: no ratio exists, so no verdict is given.
+        out['reason'] = 'the median is zero, so no ratio can be judged'
         return out
     ratio = post['value'] / median
     out['ratio'] = round(ratio, 4)
@@ -554,20 +645,28 @@ def main(argv=None):
             history = read_json(args.history) if args.history else []
             if not isinstance(history, list):
                 raise ValueError('history must be a JSON list')
-            history = history + [current_state(args.root)]
+            existing = current_state(args.root)
+            history = history + read_ledger(args.root) + [existing]
             if args.today:
                 as_date(args.today, '--today')
             result = northstar(read_json(args.capture), args.today, Path(args.root), args.sources, history, args.now)
+            state = state_of(result['line'])
+            keeps(existing, state, result['not_counted_because'])
             diff = write_now(args.root, result['line'], args.write)
+            if args.write and diff:
+                append_ledger(args.root, state)
             print(diff or 'NOW.md state line already current')
-            print(('written: NOW.md state line' if args.write and diff else 'not written; pass --write to apply')
+            print(('written: NOW.md state line and ' + LEDGER.as_posix() if args.write and diff
+                   else 'not written; pass --write to apply')
                   + '. Urgency U' + str(result['urgency']['urgency']) + ', ' + result['urgency']['label'] + '.')
             return 0
         else:
             value = read_json(args.file)
             if not isinstance(value, dict):
                 raise ValueError('verdict file must be an object')
-            result = judge(value.get('post'), value.get('history') or [], value.get('window_hours'), value.get('elapsed_hours'))
+            history = value.get('history')
+            result = judge(value.get('post'), [] if history is None else history, value.get('window_hours'),
+                           value.get('elapsed_hours'))
     except (ValueError, KeyError, TypeError, OSError) as exc:
         print(json.dumps({'valid': False, 'error': str(exc)}))
         return 1

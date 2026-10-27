@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import unittest
 
-from engine.run.cost import baseline, main, stamp
+from engine.run.cost import baseline, in_repo, main, stamp
 
 FIXTURES = Path(__file__).resolve().parent / 'fixtures' / 'cost'
 
@@ -22,7 +22,10 @@ class CostBaselineTests(unittest.TestCase):
 
     def place(self, *names):
         for name in names:
-            if name.startswith('codex'):
+            if name == 'claude-subagent.jsonl':  # beside its parent session, as Claude Code stores it
+                folder = self.claude / 'fixture-project' / 'claude-session' / 'subagents'
+                target = folder / 'agent-x.jsonl'
+            elif name.startswith('codex'):
                 folder = self.codex / '2026' / '10' / '20'
                 target = folder / ('rollout-2026-10-20-' + name)
             else:
@@ -93,6 +96,39 @@ class CostBaselineTests(unittest.TestCase):
         self.assertEqual((later['sessions_counted'], later['sessions_before_since']), (1, 1))
         with self.assertRaises(ValueError):
             self.run_baseline(repo='../growth-makeyourmindup')
+        # A whole path component must match, not a longer folder name.
+        self.assertTrue(in_repo('C:\\Users\\fixture\\growth-makeyourmindup\\.claude\\worktrees\\x', 'growth-makeyourmindup'))
+        self.assertFalse(in_repo('/home/fixture/growth-makeyourmindup-old', 'growth-makeyourmindup'))
+        self.assertTrue(in_repo('https://github.com/fixture-owner/growth-makeyourmindup.git', 'growth-makeyourmindup'))
+
+    def test_claude_subagents_fold_into_their_session(self):
+        self.place('claude-session.jsonl', 'claude-subagent.jsonl')
+        journal = self.claude / 'fixture-project' / 'claude-session' / 'subagents' / 'journal.jsonl'
+        journal.write_text('{"type": "workflow-step", "note": "FIXTURE-SECRET-JOURNAL"}\n', encoding='utf-8')
+        result = self.run_baseline()
+        self.assertEqual(result['sessions_counted'], 1)  # one session, not one per subagent
+        self.assertEqual(result['files_read']['claude_subagents'], 1)
+        claude = result['sessions'][0]
+        self.assertEqual(claude['job_kind'], 'interactive')  # the parent's prompt decides, not a subagent's
+        self.assertEqual(claude['model_calls'], 5)
+        self.assertEqual(claude['tokens'], {'input': 70, 'cache_creation_input': 1300, 'cache_read_input': 22300,
+                                            'output': 220, 'total': 23890})
+        self.assertEqual(claude['models'], ['fixture-claude-model', 'fixture-subagent-model'])
+        self.assertEqual((claude['engine_minutes'], claude['wait_for_human_minutes']), (3.0, 10.0))
+        self.assertEqual(claude['tool_minutes'], 1.0)  # 30 seconds in the parent, 30 in the subagent
+        self.assertEqual(claude['unknown_lines'], 0)  # attachment lines are routine, not drift
+
+    def test_codex_repeats_and_aborted_turns_are_not_misread(self):
+        self.place('codex-aborted.jsonl')
+        result = self.run_baseline()
+        self.assertEqual(result['sessions_counted'], 1)  # a worktree elsewhere, matched by its git remote
+        session = result['sessions'][0]
+        self.assertEqual((session['model_calls'], session['mean_context']), (1, 800))  # a repeated total is one call
+        self.assertEqual(session['tokens']['total'], 820)
+        self.assertEqual((session['engine_minutes'], session['wait_for_human_minutes']), (2.0, 4.0))
+        self.assertEqual(session['unknown_lines'], 1)  # an unrecognised event kind is drift, counted
+        self.assertEqual(result['allowance']['primary_used_percent'], 12.0)
+        self.assertIsNone(result['allowance']['primary_resets_at'])  # an impossible reset is left unknown
 
     def test_allowance_reading_from_rate_limits(self):
         self.place('codex-numbers.jsonl')
@@ -107,7 +143,8 @@ class CostBaselineTests(unittest.TestCase):
         self.assertIsNone(baseline(str(self.codex / 'missing'), str(self.claude / 'missing'))['allowance'])
 
     def test_output_has_no_message_text(self):
-        self.place('codex-numbers.jsonl', 'codex-outside.jsonl', 'codex-drift.jsonl', 'claude-session.jsonl')
+        self.place('codex-numbers.jsonl', 'codex-outside.jsonl', 'codex-drift.jsonl', 'claude-session.jsonl',
+                   'claude-subagent.jsonl', 'codex-aborted.jsonl')
         posts = Path(self.tmp.name) / 'verified.json'
         posts.write_text(json.dumps({'numbers': 2, 'carousel': 0}), encoding='utf-8')
         out = Path(self.tmp.name) / 'baseline.json'
@@ -116,12 +153,12 @@ class CostBaselineTests(unittest.TestCase):
                                    '--verified-posts', str(posts), '--out', str(out)]), 0)
         text = out.read_text(encoding='utf-8')
         for secret in ('FIXTURE-SECRET', 'fixture-session', 'private-notes', '/home/', 'Users', 'please look',
-                       self.tmp.name, 'call-1', 'tool-1', 'msg-1'):
+                       self.tmp.name, 'call-1', 'tool-1', 'msg-1', 'fixture-owner', 'growth-wt', 'fixture-agent'):
             self.assertNotIn(secret, text)
         result = json.loads(text)
         self.assertEqual(result['repo'], 'growth-makeyourmindup')
         self.assertEqual(result['per_verified_post']['numbers'],
-                         {'verified_posts': 2, 'tokens_per_post': 1700, 'engine_minutes_per_post': 4.0, 'reason': None})
+                         {'verified_posts': 2, 'tokens_per_post': 2110, 'engine_minutes_per_post': 5.0, 'reason': None})
         self.assertEqual(result['per_verified_post']['carousel']['reason'], 'no sessions of this job kind')
 
 
