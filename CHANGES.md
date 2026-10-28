@@ -1,5 +1,26 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-28: built to be sent. Krish: "for the growth repo, think about
+  virality in the content, I dont think there is enough of it at the moment.
+  that comes from the shareability from one human to another in a "you will
+  like this" kind of way. I am not talking about just saying "share this with
+  your friends" in the comments, I am talking about ensuring all the produced
+  snackable content is likelier to be shared for a specific reason."
+  - Every snackable package (meme, carousel, single image, short video, Story,
+    Note) declares a share block: a specific sender and receiver, one job from
+    a fixed list, the exact DM line the sender would type, the everyday moment
+    that brings it to mind and a standalone check
+    (`social/schemas/package.schema.json`, `social/share.json`).
+  - Generic share calls to action in post copy are refused; the share comes
+    from the content, never a request.
+  - Each snackable format names its share mechanic in its delivery checks, and
+    `hooks.json` gains a share formula, a house hypothesis like the rest.
+  - A blind send-test reader (`crew/send-test/`) sees only the post and must
+    name the declared receiver and job before Krish sees it.
+  - Sends per reach and saves per reach become the snackable lane's primary
+    measure in What-Works, house hypotheses until MYMU's own dated data
+    confirms them.
+
 - 2026-10-27 (later still): "apply the Control Center change yourself". For
   this one change only, rule 7 (stay in this repository) is lifted: the
   session implements the GA4 brief in krishanraja/control-center on branch

@@ -57,7 +57,8 @@ unpublished words. The run folder is the `run_id` with each `:` as `_`.
 Schema errors; a `week_target` that is not the ladder rung in
 `docs/NORTH_STAR.md` for the Monday (New York) of `window.start`; a
 `payload_sha256` that does not recompute; words that fail `prose_errors`
-(em dashes, stock phrases and the other house rules); an unknown channel or
+(em dashes, stock phrases and the other house rules); words that ask for the
+share (`social/share.json`); an unknown channel or
 format, or a format the channel does not take (`social/channels`,
 `social/formats`); `publish_mode` other than `krish_click` on a
 human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a `krish_click` slot with a `due_at`; `spend_usd` above 0; two
@@ -82,7 +83,8 @@ needs the previous one and its evidence under `.scratch/runs/<run>/`:
   less `signature` and `buffer_draft_id` (signing and queueing keep it valid;
   any other edit needs `--record` again).
 - `review/<slot>.json`: `verdict` "pass", a `lens` id from a fresh-context
-  reviewer and the `payload_sha256` it reviewed.
+  reviewer and the `payload_sha256` it reviewed. A snackable slot's lens is
+  `send-test` (`crew/send-test/`).
 - `decision.json` (the shape `run release` reads): `run_id`, `proposal_id`,
   `decision` "approved", `decided_at`, `slots` {slot: signed digest} and,
   optionally, `amended` {slot: Krish's amended payload}. The spec `signature`

@@ -8,6 +8,14 @@ import unittest
 
 from engine.social import ROOT, inventory, package_digest, preflight, route, validate
 
+# A realistic share block (Krish, 2026-10-28: every snackable package says why one person sends it to another).
+SHARE = {'sender': 'a head of marketing at a mid-size retailer',
+         'receiver': 'her CEO, who keeps asking when the AI pilot pays back',
+         'job': 'settles_it',
+         'dm_line': 'This is the six-week rule I meant: agree one number on day one, then decide.',
+         'moment': 'the Monday leadership meeting where the pilot budget comes up again',
+         'standalone': True}
+
 
 class SocialContractsTests(unittest.TestCase):
     def test_registry_and_known_channel_routes(self):
@@ -42,6 +50,7 @@ class SocialContractsTests(unittest.TestCase):
                 'channel': 'linkedin', 'account_url': 'https://www.linkedin.com/in/krish-raja/',
                 'account_context': 'personal', 'format': 'single-image', 'tool': 'buffer',
                 'source_url': 'https://example.com/verified-test', 'caption': 'Synthetic test copy.',
+                'share': copy.deepcopy(SHARE),
                 'assets': [{'path': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
                             'alt_text': 'Synthetic regression asset.'}],
                 'production': {'owner': 'content-engine', 'approved': True, 'evidence_ref': 'synthetic-only'},

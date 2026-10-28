@@ -45,6 +45,54 @@
       "type": "string",
       "minLength": 1
     },
+    "share": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Built to be sent (Ruling, Krish, 2026-10-28): who sends this post to whom, for which job, with the exact words they would type. Required on every snackable format; social/share.json holds the checks.",
+      "properties": {
+        "sender": {
+          "type": "string",
+          "minLength": 1
+        },
+        "receiver": {
+          "type": "string",
+          "minLength": 1
+        },
+        "job": {
+          "type": "string",
+          "enum": [
+            "in_the_know",
+            "helps_them",
+            "so_us",
+            "settles_it",
+            "warns_them",
+            "laugh_or_awe"
+          ]
+        },
+        "dm_line": {
+          "type": "string",
+          "minLength": 1
+        },
+        "moment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "standalone": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "sender",
+        "receiver",
+        "job",
+        "dm_line",
+        "moment",
+        "standalone"
+      ],
+      "additionalProperties": false
+    },
     "assets": {
       "type": "array",
       "items": {
@@ -186,6 +234,7 @@
     "tool",
     "source_url",
     "caption",
+    "share",
     "assets",
     "production",
     "voice_review_passed",

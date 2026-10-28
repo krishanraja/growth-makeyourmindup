@@ -11,18 +11,24 @@
   "guide": "social/guides/buffer.md",
   "min_assets": 1,
   "max_assets": 1,
+  "snackable": true,
   "delivery_checks": [
     "Use accepted native Story artwork from Content Engine, not a feed crop.",
     "Verify actual native presentation, one frame per post, sequence, account and continuation.",
     "No invented interactive controls, illustration boilerplate or unsupported sticker assumptions.",
-    "Keep paired Meta outputs deduplicated; verify feed delivery before the continuation runs."
+    "Keep paired Meta outputs deduplicated; verify feed delivery before the continuation runs.",
+    "Share mechanic: one frame that works with no context, built so a person sends the Story to one specific person in a private message.",
+    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test)."
   ],
   "measurements": [
+    "Primary measure (Krish, 28 October 2026): sends, meaning native shares, per reach and saves per reach against the format's own channel median; a house hypothesis until MYMU's own dated data confirms it (lesson share-rate-measure).",
     "Exposed first/last-frame reach, exits, replies and continuation taps; preserve unavailable values.",
     "Compare relevant follower and attributable subscriber movement after actual delivery."
   ],
   "lessons": [
     "revision-identity",
-    "growth-measurement"
+    "growth-measurement",
+    "built-to-be-sent",
+    "share-rate-measure"
   ]
 }

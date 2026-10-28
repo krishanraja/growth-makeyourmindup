@@ -49,6 +49,9 @@
       ],
       "minimum": 0
     },
+    "snackable": {
+      "type": "boolean"
+    },
     "delivery_checks": {
       "type": "array",
       "items": {
@@ -87,6 +90,7 @@
     "guide",
     "min_assets",
     "max_assets",
+    "snackable",
     "delivery_checks",
     "measurements",
     "lessons"

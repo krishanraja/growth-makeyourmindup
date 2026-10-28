@@ -1054,6 +1054,31 @@
         "process"
       ],
       "tests": []
+    },
+    {
+      "id": "R92",
+      "statement": "Every snackable package is built to be sent: it declares a specific sender and receiver, one share job, the exact DM line, the moment and a standalone check; generic share calls to action are refused; a blind reader must name the declared receiver and job before Krish sees it.",
+      "source_file": "CHANGES.md",
+      "quote": "I am not talking about just saying \"share this with your friends\" in the comments, I am talking about ensuring all the produced snackable content is likelier to be shared for a specific reason.",
+      "enforced_by": [
+        "engine/social.py:preflight",
+        "engine/share.py:share_errors",
+        "engine/share.py:cta_errors",
+        "engine/share.py:compare_send_test",
+        "engine/packs.py:problems",
+        "engine/run/spec.py:lint"
+      ],
+      "tests": [
+        "test_snackable_package_without_share_block_is_refused",
+        "test_vague_receivers_are_refused",
+        "test_generic_dm_lines_are_refused",
+        "test_generic_share_ctas_are_refused_in_copy",
+        "test_daily_and_radar_drafts_refuse_a_share_cta",
+        "test_send_test_request_never_shows_the_share_block",
+        "test_send_test_passes_only_on_matching_receiver_and_job",
+        "test_spec_words_refuse_a_share_cta",
+        "test_preflight_holds_until_a_matching_blind_answer"
+      ]
     }
   ]
 }

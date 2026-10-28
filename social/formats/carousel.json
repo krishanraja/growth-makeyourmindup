@@ -13,20 +13,26 @@
   "guide": "social/guides/formats.md",
   "min_assets": 2,
   "max_assets": null,
+  "snackable": true,
   "delivery_checks": [
     "Ordered accepted files and alt text, immutable asset hashes and creative approval identity.",
     "Cover promise, complete readable sequence and final continuation fit the chosen destination; production defects return to content-engine.",
     "Do not assume a photo carousel, PDF document and video montage are interchangeable.",
+    "Share mechanic: an uplifting AI news carousel carries one quotable, sourced number or fact on its own card that a person will repeat; a level-up advice carousel carries one move someone forwards to a named colleague, complete on its own. A missing mechanic returns to content-engine as a production defect.",
+    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
     "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
     "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
   ],
   "measurements": [
+    "Primary measure (Krish, 28 October 2026): sends, meaning native shares, per reach and saves per reach against the format's own channel median; a house hypothesis until MYMU's own dated data confirms it (lesson share-rate-measure).",
     "Dated exposed reach and meaningful engagement, preserving missing values.",
     "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
     "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
   ],
   "lessons": [
     "revision-identity",
-    "growth-measurement"
+    "growth-measurement",
+    "built-to-be-sent",
+    "share-rate-measure"
   ]
 }

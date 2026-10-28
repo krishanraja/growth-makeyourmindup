@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "share-rate-measure",
+  "category": "channel",
+  "scope": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "x",
+    "youtube",
+    "linkedin",
+    "threads",
+    "substack-notes"
+  ],
+  "status": "hypothesis",
+  "finding": "Sends (native shares) per reach and saves per reach are the snackable lane's primary measure, judged against each channel and format's own median. Association, not cause, until MYMU's own dated readings confirm them.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": "Buffer list_posts with includeMetrics and get_aggregated_post_metrics, read only, 28 October 2026; field names recorded in social/share.json measure.buffer_fields, values kept in private evidence.",
+    "observed_at": "2026-10-28",
+    "result": "Instagram exposed shares, saves and reach; Facebook shares and reach (some posts impressions only); TikTok shares and reach; X reposts and impressions, with no reach or saves; YouTube no shares, saves or reach; LinkedIn reach on some posts, with no shares or saves; Threads and Substack Notes not observed, as no sent posts were read."
+  },
+  "revisit_when": "Six comparable snackable posts on a channel and format have their judge-window readback, or Buffer exposes a new share or save field.",
+  "supersedes": null
+}

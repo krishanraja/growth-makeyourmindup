@@ -147,3 +147,12 @@ actual composer; the test was not saved. Do not claim automatic link stickers.
 The approved continuation referred to the already-live carousel. Buffer preview
 did not reproduce Facebook's native AI-content overlay exactly; retain a
 native safe-area check for every frame, including small branding.
+
+Metrics, read only (28 October 2026). `list_posts` with `includeMetrics` and
+`get_aggregated_post_metrics` expose per-channel field names that differ:
+Instagram shows `shares`, `saves` and `reach`; Facebook and TikTok `shares` and
+`reach`; X `reposts` and `impressions` with no reach; YouTube no share, save or
+reach field; LinkedIn `reach` on some posts. `social/share.json`
+(`measure.buffer_fields`) is the one map from those names to sends, saves and
+reach, read by `engine/run/measure.py:share_rates`. A field a channel does not
+show is "not shown", never zero. Values stay in private evidence.

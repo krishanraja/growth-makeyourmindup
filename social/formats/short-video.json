@@ -15,19 +15,25 @@
   "guide": "social/guides/formats.md",
   "min_assets": 1,
   "max_assets": 1,
+  "snackable": true,
   "delivery_checks": [
     "Receive a production-approved video; do not derive a new montage in Growth.",
     "Recheck actual upload support, cover, captions, audio and exact matching full-video continuation.",
+    "Share mechanic: one moment that lands with no context in the first seconds, so a person can send the clip cold; a missing moment returns to content-engine as a production defect.",
+    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
     "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
     "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
   ],
   "measurements": [
+    "Primary measure (Krish, 28 October 2026): sends, meaning native shares, per reach and saves per reach against the format's own channel median; a house hypothesis until MYMU's own dated data confirms it (lesson share-rate-measure).",
     "Dated exposed reach and meaningful engagement, preserving missing values.",
     "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
     "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
   ],
   "lessons": [
     "revision-identity",
-    "growth-measurement"
+    "growth-measurement",
+    "built-to-be-sent",
+    "share-rate-measure"
   ]
 }

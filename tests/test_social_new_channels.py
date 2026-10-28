@@ -9,13 +9,27 @@ import unittest
 from engine.social import DELEGATED_PERSONAL, ROOT, inventory, preflight, route
 
 MEME_CHANNELS = {'instagram', 'facebook', 'tiktok', 'youtube', 'x', 'threads'}
+# Realistic share blocks for the snackable formats (Krish, 2026-10-28); text needs none.
+SHARES = {
+    'note': {'sender': 'an operations director who reads makeyourmindup on the train',
+             'receiver': "the finance director signing off next year's AI budget",
+             'job': 'in_the_know',
+             'dm_line': "Before Thursday's budget review: read the line about who pays for the retraining.",
+             'moment': 'the week before the annual budget review, when every AI line gets questioned',
+             'standalone': True},
+    'meme': {'sender': 'a product manager who has sat through three AI vendor demos this month',
+             'receiver': 'the engineer she pairs with on the pilot',
+             'job': 'so_us',
+             'dm_line': 'This is literally our Tuesday demo, slide for slide.',
+             'moment': 'straight after another vendor demo that promised everything by Friday',
+             'standalone': True}}
 
 
 def package(channel, account_url, context, format_id, owner='content-engine', due=None):
     return {'schema_version': 1, 'kind': 'package', 'id': 'synthetic-package',
             'channel': channel, 'account_url': account_url, 'account_context': context,
             'format': format_id, 'tool': 'buffer', 'source_url': 'https://example.com/verified-test',
-            'caption': 'Synthetic test copy.', 'assets': [],
+            'caption': 'Synthetic test copy.', 'share': SHARES.get(format_id), 'assets': [],
             'production': {'owner': owner, 'approved': True, 'evidence_ref': 'synthetic-only'},
             'voice_review_passed': True, 'proposed_due_at': due,
             'platform_metadata': {'ai_generated': None, 'share_to_feed': None,

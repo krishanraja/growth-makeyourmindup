@@ -12,6 +12,7 @@ import re
 from ..control_center import sha256_hex
 from ..core import TIMEZONE, UTC, calendar_date, http_url, instant, ny_time, read_json, write_json
 from ..packs import prose_errors
+from ..share import cta_errors
 from ..social import inventory, validate
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -182,6 +183,9 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
         errors.append(finding('krish_click_due_at', at + '.due_at',
                               'a krish_click slot stays an unscheduled draft: due_at must be null', sid))
     errors += [finding('prose', at + '.words', 'words ' + e, sid) for e in prose_errors(slot['words'])]
+    # Built to be sent (Krish, 2026-10-28): the share comes from the content, never a request.
+    errors += [finding('share_cta', at + '.words', 'words ask for the share (' + e + '); the share must come'
+                       ' from the content (social/share.json)', sid) for e in cta_errors(slot['words'])]
     warnings += [finding('forward_line_prose', at + '.forward_line', 'forward_line ' + e, sid)
                  for e in prose_errors(slot['forward_line'])]
     listed, approved = manifest

@@ -78,6 +78,10 @@ def problems(item, kind=None):
         errors.append('a LinkedIn comment must have no links')
     if kind == 'radar' and len(text.split()) > 60:
         errors.append('a radar reply must be at most 60 words')
+    if kind in ('daily', 'radar'):
+        # Built to be sent (Krish, 2026-10-28): a post or reply earns the share, never asks for it.
+        from .share import cta_errors  # local: engine.share reads prose_errors from this module
+        errors += ['asks for the share (' + e + '); the share must come from the content' for e in cta_errors(text)]
     for field in ('target_url',):
         if item.get(field) is not None and not http_url(item[field]):
             errors.append(field + ' must be an http or https URL')
