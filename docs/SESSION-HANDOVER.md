@@ -2,6 +2,12 @@
 
 Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
+28 October operational checkpoint: read
+`.scratch/channel-audit/daily-20261028/REVIEW.md` before acting. Buffer reconciled;
+native metrics/engagement remain blocked by browser timeouts, not proven sign-out.
+Local GA4 directive read lacks engine configuration. Reuse existing evidence,
+preserve the LinkedIn drafts and follow the newer exact-payload release gate.
+
 27 October architecture upgrade: a run session reads `docs/RUN.md` and its pack (`python growth.py run pack SPEC`) instead of the standing docs; the plan is `docs/plans/2026-10-27-engine-architecture.md`. Every earlier instruction below still holds where the rulings recorded in `CHANGES.md` on 27 October do not supersede it.
 
 27 October closeout takes precedence: read `docs/ASSET-STORAGE.md` and
