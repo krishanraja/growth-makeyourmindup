@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
-as_of: 2026-10-27
+as_of: 2026-10-28
 head: fb61c1d
 lifecycle: live
 production_url: none
@@ -22,11 +22,22 @@ The makeyourmindup growth engine: it drafts the posts that bring new readers to 
 
 Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
 
-## Where it is right now (as of 2026-10-27)
+## Where it is right now (as of 2026-10-28)
 
 <!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-27", "current_source": "Native Substack Growth sources, New subscribers, trailing 7 days, all categories: no subscribers found; this bounds week-to-date to zero. Private daily-20261027/substack-seven-day-sources.txt", "urgency": 4, "urgency_reason": "0 of 25; under 40%"} --> **North Star number: U4, far behind.** No new subscribers appear in the native trailing-seven-day source report on 27 October, so week-to-date organic subscribers are zero against 25 this week. This is the displayed measurement, not proof that reporting is instantaneous or that the new posts have had time to work.
 
 Lifecycle: live. The detail is in `README.md`.
+
+28 October daily readback is partial: Buffer My organization now has 12
+connections, including other ventures; only this engine's explicit scope applies.
+Four unscheduled drafts include two labelled engine checks; no scheduled/error
+items returned. Shopping-agent LinkedIn remains an untouched Buffer draft;
+separate native publication is unknown. Codex browser navigation timed out, so
+no fresh native subscriber/follower measurements or engagement candidates are
+claimed. The local read-only Control Center directive path lacks engine
+configuration, so GA4 events remain unverified. See
+`.scratch/channel-audit/daily-20261028/REVIEW.md` for the gate packet and recovery.
+The 27 October North Star reading below remains historical, not a new zero.
 
 27 October session closeout: the existing Drive 4 Growth folder is the versioned
 distribution library, with the shopping-agent v3 PDF and copy preserved.
@@ -106,8 +117,8 @@ publication, follower growth or financial ROI.
 ## What is next and what is waiting on Krish
 
 - Next: read back the first `web_analytics` directive after Control Center's 05:30 UTC snapshot on 28 October, confirm the sign-up and paid event names in `invariants/ga4.json`, then prepare W45's first signed week (standing W45 to W52 plan plus the Notes and Threads go-live) for Sunday 1 November through a scheduled run. The pilot measurements and Content Engine native editions continue as before; LinkedIn stays his own click.
-- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; new cloud scheduled tasks; merging this branch to main.
-- North Star check (2026-10-27): holds.
+- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; new cloud scheduled tasks. The architecture branch is now merged into main.
+- North Star check (2026-10-28): holds.
 
 ## Read next
 

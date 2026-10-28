@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "shared-buffer-workspace",
+  "category": "tool",
+  "scope": [
+    "buffer"
+  ],
+  "status": "observed",
+  "finding": "Buffer My organization is shared across ventures. On28October it contained12 connections, including Full Time and Heartside, plus labelled engine-test Notes/Threads drafts. Filter every operation by this engine's verified channel identities and current authority. Test drafts are never publishable supply; old seven-channel price observations do not price an expanded workspace.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": ".scratch/channel-audit/daily-20261028/REVIEW.md",
+    "observed_at": "2026-10-28",
+    "result": "Connector inventory/queue and native Buffer home reconciled; no cross-venture or draft mutations."
+  },
+  "revisit_when": "Connections, engine scope or selected billing channels change; reconcile before every mutation and before trial decision.",
+  "supersedes": null
+}
