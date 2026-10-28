@@ -2,10 +2,9 @@
 
 The standing doc a run session reads first. `growth.py run pack` puts it at the
 top of every session pack. The plan behind it is
-`docs/plans/2026-10-27-engine-architecture.md` (Krish, 27 Oct 2026).
-Until `invariants/rules.json` lands, a run session also reads AGENTS.md ("The
-rules that never bend", "Autonomy"), docs/PUBLISHING-AUTHORITY.md and
-docs/ACCOUNT-VOICE.md.
+`docs/plans/2026-10-27-engine-architecture.md` (Krish, 27 Oct 2026). A run
+session also reads AGENTS.md ("The rules that never bend", "Autonomy"),
+docs/PUBLISHING-AUTHORITY.md and docs/ACCOUNT-VOICE.md.
 
 ## What a run session does
 
@@ -16,12 +15,13 @@ and measures it. LinkedIn stays his own click. Nothing is spent.
 
 A session does one job, then ends at a gate packet:
 
-- **Release:** only through `growth.py run release` (not built yet; until it
-  lands no session creates, schedules or edits a Buffer post), and only for an
-  approved go-live decision the engine reads from Control Center in its own
-  run. `decision.json` is written only from that readback, never by hand. An
-  interactive session never releases and never uses `--deliver`. Scheduled is
-  never live.
+- **Release:** only through `growth.py run release`, and only for an approved
+  go-live decision the engine reads from Control Center in its own run
+  ("Approve each day Monday", 28 Oct). `decision.json` is written only from
+  that readback, never by hand. Release acts only on this engine's eight
+  Buffer channels, pinned by channelId (other ventures' ids are refused), and
+  holds a slot whose words fail the copy lint. An interactive session never
+  releases and never uses `--deliver`. Scheduled is never live.
 - **Measure (daily):** read back "sent" and the native URL, capture metrics at
   their windows, write verdicts, check the express intake.
 - **Express:** build one approved idea into the waiting go-live, or its own.
@@ -46,8 +46,8 @@ All offline; none posts, sends, schedules or spends.
   cards load by the registry flag for the run's week (such as `w45`), else by
   channel.
 - `python growth.py run card lint FILE`: a Codex task card, before dispatch.
-- `release`, `measure`, `northstar`, `verdict`, `cost`, `ga4`: each says "not
-  built yet" until its module lands.
+- `python growth.py run release plan|check SPEC ...`: exact Buffer call
+  arguments, then readback evidence; it calls nothing itself.
 
 Keep each real spec at `.scratch/runs/<run>/spec.json`, never in git: it holds
 unpublished words. The run folder is the `run_id` with each `:` as `_`.
@@ -57,7 +57,8 @@ unpublished words. The run folder is the `run_id` with each `:` as `_`.
 Schema errors; a `week_target` that is not the ladder rung in
 `docs/NORTH_STAR.md` for the Monday (New York) of `window.start`; a
 `payload_sha256` that does not recompute; words that fail `prose_errors`
-(em dashes, stock phrases and the other house rules); an unknown channel or
+(em dashes, stock phrases and the other house rules) or content-engine's copy
+lint (eyebrow labels, asterisks, AI notes, take labels); an unknown channel or
 format, or a format the channel does not take (`social/channels`,
 `social/formats`); `publish_mode` other than `krish_click` on a
 human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a `krish_click` slot with a `due_at`; `spend_usd` above 0; two
