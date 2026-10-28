@@ -115,11 +115,14 @@
     },
     {
       "id": "F12",
-      "title": "Illustration boilerplate in public copy",
-      "source": "lesson public-copy-and-stories; docs/PUBLISHING-AUTHORITY.md (R43)",
-      "guard": "engine/social.py:preflight",
+      "title": "Illustration boilerplate in public copy; since 28 Oct 2026, every pattern of the copy lint",
+      "source": "lesson public-copy-and-stories; docs/PUBLISHING-AUTHORITY.md (R43); Krish's copy ruling of 28 Oct 2026 (CHANGES.md; vendor/content-engine/copy-lint)",
+      "guard": "engine/social.py:preflight; engine/copy_lint.py:copy_lint; engine/run/spec.py:lint",
       "tests": [
-        "test_public_illustration_boilerplate_is_rejected_without_banning_ai_topics"
+        "test_public_illustration_boilerplate_is_rejected_without_banning_ai_topics",
+        "test_copy_lint_refuses_eyebrows_asterisks_ai_notes_and_take_labels",
+        "test_every_pattern_krish_named_is_refused_where_he_named_it",
+        "test_copy_lint_is_a_lint_error_on_slot_words"
       ],
       "status": "tested"
     },

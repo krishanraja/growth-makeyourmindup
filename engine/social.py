@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import re
 
+from .copy_lint import copy_lint_errors
+
 
 ROOT = Path(__file__).resolve().parents[1]
 # Personal accounts Krish has scoped for delegated cadence of approved content:
@@ -200,6 +202,10 @@ def preflight(package, as_of=None, root=ROOT):
         raise ValueError('personal account packages must remain unscheduled for human publication')
     if re.search(r'(?:illustrations?|artwork|scenes?|scorecard)\s+(?:(?:was|were|are|is)\s+)?(?:generated\s+(?:with|by)\s+AI|AI[- ]generated)|AI[- ]generated\s+(?:editorial\s+)?illustrations?', package['caption'], re.I):
         raise ValueError('public illustration-disclaimer boilerplate is prohibited; retain private provenance and native metadata')
+    lint = copy_lint_errors(package['caption'], 'channel_copy')
+    if lint:
+        # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels.
+        raise ValueError('the caption fails the copy lint: ' + '; '.join(lint))
     if not package['voice_review_passed'] or not package['production']['approved']:
         raise ValueError('voice review and accepted production package are required')
     f = decision['format']

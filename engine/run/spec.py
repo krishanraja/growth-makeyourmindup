@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 
 from ..control_center import sha256_hex
+from ..copy_lint import copy_lint_errors
 from ..core import TIMEZONE, UTC, calendar_date, http_url, instant, ny_time, read_json, write_json
 from ..packs import prose_errors
 from ..social import inventory, validate
@@ -182,6 +183,11 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
         errors.append(finding('krish_click_due_at', at + '.due_at',
                               'a krish_click slot stays an unscheduled draft: due_at must be null', sid))
     errors += [finding('prose', at + '.words', 'words ' + e, sid) for e in prose_errors(slot['words'])]
+    try:
+        lint = copy_lint_errors(slot['words'], 'channel_copy')
+    except ValueError as exc:
+        lint = ['copy lint could not run: ' + str(exc)]
+    errors += [finding('copy_lint', at + '.words', 'words: ' + e, sid) for e in lint]
     warnings += [finding('forward_line_prose', at + '.forward_line', 'forward_line ' + e, sid)
                  for e in prose_errors(slot['forward_line'])]
     listed, approved = manifest
