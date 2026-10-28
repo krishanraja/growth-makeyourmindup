@@ -546,6 +546,9 @@ class ReleaseTests(unittest.TestCase):
         errors = release.argument_errors(bare, self.slots['notes-1'])
         self.assertIn('a create_post names its pinned Buffer channelId', errors)
         self.assertIn('the call names no Buffer channel; release only acts on a pinned channel', errors)
+        odd = copy.deepcopy(call)
+        odd['arguments']['channelId'] = [release.BUFFER_CHANNEL_ID['substack-notes']]
+        self.assertIn('Buffer channelId must be text, not list', release.argument_errors(odd, self.slots['notes-1']))
 
     def test_readback_and_publications_on_other_channels_never_count(self):
         slot = self.slots['threads-1']

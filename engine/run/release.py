@@ -299,6 +299,8 @@ def service_meta(post, service):
 
 def channel_id_errors(channel, channel_id):
     """Why channel_id is not this engine's pinned Buffer channel for channel, if it is not."""
+    if not isinstance(channel_id, str):
+        return ['Buffer channelId must be text, not ' + type(channel_id).__name__]
     if channel_id in DENIED_CHANNELS:
         return ['Buffer channel ' + channel_id + ' is ' + DENIED_CHANNELS[channel_id]
                 + ', another venture\'s; this engine never acts on it']
@@ -499,8 +501,9 @@ def argument_errors(call, slot):
         out.append('a create_post names its pinned Buffer channelId')
     if not named:
         out.append('the call names no Buffer channel; release only acts on a pinned channel')
-    for channel_id in dict.fromkeys(named):
-        out += channel_id_errors(slot['channel'], channel_id)
+    for i, channel_id in enumerate(named):
+        if channel_id not in named[:i]:
+            out += channel_id_errors(slot['channel'], channel_id)
     if 'text' in args:
         out += copy_errors(args['text'])
     if service != CHANNELS[slot['channel']][0]:
