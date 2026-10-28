@@ -47,6 +47,13 @@ signed as one document, so a bad line means the signing cannot be trusted.
 Asset bytes: --assets must be a folder of fresh downloads of each asset url,
 made into .scratch immediately before release. Buffer fetches the url, and
 the Drive 4 Growth library is editable by link, so older copies prove nothing.
+
+Channel lock (28 October 2026): the Buffer organisation is shared with other
+ventures, so a channel acts only when its service, name and channelId all
+match this engine's pinned entry, and an id on the denylist is refused
+wherever it appears: list_channels, a built call, an edit target or a
+readback. Copy lint (Krish, 28 October 2026): a slot whose words hit
+content-engine's copy lint (engine/copy_lint.py) is held and never emitted.
 """
 import argparse
 import hashlib
@@ -57,6 +64,7 @@ import sys
 from urllib.parse import urlsplit
 
 from engine.control_center import sha256_hex
+from engine.copy_lint import copy_lint_errors, version as copy_lint_version
 from engine.core import instant, locked, read_json, write_json
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -93,6 +101,22 @@ CHANNEL_PROFILE = {'substack-notes': 'substack-notes', 'threads': 'threads', 'x'
 BUFFER_NAME = {'substack-notes': 'Krish', 'threads': 'krishraja1', 'x': 'TheRealKrisho',
                'instagram': 'makeyourmind.up', 'facebook': 'Makeyourmind/up', 'tiktok': 'therealkrisho',
                'youtube': 'makeyourmindup', 'linkedin': 'krish-raja'}
+# Channel id -> the one Buffer channelId this engine may act on, read with a
+# read-only list_channels of "My organization" on 2026-10-28. A channel is
+# pinned by service, name and this id together; a new id under the same name
+# holds until a reviewed change updates this table. The Substack entry is
+# Krish's profile, which carries Notes (R81).
+BUFFER_CHANNEL_ID = {'substack-notes': '6ae09edc2f1f5ed648e9e48c', 'threads': '6adccb77778b240e2fafbe75',
+                     'x': '6adccbf5778b240e2fafc457', 'instagram': '6adccb3a778b240e2fafbb63',
+                     'facebook': '6adccc1e778b240e2fafc615', 'tiktok': '6adccbdd778b240e2fafc32e',
+                     'youtube': '6adccf83778b240e2fafe7af', 'linkedin': '6adccba0778b240e2fafc06d'}
+# The other ventures' channels in the same Buffer organisation. Never this
+# engine's, whatever a readback, a slot or a hand-built call says (plan of
+# 28 Oct 2026, W5: never the Full Time or Heartside channels).
+DENIED_CHANNELS = {'6ae09bba2f1f5ed648e9cbfc': 'fulltime.fm TikTok',
+                   '6ae096d32f1f5ed648e99e98': 'Heartside Facebook',
+                   '6ae0973f2f1f5ed648e9a327': 'yourdoghasnotes TikTok',
+                   '6ae096872f1f5ed648e99b6d': 'yourdoghasnotes Instagram'}
 # Native post URLs that carry the account handle as their first path segment.
 HANDLE_IN_PATH = ('x', 'tiktok', 'threads', 'substack-notes')
 KRISH_CLICK_ONLY = ('linkedin',)
@@ -273,8 +297,18 @@ def service_meta(post, service):
     return keyed if isinstance(keyed, dict) else meta
 
 
+def channel_id_errors(channel, channel_id):
+    """Why channel_id is not this engine's pinned Buffer channel for channel, if it is not."""
+    if channel_id in DENIED_CHANNELS:
+        return ['Buffer channel ' + channel_id + ' is ' + DENIED_CHANNELS[channel_id]
+                + ', another venture\'s; this engine never acts on it']
+    if channel_id != BUFFER_CHANNEL_ID.get(channel):
+        return ['Buffer channel ' + str(channel_id) + ' is not this engine\'s pinned ' + str(channel) + ' channel']
+    return []
+
+
 def resolve_channel(slot, channels):
-    """This engine's one Buffer channel for the slot, pinned by service and name."""
+    """This engine's one Buffer channel for the slot, pinned by service, name and channelId."""
     if isinstance(channels, dict):
         channels = channels.get('channels')
     service = CHANNELS[slot['channel']][0]
@@ -288,6 +322,9 @@ def resolve_channel(slot, channels):
     channel = found[0]
     if not (isinstance(channel.get('id'), str) and BUFFER_ID.match(channel['id'])):
         raise ValueError('Buffer channelId is malformed in the list_channels readback')
+    errors = channel_id_errors(slot['channel'], channel['id'])
+    if errors:
+        raise ValueError(errors[0] + '; never guess')
     if channel.get('isDisconnected') or channel.get('isLocked'):
         raise ValueError('Buffer channel for ' + service + ' is disconnected or locked')
     return channel
@@ -392,6 +429,9 @@ def call_arguments(slot, channel, now=None, target=None):
     if not isinstance(channel, dict) or channel.get('service') != service \
             or not (isinstance(channel.get('id'), str) and BUFFER_ID.match(channel['id'])):
         raise ValueError('Buffer channel must be the live ' + service + ' entry from list_channels')
+    pinned = channel_id_errors(slot['channel'], channel['id'])
+    if pinned:
+        raise ValueError(pinned[0])
     draft = is_draft(slot)
     if not draft and instant(slot['due_at']) <= instant(now):
         raise ValueError('due_at is not in the future')
@@ -438,6 +478,14 @@ def _has_null_link_attachment(value):
     return False
 
 
+def copy_errors(text):
+    """The copy lint on one post's words, as refusals; an unreadable lint refuses too."""
+    try:
+        return copy_lint_errors(text, 'channel_copy')
+    except ValueError as exc:
+        return ['copy lint could not run, so nothing releases: ' + str(exc)]
+
+
 def argument_errors(call, slot):
     """Guards on any Buffer call, however it was built."""
     args = call.get('arguments', {})
@@ -446,6 +494,15 @@ def argument_errors(call, slot):
     out = []
     if call.get('tool') not in ('create_post', 'edit_post'):
         out.append('only create_post or edit_post is emitted')
+    named = [c for c in (call.get('channel_id'), args.get('channelId')) if c is not None]
+    if call.get('tool') == 'create_post' and 'channelId' not in args:
+        out.append('a create_post names its pinned Buffer channelId')
+    if not named:
+        out.append('the call names no Buffer channel; release only acts on a pinned channel')
+    for channel_id in dict.fromkeys(named):
+        out += channel_id_errors(slot['channel'], channel_id)
+    if 'text' in args:
+        out += copy_errors(args['text'])
     if service != CHANNELS[slot['channel']][0]:
         out.append('the call is for another service than the slot')
     if args.get('mode') not in (None, 'customScheduled'):
@@ -566,6 +623,11 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
             hold('already_released_once' if done.get('payload_sha256') == slot['payload_sha256']
                  else 'released_earlier_with_another_payload')
             continue
+        lint = copy_errors(slot['words'])
+        if lint:
+            # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels.
+            hold('copy_lint_refused: ' + '; '.join(lint))
+            continue
         if slot['publish_mode'] == 'engine' and any(a['sha256'] not in approved for a in slot['assets']):
             hold('creative_not_approved')
             continue
@@ -596,7 +658,8 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
         calls.append(call)
         entry = {'payload_sha256': slot['payload_sha256'], 'tool': call['tool'], 'channel': slot['channel'],
                  'service': call['service'], 'channel_id': call['channel_id'],
-                 'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat()}
+                 'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat(),
+                 'copy_lint_version': copy_lint_version()}
         if target is not None:
             # The before-state, journalled ahead of the mutation.
             entry['target_sha256'] = _readback_digest(target)
@@ -646,6 +709,9 @@ def check_readback(slot, post, stage, ledger, accounts=None):
         raise ValueError(sid + ': readback is on another service')
     if not post.get('channelId') or post['channelId'] != entry.get('channel_id'):
         raise ValueError(sid + ': readback is on another Buffer channel than the one released')
+    pinned = channel_id_errors(slot['channel'], post['channelId'])
+    if pinned:
+        raise ValueError(sid + ': ' + pinned[0])
     if post.get('text') != slot['words']:
         raise ValueError(sid + ': readback text differs from the signed words')
     if len(post.get('assets') or []) != len(slot['assets']) and slot['format'] != 'story':
@@ -741,6 +807,8 @@ def engine_publications(posts, ledger, accounts=None):
             continue
         channel = entry.get('channel')
         if channel not in CHANNELS or p.get('channelService') != CHANNELS[channel][0]:
+            continue
+        if channel_id_errors(channel, p.get('channelId')):
             continue
         if native_host(channel, p.get('externalLink'), (accounts or {}).get(channel)):
             out.append(p)
