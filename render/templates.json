@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "kind": "mock_templates",
-  "about": "The ten kit templates as HTML and CSS, rendered to PNG by scripts/render_mocks.mjs. Each field is text (escaped, a newline is a line break), rows (a list of [name, value] pairs) or options (a list of strings). The examples hold placeholder text only: real ideas, claims and mocks never enter this repository.",
+  "about": "The kit templates as HTML and CSS, rendered to PNG by scripts/render_mocks.mjs; render/KIT.md says which rules come from the published artwork and which are read into it. Each field is text (escaped, a newline is a line break), rows (a list of [name, value] pairs or [name, note, value] triples; an arrow in a value is drawn) or options (a list of strings). A field named in choices takes one of the listed words. The examples hold placeholder text only: real ideas, claims and mocks never enter this repository.",
   "kit": {
     "colours": {
       "ink": "#0C1512",
@@ -51,7 +51,9 @@
         "label": "text",
         "headline": "text",
         "facts": "text",
-        "source": "text"
+        "source": "text",
+        "accent": "text",
+        "tone": "text"
       },
       "required": [
         "label",
@@ -60,10 +62,19 @@
       ],
       "example": {
         "label": "series.label",
-        "headline": "One short line that says what happened",
+        "headline": "One short line",
         "facts": "The first fact, with its number.\nThe second fact, with its number.",
-        "source": "Source name, with its date"
-      }
+        "source": "Source name, with its date",
+        "accent": "that says what happened"
+      },
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
     },
     "scorecard": {
       "file": "templates/scorecard.html",
@@ -163,7 +174,9 @@
         "label": "text",
         "headline": "text",
         "subhead": "text",
-        "page": "text"
+        "page": "text",
+        "accent": "text",
+        "tone": "text"
       },
       "required": [
         "label",
@@ -171,10 +184,19 @@
       ],
       "example": {
         "label": "series.label",
-        "headline": "A short promise for the cover",
+        "headline": "A short promise",
         "subhead": "One line that says what the reader gets",
-        "page": "1 of 4"
-      }
+        "page": "1 of 4",
+        "accent": "for the cover"
+      },
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
     },
     "carousel-body": {
       "file": "templates/carousel-body.html",
@@ -230,7 +252,9 @@
         "label": "text",
         "headline": "text",
         "body": "text",
-        "page": "text"
+        "page": "text",
+        "accent": "text",
+        "tone": "text"
       },
       "required": [
         "label",
@@ -238,10 +262,19 @@
       ],
       "example": {
         "label": "series.label",
-        "headline": "A short line for the frame",
+        "headline": "A short line",
         "body": "One more plain line that says why it matters.",
-        "page": "1 of 3"
-      }
+        "page": "1 of 3",
+        "accent": "for the frame"
+      },
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
     },
     "meme-square": {
       "file": "templates/meme-square.html",
@@ -250,7 +283,8 @@
       "fields": {
         "label": "text",
         "setup": "text",
-        "punchline": "text"
+        "punchline": "text",
+        "tone": "text"
       },
       "required": [
         "label",
@@ -261,7 +295,15 @@
         "label": "series.label",
         "setup": "The everyday moment everyone at work knows.",
         "punchline": "The kind twist at the end."
-      }
+      },
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "note": "the punchline is the accent line, in the tone colour (butter unless tone says mint or coral)."
     },
     "meme-vertical": {
       "file": "templates/meme-vertical.html",
@@ -275,7 +317,8 @@
         "label": "text",
         "setup": "text",
         "punchline": "text",
-        "beat": "text"
+        "beat": "text",
+        "tone": "text"
       },
       "required": [
         "label",
@@ -287,7 +330,14 @@
         "setup": "The everyday moment everyone at work knows.",
         "punchline": "The kind twist at the end."
       },
-      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly."
+      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly. The punchline is the accent line, in the tone colour (butter unless tone says mint or coral).",
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      }
     },
     "profile-art": {
       "file": "templates/profile-art.html",
@@ -304,6 +354,291 @@
         "line1": "Wordmark",
         "line2": "a short line"
       }
+    },
+    "versus-card": {
+      "file": "templates/versus-card.html",
+      "width": 1200,
+      "height": 675,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "accent": "text",
+        "tone": "text",
+        "rows": "rows"
+      },
+      "required": [
+        "headline",
+        "rows"
+      ],
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "example": {
+        "headline": "Who paid",
+        "accent": "and how much",
+        "rows": [
+          [
+            "The first company",
+            "Year: $1B"
+          ],
+          [
+            "The second company",
+            "$2M"
+          ],
+          [
+            "Also in the story: two more names",
+            ""
+          ]
+        ]
+      },
+      "note": "rows are [name, value]: the name on the left, the value in a solid chip, butter, mint and lilac in turn. A row with an empty value is a quiet strip of names. Up to four rows."
+    },
+    "versus-card-tall": {
+      "file": "templates/versus-card-tall.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "accent": "text",
+        "tone": "text",
+        "rows": "rows"
+      },
+      "required": [
+        "headline",
+        "rows"
+      ],
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "example": {
+        "headline": "Who paid",
+        "accent": "and how much",
+        "rows": [
+          [
+            "The first company",
+            "Year: $1B"
+          ],
+          [
+            "The second company",
+            "$2M"
+          ],
+          [
+            "Also in the story: two more names",
+            ""
+          ]
+        ]
+      },
+      "note": "rows are [name, value]: the name on the left, the value in a solid chip, butter, mint and lilac in turn. A row with an empty value is a quiet strip of names. Up to four rows."
+    },
+    "number-card": {
+      "file": "templates/number-card.html",
+      "width": 1314,
+      "height": 1080,
+      "fields": {
+        "series": "text",
+        "title": "text",
+        "context": "text",
+        "rows": "rows",
+        "takeaway": "text",
+        "source": "text",
+        "tone": "text"
+      },
+      "required": [
+        "series",
+        "title",
+        "rows"
+      ],
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "example": {
+        "series": "series.label / 01",
+        "title": "What the price did",
+        "context": "The date it changed",
+        "rows": [
+          [
+            "The first price",
+            "What it is measured in",
+            "$1 → $2"
+          ],
+          [
+            "The second price",
+            "What it is measured in",
+            "$5 → $10"
+          ]
+        ],
+        "takeaway": "One short line that says what it means.",
+        "source": "Where the numbers come from, with the date"
+      },
+      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. tone sets the top rule, the eyebrow and the numerals (butter unless it says mint or coral). Two or three rows read best."
+    },
+    "number-card-tall": {
+      "file": "templates/number-card-tall.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "series": "text",
+        "title": "text",
+        "context": "text",
+        "rows": "rows",
+        "takeaway": "text",
+        "source": "text",
+        "tone": "text"
+      },
+      "required": [
+        "series",
+        "title",
+        "rows"
+      ],
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "example": {
+        "series": "series.label / 01",
+        "title": "What the price did",
+        "context": "The date it changed",
+        "rows": [
+          [
+            "The first price",
+            "What it is measured in",
+            "$1 → $2"
+          ],
+          [
+            "The second price",
+            "What it is measured in",
+            "$5 → $10"
+          ]
+        ],
+        "takeaway": "One short line that says what it means.",
+        "source": "Where the numbers come from, with the date"
+      },
+      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. tone sets the top rule, the eyebrow and the numerals (butter unless it says mint or coral). Two or three rows read best."
+    },
+    "chapter-card": {
+      "file": "templates/chapter-card.html",
+      "width": 1920,
+      "height": 1080,
+      "fields": {
+        "eyebrow": "text",
+        "headline": "text",
+        "accent": "text",
+        "entity": "text",
+        "tone": "text"
+      },
+      "required": [
+        "eyebrow",
+        "headline"
+      ],
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "example": {
+        "eyebrow": "Chapter 1 of 6 · where it starts",
+        "headline": "The first line of the chapter",
+        "accent": "and its second line",
+        "entity": "the company name"
+      },
+      "note": "A video chapter card. The accent line is mint unless tone says butter or coral; entity is the name the chapter is about."
+    },
+    "chapter-card-vertical": {
+      "file": "templates/chapter-card-vertical.html",
+      "width": 1080,
+      "height": 1920,
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      },
+      "fields": {
+        "eyebrow": "text",
+        "headline": "text",
+        "accent": "text",
+        "entity": "text",
+        "tone": "text"
+      },
+      "required": [
+        "eyebrow",
+        "headline"
+      ],
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral"
+        ]
+      },
+      "example": {
+        "eyebrow": "Chapter 1 of 6 · where it starts",
+        "headline": "The first line of the chapter",
+        "accent": "and its second line",
+        "entity": "the company name"
+      },
+      "note": "A video chapter card. The accent line is mint unless tone says butter or coral; entity is the name the chapter is about."
+    },
+    "evidence-card": {
+      "file": "templates/evidence-card.html",
+      "width": 1280,
+      "height": 820,
+      "fields": {
+        "series": "text",
+        "incoming_label": "text",
+        "incoming": "text",
+        "incoming_tag": "text",
+        "actor": "text",
+        "actor_status": "text",
+        "actor_quote": "text",
+        "actor_note": "text",
+        "actor2": "text",
+        "actor2_status": "text",
+        "actor2_text": "text",
+        "actor2_tag": "text",
+        "foot_left": "text",
+        "foot_right": "text"
+      },
+      "required": [
+        "series",
+        "incoming_label",
+        "incoming",
+        "actor",
+        "actor_quote"
+      ],
+      "example": {
+        "series": "series.label / the test",
+        "incoming_label": "What came in",
+        "incoming": "The message, word for word.",
+        "incoming_tag": "What it lacked",
+        "actor": "First tool",
+        "actor_status": "What it did",
+        "actor_quote": "What it said",
+        "actor_note": "One plain line on why that mattered.",
+        "actor2": "Second tool",
+        "actor2_status": "What it did",
+        "actor2_text": "A short excerpt of what the second tool wrote.",
+        "actor2_tag": "How the excerpt was kept",
+        "foot_left": "How this was put together",
+        "foot_right": "The date, and that nothing was sent"
+      },
+      "note": "The first actor has a mint bar, the second a lilac bar; leave every actor2 field empty and that panel is not drawn."
     }
   }
 }

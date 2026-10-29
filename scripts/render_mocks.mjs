@@ -19,7 +19,8 @@
 // any text or time chunk is stripped from each PNG, so the same input gives the same bytes.
 // --verify renders every job twice and fails unless both sha256 values agree.
 // A job whose words do not fit its box at the smallest size, whose fonts did not load, or
-// whose fields carry an em dash, is refused; nothing is clipped silently.
+// whose fields carry an em dash, is refused; nothing is clipped silently. Each result names the colours
+// and fonts the page really painted with, so a test can hold them to the kit.
 
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -55,12 +56,21 @@ function textHtml(value) {
   return escapeHtml(value).replace(/\r\n?/g, '\n').split('\n').join('<br>');
 }
 
+// A value may hold an arrow ("$2 → $4"); it is drawn in CSS (.arrow), so no font has to carry the glyph.
+function valueHtml(value) {
+  return String(value).split(/\s*(?:\u2192|->)\s*/).map(textHtml).join('<span class="arrow" role="img" aria-label="to"></span>');
+}
+
 function rowsHtml(rows) {
-  if (!Array.isArray(rows) || !rows.every((r) => Array.isArray(r) && r.length === 2)) {
-    throw new Error('rows must be a list of [name, value] pairs');
+  if (!Array.isArray(rows) || !rows.length || !rows.every((r) => Array.isArray(r) && (r.length === 2 || r.length === 3))) {
+    throw new Error('rows must be a list of [name, value] pairs or [name, note, value] triples');
   }
-  return rows.map(([n, v]) => '<div class="row"><span class="name">' + textHtml(n) + '</span><span class="value">'
-    + textHtml(v) + '</span></div>').join('');
+  return rows.map((r) => {
+    const name = r.length === 3
+      ? '<span class="name"><span class="main">' + textHtml(r[0]) + '</span><span class="note">' + textHtml(r[1]) + '</span></span>'
+      : '<span class="name">' + textHtml(r[0]) + '</span>';
+    return '<div class="row">' + name + '<span class="value">' + valueHtml(r[r.length - 1]) + '</span></div>';
+  }).join('');
 }
 
 function optionsHtml(options) {
@@ -83,6 +93,11 @@ export function fill(manifest, job) {
   if (missing.length) throw new Error(job.template + ': missing field(s) ' + missing.join(', '));
   for (const [k, v] of Object.entries(fields)) {
     if (strings(v).some((s) => EM_DASH.test(s))) throw new Error(job.template + ': field ' + k + ' has an em dash');
+  }
+  for (const [k, allowed] of Object.entries(spec.choices || {})) {
+    if (fields[k] !== undefined && fields[k] !== '' && !allowed.includes(fields[k])) {
+      throw new Error(job.template + ': ' + k + ' is one of ' + allowed.join(', ') + ', not ' + JSON.stringify(fields[k]));
+    }
   }
   let html = fs.readFileSync(path.join(RENDER, spec.file), 'utf8');
   html = html.replace(/\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}/g, (_, kind, name) => {
@@ -139,13 +154,37 @@ async function renderOne(browser, manifest, job) {
       if (frame && (frame.scrollHeight > frame.clientHeight + 1 || frame.scrollWidth > frame.clientWidth + 1)) {
         errors.push('the page overflows its frame');
       }
-      return { unloaded, errors, faces: faces.length };
+      // What the page really painted with: every colour and the first font of every element that shows text.
+      const hex = (c) => {
+        const m = /^rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)$/.exec(c);
+        if (!m || m[4] === '0') return null;
+        return '#' + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, '0')).join('').toUpperCase();
+      };
+      const colours = new Set();
+      const fonts = new Set();
+      for (const el of [document.documentElement, ...document.querySelectorAll('*')]) {
+        for (const pseudo of [null, '::before', '::after']) {
+          const st = getComputedStyle(el, pseudo);
+          if (st.display === 'none' || (pseudo && st.content === 'none')) continue;
+          [st.color, st.backgroundColor, st.webkitTextStrokeColor].forEach((c) => { const h = hex(c); if (h) colours.add(h); });
+          for (const side of ['Top', 'Right', 'Bottom', 'Left']) {
+            if (parseFloat(st['border' + side + 'Width']) > 0 && st['border' + side + 'Style'] !== 'none') {
+              const h = hex(st['border' + side + 'Color']); if (h) colours.add(h);
+            }
+          }
+          for (const m of st.backgroundImage.matchAll(/rgba?\([^)]*\)/g)) { const h = hex(m[0]); if (h) colours.add(h); }
+          if (!pseudo && Array.from(el.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim())) {
+            fonts.add(st.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, ''));
+          }
+        }
+      }
+      return { unloaded, errors, faces: faces.length, colours: [...colours].sort(), fonts: [...fonts].sort() };
     });
     if (!report.faces || report.unloaded.length) throw new Error(job.out + ': fonts did not load: ' + report.unloaded.join(', '));
     if (report.errors.length) throw new Error(job.out + ': ' + report.errors.join('; '));
     const png = await page.screenshot({ type: 'png', animations: 'disabled', caret: 'hide', scale: 'css',
       clip: { x: 0, y: 0, width: spec.width, height: spec.height } });
-    return stripPng(Buffer.from(png));
+    return { png: stripPng(Buffer.from(png)), colours: report.colours, fonts: report.fonts };
   } finally {
     await page.close();
   }
@@ -202,17 +241,17 @@ async function main(argv) {
   const results = [];
   try {
     for (const job of jobs.filter((j) => !j.video)) {
-      const png = await renderOne(browser, manifest, job);
+      const { png, colours, fonts } = await renderOne(browser, manifest, job);
       const digest = sha256(png);
       if (args.verify) {
-        const again = sha256(await renderOne(browser, manifest, job));
+        const again = sha256((await renderOne(browser, manifest, job)).png);
         if (again !== digest) throw new Error(job.out + ': two renders differ (' + digest + ' and ' + again + ')');
       }
       const out = path.resolve(base, job.out);
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.writeFileSync(out, png);
       results.push({ out: job.out, template: job.template, width: manifest.templates[job.template].width,
-        height: manifest.templates[job.template].height, bytes: png.length, sha256: digest });
+        height: manifest.templates[job.template].height, bytes: png.length, sha256: digest, colours, fonts });
     }
   } finally {
     await browser.close();

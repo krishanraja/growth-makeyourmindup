@@ -2,16 +2,18 @@
 <html lang="en"><head><meta charset="utf-8"><title>meme square</title>
 <link rel="stylesheet" href="../kit.css">
 <style>
-  :root { --w: 1080px; --h: 1080px; }
+  :root { --w: 1080px; --h: 1080px; --wm: 40px; }
+  .masthead .label { font-size: 24px; letter-spacing: 0.06em; text-transform: uppercase; }
   .grow { margin: 40px 0 48px; }
   .rule { margin: 44px 0 40px; }
+  .footer span { opacity: 0.66; }
 </style></head>
-<body><div class="frame">
-  <div class="label">{{label}}</div>
+<body class="tone-{{tone}}"><div class="frame">
+  <div class="masthead"><div class="wordmark"><span class="mark"><i></i><i></i><i></i></span><span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div><div class="label">{{label}}</div></div>
   <div class="grow" data-fit="setup and punchline">
     <p class="body" data-max="64" data-min="40">{{setup}}</p>
     <div class="rule"></div>
-    <p class="heading butter" data-max="96" data-min="52">{{punchline}}</p>
+    <p class="headline" data-max="104" data-min="52"><span class="accent">{{punchline}}</span></p>
   </div>
   <div class="footer"><span>makeyourmindup.ai</span></div>
 </div><script src="../fit.js"></script></body></html>

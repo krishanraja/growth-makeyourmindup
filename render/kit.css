@@ -4,7 +4,7 @@
 
 @font-face { font-family: 'Anton'; src: url('fonts/Anton-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: block; }
 @font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Variable.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
-@font-face { font-family: 'Archivo'; src: url('fonts/Archivo-Variable.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'Archivo'; src: url('fonts/Archivo-Variable.ttf') format('truetype'); font-weight: 100 900; font-stretch: 62% 125%; font-style: normal; font-display: block; }
 @font-face { font-family: 'IBM Plex Mono'; src: url('fonts/IBMPlexMono-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: block; }
 @font-face { font-family: 'IBM Plex Mono'; src: url('fonts/IBMPlexMono-Medium.ttf') format('truetype'); font-weight: 500; font-style: normal; font-display: block; }
 
@@ -88,3 +88,67 @@ html, body {
 .option { display: flex; gap: 32px; align-items: center; border: 3px solid var(--mint); border-radius: 20px; padding: 28px 36px; }
 .option .key { font-family: var(--mono); font-weight: 500; font-size: 40px; color: var(--ink); background: var(--mint); border-radius: 12px; padding: 4px 18px; flex: none; }
 .option .text { font-family: var(--body); font-weight: 500; font-size: 46px; line-height: 1.2; }
+
+/* ---- The look of the published artwork (render/KIT.md says which parts were seen and which are read in). ---- */
+
+/* Muted text: a kit colour turned down, never a new colour. */
+.quiet { opacity: 0.66; }
+
+/* The wordmark: a small bars mark, MAKE YOUR MIND/ in cream and a mint UP with a speech tail. Size it with --wm. */
+.wordmark { display: flex; align-items: center; justify-content: center; font-size: var(--wm, 56px); line-height: 1; flex: none; white-space: nowrap; }
+.wordmark .mark { display: flex; align-items: flex-end; gap: 0.03em; height: 0.74em; margin-right: 0.14em; flex: none; }
+.wordmark .mark i { display: block; width: 0.29em; background: linear-gradient(165deg, var(--mint) 20%, var(--green)); }
+.wordmark .mark i:nth-child(1) { height: 56%; }
+.wordmark .mark i:nth-child(2) { height: 100%; clip-path: polygon(26% 0, 74% 0, 100% 30%, 100% 100%, 0 100%, 0 30%); }
+.wordmark .mark i:nth-child(3) { height: 74%; }
+.wordmark .words { font-family: var(--heading); color: var(--cream); }
+.wordmark .up { position: relative; z-index: 0; margin-left: 0.04em; font-family: var(--body); font-weight: 900; font-stretch: 125%;
+  font-size: 0.94em; color: var(--mint); -webkit-text-stroke: 0.03em var(--mint); }
+.wordmark .up::after { content: ''; position: absolute; z-index: -1; left: 0.08em; right: -0.12em; bottom: -0.26em; height: 0.44em;
+  background: var(--green);
+  clip-path: polygon(0 0, 100% 0, 100% 52%, 92% 52%, 100% 100%, 70% 52%, 0 52%); }
+
+/* A header band: the wordmark on the left, the series in mono on the right, a green hairline under both. */
+.masthead { display: flex; justify-content: space-between; align-items: center; gap: 32px; flex: none;
+  padding-bottom: 24px; border-bottom: 2px solid var(--green); }
+.masthead .label { color: var(--mint); text-align: right; }
+
+/* The eyebrow: small mono capitals, spaced out. */
+.eyebrow { font-family: var(--mono); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; line-height: 1.25; flex: none; }
+
+/* The two-tone headline: cream lines, then one accent line in the piece's tone (butter unless it says mint or coral). */
+.headline { font-family: var(--heading); font-weight: 400; text-transform: uppercase; line-height: 1; color: var(--cream); }
+.headline .lead, .headline .accent { display: block; }
+.accent, .tone-butter .accent { color: var(--butter); }
+.tone-mint .accent { color: var(--mint); }
+.tone-coral .accent { color: var(--coral); }
+
+/* An arrow between two values ("$2 -> $4"), drawn so every font shows it the same way. */
+.arrow { display: inline-block; position: relative; width: 0.62em; height: 0.045em; min-height: 3px; margin: 0 0.22em;
+  vertical-align: 0.34em; background: currentColor; }
+.arrow::after { content: ''; position: absolute; right: 0; top: 50%; width: 0.16em; height: 0.16em;
+  border-top: 0.045em solid currentColor; border-right: 0.045em solid currentColor; transform: translate(0, -50%) rotate(45deg);
+  transform-origin: 50% 50%; }
+
+/* Versus rows: bordered dark rows, the name on the left and a solid chip on the right (butter, mint, lilac in turn). */
+.versus .rows { gap: 16px; }
+.versus .row { position: relative; align-items: center; border: none; padding: 14px 20px 14px 26px; min-height: 0; }
+.versus .row::before { content: ''; position: absolute; inset: 0; border: 2px solid var(--cream); opacity: 0.16; pointer-events: none; }
+.versus .row .name { font-family: var(--body); font-weight: 700; color: var(--cream); line-height: 1.1; }
+.versus .row .value { font-family: var(--mono); font-weight: 500; color: var(--ink); background: var(--butter); line-height: 1.15;
+  padding: 0.12em 0.32em; -webkit-text-stroke: 0.035em var(--ink); }
+.versus .row:nth-child(3n+2) .value { background: var(--mint); }
+.versus .row:nth-child(3n+3) .value { background: var(--lilac); }
+.versus .row .value:empty { display: none; }
+.versus .row:has(.value:empty) { justify-content: center; }
+.versus .row:has(.value:empty) .name { font-family: var(--mono); font-weight: 400; font-size: 0.66em; text-align: center; opacity: 0.8; }
+
+/* Number rows: a sans label with a quiet line under it, giant condensed numerals on the right, hairlines between. */
+.numbers .rows { gap: 0; }
+.numbers .row { position: relative; align-items: center; border: none; padding: 0; }
+.numbers .row::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--cream); opacity: 0.2; }
+.numbers .row .name { display: flex; flex-direction: column; gap: 0.2em; font-family: var(--body); font-weight: 600; line-height: 1.1; }
+.numbers .row .name .note { font-weight: 400; font-size: 0.64em; opacity: 0.78; }
+.numbers .row .value { font-family: var(--heading); line-height: 1.12; color: var(--butter); }
+.tone-mint .numbers .row .value { color: var(--mint); }
+.tone-coral .numbers .row .value { color: var(--coral); }
