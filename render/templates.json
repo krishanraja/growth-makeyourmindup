@@ -274,7 +274,8 @@
       "fields": {
         "label": "text",
         "setup": "text",
-        "punchline": "text"
+        "punchline": "text",
+        "beat": "text"
       },
       "required": [
         "label",
@@ -285,7 +286,8 @@
         "label": "series.label",
         "setup": "The everyday moment everyone at work knows.",
         "punchline": "The kind twist at the end."
-      }
+      },
+      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly."
     },
     "profile-art": {
       "file": "templates/profile-art.html",

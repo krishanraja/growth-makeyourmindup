@@ -6,13 +6,14 @@
   :root { --w: 1080px; --h: 1920px; --top: 250px; --bottom: 340px; }
   .grow { margin: 56px 0 56px; }
   .rule { margin: 56px 0 48px; }
+  .beat-setup .punch { visibility: hidden; }
 </style></head>
-<body><div class="frame">
+<body class="beat-{{beat}}"><div class="frame">
   <div class="label">{{label}}</div>
   <div class="grow" data-fit="setup and punchline">
     <p class="body" data-max="72" data-min="44">{{setup}}</p>
     <div class="rule"></div>
-    <p class="heading butter" data-max="120" data-min="60">{{punchline}}</p>
+    <p class="heading butter punch" data-max="120" data-min="60">{{punchline}}</p>
   </div>
   <div class="footer"><span>makeyourmindup.ai</span></div>
 </div><script src="../fit.js"></script></body></html>

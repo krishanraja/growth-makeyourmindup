@@ -5,7 +5,8 @@
 //
 // JOBS.json is a list of {template, fields, out}: template is an id in render/templates.json,
 // fields fills its placeholders, out is the PNG path (relative paths resolve against --out-dir,
-// or the folder JOBS.json is in). A job may instead be {video: [png, ...], seconds, out}: a
+// or the folder JOBS.json is in). A job may instead be {video: [png, ...], seconds, out}, seconds one
+// number or one per frame: a
 // slideshow of already rendered PNGs, padded onto a 1080x1920 ink frame, encoded with ffmpeg
 // bit-exactly (YouTube takes video, never a still). Video jobs run after every PNG job.
 //
@@ -152,11 +153,13 @@ async function renderOne(browser, manifest, job) {
 
 function renderVideo(job, base) {
   const frames = job.video.map((f) => path.resolve(base, f));
-  const seconds = Number(job.seconds || 3);
-  if (!frames.length || !(seconds > 0)) throw new Error(job.out + ': a video job needs frames and seconds');
+  const seconds = Array.isArray(job.seconds) ? job.seconds.map(Number) : frames.map(() => Number(job.seconds || 3));
+  if (!frames.length || seconds.length !== frames.length || !seconds.every((s) => s > 0)) {
+    throw new Error(job.out + ': a video job needs frames and a positive seconds for each (one number or a list)');
+  }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mocks-'));
   try {
-    const list = frames.map((f) => "file '" + f.replace(/'/g, "'\\''") + "'\nduration " + seconds).join('\n')
+    const list = frames.map((f, i) => "file '" + f.replace(/'/g, "'\\''") + "'\nduration " + seconds[i]).join('\n')
       + "\nfile '" + frames[frames.length - 1].replace(/'/g, "'\\''") + "'\n";
     fs.writeFileSync(path.join(dir, 'list.txt'), list);
     const tmp = path.join(dir, 'out.mp4');
@@ -222,7 +225,7 @@ async function main(argv) {
     fs.mkdirSync(path.dirname(out), { recursive: true });
     fs.writeFileSync(out, mp4);
     results.push({ out: job.out, template: 'video', width: 1080, height: 1920, bytes: mp4.length, sha256: digest,
-      frames: job.video, seconds: Number(job.seconds || 3) });
+      frames: job.video, seconds: job.seconds });
   }
   const text = JSON.stringify(results, null, 2) + '\n';
   if (args.manifest) fs.writeFileSync(args.manifest, text);
