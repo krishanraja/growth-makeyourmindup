@@ -1,0 +1,51 @@
+/* The receipt tape: one cream paper tape fed out of a dark till slot, with a torn foot.
+   Kit tokens only: the eight kit colours as var(--...), the kit fonts as var(--...), the house wordmark. */
+
+html, body { background: var(--ink-deep); }
+
+/* The till slot the tape comes out of. */
+.slot { position: relative; z-index: 2; flex: none; height: 44px; margin: 0 -28px; background: var(--ink);
+  border: 2px solid var(--green); border-radius: 10px; }
+.slot::after { content: ''; position: absolute; left: 28px; right: 28px; top: 19px; height: 6px;
+  background: var(--ink-deep); border-radius: 3px; }
+
+/* The tape itself: cream paper, ink type, a zigzag torn foot drawn with two gradients. */
+.tape { position: relative; z-index: 1; flex: 1 1 auto; min-height: 0; margin: -22px 0 40px; padding: 72px 64px 56px;
+  background: var(--cream); color: var(--ink); display: flex; flex-direction: column; }
+.tape::after { content: ''; position: absolute; left: 0; right: 0; bottom: -26px; height: 26px;
+  background: linear-gradient(135deg, var(--cream) 50%, transparent 50%) 0 0 / 26px 26px repeat-x,
+              linear-gradient(225deg, var(--cream) 50%, transparent 50%) 0 0 / 26px 26px repeat-x; }
+
+/* Printed type on the tape. */
+.till { font-family: var(--mono); font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink); text-align: center; flex: none; }
+.till .quiet { opacity: 0.6; }
+.cut { flex: none; height: 0; border-top: 3px dashed var(--ink); opacity: 0.35; margin: 34px 0; }
+.tape .headline { color: var(--ink); text-align: center; }
+.tape .accent, .tape.tone-green .accent { color: var(--green); }
+.tape.tone-coral .accent { color: var(--coral); }
+.tape .body { color: var(--ink); text-align: center; }
+
+/* Line items: the name, a dotted leader, the amount. */
+.items .rows { gap: 26px; }
+.items .row { align-items: baseline; gap: 0; border: none; padding: 0; }
+.items .row .name { font-family: var(--mono); font-weight: 500; font-size: 1em; line-height: 1.25; color: var(--ink);
+  text-transform: uppercase; letter-spacing: 0.04em; flex: 0 1 auto; }
+.items .row::after { content: ''; order: 1; flex: 1 1 40px; margin: 0 18px; border-bottom: 4px dotted var(--ink);
+  opacity: 0.4; align-self: center; }
+.items .row .value { order: 2; font-family: var(--mono); font-weight: 500; font-size: 1em; line-height: 1.25;
+  color: var(--ink); }
+.total { display: flex; justify-content: space-between; align-items: baseline; gap: 32px; flex: none; }
+.total .what { font-family: var(--mono); font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; }
+.total .sum { font-family: var(--heading); line-height: 1; color: var(--ink); }
+
+/* The stamp across the finished receipt. */
+.stamp { position: absolute; right: 56px; bottom: 120px; transform: rotate(-9deg); padding: 14px 30px;
+  border: 7px solid var(--coral); border-radius: 14px; color: var(--coral); font-family: var(--heading);
+  line-height: 1; text-transform: uppercase; opacity: 0.92; }
+
+/* The line under the tape, on the dark ground. */
+.under { flex: none; display: flex; justify-content: space-between; align-items: baseline; gap: 32px;
+  font-family: var(--mono); font-size: 28px; color: var(--cream); }
+.under span:first-child { opacity: 0.66; }
+.under .page { color: var(--mint); }

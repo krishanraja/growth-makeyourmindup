@@ -21,8 +21,9 @@ lane"). Content-engine keeps every other format and all production standards.
 [docs/LANES.md](docs/LANES.md) says, in plain words, what runs on its own
 (L0 GitHub Actions), what waits for one press in Control Center (L2) and
 what waits for Krish's hands (L3: LinkedIn, the Buffer plan, one-time set-up
-in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs six
-workflows: control-center, release, measure, keys, handoff and check. There
+in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs seven
+workflows: control-center, release, measure, keys, handoff, artdirect, maker
+([docs/MAKER.md](docs/MAKER.md)) and check. There
 are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct
 2026): a new schedule is a GitHub Actions job. Making (Canva assets, words,
 Buffer drafts) is done by sessions and the nine automations on Krish's PC

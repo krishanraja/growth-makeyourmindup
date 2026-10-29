@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "synthetic-receipt-tape",
+  "about": "A synthetic example piece kit, invented so the piece-kit guards run on something real (render/KIT.md, Piece kits). Its idea is in idea.md. The examples hold placeholder text only.",
+  "templates": {
+    "tape-cover": {
+      "file": "templates/tape-cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "accent": "text",
+        "tone": "text",
+        "page": "text"
+      },
+      "required": ["label", "headline"],
+      "choices": {"tone": ["green", "coral"]},
+      "example": {
+        "label": "series.label",
+        "headline": "Who gets paid",
+        "accent": "for one made-up answer",
+        "page": "1 of 3"
+      },
+      "note": "headline is printed in ink on the tape, accent in green unless tone says coral."
+    },
+    "tape-items": {
+      "file": "templates/tape-items.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "heading": "text",
+        "rows": "rows",
+        "total_label": "text",
+        "total": "text",
+        "page": "text"
+      },
+      "required": ["label", "heading", "rows", "total_label", "total"],
+      "example": {
+        "label": "series.label",
+        "heading": "Line by line",
+        "rows": [
+          ["The first payee", "$0.40"],
+          ["The second payee", "$0.25"],
+          ["The third payee", "$0.10"]
+        ],
+        "total_label": "Total",
+        "total": "$0.75",
+        "page": "2 of 3"
+      },
+      "note": "rows are [name, amount]: the name, a dotted leader, the amount. Three to five rows read best."
+    },
+    "tape-receipt-vertical": {
+      "file": "templates/tape-receipt-vertical.html",
+      "width": 1080,
+      "height": 1920,
+      "safe": {"top": 250, "bottom": 340},
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "rows": "rows",
+        "total_label": "text",
+        "total": "text",
+        "stamp": "text",
+        "page": "text"
+      },
+      "required": ["label", "headline", "rows", "total_label", "total"],
+      "example": {
+        "label": "series.label",
+        "headline": "The whole receipt",
+        "rows": [
+          ["The first payee", "$0.40"],
+          ["The second payee", "$0.25"],
+          ["The third payee", "$0.10"]
+        ],
+        "total_label": "Total",
+        "total": "$0.75",
+        "stamp": "Paid",
+        "page": "3 of 3"
+      },
+      "note": "the stamp is one short word across the finished receipt, in coral; leave it empty and no stamp is drawn."
+    }
+  }
+}

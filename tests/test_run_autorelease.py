@@ -60,6 +60,7 @@ class BufferStandIn:
         self.posts, self.media, self.calls = {}, {}, []
         self.fail_next = []  # HTTP statuses to answer before the real reply
         self.refuse_edit = None
+        self.refuse_create = None
         self.on_schedule = None  # a callable that changes the stored post as Buffer saves the edit
         stand = self
 
@@ -103,6 +104,16 @@ class BufferStandIn:
                     nodes = [p for p in stand.posts.values() if not wanted or p['status'] in wanted]
                     return self.reply(200, {'data': {'posts': {'edges': [{'node': n} for n in nodes],
                                                                'pageInfo': {'hasNextPage': False, 'endCursor': None}}}})
+                if op == 'CreateDraft':
+                    # The maker's draft save (engine/run/buffer_drafts.py): a new post on the pinned channel.
+                    data = variables['input']
+                    if stand.refuse_create:
+                        return self.reply(200, {'data': {'createPost': {'__typename': stand.refuse_create,
+                                                                        'message': 'x'}}})
+                    post = created_post(stand, data)
+                    stand.posts[post['id']] = post
+                    return self.reply(200, {'data': {'createPost': {'__typename': 'PostActionSuccess',
+                                                                    'post': copy.deepcopy(post)}}})
                 if op == 'ScheduleDraft':
                     data = variables['input']
                     if stand.refuse_edit:
@@ -125,6 +136,7 @@ class BufferStandIn:
     def reset(self):
         self.posts, self.media, self.calls, self.fail_next, self.refuse_edit = {}, {}, [], [], None
         self.on_schedule = None
+        self.refuse_create = None
 
     def client(self, key=BKEY):
         return Buffer(key, self.base, timeout=5, loopback_for_tests=True)
@@ -142,6 +154,37 @@ class BufferStandIn:
 
     def touched(self, post_id):
         return [c for c in self.calls if json.dumps(c.get('variables', {})).find(post_id) >= 0]
+
+
+def created_post(stand, data):
+    """The post Buffer stores for a createPost, as get_post reads it back (synthetic, shaped as the live one)."""
+    channel = next(c for c, i in BUFFER_CHANNEL_ID.items() if i == data['channelId'])
+    service = CHANNELS[channel][0]
+    assets = []
+    for asset in data.get('assets') or []:
+        (kind, body), = asset.items()
+        inner = {'altText': None, 'userTags': None} if kind == 'image' else {'title': None, 'thumbnailOffset': None}
+        assets.append({'type': kind, 'source': body['url'], 'mimeType': 'image/png' if kind == 'image' else 'video/mp4',
+                       kind: inner})
+    given = (data.get('metadata') or {}).get(service) or {}
+    metadata = {
+        'instagram': lambda: {'__typename': 'InstagramPostMetadata', 'type': given.get('type'),
+                              'shouldShareToFeed': given.get('shouldShareToFeed'), 'isAiGenerated': None,
+                              'firstComment': None, 'link': None, 'stickerFields': None, 'geolocation': None},
+        'youtube': lambda: {'__typename': 'YoutubePostMetadata', 'type': None, 'title': given.get('title'),
+                            'category': {'categoryId': given.get('categoryId')}, 'privacy': given.get('privacy'),
+                            'madeForKids': given.get('madeForKids'), 'notifySubscribers': None, 'embeddable': None,
+                            'license': None, 'isAiGenerated': None},
+        'tiktok': lambda: {'__typename': 'TiktokPostMetadata', 'type': None, 'isAiGenerated': None, 'title': None},
+        'twitter': lambda: {'__typename': 'TwitterPostMetadata', 'type': 'post', 'isAiGenerated': False,
+                            'threadCount': 0, 'retweet': None},
+    }.get(service, lambda: None)()
+    number = len([p for p in stand.posts if p.startswith('dddddddddddddddddddd')])
+    post_id = 'dddddddddddddddddddd%04d' % number
+    return {'id': post_id, 'status': 'draft' if data.get('saveToDraft') is True else 'scheduled',
+            'dueAt': None if data.get('saveToDraft') is True else data.get('dueAt'), 'text': data['text'],
+            'channelId': data['channelId'], 'channelService': service, 'schedulingType': data.get('schedulingType'),
+            'via': 'api', 'channel': account(channel, data['channelId']), 'assets': assets, 'metadata': metadata}
 
 
 def fetch(url):
