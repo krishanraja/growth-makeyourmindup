@@ -111,6 +111,13 @@ release session then plans up to 16 concept posts a day on these channels plus
 their readbacks (`docs/RUN.md`, Budgets). Scheduling stays with the one
 release executor; nothing here calls Buffer.
 
+On GitHub Actions (L0) the plan goes to Control Center through the handoff
+(`growth-mix-plan`), in parts of at most 8,000 characters when a full week is
+longer, and `engine/run/autorelease.py` reads his decision and the plan back
+from Control Center by digest each run, with the same rules
+(`docs/CONCEPT-MANIFEST.md`, On GitHub Actions). Built and tested, not yet
+activated: no post has gone out this way.
+
 ## Learning
 
 Each post's What-Works verdict lands at `verdict/<slot>.json` in its run

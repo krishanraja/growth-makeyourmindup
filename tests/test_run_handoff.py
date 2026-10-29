@@ -567,7 +567,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(set(re.findall(r'secrets\.([A-Za-z0-9_]+)', self.text)),
                          {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY'})
         self.assertEqual(set(re.findall(r'vars\.([A-Za-z0-9_]+)', self.text)), {'CONTROL_CENTER_URL'})
-        for needle in ('repository_dispatch', 'types: [growth-go-live-manifest, growth-week-packet, growth-make-piece]',
+        for needle in ('repository_dispatch', 'types: [growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan]',
                        'workflow_dispatch', 'contents: read', 'group: handoff', 'cancel-in-progress: false',
                        'timeout-minutes: 10', "python-version: '3.12'", 'actions/checkout@v7.0.1',
                        'actions/setup-python@v7.0.0', 'persist-credentials: false',

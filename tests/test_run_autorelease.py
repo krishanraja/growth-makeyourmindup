@@ -400,7 +400,7 @@ class AutoreleaseTests(unittest.TestCase):
         self.cc.decisions = [Fixture.decision(self.fix.plan, '2026-11-01T12:00:00Z'),
                              Fixture.decision(self.fix.golive, '2026-11-03T14:00:00Z', payload_sha256='e' * 64)]
         summary, _ = self.run_once()
-        self.assertEqual(summary['golives'], {'releasable': 0, 'held': {'golive_report_missing': 1}})
+        self.assertEqual(summary['golives'], {'releasable': 0, 'held': {'golive_report_missing': 1}, 'claimed': 0})
         self.assertEqual(self.buf.mutations(), [])
         # A synthetic report never releases.
         self.cc.decisions[-1] = Fixture.decision(self.fix.golive, '2026-11-03T14:00:00Z')
@@ -626,7 +626,11 @@ class AutoreleaseTests(unittest.TestCase):
         summary, _ = self.run_once()
         self.assertEqual(summary['golives']['held'], {'golive_ended_unread': 30})
         reads = [c for c in self.cc.calls if c['method'] == 'GET' and '/reports/' in c['path']]
-        self.assertEqual(len(reads), 2)  # the new go-live and its plan
+        self.assertEqual(len([c for c in reads if '2026-W43' in c['path']]), 0)  # no ended go-live is read
+        # The new go-live and its plan; its claim, looked up first and read back once reported; today's
+        # derived index.
+        self.assertEqual(len([c for c in reads if '%3Agolive%3A' in c['path'] or '%3Aplan%3A' in c['path']]), 2)
+        self.assertEqual(len(reads), 5, [c['path'] for c in reads])
         self.assertEqual(summary['slots']['scheduled'], 2)
 
     # S5: an impossible date ------------------------------------------------------------------

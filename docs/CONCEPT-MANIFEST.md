@@ -3,10 +3,13 @@
 Ruling (Krish, 2026-10-29): approval moves to the idea and the mock on
 Instagram, YouTube, TikTok and X, within three or four posts a day each
 (`CHANGES.md`, R101, R104). This page names the exact fields a release
-executor (the one scheduler, `engine/run/autorelease.py` when it lands) reads
-to post from an approved concept. `engine/run/release.py` enforces every rule
-below today; an executor that schedules must enforce them too, and never
-schedules anything `release plan` would hold.
+executor reads to post from an approved concept. The one scheduler,
+`engine/run/autorelease.py`, has landed (L0, `release.yml`); on GitHub
+Actions it reads its authority only from Control Center (below, "On GitHub
+Actions"), never from a local file, a dispatch payload or a PC `.scratch`.
+`engine/run/release.py` holds every rule below as functions, and
+autorelease calls them rather than copying them, so it never schedules
+anything `release plan` would hold.
 
 ## Where the authority comes from
 
@@ -110,3 +113,39 @@ Each derived post also needs, at release:
 
 A slot with no `concept_id` still needs its digest in `slots` from the week's
 go-live decision, exactly as before.
+
+## On GitHub Actions
+
+The runner has no `decision.json`: autorelease derives the same concept
+part from Control Center readbacks, bound by digest, every run.
+
+- The plan. The handoff (`growth-mix-plan`, `engine/run/handoff.py`)
+  checks the plan file's closed shape, recomputes every `concept_sha256`
+  and the plan's words, and reports the plan proposal in its own report
+  (`<proposal_id>:<payload_sha256[:12]>`) with its concepts beside it. A
+  week over 8,000 characters is split into parts in order: part 1 is
+  `makeyourmindup:mix:<ISO week>` with every plan line, then `:p2`, `:p3`,
+  each repeating the terms; one ask at a time. A version record
+  (`makeyourmindup:mixplan:<ISO week>:<n>`) names the parts in force; the
+  highest n wins, so a yes on an earlier digest is `stale_approval`.
+- The readback. autorelease reads his decisions (every page, decline
+  first), each part by its digest, checks each part's concepts against its
+  words (`engine/run/decision.py` `part_errors`), and judges each part with
+  `judge`, the loop's own rule (`cc_readback`). His no on any part stops
+  every concept of the week; a concept is approved once part 1 and its own
+  part are. `concept_part` then gives `concepts`, `concept_manifest`,
+  `stopped_concepts`, `concept_hold` and `concept_daily_caps`, as `apply`
+  writes them.
+- A derived slot. The go-live manifest dispatch carries it with its
+  `concept_id` and `review`; the handoff rebuilds it from its Buffer draft
+  and reports the review at `makeyourmindup:review:<payload_sha256[:12]>`
+  (the full sha in the record), listed in that New York day's index
+  (`makeyourmindup:derived:<day>:<n>`). It is never a go-live.
+- The checks, in order: a `concept_hold` or an unresolved stop holds every
+  derived slot loudly; then on the draft read fresh, release's own
+  `concepts.authority` (placement, mock files, the claim, not stopped),
+  `concept_post_hold` (the review at the rebuilt digest, judged by
+  `spec.review_reason`; the daily cap counted from every post scheduled on
+  the channel that New York day in Buffer, plus each post he signed for it),
+  copy lint, share asks, the route and the channel lock; then the draft
+  digest, meta, format shape and the 5 to 90 minute window.

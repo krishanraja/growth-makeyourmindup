@@ -503,7 +503,10 @@ always held. Reports carry no `target`, so a go-live built with one is held.
 once by `proposal_id` in `.scratch/cc/golive-ledger.json` (`write_json` under
 `locked`) before anything acts, with its stops and unresolved check-ins. The
 caller passes every decision on each open plan, not only the latest read. The
-ledger is local, so the step never runs on the GitHub runner.
+ledger is local on the PC. On the GitHub runner, L0 autorelease seeds it
+each run from the claims it reported to Control Center (one per go-live
+whose every line is done, `makeyourmindup:claimed:<32 hex>`), so a go-live
+acts once across clean runners and is only checked after.
 
 **Objective.** Substack scope `publication` is all sources and wins;
 `source:<name>` rows are added per source and summed, but only when a

@@ -243,18 +243,31 @@ def mix_proposal(root, now):
 
     `growth.py mix plan --out .scratch/mix/plan-<Monday>.json` writes it in the
     Sunday report's run; the report carries its plan proposal behind strategy.
-    No file means no ask; a file whose proposal could not be built is a hold."""
+    No file means no ask; a file whose proposal could not be built is a hold.
+    The plan itself is judged by plan_proposals, which the L0 handoff calls too
+    with a plan it was sent (engine/run/handoff.py, growth-mix-plan)."""
     path = Path(root) / MIX_DIR / ('plan-' + next_monday(now).isoformat() + '.json')
     if not path.exists():
         return None, None
     try:
-        mix = read_json(path)
-        item = mix.get('proposal')
-        if not isinstance(item, dict) or item.get('stage') != 'plan' or item.get('wall') != 'strategy':
-            return None, {'reason': "Next week's mix has no plan proposal", 'detail': str(mix.get('proposal_hold'))[:900]}
-        return item, None
+        items, hold = plan_proposals(read_json(path))
+        return (items[0] if items else None), hold
     except (ValueError, OSError, AttributeError) as exc:
         return None, {'reason': "Next week's mix could not be read", 'detail': str(exc)[:900]}
+
+
+def plan_proposals(mix):
+    """([proposal], hold) for one week's mix doc: its plan proposal, then any later parts in order.
+
+    Each must be a plan behind strategy, or nothing is asked and the hold says why.
+    The local loop reads a plan file and asks its one proposal; the L0 handoff
+    rebuilds the parts of a plan it was sent (mix['parts'], engine/mix.py
+    part_proposals) and asks them all, one at a time in order."""
+    items = list(mix.get('parts') or []) or [mix.get('proposal')]
+    if not items or any(not isinstance(item, dict) or item.get('stage') != 'plan' or item.get('wall') != 'strategy'
+                        for item in items):
+        return [], {'reason': "Next week's mix has no plan proposal", 'detail': str(mix.get('proposal_hold'))[:900]}
+    return items, None
 
 
 def experiment_proposals(root):

@@ -350,8 +350,8 @@ def _caps_line(mix, channels):
     return ', '.join(CHANNEL_NAMES[c] + ' ' + str(ceiling(mix, c)) for c in channels)
 
 
-def payload_text(mix, cfg):
-    """The exact words Krish approves. Every sentence in it is what release does, no more (R101, R103)."""
+def _sections(mix, cfg):
+    """(head, concept lines, tail) of the plan text Krish reads: the plan lines, one line per concept, the walls."""
     channels = cfg['channels']
     ready = {c['concept_id'] for c in mix['concepts'] if c['ready']}
     waiting = {c['concept_id'] for c in mix['concepts'] if not c['ready']}
@@ -400,22 +400,96 @@ def payload_text(mix, cfg):
     lines.append('Day by day on ' + CHANNEL_NAMES[channels[0]] + ': '
                  + '; '.join(d[:3] + ' ' + ', '.join(v) for d, v in order.items()) + '.')
     lines.append('')
-    lines.append('Concepts. Your yes approves each ready concept below at its hash: its idea, its claim, the channels'
-                 ' named and its mock files. A post made from it may then go out on those channels with no further'
-                 ' ask, only in its format above, with only its mock files and its claim word for word. Each post'
-                 ' still needs a passing review of its own exact words and room under its channel\'s daily cap when it'
-                 ' goes out (at most ' + _caps_line(mix, channels) + ' a day), and must pass copy lint, the share rule, the channel lock and, on a route not yet'
-                 ' verified, the one capability check; a post that fails any of these is held, never posted. Delete'
-                 ' or change a concept\'s line and that concept and every post from it stop. Change any other line and'
-                 ' no concept is approved until a plan carrying your change is approved. Your no stops them all.'
-                 ' LinkedIn stays your click.')
-    for c in mix['concepts']:
-        lines.append(concept_line(c))
+    lines.append(_terms(mix, channels))
+    tail = []
     if mix['shortfalls']:
-        lines.append('Empty slots: ' + str(len(mix['shortfalls'])) + ' (missing ideas or open past pieces), never filled'
-                     ' with unapproved creative.')
-    lines.append('Walls: spend 0; no comments, follows or messages.')
-    return '\n'.join(lines)
+        tail.append('Empty slots: ' + str(len(mix['shortfalls'])) + ' (missing ideas or open past pieces), never filled'
+                    ' with unapproved creative.')
+    tail.append(WALLS_LINE)
+    return lines, [(c, concept_line(c)) for c in mix['concepts']], tail
+
+
+WALLS_LINE = 'Walls: spend 0; no comments, follows or messages.'
+
+
+def _terms(mix, channels):
+    return ('Concepts. Your yes approves each ready concept below at its hash: its idea, its claim, the channels'
+            ' named and its mock files. A post made from it may then go out on those channels with no further'
+            ' ask, only in its format above, with only its mock files and its claim word for word. Each post'
+            ' still needs a passing review of its own exact words and room under its channel\'s daily cap when it'
+            ' goes out (at most ' + _caps_line(mix, channels) + ' a day), and must pass copy lint, the share rule, the channel lock and, on a route not yet'
+            ' verified, the one capability check; a post that fails any of these is held, never posted. Delete'
+            ' or change a concept\'s line and that concept and every post from it stop. Change any other line and'
+            ' no concept is approved until a plan carrying your change is approved. Your no stops them all.'
+            ' LinkedIn stays your click.')
+
+
+def payload_text(mix, cfg):
+    """The exact words Krish approves. Every sentence in it is what release does, no more (R101, R103)."""
+    head, items, tail = _sections(mix, cfg)
+    return '\n'.join(head + [line for _, line in items] + tail)
+
+
+# A week too long for one approval -------------------------------------------------
+
+PAYLOAD_CAP = 8000  # engine/control_center.py proposal: an exact_payload over it is held, never cut
+EVIDENCE_CAP = 12  # the report schema's evidence items a proposal carries: one mock view link per concept
+
+
+def part_id(week_of, number):
+    """Part 1 is the week's plan proposal itself; later parts add :p<n>, so a stop on part 1 stops them all."""
+    return proposal_id(week_of) + ('' if number == 1 else ':p' + str(number))
+
+
+def _part_head(mix, number, parts):
+    return ['Part ' + str(number) + ' of ' + str(parts) + ' of the mix for the week of ' + mix['week_of']
+            + ' (New York): more concepts under the plan in part 1, on its terms as written there.']
+
+
+def _part_note(parts):
+    return ('This week comes in ' + str(parts) + ' parts, one ask at a time, in order. A concept is approved only'
+            ' once part 1 and its own part are; your no on any part stops every concept of the week.')
+
+
+def payload_parts(mix, cfg, fits=None):
+    """[(exact words, concepts)] for each part of the week, in order, each at most PAYLOAD_CAP characters.
+
+    One part when the whole plan fits (then its words are payload_text exactly);
+    otherwise part 1 carries every plan line and the concepts that fit, and each
+    later part repeats the terms and carries more concept lines, so one press never
+    reads past 8,000 characters (docs/MIX.md). fits(concepts) is the caller's own
+    bound on a part (the record that carries its concepts, its evidence). Raises
+    ValueError when one concept cannot fit a part on its own."""
+    fits = fits or (lambda group: True)
+    head, items, tail = _sections(mix, cfg)
+    whole = '\n'.join(head + [line for _, line in items] + tail)
+    concepts = [c for c, _ in items]
+    if len(whole) <= PAYLOAD_CAP and fits(concepts):
+        return [(whole, concepts)]
+    terms = _terms(mix, cfg['channels'])
+    # Worst-case numbering, so a part that fits here still fits once numbered.
+    first = head + [_part_note(99)]
+    later = _part_head(mix, 99, 99) + ['', terms]
+    groups, current = [], []
+    for concept, line in items:
+        frame = first if not groups else later
+        ends = tail if not groups else [WALLS_LINE]
+        if len('\n'.join(frame + [line] + ends)) > PAYLOAD_CAP or not fits([concept]):
+            raise ValueError('concept ' + concept['concept_id'] + ' does not fit a part of its own')
+        trial = current + [(concept, line)]
+        if current and (len('\n'.join(frame + [x for _, x in trial] + ends)) > PAYLOAD_CAP
+                        or not fits([c for c, _ in trial])):
+            groups.append(current)
+            current = [(concept, line)]
+        else:
+            current = trial
+    groups.append(current)
+    parts, total = [], len(groups)
+    for number, group in enumerate(groups, 1):
+        frame = head + [_part_note(total)] if number == 1 else _part_head(mix, number, total) + ['', terms]
+        ends = tail if number == 1 else [WALLS_LINE]
+        parts.append(('\n'.join(frame + [line for _, line in group] + ends), [c for c, _ in group]))
+    return parts
 
 
 def plan_proposal(mix, cfg):
@@ -428,6 +502,34 @@ def plan_proposal(mix, cfg):
                     + _caps_line(mix, cfg['channels']) + ' a day.',
                     'advice', 'strategy', 'plan_approved', exact_payload=text, reference='docs/MIX.md',
                     stage='plan')
+
+
+def part_proposals(mix, cfg, fits=None, links=None):
+    """([proposal], [concepts]) for each part of the week in order (payload_parts), each behind strategy at stage plan.
+
+    One part is plan_proposal's own words. links maps concept_id to its mock view
+    links (https); a part's evidence carries the first link of each of its concepts,
+    at most EVIDENCE_CAP, so he can open every mock he approves from the ask."""
+    links = links or {}
+    linked = lambda group: sum(1 for c in group if links.get(c['concept_id'])) <= EVIDENCE_CAP
+    parts = payload_parts(mix, cfg, lambda group: linked(group) and (fits is None or fits(group)))
+    out = []
+    for number, (text, group) in enumerate(parts, 1):
+        ready_count = sum(1 for c in group if c['ready'])
+        suffix = '' if len(parts) == 1 else ' (part ' + str(number) + ' of ' + str(len(parts)) + ')'
+        evidence = [{'label': 'Mock for ' + c['concept_id'], 'url': links[c['concept_id']][0]}
+                    for c in group if links.get(c['concept_id'])]
+        out.append(proposal(part_id(mix['week_of'], number),
+                            'Approve the week of ' + mix['week_of'] + ': ' + str(ready_count) + ' ideas and their mocks'
+                            + suffix,
+                            'One press approves the ideas and mocks for the week; posts made exactly from them may then go'
+                            ' out on Instagram, YouTube, TikTok and X, each still reviewed, at most '
+                            + _caps_line(mix, cfg['channels']) + ' a day.'
+                            + (' This week comes in ' + str(len(parts)) + ' parts, one at a time.' if len(parts) > 1
+                               else ''),
+                            'advice', 'strategy', 'plan_approved', exact_payload=text, reference='docs/MIX.md',
+                            stage='plan', evidence=evidence))
+    return out, [group for _, group in parts]
 
 
 def spec_concepts(mix):
@@ -480,8 +582,13 @@ def amended_out(mix, approved_text):
 
 def plan_lines_changed(mix, cfg, approved_text):
     """How many of the plan's own lines (not concept lines) his version changed or dropped."""
+    return lines_changed(payload_text(mix, cfg), approved_text)
+
+
+def lines_changed(engine_text, approved_text):
+    """How many of the engine's own non-concept lines his version changed or dropped (any part's words)."""
     kept = {_line(line) for line in str(approved_text).split('\n')}
-    ours = [line for line in payload_text(mix, cfg).split('\n') if line.strip() and not line.startswith('- ')]
+    ours = [line for line in str(engine_text).split('\n') if line.strip() and not line.startswith('- ')]
     return sum(1 for line in ours if _line(line) not in kept)
 
 

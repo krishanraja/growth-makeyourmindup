@@ -53,9 +53,24 @@ Center and Buffer and prints the plan as counts, and sends no mutation.
 5. Anything else holds with a reason code. Nothing is retried blindly and
    nothing without a signed decision is touched. LinkedIn and every
    krish_click slot stay drafts for Krish. A post already scheduled or sent in
-   the signed words counts as done: Buffer is the ledger, so a second run is
-   a no-op and no local state is needed (the claim ledger lives in a
-   throwaway folder unless --state names one).
+   the signed words counts as done, so a second run is a no-op.
+6. The go-live ledger (F114). The claim ledger cc_loop.claim_golives reads
+   lives in a throwaway folder unless --state names one, so it is seeded
+   each run from Control Center (seed_claims): once every line a go-live
+   signs is done, the run reports a claim (record_claim) and every later run
+   only checks that go-live's posts, never schedules one again. A go-live he
+   approved that names lines on more than one New York day holds as
+   `golive_spans_days` (R94, F111).
+7. Posts made from a concept he approved in the week's mix plan (Ruling,
+   Krish, 2026-10-29; docs/CONCEPT-MANIFEST.md, On GitHub Actions). Each one
+   the handoff indexed for today or the window is read back by its exact
+   payload_sha256 (its review record), and its week's authority by digest
+   from Control Center (week_state: the plan in force, his decisions, each
+   part's concepts, through engine/run/decision.py cc_readback and
+   concept_part). Then Run.derived calls release's own checks and schedules
+   it like a go-live line. A concept_hold or an unresolved stop holds every
+   such post loudly; a post from a plan he declined that is still scheduled
+   is loud as scheduled_after_decline.
 
 Output is one JSON summary of counts and reason codes: never words, URLs,
 ids or keys.
@@ -85,16 +100,21 @@ import re
 import sys
 import tempfile
 
-from engine.cc_loop import claim_golives, decisions_paged, decisions_since
-from engine.control_center import (APPROVED_ORIGIN, RUN_ID, Client, ProtocolError, _decided_at, _latest,
-                                   amendment_ok, report_digest)
+from engine import concepts as concept_rules, intensity, mix as mix_rules
+from engine.cc_loop import (GOLIVE_LEDGER, claim_golives, decisions_paged, decisions_since, golive_ledger,
+                            record_stops, revision, state_path)
+from engine.control_center import (APPROVED_ORIGIN, RUN_ID, TIMEZONE, Client, ProtocolError, _decided_at, _latest,
+                                   action_key, amendment_ok, golive_review, report_digest)
 from engine.buffer_channels import BUFFER_CHANNEL_ID
-from engine.core import calendar_date, instant, read_json, today
+from engine.core import locked, write_json
+from engine.core import calendar_date, instant, ny_time, read_json, today
 from engine.run import buffer_api
 from engine.run.buffer_api import Buffer, BufferAuthError, BufferError, CarryHold
+from engine.run import cc_records, decision as decide, release
 from engine.run.release import (BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, LINE_DOMAIN, account_hold,
                                 format_shape_errors, route_holds, share_ask_errors, slot_digest)
 from engine.run.spec import LENGTH, ny_midnight
+from engine.social import inventory
 
 ROOT = Path(__file__).resolve().parents[2]
 BUFFER_KEY_ENV = 'BUFFER_API_KEY'
@@ -113,6 +133,8 @@ MAX_ALARM_READS = 12
 # Go-live holds that mean the run cannot tell whether a yes still stands (F103): each is
 # loud (exit 1), as is every *too_many_reads, and each lists what is scheduled.
 UNKNOWN_HOLDS = ('stop_unresolved', 'undated_decision')
+# A line in one of these is done: its go-live is claimed once every line it signs is (cc_records.CLAIM).
+DONE = ('scheduled', 'already_scheduled', 'already_sent', 'krish_click', 'unsigned')
 # A go-live's id names its run (engine.run.handoff): the run window bounds every due_at in it.
 GOLIVE_RUN = re.compile(r'^makeyourmindup:(?:golive:)?(\d{4}-W\d{2}|\d{4}-\d{2}-\d{2}):(week|piece|express)(?::|$)')
 SERVICE_CHANNEL = {service: channel for channel, (service, _) in CHANNELS.items()}
@@ -258,6 +280,17 @@ def due_instant(value):
         return instant(value)
     except (ValueError, TypeError, OverflowError):
         return None
+
+
+def spans_days(*manifests):
+    """The New York days the engine lines of these manifests go out on (lines with no time ride along)."""
+    days = set()
+    for lines in manifests:
+        for line in lines.values():
+            due = due_instant(line['due_at']) if line['publish_mode'] == 'engine' and line['due_at'] else None
+            if due is not None:
+                days.add(ny_time(due).date())
+    return sorted(days)
 
 
 def parse_manifest(text, engine=True, bad=None):
@@ -441,15 +474,20 @@ class Run:
         self.loud = []
         self.signed = {}  # buffer_draft_id -> the engine line a standing approval signs for it
         self.alarm_checked = set()
+        self.organizations = []
+        self.caps = {}  # channel -> posts a New York day (release.concept_caps)
+        self.per_day = {}  # (channel, New York day) -> posts scheduled on it, read from Buffer (F117)
 
     def count(self, outcome):
         self.slots[outcome] = self.slots.get(outcome, 0) + 1
+        return outcome
 
     def hold(self, code, loud=False):
         self.count('held')
         self.holds[code] = self.holds.get(code, 0) + 1
         if loud:
             self.loud.append(code)
+        return 'held'
 
     def _matches(self, post, signed):
         """The full rebuilt digest (words, channel, Buffer account, asset bytes and
@@ -493,9 +531,10 @@ class Run:
         except BufferError as error:
             return None, error.code
 
-    def slot(self, signed, engine_line, golive_decision, window=None):
+    def slot(self, signed, engine_line, golive_decision, window=None, acted=False):
         """Release one signed line, or count why not. window is the (start, end) of the
-        run its go-live names: a due_at outside it (his amended time too) holds."""
+        run its go-live names: a due_at outside it (his amended time too) holds. acted: its
+        go-live is claimed (it acted once), so the line is only checked, never scheduled again."""
         if engine_line is None:
             return self.hold('amended_slot_unknown')
         changed = {k for k in LINE_KEYS if signed[k] != engine_line[k]} - AMENDABLE
@@ -553,6 +592,8 @@ class Run:
         if status != 'draft':
             return self.hold({'sending': 'still_sending', 'error': 'buffer_post_error',
                               'needs_approval': 'needs_approval'}.get(status, 'unknown_status'))
+        if acted:
+            return self.hold('acted_once_now_a_draft')  # a go-live acts once: never scheduled a second time
         if due - self.clock() <= DUE_MARGIN:
             return self.hold('due_time_passed', loud=True)
         try:
@@ -592,25 +633,174 @@ class Run:
             return self.hold('readback_mismatch', loud=True)
         return self.count('scheduled')
 
-    def golive(self, action, proposal):
-        """Every line of one approved go-live. Lines he dropped are never touched."""
+    def golive(self, action, proposal, acted=False):
+        """Every line of one approved go-live. Lines he dropped are never touched. Returns each line's
+        outcome: when every one is done (scheduled, already scheduled or sent, his own click, or
+        dropped) the go-live is claimed in Control Center and never acted on again (record_claim)."""
         bad = {}
         try:
             engine_lines = parse_manifest(proposal.get('exact_payload'), engine=True, bad=bad)
             signed_lines = (parse_manifest(action['exact_payload'], engine=False, bad=bad) if action['amended']
                             else engine_lines)
         except ValueError as error:
-            return self.hold(str(error))
+            return [self.hold(str(error))]
+        if len(spans_days(signed_lines)) > 1:
+            # R94 (F111): approving a day authorises exactly that day's posts. A go-live he approved that
+            # names lines on more than one New York day (built before the handoff made one per day) never acts.
+            return [self.hold('golive_spans_days') for _ in signed_lines]
         decision = {'decision': 'approved', 'stage': 'go_live'}
         window = run_window(action['proposal_id'])
+        outcomes = []
         for sid in sorted(bad):
-            self.hold(bad[sid])
+            outcomes.append(self.hold(bad[sid]))
         for sid in sorted(engine_lines):
             if sid not in signed_lines and sid not in bad:
-                self.count('unsigned')
+                outcomes.append(self.count('unsigned'))
         for sid in sorted(signed_lines):
             if sid not in bad:
-                self.slot(signed_lines[sid], engine_lines.get(sid), decision, window)
+                outcomes.append(self.slot(signed_lines[sid], engine_lines.get(sid), decision, window, acted))
+        return outcomes
+
+    def day_count(self, channel, day):
+        """Every post scheduled, sending or sent on this engine's own channel that New York day, read from
+        Buffer once a run, plus each line a standing go-live signs for that day not yet scheduled, so a
+        concept post never takes the place of a post he signed one by one (F117)."""
+        key = (channel, day)
+        if key not in self.per_day:
+            pinned = BUFFER_CHANNEL_ID[channel]
+            start = ny_midnight(calendar_date(day))
+            seen = set()
+            for organization in self.organizations:
+                for post in self.buffer.list_posts(organization, ['scheduled', 'sending', 'sent'], [pinned],
+                                                   start.isoformat()):
+                    due = due_instant(post.get('dueAt')) if isinstance(post, dict) else None
+                    if post.get('channelId') == pinned and due is not None and ny_time(due).date().isoformat() == day:
+                        seen.add(post.get('id'))
+            reserved = {draft for draft, line in self.signed.items() if line['channel'] == channel
+                        and line['due_at'] and due_instant(line['due_at']) is not None
+                        and ny_time(due_instant(line['due_at'])).date().isoformat() == day}
+            self.per_day[key] = len(seen | reserved)
+        return self.per_day
+
+    def derived(self, fields, review, state):
+        """Schedule one post made from a concept Krish approved in the week's mix plan, or count why not.
+
+        fields and review are read back from Control Center by the post's exact payload_sha256
+        (review_of); state is week_state's. In order: the week's holds (loud); then, from the
+        draft read fresh, release's own concept checks (engine/concepts.py authority: placement,
+        mock files, the claim word for word, not stopped; release.concept_post_hold: the review
+        at this payload judged by spec.review_reason, the New York daily cap counted from
+        Buffer; copy lint, share asks, the route, the channel lock), called, never copied; then
+        the draft digest, meta, account, format shape and the 5 to 90 minute window."""
+        if state.get('hold'):
+            return self.hold(state['hold'], loud=state.get('loud', False))
+        due = due_instant(fields['due_at'])
+        if due is None:
+            return self.hold('bad_due_at')
+        if due - self.clock() > SCHEDULE_WINDOW:
+            return self.count('not_yet_due')
+        if fields['channel'] not in concept_rules.CONCEPT_CHANNELS or fields['publish_mode'] != 'engine':
+            return self.hold(concept_rules.DEPARTS)
+        unverified, _, _ = route_holds(fields, instant(self.now).date().isoformat())
+        if unverified:
+            return self.hold('route_not_verified')
+        post, code = self._read(fields['buffer_draft_id'])
+        if code:
+            return self.hold(code)
+        if post.get('via') == 'network':
+            return self.hold('imported_post')
+        if post.get('channelService') != CHANNELS[fields['channel']][0]:
+            return self.hold('draft_on_another_service')
+        if account_hold(fields['channel'], post):
+            return self.hold('wrong_account')
+        status = post.get('status')
+        live = status in ('scheduled', 'sending', 'sent')
+        if state.get('stopped'):
+            # His no on the mix plan: a post from it still scheduled is reported loudly, never unscheduled.
+            return self.hold('scheduled_after_decline', loud=True) if status in ('scheduled', 'sending') \
+                else self.hold(concept_rules.STOPPED)
+        if not live and status != 'draft':
+            return self.hold({'error': 'buffer_post_error', 'needs_approval': 'needs_approval'}.get(status,
+                                                                                                  'unknown_status'))
+        line_fields = {key: fields[key] for key in ('slot_id', 'format', 'due_at', 'link_placement', 'publish_mode',
+                                                    'buffer_draft_id')}
+        try:
+            line = draft_line(post, line_fields, self.fetch)
+        except CarryHold as hold:
+            return self.hold(hold.code)
+        except BufferAuthError:
+            raise
+        except BufferError as error:
+            return self.hold(error.code if error.code.startswith('asset_') else 'asset_download_failed')
+        if len(fields['asset_names']) != len(line['assets']) or line['channel'] != fields['channel']:
+            return self.hold('asset_count_differs')
+        slot = {'slot_id': fields['slot_id'], 'channel': line['channel'], 'format': fields['format'],
+                'due_at': fields['due_at'], 'words': line['words'], 'link_placement': fields['link_placement'],
+                'publish_mode': fields['publish_mode'], 'concept_id': fields['concept_id'], 'share': fields['share'],
+                'assets': [{'name': name, 'sha256': digest} for name, digest in zip(fields['asset_names'],
+                                                                                   line['assets'])],
+                'payload_sha256': spec_digest(line)}
+        spec = dict(state['spec'], slots=[slot])
+        formats = inventory(self.root or ROOT)['format']
+        _, reasons = release.authorised_digests(spec, state['decision'], {}, state['stopped_proposals'], (), formats)
+        snack = release.snackable_formats()
+        day = ny_time(due).date().isoformat()
+        why = reasons.get(slot['slot_id'])
+        if why is None:
+            # The cap counts this post's own day from Buffer; a post already out is counted in it.
+            why = release.concept_post_hold(slot, state['decision'], review, {} if live else self.caps,
+                                            {} if live else self.day_count(slot['channel'], day), snack)
+            if live and why and why.startswith('concept_daily_cap_unknown'):
+                why = None
+        if live:
+            if why or spec_digest(line) != fields['payload_sha256']:
+                return self.hold('scheduled_after_decline' if why else 'live_post_differs_from_signed', loud=True)
+            if status == 'scheduled' and due_instant(post.get('dueAt')) != due:
+                return self.hold('live_post_differs_from_signed', loud=True)
+            self.signed[fields['buffer_draft_id']] = line
+            return self.count('already_' + ('scheduled' if status in ('scheduled', 'sending') else 'sent'))
+        if why:
+            return self.hold(why.split(':')[0])
+        if release.copy_errors(slot['words']):
+            return self.hold('copy_lint_refused')
+        if share_ask_errors(slot, slot['words'], snack):
+            return self.hold('share_ask_refused')
+        if spec_digest(line) != fields['payload_sha256']:
+            return self.hold('draft_differs_from_signed')
+        try:
+            buffer_api.edit_input(post, fields['due_at'], line['words'])
+        except CarryHold as hold:
+            return self.hold(hold.code)
+        if due - self.clock() <= DUE_MARGIN:
+            return self.hold('due_time_passed', loud=True)
+        if not self.deliver:
+            self.per_day[(slot['channel'], day)] += 1
+            return self.count('would_schedule')
+        signed = {'words': line['words'], 'due_at': fields['due_at']}
+        try:
+            self.buffer.schedule_draft(post, fields['due_at'], line['words'])
+        except BufferAuthError:
+            raise
+        except (BufferError, CarryHold) as error:
+            code = getattr(error, 'code', 'edit_failed')
+            again, failed = self._read(post['id'])
+            if failed:
+                return self.hold('uncertain_edit', loud=True)
+            if self._readback_ok(again, post, signed, line):
+                self.per_day[(slot['channel'], day)] += 1
+                self.signed[fields['buffer_draft_id']] = line
+                return self.count('scheduled')
+            if again.get('status') != 'draft':
+                return self.hold('uncertain_edit', loud=True)
+            return self.hold(code)
+        back, failed = self._read(post['id'])
+        if failed:
+            return self.hold('readback_failed', loud=True)
+        if not self._readback_ok(back, post, signed, line):
+            return self.hold('readback_mismatch', loud=True)
+        self.per_day[(slot['channel'], day)] += 1
+        self.signed[fields['buffer_draft_id']] = line
+        return self.count('scheduled')
 
     def check_scheduled(self, line):
         """The alarm for one line of a yes that no longer stands: its draft must
@@ -701,6 +891,258 @@ def check_revoked(cc, run, decisions, stopped, now, held):
                 run.check_scheduled(line)
 
 
+# The go-live ledger, kept in Control Center -----------------------------------------------
+
+def seed_claims(cc, state_root, proposals, decisions, now):
+    """Read back, by their exact run_id, the go-lives this lane already finished acting on, into the
+    local ledger engine.cc_loop.claim_golives reads, so each acts once across clean runners.
+
+    Only a go-live that could act now is looked up (golive_review, pure), so old ones cost
+    no read. A claim that cannot be read fails the run (Control Center errors propagate)."""
+    review = golive_review(proposals, decisions, golive_ledger(state_root), now)
+    found = {}
+    for action in review['actions']:
+        key = action_key(action)
+        record = cc_records.read_record(cc, cc_records.claim_run_id(key), cc_records.CLAIM)
+        if record is None:
+            continue
+        if record.get('action_key') != key:
+            raise ValueError('claim_mismatch')
+        found[key] = {k: record.get(k) for k in ('proposal_id', 'parent_proposal_id', 'action_sha256', 'amended',
+                                                 'decided_at', 'claimed_at')}
+    if found:
+        path = state_path(state_root, GOLIVE_LEDGER)
+        with locked(path):
+            ledger = golive_ledger(state_root)
+            ledger['acted'].update(found)
+            write_json(path, {key: dict(sorted(ledger[key].items())) for key in ('acted', 'stopped', 'unresolved')})
+    return len(found)
+
+
+def acted_action(proposal, decision):
+    """The version of a claimed go-live his latest decision stands on, as golive() reads an action, or None.
+
+    A claimed go-live acts once: its lines are only checked each run (a scheduled post that drifts
+    from what he signed is loud, and the alarm knows his posts), never scheduled again."""
+    if not isinstance(decision, dict) or decision.get('decision') != 'approved':
+        return None
+    amended = decision.get('amended') is True
+    if amended and not amendment_ok(decision):
+        return None
+    return {'proposal_id': proposal['proposal_id'], 'amended': amended,
+            'exact_payload': decision.get('exact_payload') if amended else proposal.get('exact_payload')}
+
+
+def record_claim(cc, action, now, root, outcomes):
+    """Report that this lane finished one go-live (every line it signs done), at its claim run_id.
+
+    A conflict reads back: the same claim already there counts. Codes only in the words."""
+    key = action_key(action)
+    record = {'schema': cc_records.CLAIM, 'action_key': key, 'proposal_id': action['proposal_id'],
+              'parent_proposal_id': action['parent_proposal_id'], 'action_sha256': action['action_sha256'],
+              'amended': action['amended'], 'decided_at': action['decided_at'], 'claimed_at': instant(now).isoformat(),
+              'outcomes': dict(sorted(outcomes.items()))}
+    report = cc_records.record_report(cc_records.claim_run_id(key), cc_records.CLAIM, record,
+                                      ['Go-live acted on once: every line it signs is scheduled, sent or his click',
+                                       'Scheduled only what Krish approved; published, sent and spent nothing'],
+                                      now, revision(root or ROOT))
+    posted = cc.post_report(report)
+    if posted['accepted']:
+        return True
+    stored = cc_records.read_record(cc, report['run_id'], cc_records.CLAIM)
+    return isinstance(stored, dict) and stored.get('action_key') == key
+
+
+# Posts made from an approved concept (the mix plan) -----------------------------------------
+
+MAX_DERIVED = 40  # derived slots read in one run; past it the run is loud (derived_too_many_reads)
+MAX_NUMBERED = 24  # day indexes and plan versions probed
+# Week-level holds: each is loud (exit 1, GitHub emails him) and holds every derived slot of the week.
+LOUD_CONCEPT = ('concept_hold', 'concept_stop_unresolved')
+REVIEW_SLOT_KEYS = frozenset({'slot_id', 'channel', 'format', 'due_at', 'link_placement', 'publish_mode',
+                              'buffer_draft_id', 'concept_id', 'share', 'asset_names'})
+
+
+def week_of(due):
+    day = ny_time(due).date()
+    return (day - dt.timedelta(days=day.weekday())).isoformat()
+
+
+def _week_label(monday):
+    return mix_rules.proposal_id(monday).rsplit(':', 1)[1]
+
+
+def _held(code, why, loud=True):
+    return {'hold': code, 'why': why, 'loud': loud}
+
+
+def read_part(cc, proposal_id, payload_sha256):
+    """(proposal, record) for one plan part, read back from its own report by digest (as a go-live is)."""
+    run_id = staged_report_run_id(proposal_id, payload_sha256)
+    report = cc_records.read_report(cc, run_id) if run_id else None
+    if report is None:
+        return None, None
+    for item in report.get('proposals') or []:
+        if isinstance(item, dict) and item.get('proposal_id') == proposal_id \
+                and item.get('payload_sha256') == payload_sha256:
+            return item, cc_records.record_of(report, cc_records.PART)
+    return None, None
+
+
+def _why_code(why):
+    """A reason code for why decision.judge recorded nothing: codes only ever reach the log."""
+    head = str(why).split(':')[0]
+    if re.match(r'^[a-z_]{1,40}$', head):
+        return head
+    for start, code in (('no decision on', 'no_decision'), ('the latest decision on', 'not_approved'),
+                        ('a decision on', 'undated_decision')):
+        if str(why).startswith(start):
+            return code
+    return 'not_applied'
+
+
+def week_state(cc, monday, decisions, state_root, now, root, proposals=()):
+    """What the week's mix plan, read back from Control Center, authorises: the concept part of a decision
+    (decision.concept_part on decision.cc_readback, engine/run/decision.py's own rules), a synthetic spec
+    carrying the approved concepts for release's checks, and the stops; or a hold. Never a local file.
+
+    The plan in force is its highest numbered version record. Every decision, stop and decline is
+    read first: his no on any part stops the week before any part is trusted."""
+    pid = mix_rules.proposal_id(monday)
+    label = _week_label(monday)
+    versions = cc_records.probe(cc, lambda n: cc_records.version_run_id(label, n), cc_records.VERSION, MAX_NUMBERED)
+    if versions is None:
+        return _held('concept_hold', 'mix_versions_unbounded')
+    if not versions:
+        return _held('concept_hold', 'mix_plan_not_reported')
+    version = versions[-1]
+    parts = version.get('parts')
+    if version.get('week_of') != monday or not isinstance(parts, list) or not parts or any(
+            not isinstance(p, dict) or set(p) != {'proposal_id', 'payload_sha256'}
+            or p['proposal_id'] != mix_rules.part_id(monday, n) or not isinstance(p['payload_sha256'], str)
+            or not HEX64.match(p['payload_sha256']) for n, p in enumerate(parts, 1)):
+        return _held('concept_hold', 'mix_version_malformed')
+    stubs = [{'proposal_id': p['proposal_id'], 'stage': 'plan', 'payload_sha256': p['payload_sha256']} for p in parts]
+    ledger = record_stops(state_root, list(proposals) + stubs, decisions)
+    stopped = tuple(sorted(ledger['stopped']))
+    if any(p['proposal_id'] in ledger['stopped'] or any(
+            isinstance(d, dict) and d.get('proposal_id') == p['proposal_id'] and d.get('decision') == 'declined'
+            for d in decisions) for p in parts):
+        return {'hold': None, 'stopped': True, 'why': 'declined'}
+    if ledger['unresolved']:
+        return _held('concept_stop_unresolved', 'stop_unresolved')
+    read = []
+    for part in parts:
+        try:
+            item, record = read_part(cc, part['proposal_id'], part['payload_sha256'])
+        except ValueError:
+            return _held('concept_hold', 'mix_part_unreadable')
+        if item is None:
+            return _held('concept_hold', 'mix_part_missing')
+        read.append((item, record))
+    try:
+        cfg = mix_rules.load(root or ROOT)
+        record, why = decide.cc_readback(monday, read, cfg, decisions, ledger, now)
+    except (ValueError, KeyError, TypeError):
+        return _held('concept_hold', 'plan_untrusted')
+    if record is None:
+        code = _why_code(why)
+        pending = code in ('no_decision', 'not_approved')
+        return _held('concept_not_approved' if pending else 'concept_hold', code, loud=not pending)
+    if record['decision'] == 'declined':
+        return {'hold': None, 'stopped': True, 'why': 'declined'}
+    known = {c['concept_id']: c for _, part in read for c in part['concepts'] if c['ready']}
+    ceilings = {c: mix_rules.ceiling({'targets': read[0][1]['targets']}, c) for c in cfg['channels']}
+    try:
+        part = decide.concept_part(pid, known, record, (), ceilings, read[0][0]['payload_sha256'], None)
+    except ValueError:
+        return _held('concept_hold', 'not_applied')
+    if part['concept_hold']:
+        return _held('concept_hold', part['concept_hold'].split(':')[0])
+    start = ny_midnight(calendar_date(monday))
+    spec = {'concepts': part['concept_manifest'],
+            'window': {'start': start.isoformat(), 'end': ny_midnight(calendar_date(monday) + dt.timedelta(days=7))
+                       .isoformat(), 'tz': TIMEZONE},
+            'signature': {'concept_proposal_id': pid, 'concepts_digest': concept_rules.concepts_digest(part['concepts'])}}
+    problem = concept_rules.decision_errors(spec, part)
+    if problem:
+        return _held('concept_hold', 'not_applied')
+    return {'hold': None, 'stopped': False, 'why': None, 'decision': part, 'spec': spec,
+            'stopped_proposals': stopped}
+
+
+def derived_entries(cc, now, holds):
+    """The derived slots due from the start of today in New York to the end of the release window, from each
+    day's numbered index (cc_records.INDEX), in due order. None (loud) when a day's indexes never end."""
+    days = sorted({ny_time(now).date().isoformat(), ny_time(now + SCHEDULE_WINDOW).date().isoformat()})
+    found = {}
+    for day in days:
+        records = cc_records.probe(cc, lambda n: cc_records.index_run_id(day, n), cc_records.INDEX, MAX_NUMBERED)
+        if records is None:
+            return None
+        for record in records:
+            for entry in record.get('entries') or [] if record.get('day') == day else []:
+                due = due_instant(entry.get('due_at')) if isinstance(entry, dict) else None
+                if due is None or not isinstance(entry.get('payload_sha256'), str) \
+                        or not HEX64.match(entry['payload_sha256']) or ny_time(due).date().isoformat() != day:
+                    holds['derived_index_malformed'] = holds.get('derived_index_malformed', 0) + 1
+                    continue
+                if due - now <= SCHEDULE_WINDOW:
+                    found.setdefault(entry['payload_sha256'], entry)
+    return sorted(found.values(), key=lambda e: (due_instant(e['due_at']), e['payload_sha256']))
+
+
+def review_of(cc, entry):
+    """(slot fields, review) for one indexed derived slot, read back by its exact payload_sha256, or (None, code)."""
+    sha = entry['payload_sha256']
+    record = cc_records.read_record(cc, cc_records.review_run_id(sha), cc_records.REVIEW)
+    if record is None:
+        return None, 'review_missing'
+    slot, review = record.get('slot'), record.get('review')
+    if record.get('payload_sha256') != sha or not isinstance(review, dict) or review.get('payload_sha256') != sha:
+        return None, 'review_for_another_payload'  # F113: a review at another sha never counts
+    if not isinstance(slot, dict) or set(slot) != REVIEW_SLOT_KEYS or slot['due_at'] != entry['due_at'] \
+            or slot['channel'] != entry.get('channel') or not isinstance(slot['buffer_draft_id'], str) \
+            or not BUFFER_ID.match(slot['buffer_draft_id']) or not isinstance(slot['asset_names'], list) \
+            or not isinstance(slot['concept_id'], str):
+        return None, 'review_malformed'
+    return dict(slot, payload_sha256=sha), review
+
+
+def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=()):
+    """Every post made from an approved concept, indexed for today or the release window, through Run.derived.
+    The week's authority is read once per week (week_state); reads are capped at MAX_DERIVED, past it loud."""
+    try:
+        entries = derived_entries(cc, now, run.holds)
+    except ValueError:
+        entries = None
+    if entries is None:
+        run.hold('derived_index_unreadable', loud=True)
+        return
+    if len(entries) > MAX_DERIVED:
+        run.loud.append('derived_too_many_reads')
+        run.holds['derived_too_many_reads'] = len(entries) - MAX_DERIVED
+        entries = entries[:MAX_DERIVED]
+    weeks = {}
+    for entry in entries:
+        try:
+            fields, review = review_of(cc, entry)
+        except ValueError:
+            fields, review = None, 'review_unreadable'
+        if fields is None:
+            run.hold(review, loud=review == 'review_unreadable')
+            continue
+        monday = week_of(entry['due_at'])
+        if monday not in weeks:
+            try:
+                weeks[monday] = week_state(cc, monday, decisions, state_root, now, root, proposals)
+            except ValueError:
+                weeks[monday] = _held('concept_hold', 'record_unreadable')
+        run.derived(fields, review, weeks[monday])
+    summary['derived'] = {'read': len(entries),
+                          'weeks': {_week_label(m): (w.get('why') or 'approved') for m, w in sorted(weeks.items())}}
+
+
 # The run ----------------------------------------------------------------------------
 
 class Unpaged(Exception):
@@ -717,12 +1159,14 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
     now = clock()
     fetch = fetch or (lambda url: buffer_api.download_sha256(url))
     summary = {'lane': 'L0', 'command': 'autorelease', 'deliver': bool(deliver), 'decisions_read': 0,
-               'golives': {'releasable': 0, 'held': {}}, 'slots': {}, 'holds': {}, 'mutations': 0,
-               'loud': [], 'error': None}
+               'golives': {'releasable': 0, 'held': {}, 'claimed': 0}, 'derived': {'read': 0, 'weeks': {}},
+               'slots': {}, 'holds': {}, 'mutations': 0, 'loud': [], 'error': None}
     run = Run(buffer, now, deliver, fetch, root, clock)
     folder = None
     try:
         organizations = buffer.account_check().get('organization_ids') or []
+        run.organizations = organizations
+        run.caps = release.concept_caps(intensity.state(root or ROOT, now)['urgency'], root or ROOT)
         if state_root is None:
             folder = tempfile.TemporaryDirectory()
             state_root = folder.name
@@ -734,14 +1178,29 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
         summary['decisions_read'] = len(decisions)
         held = summary['golives']['held']
         proposals = signed_golives(cc, decisions, held, now)
+        # The go-live ledger is Control Center's (F114): the go-lives this lane already finished are read
+        # back into the ledger claim_golives reads, so each acts once though every runner starts clean.
+        seed_claims(cc, state_root, proposals, decisions, now)
         review = claim_golives(state_root, proposals, decisions, now)
         for item in review['holds']:
             held[item['reason']] = held.get(item['reason'], 0) + 1
         by_id = {p['proposal_id']: p for p in proposals}
+        latest, _ = _latest(decisions)
+        for item in review['holds']:
+            if item['reason'] == 'already_acted' and item['proposal_id'] in by_id:
+                acted = acted_action(by_id[item['proposal_id']], latest.get(item['proposal_id']))
+                if acted:
+                    run.golive(acted, by_id[item['proposal_id']], acted=True)
         summary['golives']['releasable'] = len(review['actions'])
         for action in review['actions']:
-            run.golive(action, by_id[action['proposal_id']])
-        latest, _ = _latest(decisions)
+            outcomes = run.golive(action, by_id[action['proposal_id']])
+            if deliver and outcomes and all(outcome in DONE for outcome in outcomes):
+                tally = {}
+                for outcome in outcomes:
+                    tally[outcome] = tally.get(outcome, 0) + 1
+                summary['golives']['claimed'] += int(record_claim(cc, action, now, root, tally))
+        # Posts made from a concept he approved in the week's mix plan, read back from Control Center.
+        derived_lane(cc, run, decisions, state_root, now, root, summary, proposals)
         stopped = [(item['proposal_id'], latest[item['proposal_id']], by_id[item['proposal_id']])
                    for item in review['holds'] if item['reason'] == 'plan_stopped'
                    and item['proposal_id'] in by_id and item['proposal_id'] in latest]
@@ -762,6 +1221,9 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
         summary['error'] = 'control_center_' + error.code
     except Unpaged:
         summary['error'] = 'decisions_unpaged'
+    except ValueError as error:
+        # A record in Control Center that cannot be read whole: nothing is guessed (codes only).
+        summary['error'] = str(error) if re.match(r'^[a-z_]{1,40}$', str(error)) else 'record_unreadable'
     finally:
         if folder is not None:
             folder.cleanup()
@@ -797,8 +1259,8 @@ def main(argv=None, make_cc=None, make_buffer=None, fetch=None, out=print):
     parser = argparse.ArgumentParser(prog='growth.py run autorelease', description=__doc__.split('\n')[0])
     parser.add_argument('--deliver', action='store_true', help='schedule in Buffer; without it, a dry run')
     parser.add_argument('--now', help='a fixed clock, for tests')
-    parser.add_argument('--state', help='a folder for the claim ledger, for tests; default a throwaway one (Buffer is '
-                        'the ledger). A kept ledger claims a go-live once, so a slot not yet due then never releases')
+    parser.add_argument('--state', help='a folder for the claim ledger, for tests; default a throwaway one, seeded '
+                        'each run from the claims kept in Control Center')
     args = parser.parse_args(argv)
     summary = {'lane': 'L0', 'command': 'autorelease', 'deliver': args.deliver}
     try:

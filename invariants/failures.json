@@ -1262,6 +1262,107 @@
       "status": "tested"
     },
     {
+      "id": "F111",
+      "title": "A go-live Krish approved that names lines on more than one New York day acts as one press for several days, against R94",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor; go-lives built before the handoff made one per New York day",
+      "guard": "engine/run/autorelease.py:golive holds every line of a go-live whose signed lines engine/run/autorelease.py:spans_days finds on more than one New York day as golive_spans_days; a line with no time rides along",
+      "tests": [
+        "test_a_go_live_naming_two_new_york_days_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F112",
+      "title": "On GitHub Actions a post made from a concept is authorised from a local file, a dispatch payload or a PC .scratch instead of Control Center",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: decision.json is written only in the loop's own run on the PC, so the runner had no concept authority it could trust",
+      "guard": "engine/run/autorelease.py:week_state reads the plan in force, its parts by digest (engine/run/autorelease.py:read_part) and his decisions from Control Center and derives the concept part with engine/run/decision.py:cc_readback, engine/run/decision.py:judge and engine/run/decision.py:concept_part; engine/run/autorelease.py:derived then calls release.authorised_digests and release.concept_post_hold; a concept_hold or an unresolved stop holds every derived post loudly",
+      "tests": [
+        "test_end_to_end_a_dispatched_plan_he_approves_schedules_its_derived_post_in_the_window",
+        "test_his_no_on_the_plan_holds_the_derived_post",
+        "test_an_amended_plan_that_changes_the_concept_line_holds_the_derived_post",
+        "test_an_amended_plan_line_other_than_a_concept_holds_every_derived_post_loudly",
+        "test_a_derived_post_whose_asset_is_not_the_mock_holds",
+        "test_a_derived_post_that_drops_the_claim_holds",
+        "test_a_week_with_no_plan_in_control_center_holds_loudly",
+        "test_an_unresolved_stop_holds_every_derived_post_loudly"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F113",
+      "title": "A review of another payload counts for a derived post, or a copy of the review judge drifts from spec.review_reason",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: review results reach Control Center keyed by the slot's payload_sha256",
+      "guard": "engine/run/handoff.py:derived_record refuses a review whose sha or slot is not the slot's; engine/run/autorelease.py:review_of refuses a record whose body names another sha; engine/run/release.py:concept_post_hold judges it with spec.review_reason at the digest rebuilt from the draft",
+      "tests": [
+        "test_a_review_for_another_sha_is_refused",
+        "test_the_review_is_judged_only_by_spec_review_reason"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F114",
+      "title": "cc_loop.claim_golives is never called with a real ledger in production: each clean runner forgets which go-lives already acted",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: the claim ledger lived in a throwaway folder on the runner (docs/ENGINE.md, The ledger)",
+      "guard": "engine/run/autorelease.py:seed_claims reads each claim back from Control Center into the ledger engine/cc_loop.py:claim_golives reads; engine/run/autorelease.py:record_claim reports a go-live once every line it signs is done; engine/run/autorelease.py:acted_action only checks a claimed go-live, never schedules it again; a claim that cannot be read fails the run",
+      "tests": [
+        "test_a_finished_go_live_is_claimed_in_control_center_and_acts_once",
+        "test_a_go_live_with_a_line_still_to_come_is_not_claimed",
+        "test_a_claim_that_cannot_be_read_fails_closed"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F115",
+      "title": "A full week's mix plan over 8,000 characters never reaches Krish: the proposal is held, so no concept can be approved",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: a flooded week carries about 25 concept lines, near or over the exact-payload cap",
+      "guard": "engine/mix.py:payload_parts splits the week into parts in order, each at most 8,000 characters (part 1 keeps every plan line), engine/mix.py:part_proposals asks each, and engine/run/decision.py:cc_readback approves a concept only once part 1 and its own part are; a no on any part stops the week",
+      "tests": [
+        "test_a_full_week_over_eight_thousand_characters_comes_in_parts_in_order"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F116",
+      "title": "A newer plan for the week, sent after his yes, leaves the old yes standing on the runner",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: on Control Center the plan in force has to be named, since no local plan file is there to rebuild",
+      "guard": "engine/run/handoff.py:deliver_version reports each new version of the week's plan; engine/run/autorelease.py:week_state reads the highest as the plan in force, so a yes on an earlier digest is stale_approval and holds loudly",
+      "tests": [
+        "test_a_newer_plan_version_withdraws_his_earlier_yes"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F117",
+      "title": "The daily cap on a derived post counts only local ledgers, so posts already scheduled in Buffer that New York day, or his signed posts still to come, are missed",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: on the runner there is no .scratch ledger to count",
+      "guard": "engine/run/autorelease.py:day_count reads every post scheduled, sending or sent on the pinned channel that New York day from Buffer and reserves each line a standing go-live signs for that day",
+      "tests": [
+        "test_the_daily_cap_counts_every_post_scheduled_that_new_york_day_from_buffer",
+        "test_a_derived_post_never_bumps_a_post_he_signed_for_that_day"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F118",
+      "title": "A record kept in a report's activity lines changes on the way: Control Center clips each line and collapses its whitespace",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: control_center.clip joins every run of whitespace into one space",
+      "guard": "engine/run/cc_records.py:record_lines carries a record as base64 of its canonical JSON in numbered chunks with no whitespace; engine/run/cc_records.py:record_of refuses a missing or repeated chunk",
+      "tests": [
+        "test_a_record_rides_whole_through_whitespace_collapse"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F119",
+      "title": "His yes on a week's mix plan becomes the plan a go-live hangs from, so a concept approval could parent go-lives",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: the mix plan is a plan proposal behind strategy, like the standing plan",
+      "guard": "engine/run/handoff.py:open_plan never takes a mix plan (makeyourmindup:mix:...) as a go-live's plan, and engine/run/handoff.py:derived_record makes a post from a concept a review record, never a go-live",
+      "tests": [
+        "test_a_derived_slot_is_never_a_go_live_and_the_mix_plan_is_no_go_lives_plan"
+      ],
+      "status": "tested"
+    },
+    {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",

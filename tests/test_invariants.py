@@ -259,7 +259,7 @@ class FailureRegisterTests(unittest.TestCase):
         # carried word, the loud alarm, signed meta, two digest domains and one day a press.
         failures = {f['id']: f for f in load_failures()}
         new = FAILURE_IDS[99:110]
-        self.assertEqual((new[0], new[-1], FAILURE_IDS[110]), ('F100', 'F110', 'G1'))
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[110]), ('F100', 'F110', 'F111'))
         self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
         for fid, guard, test in (
                 ('F100', 'cc_loop.py:decisions_paged', 'test_his_no_past_the_hundredth_decision_stops_the_release'),
@@ -273,6 +273,26 @@ class FailureRegisterTests(unittest.TestCase):
                 ('F108', 'autorelease.py:slot', 'test_an_amended_time_outside_the_run_window_holds'),
                 ('F109', 'buffer_api.py:_uncarried', 'test_a_field_read_but_never_carried_holds'),
                 ('F110', 'handoff.py:meta_words', 'test_the_why_names_alt_text_in_plain_words')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
+
+    def test_register_records_the_concept_path_on_the_executor(self):
+        # Main's concept approval (PR #26) on the L0 executor, 29 Oct 2026: authority read back from
+        # Control Center by digest, reviews keyed by sha, a real go-live ledger, parts and versions.
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[110:119]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[119]), ('F111', 'F119', 'G1'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F111', 'autorelease.py:spans_days', 'test_a_go_live_naming_two_new_york_days_holds'),
+                ('F112', 'autorelease.py:week_state', 'test_end_to_end_a_dispatched_plan_he_approves_schedules_its_derived_post_in_the_window'),
+                ('F113', 'autorelease.py:review_of', 'test_a_review_for_another_sha_is_refused'),
+                ('F114', 'autorelease.py:seed_claims', 'test_a_finished_go_live_is_claimed_in_control_center_and_acts_once'),
+                ('F115', 'mix.py:payload_parts', 'test_a_full_week_over_eight_thousand_characters_comes_in_parts_in_order'),
+                ('F116', 'handoff.py:deliver_version', 'test_a_newer_plan_version_withdraws_his_earlier_yes'),
+                ('F117', 'autorelease.py:day_count', 'test_the_daily_cap_counts_every_post_scheduled_that_new_york_day_from_buffer'),
+                ('F118', 'cc_records.py:record_lines', 'test_a_record_rides_whole_through_whitespace_collapse'),
+                ('F119', 'handoff.py:open_plan', 'test_a_derived_slot_is_never_a_go_live_and_the_mix_plan_is_no_go_lives_plan')):
             self.assertIn(guard, failures[fid]['guard'], fid)
             self.assertIn(test, failures[fid]['tests'], fid)
 

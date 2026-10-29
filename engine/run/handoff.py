@@ -8,7 +8,7 @@ this runner turns the handoff into a Control Center proposal. There are no
 Claude routines (Krish, 29 Oct 2026). It never schedules, publishes, sends or spends: release is
 engine.run.autorelease's, and only after Krish approves.
 
-Three event types, each with a closed client_payload (unknown keys refused):
+Four event types, each with a closed client_payload (unknown keys refused):
 
 - `growth-go-live-manifest` (a day's or a piece's drafts; an express idea with
   "express": true): {"run_id", "slots": [{"slot", "channel",
@@ -42,6 +42,26 @@ Three event types, each with a closed client_payload (unknown keys refused):
   format is a new kind (carousel, meme, opinion, reactive, or the list in
   invariants/authority.json), is its own go-live (`:item-1`, ...), so he
   sees it alone.
+  A slot made from a concept Krish approved in the week's mix plan names it
+  in `concept_id` and carries its `review` (closed: slot_id, verdict, lens,
+  payload_sha256, reader_answer, share, asset_names). It is never a go-live:
+  its draft is rebuilt the same way, and its review is reported as its own
+  record, `makeyourmindup:review:<payload_sha256[:12]>`, listed in that New
+  York day's index (`makeyourmindup:derived:<day>:<n>`, engine/run/
+  cc_records.py). autorelease reads both back by that exact sha and judges
+  the review with engine/run/spec.py review_reason, never here.
+- `growth-mix-plan` (the weekly ideas board, `growth.py mix plan`): the plan
+  file's {"week_of", "targets", "weights", "moved", "slots", "concepts",
+  "shortfalls"}, each concept {"concept_id", "lane", "idea", "claim",
+  "source_url", "piece_id", "mock_sha256", "placements", "mock_links"?,
+  "ready"?, "text_only"?, "concept_sha256"?}. The runner checks the closed
+  shape against mix.json, recomputes every concept_sha256 and the plan's words
+  and digest with engine/concepts.py and engine/mix.py, and asks it through
+  cc_loop.plan_proposals: one plan proposal behind strategy, or, when a week
+  passes 8,000 characters, parts in order (`makeyourmindup:mix:<week>`, then
+  `:p2`, ...), one ask at a time, each part's concepts in its own report.
+  A version record (`makeyourmindup:mixplan:<week>:<n>`) names the parts in
+  force. Each mock's first view link rides as the ask's evidence.
 - `growth-week-packet` (whoever plans the week): {"run_id", "week",
   "spec_sha256", "slots": [{"slot", "channel", "payload_sha256"}]}. Proposed
   as a `check_in` on the open plan ("On track?"), or as a `plan` when no
@@ -61,21 +81,24 @@ from pathlib import Path
 import re
 import sys
 
-from engine.cc_loop import NO_SPEND, decisions_paged, revision
+from engine import concepts as concept_rules, mix as mix_rules
+from engine.cc_loop import NO_SPEND, decisions_paged, plan_proposals, revision
 from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _plan_open, _stops,
                                    build_report, canonical_json, objective, proposal, sha256_hex)
-from engine.core import instant, ny_time, today, write_json
-from engine.run import autorelease, buffer_api
+from engine.core import http_url, instant, ny_time, today, write_json
+from engine.run import autorelease, buffer_api, cc_records
 from engine.run.autorelease import (DUE_MARGIN, LINE_KEYS, MANIFEST_SCHEMA, MAX_REPORT_READS, _authority, draft_line,
                                     due_instant, line_digest, read_proposal, run_window, show_before_post_until,
                                     spec_digest, staged_report_run_id)
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
-from engine.run.release import BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, account_hold
+from engine.run.release import ASSET_NAME, BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, account_hold
 from engine.run.spec import RUN_ID as SPEC_RUN_ID
+from engine.social import inventory
 
 ROOT = Path(__file__).resolve().parents[2]
 GO_LIVE, WEEK_PACKET, MAKE_PIECE = 'growth-go-live-manifest', 'growth-week-packet', 'growth-make-piece'
-EVENTS = (GO_LIVE, WEEK_PACKET, MAKE_PIECE)
+MIX_PLAN = 'growth-mix-plan'
+EVENTS = (GO_LIVE, WEEK_PACKET, MAKE_PIECE, MIX_PLAN)
 MAX_PAYLOAD_BYTES = 65536
 MAX_SLOTS = 60
 PAYLOAD_CAP = 8000
@@ -91,6 +114,18 @@ MANIFEST_SLOT_KEYS = frozenset({'slot', 'channel', 'buffer_draft_id', 'payload_s
 PACKET_KEYS, PACKET_SLOT_KEYS = (frozenset({'run_id', 'week', 'spec_sha256', 'slots'}),
                                  frozenset({'slot', 'channel', 'payload_sha256'}))
 PIECE_KEYS = frozenset({'piece_id'})
+# A slot made from an approved concept: its concept and its review (never words of the post).
+DERIVED_KEYS = frozenset({'concept_id', 'review'})
+REVIEW_KEYS = frozenset({'slot_id', 'verdict', 'lens', 'payload_sha256', 'reader_answer', 'share', 'asset_names'})
+CONCEPT_ID = re.compile(r'^[a-z0-9][a-z0-9-]{0,63}$')
+LENS = re.compile(r'^[a-z0-9][a-z0-9-]*$')
+# growth-mix-plan: the plan file's own fields (a client_payload holds at most ten top-level keys).
+MIX_KEYS = frozenset({'week_of', 'targets', 'weights', 'moved', 'slots', 'concepts', 'shortfalls'})
+MIX_SLOT_KEYS = frozenset({'slot_id', 'channel', 'format', 'lane', 'day', 'due_at', 'concept_id'})
+MIX_CONCEPT_KEYS = frozenset(concept_rules.DIGESTED)
+MIX_CONCEPT_OPTIONAL = frozenset({'mock_links', 'ready', 'text_only', 'concept_sha256'})
+MIX_MAX_SLOTS, MIX_MAX_CONCEPTS, MIX_MAX_LINKS, TEXT_MAX = 400, 200, 12, 2000
+MAX_INDEX_PARTS = 24  # numbered day indexes and plan versions read before a lane holds loudly
 # New kinds of post Krish sees one by one (docs/LANES.md, L2). invariants/authority.json
 # may list its own; these are read when it does not.
 NEW_FORMATS_DEFAULT = ('carousel', 'meme', 'opinion', 'reactive')
@@ -138,8 +173,8 @@ def _unique(slots, key, code):
         raise PayloadRejected(code)
 
 
-def _slot_common(slot, keys):
-    _closed(slot, keys, where='slot')
+def _slot_common(slot, keys, optional=frozenset()):
+    _closed(slot, keys, optional, where='slot')
     if not isinstance(slot['slot'], str) or not SLOT_ID.match(slot['slot']):
         raise PayloadRejected('bad_slot_id')
     if slot['channel'] not in CHANNELS:
@@ -154,7 +189,9 @@ def validate_manifest(value):
     if 'express' in value and not isinstance(value['express'], bool):
         raise PayloadRejected('bad_express')
     for slot in _slots(value['slots']):
-        _slot_common(slot, MANIFEST_SLOT_KEYS)
+        _slot_common(slot, MANIFEST_SLOT_KEYS, DERIVED_KEYS)
+        if set(slot) & DERIVED_KEYS:
+            _derived(slot)
         if not isinstance(slot['buffer_draft_id'], str) or not BUFFER_ID.match(slot['buffer_draft_id']):
             raise PayloadRejected('bad_buffer_draft_id')
         if not isinstance(slot['per_item_review'], bool):
@@ -171,6 +208,32 @@ def validate_manifest(value):
     _unique(value['slots'], 'slot', 'duplicate_slot')
     _unique(value['slots'], 'buffer_draft_id', 'duplicate_draft')
     return value
+
+
+def _text(value, limit=TEXT_MAX):
+    return isinstance(value, str) and bool(value.strip()) and len(value) <= limit
+
+
+def _derived(slot):
+    """A slot made from an approved concept: its concept_id and its closed review, both or neither."""
+    if DERIVED_KEYS - set(slot):
+        raise PayloadRejected('derived_needs_concept_and_review')
+    if not isinstance(slot['concept_id'], str) or not CONCEPT_ID.match(slot['concept_id']):
+        raise PayloadRejected('bad_concept_id')
+    review = slot['review']
+    _closed(review, REVIEW_KEYS, where='review')
+    if not isinstance(review['slot_id'], str) or not SLOT_ID.match(review['slot_id']) \
+            or not isinstance(review['verdict'], str) or not CONCEPT_ID.match(review['verdict']) \
+            or not isinstance(review['lens'], str) or not LENS.match(review['lens']) \
+            or not isinstance(review['payload_sha256'], str) or not HEX64.match(review['payload_sha256']):
+        raise PayloadRejected('bad_review')
+    for key in ('reader_answer', 'share'):
+        if review[key] is not None and (not isinstance(review[key], dict) or len(canonical_json(review[key])) > 4000):
+            raise PayloadRejected('bad_review')
+    names = review['asset_names']
+    if not isinstance(names, list) or len(names) > 20 or not all(isinstance(n, str) and ASSET_NAME.match(n)
+                                                                  for n in names):
+        raise PayloadRejected('bad_review')
 
 
 def validate_packet(value):
@@ -193,7 +256,112 @@ def validate_piece(value):
     return value
 
 
-VALIDATORS = {GO_LIVE: validate_manifest, WEEK_PACKET: validate_packet, MAKE_PIECE: validate_piece}
+def validate_mix_plan(value, root=None):
+    """The mix plan's closed shape, checked against mix.json and the social records. Returns the
+    plan as engine/mix.py builds it, with every concept's ready, text_only and concept_sha256
+    recomputed (a value sent that differs is refused), and {concept_id: mock view links}."""
+    _closed(value, MIX_KEYS)
+    try:
+        cfg = mix_rules.load(root or ROOT)
+        week = mix_rules.week_days(value['week_of'])
+        formats = inventory(root or ROOT)['format']
+    except (ValueError, KeyError, TypeError, OSError):
+        raise PayloadRejected('bad_week_of') from None
+    channels, lanes = cfg['channels'], cfg['lanes']
+    targets = value['targets']
+    if not isinstance(targets, dict) or sorted(targets) != sorted(channels):
+        raise PayloadRejected('bad_targets')
+    for channel, row in targets.items():
+        _closed(row, frozenset({'target', 'floor'}), where='targets')
+        if not all(type(row[k]) is int for k in row) \
+                or not 0 <= row['floor'] <= row['target'] <= mix_rules.max_daily_posts(channel) or row['target'] < 1:
+            raise PayloadRejected('bad_targets')
+    weights = value['weights']
+    if not isinstance(weights, dict) or list(weights) != list(lanes) or any(
+            type(w) is not int or not lanes[n]['min'] <= w <= lanes[n]['max'] for n, w in weights.items()):
+        raise PayloadRejected('bad_weights')
+    moved = value['moved']
+    if not isinstance(moved, dict) or set(moved) - set(lanes):
+        raise PayloadRejected('bad_moved')
+    for row in moved.values():
+        _closed(row, frozenset({'from', 'to', 'judged', 'score'}), where='moved')
+        if not all(type(row[k]) is int for k in ('from', 'to', 'judged')) or type(row['score']) not in (int, float):
+            raise PayloadRejected('bad_moved')
+    slots = value['slots']
+    if not isinstance(slots, list) or not slots or len(slots) > MIX_MAX_SLOTS:
+        raise PayloadRejected('bad_slots')
+    days = {mix_rules.DAYS[d.weekday()]: d for d in week}
+    for slot in slots:
+        _closed(slot, MIX_SLOT_KEYS, where='mix_slot')
+        if slot['channel'] not in channels or slot['lane'] not in lanes or slot['day'] not in days \
+                or slot['format'] != lanes[slot['lane']]['placements'][slot['channel']] \
+                or not isinstance(slot['slot_id'], str) or not SLOT_ID.match(slot['slot_id']) \
+                or not (slot['concept_id'] is None or (isinstance(slot['concept_id'], str)
+                                                       and CONCEPT_ID.match(slot['concept_id']))) \
+                or not isinstance(slot['due_at'], str) or not DUE_AT.match(slot['due_at']) \
+                or due_instant(slot['due_at']) is None or ny_time(slot['due_at']).date() != days[slot['day']]:
+            raise PayloadRejected('bad_mix_slot')
+    _unique(slots, 'slot_id', 'duplicate_slot')
+    concepts, links, placed = [], {}, {}
+    for slot in slots:
+        if slot['concept_id'] is not None:
+            pair = {'channel': slot['channel'], 'format': slot['format']}
+            row = placed.setdefault(slot['concept_id'], [])
+            if pair not in row:
+                row.append(pair)
+    sent = value['concepts']
+    if not isinstance(sent, list) or len(sent) > MIX_MAX_CONCEPTS:
+        raise PayloadRejected('bad_concepts')
+    for item in sent:
+        _closed(item, MIX_CONCEPT_KEYS, MIX_CONCEPT_OPTIONAL, where='concept')
+        concept = {key: item[key] for key in concept_rules.DIGESTED}
+        ok = (isinstance(concept['concept_id'], str) and CONCEPT_ID.match(concept['concept_id'])
+              and concept['lane'] in lanes and _text(concept['idea'])
+              and (concept['claim'] is None or _text(concept['claim']))
+              and (concept['source_url'] is None or (http_url(concept['source_url'])
+                                                     and concept['source_url'].startswith('https://')))
+              and (concept['piece_id'] is None or (isinstance(concept['piece_id'], str)
+                                                   and PIECE_ID.match(concept['piece_id'])))
+              and isinstance(concept['mock_sha256'], list) and len(concept['mock_sha256']) <= 20
+              and all(isinstance(h, str) and HEX64.match(h) for h in concept['mock_sha256'])
+              and isinstance(concept['placements'], list) and concept['placements']
+              and all(isinstance(p, dict) and set(p) == {'channel', 'format'} and p['channel'] in channels
+                      and p['format'] == lanes[concept['lane']]['placements'][p['channel']]
+                      for p in concept['placements']))
+        if not ok:
+            raise PayloadRejected('bad_concept')
+        if concept['placements'] != placed.get(concept['concept_id']):
+            raise PayloadRejected('concept_placements_differ_from_slots')
+        given = item.get('mock_links') or []
+        if not isinstance(given, list) or len(given) > MIX_MAX_LINKS or not all(
+                http_url(u) and u.startswith('https://') and len(u) <= 2000 for u in given):
+            raise PayloadRejected('bad_mock_links')
+        concept['text_only'] = all(formats[p['format']]['min_assets'] == 0 for p in concept['placements'])
+        concept['ready'] = mix_rules.ready(concept)
+        concept['concept_sha256'] = concept_rules.concept_sha256(concept) if concept['ready'] else None
+        for key in ('ready', 'text_only', 'concept_sha256'):
+            if key in item and item[key] != concept[key]:
+                raise PayloadRejected('concept_' + key + '_differs')  # recomputed, never trusted
+        if concept['ready'] and concept_rules.concept_errors(concept):
+            raise PayloadRejected('bad_concept')
+        if given:
+            links[concept['concept_id']] = list(given)
+        concepts.append(concept)
+    _unique(concepts, 'concept_id', 'duplicate_concept')
+    if set(placed) - {c['concept_id'] for c in concepts}:
+        raise PayloadRejected('slot_names_unknown_concept')
+    shortfalls = value['shortfalls']
+    if not isinstance(shortfalls, list) or len(shortfalls) > MIX_MAX_SLOTS or not all(
+            isinstance(f, dict) and set(f) == {'channel', 'day', 'lane', 'needs'}
+            and all(_text(f[k], 200) for k in f) for f in shortfalls):
+        raise PayloadRejected('bad_shortfalls')
+    mix = {'week_of': week[0].isoformat(), 'targets': targets, 'weights': weights, 'moved': moved,
+           'slots': slots, 'concepts': concepts, 'shortfalls': shortfalls}
+    return mix, links, cfg
+
+
+VALIDATORS = {GO_LIVE: validate_manifest, WEEK_PACKET: validate_packet, MAKE_PIECE: validate_piece,
+              MIX_PLAN: lambda value: value}
 
 
 def load_payload(path):
@@ -260,9 +428,11 @@ def open_plan(cc, decisions, now):
             got, _ = read_proposal(cc, item['proposal_id'], item['payload_sha256'])
             if got is not None:
                 found.append(got)
+    # A week's mix plan (makeyourmindup:mix:...) authorises concepts, never a go-live: it is no go-live's plan.
     wanted = sorted(((d.get('decided_at') or '', pid) for pid, d in latest.items()
                      if d.get('stage') == 'plan' and d.get('decision') == 'approved'
-                     and isinstance(d.get('payload_sha256'), str)), reverse=True)
+                     and isinstance(d.get('payload_sha256'), str) and not pid.startswith(SLUG + ':mix:')),
+                    reverse=True)
     plans = []
     for _, pid in wanted:
         if reads >= MAX_REPORT_READS:
@@ -657,6 +827,155 @@ def deliver_reports(cc, reports, summary):
             summary['loud'].append('report_conflict')
 
 
+# Posts made from an approved concept ---------------------------------------------------------
+
+def review_record(slot, line):
+    """The record autorelease reads back by this slot's exact payload_sha256 (cc_records.REVIEW).
+
+    The post's words are never in it: autorelease rebuilds them from the Buffer draft,
+    and the digest binds them. Its review is judged there, by spec.review_reason."""
+    review = slot['review']
+    body = {key: review[key] for key in ('slot_id', 'verdict', 'lens', 'payload_sha256')}
+    if review['reader_answer'] is not None:
+        body['send_test'] = {'reader_answer': review['reader_answer']}
+    return {'schema': cc_records.REVIEW, 'payload_sha256': slot['payload_sha256'],
+            'slot': {'slot_id': slot['slot'], 'channel': line['channel'], 'format': slot['format'],
+                     'due_at': slot['due_at'], 'link_placement': slot['link_placement'],
+                     'publish_mode': slot['publish_mode'], 'buffer_draft_id': slot['buffer_draft_id'],
+                     'concept_id': slot['concept_id'], 'share': review['share'],
+                     'asset_names': review['asset_names']},
+            'review': body}
+
+
+def derived_record(buffer, slot, fetch, now, window=None):
+    """(review record, None) for a slot made from a concept, or (None, hold code). Never a go-live."""
+    if slot['channel'] not in concept_rules.CONCEPT_CHANNELS or slot['publish_mode'] != 'engine' \
+            or slot['due_at'] is None:
+        return None, 'derived_not_a_concept_post'
+    review = slot['review']
+    if review['payload_sha256'] != slot['payload_sha256'] or review['slot_id'] != slot['slot']:
+        return None, 'review_for_another_payload'
+    line, code = rebuild(buffer, slot, fetch, now, window)
+    if code:
+        return None, code
+    if len(review['asset_names']) != len(line['assets']):
+        return None, 'asset_count_differs'
+    record = review_record(slot, line)
+    if not cc_records.fits(cc_records.REVIEW, record):
+        return None, 'review_too_large'
+    return record, None
+
+
+def derived_reports(records, now, root):
+    """One review report per derived slot, at review:<payload_sha256[:12]>, and each New York day's entries."""
+    rev, reports, days = revision(root), [], {}
+    for record in records:
+        reports.append(cc_records.record_report(
+            cc_records.review_run_id(record['payload_sha256']), cc_records.REVIEW, record,
+            ['Review of a post made from concept ' + record['slot']['concept_id'] + ', for the release that'
+             ' schedules it once its concept is approved', 'Posted, sent, published and spent nothing'], now, rev))
+        day = ny_time(record['slot']['due_at']).date().isoformat()
+        days.setdefault(day, []).append({'payload_sha256': record['payload_sha256'],
+                                         'due_at': record['slot']['due_at'], 'channel': record['slot']['channel']})
+    return reports, {day: sorted(entries, key=lambda e: (instant(e['due_at']), e['payload_sha256']))
+                     for day, entries in sorted(days.items())}
+
+
+def index_report(day, number, entries, now, root):
+    record = {'schema': cc_records.INDEX, 'day': day, 'entries': entries}
+    return cc_records.record_report(cc_records.index_run_id(day, number), cc_records.INDEX, record,
+                                    [_posts(len(entries)) + ' made from approved concepts, due ' + day + ' (New York)',
+                                     'Posted, sent, published and spent nothing'], now, revision(root))
+
+
+def deliver_records(cc, reports, schema, summary):
+    """Post each record report once. A conflict is read back: the same record already stored
+    counts as reported (a later run differs only in its time); anything else is loud."""
+    for report in reports:
+        posted = cc.post_report(report)
+        if posted['accepted']:
+            summary['reports']['posted'] += 1
+            summary['reports']['readback_matches'] += int(bool(posted['readback_matches']))
+        elif cc_records.read_record(cc, report['run_id'], schema) == cc_records.record_of(report, schema):
+            summary['reports']['already_reported'] += 1
+        else:
+            summary['loud'].append('report_conflict')
+
+
+def deliver_index(cc, day, entries, now, root, summary):
+    """Index the day's entries not yet indexed, as the next numbered index (one runs at a time:
+    handoff.yml's concurrency group). Every entry already indexed: nothing new is posted."""
+    found = cc_records.probe(cc, lambda n: cc_records.index_run_id(day, n), cc_records.INDEX, MAX_INDEX_PARTS)
+    if found is None:
+        summary['loud'].append('derived_index_full')
+        return
+    known = {e.get('payload_sha256') for record in found for e in record.get('entries') or [] if isinstance(e, dict)}
+    fresh = [e for e in entries if e['payload_sha256'] not in known]
+    if not fresh:
+        summary['reports']['already_reported'] += 1
+        return
+    deliver_records(cc, [index_report(day, len(found) + 1, fresh, now, root)], cc_records.INDEX, summary)
+
+
+# The weekly ideas board (growth-mix-plan) --------------------------------------------------------
+
+def part_record(mix, number, parts, group):
+    """What a plan part's report carries beside its proposal: its concepts, whole, and the week's targets."""
+    return {'schema': cc_records.PART, 'week_of': mix['week_of'], 'part': number, 'parts': parts,
+            'targets': mix['targets'],
+            'concepts': [dict({key: c[key] for key in concept_rules.DIGESTED}, ready=c['ready'],
+                              text_only=c['text_only'], concept_sha256=c['concept_sha256']) for c in group]}
+
+
+def week_label(week_of):
+    return mix_rules.proposal_id(week_of).rsplit(':', 1)[1]
+
+
+def mix_reports(mix, links, cfg, now, root):
+    """(part reports, version record) for the week's plan. Each part is a plan proposal behind strategy in its
+    own report (`<proposal_id>:<payload_sha256[:12]>`, so autorelease reads it back by the digest he decided
+    on), carrying its concepts; the version record names the parts in force. ValueError when a part cannot
+    be built (a concept that fits no part on its own)."""
+    fits = lambda group: cc_records.fits(cc_records.PART, part_record(mix, 99, 99, group))
+    built, groups = mix_rules.part_proposals(mix, cfg, fits, links)
+    items, hold = plan_proposals(dict(mix, parts=built))
+    if hold:
+        raise ValueError(hold['reason'])
+    rev, reports = revision(root), []
+    for number, (item, group) in enumerate(zip(items, groups), 1):
+        ready = sum(1 for c in group if c['ready'])
+        words = ['Mix plan for the week of ' + mix['week_of'] + ('' if len(items) == 1 else ', part ' + str(number)
+                                                                 + ' of ' + str(len(items)))
+                 + ': ' + str(ready) + ' ideas and their mocks for Krish to approve',
+                 'Posted, sent, published and spent nothing']
+        reports.append(cc_records.record_report(staged_report_run_id(item['proposal_id'], item['payload_sha256']),
+                                                cc_records.PART, part_record(mix, number, len(items), group), words,
+                                                now, rev, [item]))
+    version = {'schema': cc_records.VERSION, 'week_of': mix['week_of'],
+               'parts': [{'proposal_id': i['proposal_id'], 'payload_sha256': i['payload_sha256']} for i in items]}
+    return reports, version
+
+
+def version_report(week_of, number, version, now, root):
+    return cc_records.record_report(cc_records.version_run_id(week_label(week_of), number), cc_records.VERSION,
+                                    version, ['The mix plan in force for the week of ' + week_of + ': '
+                                              + str(len(version['parts'])) + ' part(s)',
+                                              'Posted, sent, published and spent nothing'], now, revision(root))
+
+
+def deliver_version(cc, week_of, version, now, root, summary):
+    """The plan in force is the highest numbered version: post this one unless it already is."""
+    label = week_label(week_of)
+    found = cc_records.probe(cc, lambda n: cc_records.version_run_id(label, n), cc_records.VERSION, MAX_INDEX_PARTS)
+    if found is None:
+        summary['loud'].append('mix_versions_full')
+        return
+    if found and found[-1].get('parts') == version['parts']:
+        summary['reports']['already_reported'] += 1
+        return
+    deliver_records(cc, [version_report(week_of, len(found) + 1, version, now, root)], cc_records.VERSION, summary)
+
+
 # The run ------------------------------------------------------------------------------------
 
 def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch=None, root=None, out_path=None):
@@ -673,6 +992,22 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
     try:
         if event not in EVENTS:
             raise PayloadRejected('unknown_event')
+        if event == MIX_PLAN:
+            mix, links, cfg = validate_mix_plan(payload, root)
+            try:
+                reports, version = mix_reports(mix, links, cfg, now, root)
+            except ValueError:
+                reports, version = [held_report(event, mix_rules.proposal_id(mix['week_of']), slots, now, root,
+                                                'mix_plan_part_over_cap')], None
+                summary['holds']['mix_plan_part_over_cap'] = 1
+            summary['proposals'] = {'plan': len(reports)} if version else {}
+            summary['reports']['built'] = len(reports) + (1 if version else 0)
+            write_json(path, {'event': event, 'deliver': bool(deliver), 'reports': reports, 'version': version})
+            if deliver:
+                deliver_reports(cc, reports, summary)
+                if version:
+                    deliver_version(cc, mix['week_of'], version, now, root, summary)
+            return _finish(summary, slots)
         VALIDATORS[event](payload)
         if event == MAKE_PIECE:
             # The maker that sent it does the making; the runner only records that it was asked.
@@ -684,12 +1019,21 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
         if decisions is None:
             raise autorelease.Unpaged()
         plan, reason = open_plan(cc, decisions, now)
+        records, days = [], {}
         if event == GO_LIVE:
             fetch = fetch or (lambda url: buffer_api.download_sha256(url))
+            window = run_window(payload['run_id'])
             lines = []
-            if plan is not None:
-                window = run_window(payload['run_id'])
-                for slot in payload['slots']:
+            for slot in payload['slots']:
+                if 'concept_id' in slot:
+                    # Made from a concept he approved in the mix plan: its review, never a go-live.
+                    record, code = derived_record(buffer, slot, fetch, now, window)
+                    if code:
+                        slots.hold(code)
+                    else:
+                        slots.count('derived_recorded')
+                        records.append(record)
+                elif plan is not None:
                     line, code = rebuild(buffer, slot, fetch, now, window)
                     if code:
                         slots.hold(code)
@@ -697,15 +1041,15 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                         if slot['channel'] in KRISH_CLICK_ONLY and slot['publish_mode'] != 'krish_click':
                             slots.count('linkedin_to_krish_click')
                         lines.append((line, slot))
-            else:
-                for _ in payload['slots']:
+                else:
                     slots.hold(reason)
             items = golive_proposals(payload, lines, new_formats(root), plan and plan['proposal_id'], now, root,
                                      slots) if lines else []
             activity = [{'line': 'Rebuilt ' + _posts(len(lines)) + " from their Buffer drafts; each matched the dispatch's digest"},
                         {'line': 'Posted, sent, published and spent nothing'}]
             reports = reports_for(items, slots, now, root, activity) if items else \
-                [held_report(event, payload['run_id'], slots, now, root)]
+                ([held_report(event, payload['run_id'], slots, now, root)] if slots.holds or not records else [])
+            derived, days = derived_reports(records, now, root) if records else ([], {})
             summary['proposals'] = {'go_live': len(items)} if items else {}
         else:
             item = packet_proposal(payload, plan) if reason in (None, 'no_open_plan') else None
@@ -718,9 +1062,15 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                             {'line': 'Posted, sent, published and spent nothing'}]
                 reports = reports_for([item], slots, now, root, activity)
                 summary['proposals'] = {item['stage']: 1}
-        summary['reports']['built'] = len(reports)
-        write_json(path, {'event': event, 'deliver': bool(deliver), 'reports': reports})
+            derived = []
+        summary['reports']['built'] = len(reports) + len(derived) + len(days)
+        write_json(path, {'event': event, 'deliver': bool(deliver), 'reports': reports, 'derived': derived,
+                          'days': days})
         if deliver:
+            # Reviews first, then the day's index that points at them, then the go-lives.
+            deliver_records(cc, derived, cc_records.REVIEW, summary)
+            for day, entries in days.items():
+                deliver_index(cc, day, entries, now, root, summary)
             deliver_reports(cc, reports, summary)
     except PayloadRejected as error:
         summary['error'] = 'payload_rejected_' + error.code
@@ -732,6 +1082,8 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
         summary['error'] = 'control_center_' + error.code
     except autorelease.Unpaged:
         summary['error'] = 'decisions_unpaged'
+    except ValueError as error:
+        summary['error'] = 'record_' + (str(error) if re.match(r'^[a-z_]{1,40}$', str(error)) else 'unreadable')
     return _finish(summary, slots)
 
 
@@ -764,7 +1116,7 @@ def main(argv=None, make_cc=None, make_buffer=None, fetch=None, out=print, root=
         out(json.dumps(summary, sort_keys=True))
         return 1
     cc = buffer = None
-    if args.event in (GO_LIVE, WEEK_PACKET):
+    if args.event in (GO_LIVE, WEEK_PACKET) or (args.event == MIX_PLAN and args.deliver):
         try:
             if args.event == GO_LIVE:
                 buffer = (make_buffer or autorelease._buffer_client)()

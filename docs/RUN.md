@@ -22,7 +22,10 @@ A session does one job, then ends at a gate packet:
   Buffer channels; copy lint, a share ask or a format unlike its draft holds.
   A draft is scheduled 5 to 90 minutes before its time, so a No first stops
   it; scheduled after a No, or while a stop cannot be read, fails the run.
-  Sessions save drafts, never `--deliver`. Scheduled is never live.
+  Sessions save drafts, never `--deliver`; they hand off drafts, the mix
+  plan (`growth-mix-plan`) and concept posts' reviews via `handoff.yml`, and
+  autorelease reads them back from Control Center by digest, never a file.
+  Scheduled is never live.
 - **Measure:** L0 `measure.yml` gives verdicts thrice daily; a session reads
   back "sent" and native URLs, metrics at their windows and the express
   intake.
@@ -98,13 +101,11 @@ needs the previous one and its evidence under `.scratch/runs/<run>/`:
   reviewer and the `payload_sha256` it reviewed. Snackable slots use lens
   `send-test` (`run send-test --answer FILE --record`).
 - `decision.json` (what `run release` reads): `run_id`, `proposal_id`,
-  `decision` "approved", `decided_at`, `slots` {slot: signed digest} and
-  optional `amended` {slot: his amended payload}. The spec `signature` names
-  `proposal_id` and holds `decision_digest`, the sha256 of the canonical
-  `slots` map. Each digest equals the slot's `payload_sha256` or recomputes
-  from his amended payload, which is what releases: rewrite the slot with it
-  first. A mismatch is never signed. Concept-only: `proposal_id` and
-  `decision` null, `slots` {}.
+  `decision` "approved", `decided_at`, `slots` {slot: signed digest},
+  optional `amended`; concept fields in docs/CONCEPT-MANIFEST.md. The
+  `signature` names `proposal_id` and holds `decision_digest` (sha256 of
+  `slots`). His amended payload is what releases: rewrite the slot with it
+  first. A mismatch is never signed.
 - `queued/<slot>.json`: `status` "scheduled" or "draft" (always "draft" for
   `krish_click`) and the signed digest as `payload_sha256`.
 - `live/<slot>.json`: `status` "sent" and an https `native_url` read back from
@@ -153,6 +154,5 @@ bytes against its signed manifest line; a file in 4 Growth is never trusted.
 - `docs/PUBLISHING-AUTHORITY.md`: who may publish where.
 - `docs/ACCOUNT-VOICE.md`: X, TikTok, Threads and LinkedIn are his personal
   accounts, in his own voice (sincere, warm, humble).
-- `AGENTS.md` ("The rules that never bend", "Autonomy"): outreach belongs to
-  Control Center; this engine never delivers pitches, partners or swaps
-  packs.
+- `AGENTS.md` ("The rules that never bend", "Autonomy"): outreach is
+  Control Center's; never pitches, partners or swaps packs.

@@ -19,13 +19,44 @@ Nobody has to be awake or online for these.
 |---|---|---|
 | The Control Center runner (`control-center.yml`): reads the day's instructions, checks the engine, sends the report, reads Krish's answers | every day 05:10, when Control Center wakes it; a backup at 05:40 runs only if that run has not worked today | 05:10, backup 05:40 |
 | The key check (`keys.yml`): checks that both keys still work. A refused or missing key fails the run, so GitHub emails Krish | every day 06:50 | 06:50 |
-| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). A post still scheduled after a No fails the run, so GitHub emails Krish. It holds a post whose words fail the copy lint or ask for the share, and every post on a Buffer route not yet recorded as passed: that route's one capability check goes through `run release` first. Never LinkedIn | every 30 minutes | every 30 minutes |
+| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). That is each day's go-live he approved (a go-live naming more than one New York day holds), and each post made from an idea and mock he approved in the week's mix plan, read back from Control Center (below). A post still scheduled after a No fails the run, so GitHub emails Krish. It holds a post whose words fail the copy lint or ask for the share, and every post on a Buffer route not yet recorded as passed: that route's one capability check goes through `run release` first. Never LinkedIn | every 30 minutes | every 30 minutes |
 | Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
-| The handoff (`handoff.yml`): turns the Buffer drafts or week packet a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash | when that maker wakes it | when that maker wakes it |
+| The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea | when that maker wakes it | when that maker wakes it |
 | The test suite (`check.yml`) | on every push and pull request | on every push and pull request |
 
 Only this lane holds the Control Center engine key. It is a GitHub
 repository secret. No chat session holds it.
+
+### How release reads what Krish approved
+
+Release trusts only what it reads back from Control Center, each record by
+its exact address and digest, and Buffer itself. It never trusts a file on
+the runner, a dispatch payload or anything on Krish's PC.
+
+- **A go-live.** His decision, then the go-live and its plan read back from
+  their own reports by the digest he decided on.
+- **The week's mix plan** (Krish, 29 Oct 2026: approve the idea and the
+  mock). The handoff reports the plan as one ask, or in parts in order when
+  a week passes 8,000 characters, each part with its ideas, claims and mock
+  hashes, plus a record of which version is in force. Release reads them
+  back, rebuilds every idea's hash, and applies his yes, his changed version
+  or his No with the same code the Control Center runner uses. His No on any
+  part stops the week; a newer plan he has not answered withdraws an older
+  yes.
+- **A post made from an approved idea.** The handoff records its review
+  under the post's own hash. Release reads that record back by the exact
+  hash, rebuilds the post from its Buffer draft, and schedules it only when
+  it matches its idea (one of its channels and formats, only its mock files,
+  its claim word for word), its review passes at that exact hash, and the
+  channel's New York day still has room (four a day on Instagram, YouTube,
+  TikTok and X, counting every post already scheduled in Buffer and each
+  post he signed for that day). While the plan cannot be trusted or a No
+  cannot be matched to its plan, every such post holds and the run fails,
+  so GitHub emails Krish.
+- **What it already did.** When every post of a go-live is done, release
+  records that in Control Center, so the next run, on a clean machine, never
+  acts on it again; it only checks that what is scheduled is still what he
+  approved.
 
 The North Star line in `NOW.md` is not made here. The "Growth: numbers"
 automation on Krish's PC reads the Substack Growth sources page in his
@@ -55,9 +86,11 @@ Krish's PC, under the same walls:
   `docs/TASTE.md`.
 - No figures, words or ids in this public repository.
 - To propose what it saved, a maker wakes the handoff with a
-  `repository_dispatch` (`growth-go-live-manifest`, `growth-week-packet` or
-  `growth-make-piece`; the payloads are in `engine/run/handoff.py`). The
-  runner checks every draft against its hash before Krish sees it.
+  `repository_dispatch` (`growth-go-live-manifest`, `growth-week-packet`,
+  `growth-make-piece` or `growth-mix-plan`; the payloads are in
+  `engine/run/handoff.py`). The runner checks every draft against its hash
+  before Krish sees it. A post made from an approved idea goes in the
+  go-live manifest with its idea and its review; it is never asked again.
 
 The jobs on Krish's PC run only while his PC is on: the nine automations in
 `automations.json` (their times are in `README.md`; the channel audit is
