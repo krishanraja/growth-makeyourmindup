@@ -63,6 +63,7 @@ import re
 import sys
 from urllib.parse import urlsplit
 
+from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, channel_id_errors
 from engine.control_center import sha256_hex
 from engine.copy_lint import copy_lint_errors, version as copy_lint_version
 from engine.core import instant, locked, read_json, write_json
@@ -101,22 +102,8 @@ CHANNEL_PROFILE = {'substack-notes': 'substack-notes', 'threads': 'threads', 'x'
 BUFFER_NAME = {'substack-notes': 'Krish', 'threads': 'krishraja1', 'x': 'TheRealKrisho',
                'instagram': 'makeyourmind.up', 'facebook': 'Makeyourmind/up', 'tiktok': 'therealkrisho',
                'youtube': 'makeyourmindup', 'linkedin': 'krish-raja'}
-# Channel id -> the one Buffer channelId this engine may act on, read with a
-# read-only list_channels of "My organization" on 2026-10-28. A channel is
-# pinned by service, name and this id together; a new id under the same name
-# holds until a reviewed change updates this table. The Substack entry is
-# Krish's profile, which carries Notes (R81).
-BUFFER_CHANNEL_ID = {'substack-notes': '6ae09edc2f1f5ed648e9e48c', 'threads': '6adccb77778b240e2fafbe75',
-                     'x': '6adccbf5778b240e2fafc457', 'instagram': '6adccb3a778b240e2fafbb63',
-                     'facebook': '6adccc1e778b240e2fafc615', 'tiktok': '6adccbdd778b240e2fafc32e',
-                     'youtube': '6adccf83778b240e2fafe7af', 'linkedin': '6adccba0778b240e2fafc06d'}
-# The other ventures' channels in the same Buffer organisation. Never this
-# engine's, whatever a readback, a slot or a hand-built call says (plan of
-# 28 Oct 2026, W5: never the Full Time or Heartside channels).
-DENIED_CHANNELS = {'6ae09bba2f1f5ed648e9cbfc': 'fulltime.fm TikTok',
-                   '6ae096d32f1f5ed648e99e98': 'Heartside Facebook',
-                   '6ae0973f2f1f5ed648e9a327': 'yourdoghasnotes TikTok',
-                   '6ae096872f1f5ed648e99b6d': 'yourdoghasnotes Instagram'}
+# BUFFER_CHANNEL_ID and DENIED_CHANNELS live in engine/buffer_channels.py, the
+# one table release and social preflight both read.
 # Native post URLs that carry the account handle as their first path segment.
 HANDLE_IN_PATH = ('x', 'tiktok', 'threads', 'substack-notes')
 KRISH_CLICK_ONLY = ('linkedin',)
@@ -295,18 +282,6 @@ def service_meta(post, service):
         return {}
     keyed = meta.get(service)
     return keyed if isinstance(keyed, dict) else meta
-
-
-def channel_id_errors(channel, channel_id):
-    """Why channel_id is not this engine's pinned Buffer channel for channel, if it is not."""
-    if not isinstance(channel_id, str):
-        return ['Buffer channelId must be text, not ' + type(channel_id).__name__]
-    if channel_id in DENIED_CHANNELS:
-        return ['Buffer channel ' + channel_id + ' is ' + DENIED_CHANNELS[channel_id]
-                + ', another venture\'s; this engine never acts on it']
-    if channel_id != BUFFER_CHANNEL_ID.get(channel):
-        return ['Buffer channel ' + str(channel_id) + ' is not this engine\'s pinned ' + str(channel) + ' channel']
-    return []
 
 
 def resolve_channel(slot, channels):

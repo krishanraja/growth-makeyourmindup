@@ -52,6 +52,10 @@ asset hashes/order, alt text and intended metadata before saving. Use
 saveToDraft=true with no due time through the connector, or the actual Save
 Draft control in Codex. This is draft authority, not scheduling/publication
 authority. Reopen the saved draft and independently read back native state.
+Save only to the Buffer channel whose channelId is this engine's pinned entry
+in `engine/buffer_channels.py`: the package names it as `buffer_channel_id`,
+and `social preflight` refuses any other id, including the fulltime.fm,
+Heartside and both yourdoghasnotes channels in the same organisation.
 
 Tool mechanics and dated failure recovery live in social/guides/buffer.md;
 capability status lives in social/tools/buffer.json. Start from the selected

@@ -1077,17 +1077,19 @@
     },
     {
       "id": "R93",
-      "statement": "Release acts only on this engine's eight Buffer channels, pinned by service, name and channelId; the other ventures' channels are refused by id at every layer.",
+      "statement": "Release acts only on this engine's eight Buffer channels, pinned by service, name and channelId; the other ventures' channels are refused by id in every release step and in social preflight, which a Buffer draft package passes before it is saved.",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Release acts only on a channel whose service, name and channelId all match its pinned entry, and refuses the fulltime.fm TikTok, the Heartside Facebook Page and both yourdoghasnotes channels by id, wherever they appear",
       "enforced_by": [
         "engine/run/release.py:resolve_channel",
-        "engine/run/release.py:channel_id_errors",
+        "engine/buffer_channels.py:channel_id_errors",
         "engine/run/release.py:argument_errors",
-        "engine/run/release.py:check_readback"
+        "engine/run/release.py:check_readback",
+        "engine/social.py:preflight"
       ],
       "tests": [
         "test_release_is_pinned_to_this_engines_buffer_channels",
+        "test_buffer_package_names_this_engines_pinned_channel_id",
         "test_channel_ids_are_pinned_and_other_ventures_denied",
         "test_decoy_and_denylisted_channel_ids_are_refused",
         "test_hand_built_calls_to_other_channels_are_refused",

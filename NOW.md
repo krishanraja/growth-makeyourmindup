@@ -33,7 +33,8 @@ one weekly chain that runs on time"): release is pinned to this engine's
 eight Buffer channels by channelId as well as service and name, checked
 against a read-only list of all twelve channels in the shared organisation,
 and the fulltime.fm, Heartside and both yourdoghasnotes channels are refused
-by id at every layer. Content-engine's copy lint is vendored and refuses
+by id in every release step and in social preflight, which a Buffer draft
+package passes before the daily job saves it. Content-engine's copy lint is vendored and refuses
 eyebrow labels, asterisks, AI notes and take labels in run lint, social
 preflight and release. His 28 October rulings are recorded: go-live is
 "Approve each day Monday", every route goes through Buffer with a first-post
