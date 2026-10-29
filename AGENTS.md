@@ -468,8 +468,10 @@ project". After he adds them, run steps 5 to 7.
 ## Lists this engine keeps
 
 `lists/swaps.md` (Substacks asked, with dates and replies),
-`lists/pitches.md` (shows pitched) and `lists/partners.md` (the 100-account
-partner map and each partner's step on the ask ladder). A job that adds rows commits them to
+`lists/pitches.md` (shows pitched), `lists/partners.md` (the 100-account
+partner map and each partner's step on the ask ladder) and `lists/pilots.json`
+(each amplification pilot's measured windows and What-Works verdict, which the
+Sunday report records and the GitHub runner reports; never a reading). A job that adds rows commits them to
 `main` with a message naming the job and date. If it cannot push, it puts
 the new rows in its final message so the next session can commit them.
 

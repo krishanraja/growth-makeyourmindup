@@ -326,17 +326,22 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report['status'], 'degraded')
 
     def test_runner_report_is_honest_about_what_it_cannot_measure(self):
-        report, error = runner_report(ROOT, 'makeyourmindup:2026-10-17:runner', NOW, checks(), 'synthetic', True, 'fixture')
+        report, error = runner_report(ROOT, 'makeyourmindup:2026-10-17:runner', NOW, checks(), 'synthetic', True, 'fixture',
+                                      sent={})
         self.assertIsNone(error)
         self.assertEqual(report['status'], 'held')
         for item in report['objectives']:
             self.assertEqual((item['value'], item['availability']), (None, 'missing'))
             self.assertTrue(item['reason'].startswith('Measured only in the publication workspace'))
         self.assertEqual({p['wall'] for p in report['proposals']}, {'strategy'})
-        # One strategy proposal per planned experiment template, no more.
+        # With nothing sent before: the standing plan once, and one strategy proposal per planned template.
         planned = json.loads((ROOT / 'experiments.json').read_text(encoding='utf-8'))['experiments']
-        self.assertEqual(len(report['proposals']), sum(e['status'] == 'planned' for e in planned))
+        self.assertEqual(len(report['proposals']), 1 + sum(e['status'] == 'planned' for e in planned))
         self.assertIn('makeyourmindup:experiment:answer-first-pieces', {p['proposal_id'] for p in report['proposals']})
+        # Unread, it proposes nothing rather than risk sending an ask twice.
+        unread = runner_report(ROOT, 'r1', NOW, checks(), 'synthetic', True, 'fixture')[0]
+        self.assertEqual(unread['proposals'], [])
+        self.assertIn(cc_loop.UNREAD, [h['reason'] for h in unread['holds']])
         self.assertTrue(any('9 tests' in a['line'] for a in report['activity']))
         failed, error = runner_report(ROOT, 'r1', NOW, checks(False), 'synthetic', True, 'fixture')
         self.assertEqual((failed['status'], error), ('degraded', 'offline_checks_failed'))
