@@ -71,6 +71,7 @@ task. The original technical backlog below remains open, not silently done.
 - [ ] **Step 3.** Act on his experiment decisions. When he approves one, the next runs prepare it (drafts as `wall: post` with the exact words) and report its readings against `new_subscribers`. When he declines one, drop it and do not propose it again unless the evidence changes.
 - [ ] **Step 4.** `paid_boosts_usd`: find out with evidence whether boost spend can be read (Substack or LinkedIn records). If it can, measure it. If it cannot, keep it missing with that exact reason.
 - [ ] **Step 5.** Make the daily recommendation the single post or experiment step most likely to add the right subscribers, prepared and tied to `new_subscribers`.
+- [ ] **Step 6 (added 2026-10-29).** Protocol 1.16.0, prepaid credits (docs/CONTROL-CENTER-BRIEF.md, "Prepaid credits"): read the directive's `credits` block, spend this engine's share of each pool (ElevenLabs, Apify) on work that moves its objectives, never past `remaining_for_you`, and report each spend in `credits_spent[]` with the report at `schema_version: "1.16.0"`. Nothing made is published without its own approval.
 
 ## The architecture upgrade (2026-10-27)
 
