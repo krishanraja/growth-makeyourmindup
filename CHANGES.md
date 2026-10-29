@@ -1,5 +1,22 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (night): Growth ticks the publish board (R122). Krish: "Now
+  that the growth repo takes care of more or less ALL posting, we need the
+  growth repo to keep the publish board check boxes update with what it has
+  done and when."
+  - `growth.py run board tick --deliver` runs after release every 30
+    minutes. For each post Buffer shows sent on a pinned channel at the day's
+    piece slot (12:30 New York on the series days, or the slot the board
+    names), with a native URL on the channel's own host, it posts
+    `{day, piece_id, channel, post_url, posted_at, buffer_post_id}` to
+    content-engine's `/api/board/<Monday>/posted` (content-engine PR #267).
+    Which piece sits on which day, and which boxes it has, it reads from the
+    board itself. A replay answers duplicate, so no ledger is kept. Without
+    the GROWTH_WRITEBACK_TOKEN secret it says the board is not configured.
+  - The sent-post listing now asks Buffer for `sentAt` (read live on
+    29 October). Before this, the measure job's production listing never
+    selected it, so suspected: every live sent post was skipped. Only the
+    tick's own listing asks for `externalLink`.
 - 2026-10-29 (night): one Claude scheduled session is allowed, and Apify is a
   ceiling. His words: "make an exception for makeyourmindup", and "bear in
   mind apify is pay as you go, always - we just need to ensure we don't blow

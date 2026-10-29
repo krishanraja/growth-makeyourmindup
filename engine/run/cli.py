@@ -11,7 +11,8 @@ ROUTES = {'new': 'spec', 'drafts': 'spec', 'lint': 'spec', 'status': 'spec', 'se
           'verdict': 'measure',
           'cost': 'cost', 'ga4': 'ga4', 'autorelease': 'autorelease', 'keys': 'keys',
           'dispatch-check': 'backup', 'calendar': 'calendar', 'carousel': 'plain', 'plain': 'plain',
-          'canva': 'canva', 'handoff': 'handoff', 'artdirect': 'artdirect', 'maker': 'maker'}
+          'canva': 'canva', 'handoff': 'handoff', 'artdirect': 'artdirect', 'maker': 'maker',
+          'board': 'board_tick'}
 
 
 def main(argv=None):

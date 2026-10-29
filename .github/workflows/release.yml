@@ -45,3 +45,10 @@ jobs:
             exit 1
           fi
           python growth.py run autorelease --deliver
+      # A loud release run (a post still scheduled after a No) still ticks what did go out.
+      - name: Tick the publish board for posts Buffer shows sent
+        if: success() || failure()
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          GROWTH_WRITEBACK_TOKEN: ${{ secrets.GROWTH_WRITEBACK_TOKEN }}
+        run: python growth.py run board tick --deliver
