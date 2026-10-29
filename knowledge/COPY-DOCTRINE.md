@@ -105,7 +105,9 @@ familiarity or a compliment.
 2. The finding itself, quoted literally from the published piece.
 3. The primary source the piece cites.
 4. The method: who gets paid, how it works, the dated call.
-5. What is published about Krish's own work, and nothing more.
+5. What the publication has published about its own work (its method and
+   its record of calls), said as "we", and nothing more. Proof never names
+   Krish (rule 14 below).
 6. Reasoning from the above.
 
 Never: invented testimonials, subscriber counts, reader quotes or results. A
@@ -181,7 +183,8 @@ front door promise, the lead and hook, the proof, then the call to action.
 - **D Clarity:** plain words, short sentences, a 12-year-old could follow.
 - **E Action:** one next step; the link is tracked and matched.
 - Voice: no em dashes, no percentages, no stock phrases, the delete-his-name
-  test. Then run `python growth.py check`.
+  test, and his name nowhere in the text (rule 14). Then run
+  `python growth.py check`.
 
 ## Critique rubric, for envelopes
 
@@ -229,3 +232,18 @@ Krish's rules win. Each one is listed so no session "fixes" it back:
 12. **Money models and paid tiers are only Sunday-report proposals**, with
     evidence and Krish's decision. No upsell, downsell or continuity offer is
     drafted for any reader.
+13. **Snackable posts never ask to be shared** (Krish, 2026-10-28). The
+    corpus's share and forward asks stay with the newsletter; a meme,
+    carousel, image, short, Story or Note earns the send with its content,
+    for a reason its package's share block names (`social/share.json`).
+14. **No content names Krish** (Krish, 2026-10-28: "Remember, no content
+    refers to Krish, ever. I still see that popping up from time to time.
+    Even articles written are not authored by Krish. My face only, for
+    assets and the video format."). The publication's own lanes and proof
+    speak as the publication: "we", never "Krish found" or "Krish's test".
+    His personal accounts stay personal (his answer, 29 October: "No,
+    personal stays personal"): first person is fine there, his name in the
+    text never is. Another person called Krish is refused too, with no
+    override (his answer: "Yes, block it"). content-engine's copy lint
+    refuses the name everywhere Growth writes public words
+    (`vendor/content-engine/copy-lint/SOURCE.md`).

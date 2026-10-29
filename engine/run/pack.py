@@ -98,7 +98,7 @@ def compile_pack(spec, day=None, channel=None, runs=None, root=ROOT, records=Non
     keep = [f for f in found['errors'] + found['warnings'] if f['slot_id'] is None or f['slot_id'] in ids]
     findings = []
     try:
-        rows = [r for r in status(spec, runs, root)['slots'] if r['slot_id'] in ids]
+        rows = [r for r in status(spec, runs, root, records)['slots'] if r['slot_id'] in ids]
     except (ValueError, OSError) as exc:
         rows, findings = [], ['status unavailable: ' + str(exc)]
     cards, more = crew_cards(sorted({s['channel'] for s in part['slots']}), root, week_flag(spec),

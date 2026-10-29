@@ -157,6 +157,16 @@ Growth now produces, in Canva, the formats content-engine does not cover
 parallel-production line above; content-engine keeps every other format and
 its standards, and the lane applies them by reference.
 
+28 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md` and
+`docs/PUBLISHING-AUTHORITY.md`, "28 October 2026"): Growth also makes
+derived carousels to content-engine's standard ("take over posting as well
+as creating new assets like carousels") and owns the off-day lane (Tuesday,
+Thursday, Saturday and Sunday on Instagram, TikTok and YouTube Shorts).
+Go-live is "Approve each day Monday"; every route goes through Buffer,
+pinned by channelId to this engine's eight channels, and every post passes
+content-engine's copy lint. Engagement is a daily 10-minute queue across X,
+TikTok, Instagram and LinkedIn, still prepared only. LinkedIn stays his click.
+
 Growth strategy is self-contained here. Content-engine supplies production
 assets; Control Center is the eventual unified review surface. Scheduled
 jobs may use the supported growth routes. Interactive work makes no Control

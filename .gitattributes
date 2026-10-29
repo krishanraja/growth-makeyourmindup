@@ -1,3 +1,6 @@
 # Preserved originals must keep their exact bytes on every platform.
 knowledge/corpus/** -text
 knowledge/*.docx binary
+# Vendored files are pinned by sha256 and the run doc by byte size: keep LF on every platform.
+vendor/** -text
+docs/RUN.md text eol=lf

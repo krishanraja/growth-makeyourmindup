@@ -134,3 +134,61 @@ Substack profile at up to two a day as he signs, and Threads, at one a
 day in his personal voice, are scoped accounts by his ruling, not because
 Buffer connects them. The line above that a connected Buffer account alone
 never adds it to scope still holds for every other account.
+
+## 28 October 2026: derived carousels, the off-day lane and the engage queue
+
+Rulings: Krish, 28 October 2026 (`CHANGES.md`), from the plan he approved
+that day. For the three things below they supersede the lines above that
+keep production out of Growth; content-engine keeps every production
+standard and the hero assets of each piece (the article, the two cuts,
+thumbnails and covers).
+
+**Growth makes derived carousels.** "take over posting as well as creating
+new assets like carousels". Growth makes carousels derived from approved
+pieces to content-engine's standard
+([content-engine/docs/CAROUSEL-STANDARD.md](https://github.com/krishanraja/content-engine/blob/main/docs/CAROUSEL-STANDARD.md)),
+its rejection floor and its copy lint. The standard stays there and is
+applied by reference, never copied here. Derived carousels go on the Monday
+final board for the same approval as the hero pieces. This supersedes the
+26 October split for carousels only.
+
+**The off-day lane is Growth's.** "I also want the Make Your Mind Up
+Instagram, TikTok, and YouTube Shorts to post on days that are not
+mon/weds/fri, with memes, positive uplifting AI news carousels, or simple
+valuable advice on how to level up with AI ... the growth repo should be
+accountable for this and this should show me quickly for approval, and when
+I one click green light it puts it in the next available slot".
+
+- Days and channels: Tuesday, Thursday, Saturday and Sunday on the
+  makeyourmindup Instagram, TikTok (`therealkrisho`) and YouTube Shorts
+  channels in the release allowlist. Shorts takes video only, so a carousel
+  goes there as a short slideshow.
+- Formats: memes made fresh in the brand kit (a borrowed format is
+  credited; someone else's image or clip is never reposted); uplifting AI
+  news carousels, where every claim names its primary source, is dated
+  within 7 days and passes content-engine's fact check before he sees it;
+  level-up advice, one practical move per post; and snackable cuts of past
+  pieces, named here by word range and cut by content-engine from the
+  approved master.
+- Planned on Sunday: "I'm happy to plan the Tuesday, Thursday, Saturday,
+  and Sunday content within the Sunday ideas session if you give me a few
+  options to approve as you do the Mon/wed/fri". Growth feeds 2 to 3
+  options a day to the Sunday ideas board through content-engine's
+  `week_board.py` inputs, never a board of its own. Each shows its format,
+  source and draft copy, and he approves or skips it with one press.
+- Mid-week, a green press puts an approved post in the next free off-day
+  slot per channel (`docs/PUBLISHING-AUTHORITY.md`).
+- Accountable: Growth reports slots filled against slots available, and
+  per-format results, to Control Center.
+
+**Engagement is a daily 10-minute queue.** "10 min daily queue is fine, add
+Instagram and LinkedIn to this, and make sure everything is one click
+copiable and the click through goes precisely where i need to engage."
+Growth prepares it across X, TikTok, Instagram and LinkedIn: each reply
+drafted with a one-click copy button, each link opening the exact post,
+reply box or profile. Control Center shows it. It stays prepared only: he
+submits every reply, and following and liking stay his.
+
+Built so far (28 October): the release channel lock and the copy lint. The
+lane, the engage queue, derived carousels and the Monday go-live reads are
+Wave 2 of the plan, with the first off-day posts due Tuesday 10 November.

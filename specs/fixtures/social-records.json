@@ -44,7 +44,8 @@
         "substack-notes"
       ],
       "min_assets": 0,
-      "max_assets": 1
+      "max_assets": 1,
+      "snackable": true
     },
     "single-image": {
       "id": "single-image",
@@ -54,7 +55,8 @@
         "x"
       ],
       "min_assets": 1,
-      "max_assets": 1
+      "max_assets": 1,
+      "snackable": true
     },
     "text": {
       "id": "text",
@@ -64,7 +66,8 @@
         "x"
       ],
       "min_assets": 0,
-      "max_assets": 0
+      "max_assets": 0,
+      "snackable": false
     }
   }
 }

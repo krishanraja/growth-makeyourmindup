@@ -10,8 +10,11 @@ from pathlib import Path
 import re
 
 from ..control_center import sha256_hex
+from ..copy_lint import copy_lint_errors
 from ..core import TIMEZONE, UTC, calendar_date, http_url, instant, ny_time, read_json, write_json
 from ..packs import prose_errors
+from ..share import (compare_send_test, cta_applies, cta_errors, share_errors, share_line,
+                     slot_send_test_request, stage_slot_send_test)
 from ..social import inventory, validate
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -92,7 +95,26 @@ def computed(spec, root=ROOT):
         pass
     for slot in spec['slots']:
         slot['payload_sha256'] = payload_sha256(slot)
+        derived = forward_line(slot)
+        if derived is not None:
+            slot['forward_line'] = derived
     return spec
+
+
+def forward_line(slot):
+    """The forward_line a slot's share block computes (engine/share.py:share_line), or None without a valid one."""
+    share = slot.get('share') if isinstance(slot, dict) else None
+    if not isinstance(share, dict):
+        return None
+    try:
+        return share_line(share)
+    except ValueError:
+        return None
+
+
+def snackable(record):
+    """A format record marked snackable: its slots are built to be sent (Krish, 2026-10-28)."""
+    return isinstance(record, dict) and record.get('snackable') is True
 
 
 def skeleton(start, kind='week', run_id=None, root=ROOT):
@@ -182,6 +204,28 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
         errors.append(finding('krish_click_due_at', at + '.due_at',
                               'a krish_click slot stays an unscheduled draft: due_at must be null', sid))
     errors += [finding('prose', at + '.words', 'words ' + e, sid) for e in prose_errors(slot['words'])]
+    try:
+        lint = copy_lint_errors(slot['words'], 'channel_copy')
+    except ValueError as exc:
+        lint = ['copy lint could not run: ' + str(exc)]
+    errors += [finding('copy_lint', at + '.words', 'words: ' + e, sid) for e in lint]
+    # Built to be sent (Krish, 2026-10-28): a snackable slot says why one person sends it to another, its
+    # forward_line is computed from that, and the share comes from the content, never a request.
+    snack = snackable(fmt)
+    share = slot.get('share')
+    if snack and share is None:
+        errors.append(finding('share_required', at + '.share', 'a snackable slot needs a share block: who sends it'
+                              ' to whom, for which job, in what words (social/share.json)', sid))
+    elif share is not None:
+        found = share_errors(share, snack)
+        errors += [finding('share', at + '.share', 'share ' + e, sid) for e in found]
+        derived = forward_line(slot)
+        if not found and derived is not None and slot['forward_line'] != derived:
+            errors.append(finding('forward_line', at + '.forward_line', 'forward_line is computed from share:'
+                                  ' run new --from', sid))
+    if cta_applies(snack):
+        errors += [finding('share_cta', at + '.words', 'words ask for the share (' + e + '); the share must come'
+                           ' from the content (social/share.json)', sid) for e in cta_errors(slot['words'])]
     warnings += [finding('forward_line_prose', at + '.forward_line', 'forward_line ' + e, sid)
                  for e in prose_errors(slot['forward_line'])]
     listed, approved = manifest
@@ -416,7 +460,32 @@ def row(slot, stage, reason=None):
             'next': STAGES[index + 1] if index + 1 < len(STAGES) else None, 'reason': reason}
 
 
-def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None):
+def send_test_reason(slot, review, label):
+    """None while the recorded blind answer still passes against this slot's share block, else why not.
+
+    payload_sha256 does not cover the share block, so a stored pass is never
+    trusted: the reader's answer is compared again with the share block and the
+    request as they stand now (R99). A changed receiver or job, or a request the
+    answer was not given for, sends the slot back to linted for a fresh reader.
+    """
+    tested = review.get('send_test')
+    answer = tested.get('reader_answer') if isinstance(tested, dict) else None
+    if not isinstance(answer, dict):
+        return label + ' carries no reader_answer to compare again; record the send test with run send-test --answer'
+    if slot.get('share') is None:
+        return label + ' is a send test, but the slot declares no share block for it to match'
+    try:
+        result = compare_send_test(slot['share'], answer, slot_send_test_request(slot))
+    except (ValueError, KeyError, TypeError) as exc:
+        return label + ' no longer counts: ' + str(exc)
+    if result['verdict'] != 'pass':
+        return (label + ' no longer passes against this share block (' + '; '.join(result['reasons'])
+                + '); run a fresh blind reader with run send-test')
+    return None
+
+
+def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None, snack=False):
+    """snack: the slot's format is snackable, so its review is the blind send test (crew/send-test/)."""
     sid = slot['slot_id']
     if lint_reason:
         return row(slot, 'drafted', lint_reason)
@@ -429,6 +498,10 @@ def slot_status(slot, folder, lint_reason, decision, decision_reason, window=Non
         reason = label + " must carry this slot's payload_sha256; a review of another payload never counts"
     elif review is not None and not _same(review, 'slot_id', sid):
         reason = label + ' reviewed another slot'
+    elif review is not None and snack and review.get('lens') != 'send-test':
+        reason = label + ' of a snackable slot is the blind send test: lens send-test (run send-test)'
+    elif review is not None and review.get('lens') == 'send-test':
+        reason = send_test_reason(slot, review, label)
     if reason:
         return row(slot, 'linted', reason)
     if decision_reason:
@@ -472,9 +545,10 @@ def slot_status(slot, folder, lint_reason, decision, decision_reason, window=Non
     return row(slot, 'verdict')
 
 
-def status(spec, runs=None, root=ROOT):
+def status(spec, runs=None, root=ROOT, records=None):
     """Each slot's furthest stage the evidence proves, and why it stops there."""
     validate(spec, read_json(SCHEMA))
+    formats = (records or social_records(root))['format']
     folder = run_dir(spec, runs, root)
     lint_record, lint_reason = _evidence(folder / 'lint.json', 'lint.json (run lint --record)')
     if lint_record is not None:
@@ -491,8 +565,40 @@ def status(spec, runs=None, root=ROOT):
     except ValueError:
         shown = folder.name
     return {'local_only': True, 'run_id': spec['run_id'], 'evidence': shown,
-            'slots': [slot_status(slot, folder, lint_reason, decision, decision_reason, window)
+            'slots': [slot_status(slot, folder, lint_reason, decision, decision_reason, window,
+                                  snackable(formats.get(slot['format'])))
                       for slot in spec['slots']]}
+
+
+# The blind send test for a slot -------------------------------------------
+
+def send_test_review(spec, slot_id, answer=None, stage=None, assets=None):
+    """A slot's blind request, or with the reader's answer the review record run status reads.
+
+    The record's lens is send-test and it carries the slot's payload_sha256, so a
+    later edit to the words, assets or format leaves it reviewing another payload.
+    With stage and assets, the slot's assets are found by name in the assets
+    folder, checked against their sha256 and copied under blind names, with
+    request.json, into the new stage folder: the only thing the reader is given.
+    """
+    validate(spec, read_json(SCHEMA))
+    slot = next((s for s in spec['slots'] if s['slot_id'] == slot_id), None)
+    if slot is None:
+        raise ValueError('no slot ' + str(slot_id) + ' in this spec')
+    if stage is not None:
+        if answer is not None or assets is None:
+            raise ValueError('--stage needs --assets and no --answer: stage the request, then compare the answer')
+        return dict(stage_slot_send_test(slot, stage, assets), staged=str(stage))
+    request = slot_send_test_request(slot)
+    if answer is None:
+        return request
+    if slot.get('share') is None:
+        raise ValueError(slot_id + ' declares no share block to compare against')
+    if slot['payload_sha256'] != payload_sha256(slot):
+        raise ValueError(slot_id + ': payload_sha256 does not recompute; run new --from first')
+    result = compare_send_test(slot['share'], answer, request)
+    return {'slot_id': slot_id, 'verdict': result['verdict'], 'lens': 'send-test',
+            'payload_sha256': slot['payload_sha256'], 'send_test': result}
 
 
 # Command line ---------------------------------------------------------------
@@ -504,7 +610,8 @@ def main(argv=None):
     p.add_argument('--start', help='YYYY-MM-DD in New York; a week starts on its Monday')
     p.add_argument('--kind', choices=sorted(LENGTH), default='week')
     p.add_argument('--run-id')
-    p.add_argument('--from', dest='source', help='a draft spec: fill week_target and every payload_sha256')
+    p.add_argument('--from', dest='source',
+                   help='a draft spec: fill week_target, every payload_sha256 and each forward_line with a share')
     p.add_argument('--out')
     for name in ('lint', 'status'):
         p = sub.add_parser(name)
@@ -512,6 +619,15 @@ def main(argv=None):
         p.add_argument('--runs-dir', help='evidence root (default .scratch/runs)')
         if name == 'lint':
             p.add_argument('--record', action='store_true', help='write lint.json for run status')
+    p = sub.add_parser('send-test', help="a slot's blind send test: the request, or with --answer its review record")
+    p.add_argument('spec')
+    p.add_argument('slot')
+    p.add_argument('--answer', help="the fresh reader's JSON answer to this slot's request")
+    p.add_argument('--record', action='store_true', help='write the review record to review/<slot>.json')
+    p.add_argument('--stage', help='a new or empty folder: the assets under blind names and request.json,'
+                                   ' the only things the reader is given')
+    p.add_argument('--assets', help="with --stage: a folder holding the slot's assets by their slot names")
+    p.add_argument('--runs-dir', help='evidence root (default .scratch/runs)')
     args = parser.parse_args(argv)
     try:
         if args.action == 'new':
@@ -527,6 +643,20 @@ def main(argv=None):
             print('spec written locally: ' + args.out + '; no external write')
             return 0
         spec = read_json(args.spec)
+        if args.action == 'send-test':
+            if args.record and not args.answer:
+                raise ValueError('--record needs --answer: only a compared answer is review evidence')
+            if args.assets and not args.stage:
+                raise ValueError('--assets is read only with --stage')
+            if args.record and args.stage:
+                raise ValueError('--record needs a compared answer, not a staged request')
+            result = send_test_review(spec, args.slot, read_json(args.answer) if args.answer else None,
+                                      args.stage, args.assets)
+            if args.record:
+                write_json(run_dir(spec, args.runs_dir) / 'review' / (args.slot + '.json'),
+                           dict(result, recorded_at=instant().isoformat()))
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+            return int(bool(args.answer) and result['verdict'] != 'pass')
         if args.action == 'status':
             print(json.dumps(status(spec, args.runs_dir), indent=2))
             return 0

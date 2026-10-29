@@ -8,6 +8,7 @@ import re
 import unicodedata
 from urllib.parse import parse_qsl, urlsplit
 
+from .copy_lint import copy_lint_errors
 from .core import KINDS, OWN_HOSTS, PLATFORMS, calendar_date, canonical, http_url, identity, instant
 
 EM_DASH = re.compile('\u2014')
@@ -25,6 +26,15 @@ URL = re.compile(r'https?://[^\s<>\]\["\']+', re.I)
 ACTING = {'send', 'post', 'publish', 'schedule', 'send_at', 'post_at', 'publish_at', 'scheduled_at', 'auto_post'}
 ITEM_WIRE = ('platform', 'target_url', 'target_name', 'why', 'text', 'status')
 NUMBER_WIRE = ('platform', 'followers', 'new_this_week', 'reach', 'visits', 'new_free', 'new_paid', 'unsubscribes', 'top_source', 'note')
+# Pack kinds whose items are readings and recommendations for Krish, never pasted anywhere public
+# (cc_loop.WALLS puts them behind strategy and none, not post or send), so a report can quote the
+# copy the lint held. Every other kind, and a draft checked with no kind, is public copy.
+INTERNAL_KINDS = ('report', 'numbers')
+# Private outreach Krish sends himself from his own address (a pitch, a swap, a partner note). It is not
+# published content, so it may be signed with his name; every other lint pattern still runs on it.
+# Krish, 2026-10-28: "Remember, no content refers to Krish, ever." The pitch sign-off in jobs/pitches.md
+# is his own email signature, not content.
+PRIVATE_OUTREACH_KINDS = ('pitches', 'swaps', 'partners')
 
 
 def x_weight(text):
@@ -65,6 +75,16 @@ def problems(item, kind=None):
     if item.get('platform') not in PLATFORMS:
         errors.append('unknown platform')
     errors += prose_errors(text)
+    # The draft is public once he pastes it (Krish, 28 Oct 2026: no eyebrows,
+    # asterisks, AI notes or take labels); an unreadable lint refuses the pack.
+    if kind not in INTERNAL_KINDS:
+        try:
+            hits = copy_lint_errors(text, 'channel_copy')
+            if kind in PRIVATE_OUTREACH_KINDS:
+                hits = [h for h in hits if not h.startswith('copy lint no_name:')]
+            errors += hits
+        except ValueError as exc:
+            errors.append('copy lint could not run: ' + str(exc))
     if len(text.encode('utf-16-le')) // 2 > 4000:
         errors.append('exceeds the API limit of 4000 UTF-16 units')
     if item.get('platform') == 'x':
@@ -78,6 +98,12 @@ def problems(item, kind=None):
         errors.append('a LinkedIn comment must have no links')
     if kind == 'radar' and len(text.split()) > 60:
         errors.append('a radar reply must be at most 60 words')
+    if kind in ('daily', 'radar'):
+        # Built to be sent (Krish, 2026-10-28) covers snackable posts. Daily and radar drafts are text, so
+        # share asks are refused here only if Krish widens share.json share_cta_scope to all_post_copy.
+        from .share import cta_applies, cta_errors  # local: engine.share reads prose_errors from this module
+        if cta_applies(False):
+            errors += ['asks for the share (' + e + '); the share must come from the content' for e in cta_errors(text)]
     for field in ('target_url',):
         if item.get(field) is not None and not http_url(item[field]):
             errors.append(field + ' must be an http or https URL')

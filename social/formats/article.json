@@ -10,6 +10,7 @@
   "guide": "social/guides/formats.md",
   "min_assets": 0,
   "max_assets": 0,
+  "snackable": false,
   "delivery_checks": [
     "Audit free subscription and related-reading journeys live.",
     "Body edits and the live paid offer retain their separate approval boundaries.",

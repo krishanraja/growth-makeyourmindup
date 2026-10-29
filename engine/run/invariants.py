@@ -29,7 +29,8 @@ GUARD = re.compile('^' + GUARD_PATH + '$')
 TEST_DEF = re.compile(r'^\s*def (test_[A-Za-z0-9_]+)\(', re.M)
 HOUSE = re.compile('\u2014|\x25|\\bper ?cent\\b', re.I)
 PLAY = re.compile(r'\bP[1-9]\b')
-RULE_REF = re.compile(r'\bR\d\d\b')
+# Two or three digits: R01 to R99, then R100 onwards for the rulings still to come.
+RULE_REF = re.compile(r'\bR\d{2,3}\b')
 FAILURE_REF = re.compile(r'\b(?:F\d\d|G[1-9])\b')
 
 
@@ -78,7 +79,7 @@ def load_rules(root=ROOT):
         at = str(rule.get('id')) if isinstance(rule, dict) else '?'
         if not isinstance(rule, dict) or any(f not in rule for f in RULE_FIELDS):
             raise ValueError(at + ': rule needs ' + ', '.join(RULE_FIELDS))
-        if not re.match(r'^R\d\d$', rule['id']) or rule['id'] in seen:
+        if not re.match(r'^R\d{2,3}$', rule['id']) or rule['id'] in seen:
             raise ValueError(at + ': rule id must be unique, like R01')
         seen.add(rule['id'])
         if rule['source_file'] not in RULE_SOURCES:

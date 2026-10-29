@@ -19,6 +19,7 @@ creating or uploading a package; keep private evidence out of the shared library
 | How do we safely operate the selected tool? | `tools/<tool>.json` and its guide |
 | What actually worked, failed, or remains a hypothesis? | One evidence-linked record per lesson in `lessons/` |
 | What exact post is proposed? | Private package conforming to `schemas/package.schema.json` |
+| Why would one person send it to another? | The package's `share` block, checked against `share.json`; the blind reader is `crew/send-test/` |
 | How is creative made and judged? | Content-engine's production contract; see `docs/ENGINE-BOUNDARY.md` |
 | How are Notes and memes made? | `guides/canva.md` (format `production_owner` is `growth-canva`) |
 | What is live right now? | Actual owned native pages and tool readback; private run evidence |
@@ -37,15 +38,24 @@ python growth.py social route instagram carousel
 python growth.py social route linkedin single-image
 python growth.py social route threads text
 python growth.py social preflight .scratch/my-post/package.json
+python growth.py social send-test .scratch/my-post/package.json
 ```
 
 The route command returns the narrow reading path, relevant learned rules,
 specific tested tool capability, remaining holds and mandatory live checks.
 Preflight verifies identity/context, format, publication mode, production asset
-bytes and any stored exact-payload digest. Read docs/PUBLISHING-AUTHORITY.md:
+bytes and any stored exact-payload digest. A Buffer package names its
+`buffer_channel_id`, which must be this engine's pinned channel in
+`engine/buffer_channels.py`; another venture's id is refused. Read docs/PUBLISHING-AUTHORITY.md:
 approved brand content and scoped X, TikTok and Threads have delegated
 cadence. LinkedIn remains an unscheduled draft for Krish's manual final
 publication.
+Every snackable package (its format profile says `"snackable": true`) carries a
+`share` block, and its copy never asks for the share (Krish, 28 October 2026;
+`guides/formats.md`, "Built to be sent"). Preflight holds it until a blind
+send-test answer to this exact revision (its `request_sha256`) is supplied
+with `--send-test ANSWER.json` and matches; `social send-test PACKAGE.json
+--stage FOLDER` prepares the only things the reader is given.
 Preflight never authenticates approval or grants permission
 to publish. It has no network, write, schedule or publication capability.
 

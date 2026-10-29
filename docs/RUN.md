@@ -1,11 +1,8 @@
 # Run sessions
 
-The standing doc a run session reads first. `growth.py run pack` puts it at the
-top of every session pack. The plan behind it is
+The standing doc a run session reads first; `growth.py run pack` puts it at
+the top of every pack. The plan behind it is
 `docs/plans/2026-10-27-engine-architecture.md` (Krish, 27 Oct 2026).
-Until `invariants/rules.json` lands, a run session also reads AGENTS.md ("The
-rules that never bend", "Autonomy"), docs/PUBLISHING-AUTHORITY.md and
-docs/ACCOUNT-VOICE.md.
 
 ## What a run session does
 
@@ -16,12 +13,14 @@ and measures it. LinkedIn stays his own click. Nothing is spent.
 
 A session does one job, then ends at a gate packet:
 
-- **Release:** only through `growth.py run release` (not built yet; until it
-  lands no session creates, schedules or edits a Buffer post), and only for an
-  approved go-live decision the engine reads from Control Center in its own
-  run. `decision.json` is written only from that readback, never by hand. An
-  interactive session never releases and never uses `--deliver`. Scheduled is
-  never live.
+- **Release:** only through `growth.py run release`, and only for an approved
+  go-live decision the engine reads from Control Center in its own run
+  ("Approve each day Monday", 28 Oct). `decision.json` is written only from
+  that readback, never by hand. It acts only on this engine's eight Buffer
+  channels, pinned by channelId, holds a slot whose words fail the copy lint,
+  and releases only an unverified route's first post, its check.
+  An interactive session never releases and never uses `--deliver`.
+  Scheduled is never live.
 - **Measure (daily):** read back "sent" and the native URL, capture metrics at
   their windows, write verdicts, check the express intake.
 - **Express:** build one approved idea into the waiting go-live, or its own.
@@ -31,23 +30,24 @@ ends. A run session commits nothing to `engine/`.
 
 ## Commands
 
-All offline; none posts, sends, schedules or spends.
+All offline, as `python growth.py run ...`; none posts, sends, schedules or
+spends.
 
-- `python growth.py run new --start YYYY-MM-DD [--kind week|piece|express]`:
-  a skeleton with its computed fields.
-- `python growth.py run new --from DRAFT --out SPEC`: fill `week_target` and
-  every `payload_sha256` from their sources. Never type them by hand.
-- `python growth.py run lint SPEC [--record]`: errors (exit 1) and warnings as
-  JSON. `--record` writes `lint.json` for status.
-- `python growth.py run status SPEC`: each slot's stage, computed from evidence.
-- `python growth.py run pack SPEC [--day YYYY-MM-DD] [--channel ID]`: this pack.
-  Over 36 KB is refused, and so is a part over its budget (this doc 8 KB, the
-  slice 10 KB, crew cards 12 KB, findings and status 6 KB); narrow it. Crew
-  cards load by the registry flag for the run's week (such as `w45`), else by
-  channel.
-- `python growth.py run card lint FILE`: a Codex task card, before dispatch.
-- `release`, `measure`, `northstar`, `verdict`, `cost`, `ga4`: each says "not
-  built yet" until its module lands.
+- `run new --start YYYY-MM-DD [--kind week|piece|express]`: a skeleton with
+  its computed fields.
+- `run new --from DRAFT --out SPEC`: fill `week_target`, every
+  `payload_sha256` and each `share`'s `forward_line`. Never type them by hand.
+- `run lint SPEC [--record]`: errors (exit 1) and warnings as JSON.
+- `run status SPEC`: each slot's stage, computed from evidence.
+- `run pack SPEC [--day YYYY-MM-DD] [--channel ID]`: this pack. Over 36 KB,
+  or a part over its budget (this doc 8 KB, the slice 10 KB, the cards 12 KB,
+  findings and status 6 KB), is refused; narrow it. Crew cards load by the
+  registry flag for the run's week (such as `w45`), else by channel.
+- `run card lint FILE`: a Codex task card, before dispatch.
+- `run release plan|check SPEC ...`: exact Buffer call arguments, then
+  readback evidence; it calls nothing itself.
+- `run send-test SPEC SLOT`: the blind send test.
+- `run measure`, `northstar`, `verdict`, `cost`, `ga4`: see `--help`.
 
 Keep each real spec at `.scratch/runs/<run>/spec.json`, never in git: it holds
 unpublished words. The run folder is the `run_id` with each `:` as `_`.
@@ -56,18 +56,21 @@ unpublished words. The run folder is the `run_id` with each `:` as `_`.
 
 Schema errors; a `week_target` that is not the ladder rung in
 `docs/NORTH_STAR.md` for the Monday (New York) of `window.start`; a
-`payload_sha256` that does not recompute; words that fail `prose_errors`
-(em dashes, stock phrases and the other house rules); an unknown channel or
-format, or a format the channel does not take (`social/channels`,
-`social/formats`); `publish_mode` other than `krish_click` on a
-human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a `krish_click` slot with a `due_at`; `spend_usd` above 0; two
-experiments on one channel; an arm that is not registered; an asset hash that
-is not 64 lowercase hex; more scheduled slots on a New York day than the
-channel's `daily_posts_target` (null: no cap); an engine slot asset in no
-manifest with a `creative_approval_ref` (release holds it too); a window
-that is not New York midnights 7 (week, from a Monday), 8 (piece) or 1
-(express) days long. Warnings include an engine slot with no `due_at`: it
-cannot release, and the daily cap counts only scheduled slots.
+`payload_sha256` that does not recompute; words that fail `prose_errors` (em
+dashes, stock phrases, other house rules) or content-engine's copy lint
+(eyebrow labels, asterisks, AI notes, take labels); a snackable slot with no
+valid `share`, a stale `forward_line` or a share ask (`social/share.json`); an
+unknown channel or format, or a format the channel does not take
+(`social/channels`, `social/formats`); `publish_mode` other than `krish_click`
+on a human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a
+`krish_click` slot with a `due_at`; `spend_usd` above 0; two experiments on one
+channel; an unregistered arm; an asset hash that is not 64 lowercase hex; more
+scheduled slots on a New York day than the channel's `daily_posts_target`
+(null: no cap); an engine slot asset in no manifest with a
+`creative_approval_ref` (release holds it too); a window that is not New York
+midnights 7 (week, from a Monday), 8 (piece) or 1 (express) days long. Warnings
+include an engine slot with no `due_at`: it cannot release, and the daily cap
+counts only scheduled slots.
 
 A slot's `payload_sha256` covers exactly `channel`, `format`, `words`, the
 ordered asset hashes, `link_placement`, `due_at` and `publish_mode`, as
@@ -82,7 +85,8 @@ needs the previous one and its evidence under `.scratch/runs/<run>/`:
   less `signature` and `buffer_draft_id` (signing and queueing keep it valid;
   any other edit needs `--record` again).
 - `review/<slot>.json`: `verdict` "pass", a `lens` id from a fresh-context
-  reviewer and the `payload_sha256` it reviewed.
+  reviewer and the `payload_sha256` it reviewed. Snackable slots use lens
+  `send-test` (`run send-test --answer FILE --record`).
 - `decision.json` (the shape `run release` reads): `run_id`, `proposal_id`,
   `decision` "approved", `decided_at`, `slots` {slot: signed digest} and,
   optionally, `amended` {slot: Krish's amended payload}. The spec `signature`
@@ -106,14 +110,14 @@ Draft counts are never outcomes.
 - **Standing plan:** one `plan` proposal (wall `strategy`) for W45 to W52;
   every go-live names it as `parent_proposal_id`.
 - **G-A, Sunday (up to 15 min):** the week's Notes, Threads and evergreen slots
-  as one go-live; payloads of 8,000 characters or less, split if larger.
+  as one go-live; payloads up to 8,000 characters, split if larger.
 - **G-B, Mon/Wed/Fri (up to 5 min each):** a piece's batch across channels.
 - **G-X, express (up to 2 min):** joins the waiting go-live; one a day.
 - **Check-ins:** Sunday (with the What-Works ledger) and Wednesday.
 
 Control Center shows one ask per engine at a time. Release checks each slot's
-bytes against the signed manifest line at release time; a file in 4 Growth is
-never trusted for where it lives.
+bytes against its signed manifest line; a file in 4 Growth is never trusted
+for where it lives.
 
 ## Budgets (provisional until the Phase 0 baseline)
 
@@ -140,12 +144,12 @@ never trusted for where it lives.
 7. If an automation changed, verify its owner and schedule; update existing
    jobs, never duplicate them.
 
-## Rules live elsewhere
+## Rules a run session also reads
 
 - `invariants/rules.json`: each rule with its verbatim source quote.
 - `docs/PUBLISHING-AUTHORITY.md`: who may publish where.
-- `docs/ACCOUNT-VOICE.md`: X, TikTok and Threads are Krish's personal
-  accounts and keep his personal voice: sincere, warm, humble. LinkedIn too,
-  and LinkedIn is his click only.
-- `AGENTS.md`: outreach belongs to Control Center; this engine never delivers
-  pitches, partners or swaps packs (`post --deliver` refuses them).
+- `docs/ACCOUNT-VOICE.md`: X, TikTok, Threads and LinkedIn are Krish's
+  personal accounts in his personal voice (sincere, warm, humble).
+- `AGENTS.md` ("The rules that never bend", "Autonomy"): outreach belongs to
+  Control Center; this engine never delivers pitches, partners or swaps packs
+  (`post --deliver` refuses them).
