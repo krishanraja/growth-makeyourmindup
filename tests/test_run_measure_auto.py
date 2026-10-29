@@ -6,6 +6,7 @@ Buffer, Control Center or GitHub.
 import contextlib
 import datetime as dt
 import io
+import re
 import json
 from pathlib import Path
 import shutil
@@ -174,7 +175,9 @@ class MeasureJobTests(unittest.TestCase):
             self.assertIn('measure: works=1 neutral=7 fails=0 insufficient=1', text)
             self.assertIn('no Control Center call', text)
             # Numbers stay in the report: no metric, session or sign-up figure reaches the log.
-            for private in ('400', 'impressions', 'sessions', 'placement_'):
+            # A figure is matched as a whole number: the report's sha256 is hex and may hold the digits by chance.
+            self.assertIsNone(re.search(r'\b400\b', text))
+            for private in ('impressions', 'sessions', 'placement_'):
                 self.assertNotIn(private, text)
             report = validate_report(read_json(Path(folder) / '.scratch/cc/report-measure.json'))
             lines = ' | '.join(a['line'] for a in report['activity'])
