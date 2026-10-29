@@ -78,3 +78,25 @@ The full spec is `docs/control-center/ENGINE-PROTOCOL.md`, with the report and d
 
 - A post proposal appears on Krish's list with its exact words, and his Clear comes back with your digest.
 - A missing measure shows as unknown with its reason, never as zero.
+
+## Prepaid credits (protocol 1.16.0)
+
+Added 2026-10-29. Ruling (Krish, 2026-10-29): a growth engine may spend up to its placement share of a tool's prepaid credits each cycle with no per-batch approval, and reports what it made. The spec is `docs/control-center/ENGINE-PROTOCOL.md`, "Prepaid credits: spend your share before it is wiped (1.16.0)".
+
+**What arrives.** The directive may carry `credits`: `{ rule, pools[] }`, each pool `{ pool, tool, unit, share, share_amount, spent_this_cycle, remaining_for_you, pool_balance, balance_as_of, use_by, resets_on, days_left, unit_costs[] }`, soonest wipe first. No `credits` block means the pools could not be read today: unknown, never a share of zero.
+
+**This engine's pools** (venture key `publication`):
+
+| Pool | Share | Cycle | Note |
+|---|---|---|---|
+| ElevenLabs (main) | about 50,000 of the 100,000 credits a month | renews on the 10th; unused credits roll over two months | Krish's voice clone: anything made with it needs his approval before it is published |
+| Apify (main) | $5.80 of the $29 included usage | resets on the 21st | anything over the included $29 is new money |
+
+The directive's figures win over this table: read `share_amount` and `remaining_for_you` each run.
+
+**What to do.** Spend up to `remaining_for_you` of each pool on work that moves this engine's objectives (`new_subscribers` first), with no proposal: for example narrated audio of a published piece for a Short, or an Apify extraction that feeds the radar or the numbers job. Make stills before video. Report every spend in the report's `credits_spent[]`, `{ pool, amount, asset, objective_key }`, at most 40, with the report at `schema_version: "1.16.0"`. `asset` says what was made in words, never an address.
+
+**The walls.**
+- Never past `remaining_for_you`, and never a top-up, a plan change or new money.
+- Nothing made with credits is published, posted or sent without its own approval: the go-live, or an approved concept under the 2026-10-29 mix plan ruling (AGENTS.md, "Autonomy"). Anything in Krish's cloned voice needs his approval to publish.
+- Never spend to exhaust a pool: credits serve the objectives, not the other way round.
