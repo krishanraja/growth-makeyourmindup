@@ -78,6 +78,14 @@ this architecture". There is no L1 lane. A new schedule is a GitHub
 Actions job in L0, never a Claude routine. The existing Codex automations on
 Krish's PC (below) are kept as they are.
 
+**The one exception** (Krish, 2026-10-29): "make an exception for
+makeyourmindup". Exactly one Claude scheduled session is allowed, "Spend Make
+Your Mind Up's prepaid credit share". Once a day it spends inside this
+engine's prepaid credit share, reserving and settling each spend through
+Control Center's connector, and it publishes, posts and sends nothing. Its
+brief is `docs/CREDITS.md`. It is named in `lanes.json` (`claude_sessions`),
+and `check_lanes` fails any other Claude session or routine.
+
 ## Who makes
 
 Making is not a lane of its own. Canva assets, words, Buffer drafts and the

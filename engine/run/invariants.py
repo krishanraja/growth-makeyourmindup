@@ -297,6 +297,11 @@ LANE_JOBS = {'L0_code': ('control-center', 'release', 'measure', 'keys', 'handof
              'L2_eyes': ('publish-board', 'preview-packet', 'new-format-item', 'week-sign-off'),
              'L3_hands': ('linkedin-posting', 'buffer-plan', 'one-time-setup')}
 ENGINE_KEYS = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN')
+# The one Claude scheduled session this repository allows (Krish, 2026-10-29: "make an exception for
+# makeyourmindup"): it spends the prepaid credit share through Control Center's connector and publishes
+# nothing. Every other Claude schedule still fails.
+CLAUDE_SESSION_EXCEPTIONS = {"Spend Make Your Mind Up's prepaid credit share": 'docs/CREDITS.md'}
+CLAUDE_SESSION_FIELDS = ('name', 'brief', 'ruling', 'may', 'never')
 
 
 def _closed(value, fields, at):
@@ -436,7 +441,8 @@ def may_post_alone(authority, name, channel, format_id, day, board_approved=Fals
 def load_lanes(root=ROOT):
     """lanes.json in its closed shape. Raises ValueError when malformed."""
     data = read(Path(root) / 'lanes.json')
-    _closed(data, ('schema_version', 'kind', 'note', 'authority', 'lanes', 'jobs', 'automations'), 'lanes.json')
+    _closed(data, ('schema_version', 'kind', 'note', 'authority', 'lanes', 'jobs', 'automations', 'claude_sessions'),
+            'lanes.json')
     if data['schema_version'] != 1 or data['kind'] != 'lanes' or data['authority'] != 'invariants/authority.json':
         raise ValueError('lanes.json is schema_version 1, kind lanes, reading invariants/authority.json')
     if not isinstance(data['lanes'], dict) or tuple(data['lanes']) != LANES:
@@ -472,6 +478,16 @@ def load_lanes(root=ROOT):
         _strings(entry['jobs'], 'jobs', at)
         if entry['source'] not in ('automations.json', 'heartbeat'):
             raise ValueError(at + ': source is automations.json or heartbeat')
+    if not isinstance(data['claude_sessions'], list):
+        raise ValueError('claude_sessions is a list')
+    for entry in data['claude_sessions']:
+        _closed(entry, CLAUDE_SESSION_FIELDS, 'claude session ' + str(entry.get('name') if isinstance(entry, dict) else '?'))
+        at = 'claude session ' + str(entry['name'])
+        if not all(isinstance(entry[f], str) and entry[f].strip() for f in ('name', 'brief', 'ruling', 'may')):
+            raise ValueError(at + ': name, brief, ruling and may are text')
+        _strings(entry['never'], 'never', at)
+        if not entry['never']:
+            raise ValueError(at + ': says what it must never do')
     return data
 
 
@@ -487,6 +503,14 @@ def check_lanes(lanes, authority, root=ROOT):
     if (root / 'routines').exists():
         errors.append('routines/ exists: there are no Claude routines (Krish, 29 Oct 2026); '
                       'a schedule is a GitHub Actions job')
+    named = [entry['name'] for entry in lanes.get('claude_sessions', [])]
+    for entry in lanes.get('claude_sessions', []):
+        if CLAUDE_SESSION_EXCEPTIONS.get(entry['name']) != entry['brief']:
+            errors.append('claude session ' + entry['name'] + ': there are no Claude routines (Krish, 29 Oct 2026); '
+                          'the one exception is ' + ', '.join(sorted(CLAUDE_SESSION_EXCEPTIONS)))
+        elif not (root / entry['brief']).exists():
+            errors.append('claude session ' + entry['name'] + ': brief missing: ' + entry['brief'])
+    errors += ['claude session named more than once: ' + n for n in sorted({n for n in named if named.count(n) > 1})]
     ids = [job['id'] for job in lanes['jobs']]
     everything = ids + [entry['name'] for entry in lanes['automations']]
     errors += ['named more than once: ' + n for n in sorted({n for n in everything if everything.count(n) > 1})]

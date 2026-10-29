@@ -1,5 +1,18 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (night): one Claude scheduled session is allowed, and Apify is a
+  ceiling. His words: "make an exception for makeyourmindup", and "bear in
+  mind apify is pay as you go, always - we just need to ensure we don't blow
+  out Apify API costs really, by learning whats efficient and useful in there
+  for us."
+  - The exception is exactly one daily session, "Spend Make Your Mind Up's
+    prepaid credit share" (`docs/CREDITS.md`), named in `lanes.json`
+    `claude_sessions`. It spends inside the share through Control Center's
+    connector and publishes nothing. Every other Claude routine still fails
+    `check_lanes`.
+  - Apify is pay as you go: its share is the most this engine may spend in a
+    cycle, never a target. The session reads `get_apify_learnings` first and
+    settles each run with its actor, job, results and results kept.
 - 2026-10-29 (late): the Mon/Wed/Fri cadence restarts on 2 November, and
   Krish's answers to the Waves 2 and 3 questions. His words: "23rd and 26th
   never went live, they were only finished yesterday and the growth repo needs
