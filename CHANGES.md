@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29: "At U3 to U5, engines and Control Center may raise volume caps
+  up to each repo's existing policy bounds without a signed week spec. This
+  is volume only: walls unchanged." The engagement doctrine moves from
+  "fewer good candidates beat quota fillers" to as many as clear the bar,
+  batched as one copy and open ask on his list (docs/ENGAGEMENT-LOOP.md,
+  jobs/radar.md). The backlog (`growth.py backlog`) and the ecosystem route
+  on every run spec slot (`ecosystem_cta`) come from the same day's plan.
+
 - 2026-10-29: no content names Krish. Krish, 28 October: "Remember, no
   content refers to Krish, ever. I still see that popping up from time to
   time. Even articles written are not authored by Krish. My face only, for

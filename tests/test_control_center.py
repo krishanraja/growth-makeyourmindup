@@ -33,6 +33,18 @@ PRIVATE = 'directive text that must stay off a public runner log'
 PREFIX = '/api/growth/engines/makeyourmindup/'
 
 
+
+def setUpModule():
+    # The runner reads the public feed for its backlog line; unit tests stay offline.
+    global _OFFLINE
+    from engine import backlog
+    _OFFLINE = patch.object(backlog, 'read_feed', side_effect=OSError('offline test'))
+    _OFFLINE.start()
+
+
+def tearDownModule():
+    _OFFLINE.stop()
+
 class StandIn:
     """A local stand-in for Control Center's engine routes."""
 

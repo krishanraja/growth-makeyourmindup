@@ -318,7 +318,10 @@ class ShareBlockTests(unittest.TestCase):
         spec = json.loads((ROOT / 'specs' / 'fixtures' / 'w45-week.json').read_text(encoding='utf-8'))
         records = json.loads((ROOT / 'specs' / 'fixtures' / 'social-records.json').read_text(encoding='utf-8'))
         self.assertNotIn('share_cta', {e['code'] for e in lint(spec, records)['errors']})
-        spec['slots'][0]['words'] += ' Send this to someone who is planning a pilot.'
+        # Before the in_post route URL the words end on (ecosystem_cta).
+        words = spec['slots'][0]['words']
+        spec['slots'][0]['words'] = words.replace(' More from Mindmake:', ' Send this to someone who is planning a pilot. More from Mindmake:')
+        self.assertNotEqual(spec['slots'][0]['words'], words)
         found = [e for e in lint(spec, records)['errors'] if e['code'] == 'share_cta']
         self.assertTrue(found)
         self.assertTrue(all(e['slot_id'] == spec['slots'][0]['slot_id'] for e in found))
