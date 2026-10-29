@@ -1,0 +1,307 @@
+{
+  "schema_version": 1,
+  "kind": "mock_templates",
+  "about": "The ten kit templates as HTML and CSS, rendered to PNG by scripts/render_mocks.mjs. Each field is text (escaped, a newline is a line break), rows (a list of [name, value] pairs) or options (a list of strings). The examples hold placeholder text only: real ideas, claims and mocks never enter this repository.",
+  "kit": {
+    "colours": {
+      "ink": "#0C1512",
+      "ink_deep": "#070D0B",
+      "cream": "#F4EFE4",
+      "green": "#2F6B5C",
+      "mint": "#7EF0C0",
+      "butter": "#FFD84D",
+      "coral": "#FF6A4D",
+      "lilac": "#B7A6FF"
+    },
+    "fonts": {
+      "heading": "Anton",
+      "subheading": "Fraunces",
+      "body": "Archivo",
+      "label": "IBM Plex Mono"
+    },
+    "margin_px": 108,
+    "footer": "makeyourmindup.ai",
+    "fonts_source": "github.com/google/fonts, branch main, folders ofl/anton, ofl/fraunces, ofl/archivo and ofl/ibmplexmono; each family keeps its SIL Open Font License beside it in render/fonts"
+  },
+  "templates": {
+    "quote-card": {
+      "file": "templates/quote-card.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "quote": "text",
+        "source": "text"
+      },
+      "required": [
+        "label",
+        "quote"
+      ],
+      "example": {
+        "label": "series.label",
+        "quote": "One plain sentence, quoted word for word from the published piece.",
+        "source": "From the piece title, with its date"
+      }
+    },
+    "receipt-card": {
+      "file": "templates/receipt-card.html",
+      "width": 1600,
+      "height": 900,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "facts": "text",
+        "source": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "facts"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "One short line that says what happened",
+        "facts": "The first fact, with its number.\nThe second fact, with its number.",
+        "source": "Source name, with its date"
+      }
+    },
+    "scorecard": {
+      "file": "templates/scorecard.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "title": "text",
+        "rows": "rows",
+        "note": "text"
+      },
+      "required": [
+        "label",
+        "title",
+        "rows"
+      ],
+      "example": {
+        "label": "series.label",
+        "title": "What we scored",
+        "rows": [
+          [
+            "The first thing",
+            "7"
+          ],
+          [
+            "The second thing",
+            "5"
+          ],
+          [
+            "The third thing",
+            "9"
+          ]
+        ],
+        "note": "Our scores, and how we made them"
+      }
+    },
+    "poll-question": {
+      "file": "templates/poll-question.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "question": "text",
+        "options": "options"
+      },
+      "required": [
+        "label",
+        "question",
+        "options"
+      ],
+      "example": {
+        "label": "series.label",
+        "question": "One clear question a reader can answer in a second?",
+        "options": [
+          "The first answer",
+          "The second answer",
+          "The third answer"
+        ]
+      }
+    },
+    "poll-result": {
+      "file": "templates/poll-result.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "question": "text",
+        "results": "rows",
+        "note": "text"
+      },
+      "required": [
+        "label",
+        "question",
+        "results"
+      ],
+      "example": {
+        "label": "series.label",
+        "question": "The question we asked",
+        "results": [
+          [
+            "The first answer",
+            "12 votes"
+          ],
+          [
+            "The second answer",
+            "8 votes"
+          ]
+        ],
+        "note": "How many people voted, and when"
+      }
+    },
+    "carousel-cover": {
+      "file": "templates/carousel-cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "subhead": "text",
+        "page": "text"
+      },
+      "required": [
+        "label",
+        "headline"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "A short promise for the cover",
+        "subhead": "One line that says what the reader gets",
+        "page": "1 of 4"
+      }
+    },
+    "carousel-body": {
+      "file": "templates/carousel-body.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "body": "text",
+        "attribution": "text",
+        "page": "text"
+      },
+      "required": [
+        "label",
+        "body"
+      ],
+      "example": {
+        "label": "series.label",
+        "body": "One plain idea per slide, in words a reader can follow at a glance.",
+        "attribution": "From the piece title, with its date",
+        "page": "2 of 4"
+      }
+    },
+    "carousel-close": {
+      "file": "templates/carousel-close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "body": "text",
+        "page": "text"
+      },
+      "required": [
+        "label",
+        "headline"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "Where the whole piece lives",
+        "body": "Read the full piece free at makeyourmindup.ai",
+        "page": "4 of 4"
+      }
+    },
+    "story-frame": {
+      "file": "templates/story-frame.html",
+      "width": 1080,
+      "height": 1920,
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      },
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "body": "text",
+        "page": "text"
+      },
+      "required": [
+        "label",
+        "headline"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "A short line for the frame",
+        "body": "One more plain line that says why it matters.",
+        "page": "1 of 3"
+      }
+    },
+    "meme-square": {
+      "file": "templates/meme-square.html",
+      "width": 1080,
+      "height": 1080,
+      "fields": {
+        "label": "text",
+        "setup": "text",
+        "punchline": "text"
+      },
+      "required": [
+        "label",
+        "setup",
+        "punchline"
+      ],
+      "example": {
+        "label": "series.label",
+        "setup": "The everyday moment everyone at work knows.",
+        "punchline": "The kind twist at the end."
+      }
+    },
+    "meme-vertical": {
+      "file": "templates/meme-vertical.html",
+      "width": 1080,
+      "height": 1920,
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      },
+      "fields": {
+        "label": "text",
+        "setup": "text",
+        "punchline": "text"
+      },
+      "required": [
+        "label",
+        "setup",
+        "punchline"
+      ],
+      "example": {
+        "label": "series.label",
+        "setup": "The everyday moment everyone at work knows.",
+        "punchline": "The kind twist at the end."
+      }
+    },
+    "profile-art": {
+      "file": "templates/profile-art.html",
+      "width": 1080,
+      "height": 1080,
+      "fields": {
+        "line1": "text",
+        "line2": "text"
+      },
+      "required": [
+        "line1"
+      ],
+      "example": {
+        "line1": "Wordmark",
+        "line2": "a short line"
+      }
+    }
+  }
+}
