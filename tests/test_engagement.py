@@ -171,3 +171,43 @@ class EngagementTask(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ExactTargets(unittest.TestCase):
+    """W2.8: each tap opens exactly the post or profile to engage with (Krish, 2026-10-28)."""
+
+    def test_each_queue_platform_opens_its_exact_post_or_profile(self):
+        from engine.engage import target_kind
+        good = {('x', 'https://x.com/synthetic_one/status/1850000000000000001'): 'post',
+                ('x', 'https://twitter.com/synthetic_one'): 'profile',
+                ('tiktok', 'https://www.tiktok.com/@synthetic.one/video/7430000000000000001'): 'post',
+                ('tiktok', 'https://www.tiktok.com/@synthetic.one'): 'profile',
+                ('instagram', 'https://www.instagram.com/reel/SYNTHabc12/'): 'post',
+                ('instagram', 'https://www.instagram.com/synthetic.one/'): 'profile',
+                ('linkedin', 'https://www.linkedin.com/feed/update/urn:li:activity:7250000000000000001/'): 'post',
+                ('linkedin', 'https://www.linkedin.com/posts/synthetic-one_ai-activity-7250000000000000001-AbCd'): 'post',
+                ('linkedin', 'https://www.linkedin.com/in/synthetic-one/'): 'profile',
+                ('youtube', 'https://www.youtube.com/watch?v=synthetic'): 'page'}
+        for (platform, url), kind in good.items():
+            self.assertEqual(target_kind(platform, url), kind, url)
+        bad = [('x', 'https://x.com/home'), ('x', 'https://x.com/search?q=ai'), ('x', 'https://t.co/abc123'),
+               ('x', 'http://x.com/synthetic_one/status/1850000000000000001'),
+               ('tiktok', 'https://www.tiktok.com/foryou'), ('tiktok', 'https://vm.tiktok.com/ZMabc/'),
+               ('instagram', 'https://www.instagram.com/explore/'), ('instagram', 'https://www.instagram.com/'),
+               ('linkedin', 'https://www.linkedin.com/feed/'), ('linkedin', 'https://lnkd.in/abc'),
+               ('linkedin', 'https://www.linkedin.com/search/results/content/?keywords=ai'),
+               ('x', 'https://x.com.evil.example/synthetic_one/status/1850000000000000001')]
+        for platform, url in bad:
+            self.assertIsNone(target_kind(platform, url), url)
+
+    def test_a_tap_that_does_not_open_its_exact_target_is_held_by_name(self):
+        result = report(3, url='https://www.linkedin.com/feed/?n={}')
+        self.assertEqual(result['proposals'], [])
+        details = ' '.join(h['detail'] for h in result['holds'])
+        self.assertIn('exact post or profile', details)
+
+    def test_a_linkedin_reply_with_a_link_is_held(self):
+        from engine.engage import tap_errors
+        self.assertEqual(tap_errors('linkedin', 'https://www.linkedin.com/in/synthetic-one/', 'Read www.example.com'),
+                         ['a LinkedIn reply carries no link'])
+        self.assertEqual(tap_errors('x', 'https://x.com/synthetic_one', 'See https://example.com'), [])

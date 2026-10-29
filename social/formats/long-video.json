@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "kind": "format",
+  "id": "long-video",
+  "production_owner": "content-engine",
+  "production_reference": "https://github.com/krishanraja/content-engine/blob/main/docs/GROWTH-HANDOFF.md",
+  "channels": [
+    "youtube"
+  ],
+  "guide": "social/guides/formats.md",
+  "min_assets": 1,
+  "max_assets": 1,
+  "snackable": false,
+  "delivery_checks": [
+    "Receive the production-approved long-form video and its signed title and category from content-engine's piece manifest; do not cut or derive video in Growth.",
+    "Before Krish sees it: the draft's words, title, alt text and asset hash match the piece manifest exactly (engine/run/piece_manifest.py), or it is held as manifest_differs.",
+    "Its first real post is the route's one capability check, approved by Krish on its Monday through growth.py run release; until it passes, the route holds.",
+    "Bind publication approval to the exact account, title, description, asset hash, category and proposed time.",
+    "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
+  ],
+  "measurements": [
+    "Dated exposed reach and meaningful engagement, preserving missing values.",
+    "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
+    "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
+  ],
+  "lessons": [
+    "revision-identity",
+    "growth-measurement",
+    "built-to-be-sent",
+    "share-rate-measure"
+  ]
+}

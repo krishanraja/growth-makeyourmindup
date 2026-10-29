@@ -33,7 +33,7 @@ from ..control_center import SLUG, build_report, objective
 from ..core import instant, read_json, today, write_json
 from . import buffer_reads
 from .ga4 import directive_rows, join_directive, load_config
-from .measure import judge
+from .measure import judge, share_rates
 from .release import BUFFER_NAME
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -114,6 +114,43 @@ def tally(results):
     return counts
 
 
+def share_part(posts):
+    """Sends and saves per 1,000 reached, by channel, over the posts that show both (W2.8).
+
+    The snackable lane's primary measure (measure.share_rates, Krish, 2026-10-28),
+    labelled with its status: a house hypothesis until MYMU's own dated data
+    confirms it. A channel that shows no sends, saves or reach says so, never zero.
+    Returns (activity lines, {channel: aggregate})."""
+    by_channel = {}
+    for post in posts:
+        try:
+            rates = share_rates(post['channel'], post['metrics'] or {})
+        except ValueError:
+            continue
+        by_channel.setdefault(post['channel'], []).append(rates)
+    out, lines = {}, []
+    status = None
+    for cid in sorted(by_channel):
+        rows = by_channel[cid]
+        status = rows[0]['status']
+        agg = {'posts': len(rows)}
+        for key in ('sends', 'saves'):
+            shown = [r for r in rows if r[key] is not None and r['reach']]
+            reach = sum(r['reach'] for r in shown)
+            agg[key + '_per_1000_reached'] = round(sum(r[key] for r in shown) * 1000 / reach, 1) if reach else None
+            agg[key + '_posts_shown'] = len(shown)
+        out[cid] = agg
+
+        def say(key):
+            value = agg[key + '_per_1000_reached']
+            return (key + ' not shown' if value is None
+                    else key + ' ' + str(value) + ' per 1,000 reached over ' + count(agg[key + '_posts_shown'], 'post'))
+        lines.append('Built to be sent, ' + cid + ': ' + say('sends') + '; ' + say('saves'))
+    if lines:
+        lines.append('Sends and saves per reach are the snackable lane\'s measure: ' + str(status))
+    return lines, out
+
+
 def ga4_part(block, posts, config):
     """(activity lines, hold or None, joined result or None). Unknown is said, never zero."""
     if block is None:
@@ -189,6 +226,7 @@ def build(posts_read, block, now, root, mode, config, directive_pulled):
     activity.append({'line': 'Verdicts against each post\'s own channel median: '
                      + ', '.join(k + ' ' + str(v) for k, v in counts.items())
                      + '. Association, not cause; bands are proposed defaults for Krish at G-A'})
+    activity += [{'line': line} for line in share_part(posts)[0]]
     lines, hold, joined = ga4_part(block, posts, config)
     activity += [{'line': line} for line in lines]
     if hold:

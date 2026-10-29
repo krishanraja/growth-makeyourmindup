@@ -129,6 +129,14 @@
       "verified_operations": []
     },
     {
+      "channel": "youtube",
+      "format": "long-video",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified. W2.8 (Krish, plan of 28 October 2026): its first real post is the capability check he approves on its Monday; release waits on a signed title and category.",
+      "verified_operations": []
+    },
+    {
       "channel": "substack",
       "format": "article",
       "status": "unverified",

@@ -24,7 +24,7 @@ from . import meter
 from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, _decided_at, action_key, action_errors,
                              build_report, canonical_json, copy_open, engage_action, golive_review, iso,
                              match_decisions, objective, proposal, _stops)
-from . import intensity
+from . import engage, intensity
 from .credits import credits_block, credits_lines
 from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
@@ -697,7 +697,7 @@ def engagement_task(items, now, evidence, cap, plain=False):
     taps, chosen, holds = [], [], []
     for item in items:
         tap = _tap(item)
-        problems = action_errors({'body': 'x', 'taps': [tap]})
+        problems = action_errors({'body': 'x', 'taps': [tap]}) or engage.tap_errors(item['platform'], tap['url'], tap['text'])
         if problems:
             holds.append({'reason': 'Engagement draft cannot be a tap', 'detail': item['item_id'] + ': ' + problems[0]})
         elif len(taps) >= cap:
@@ -708,9 +708,11 @@ def engagement_task(items, now, evidence, cap, plain=False):
     if not taps:
         return None, holds, 0
     minutes = sum(item.get('minutes', 1) for item in chosen)
+    over = ('; over the ' + str(engage.QUEUE_MINUTES) + ' minute queue, the cap is from intensity.json'
+            if minutes > engage.QUEUE_MINUTES else '')
     body = ("Today's " + str(len(taps)) + (' reply or comment' if len(taps) == 1 else ' replies or comments')
             + ' for Krish to post himself: each tap copies the exact words and opens the public page. About '
-            + str(minutes) + ' minutes.')
+            + str(minutes) + ' minutes' + over + '.')
     sources = []
     for item in chosen:
         for ref in item.get('evidence_ids', []):

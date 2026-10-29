@@ -1,5 +1,38 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (Wave 2, W2.8): Growth posts what he approved. From Krish's
+  saved Wave 2 brief (plan of 28 October, amended 29 October): "content-engine
+  writes `0 Publish/manifest.json` per piece: Drive ids, sha256, order, exact
+  copy per channel, alt text, QA state and the approval digest." And for
+  metrics: "Shares or sends per reach, and saves per reach, are the snackable
+  lane's measures, marked as hypotheses until his own data confirms them."
+  And for the engage queue, his 28 October words: "make sure everything is one
+  click copiable and the click through goes precisely where i need to engage."
+  - The piece manifest (R115): a go-live dispatch may name content-engine's
+    manifest by a direct download link and its sha256 (`piece_manifest`). The
+    handoff reads it, refuses one that is not passed QA, unapproved or not
+    its sha, and holds any draft that is not exactly the manifest's post for
+    its channel: words, assets in order and alt text (`manifest_differs`).
+    `engine/run/piece_manifest.py`, schema in
+    `specs/schema/piece-manifest.schema.json`.
+  - One go-live per post: a slot marked `per_item_review` is already its own
+    go-live, so a maker that marks every slot gets one decision per post,
+    bound to its payload_sha256, Buffer channel id and due time. His No on
+    one post before release schedules it (5 to 90 minutes ahead) is the Pull:
+    only that post stays a draft. A No after it is scheduled is loud and is
+    never unscheduled by the engine; unscheduling is his call.
+  - Exact targets (R116): each engage tap on X, TikTok, Instagram or LinkedIn
+    opens the exact post or profile, never a feed, search or short link, and
+    a LinkedIn reply carries no link (`engine/engage.py`). The queue says
+    when its taps run past the 10-minute queue; the daily cap stays
+    intensity.json's.
+  - Sends and saves per reach reach the measure report (R117), per channel
+    per 1,000 reached, with the hypothesis status; a channel that shows
+    none says so, never zero.
+  - YouTube long-form is a route (`long-video`), unverified until its first
+    real post passes as the capability check he approves on its Monday. A
+    Substack article is never released (Buffer's Substack channel is his
+    Notes profile): it stays a saved draft for his click.
 - 2026-10-29 (late): the code renderer draws every post; Codex art-directs
   one visual idea per piece. Krish judged a blind bake-off of three makers
   (the code renderer, Codex and Canva) on the same seven images and picked the

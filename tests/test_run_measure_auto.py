@@ -97,6 +97,22 @@ class VerdictRuleTests(unittest.TestCase):
         self.assertEqual(results[post(1, 'x', 3)['id']]['reason'], 'association, not cause')
         self.assertEqual(channels['x']['indicator'], 'impressions')
 
+    def test_sends_and_saves_per_reach_reach_the_report_as_a_hypothesis(self):
+        """W2.8: the snackable lane's measure is in the report, never a zero for what is not shown."""
+        posts = [{'post_id': 'a', 'channel': 'instagram', 'metrics': {'shares': 3, 'saves': 6, 'reach': 1000}},
+                 {'post_id': 'b', 'channel': 'instagram', 'metrics': {'shares': 1, 'reach': 1000}},
+                 {'post_id': 'c', 'channel': 'youtube', 'metrics': {'views': 900}},
+                 {'post_id': 'd', 'channel': 'threads', 'metrics': None}]
+        lines, out = measure_auto.share_part(posts)
+        self.assertEqual(out['instagram']['sends_per_1000_reached'], 2.0)
+        self.assertEqual(out['instagram']['saves_per_1000_reached'], 6.0)
+        self.assertEqual(out['instagram']['saves_posts_shown'], 1)
+        self.assertIsNone(out['youtube']['sends_per_1000_reached'])
+        self.assertIn('youtube: sends not shown; saves not shown', ' '.join(lines))
+        self.assertIn('hypothesis', lines[-1])
+        self.assertFalse(any('%' in line for line in lines))
+        self.assertEqual(measure_auto.share_part([]), ([], {}))
+
     def test_window_not_elapsed_and_thin_history_are_insufficient(self):
         young = post(1, 'x', 1, 500)  # X is judged at 48 hours
         results, _ = self.by_id(x_history([100] * 6) + [young])

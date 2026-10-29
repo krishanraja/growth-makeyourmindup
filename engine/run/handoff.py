@@ -105,7 +105,7 @@ from engine.cc_loop import NO_SPEND, decisions_paged, plan_proposals, revision
 from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _plan_open, _stops,
                                    build_report, canonical_json, objective, proposal, sha256_hex)
 from engine.core import http_url, instant, ny_time, today, write_json
-from engine.run import autorelease, buffer_api, cc_records
+from engine.run import autorelease, buffer_api, cc_records, piece_manifest
 from engine.run.autorelease import (DUE_MARGIN, LINE_KEYS, MANIFEST_SCHEMA, MAX_REPORT_READS, _authority, draft_line,
                                     due_instant, line_digest, read_proposal, run_window, show_before_post_until,
                                     spec_digest, staged_report_run_id)
@@ -127,7 +127,8 @@ FORMAT = re.compile(r'^[a-z0-9][a-z0-9_-]{0,47}$')
 PLACEMENT = re.compile(r'^[a-z][a-z0-9_]{0,31}$')
 WEEK = re.compile(r'^W(0[1-9]|[1-4][0-9]|5[0-3])$')
 PIECE_ID = re.compile(r'^[A-Za-z0-9][A-Za-z0-9:._-]{0,119}$')
-MANIFEST_KEYS, MANIFEST_OPTIONAL = frozenset({'run_id', 'slots'}), frozenset({'express'})
+MANIFEST_KEYS, MANIFEST_OPTIONAL = frozenset({'run_id', 'slots'}), frozenset({'express', 'piece_manifest'})
+PIECE_MANIFEST_KEYS = frozenset({'url', 'sha256'})
 MANIFEST_SLOT_KEYS = frozenset({'slot', 'channel', 'buffer_draft_id', 'payload_sha256', 'per_item_review',
                                 'format', 'due_at', 'link_placement', 'publish_mode'})
 PACKET_KEYS, PACKET_SLOT_KEYS = (frozenset({'run_id', 'week', 'spec_sha256', 'slots'}),
@@ -212,6 +213,13 @@ def validate_manifest(value):
     _run_id(value['run_id'])
     if 'express' in value and not isinstance(value['express'], bool):
         raise PayloadRejected('bad_express')
+    if 'piece_manifest' in value:
+        ref = value['piece_manifest']
+        _closed(ref, PIECE_MANIFEST_KEYS, where='piece_manifest')
+        if not (isinstance(ref['url'], str) and ref['url'].startswith('https://') and http_url(ref['url'])):
+            raise PayloadRejected('bad_piece_manifest_url')
+        if not isinstance(ref['sha256'], str) or not HEX64.match(ref['sha256']):
+            raise PayloadRejected('bad_piece_manifest_sha256')
     for slot in _slots(value['slots']):
         _slot_common(slot, MANIFEST_SLOT_KEYS, DERIVED_KEYS)
         if set(slot) & DERIVED_KEYS:
@@ -1111,7 +1119,8 @@ def deliver_version(cc, week_of, version, now, root, summary):
 
 # The run ------------------------------------------------------------------------------------
 
-def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch=None, root=None, out_path=None):
+def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch=None, root=None, out_path=None,
+            fetch_bytes=None):
     """Returns (summary, exit_code). summary holds counts and codes only."""
     now = instant(now)
     root = Path(root or ROOT)
@@ -1174,6 +1183,16 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             fetch = fetch or (lambda url: buffer_api.download_sha256(url))
             window = run_window(payload['run_id'])
             lines = []
+            piece, piece_hold = None, None
+            if 'piece_manifest' in payload:
+                # Content-engine's manifest for the piece (W2.8): every draft must be exactly its post.
+                ref = payload['piece_manifest']
+                try:
+                    piece = piece_manifest.parse((fetch_bytes or buffer_api.download_bytes)(ref['url']), ref['sha256'])
+                except piece_manifest.ManifestRejected as error:
+                    piece_hold = error.code
+                except (BufferError, CarryHold):
+                    piece_hold = 'manifest_unreadable'
             for slot in payload['slots']:
                 if 'concept_id' in slot:
                     # Made from a concept he approved in the mix plan: its review, never a go-live.
@@ -1183,8 +1202,12 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                     else:
                         slots.count('derived_recorded')
                         records.append(record)
+                elif piece_hold:
+                    slots.hold(piece_hold)
                 elif plan is not None:
                     line, code = rebuild(buffer, slot, fetch, now, window)
+                    if not code and piece is not None:
+                        code = piece_manifest.line_hold(piece, line)
                     if code:
                         slots.hold(code)
                     else:
