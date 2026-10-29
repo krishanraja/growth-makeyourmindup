@@ -51,8 +51,9 @@ ready concept with its hash. The Sunday report job carries it when
 `.scratch/mix/plan-<Monday>.json` exists (`engine/cc_loop.py`, `mix_proposal`).
 His yes approves each ready concept at its hash; deleting or changing a
 concept's line in his amended version stops that concept (`mix.approved_map`,
-`mix.amended_out`); changing any other line approves none until a plan
-carrying his change is approved; his no approves none and stops them all.
+`mix.amended_out`), under every later version too; changing or adding any
+other line approves none until a plan carrying his change is approved; his no
+on any part of any version approves none and stops them all.
 
 Then `growth.py run new --start <Monday> --mix <plan file>` puts the ready
 concepts in the week's spec. In the loop's own run, right after it reads his
@@ -110,6 +111,13 @@ built and wired is not activated, and no post has gone out this way yet. A
 release session then plans up to 16 concept posts a day on these channels plus
 their readbacks (`docs/RUN.md`, Budgets). Scheduling stays with the one
 release executor; nothing here calls Buffer.
+
+On GitHub Actions (L0) the plan goes to Control Center through the handoff
+(`growth-mix-plan`), in parts of at most 8,000 characters when a full week is
+longer, and `engine/run/autorelease.py` reads his decision and the plan back
+from Control Center by digest each run, with the same rules
+(`docs/CONCEPT-MANIFEST.md`, On GitHub Actions). Built and tested, not yet
+activated: no post has gone out this way.
 
 ## Learning
 

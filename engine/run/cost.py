@@ -5,6 +5,12 @@ result carries aggregates only: token counts, call counts and minutes per
 session and per job kind, the repository name and model names. No message
 text and no paths, so it is safe to commit. The formats drift, so unknown or
 unparseable lines are counted and reported; a value is never guessed.
+
+`run cost baseline` aggregates every session in this repository. `run cost self`
+prints one line for the newest session only, which any session pastes into its
+own summary to meter itself. A job kind comes only from one fixed pattern
+("Run jobs/X.md"), else it is "interactive": never prompt text. There are no
+Claude routines (Krish, 29 Oct 2026), so no routine kind either.
 """
 import argparse
 import datetime as dt
@@ -38,7 +44,7 @@ CODEX_ITEMS = {'message', 'reasoning', 'function_call', 'function_call_output', 
                'custom_tool_call_output', 'local_shell_call', 'web_search_call', 'ghost_snapshot', 'compaction',
                'compaction_summary', 'other'}
 CLAUDE_TYPES = {'user', 'assistant', 'system', 'summary', 'file-history-snapshot', 'queue-operation'}
-# Routine Claude Code bookkeeping lines: known, carry no usage, never counted as drift.
+# Ordinary Claude Code bookkeeping lines: known, carry no usage, never counted as drift.
 CLAUDE_IGNORED = {'attachment', 'last-prompt', 'custom-title', 'agent-name', 'mode', 'tools-used', 'atis-latch',
                   'cost-state', 'started', 'result', 'progress'}
 CLAUDE_USAGE = ('input_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens', 'output_tokens')
@@ -46,6 +52,14 @@ CLAUDE_KINDS = {'input_tokens': 'input', 'cache_creation_input_tokens': 'cache_c
                 'cache_read_input_tokens': 'cache_read_input', 'output_tokens': 'output'}
 TOOL_CALLS = {'function_call', 'custom_tool_call'}
 TOOL_OUTPUTS = {'function_call_output', 'custom_tool_call_output'}
+
+
+def job_kind(text):
+    """A job name from the fixed patterns, else 'interactive': never the prompt's own text."""
+    if not isinstance(text, str):
+        return 'interactive'
+    match = JOB.search(text)
+    return match.group(1) if match else 'interactive'
 
 
 def stamp(value):
@@ -118,8 +132,7 @@ class Session:
 
     def prompt(self, text, when):
         if self.first_prompt is None and isinstance(text, str):
-            match = JOB.search(text)
-            self.first_prompt = match.group(1) if match else 'interactive'
+            self.first_prompt = job_kind(text)
         if when:
             self.events.append((when, 'prompt'))
 
@@ -475,6 +488,64 @@ def baseline(codex_dir=None, claude_dir=None, repo='growth-makeyourmindup', sinc
                      'never estimated.')}
 
 
+def since_bound(value):
+    """A UTC instant from YYYY-MM-DD (UTC midnight) or an offset-bearing ISO timestamp."""
+    if not isinstance(value, str):
+        raise ValueError('--since must be YYYY-MM-DD or an ISO timestamp with an offset')
+    if len(value) == 10:
+        day = calendar_date(value)
+        return dt.datetime(day.year, day.month, day.day, tzinfo=dt.timezone.utc)
+    when = stamp(value)
+    if when is None:
+        raise ValueError('--since must be YYYY-MM-DD or an ISO timestamp with an offset')
+    return when
+
+
+def self_meter(claude_dir, since, codex_dir=None, repo=None):
+    """The latest session only, started at or after `since` (UTC), for that session's own summary.
+
+    Reads only the folders it is given. With no `repo` every session counts, because a
+    cloud session may run from any working folder; the newest session is the one asking.
+    """
+    if repo is not None and (not isinstance(repo, str) or not repo.strip() or '/' in repo or '\\' in repo):
+        raise ValueError('repo must be a bare repository name')
+    bound = since_bound(since)
+    sources = [('claude', claude_dir, '*/*.jsonl', claude_with_subagents)]
+    if codex_dir:
+        sources.append(('codex', codex_dir, '**/rollout-*.jsonl', codex_session))
+    latest = None
+    for tool, folder, pattern, read in sources:
+        folder = Path(os.path.expanduser(folder))
+        for path in sorted(folder.glob(pattern)) if folder.is_dir() else []:
+            try:
+                s = read(path)
+            except OSError:
+                continue
+            if s.started is None or s.started < bound or (repo and not s.belongs(repo)):
+                continue
+            if latest is None or s.started > latest.started:
+                latest = s
+    if latest is None:
+        return None
+    row = latest.report()
+    row['subagents'] = getattr(latest, 'subagents', 0)
+    return row
+
+
+def self_line(row):
+    """One line of aggregates: no text, no paths, no ids."""
+    if row is None:
+        return 'cost self: no session found since the given time; unknown, not zero'
+    tokens = row['tokens'] or {}
+    parts = ['tool ' + row['tool'], 'job ' + row['job_kind'], 'started ' + (row['started_at'] or 'unknown'),
+             'calls ' + str(row['model_calls']),
+             'tokens ' + (', '.join(k + ' ' + str(tokens[k]) for k in sorted(tokens)) if tokens else 'unknown'),
+             'engine min ' + str(row['engine_minutes']), 'tool min ' + str(row['tool_minutes']),
+             'subagents ' + str(row['subagents']),
+             'unknown lines ' + str(row['unknown_lines'] + row['unparseable_lines'])]
+    return 'cost self: ' + '; '.join(parts)
+
+
 def verified(path):
     value = read_json(path)
     if not isinstance(value, dict) or any(not isinstance(k, str) or isinstance(v, bool) or not isinstance(v, int)
@@ -491,7 +562,17 @@ def main(argv=None):
     b.add_argument('--codex-dir'); b.add_argument('--claude-dir')
     b.add_argument('--repo', default='growth-makeyourmindup'); b.add_argument('--since')
     b.add_argument('--verified-posts'); b.add_argument('--out')
+    me = cost.add_parser('self', help="the latest session's aggregates as one line, for its own summary")
+    me.add_argument('--claude-dir', required=True); me.add_argument('--since', required=True)
+    me.add_argument('--codex-dir'); me.add_argument('--repo')
     args = parser.parse_args(argv)
+    if args.action == 'self':
+        try:
+            print(self_line(self_meter(args.claude_dir, args.since, args.codex_dir, args.repo)))
+        except (ValueError, OSError) as exc:
+            print(json.dumps({'valid': False, 'error': str(exc)}))
+            return 1
+        return 0
     try:
         result = baseline(args.codex_dir, args.claude_dir, args.repo, args.since,
                           verified(args.verified_posts) if args.verified_posts else None)

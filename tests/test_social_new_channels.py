@@ -84,12 +84,15 @@ class NewChannelsTests(unittest.TestCase):
     def test_meme_and_note_are_owned_by_growth_canva(self):
         records = inventory()
         formats = records['format']
-        for name in ('note', 'meme'):
+        # 27 Oct evening: the V1 calendar's cards, polls and Story frames join the Canva lane
+        # (invariants/boundary.json owners; story artwork itself stays content-engine's).
+        canva = ('note', 'meme', 'receipt-card', 'quote-card', 'scorecard', 'poll', 'story-frame')
+        for name in canva:
             self.assertEqual(formats[name]['production_owner'], 'growth-canva')
             self.assertEqual(formats[name]['production_reference'], 'social/guides/canva.md')
             self.assertIn('canva-lane-boundary', formats[name]['lessons'])
         for name, obj in formats.items():
-            if name not in ('note', 'meme'):
+            if name not in canva:
                 self.assertEqual(obj['production_owner'], 'content-engine', name)
         self.assertEqual(set(formats['meme']['channels']), MEME_CHANNELS)
         self.assertEqual(formats['note']['channels'], ['substack-notes'])

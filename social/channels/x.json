@@ -9,7 +9,11 @@
     "single-image",
     "text",
     "short-video",
-    "meme"
+    "meme",
+    "receipt-card",
+    "quote-card",
+    "scorecard",
+    "poll"
   ],
   "guide": "social/guides/other-channels.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

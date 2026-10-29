@@ -675,6 +675,819 @@
       "status": "tested"
     },
     {
+      "id": "F66",
+      "title": "A derivative posts before its publish board or the four-week preview, or a new format posts without its own approval",
+      "source": "CHANGES.md 2026-10-27 (evening), standing approval for derivatives (R105)",
+      "guard": "engine/run/invariants.py:load_authority and engine/run/invariants.py:may_post_alone",
+      "tests": [
+        "test_authority_encodes_the_27_october_standing_approval",
+        "test_authority_refuses_a_malformed_register",
+        "test_derivatives_wait_for_board_and_preview_then_post_alone",
+        "test_new_formats_and_unlisted_classes_need_eyes",
+        "test_linkedin_is_never_posted_alone",
+        "test_authority_formats_and_hands_exist_in_the_social_records"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F67",
+      "title": "A workflow or job runs in no lane, an L0 job holds an action from his hands or his eyes, or a Claude schedule comes back (there are no Claude routines)",
+      "source": "CHANGES.md 2026-10-27 (evening), lanes ruling (R107); 2026-10-29, no Claude routines and no Claude schedules of any kind",
+      "guard": "engine/run/invariants.py:check_lanes and engine/run/invariants.py:load_lanes",
+      "tests": [
+        "test_every_workflow_and_job_is_in_one_lane",
+        "test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes",
+        "test_every_job_file_and_automation_is_named_exactly_once",
+        "test_no_l0_job_holds_his_hands_or_his_eyes",
+        "test_lanes_register_refuses_a_bad_shape",
+        "test_there_are_no_claude_routines"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F68",
+      "title": "A session or a CI job holds the Control Center engine key",
+      "source": "CHANGES.md 2026-10-27 (evening), keys ruling (R106)",
+      "guard": "engine/run/invariants.py:check_lanes (engine key per workflow)",
+      "tests": [
+        "test_the_engine_key_lives_only_on_the_github_runner"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F69",
+      "title": "A posting calendar row lands in the wrong lane or format, or the resolved week misses a floor or passes a cap (a daily cap read from its channel record and intensity.json, a weekly cap quoted)",
+      "source": "calendar/v1.json, the V1 posting calendar (R105, R107)",
+      "guard": "engine/run/calendar.py:lint and engine/run/calendar.py:resolve",
+      "tests": [
+        "test_v1_calendar_lints_clean_and_meets_its_floors",
+        "test_every_row_is_in_the_lane_authority_gives_it",
+        "test_a_wrong_lane_is_refused",
+        "test_formats_producers_and_templates_must_exist",
+        "test_floors_and_caps_are_checked_on_the_resolved_week",
+        "test_caps_are_quoted_from_the_corpus",
+        "test_daily_caps_come_only_from_the_channel_records_and_intensity",
+        "test_a_result_card_runs_only_after_its_poll",
+        "test_timezone_and_preview_date_are_checked",
+        "test_calendar_lint_is_a_run_route"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F70",
+      "title": "A carousel or caption is not plain English, human and humble",
+      "source": "CHANGES.md 2026-10-27 (evening) (R105); social/lessons/carousel-plain-english.json",
+      "guard": "engine/run/plain.py:lint_carousel and engine/run/plain.py:lint_text",
+      "tests": [
+        "test_good_synthetic_carousel_passes",
+        "test_long_sentences_and_long_averages_are_refused",
+        "test_jargon_and_em_dashes_are_refused",
+        "test_stacked_two_word_fragments_are_refused",
+        "test_a_carousel_needs_a_humble_human_line_and_six_to_eight_cards",
+        "test_carousel_lint_is_a_run_route",
+        "test_run_lint_blocks_an_unplain_carousel_and_warns_on_other_captions"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F71",
+      "title": "A Canva export is off the brand kit, the wrong size for its channel, carries boilerplate or quotes words the piece does not contain",
+      "source": "social/guides/canva.md; social/brand/kit.json (kit kAHZOJ-K6I8)",
+      "guard": "engine/run/canva.py:lint_design and engine/social.py:has_boilerplate",
+      "tests": [
+        "test_kit_holds_the_makeyourmindup_brand",
+        "test_an_on_kit_design_passes",
+        "test_off_kit_colour_font_and_size_are_refused",
+        "test_a_quote_must_be_a_literal_match_to_the_piece",
+        "test_boilerplate_and_unapproved_templates_are_refused",
+        "test_canva_lint_is_a_run_route"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F72",
+      "title": "A go-live schedules a Buffer draft that differs from what Krish signed by one word, one asset byte or an asset that cannot be downloaded",
+      "source": "V1 build, 27 Oct 2026: L0 release (engine/run/autorelease.py, .github/workflows/release.yml)",
+      "guard": "engine/run/autorelease.py:Run rebuilds each draft with engine/run/autorelease.py:_rebuilt_digest and engine/run/autorelease.py:draft_line and schedules only when the digest equals the signed payload_sha256; engine/run/autorelease.py:may_release",
+      "tests": [
+        "test_one_changed_asset_byte_holds",
+        "test_one_changed_word_holds",
+        "test_a_missing_asset_download_holds",
+        "test_happy_path_schedules_once_with_the_full_payload",
+        "test_an_unsigned_slot_is_never_touched",
+        "test_no_approved_go_live_touches_nothing",
+        "test_a_declined_go_live_stops",
+        "test_an_amended_decision_posts_his_version",
+        "test_an_amendment_with_a_bad_digest_releases_nothing",
+        "test_an_amendment_that_moves_the_draft_holds",
+        "test_a_past_due_time_holds",
+        "test_the_dry_run_sends_no_mutation"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F73",
+      "title": "A second release run schedules a post again, or a post scheduled in other words counts as done",
+      "source": "V1 build, 27 Oct 2026: L0 release; Buffer is the ledger, so no local state is needed",
+      "guard": "engine/run/autorelease.py:_matches counts a post already scheduled or sent as done only when its full rebuilt digest (words, account, asset bytes and meta) and its time equal the signed line, and holds any other loudly",
+      "tests": [
+        "test_a_second_run_is_a_no_op",
+        "test_scheduled_in_other_words_is_held_loudly_not_counted",
+        "test_already_scheduled_means_the_full_digest_not_words_and_time"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F74",
+      "title": "An uncertain or refused Buffer edit is sent again instead of read back",
+      "source": "V1 build, 27 Oct 2026: L0 release",
+      "guard": "engine/run/autorelease.py:slot reads the post back once after a failed edit and never resends; engine/run/buffer_api.py:_transient retries one 5xx only; a cut-off body (http.client.IncompleteRead) is transient too",
+      "tests": [
+        "test_a_refused_edit_is_read_back_and_held_never_resent",
+        "test_one_retry_on_5xx_only",
+        "test_a_cut_off_body_is_transient_and_carries_a_code"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F75",
+      "title": "A refused Buffer key is retried or passes quietly instead of failing the run",
+      "source": "V1 build, 27 Oct 2026: engine/run/buffer_api.py",
+      "guard": "engine/run/buffer_api.py:BufferAuthError (401, 403 and named refusals, never retried) stops engine/run/autorelease.py:autorelease with exit 1 before any Control Center read",
+      "tests": [
+        "test_a_refused_key_fails_loudly",
+        "test_401_and_403_are_auth_errors_never_retried",
+        "test_errors_carry_no_key_or_url"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F76",
+      "title": "Release acts on a go-live it did not read back from its own staged report by the digest Krish decided on",
+      "source": "V1 build, 27 Oct 2026: L0 release; the staged report convention in engine/run/autorelease.py",
+      "guard": "engine/run/autorelease.py:read_proposal at engine/run/autorelease.py:staged_report_run_id; engine/run/autorelease.py:parse_manifest recomputes every engine line",
+      "tests": [
+        "test_report_address_is_bound_to_the_decided_digest",
+        "test_an_unapproved_plan_or_missing_report_releases_nothing",
+        "test_engine_lines_must_recompute"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F77",
+      "title": "The Buffer client can publish now, add to the queue or delete",
+      "source": "V1 build, 27 Oct 2026: engine/run/buffer_api.py",
+      "guard": "engine/run/buffer_api.py:Buffer holds one mutation, engine/run/buffer_api.py:schedule_draft (editPost to customScheduled, a draft only); engine/run/buffer_api.py:edit_input; engine/run/buffer_api.py:download_sha256 pins asset URLs and caps their size",
+      "tests": [
+        "test_no_immediate_publish_or_removal_path_exists",
+        "test_only_a_draft_is_scheduled_and_documents_and_stickers_hold",
+        "test_the_endpoint_and_asset_urls_are_pinned",
+        "test_an_asset_over_the_cap_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F78",
+      "title": "Release looks up its Control Center token among every secret name and could send the Buffer key to Control Center",
+      "source": "V1 build, 27 Oct 2026: integration bug fixed in 52f1147: cc_loop.SECRET_ENV now lists BUFFER_API_KEY for redaction",
+      "guard": "engine/run/autorelease.py:_cc_client reads CONTROL_CENTER_ENGINE_TOKEN alone",
+      "tests": [
+        "test_the_cli_routes_and_refuses_without_a_key",
+        "test_the_workflow_names_only_the_expected_secrets"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F79",
+      "title": "The morning Control Center run is missed when the 05:10 dispatch does not arrive, or runs twice when it did",
+      "source": "V1 build, 27 Oct 2026: the backup cron in .github/workflows/control-center.yml",
+      "guard": "engine/run/backup.py:dispatch_succeeded_today and engine/run/backup.py:decide: the 05:40 UTC backup runs unless a repository_dispatch run succeeded today (UTC); an unreadable answer runs it",
+      "tests": [
+        "test_a_successful_dispatch_today_skips_the_backup",
+        "test_anything_else_runs_the_backup",
+        "test_the_request_asks_only_for_todays_successful_dispatches",
+        "test_an_unreadable_answer_runs_the_backup_and_prints_no_token",
+        "test_control_center_has_the_backup_schedule_and_gate",
+        "test_backup_runner_reports_under_its_own_run_id"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F80",
+      "title": "The runner drops the directive's web_analytics block or logs its values",
+      "source": "V1 build, 27 Oct 2026: the Control Center runner (engine/cc_loop.py), protocol 1.10.0",
+      "guard": "engine/cc_loop.py:web_analytics_block, engine/cc_loop.py:keep_web_analytics and engine/cc_loop.py:web_analytics_summary log the shape only: row counts, coverage and event names",
+      "tests": [
+        "test_summary_line_is_shape_only",
+        "test_absent_and_unread_parts_are_said",
+        "test_block_is_found_beside_or_inside_the_directive",
+        "test_runner_keeps_the_block_and_logs_its_shape"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F81",
+      "title": "A measure verdict is given too early, against another channel's history, or from a post that is not this engine's",
+      "source": "V1 build, 27 Oct 2026: L0 measure (engine/run/measure_auto.py, .github/workflows/measure.yml)",
+      "guard": "engine/run/measure_auto.py:verdicts judges each post against its own channel's median after its window, with no verdict for a channel's first 14 days; engine/run/buffer_reads.py:sent_posts reads only the pinned channels and skips imported posts",
+      "tests": [
+        "test_works_neutral_and_fails_against_the_channels_own_median",
+        "test_window_not_elapsed_and_thin_history_are_insufficient",
+        "test_a_new_channel_stays_insufficient_for_fourteen_days",
+        "test_a_zero_median_gives_no_verdict",
+        "test_only_this_engines_pinned_channels_and_no_imported_posts",
+        "test_metrics_come_from_get_post_only_when_the_list_has_none",
+        "test_without_buffer_it_still_runs_the_ga4_part",
+        "test_unverified_event_names_are_not_counted",
+        "test_a_buffer_failure_is_held_by_name_and_fails_the_run",
+        "test_deliver_reports_by_the_existing_path_with_a_readback",
+        "test_existing_measure_commands_still_route",
+        "test_measure_runs_three_times_a_day_after_a_key_check"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F82",
+      "title": "A refused or missing key passes the daily key check",
+      "source": "V1 build, 27 Oct 2026: L0 keys (engine/run/keys.py, .github/workflows/keys.yml)",
+      "guard": "engine/run/keys.py:check_cc and engine/run/keys.py:check_buffer; engine/run/keys.py:main exits 1 with the reason code and never prints the key",
+      "tests": [
+        "test_healthy_control_center_and_no_buffer_module_passes",
+        "test_refused_engine_token_exits_non_zero_with_its_code",
+        "test_missing_or_foreign_engine_token",
+        "test_refused_buffer_key_exits_non_zero_with_its_code",
+        "test_buffer_not_configured_and_a_healthy_buffer",
+        "test_keys_is_routed"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F83",
+      "title": "doctor calls a session with no engine token not ready, or prints or uses a foreign token",
+      "source": "V1 build, 27 Oct 2026: runner hardening; no session holds the engine key (R106)",
+      "guard": "growth.py:engine_token_mode and growth.py:doctor (session mode is OK, a foreign token is a warning); growth.py:engine_client refuses a token that is not gen1_. Outside engine/, so the register cannot check these paths",
+      "tests": [
+        "test_no_engine_token_is_session_mode_and_ready",
+        "test_a_foreign_token_is_a_warning_never_printed_or_used",
+        "test_the_engine_token_is_still_checked_read_only",
+        "test_engine_client_refuses_a_foreign_token"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F84",
+      "title": "A run or a session reports no cost of its own",
+      "source": "V1 build, 27 Oct 2026: self-metering (R106: \"Same for the cost baseline\")",
+      "guard": "engine/meter.py:install counts every urllib call once and engine/meter.py:cost_line prints seconds and calls only; engine/run/cost.py:self_meter reads the latest session for run cost self",
+      "tests": [
+        "test_one_counter_sees_every_urllib_call",
+        "test_cost_line_is_seconds_and_calls_only",
+        "test_latest_session_only",
+        "test_one_line_without_text_or_paths",
+        "test_since_bounds_and_unknowns",
+        "test_codex_logs_are_read_only_when_named"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F85",
+      "title": "The handoff proposes a go-live from the dispatch's word instead of the live draft",
+      "source": "V1 build, 27 Oct 2026: L0 handoff (engine/run/handoff.py, .github/workflows/handoff.yml)",
+      "guard": "engine/run/handoff.py:rebuild reads each draft fresh and rebuilds its line with engine/run/autorelease.py:draft_line; a mismatch holds handoff_digest_mismatch",
+      "tests": [
+        "test_a_mismatched_digest_holds_that_slot",
+        "test_a_draft_that_is_no_longer_a_draft_holds",
+        "test_a_matching_manifest_is_proposed_and_autorelease_releases_it",
+        "test_a_second_handoff_of_the_same_manifest_reports_nothing_new",
+        "test_an_unknown_key_is_rejected_before_any_call",
+        "test_the_dry_run_sends_nothing",
+        "test_no_open_plan_proposes_nothing",
+        "test_a_week_packet_is_one_check_in_on_the_open_plan_or_a_plan",
+        "test_make_piece_is_recorded_and_proposes_nothing"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F86",
+      "title": "A LinkedIn slot reaches a go-live as an engine post, or release reads or schedules a LinkedIn draft",
+      "source": "V1 build, 27 Oct 2026: L0 handoff and release; LinkedIn stays his own final click (R62, R109)",
+      "guard": "engine/run/handoff.py:rebuild turns every LinkedIn line to krish_click with its own digest; engine/run/autorelease.py:slot makes no call for a krish_click slot",
+      "tests": [
+        "test_linkedin_always_goes_in_as_krish_click",
+        "test_linkedin_stays_a_draft_and_is_never_read"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F87",
+      "title": "A new kind of post rides in a batch go-live, or derivatives are read from a key authority.json does not use",
+      "source": "V1 build, 27 Oct 2026: merge e28626f: release and handoff read derivative formats one way (R105, R110)",
+      "guard": "engine/run/autorelease.py:derivative_formats reads the derivative classes of invariants/authority.json for both; engine/run/handoff.py:needs_own_review and engine/run/handoff.py:new_formats give every other format a go-live of its own",
+      "tests": [
+        "test_a_new_kind_of_post_is_its_own_go_live",
+        "test_authority_file_names_the_new_formats",
+        "test_per_item_review_from_the_dispatch_is_honoured",
+        "test_absent_file_defaults_and_stays_shut",
+        "test_both_sides_of_the_date",
+        "test_the_date_is_read_from_the_file"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F88",
+      "title": "An oversize go-live manifest is cut off or reordered",
+      "source": "V1 build, 27 Oct 2026: L0 handoff; Control Center caps an exact payload at 8,000 characters",
+      "guard": "engine/run/handoff.py:pack splits the lines in order into parts of PAYLOAD_CAP or less; engine/run/handoff.py:golive_proposals numbers them",
+      "tests": [
+        "test_an_oversize_manifest_splits_into_go_lives_in_order"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F89",
+      "title": "A dispatch's client_payload reaches a shell run line",
+      "source": "V1 build, 27 Oct 2026: .github/workflows/handoff.yml",
+      "guard": "The payload reaches the job only through the HANDOFF_PAYLOAD env var, written to a file by Python; engine/run/handoff.py:load_payload caps and parses it",
+      "tests": [
+        "test_the_payload_never_reaches_a_run_line",
+        "test_triggers_secrets_and_limits"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F90",
+      "title": "A public Actions log carries words, URLs, ids, digests or keys",
+      "source": "V1 build, 27 Oct 2026: every L0 job; the repository is public",
+      "guard": "engine/run/autorelease.py:autorelease, engine/run/handoff.py:_finish and engine/run/measure_auto.py:_counts_line print counts and reason codes only",
+      "tests": [
+        "test_the_summary_carries_no_words_urls_or_ids",
+        "test_the_log_carries_counts_and_codes_only",
+        "test_dry_run_reads_fakes_reports_locally_and_logs_only_counts"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F91",
+      "title": "A Story frame counts against a channel's daily feed cap",
+      "source": "V1 build, 27 Oct 2026: commit f7f8d78; the calendar's stories floor governs Story frames",
+      "guard": "engine/run/spec.py:lint skips STORY_FORMATS (the same tuple as engine/run/calendar.py) in the posts per day count",
+      "tests": [
+        "test_story_frames_do_not_count_against_the_feed_cap"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F92",
+      "title": "The taste procedure grows past 6 KB, loses a wall or gains a schedule of its own",
+      "source": "V1 build, 27 Oct 2026, the standing make, plan and watch files; retargeted on 29 Oct 2026 to docs/TASTE.md, when they were removed under Krish's ruling of no Claude routines",
+      "guard": "tests/test_taste_wiring.py holds docs/TASTE.md at 6 KB or less with every wall, no clock time and no routine path, and checks that docs/LANES.md and AGENTS.md point makers at it; engine/run/invariants.py:check_lanes fails a routines/ folder",
+      "tests": [
+        "test_taste_file_reads_both_tools_and_never_blocks",
+        "test_makers_are_pointed_at_the_taste_file"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F93",
+      "title": "The signed digest misses what the edit sends besides the words: a first comment, a title, privacy, a topic, a location, alt text or a tagged account changed after Krish's yes still goes out",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: buffer_api.edit_input carried the draft's metadata, but slot_digest covered only channel, format, words, link placement, due time, publish mode and asset bytes",
+      "guard": "engine/run/buffer_api.py:signed_meta is exactly what engine/run/buffer_api.py:carried sends (asset urls as byte sha256), and the meta field sits in engine/run/release.py:slot_digest, engine/run/autorelease.py:draft_line, engine/run/spec.py:payload and the manifest line; engine/run/handoff.py:meta_words shows it to Krish in plain words, and engine/run/autorelease.py:_readback_ok checks it after the edit",
+      "tests": [
+        "test_a_metadata_change_after_approval_holds",
+        "test_the_probe_cases_change_the_digest",
+        "test_the_signed_meta_is_exactly_what_the_edit_sends",
+        "test_the_why_names_what_goes_out_with_the_words",
+        "test_a_metadata_change_after_the_dispatch_holds",
+        "test_details_that_cannot_be_shown_whole_are_never_proposed",
+        "test_the_spec_digest_equals_the_handoff_digest",
+        "test_the_readback_checks_the_meta",
+        "test_a_signed_account_or_meta_that_differs_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F94",
+      "title": "A draft on another venture's Buffer channel in the shared organisation is proposed or scheduled because only its service was checked",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: handoff and autorelease pinned channelService only; the Buffer organisation is shared with other ventures",
+      "guard": "engine/run/release.py:account_hold resolves the post's own channel (engine/run/buffer_api.py CHANNEL_FIELDS) against release.BUFFER_NAME with engine/run/release.py:resolve_channel; engine/run/handoff.py:rebuild and engine/run/autorelease.py:slot hold wrong_account, and buffer_channel_id is in the manifest line and the digest",
+      "tests": [
+        "test_a_draft_on_another_account_holds",
+        "test_a_draft_on_another_account_is_never_proposed",
+        "test_the_spec_digest_equals_the_handoff_digest",
+        "test_the_probe_cases_change_the_digest",
+        "test_a_signed_account_or_meta_that_differs_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F95",
+      "title": "Release schedules an approved draft days before it is due, so a later No, amendment or changed asset file cannot stop it",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: autorelease scheduled every approved slot on its first run after the yes",
+      "guard": "engine/run/autorelease.py:slot schedules only when DUE_MARGIN < due_at - now <= SCHEDULE_WINDOW (90 minutes), reading the clock again before each margin check; further out it is not_yet_due with no read and no edit, and a draft still unscheduled at its time holds loudly (due_time_passed); engine/run/handoff.py:golive_words says a yes schedules each post about an hour before it is due",
+      "tests": [
+        "test_a_slot_more_than_ninety_minutes_out_is_never_read_or_edited",
+        "test_a_no_before_the_window_stops_it",
+        "test_a_past_due_time_holds",
+        "test_the_clock_is_read_again_before_each_margin_check",
+        "test_a_matching_manifest_is_proposed_and_autorelease_releases_it"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F96",
+      "title": "A post scheduled under a yes that Krish later declined, changed or stopped goes out silently",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: nothing looked back at go-lives whose approval no longer stands",
+      "guard": "engine/run/autorelease.py:revoked_versions and engine/run/autorelease.py:check_revoked read each draft of a yes that no longer stands (and of a go-live whose plan was stopped) and report one still scheduled, unless exactly as the standing approval signs it, as scheduled_after_decline: loud, exit 1, never unscheduled",
+      "tests": [
+        "test_a_no_after_scheduling_is_loud_and_never_unscheduled",
+        "test_a_changed_approval_after_scheduling_is_loud",
+        "test_a_stopped_plan_after_scheduling_is_loud",
+        "test_no_alarm_when_nothing_was_scheduled"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F97",
+      "title": "The handoff's dispatch payload is placed in a step env, which GitHub prints in the public log header",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: .github/workflows/handoff.yml passed client_payload through HANDOFF_PAYLOAD",
+      "guard": ".github/workflows/handoff.yml reads the payload in Python from GITHUB_EVENT_PATH (client_payload, or inputs.payload) and writes it to RUNNER_TEMP; tests/test_run_handoff.py holds every step env free of it",
+      "tests": [
+        "test_no_step_env_carries_the_payload",
+        "test_the_payload_step_writes_the_event_payload",
+        "test_the_payload_never_reaches_a_run_line"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F98",
+      "title": "Old approved go-lives use up the report reads so a new one is never read and never released",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: signed_golives read approved go-lives in proposal id order under MAX_REPORT_READS, and declined check-ins last",
+      "guard": "engine/run/autorelease.py:signed_golives reads declined check-ins first, then approved go-lives newest first by decision time, and skips a go-live whose run has ended (engine/run/autorelease.py:golive_ended, engine/run/autorelease.py:run_window) before it uses a read; engine/run/handoff.py:rebuild keeps every due_at inside that run window (due_outside_run_window)",
+      "tests": [
+        "test_old_go_lives_never_starve_a_new_one",
+        "test_an_ended_go_live_is_skipped_before_it_uses_a_read",
+        "test_a_due_outside_the_run_window_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F99",
+      "title": "A due_at shaped right but no real date (2026-02-30) crashes the release or the handoff run",
+      "source": "Adversarial review of PR #19, 27 Oct 2026: parse_manifest and validate_manifest checked the shape only; instant() raised mid-run",
+      "guard": "engine/run/autorelease.py:parse_manifest and engine/run/autorelease.py:due_instant parse due_at with core.instant and hold that slot alone as bad_due_at; engine/run/handoff.py:rebuild does the same",
+      "tests": [
+        "test_an_impossible_due_date_holds_that_slot_only",
+        "test_an_impossible_due_date_holds_that_slot_in_the_handoff"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F100",
+      "title": "Krish's decisions are read in one call, so a No past the 100th decision is never seen and a go-live he stopped is scheduled",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: autorelease and handoff called cc.decisions(since) once; Control Center serves at most 100 a read, the oldest first",
+      "guard": "engine/cc_loop.py:decisions_paged reads from since page by page until a short page, starts each next page one second before the last decided_at so a tie at the boundary is read again, keeps each decision once by its whole record, and returns None when the pages do not end; engine/run/autorelease.py:autorelease and engine/run/handoff.py:handoff fail closed and loud on it as decisions_unpaged (exit 1)",
+      "tests": [
+        "test_his_no_past_the_hundredth_decision_stops_the_release",
+        "test_a_tie_at_the_page_boundary_is_never_dropped",
+        "test_decisions_that_never_page_out_fail_loud",
+        "test_the_handoff_reads_every_page_of_decisions"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F101",
+      "title": "The format a dispatch names is trusted, so a Reel signed as a carousel or a video signed as a single image goes out under the wrong label",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: draft_line and the handoff's rebuild took format from the dispatch without looking at the draft",
+      "guard": "engine/run/release.py:format_shape_errors checks the draft against release.py's FORMAT_SHAPE table (asset kinds; the Instagram and Facebook type) and engine/run/release.py:format_shape (asset counts from social/formats); engine/run/autorelease.py:draft_line raises format_differs_from_draft, which engine/run/handoff.py:rebuild and the release hold",
+      "tests": [
+        "test_a_format_label_that_is_not_the_draft_holds",
+        "test_a_format_label_that_is_not_the_draft_holds_in_the_handoff",
+        "test_the_format_shape_table_covers_every_format_record"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F102",
+      "title": "Some carried public words skip the copy lint: a Threads topic or location, an Instagram location or a tagged handle could name Krish",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: release.media_copy_errors read alt text, titles and first comments only",
+      "guard": "engine/run/release.py:media_copy_errors lints every string an edit's assets and metadata carry (engine/run/release.py:_carried_words) except links, ids and fixed codes (NOT_WORDS), so no_name reads them as titles; engine/run/buffer_api.py:edit_input holds copy_lint_refused",
+      "tests": [
+        "test_every_carried_free_text_field_runs_the_copy_lint"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F103",
+      "title": "An unresolved stop, a capped read or an undated decision holds quietly while posts from an earlier yes stay scheduled",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: stop_unresolved, too_many_reads and undated_decision were counted but not loud, and nothing listed what was scheduled",
+      "guard": "engine/run/autorelease.py:autorelease makes each UNKNOWN_HOLDS code and every too_many_reads loud (exit 1) and then engine/run/autorelease.py:sweep_scheduled lists the posts scheduled on the pinned channels, alarming scheduled_after_decline on any no standing signed line matches",
+      "tests": [
+        "test_an_unresolved_stop_is_loud_and_lists_what_is_scheduled",
+        "test_a_capped_read_or_an_undated_decision_is_loud"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F104",
+      "title": "run release with a draft id and null meta schedules alt text and an AI label nobody signed",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: release_plan compared the draft with the signed meta only when meta was set, and call_arguments carried the draft's alt text and AI flag forward",
+      "guard": "engine/run/release.py:call_arguments holds an engine-scheduled edit whose meta is null as draft_meta_not_signed",
+      "tests": [
+        "test_an_engine_edit_with_no_signed_meta_holds",
+        "test_edit_carries_alt_text_and_ai_flag_forward"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F105",
+      "title": "One approval can act through both release paths: a go-live line and a run-spec slot hashed the same fields to the same digest",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: slot_digest and line_digest hashed the same keys, and run release could create a post on a route L0 already serves",
+      "guard": "engine/run/release.py:slot_digest hashes SLOT_DOMAIN in with the fields and engine/run/autorelease.py:line_digest LINE_DOMAIN (engine/run/autorelease.py:spec_digest is the run-spec one the handoff checks a dispatch against); engine/run/release.py:release_plan holds every engine-scheduled slot on a route verified and fresh as route_served_by_l0; docs/RUN.md states the two paths apart",
+      "tests": [
+        "test_a_golive_line_digest_is_never_a_run_spec_slot_digest",
+        "test_run_release_is_only_each_routes_capability_check",
+        "test_run_doc_is_small_and_house_clean",
+        "test_payload_digest_recomputed"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F106",
+      "title": "One press authorises a week: the handoff packs a week's posts into one go-live, against R94's exactly that day's posts",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: golive_proposals packed every batch line of a run into one go-live, split only at 8,000 characters",
+      "guard": "engine/run/handoff.py:golive_proposals makes one go-live per New York day (engine/run/handoff.py:by_day, engine/run/handoff.py:post_day), keeps the 8,000-character split within a day, and engine/run/handoff.py:golive_words names the day in the title and the why",
+      "tests": [
+        "test_one_go_live_per_new_york_day"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F107",
+      "title": "A transient failure on the editPost mutation is resent, so an edit that landed could be sent twice",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: buffer_api._graphql retried every operation once on a 5xx or a timeout",
+      "guard": "engine/run/buffer_api.py:schedule_draft calls engine/run/buffer_api.py:_graphql with retry=False; the release reads back instead",
+      "tests": [
+        "test_the_edit_is_never_resent"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F108",
+      "title": "An amended due_at outside its go-live's run window is scheduled; only the handoff checked the window",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: Run.slot never compared Krish's amended time with the run the go-live names",
+      "guard": "engine/run/autorelease.py:slot holds a due_at outside engine/run/autorelease.py:run_window of its go-live as due_outside_run_window",
+      "tests": [
+        "test_an_amended_time_outside_the_run_window_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F109",
+      "title": "A field the reads select but the edit does not carry (a Facebook title) is silently dropped from the post",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: _metadata_input read FacebookPostMetadata.title and sent nothing for it; an edit is revalidated as a whole post (F01)",
+      "guard": "engine/run/buffer_api.py:_metadata_input and engine/run/buffer_api.py:_asset_input hold uncarried_field_set when engine/run/buffer_api.py:_uncarried finds a set field outside HANDLED_METADATA, HANDLED_ASSET or HANDLED_MEDIA",
+      "tests": [
+        "test_a_field_read_but_never_carried_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F110",
+      "title": "Alt text goes out with a post but the why Krish reads does not name it",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: meta_words named first comments, titles, location and tags, never alt text",
+      "guard": "engine/run/handoff.py:meta_words names each image's alt text in plain words",
+      "tests": [
+        "test_the_why_names_alt_text_in_plain_words"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F111",
+      "title": "A go-live Krish approved that names lines on more than one New York day acts as one press for several days, against R94",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor; go-lives built before the handoff made one per New York day",
+      "guard": "engine/run/autorelease.py:golive holds every line of a go-live whose signed lines engine/run/autorelease.py:spans_days finds on more than one New York day as golive_spans_days; a line with no time rides along",
+      "tests": [
+        "test_a_go_live_naming_two_new_york_days_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F112",
+      "title": "On GitHub Actions a post made from a concept is authorised from a local file, a dispatch payload or a PC .scratch instead of Control Center",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: decision.json is written only in the loop's own run on the PC, so the runner had no concept authority it could trust",
+      "guard": "engine/run/autorelease.py:week_state reads the plan in force, its parts by digest (engine/run/autorelease.py:read_part) and his decisions from Control Center and derives the concept part with engine/run/decision.py:cc_readback, engine/run/decision.py:judge and engine/run/decision.py:concept_part; engine/run/autorelease.py:derived then calls release.authorised_digests and release.concept_post_hold; a concept_hold or an unresolved stop holds every derived post loudly",
+      "tests": [
+        "test_end_to_end_a_dispatched_plan_he_approves_schedules_its_derived_post_in_the_window",
+        "test_his_no_on_the_plan_holds_the_derived_post",
+        "test_an_amended_plan_that_changes_the_concept_line_holds_the_derived_post",
+        "test_an_amended_plan_line_other_than_a_concept_holds_every_derived_post_loudly",
+        "test_a_derived_post_whose_asset_is_not_the_mock_holds",
+        "test_a_derived_post_that_drops_the_claim_holds",
+        "test_a_week_with_no_plan_in_control_center_holds_loudly",
+        "test_an_unresolved_stop_holds_every_derived_post_loudly"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F113",
+      "title": "A review of another payload counts for a derived post, or a copy of the review judge drifts from spec.review_reason",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: review results reach Control Center keyed by the slot's payload_sha256",
+      "guard": "engine/run/handoff.py:derived_record refuses a review whose sha or slot is not the slot's; engine/run/autorelease.py:review_of refuses a record whose body names another sha; engine/run/release.py:concept_post_hold judges it with spec.review_reason at the digest rebuilt from the draft",
+      "tests": [
+        "test_a_review_for_another_sha_is_refused",
+        "test_the_review_is_judged_only_by_spec_review_reason"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F114",
+      "title": "cc_loop.claim_golives is never called with a real ledger in production: each clean runner forgets which go-lives already acted",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: the claim ledger lived in a throwaway folder on the runner (docs/ENGINE.md, The ledger)",
+      "guard": "engine/run/autorelease.py:seed_claims reads each claim back from Control Center into the ledger engine/cc_loop.py:claim_golives reads; engine/run/autorelease.py:record_claim reports a go-live once every line it signs is done; engine/run/autorelease.py:acted_action only checks a claimed go-live, never schedules it again; a claim that cannot be read fails the run",
+      "tests": [
+        "test_a_finished_go_live_is_claimed_in_control_center_and_acts_once",
+        "test_a_go_live_with_a_line_still_to_come_is_not_claimed",
+        "test_a_claim_that_cannot_be_read_fails_closed"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F115",
+      "title": "A full week's mix plan over 8,000 characters never reaches Krish: the proposal is held, so no concept can be approved",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: a flooded week carries about 25 concept lines, near or over the exact-payload cap",
+      "guard": "engine/mix.py:payload_parts splits the week into parts in order, each at most 8,000 characters (part 1 keeps every plan line), engine/mix.py:part_proposals asks each, and engine/run/decision.py:cc_readback approves a concept only once part 1 and its own part are; a no on any part stops the week",
+      "tests": [
+        "test_a_full_week_over_eight_thousand_characters_comes_in_parts_in_order"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F116",
+      "title": "A newer plan for the week, sent after his yes, leaves the old yes standing on the runner",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: on Control Center the plan in force has to be named, since no local plan file is there to rebuild",
+      "guard": "engine/run/handoff.py:deliver_version reports each new version of the week's plan; engine/run/autorelease.py:week_state reads the highest as the plan in force, so a yes on an earlier digest is stale_approval and holds loudly",
+      "tests": [
+        "test_a_newer_plan_version_withdraws_his_earlier_yes"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F117",
+      "title": "The daily cap on a derived post counts only local ledgers, so posts already scheduled in Buffer that New York day, or his signed posts still to come, are missed",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: on the runner there is no .scratch ledger to count",
+      "guard": "engine/run/autorelease.py:day_count reads every post scheduled, sending or sent on the pinned channel that New York day from Buffer and reserves each line a standing go-live signs for that day",
+      "tests": [
+        "test_the_daily_cap_counts_every_post_scheduled_that_new_york_day_from_buffer",
+        "test_a_derived_post_never_bumps_a_post_he_signed_for_that_day"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F118",
+      "title": "A record kept in a report's activity lines changes on the way: Control Center clips each line and collapses its whitespace",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: control_center.clip joins every run of whitespace into one space",
+      "guard": "engine/run/cc_records.py:record_lines carries a record as base64 of its canonical JSON in numbered chunks with no whitespace; engine/run/cc_records.py:record_of refuses a missing or repeated chunk",
+      "tests": [
+        "test_a_record_rides_whole_through_whitespace_collapse"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F119",
+      "title": "His yes on a week's mix plan becomes the plan a go-live hangs from, so a concept approval could parent go-lives",
+      "source": "V1 build, 29 Oct 2026: main's concept approval (PR #26) on the L0 executor: the mix plan is a plan proposal behind strategy, like the standing plan",
+      "guard": "engine/run/handoff.py:open_plan never takes a mix plan (makeyourmindup:mix:...) as a go-live's plan, and engine/run/handoff.py:derived_record makes a post from a concept a review record, never a go-live",
+      "tests": [
+        "test_a_derived_slot_is_never_a_go_live_and_the_mix_plan_is_no_go_lives_plan"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F120",
+      "title": "His no on a part of the week's plan was forgotten once a later, shorter version dropped that part",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:week_state reads a decline on every part id of the week in any version (engine/mix.py:week_part); engine/run/decision.py:cc_readback does the same",
+      "tests": [
+        "test_a_no_on_a_part_a_later_version_dropped_still_stops_the_week"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F121",
+      "title": "A line he added to his amended yes was ignored, so every concept was approved under the engine's terms, not his",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/mix.py:lines_changed counts every line he added that is not his edit of a concept's own line, so his term holds the week (amended_plan_terms); an added line naming a concept is excused only while that concept's own line is gone",
+      "tests": [
+        "test_a_line_he_adds_to_his_amended_yes_holds_every_concept"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F122",
+      "title": "A concept he stopped by deleting or editing its line in an earlier version went out once a later version re-listed it",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:amended_away unions the concepts he deleted or edited in every amended yes on the week, read from the words each was made on",
+      "tests": [
+        "test_a_concept_he_stopped_in_an_earlier_version_stays_stopped"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F123",
+      "title": "One approved concept could go out several times on one channel the same day",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:other_drafts with derived_lane: one live Buffer draft per concept, channel and New York week (two live is loud); index entries carry concept_id and buffer_draft_id (engine/run/handoff.py:derived_reports)",
+      "tests": [
+        "test_one_concept_posts_once_per_channel_a_week",
+        "test_an_earlier_second_draft_never_joins_one_already_live",
+        "test_a_replacement_draft_goes_out_when_the_first_never_did"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F124",
+      "title": "A post scheduled for later in a declined week was alarmed only near its time, and a stale route hid the alarm",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:derived_lane reads a stopped week's every post still to come once he has declined a plan or check-in; engine/run/autorelease.py:derived reads the stop before every other gate; engine/run/autorelease.py:stopped reads the post by its draft id, so no review is needed, and a post sent after his no is loud too",
+      "tests": [
+        "test_a_declined_week_with_a_post_scheduled_for_later_is_loud_now",
+        "test_a_post_sent_after_his_no_is_loud_and_one_sent_before_is_not",
+        "test_a_stopped_week_is_checked_even_when_its_review_cannot_be_read"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F125",
+      "title": "A go-live claimed under one decision acted again under a later one",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/cc_records.py:claim_run_id is per go-live (proposal_id); engine/run/autorelease.py:seed_claims finds a claim made under any decision",
+      "tests": [
+        "test_a_go_live_claimed_under_an_earlier_decision_never_acts_again"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F126",
+      "title": "The local run release cap could not see posts L0 autorelease scheduled in Buffer",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/release.py:release_plan counts the day from a fresh Buffer list_posts readback (--scheduled) and holds a concept post without one; a readback that is not a list of posts with id, status and channelId is refused",
+      "tests": [
+        "test_the_cap_counts_what_buffer_holds_so_l0_posts_count_here"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F127",
+      "title": "A past-due draft, and a newer plan version he had not answered, were loud every run all day, training him to ignore the alarm",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:derived_entries no longer reads a draft LATE past its time; engine/run/autorelease.py:week_state holds stale_approval quietly",
+      "tests": [
+        "test_a_past_due_draft_is_loud_once_then_quiet",
+        "test_a_newer_plan_version_withdraws_his_earlier_yes"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F128",
+      "title": "The mock he opened from the ask was never compared with the mock hash he approved",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/handoff.py:check_mock_links downloads each mock view link and requires it to hash to one of its concept's mock_sha256",
+      "tests": [
+        "test_a_mock_link_must_be_one_of_the_files_he_approves"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F129",
+      "title": "A claim matched inside a longer number or word: a claim about 10 pilots passed in words about 110 pilots",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/concepts.py:carries matches the claim as whole words",
+      "tests": [
+        "test_a_claim_is_carried_as_whole_words"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F130",
+      "title": "A log leak check matched a private figure's digits inside the report's sha256 and failed by chance",
+      "source": "CI on PR #19 head 442aa51, 29 Oct 2026: self-test (ubuntu-24.04, 3.9)",
+      "guard": "tests/test_run_measure_auto.py matches the figure as a whole number; the digest covers the run's measured cost, so it changes every run",
+      "tests": [
+        "test_dry_run_reads_fakes_reports_locally_and_logs_only_counts"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F131",
+      "title": "A missing Buffer time read as now, so a sent post with no sentAt looked sent at this moment",
+      "source": "Review 4 of PR #19, 29 Oct 2026: the fixes to review 3",
+      "guard": "engine/run/autorelease.py:due_instant returns None for a missing value (engine.core.instant(None) is now)",
+      "tests": [
+        "test_a_post_sent_after_his_no_is_loud_and_one_sent_before_is_not"
+      ],
+      "status": "tested"
+    },
+    {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",

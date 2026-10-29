@@ -479,7 +479,8 @@ class PlanWords(unittest.TestCase):
             self.assertNotIn(claim, text)
         for rule in ('passing review of its own exact words', "room under its channel's daily cap when it goes out"
                      ' (at most Instagram 4, YouTube Shorts 4, TikTok 4, X 4 a day)', 'copy lint', 'channel lock',
-                     'Change any other line and no concept is approved until a plan carrying your change is approved',
+                     'Change or add any other line and no concept is approved until a plan carrying your change is'
+                     ' approved', 'once on each a week',
                      'capability check', 'change a concept\'s line and that concept and every post from it stop',
                      'Your no stops them all', 'LinkedIn stays your click'):
             self.assertIn(rule, text)

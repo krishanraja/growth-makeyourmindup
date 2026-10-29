@@ -100,7 +100,8 @@ class Volume(unittest.TestCase):
                     'words': 'TEST FIXTURE ONLY. A pilot earns its budget line when one number is agreed on day one.'
                              ' More from Mindmake: https://mindmake.co/',
                     'assets': [], 'link_placement': None, 'cta': False, 'forward_line': 'not shared',
-                    'experiment_arm': None, 'publish_mode': 'engine', 'buffer_draft_id': None,
+                    'experiment_arm': None, 'publish_mode': 'engine', 'buffer_draft_id': None, 'meta': None,
+                    'buffer_channel_id': None,
                     'ecosystem_cta': {'route': 'mindmake', 'url': 'https://mindmake.co/', 'placement': 'in_post'}}
         spec = copy.deepcopy(base)
         spec['slots'] = []

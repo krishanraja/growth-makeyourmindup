@@ -409,10 +409,18 @@ nothing. A failure is reported as a failed attempt with a code; never retry a
 report by hand after "report conflict". Control Center already holds that
 run, so say so in the job's final message. The engine key is
 `CONTROL_CENTER_ENGINE_TOKEN` or the `engine-token` file (`docs/KEY.md`).
+Only the GitHub runner (a repository secret) and Krish's PC (the file, for
+Codex workspace runs) hold it. A Claude session never sets or reads it: it
+reads Control Center through the Control Center connector, and its
+proposals reach Control Center only through the runner (`docs/LANES.md`).
+There are no Claude routines (Krish, 29 Oct 2026); whoever makes or writes
+for this engine follows `docs/TASTE.md`.
 Separately, Control Center wakes `.github/workflows/control-center.yml`
 every morning; that GitHub runner checks the engine offline and reports
 what a clean runner can see. Its numbers are always "measured only in the
-publication workspace".
+publication workspace". GitHub Actions runs six workflows, all lane L0
+(`docs/LANES.md`): control-center, release, measure, keys, handoff and
+check. The nine automations below run on Krish's PC and are kept until W46.
 
 ## The schedule (New York time)
 
@@ -434,7 +442,7 @@ earlier selected work. An individual job has no separate 20-minute allowance.
 
 The channel-audit slot uses Europe/London; other rows remain New York time.
 It is explicitly authorised by the 2026-10-21 ruling and may be scheduled
-without creating the other seven jobs. Its heartbeat follows this chat.
+without creating the other eight jobs. Its heartbeat follows this chat.
 Its scoped metadata edits are also the exception to the older setup rule
 against automation prompts that edit platform content.
 

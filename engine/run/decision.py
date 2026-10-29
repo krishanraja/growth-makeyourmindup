@@ -105,16 +105,27 @@ def readback(mix_doc, cfg, proposals, decisions, ledger=None, now=None):
     about the plan file is trusted, because stopping is always safe. Raises
     ValueError when the plan file cannot be trusted and he did not decline it.
     """
-    pid = mix_rules.proposal_id(mix_doc['week_of'])
     item = mix_doc.get('proposal') if isinstance(mix_doc.get('proposal'), dict) else {}
+    return judge(mix_rules.proposal_id(mix_doc['week_of']), mix_doc['week_of'], item, mix_doc.get('concepts'),
+                 lambda: plan_errors(mix_doc, cfg), proposals, decisions, ledger, now)
+
+
+def judge(pid, week_of, item, concepts, trust, proposals, decisions, ledger=None, now=None):
+    """The readback's rule for one plan proposal, wherever its plan was read from. Pure.
+
+    item is the plan proposal; concepts its concepts (the mix doc's, or the record
+    a Control Center report carries); trust() returns why that plan cannot be
+    trusted, or None, and is asked only after a decline or a stop is read. Both
+    the loop's local plan file (readback) and L0 autorelease's Control Center
+    readback (cc_readback) are judged here, never by a copy."""
+    item = item if isinstance(item, dict) else {}
     reported = {p.get('proposal_id'): p for p in proposals or [] if isinstance(p, dict)}
     stops, unresolved = _stops(list(reported.values()), decisions, ledger)
     latest, undated = _latest(decisions)
     decision = latest.get(pid)
-    every = sorted(c['concept_id'] for c in mix_doc.get('concepts') or []
-                   if isinstance(c, dict) and isinstance(c.get('concept_id'), str))
+    every = sorted(c['concept_id'] for c in concepts or [] if isinstance(c, dict) and isinstance(c.get('concept_id'), str))
     sha = item.get('payload_sha256')
-    record = {'schema': RECORD, 'proposal_id': pid, 'week_of': mix_doc['week_of'],
+    record = {'schema': RECORD, 'proposal_id': pid, 'week_of': week_of,
               'plan_payload_sha256': sha if isinstance(sha, str) and SHA_HEX.match(sha) else None,
               'read_at': iso(now), 'decided_at': (decision or {}).get('decided_at'), 'amended': False,
               'amended_sha256': None, 'approved': {}, 'stopped_concepts': [], 'changed_concepts': [],
@@ -127,7 +138,7 @@ def readback(mix_doc, cfg, proposals, decisions, ledger=None, now=None):
     if unresolved:
         return None, (HOLD_UNRESOLVED + ': ' + str(len(unresolved)) + ' declined check-in(s) not yet matched to'
                       ' their plan; any of them may stop ' + pid)
-    problem = plan_errors(mix_doc, cfg)
+    problem = trust()
     if problem:
         raise ValueError(problem)
     if pid not in reported:
@@ -148,8 +159,10 @@ def readback(mix_doc, cfg, proposals, decisions, ledger=None, now=None):
             return None, 'no_spend_authority: the mix plan spends nothing'
         text = decision['exact_payload']
         record.update(amended=True, amended_sha256=decision['amended_sha256'])
-    deleted, changed = mix_rules.amended_out(mix_doc, text)
-    lines = mix_rules.plan_lines_changed(mix_doc, cfg, text)
+    plan = {'concepts': list(concepts or [])}
+    deleted, changed = mix_rules.amended_out(plan, text)
+    # item's words are the plan's own (trust() proved them), so this is plan_lines_changed on the plan.
+    lines = mix_rules.lines_changed(item['exact_payload'], text)
     record.update(stopped_concepts=sorted(set(deleted) | set(changed)), changed_concepts=changed,
                   plan_lines_changed=lines)
     if lines:
@@ -158,8 +171,112 @@ def readback(mix_doc, cfg, proposals, decisions, ledger=None, now=None):
         record.update(decision='held', hold=(HOLD_TERMS + ': he changed ' + str(lines) + ' plan line(s); no'
                                              ' concept is approved until a plan carrying his terms is approved'))
         return record, None
-    record.update(decision='approved', approved=mix_rules.approved_map(mix_doc, text))
+    record.update(decision='approved', approved=mix_rules.approved_map(plan, text))
     return record, None
+
+
+# The same readback on L0, from Control Center ---------------------------------------
+
+PART_SCHEMA = 'growth-mix-part/1'
+PART_KEYS = frozenset({'schema', 'week_of', 'part', 'parts', 'targets', 'concepts'})
+PART_CONCEPT_KEYS = frozenset(concept_rules.DIGESTED) | {'ready', 'text_only', 'concept_sha256'}
+
+
+def part_errors(item, record, number, parts, week_of, cfg):
+    """Why one part of the week's plan, read back from its Control Center report, cannot be trusted, or None.
+
+    record is the part's concepts as its report carries them (engine/run/handoff.py,
+    growth-mix-plan). The words are his ask, read back by digest; the record must
+    match them: every concept recomputes to its concept_sha256, its line stands in the
+    words exactly (engine/mix.py concept_line), every concept line in the words is one
+    of them, and part 1 states each channel's daily cap from the record's targets."""
+    if not isinstance(record, dict) or set(record) != PART_KEYS or record['schema'] != PART_SCHEMA:
+        return 'the plan record for ' + str(item.get('proposal_id')) + ' is not a ' + PART_SCHEMA + ' record'
+    if (record['week_of'], record['part'], record['parts']) != (week_of, number, parts):
+        return 'the plan record for ' + str(item.get('proposal_id')) + ' names another week or part'
+    if item.get('proposal_id') != mix_rules.part_id(week_of, number) or item.get('stage') != 'plan' \
+            or item.get('wall') != 'strategy' or not isinstance(item.get('exact_payload'), str):
+        return 'the plan part ' + str(item.get('proposal_id')) + ' is not the plan proposal for its week and part'
+    text = item['exact_payload']
+    lines = {mix_rules._line(line) for line in text.split('\n')}
+    rendered = set()
+    for concept in record['concepts'] if isinstance(record['concepts'], list) else [None]:
+        if not isinstance(concept, dict) or set(concept) != PART_CONCEPT_KEYS:
+            return 'a concept in the plan record for ' + item['proposal_id'] + ' is not a whole concept'
+        if concept['ready'] and (concept['concept_sha256'] != concept_rules.concept_sha256(concept)
+                                 or concept_rules.concept_errors(concept)):
+            return 'concept ' + str(concept['concept_id']) + ' does not recompute to its concept_sha256'
+        line = mix_rules._line(mix_rules.concept_line(concept))
+        if line not in lines:
+            return 'concept ' + str(concept['concept_id']) + ' is not in the words of ' + item['proposal_id']
+        rendered.add(line)
+    if any(mix_rules._line(line) not in rendered for line in text.split('\n') if line.startswith('- ')):
+        return 'a concept line in ' + item['proposal_id'] + ' has no concept in its record'
+    if number == 1:
+        stated = 'at most ' + mix_rules._caps_line({'targets': record['targets']}, cfg['channels']) + ' a day'
+        if stated not in text:
+            return "the plan's daily caps are not the ones its words state"
+    return None
+
+
+def cc_readback(week_of, parts, cfg, decisions, ledger=None, now=None):
+    """(record, None) or (None, why): his decisions on the week's mix plan as Control Center holds it.
+
+    parts is [(proposal, record)] for every part of the plan in force, in order,
+    each read back from its own report (engine/run/autorelease.py). Each part is
+    judged by judge(), the loop's own rule; then: his no on any part, or a stop on
+    any, stops every concept of the week; nothing is approved while part 1 is not;
+    a part with no yes yet approves none of its concepts; a part whose other lines he
+    changed holds the week. Raises ValueError when a part cannot be trusted."""
+    pid = mix_rules.proposal_id(week_of)
+    items = [item for item, _ in parts]
+    every = sorted({c['concept_id'] for _, record in parts for c in (record or {}).get('concepts') or []
+                    if isinstance(c, dict) and isinstance(c.get('concept_id'), str)})
+    stops, _ = _stops(items, decisions, ledger)
+    # His no on any part of the week, in any version (a part a later version dropped included), stops it (R111).
+    ever = sorted({d['proposal_id'] for d in decisions or [] if isinstance(d, dict)
+                   and mix_rules.week_part(d.get('proposal_id'), week_of)} - {item.get('proposal_id') for item in items})
+    if any(_declined(other, decisions, stops) for other in ever):
+        sha = items[0].get('payload_sha256') if items else None
+        return {'schema': RECORD, 'proposal_id': pid, 'week_of': week_of,
+                'plan_payload_sha256': sha if isinstance(sha, str) and SHA_HEX.match(sha) else None,
+                'read_at': iso(now), 'decided_at': None, 'amended': False, 'amended_sha256': None, 'approved': {},
+                'stopped_concepts': every, 'changed_concepts': [], 'plan_lines_changed': 0, 'hold': None,
+                'decision': 'declined'}, None
+    for item in items:
+        if _declined(item.get('proposal_id'), decisions, stops):
+            # Read first, before any part is trusted: his no on one part stops every concept of the week.
+            record, _ = judge(item['proposal_id'], week_of, item, [], lambda: None, items, decisions, ledger, now)
+            record.update(proposal_id=pid, stopped_concepts=every, approved={},
+                          plan_payload_sha256=items[0].get('payload_sha256'))
+            return record, None
+    records = []
+    for number, (item, part) in enumerate(parts, 1):
+        trust = (lambda item=item, part=part, number=number:
+                 part_errors(item, part, number, len(parts), week_of, cfg))
+        records.append(judge(item.get('proposal_id'), week_of, item, (part or {}).get('concepts'), trust, items,
+                             decisions, ledger, now))
+    head, why = records[0] if records else (None, 'the mix plan for ' + week_of + ' has no parts')
+    if head is None:
+        return None, why
+    merged = dict(head, proposal_id=pid, parts=[{'proposal_id': item['proposal_id'],
+                                                 'payload_sha256': item['payload_sha256'],
+                                                 'decision': (record or {}).get('decision')}
+                                                for item, (record, _) in zip(items, records)])
+    stopped, changed, approved = set(head['stopped_concepts']), set(head['changed_concepts']), dict(head['approved'])
+    for record, _ in records[1:]:
+        if record is None:
+            continue  # that part waits for his decision: none of its concepts is approved yet
+        stopped |= set(record['stopped_concepts'])
+        changed |= set(record['changed_concepts'])
+        merged['plan_lines_changed'] += record['plan_lines_changed']
+        if record['decision'] == 'held' and merged['decision'] != 'held':
+            merged.update(decision='held', hold=record['hold'])
+        approved.update(record['approved'] if record['decision'] == 'approved' else {})
+    merged.update(stopped_concepts=sorted(stopped), changed_concepts=sorted(changed),
+                  approved={} if merged['decision'] != 'approved' else
+                  {cid: sha for cid, sha in sorted(approved.items()) if cid not in stopped})
+    return merged, None
 
 
 def sticky(old, new):
@@ -205,22 +322,16 @@ def _go_live_part(spec, existing):
     return part
 
 
-def apply(spec, record, existing=None, ceilings=None, plan_sha=None, hold=None, now=None):
-    """(decision, signature) for this run from the week's mix decision record. Pure; raises ValueError.
+def concept_part(pid, known, record, stops=(), ceilings=None, plan_sha=None, hold=None):
+    """The concept part of decision.json from the week's record. Pure; raises ValueError.
 
-    ceilings is channel -> the most posts a day the approved plan states
-    (engine/mix.py ceiling); plan_sha is the payload_sha256 of the week's plan
-    proposal as it stands now. A record approved on another plan, or any hold
-    (a reason string), approves nothing and writes concept_hold, so a stale or
-    unenforceable yes never keeps posts going."""
-    pid = concept_rules.plan_proposal_id(spec)
-    if pid is None or (record is not None and pid != record.get('proposal_id')):
-        raise ValueError('the spec week does not match the mix plan ' + str((record or {}).get('proposal_id')))
-    known = concept_rules.by_id(spec)
-    if not known:
-        raise ValueError('the spec carries no concepts (run new --mix)')
+    known maps concept_id to each concept the run may carry (the spec's, or on L0 the
+    plan read back from Control Center). stops are concept ids already stopped. A
+    record approved on another plan, or any hold (a reason string), approves nothing
+    and writes concept_hold, so a stale or unenforceable yes never keeps posts going.
+    apply() writes it into a run's decision.json; L0 autorelease reads it as is."""
     record = record or {}
-    stopped = set(record.get('stopped_concepts') or []) | set((existing or {}).get('stopped_concepts') or [])
+    stopped = set(record.get('stopped_concepts') or []) | set(stops or ())
     if record.get('decision') == 'declined':
         stopped |= set(known)
     if hold is None and record.get('decision') == 'held':
@@ -234,14 +345,11 @@ def apply(spec, record, existing=None, ceilings=None, plan_sha=None, hold=None, 
                 or concept.get('concept_sha256') != sha or concept_rules.concept_errors(concept):
             continue
         approved[cid] = sha
-    part = _go_live_part(spec, existing)
-    decision = part or {'run_id': spec['run_id'], 'proposal_id': None, 'decision': None, 'decided_at': None,
-                        'slots': {}}
     ceilings = ceilings or {}
     channels = sorted({p['channel'] for cid in approved for p in known[cid]['placements']})
     seen = {k: record.get(k) for k in ('decision', 'decided_at', 'plan_payload_sha256', 'amended', 'amended_sha256',
                                        'read_at')}
-    decision.update(
+    part = dict(
         concepts=approved, concept_proposal_id=pid,
         concept_decision=seen if record.get('decision') else None,
         concept_hold=hold,
@@ -249,8 +357,32 @@ def apply(spec, record, existing=None, ceilings=None, plan_sha=None, hold=None, 
                           for cid in approved],
         concept_daily_caps={c: ceilings.get(c) for c in channels},
         stopped_concepts=sorted(stopped), changed_concepts=sorted(record.get('changed_concepts') or []))
-    if any(not isinstance(v, int) or isinstance(v, bool) for v in decision['concept_daily_caps'].values()):
+    if any(not isinstance(v, int) or isinstance(v, bool) for v in part['concept_daily_caps'].values()):
         raise ValueError('a concept channel has no daily cap in the approved plan, so no concept is applied')
+    return part
+
+
+def apply(spec, record, existing=None, ceilings=None, plan_sha=None, hold=None, now=None):
+    """(decision, signature) for this run from the week's mix decision record. Pure; raises ValueError.
+
+    ceilings is channel -> the most posts a day the approved plan states
+    (engine/mix.py ceiling); plan_sha is the payload_sha256 of the week's plan
+    proposal as it stands now. A record approved on another plan, or any hold
+    (a reason string), approves nothing and writes concept_hold, so a stale or
+    unenforceable yes never keeps posts going (concept_part)."""
+    pid = concept_rules.plan_proposal_id(spec)
+    if pid is None or (record is not None and pid != record.get('proposal_id')):
+        raise ValueError('the spec week does not match the mix plan ' + str((record or {}).get('proposal_id')))
+    known = concept_rules.by_id(spec)
+    if not known:
+        raise ValueError('the spec carries no concepts (run new --mix)')
+    concepts_part = concept_part(pid, known, record, (existing or {}).get('stopped_concepts') or [], ceilings,
+                                 plan_sha, hold)
+    part = _go_live_part(spec, existing)
+    decision = part or {'run_id': spec['run_id'], 'proposal_id': None, 'decision': None, 'decided_at': None,
+                        'slots': {}}
+    decision.update(concepts_part)
+    approved = decision['concepts']
     signature = dict(spec.get('signature') or {})
     if part is None:
         signature.update(go_live_proposal_id=None, decision_digest=EMPTY_DIGEST)

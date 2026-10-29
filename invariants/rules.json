@@ -1105,15 +1105,18 @@
     },
     {
       "id": "R94",
-      "statement": "Go-live is approved per day on the Monday final board; it authorises scheduling exactly that day's approved payloads, read back from Buffer. Pulling a post until its slot is Wave 2 (plan W5) and is not built or claimed here.",
+      "statement": "Go-live is approved per day on the Monday final board; it authorises scheduling exactly that day's approved payloads, read back from Buffer. The handoff proposes one go-live per New York calendar day, split at 8,000 characters only within that day, so one press never authorises more than one day's posts (F106). Pulling a post until its slot is Wave 2 (plan W5) and is not built or claimed here.",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Approving a day on the Monday final board authorises scheduling exactly that day's posts, nothing more.",
       "enforced_by": [
-        "engine/run/release.py:release_plan"
+        "engine/run/release.py:release_plan",
+        "engine/run/handoff.py:golive_proposals",
+        "engine/run/handoff.py:by_day"
       ],
       "tests": [
         "test_release_refuses_unsigned_or_mismatched_slot",
-        "test_release_once_per_slot"
+        "test_release_once_per_slot",
+        "test_one_go_live_per_new_york_day"
       ]
     },
     {
@@ -1126,14 +1129,16 @@
         "engine/run/release.py:capability_checks",
         "engine/run/release.py:release_plan",
         "engine/run/release.py:other_capability_checks",
-        "engine/run/release.py:pending_check"
+        "engine/run/release.py:pending_check",
+        "engine/run/autorelease.py:slot"
       ],
       "tests": [
         "test_unchecked_route_releases_only_its_capability_check",
         "test_unknown_document_route_is_not_inferred_from_png_success",
         "test_stale_and_future_observations_require_bounded_recheck",
         "test_capability_check_holds_its_route_across_runs",
-        "test_a_slot_signed_later_never_becomes_a_second_check"
+        "test_a_slot_signed_later_never_becomes_a_second_check",
+        "test_an_unverified_route_holds_and_a_share_ask_holds"
       ]
     },
     {
@@ -1181,7 +1186,8 @@
         "engine/run/spec.py:slot_status",
         "engine/run/spec.py:send_test_reason",
         "engine/run/release.py:share_ask_errors",
-        "engine/share.py:stage_slot_send_test"
+        "engine/share.py:stage_slot_send_test",
+        "engine/run/autorelease.py:slot"
       ],
       "tests": [
         "test_snackable_package_without_share_block_is_refused",
@@ -1199,7 +1205,8 @@
         "test_snackable_slots_declare_a_share_block_and_compute_forward_line",
         "test_snackable_slot_review_is_the_blind_send_test",
         "test_share_ask_holds_a_signed_snackable_slot",
-        "test_snackable_slot_send_test_is_staged_under_blind_names"
+        "test_snackable_slot_send_test_is_staged_under_blind_names",
+        "test_a_share_ask_in_a_snackable_line_holds_before_any_read"
       ]
     },
     {
@@ -1215,7 +1222,8 @@
         "engine/run/release.py:media_copy_errors",
         "engine/channel_audit.py:repair_plan",
         "engine/packs.py:problems",
-        "engine/cc_loop.py:item_proposal"
+        "engine/cc_loop.py:item_proposal",
+        "engine/run/buffer_api.py:edit_input"
       ],
       "tests": [
         "test_his_name_is_refused_on_every_public_surface_the_article_body_too",
@@ -1227,7 +1235,9 @@
         "test_live_copy_repairs_pass_the_copy_lint",
         "test_drafted_replies_pass_the_copy_lint",
         "test_copy_lint_is_a_lint_error_on_slot_words",
-        "test_a_draft_that_names_him_is_held_not_proposed"
+        "test_a_draft_that_names_him_is_held_not_proposed",
+        "test_a_word_failing_main_copy_lint_holds_before_any_edit",
+        "test_carried_titles_and_first_comments_run_the_copy_lint"
       ]
     },
     {
@@ -1370,6 +1380,145 @@
         "test_the_loop_calls_the_hook_right_after_it_remembers_decisions",
         "test_it_promises_no_post_beyond_what_release_allows",
         "test_counts_say_which_slots_are_ready_waiting_or_empty"
+      ]
+    },
+    {
+      "id": "R105",
+      "statement": "Derivatives of a piece whose publish board (article, assets, video recordings) Krish approved post on every channel but LinkedIn without per-post sign-off. On or before 2026-11-29 (W45 to W48) each batch is shown to him first. Carousels, memes, opinion and reactive posts, and any class not on the derivatives list, need his approval item by item, and carousel copy must be plain English, human and humble (invariants/authority.json, engine/run/plain.py).",
+      "source_file": "CHANGES.md",
+      "quote": "Derivatives of approved pieces. That actually includes Instagram as well as YouTube and TikTok. Once I'm happy with the publish board (article, the assets and video recordings), you should be able to just go for gold everywhere else. I would say that for the first 4 weeks you need to show me before you post. However I think you're going to be creating new formats like carousels. The last one that went up on Make Your Mind Up Instagram was good but could have been better. It wasn't plain English and human and humble enough.",
+      "enforced_by": [
+        "engine/run/invariants.py:load_authority",
+        "engine/run/invariants.py:may_post_alone",
+        "engine/run/calendar.py:lint",
+        "engine/run/plain.py:lint_carousel"
+      ],
+      "tests": [
+        "test_authority_encodes_the_27_october_standing_approval",
+        "test_derivatives_wait_for_board_and_preview_then_post_alone",
+        "test_new_formats_and_unlisted_classes_need_eyes",
+        "test_linkedin_is_never_posted_alone",
+        "test_a_carousel_needs_a_humble_human_line_and_six_to_eight_cards",
+        "test_run_lint_blocks_an_unplain_carousel_and_warns_on_other_captions"
+      ]
+    },
+    {
+      "id": "R106",
+      "statement": "No session holds the Control Center engine key. Only L0 jobs on the GitHub Actions runner may read it (lanes.json), a CI job never does, and the measure job meters each run's own cost.",
+      "source_file": "CHANGES.md",
+      "quote": "Surely we can have a less fragile way of doing this than a session engine token ... Give me the bulletproof version of this. Same for the cost baseline.",
+      "enforced_by": [
+        "engine/run/invariants.py:check_lanes"
+      ],
+      "tests": [
+        "test_the_engine_key_lives_only_on_the_github_runner"
+      ]
+    },
+    {
+      "id": "R107",
+      "statement": "Every workflow and job sits in exactly one lane of lanes.json: L0 code on GitHub Actions, L2 his eyes (one press) and L3 his hands (LinkedIn, the Buffer plan, one-time set-up). There is no L1: no Claude routines and no Claude schedules of any kind (Krish, 29 Oct 2026). No L0 job holds an action from his hands or his eyes, and every calendar row's lane is derived from invariants/authority.json.",
+      "source_file": "CHANGES.md",
+      "quote": "set yourself daily autonomous tasks that don't really rely on me. Separate your daily autonomous work ... from the things that you need my eyes on to just approve versus the things that you need me to push manually, like my personal LinkedIn posts that you've drafted.",
+      "enforced_by": [
+        "engine/run/invariants.py:check_lanes",
+        "engine/run/calendar.py:lint"
+      ],
+      "tests": [
+        "test_every_workflow_and_job_is_in_one_lane",
+        "test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes",
+        "test_no_l0_job_holds_his_hands_or_his_eyes",
+        "test_every_row_is_in_the_lane_authority_gives_it",
+        "test_a_wrong_lane_is_refused"
+      ]
+    },
+    {
+      "id": "R108",
+      "statement": "Release (L0) queues and posts only what Krish approved: a go-live he signed, read back from its own report by the digest he decided on, and each Buffer draft rebuilt to that exact digest. Anything else holds.",
+      "source_file": "CHANGES.md",
+      "quote": "then the engine will build, show me for approval, and then queue and post autonomously.",
+      "enforced_by": [
+        "engine/run/autorelease.py:may_release",
+        "engine/run/autorelease.py:read_proposal",
+        "engine/run/autorelease.py:_rebuilt_digest"
+      ],
+      "tests": [
+        "test_happy_path_schedules_once_with_the_full_payload",
+        "test_no_approved_go_live_touches_nothing",
+        "test_one_changed_word_holds",
+        "test_report_address_is_bound_to_the_decided_digest"
+      ]
+    },
+    {
+      "id": "R109",
+      "statement": "In the L0 handoff and release LinkedIn stays his own final click: every LinkedIn line goes into a go-live as krish_click, and release never reads or schedules it.",
+      "source_file": "CHANGES.md",
+      "quote": "pasting or manual asking\". LinkedIn stays his own final click.",
+      "enforced_by": [
+        "engine/run/handoff.py:rebuild",
+        "engine/run/autorelease.py:slot"
+      ],
+      "tests": [
+        "test_linkedin_always_goes_in_as_krish_click",
+        "test_linkedin_stays_a_draft_and_is_never_read"
+      ]
+    },
+    {
+      "id": "R110",
+      "statement": "Through 2026-11-29 nothing posts on the standing derivative approval: release needs a go-live he approved. After it only a derivative format of a piece whose board he approved may, and a new kind of post is always its own go-live.",
+      "source_file": "CHANGES.md",
+      "quote": "I would say that for the first 4 weeks you need to show me before you post.",
+      "enforced_by": [
+        "engine/run/autorelease.py:standing_derivative_allowed",
+        "engine/run/autorelease.py:derivative_formats",
+        "engine/run/handoff.py:needs_own_review"
+      ],
+      "tests": [
+        "test_absent_file_defaults_and_stays_shut",
+        "test_both_sides_of_the_date",
+        "test_the_date_is_read_from_the_file",
+        "test_a_new_kind_of_post_is_its_own_go_live"
+      ]
+    },
+    {
+      "id": "R111",
+      "statement": "His no on any part of a week's plan, in any version and at any time, stops every concept of that week for good, and a concept he deleted or edited in any amended yes stays stopped.",
+      "source_file": "CHANGES.md",
+      "quote": "His no, or a stop on a concept, stops all of its posts.",
+      "enforced_by": [
+        "engine/mix.py:week_part",
+        "engine/run/autorelease.py:week_state",
+        "engine/run/autorelease.py:amended_away",
+        "engine/run/decision.py:cc_readback"
+      ],
+      "tests": [
+        "test_a_no_on_a_part_a_later_version_dropped_still_stops_the_week",
+        "test_a_concept_he_stopped_in_an_earlier_version_stays_stopped"
+      ]
+    },
+    {
+      "id": "R112",
+      "statement": "A line he adds to his amended yes on a mix plan is a term of his; the engine cannot enforce it, so no concept is approved until a plan carrying it is approved.",
+      "source_file": "CHANGES.md",
+      "quote": "I just need to be in control of the idea and the mocks",
+      "enforced_by": [
+        "engine/mix.py:lines_changed"
+      ],
+      "tests": [
+        "test_a_line_he_adds_to_his_amended_yes_holds_every_concept"
+      ]
+    },
+    {
+      "id": "R113",
+      "statement": "A concept goes out at most once on each channel in a New York week: a second Buffer draft of it on that channel holds, and the mock he opens from the ask is a file he approves.",
+      "source_file": "CHANGES.md",
+      "quote": "three or four a day per channel, no piece twice on a channel in a week",
+      "enforced_by": [
+        "engine/run/autorelease.py:other_drafts",
+        "engine/run/handoff.py:check_mock_links"
+      ],
+      "tests": [
+        "test_one_concept_posts_once_per_channel_a_week",
+        "test_a_mock_link_must_be_one_of_the_files_he_approves"
       ]
     }
   ]

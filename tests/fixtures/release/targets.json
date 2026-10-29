@@ -19,6 +19,7 @@
       }
     ],
     "metadata": {
+      "__typename": "InstagramPostMetadata",
       "type": "story",
       "shouldShareToFeed": false,
       "isAiGenerated": true,
@@ -46,6 +47,7 @@
       }
     ],
     "metadata": {
+      "__typename": "LinkedInPostMetadata",
       "type": "post",
       "linkAttachment": null
     }
@@ -70,6 +72,7 @@
       }
     ],
     "metadata": {
+      "__typename": "TwitterPostMetadata",
       "type": "post",
       "isAiGenerated": false
     }

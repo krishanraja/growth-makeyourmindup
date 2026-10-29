@@ -141,6 +141,23 @@ format; it is not responsible for finding Growth's opportunities for it.
    or paid-Substack change without exact approval.
    After trial expiry, continue daily research/draft/audit work using
    verified available access; hold Buffer actions if access has expired.
+9. Cost baseline, once, with no step for Krish. Run `git fetch origin`,
+   then `git cat-file -e origin/main:lists/cost/baseline.json`. If that
+   succeeds, or a remote branch `cost-baseline-*` already exists
+   (`git branch -r --list "origin/cost-baseline-*"`), skip this step.
+   Otherwise, with DATE as today's London date (YYYY-MM-DD), one command
+   per line in PowerShell:
+   `git worktree add ..\growth-cost-DATE -b cost-baseline-DATE origin/main`
+   `python growth.py run cost baseline --since 2026-10-01 --out ..\growth-cost-DATE\lists\cost\baseline.json`
+   It holds aggregates only: tokens, calls, minutes and job kinds, never
+   prompt text or paths. Open it and confirm every `job_kind` is a job
+   name or `interactive`; anything else, stop and
+   report. Then, in `..\growth-cost-DATE`: `git add lists/cost/baseline.json`,
+   `git commit -m "Cost baseline since 2026-10-01 (aggregates only)"`,
+   `git push -u origin cost-baseline-DATE` and
+   `gh pr create --fill --base main`. Without `gh`, put the branch's
+   compare link in the review pack. Last, from this project,
+   `git worktree remove ..\growth-cost-DATE`. Commit nothing else there.
 
 Deliver one concise actionable review pack after completed work, not a list
 of intentions. Report real results, exact approvals needed and changed access

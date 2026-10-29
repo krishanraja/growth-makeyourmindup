@@ -8,7 +8,11 @@
   "formats": [
     "text",
     "single-image",
-    "meme"
+    "meme",
+    "receipt-card",
+    "quote-card",
+    "scorecard",
+    "poll"
   ],
   "guide": "social/guides/other-channels.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

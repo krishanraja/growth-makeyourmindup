@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import unittest
 
-from engine.run.cost import baseline, in_repo, main, stamp
+from engine.run.cost import baseline, in_repo, job_kind, main, self_line, self_meter, stamp
 
 FIXTURES = Path(__file__).resolve().parent / 'fixtures' / 'cost'
 
@@ -116,7 +116,7 @@ class CostBaselineTests(unittest.TestCase):
         self.assertEqual(claude['models'], ['fixture-claude-model', 'fixture-subagent-model'])
         self.assertEqual((claude['engine_minutes'], claude['wait_for_human_minutes']), (3.0, 10.0))
         self.assertEqual(claude['tool_minutes'], 1.0)  # 30 seconds in the parent, 30 in the subagent
-        self.assertEqual(claude['unknown_lines'], 0)  # attachment lines are routine, not drift
+        self.assertEqual(claude['unknown_lines'], 0)  # attachment lines are ordinary, not drift
 
     def test_codex_repeats_and_aborted_turns_are_not_misread(self):
         self.place('codex-aborted.jsonl')
@@ -160,6 +160,104 @@ class CostBaselineTests(unittest.TestCase):
         self.assertEqual(result['per_verified_post']['numbers'],
                          {'verified_posts': 2, 'tokens_per_post': 2110, 'engine_minutes_per_post': 5.0, 'reason': None})
         self.assertEqual(result['per_verified_post']['carousel']['reason'], 'no sessions of this job kind')
+
+
+def claude_lines(prompt, start, cwd='/home/fixture/elsewhere', model='fixture-claude-model'):
+    """A minimal synthetic Claude Code transcript: one prompt, one reply with usage."""
+    rows = [{'type': 'user', 'timestamp': start + ':00.000Z', 'cwd': cwd, 'message': {'role': 'user', 'content': prompt}},
+            {'type': 'assistant', 'timestamp': start + ':30.000Z', 'cwd': cwd,
+             'message': {'id': 'msg-' + start[-5:], 'role': 'assistant', 'model': model,
+                         'content': [{'type': 'text', 'text': 'FIXTURE-SECRET-REPLY'}],
+                         'usage': {'input_tokens': 10, 'cache_read_input_tokens': 200, 'output_tokens': 30}}}]
+    return ''.join(json.dumps(r) + '\n' for r in rows)
+
+
+class JobKindTests(unittest.TestCase):
+    def test_arbitrary_first_prompt_is_interactive_never_the_text(self):
+        # There are no Claude routines (Krish, 29 Oct 2026): their old standing text is just a prompt now.
+        for text in ('FIXTURE-SECRET please look at my private notes', 'routines/make.md',
+                     'Clone krishanraja/growth-makeyourmindup (main) and follow routines/../x.md',
+                     'Clone krishanraja/growth-makeyourmindup (main) and follow routines/make.md, then post it',
+                     'Clone krishanraja/growth-makeyourmindup (main) and follow routines/make.md',
+                     ' Clone krishanraja/growth-makeyourmindup (main) and follow routines/watch.md.\n',
+                     'run jobs/numbers.md', '', None):
+            self.assertEqual(job_kind(text), 'interactive', text)
+        self.assertEqual(job_kind('Run jobs/numbers.md as AGENTS.md says. FIXTURE-SECRET'), 'numbers')
+        self.assertEqual(job_kind('Run jobs/daily-pack.md'), 'daily-pack')
+
+    def test_session_with_arbitrary_prompt_reports_interactive_in_baseline(self):
+        with tempfile.TemporaryDirectory() as folder:
+            project = Path(folder) / 'projects' / 'fixture-project'
+            project.mkdir(parents=True)
+            prompt = 'FIXTURE-SECRET-ARBITRARY-PROMPT: here is my draft about a private deal'
+            (project / 'one.jsonl').write_text(claude_lines(prompt, '2026-10-27T06:00', cwd='/home/fixture/growth-makeyourmindup'),
+                                               encoding='utf-8')
+            result = baseline(str(Path(folder) / 'none'), str(Path(folder) / 'projects'))
+            self.assertEqual(result['sessions'][0]['job_kind'], 'interactive')
+            self.assertEqual(list(result['by_job_kind']), ['interactive'])
+            text = json.dumps(result)
+            for leak in ('FIXTURE-SECRET', 'private deal', 'draft about'):
+                self.assertNotIn(leak, text)
+
+
+class CostSelfTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.claude = Path(self.tmp.name) / 'projects'
+        project = self.claude / 'fixture-cloud-project'
+        project.mkdir(parents=True)
+        job = 'Run jobs/daily-pack.md as AGENTS.md says.'
+        (project / 'older.jsonl').write_text(claude_lines('FIXTURE-SECRET-OLDER', '2026-10-26T17:30'), encoding='utf-8')
+        (project / 'job.jsonl').write_text(claude_lines(job, '2026-10-27T06:00'), encoding='utf-8')
+        (project / 'earlier-today.jsonl').write_text(claude_lines('FIXTURE-SECRET-EARLIER', '2026-10-27T05:30'),
+                                                     encoding='utf-8')
+
+    def test_latest_session_only(self):
+        row = self_meter(str(self.claude), '2026-10-27')
+        self.assertEqual(row['job_kind'], 'daily-pack')
+        self.assertEqual(row['started_at'], '2026-10-27T06:00:00+00:00')  # a UTC date, so 06:00 UTC counts
+        self.assertEqual(row['model_calls'], 1)
+        self.assertEqual(row['tokens'], {'input': 10, 'cache_read_input': 200, 'output': 30, 'total': 240})
+
+    def test_one_line_without_text_or_paths(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = main(['cost', 'self', '--claude-dir', str(self.claude), '--since', '2026-10-27'])
+        self.assertEqual(code, 0)
+        line = out.getvalue()
+        self.assertEqual(line.count('\n'), 1)
+        self.assertTrue(line.startswith('cost self: tool claude; job daily-pack; started 2026-10-27T06:00:00+00:00;'))
+        self.assertIn('calls 1', line)
+        self.assertIn('total 240', line)
+        for leak in ('FIXTURE-SECRET', 'AGENTS.md', 'jobs/', 'krishanraja', self.tmp.name, 'fixture-cloud-project',
+                     'msg-', '/home/'):
+            self.assertNotIn(leak, line)
+
+    def test_since_bounds_and_unknowns(self):
+        self.assertEqual(self_meter(str(self.claude), '2026-10-27T05:45:00Z')['job_kind'], 'daily-pack')
+        self.assertIsNone(self_meter(str(self.claude), '2026-10-28'))
+        self.assertIn('unknown, not zero', self_line(None))
+        self.assertIsNone(self_meter(str(self.claude / 'missing'), '2026-10-27'))
+        # A repository filter keeps only sessions whose folder names it.
+        self.assertIsNone(self_meter(str(self.claude), '2026-10-27', repo='growth-makeyourmindup'))
+        for bad in ('27/10/2026', '2026-10-27T06:00:00', 'today'):
+            with self.assertRaises(ValueError):
+                self_meter(str(self.claude), bad)
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(main(['cost', 'self', '--claude-dir', str(self.claude), '--since', bad]), 1)
+            self.assertIn('"valid": false', out.getvalue())
+
+    def test_codex_logs_are_read_only_when_named(self):
+        codex = Path(self.tmp.name) / 'codex'
+        folder = codex / '2026' / '10' / '27'
+        folder.mkdir(parents=True)
+        shutil.copyfile(FIXTURES / 'codex-numbers.jsonl', folder / 'rollout-2026-10-27-x.jsonl')
+        self.assertEqual(self_meter(str(self.claude), '2026-10-20')['tool'], 'claude')
+        newest = self_meter(str(self.claude), '2026-10-01', codex_dir=str(codex))
+        self.assertEqual(newest['job_kind'], 'daily-pack')  # the codex fixture is older
+        only = self_meter(str(self.claude / 'missing'), '2026-10-01', codex_dir=str(codex))
+        self.assertEqual((only['tool'], only['job_kind']), ('codex', 'numbers'))
 
 
 if __name__ == '__main__':

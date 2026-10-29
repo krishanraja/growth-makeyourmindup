@@ -333,7 +333,7 @@ No session writes a stage.
 1. **Today: connect Substack in Buffer** (a new connection). Until then, W45 Notes are drafted for him to post by hand.
 2. **Codex.** The existing automations may be drawing paid credits until about 2 Nov.
    - **My recommendation:** keep numbers and the 09:00 heartbeat; pause pitches, partners and swaps (they only produce holds), plus radar and answer, until the reset.
-3. **Cloud run access.** Place the **existing** engine token (not regenerated) as a Claude environment secret, and allow controlcenter.krishraja.com in the network policy. Cloud runs keep no private evidence; anything private is produced only by PC sessions, in `.scratch/`.
+3. **Cloud run access.** Place the **existing** engine token (not regenerated) as a Claude environment secret, and allow controlcenter.krishraja.com in the network policy. Cloud runs keep no private evidence; anything private is produced only by PC sessions, in `.scratch/`. *Superseded 27 Oct for the token: sessions read Control Center through the Control Center connector and hold no engine token; Control Center traffic runs only from GitHub Actions (`docs/KEY.md`, `docs/LANES.md`).*
 4. **The standing W45 to W52 plan, `sources.json`, and each G-A, G-B and G-X:** posting.
 5. **Buffer's Team plan by 31 Oct:** spend.
 6. **New Claude cloud scheduled tasks** (release, measure): new automations.

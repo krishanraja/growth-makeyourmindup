@@ -1,0 +1,47 @@
+name: release
+# Lane L0. Every 30 minutes the engine reads Krish's signed go-lives, and the
+# ideas and mocks he approved in the week's mix plan, from Control Center and
+# schedules in Buffer exactly what he signed, once, at the signed time, each draft about an hour before it is due (until then a No
+# stops it; one still scheduled after a No fails this run, so GitHub emails
+# him). No model, no session, no PC. It never publishes immediately and
+# never removes a post; LinkedIn stays his own click. This repository is
+# public, so the log carries only counts and reason codes: no words, URLs,
+# ids or keys, and nothing is uploaded.
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Release signed go-lives to Buffer
+        env:
+          CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
+          CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+        run: |
+          if [ -z "$BUFFER_API_KEY" ]; then
+            echo "::notice::The BUFFER_API_KEY secret is not set yet, so release is not configured. Nothing was read or scheduled."
+            exit 0
+          fi
+          if [ -z "$CONTROL_CENTER_ENGINE_TOKEN" ]; then
+            echo "::error::The CONTROL_CENTER_ENGINE_TOKEN secret is not set for this repository. Nothing was released."
+            exit 1
+          fi
+          python growth.py run autorelease --deliver

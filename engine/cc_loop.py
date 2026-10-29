@@ -20,7 +20,8 @@ import subprocess
 import sys
 import tempfile
 
-from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, action_key, action_errors,
+from . import meter
+from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, _decided_at, action_key, action_errors,
                              build_report, canonical_json, copy_open, engage_action, golive_review, iso,
                              match_decisions, objective, proposal, _stops)
 from . import intensity
@@ -28,7 +29,7 @@ from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
 from .operations import aggregate, daily_queue, validate_observation
 
-SECRET_ENV = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN')
+SECRET_ENV = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN', 'BUFFER_API_KEY', 'GITHUB_TOKEN')
 STATE_DIR = Path('.scratch') / 'cc'
 WORKSPACE_ONLY = 'Measured only in the publication workspace'
 NO_SPEND = 'this engine has no spend authority, bought no boosts and does not read platform ad spend'
@@ -242,18 +243,31 @@ def mix_proposal(root, now):
 
     `growth.py mix plan --out .scratch/mix/plan-<Monday>.json` writes it in the
     Sunday report's run; the report carries its plan proposal behind strategy.
-    No file means no ask; a file whose proposal could not be built is a hold."""
+    No file means no ask; a file whose proposal could not be built is a hold.
+    The plan itself is judged by plan_proposals, which the L0 handoff calls too
+    with a plan it was sent (engine/run/handoff.py, growth-mix-plan)."""
     path = Path(root) / MIX_DIR / ('plan-' + next_monday(now).isoformat() + '.json')
     if not path.exists():
         return None, None
     try:
-        mix = read_json(path)
-        item = mix.get('proposal')
-        if not isinstance(item, dict) or item.get('stage') != 'plan' or item.get('wall') != 'strategy':
-            return None, {'reason': "Next week's mix has no plan proposal", 'detail': str(mix.get('proposal_hold'))[:900]}
-        return item, None
+        items, hold = plan_proposals(read_json(path))
+        return (items[0] if items else None), hold
     except (ValueError, OSError, AttributeError) as exc:
         return None, {'reason': "Next week's mix could not be read", 'detail': str(exc)[:900]}
+
+
+def plan_proposals(mix):
+    """([proposal], hold) for one week's mix doc: its plan proposal, then any later parts in order.
+
+    Each must be a plan behind strategy, or nothing is asked and the hold says why.
+    The local loop reads a plan file and asks its one proposal; the L0 handoff
+    rebuilds the parts of a plan it was sent (mix['parts'], engine/mix.py
+    part_proposals) and asks them all, one at a time in order."""
+    items = list(mix.get('parts') or []) or [mix.get('proposal')]
+    if not items or any(not isinstance(item, dict) or item.get('stage') != 'plan' or item.get('wall') != 'strategy'
+                        for item in items):
+        return [], {'reason': "Next week's mix has no plan proposal", 'detail': str(mix.get('proposal_hold'))[:900]}
+    return items, None
 
 
 def experiment_proposals(root):
@@ -280,23 +294,49 @@ def id_holds(reason, entries):
     return out + ([{'reason': reason, 'detail': line}] if line else [])
 
 
-def _decisions_until(client, cutoff):
-    """Every decision since this engine began and decided by cutoff, read page by page, or None.
+def _decision_key(item):
+    """A decision's identity: its whole record. The route gives no id, and two reads of
+    one decision are the same record."""
+    return json.dumps(item, sort_keys=True, separators=(',', ':'), ensure_ascii=False, default=str)
 
-    The route serves the oldest 100 after since, so the next page starts at the
-    last decided_at seen. None when the pages do not end."""
-    since, out = instant(DECISIONS_SINCE), []
+
+def decisions_paged(client, since):
+    """Every decision after since, oldest first, each once, read page by page; None when
+    the pages do not end (the caller fails closed: decisions_unpaged).
+
+    Control Center serves at most DECISIONS_PAGE decisions a read, the oldest first,
+    after since to the second. A page that is short is the last. The next page starts
+    one second before the last decided_at seen, so a decision sharing that time (a tie
+    at the page boundary) is read again rather than dropped, and a decision read twice
+    counts once. A full page that moves since no further (more than a page of decisions
+    inside one second), or more than DECISIONS_PAGES pages, is None: never a guess.
+    Shared by the runner's ledger read and both L0 lanes (engine.run.autorelease and
+    engine.run.handoff)."""
+    since, out, seen = instant(since), [], set()
     for _ in range(DECISIONS_PAGES):
         page = client.decisions(since)
-        out += page
+        for item in page:
+            key = _decision_key(item)
+            if key not in seen:
+                seen.add(key)
+                out.append(item)
         if len(page) < DECISIONS_PAGE:
-            return [d for d in out if not _after(d, cutoff)]
-        last = max((instant(d['decided_at']) for d in page if isinstance(d, dict) and d.get('decided_at')),
-                   default=None)
-        if last is None or last <= since:
+            return out
+        times = [_decided_at(d) for d in page if isinstance(d, dict)]
+        last = max((t for t in times if t is not None), default=None)
+        if last is None:
             return None
-        since = last
+        following = last - dt.timedelta(seconds=1)
+        if following <= since:
+            return None
+        since = following
     return None
+
+
+def _decisions_until(client, cutoff):
+    """Every decision since this engine began and decided by cutoff, read page by page, or None."""
+    out = decisions_paged(client, DECISIONS_SINCE)
+    return None if out is None else [d for d in out if not _after(d, cutoff)]
 
 
 def _after(item, cutoff):
@@ -416,10 +456,11 @@ def backlog_line(backlog):
 
 
 def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None,
-                  backlog=None, gap=None):
+                  backlog=None, gap=None, extra_activity=()):
     """The runner's held report. sent is already_sent(): asks Krish has, answered or pending, are
     never sent again, and None (not read) proposes nothing. backlog is backlog.for_runner():
-    (inventory, None) or (None, reason); None means it was not read."""
+    (inventory, None) or (None, reason); None means it was not read. extra_activity: lines
+    the runner adds (the web_analytics shape it kept, its own cost so far)."""
     root = Path(root)
     automations = automation_count(root)
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
@@ -454,6 +495,7 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     activity.append({'line': 'Read the committed plan: ' + str(len(channels)) + ' channels, ' + str(len(journeys))
                      + ' reader journeys, ' + str(len(experiments)) + ' experiment templates, '
                      + str(sum(e.get('status') == 'running' for e in experiments)) + ' running'})
+    activity += [{'line': line} for line in extra_activity]
     activity.append({'line': backlog_line(backlog)})
     holds = [{'reason': 'Drafts and dashboard numbers are made only in the publication workspace',
               'detail': 'The automations defined in automations.json' + (' (' + str(automations) + ')' if automations is not None else '')
@@ -893,6 +935,16 @@ INSPIRATION_FILE = 'inspiration.txt'
 WEB_ANALYTICS_FILE = 'web-analytics.json'
 
 
+def web_analytics_block(directive):
+    """The `web_analytics` block (protocol 1.10.0) beside the directive or inside it, else None."""
+    if not isinstance(directive, dict):
+        return None
+    block = directive.get('web_analytics')
+    if not isinstance(block, dict) and isinstance(directive.get('directive'), dict):
+        block = directive['directive'].get('web_analytics')
+    return block if isinstance(block, dict) else None
+
+
 def keep_web_analytics(root, directive):
     """Keep today's `web_analytics` (protocol 1.10.0) for the Measurement Specialist.
 
@@ -902,12 +954,75 @@ def keep_web_analytics(root, directive):
     this public repository.
     """
     path = state_path(root, WEB_ANALYTICS_FILE)
-    block = directive.get('web_analytics') if isinstance(directive, dict) else None
+    block = web_analytics_block(directive)
     if isinstance(block, dict):
         write_json(path, block)
     elif path.exists():
         path.unlink()
     return path if isinstance(block, dict) else None
+
+
+WA_DIMS = ('source_medium', 'landing_page', 'utm_content')
+_WA_NAME = re.compile(r'^[A-Za-z][A-Za-z0-9_]{0,39}$')
+_WA_TEXT = re.compile(r'[^A-Za-z0-9 ,.:;()/_-]+')
+
+
+def _wa_text(value, limit=160):
+    """Control Center's words, one line, plain characters only, for a public log."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return ' '.join(_WA_TEXT.sub(' ', value).split())[:limit] or None
+
+
+def web_analytics_summary(block):
+    """What the runner may say about the block: shape only, never a value or a per-page count.
+
+    property, through and days; how many rows of each dim_type; whether coverage
+    is complete and why not; and the event names with their key_event flags.
+    """
+    if not isinstance(block, dict):
+        return {'present': False}
+    rows = block.get('rows')
+    counts = None
+    if isinstance(rows, list):
+        counts = {dim: sum(1 for r in rows if isinstance(r, dict) and r.get('dim_type') == dim) for dim in WA_DIMS}
+    coverage = block.get('coverage') if isinstance(block.get('coverage'), dict) else {}
+    events = block.get('events')
+    names = None
+    if isinstance(events, list):
+        names = [{'name': e['name'] if _WA_NAME.match(e['name']) else '(unreadable name)', 'key': e.get('key_event') is True}
+                 for e in events if isinstance(e, dict) and isinstance(e.get('name'), str)]
+    days = block.get('days')
+    through = block.get('through')
+    return {'present': True, 'property': _wa_text(block.get('property'), 40),
+            'through': through if isinstance(through, str) and re.match(r'^\d{4}-\d{2}-\d{2}$', through) else None,
+            'days': days if isinstance(days, int) and not isinstance(days, bool) else None,
+            'rows': counts, 'complete': coverage.get('complete') is True,
+            'reason': _wa_text(coverage.get('reason')), 'events': names}
+
+
+def web_analytics_line(summary):
+    """The one public log line: counts of rows per dim_type, coverage, event names. No values."""
+    if not summary.get('present'):
+        return "web_analytics: not in today's directive"
+    rows = summary['rows']
+    part = ('rows ' + ' '.join(dim + '=' + str(rows[dim]) for dim in WA_DIMS)) if rows is not None else 'rows not read'
+    coverage = 'complete' if summary['complete'] else 'incomplete' + (' (' + summary['reason'] + ')' if summary['reason'] else '')
+    events = summary['events']
+    names = ('none' if not events else ','.join(e['name'] + ('(key)' if e['key'] else '') for e in events)) \
+        if events is not None else 'not read'
+    return 'web_analytics: ' + part + '; coverage=' + coverage + '; events=' + names
+
+
+def web_analytics_activity(summary):
+    """The report's line: the same shape, with the property, end date and window."""
+    if not summary.get('present'):
+        return "Today's directive carried no web_analytics block, so nothing from GA4 was kept"
+    head = ('web_analytics for property ' + str(summary['property'] or 'unnamed') + ' through '
+            + str(summary['through'] or 'an unstated date') + ' over ' + (str(summary['days']) + ' days' if summary['days'] else 'an unstated window'))
+    return head + ': ' + web_analytics_line(summary)[len('web_analytics: '):]
+
+
 VOICE_USE = ('Use them only for how anything you draft is written. Never use them to choose what it is about, '
              'and never to judge, score, rank or check a draft: the review, the rubric scores, the breakout score, '
              'the queue and growth.py check work exactly as if this block were not here.')
@@ -1096,21 +1211,32 @@ def cli(args, root, make_client, out=print, checks=None):
         if dispatched and dispatched != ENGINE_ID:
             out('Not ready: the dispatch named another engine; nothing was run')
             return 1
-        run_id = args.run_id or run_id_for('runner', now)
+        # The 05:40 UTC backup reports under its own run_id, so it never conflicts with the dispatch's report.
+        run_id = args.run_id or run_id_for('runner-backup' if getattr(args, 'backup', False) else 'runner', now)
         if not args.deliver:
             report, error = runner_report(root, run_id, now, checks(root), args.mode, sent={})
             out('Dry run: no Control Center call. Report ' + report['status'] + ', payload_sha256 ' + report['payload_sha256'])
             return int(bool(error))
         client = make_client()
         from .backlog import for_runner
-        outcome = run(client, 'runner', run_id,
-                      lambda d: runner_report(root, run_id, clock(), checks(root), args.mode, True,
-                                              sent=already_sent(client, clock(), d, args.mode),
-                                              backlog=for_runner(root, clock()),
-                                              gap=intensity.state(root, clock(), d)),
-                      now - dt.timedelta(days=7), clock)
+        seen = {}
+
+        def build(directive):
+            # Keep the block for the measure job, and say what it holds, shape only.
+            keep_web_analytics(root, directive)
+            seen['web'] = web_analytics_summary(web_analytics_block(directive))
+            lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web']), meter.cost_line('before this report')]
+            return runner_report(root, run_id, clock(), checks(root), args.mode, True,
+                                 sent=already_sent(client, clock(), directive, args.mode),
+                                 backlog=for_runner(root, clock()),
+                                 gap=intensity.state(root, clock(), directive), extra_activity=lines)
+
+        outcome = run(client, 'runner', run_id, build, now - dt.timedelta(days=7), clock)
+        if 'web' in seen:
+            out(web_analytics_line(seen['web']))
         for line in summary(outcome, public=True):
             out(line)
+        out(meter.cost_line('in all'))
         return int(outcome['status'] != 'succeeded')
 
     job = args.job

@@ -126,6 +126,29 @@ class RuleTests(unittest.TestCase):
         if waiting:
             self.assertEqual(rule['pending_item'], 'measure')
 
+    def test_27_october_evening_rulings_are_quoted_and_guarded(self):
+        rules = {r['id']: r for r in load_rules()}
+        anchors = {'R105': ('Derivatives of approved pieces.', 'show me before you post',
+                           "It wasn't plain English and human and humble enough."),
+                   'R106': ('less fragile way of doing this than a session engine token',
+                           'Same for the cost baseline.'),
+                   'R107': ('set yourself daily autonomous tasks', 'like my personal LinkedIn posts')}
+        for rule_id, phrases in anchors.items():
+            self.assertEqual(rules[rule_id]['source_file'], 'CHANGES.md')
+            for phrase in phrases:
+                self.assertIn(phrase, collapse(rules[rule_id]['quote']), rule_id)
+            self.assertTrue(rules[rule_id]['tests'], rule_id)
+        self.assertIn('engine/run/invariants.py:check_lanes', rules['R106']['enforced_by'])
+        failures = {f['id']: f for f in load_failures()}
+        self.assertEqual(FAILURE_IDS[65:71], ('F66', 'F67', 'F68', 'F69', 'F70', 'F71'))
+        for fid, guard in (('F66', 'may_post_alone'), ('F67', 'check_lanes'), ('F68', 'check_lanes'),
+                           ('F69', 'calendar.py:lint'), ('F70', 'plain.py:lint_carousel'),
+                           ('F71', 'canva.py:lint_design')):
+            self.assertEqual(failures[fid]['status'], 'tested', fid)
+            self.assertIn(guard, failures[fid]['guard'], fid)
+        for path in (ROOT / 'invariants' / 'authority.json', ROOT / 'lanes.json', ROOT / 'calendar' / 'v1.json'):
+            self.assertEqual(house_errors(path.read_text(encoding='utf-8')), [], path.name)
+
     def test_notes_identity_and_asset_storage_rules_are_quoted(self):
         rules = {r['id']: r for r in load_rules()}
         notes = rules['R81']
@@ -192,6 +215,108 @@ class FailureRegisterTests(unittest.TestCase):
             self.assertIn(name, owner)
             if name not in names:  # Still being built by its work item.
                 self.assertEqual((owner[name]['status'], owner[name]['pending_item']), ('pending-build', item), name)
+
+    def test_register_records_the_v1_build(self):
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[71:92]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[92]), ('F72', 'F92', 'F93'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F72', '_rebuilt_digest', 'test_one_changed_asset_byte_holds'),
+                ('F75', 'BufferAuthError', 'test_a_refused_key_fails_loudly'),
+                ('F78', '_cc_client', 'test_the_cli_routes_and_refuses_without_a_key'),
+                ('F85', 'handoff.py:rebuild', 'test_a_mismatched_digest_holds_that_slot'),
+                ('F91', 'spec.py:lint', 'test_story_frames_do_not_count_against_the_feed_cap'),
+                # Retargeted on 29 Oct 2026: there are no Claude routines; the walls live in docs/TASTE.md.
+                ('F92', 'docs/TASTE.md', 'test_taste_file_reads_both_tools_and_never_blocks')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
+        rules = {r['id']: r for r in load_rules()}
+        for rule_id, phrase in (('R108', 'queue and post autonomously'), ('R109', 'LinkedIn stays his own final click'),
+                                ('R110', 'show me before you post')):
+            self.assertIn(phrase, rules[rule_id]['quote'], rule_id)
+
+    def test_register_records_the_posting_path_review(self):
+        # The adversarial review of PR #19: nothing is posted unless Krish approved exactly
+        # that content, on this engine's own account.
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[92:99]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[99]), ('F93', 'F99', 'F100'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F93', 'buffer_api.py:signed_meta', 'test_a_metadata_change_after_approval_holds'),
+                ('F94', 'release.py:account_hold', 'test_a_draft_on_another_account_holds'),
+                ('F95', 'SCHEDULE_WINDOW', 'test_a_slot_more_than_ninety_minutes_out_is_never_read_or_edited'),
+                ('F96', 'autorelease.py:check_revoked', 'test_a_no_after_scheduling_is_loud_and_never_unscheduled'),
+                ('F97', 'GITHUB_EVENT_PATH', 'test_no_step_env_carries_the_payload'),
+                ('F98', 'autorelease.py:signed_golives', 'test_old_go_lives_never_starve_a_new_one'),
+                ('F99', 'autorelease.py:due_instant', 'test_an_impossible_due_date_holds_that_slot_only')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
+
+    def test_register_records_the_second_posting_path_review(self):
+        # The second adversarial review of PR #19 (29 Oct 2026): paging, the format label, every
+        # carried word, the loud alarm, signed meta, two digest domains and one day a press.
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[99:110]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[110]), ('F100', 'F110', 'F111'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F100', 'cc_loop.py:decisions_paged', 'test_his_no_past_the_hundredth_decision_stops_the_release'),
+                ('F101', 'release.py:format_shape_errors', 'test_a_format_label_that_is_not_the_draft_holds'),
+                ('F102', 'release.py:media_copy_errors', 'test_every_carried_free_text_field_runs_the_copy_lint'),
+                ('F103', 'autorelease.py:sweep_scheduled', 'test_an_unresolved_stop_is_loud_and_lists_what_is_scheduled'),
+                ('F104', 'release.py:call_arguments', 'test_an_engine_edit_with_no_signed_meta_holds'),
+                ('F105', 'autorelease.py:line_digest', 'test_a_golive_line_digest_is_never_a_run_spec_slot_digest'),
+                ('F106', 'handoff.py:golive_proposals', 'test_one_go_live_per_new_york_day'),
+                ('F107', 'buffer_api.py:schedule_draft', 'test_the_edit_is_never_resent'),
+                ('F108', 'autorelease.py:slot', 'test_an_amended_time_outside_the_run_window_holds'),
+                ('F109', 'buffer_api.py:_uncarried', 'test_a_field_read_but_never_carried_holds'),
+                ('F110', 'handoff.py:meta_words', 'test_the_why_names_alt_text_in_plain_words')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
+
+    def test_register_records_the_concept_path_on_the_executor(self):
+        # Main's concept approval (PR #26) on the L0 executor, 29 Oct 2026: authority read back from
+        # Control Center by digest, reviews keyed by sha, a real go-live ledger, parts and versions.
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[110:119]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[119]), ('F111', 'F119', 'F120'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F111', 'autorelease.py:spans_days', 'test_a_go_live_naming_two_new_york_days_holds'),
+                ('F112', 'autorelease.py:week_state', 'test_end_to_end_a_dispatched_plan_he_approves_schedules_its_derived_post_in_the_window'),
+                ('F113', 'autorelease.py:review_of', 'test_a_review_for_another_sha_is_refused'),
+                ('F114', 'autorelease.py:seed_claims', 'test_a_finished_go_live_is_claimed_in_control_center_and_acts_once'),
+                ('F115', 'mix.py:payload_parts', 'test_a_full_week_over_eight_thousand_characters_comes_in_parts_in_order'),
+                ('F116', 'handoff.py:deliver_version', 'test_a_newer_plan_version_withdraws_his_earlier_yes'),
+                ('F117', 'autorelease.py:day_count', 'test_the_daily_cap_counts_every_post_scheduled_that_new_york_day_from_buffer'),
+                ('F118', 'cc_records.py:record_lines', 'test_a_record_rides_whole_through_whitespace_collapse'),
+                ('F119', 'handoff.py:open_plan', 'test_a_derived_slot_is_never_a_go_live_and_the_mix_plan_is_no_go_lives_plan')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
+
+    def test_register_records_review_three_of_the_concept_path(self):
+        # Review 3 of PR #19, 29 Oct 2026: every way he says no holds on the L0 executor.
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[119:131]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[131]), ('F120', 'F131', 'G1'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F120', 'autorelease.py:week_state', 'test_a_no_on_a_part_a_later_version_dropped_still_stops_the_week'),
+                ('F121', 'mix.py:lines_changed', 'test_a_line_he_adds_to_his_amended_yes_holds_every_concept'),
+                ('F122', 'autorelease.py:amended_away', 'test_a_concept_he_stopped_in_an_earlier_version_stays_stopped'),
+                ('F123', 'autorelease.py:other_drafts', 'test_one_concept_posts_once_per_channel_a_week'),
+                ('F124', 'autorelease.py:derived_lane', 'test_a_declined_week_with_a_post_scheduled_for_later_is_loud_now'),
+                ('F125', 'cc_records.py:claim_run_id', 'test_a_go_live_claimed_under_an_earlier_decision_never_acts_again'),
+                ('F126', 'release.py:release_plan', 'test_the_cap_counts_what_buffer_holds_so_l0_posts_count_here'),
+                ('F127', 'autorelease.py:derived_entries', 'test_a_past_due_draft_is_loud_once_then_quiet'),
+                ('F128', 'handoff.py:check_mock_links', 'test_a_mock_link_must_be_one_of_the_files_he_approves'),
+                ('F129', 'concepts.py:carries', 'test_a_claim_is_carried_as_whole_words'),
+                ('F130', 'test_run_measure_auto.py', 'test_dry_run_reads_fakes_reports_locally_and_logs_only_counts'),
+                ('F131', 'autorelease.py:due_instant', 'test_a_post_sent_after_his_no_is_loud_and_one_sent_before_is_not')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
 
     def test_missing_test_fails_the_register(self):
         with tempfile.TemporaryDirectory() as folder:
