@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "built-to-be-sent",
+  "category": "format",
+  "scope": [
+    "meme",
+    "carousel",
+    "single-image",
+    "short-video",
+    "story",
+    "note"
+  ],
+  "status": "accepted",
+  "finding": "Every snackable package declares a share block: a specific sender and receiver, one job from a fixed list, the exact DM line the sender would type, the everyday moment that brings it to mind and a standalone check. Generic share calls to action in the copy are refused, and a blind reader who sees only the post must name the declared receiver and job before Krish sees it.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "CHANGES.md, 2026-10-28 entry: \"I am not talking about just saying \"share this with your friends\" in the comments, I am talking about ensuring all the produced snackable content is likelier to be shared for a specific reason.\"",
+    "observed_at": "2026-10-28",
+    "result": "package.schema.json gains share; social/share.json holds the jobs, the vague-receiver words and the share-CTA patterns; social.preflight refuses an incomplete block or a share CTA; crew/send-test is the blind reader."
+  },
+  "revisit_when": "Krish changes the rule or the list of snackable formats.",
+  "supersedes": null
+}

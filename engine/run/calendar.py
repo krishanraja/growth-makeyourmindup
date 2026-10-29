@@ -1,14 +1,15 @@
 """The posting calendar (calendar/v1.json): schema, a resolved steady-state week, and its lint.
 
 Offline only. Nothing here posts, schedules, sends or spends. Every row's lane
-is derived from invariants/authority.json (Krish, 27 Oct 2026, rules R92 to
-R94); the lint proves it, and proves the floors and caps hold on the week the
+is derived from invariants/authority.json (Krish, 27 Oct 2026, rules R101 to
+R103); the lint proves it, and proves the floors and caps hold on the week the
 rows resolve to.
 """
 import argparse
 import json
 from pathlib import Path
 
+from .. import intensity
 from ..core import TIMEZONE, read_json
 from ..social import inventory, validate
 from .invariants import RULE_SOURCES, class_of, collapse, load_authority, posting_lane
@@ -67,29 +68,31 @@ def candidates(calendar):
     return out
 
 
-def daily_caps(calendar, channels):
-    """Per channel: the smallest of its record's daily_posts_target, a quoted corpus cap and its floor max."""
+def daily_caps(calendar, channels, urgency=None, root=ROOT):
+    """Per channel: its daily cap from its own home and nowhere else.
+
+    That is the channel record's daily_posts_target (social/channels), raised at
+    U3 to U5 only to its policy bound (intensity.json, engine/intensity.py), the
+    same function run lint uses (engine/run/spec.py daily_cap). The calendar never
+    restates a daily cap: a floor's max is the volume it plans, held for Krish
+    when the cap is lower, and a per-day entry in its caps is refused by lint.
+    calendar is unused and kept for callers."""
     caps = {}
     for name, record in channels.items():
-        target = record.get('daily_posts_target')
-        if isinstance(target, int) and not isinstance(target, bool):
-            caps[name] = target
-    for cap in calendar['caps']:
-        if cap['per'] == 'day':
-            caps[cap['channel']] = min(caps.get(cap['channel'], cap['max']), cap['max'])
-    for floor in calendar['floors']:
-        caps[floor['channel']] = min(caps.get(floor['channel'], floor['max']), floor['max'])
+        cap = intensity.daily_cap(record, urgency, root)
+        if cap is not None:
+            caps[name] = cap
     return caps
 
 
-def resolve(calendar, channels):
+def resolve(calendar, channels, urgency=None, root=ROOT):
     """(kept, bumped): the week the rows resolve to under each channel's daily cap.
 
     Per weekday and channel the lowest priority number wins, then the newer
     piece. A row whose `requires` row (same piece) did not run is dropped, and
     that can free room for another; repeat until nothing changes.
     """
-    caps = daily_caps(calendar, channels)
+    caps = daily_caps(calendar, channels, urgency, root)
     every = candidates(calendar)
     dropped = set()
     while True:
@@ -168,8 +171,11 @@ def _row_errors(at, row, authority, records, calendar, kit):
     return errors
 
 
-def lint(calendar, root=ROOT):
-    """{'valid', 'errors', 'warnings', 'held', 'bumped', 'week'} for one calendar. Errors block it."""
+def lint(calendar, root=ROOT, urgency=None):
+    """{'valid', 'errors', 'warnings', 'held', 'bumped', 'week'} for one calendar. Errors block it.
+
+    urgency is the North Star urgency (engine/intensity.py state); at U3 to U5 a
+    channel's daily cap rises to its policy bound, as in run lint."""
     root = Path(root)
     try:
         validate(calendar, read_json(root / 'specs' / 'schema' / 'calendar.schema.json'))
@@ -198,6 +204,9 @@ def lint(calendar, root=ROOT):
             errors.append(finding('template', '$.templates.' + name, size + ' is not a size in ' + calendar['kit']))
     for i, cap in enumerate(calendar['caps']):
         at = '$.caps[%d]' % i
+        if cap['per'] == 'day':
+            errors.append(finding('daily_cap_restated', at + '.per', 'a daily cap lives only in its channel record'
+                                  ' (social/channels) and intensity.json; the calendar never restates one'))
         path = root / cap['source_file']
         if not (cap['source_file'].startswith(CAP_SOURCES) or cap['source_file'] in RULE_SOURCES) or not path.is_file():
             errors.append(finding('cap_source', at + '.source_file', 'a cap cites a file in knowledge/, social/ or docs/'))
@@ -206,8 +215,8 @@ def lint(calendar, root=ROOT):
     if errors:
         return {'valid': False, 'errors': errors, 'warnings': warnings, 'held': held, 'bumped': [], 'week': {}}
     channels = records['channel']
-    caps = daily_caps(calendar, channels)
-    kept, bumped = resolve(calendar, channels)
+    caps = daily_caps(calendar, channels, urgency, root)
+    kept, bumped = resolve(calendar, channels, urgency, root)
     week = week_counts(kept)
     for item in bumped:
         if item['priority'] == 1:
@@ -217,7 +226,8 @@ def lint(calendar, root=ROOT):
         name = floor['channel']
         if name in caps and caps[name] < floor['max']:
             held.append(name + ': the calendar allows ' + str(floor['max']) + ' a day, but the cap is ' + str(caps[name])
-                        + '; more waits for Krish to raise it in social/channels/' + name + '.json')
+                        + '; more waits for Krish to raise it in social/channels/' + name + '.json'
+                        + ' (intensity.json raises it at U3+)')
         if name in caps and caps[name] < floor['min']:
             errors.append(finding('floor_over_cap', '$.floors', name + ' floor of ' + str(floor['min'])
                                   + ' a day is above its cap of ' + str(caps[name])))
@@ -272,6 +282,6 @@ def main(argv=None):
     except (OSError, ValueError) as exc:
         print(json.dumps({'valid': False, 'errors': [finding('read', '$', str(exc))]}, indent=1))
         return 1
-    result = lint(calendar)
+    result = lint(calendar, urgency=intensity.state(ROOT)['urgency'])
     print(json.dumps(result, indent=1, sort_keys=True))
     return 0 if result['valid'] else 1

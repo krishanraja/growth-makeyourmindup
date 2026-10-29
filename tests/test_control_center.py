@@ -33,6 +33,18 @@ PRIVATE = 'directive text that must stay off a public runner log'
 PREFIX = '/api/growth/engines/makeyourmindup/'
 
 
+
+def setUpModule():
+    # The runner reads the public feed for its backlog line; unit tests stay offline.
+    global _OFFLINE
+    from engine import backlog
+    _OFFLINE = patch.object(backlog, 'read_feed', side_effect=OSError('offline test'))
+    _OFFLINE.start()
+
+
+def tearDownModule():
+    _OFFLINE.stop()
+
 class StandIn:
     """A local stand-in for Control Center's engine routes."""
 
@@ -266,6 +278,18 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(first['proposal_id'], edited['proposal_id'])
         self.assertNotEqual(first['payload_sha256'], edited['payload_sha256'])
 
+    def test_a_draft_that_names_him_is_held_not_proposed(self):
+        # Krish, 2026-10-28: "Remember, no content refers to Krish, ever." An envelope the report reads
+        # unsealed, edited after sealing, still meets the copy lint before it becomes a post proposal.
+        env = envelope()
+        env['pack']['items'][0]['text'] = 'TEST FIXTURE ONLY. Krish asked one useful question.'
+        self.assertEqual(len(workspace_report('daily', 'r1', NOW, [envelope()], rev='fixture')[0]['proposals']), 1)
+        report = workspace_report('daily', 'r1', NOW, [env], rev='fixture')[0]
+        self.assertEqual(report['proposals'], [])
+        held = [h['detail'] for h in report['holds'] if h['reason'] == 'Draft could not become a proposal']
+        self.assertEqual(len(held), 1)
+        self.assertIn('the draft fails the copy lint: copy lint no_name', held[0])
+
     def test_a_merged_queue_reports_only_this_jobs_work(self):
         env = envelope()
         selected = [{**env['pack']['items'][0], **env['metadata'][0], 'pack_kind': 'daily'},
@@ -314,17 +338,22 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report['status'], 'degraded')
 
     def test_runner_report_is_honest_about_what_it_cannot_measure(self):
-        report, error = runner_report(ROOT, 'makeyourmindup:2026-10-17:runner', NOW, checks(), 'synthetic', True, 'fixture')
+        report, error = runner_report(ROOT, 'makeyourmindup:2026-10-17:runner', NOW, checks(), 'synthetic', True, 'fixture',
+                                      sent={})
         self.assertIsNone(error)
         self.assertEqual(report['status'], 'held')
         for item in report['objectives']:
             self.assertEqual((item['value'], item['availability']), (None, 'missing'))
             self.assertTrue(item['reason'].startswith('Measured only in the publication workspace'))
         self.assertEqual({p['wall'] for p in report['proposals']}, {'strategy'})
-        # One strategy proposal per planned experiment template, no more.
+        # With nothing sent before: the standing plan once, and one strategy proposal per planned template.
         planned = json.loads((ROOT / 'experiments.json').read_text(encoding='utf-8'))['experiments']
-        self.assertEqual(len(report['proposals']), sum(e['status'] == 'planned' for e in planned))
+        self.assertEqual(len(report['proposals']), 1 + sum(e['status'] == 'planned' for e in planned))
         self.assertIn('makeyourmindup:experiment:answer-first-pieces', {p['proposal_id'] for p in report['proposals']})
+        # Unread, it proposes nothing rather than risk sending an ask twice.
+        unread = runner_report(ROOT, 'r1', NOW, checks(), 'synthetic', True, 'fixture')[0]
+        self.assertEqual(unread['proposals'], [])
+        self.assertIn(cc_loop.UNREAD, [h['reason'] for h in unread['holds']])
         self.assertTrue(any('9 tests' in a['line'] for a in report['activity']))
         failed, error = runner_report(ROOT, 'r1', NOW, checks(False), 'synthetic', True, 'fixture')
         self.assertEqual((failed['status'], error), ('degraded', 'offline_checks_failed'))

@@ -13,6 +13,7 @@ from pathlib import Path
 import re
 import tempfile
 import unittest
+from unittest import mock
 
 try:
     from test_autonomy import CapableStandIn
@@ -25,6 +26,7 @@ from engine.control_center import proposal
 from engine.run import autorelease, buffer_api, handoff
 from engine.run.autorelease import line_digest, parse_manifest, staged_report_run_id
 from engine.run.handoff import GO_LIVE, MAKE_PIECE, PAYLOAD_CAP, WEEK_PACKET
+from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.run.release import BUFFER_NAME, CHANNELS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,7 +38,8 @@ GOLIVE = 'makeyourmindup:golive:2026-11-03:piece'
 PLAN = 'makeyourmindup:plan:w45-w52'
 P_THREADS, P_X, P_LINKEDIN, P_CAROUSEL = ('dddddddddddddddddddddd01', 'dddddddddddddddddddddd02',
                                           'dddddddddddddddddddddd03', 'dddddddddddddddddddddd04')
-CH = 'eeeeeeeeeeeeeeeeeeeeee01'
+# Each channel's pinned Buffer channelId (engine/buffer_channels.py): main's channel lock refuses any other.
+CH = BUFFER_CHANNEL_ID
 WORDS = {P_THREADS: 'Synthetic handoff words for the threads slot.', P_X: 'Synthetic handoff words for the x slot.',
          P_LINKEDIN: 'Synthetic handoff words for the linkedin slot.',
          P_CAROUSEL: 'Synthetic handoff words for the carousel slot.'}
@@ -52,11 +55,11 @@ METADATA = {'threads': {'__typename': 'ThreadsPostMetadata', 'type': 'post', 'th
 
 
 def maker_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=DUE, fmt='text', review=False,
-               meta=None, channel_id=CH):
+               meta=None, channel_id=None):
     """One slot as a maker dispatches it: ids, codes, a time and the spec's digest."""
     digest = line_digest({'channel': channel, 'format': fmt, 'words': words, 'link_placement': None,
                           'due_at': due, 'publish_mode': mode, 'assets': list(assets), 'meta': meta,
-                          'buffer_channel_id': channel_id})
+                          'buffer_channel_id': channel_id or CH[channel]})
     return {'slot': slot_id, 'channel': channel, 'buffer_draft_id': draft, 'payload_sha256': digest,
             'per_item_review': review, 'format': fmt, 'due_at': due, 'link_placement': None, 'publish_mode': mode}
 
@@ -83,8 +86,8 @@ class Fixture:
 
     def draft(self, post_id, channel, assets=(), words=None, status='draft', metadata=None):
         self.buf.posts[post_id] = {'id': post_id, 'status': status, 'dueAt': None, 'schedulingType': 'automatic',
-                                   'via': 'api', 'text': words or WORDS[post_id], 'channelId': CH,
-                                   'channel': {'id': CH, 'name': BUFFER_NAME[channel], 'service': CHANNELS[channel][0],
+                                   'via': 'api', 'text': words or WORDS[post_id], 'channelId': CH[channel],
+                                   'channel': {'id': CH[channel], 'name': BUFFER_NAME[channel], 'service': CHANNELS[channel][0],
                                                'isDisconnected': False, 'isLocked': False},
                                    'channelService': SERVICE[channel], 'assets': list(assets),
                                    'metadata': metadata if metadata is not None else METADATA[channel]}
@@ -163,7 +166,13 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(self.buf.mutations(), [])
         # Krish approves; autorelease finds that exact go-live and schedules it once.
         self.cc.decisions.append(self.fix.decision(item, '2026-11-03T14:30:00Z'))
+        # Main's R95: on a route not yet recorded as passed, L0 release holds (route_not_verified).
         released, code = autorelease.autorelease(self.cc.client(), self.buf.client(), RELEASE_NOW, True, fetch)
+        self.assertEqual(released['holds'], {'route_not_verified': 2})
+        self.assertEqual(self.buf.mutations(), [])
+        # Once the Threads and X text routes pass their capability checks, the same yes schedules.
+        with mock.patch.object(autorelease, 'route_holds', lambda slot, as_of: ([], True, '2026-11-02')):
+            released, code = autorelease.autorelease(self.cc.client(), self.buf.client(), RELEASE_NOW, True, fetch)
         self.assertEqual(code, 0, released)
         self.assertEqual(released['slots'], {'krish_click': 1, 'scheduled': 2})
         self.assertEqual(self.buf.posts[P_X]['status'], 'scheduled')
@@ -384,7 +393,7 @@ class HandoffTests(unittest.TestCase):
                 'forward_line': 'Synthetic.', 'experiment_arm': None, 'publish_mode': 'engine',
                 'buffer_draft_id': None, 'meta': None, 'buffer_channel_id': None, 'payload_sha256': None}
         filled = specmod.fill_drafts({'slots': [slot]}, {'ig-1': {'post': post}})['slots'][0]
-        self.assertEqual((filled['buffer_draft_id'], filled['buffer_channel_id']), (P_CAROUSEL, CH))
+        self.assertEqual((filled['buffer_draft_id'], filled['buffer_channel_id']), (P_CAROUSEL, CH['instagram']))
         line, code = handoff.rebuild(self.buf.client(), dict(self.fix.slots[-1], slot='ig-1'), fetch, NOW)
         self.assertIsNone(code)
         self.assertEqual(filled['payload_sha256'], line['payload_sha256'])

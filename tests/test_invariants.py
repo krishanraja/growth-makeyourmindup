@@ -12,6 +12,7 @@ from engine.run.invariants import (FAILURE_IDS, RULE_SOURCES, ROOT, check_failur
                                    check_rule_links, collapse, house_errors, load_boundary,
                                    load_failures, load_rules, load_sources)
 from engine.run.invariants import test_names as defined_tests  # not collected as a test
+from engine.run.invariants import _card_errors as card_errors
 
 GA4_TESTS = ('test_ga4_credentials_accept_raw_or_base64_json', 'test_rs256_signature_verifies_with_public_key',
              'test_ga4_transport_only_allows_google_origins_and_never_logs_secrets',
@@ -82,6 +83,25 @@ class RuleTests(unittest.TestCase):
                        'signed out from another browser'):
             self.assertIn(anchor, quotes)
 
+    def test_rule_ids_run_past_r99(self):
+        # R99 was the last two-digit id; the next ruling's rule is R100, and a card may cite it.
+        quote = 'The engine never acts on a platform without an approved go-live'
+        with tempfile.TemporaryDirectory() as folder:
+            root = fixture_root(folder, quote + ', read in its own run.\n', quote)
+            path = root / 'invariants' / 'rules.json'
+            data = json.loads(path.read_text(encoding='utf-8'))
+            data['rules'].append(dict(data['rules'][0], id='R100'))
+            path.write_text(json.dumps(data), encoding='utf-8')
+            self.assertEqual([r['id'] for r in load_rules(root)], ['R01', 'R100'])
+            for bad in ('R1000', 'R1', 'R10a'):
+                data['rules'][1]['id'] = bad
+                path.write_text(json.dumps(data), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, 'rule id must be unique'):
+                    load_rules(root)
+        card = '| If | Then |\n|---|---|\n| A | B, P1, R100 |\n| C | D |\n| E | F |\n'
+        self.assertEqual(card_errors(card, ['R01', 'R100']), [])
+        self.assertIn('cites unknown rule R100', card_errors(card, ['R01']))
+
     def test_rule_guards_and_tests_exist(self):
         self.assertEqual(check_rule_links(load_rules()), [])
 
@@ -108,17 +128,17 @@ class RuleTests(unittest.TestCase):
 
     def test_27_october_evening_rulings_are_quoted_and_guarded(self):
         rules = {r['id']: r for r in load_rules()}
-        anchors = {'R92': ('Derivatives of approved pieces.', 'show me before you post',
+        anchors = {'R101': ('Derivatives of approved pieces.', 'show me before you post',
                            "It wasn't plain English and human and humble enough."),
-                   'R93': ('less fragile way of doing this than a session engine token',
+                   'R102': ('less fragile way of doing this than a session engine token',
                            'Same for the cost baseline.'),
-                   'R94': ('set yourself daily autonomous tasks', 'like my personal LinkedIn posts')}
+                   'R103': ('set yourself daily autonomous tasks', 'like my personal LinkedIn posts')}
         for rule_id, phrases in anchors.items():
             self.assertEqual(rules[rule_id]['source_file'], 'CHANGES.md')
             for phrase in phrases:
                 self.assertIn(phrase, collapse(rules[rule_id]['quote']), rule_id)
             self.assertTrue(rules[rule_id]['tests'], rule_id)
-        self.assertIn('engine/run/invariants.py:check_lanes', rules['R93']['enforced_by'])
+        self.assertIn('engine/run/invariants.py:check_lanes', rules['R102']['enforced_by'])
         failures = {f['id']: f for f in load_failures()}
         self.assertEqual(FAILURE_IDS[65:71], ('F66', 'F67', 'F68', 'F69', 'F70', 'F71'))
         for fid, guard in (('F66', 'may_post_alone'), ('F67', 'check_lanes'), ('F68', 'check_lanes'),
@@ -212,8 +232,8 @@ class FailureRegisterTests(unittest.TestCase):
             self.assertIn(guard, failures[fid]['guard'], fid)
             self.assertIn(test, failures[fid]['tests'], fid)
         rules = {r['id']: r for r in load_rules()}
-        for rule_id, phrase in (('R95', 'queue and post autonomously'), ('R96', 'LinkedIn stays his own final click'),
-                                ('R97', 'show me before you post')):
+        for rule_id, phrase in (('R104', 'queue and post autonomously'), ('R105', 'LinkedIn stays his own final click'),
+                                ('R106', 'show me before you post')):
             self.assertIn(phrase, rules[rule_id]['quote'], rule_id)
 
     def test_register_records_the_posting_path_review(self):

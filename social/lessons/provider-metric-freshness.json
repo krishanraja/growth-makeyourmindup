@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "provider-metric-freshness",
+  "category": "tool",
+  "scope": [
+    "buffer"
+  ],
+  "status": "observed",
+  "finding": "A daily Buffer metrics read can contain older per-post update times. Preserve metricsUpdatedAt alongside captured_at and actual post age; never label the retrieval as an exact 24h or 72h sample. Keep platform and metric definitions separate when Buffer reach differs from native viewers.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": ".scratch/channel-audit/daily-20261029/REVIEW.md",
+    "observed_at": "2026-10-29",
+    "result": "29 October retrieval carried 27-28 October updates. Instagram native viewers was 6 and Buffer reach 7; both readings retained without forcing agreement."
+  },
+  "revisit_when": "Metric definitions or refresh behavior change; compare like-for-like windows before a verdict.",
+  "supersedes": null
+}

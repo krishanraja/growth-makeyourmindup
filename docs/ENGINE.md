@@ -107,6 +107,79 @@ and real action evidence before deciding whether an unchanged piece needs
 recovery, follow-up or no work. Publication after the nominal slot is
 picked up at the next existing run, then allocated within the shared budget.
 
+## The content backlog
+
+`python growth.py backlog` lists every published piece against the channels
+it could run on, oldest unamplified first, then partly amplified, then
+covered, and ends with "Backlog remaining N": the pieces with no native
+edition yet. It reads the public feed as far back as it reaches (366 days)
+and merges `.scratch/catalog.json`, so a piece that has left the feed stays
+in the backlog. A video post folds into its article only on an explicit
+published link, the same rule as discovery. The open channels are every
+channel record in `social/channels/` except `substack`, the piece's home.
+Each piece also lists its open formats (`formats_open`): every channel and
+format pair with no edition in that exact format, so one Instagram carousel
+closes Instagram as a channel but leaves its short video and story open. An
+edition that names no format closes none.
+
+A native edition counts from two places: a committed pilot in
+`lists/pilots.json` that names its `piece_url` (and its `editions`), and the
+local ledger `.scratch/backlog/amplified.json`. Add a live edition with
+`python growth.py backlog record --piece URL --channel ID --format ID
+--native-url URL --at TIME` once its native URL reads back; a draft or a
+scheduled post is never an edition. The inventory is written to
+`.scratch/backlog/inventory.json`. Only `backlog/inventory.schema.json`,
+`backlog/amplified.schema.json` and the synthetic `backlog/fixture.json` are
+committed. The GitHub runner reports "Backlog remaining N" from the public
+feed and the committed pilots only, and says that workspace editions are not
+visible to it. The day's pack takes the oldest unamplified piece worth a new
+edition alongside the day's new piece (`jobs/daily-pack.md`).
+
+## Ecosystem routes
+
+Every run spec slot names a route into the wider ecosystem
+(`ecosystem_cta`, `engine/run/spec.py` lint). The
+publication is the front door to Mindmake (NOW.md), so a post that only
+points at the newsletter, an article or the subscribe page has no route
+beyond it. Each slot names one verified route from `journeys.json`
+(`ecosystem`): the show's own YouTube channel (`/@makeyourmind-up`) or a
+long video whose id is in the route's `video_ids`, or Mindmake at
+mindmake.co. The Spotify show is a route row with `verified` false, so lint
+refuses it until its URL is verified. Each names its URL and placement:
+`in_post` (the URL is in the words, tracked or not) or `first_reply` (the
+slot's `link_placement` is `first_reply`). A profile link is not a
+placement: the only profile link the engine may set is the newsletter's
+subscribe page (`engine/channel_audit.py`), which is no route beyond the
+newsletter. Lint refuses no route, an unknown or unverified route, a
+newsletter URL, a URL off the route (another channel, an unlisted video),
+an `in_post` URL missing from the words and a `first_reply` route without a
+first-reply placement. A new route, or a newly verified video, is a row in
+`journeys.json`; each journey there names the route its readers continue
+on (`ecosystem_route`).
+`ecosystem_cta` is outside the digest: an `in_post` URL is already in the
+signed words.
+
+## Intensity: the gap sets the volume
+
+Ruling (Krish, 2026-10-29): At U3 to U5, engines and Control Center may
+raise volume caps up to each repo's existing policy bounds without a signed
+week spec. This is volume only: walls unchanged.
+
+`engine/intensity.py` reads this week's gap from NOW.md's state line and the
+ladder in docs/NORTH_STAR.md, and takes Control Center's urgency instead
+when the directive's `north_star.intensity` is higher. A week nobody has
+measured is U4; a week with no ladder rung raises nothing. Every report,
+from the runner and from each workspace job, leads with the gap line
+"X of Y, U-n, short by Z" (an unmeasured week reads "not measured of Y, U4,
+short by unknown", never zero). At U3 and above the caps rise to the bounds
+in `intensity.json`: a channel's scheduled posts a day only to its own
+policy bound in `engine/social.py` (Substack Notes two, every other channel
+one, the 27 Oct ruling; every channel already sits there, so `run lint`
+reads the urgency and no channel gains a post; a human-only channel stays
+manual), and the day's engagement taps from 5 to 10, 15 and 20 at U3, U4
+and U5, under Control Center's 25. Raised volume comes from the taps. Walls, zero spend, approvals, the
+creative bar and Krish's 20 and 30 minute budget never move with it.
+
 ## Tracking and the work queue
 
 ```powershell
@@ -265,11 +338,31 @@ attempt `failed` with `report_conflict`.
 
 | Pack kind | Wall | Closes on |
 |---|---|---|
-| daily, radar | `post`, with the exact words | `published` |
+| daily | `post`, with the exact words | `published` |
+| radar | `post`: one engagement task for the day (below) | `tapped` |
 | conversion | `post`, the exact copy | `applied` |
 | pitches, swaps, partners | `send`, with the exact words | `sent` |
 | report | `strategy` | `reviewed` |
 | numbers | `none` | `verified` |
+
+**The engagement task (protocol 1.14.0).** The radar's selected replies and
+comments go as one ask, `makeyourmindup:engage:<New York date>`, never one
+proposal each: Control Center's version 2 action of kind `copy_open` on the
+`engage` channel, behind `post`, with no stage. Its `exact_payload` is the
+canonical JSON `{version: 2, channel: "engage", kind: "copy_open", body,
+taps: [{label, text, url}]}`: each tap the exact words to copy and the public
+https page to open. Krish pastes and posts each one himself and marks the
+task carried out (`tapped`); nothing in this engine or Control Center posts.
+The task carries as many as cleared the bar, up to today's cap
+(`intensity.json`: 5, then 10, 15 and 20 at U3, U4 and U5); a tap past the
+cap, or one with no public https page or with an address or a phone number
+in its words, is held by name. The report goes at 1.14.0 only where
+capabilities list it and `features.copy_open` is true. If Control Center
+cannot take the task (`schema_version_unsupported`,
+`schema_version_unconfirmed`, `copy_open_unsupported` or a 400), the loop
+rebuilds the report once with the same taps as one plain `advice` proposal
+behind `post`, at the old version, and says so; nothing else is resent.
+The wire shape is in `docs/control-center/ENGINE-PROTOCOL.md`.
 
 `proposal_id` is `makeyourmindup:<item_id>`, so it survives a copy edit
 while `payload_sha256` (SHA-256 of the canonical `{channel, exact_payload,
@@ -281,7 +374,8 @@ labels Krish confirmed go in a `--completions` JSON list,
 `{label, item_id, at, evidence_url, confirmed_by: "Krish"}`, where the
 label is Published, Sent, Applied, Verified or Reviewed; each becomes an
 event. Skipped is his Purge and arrives as `declined`. Planned experiment
-templates are `strategy` proposals for his decision to start one.
+templates are `strategy` proposals for his decision to start one, sent once
+by the GitHub runner (below).
 
 **Objectives.** `new_subscribers` (people, New York week) is the sum of this
 week's Substack `new_free` observations, validated and added with the same
@@ -308,6 +402,35 @@ missing with "Measured only in the publication workspace", and its log
 prints only codes, counts and digests, never the directive, because this
 repository is public. It uploads no artifact. A missing secret or variable
 stops the job with an error and nothing reported.
+
+**Each ask once** (plan item D2, 2026-10-29). Before it reports, the runner
+reads what Krish already has (`already_sent`). A clean runner keeps no state,
+so Control Center is the ledger. It reads every decision since 2026-10-19,
+page by page, because the route serves only the oldest 100 after `since`; a
+decision dated after the run's own time is not counted. It also reads the
+latest earlier runner report of the same mode within 14 days that read its
+own ledger. That report's proposals and its "Waiting on Krish, not sent
+again" holds count as pending, and its "Answered by Krish, not sent again"
+holds (`id=decision`) count as answered, so a decision the route no longer
+reaches still counts. A report of the other mode (a synthetic run never
+counts for a live one), or one that could not read its ledger, is passed
+over. Each hold names whole ids, as many as fit its 1,000 characters, and
+starts another when they do not; an id is never clipped. An ask he answered
+(approved, declined or done, on any payload) is never sent again; one still
+waiting is named in a waiting hold and not resent. Today's own report is
+never read, so a rerun with the same `--now` makes the same report and
+replays; a rerun at a later time changes `observed_at`, and may see a newer
+decision, so Control Center keeps the first report and the attempt is
+journaled as a conflict. If any read fails, or the decision pages do not
+end, nothing is proposed and the hold says so. Fourteen days in a row
+without a readable ledger would lose what it carried, and the asks would go
+again. The standing W45 to W52 plan (`specs/standing-plan.json`, docs/RUN.md
+"Gates") goes once as `stage: "plan"` behind `strategy`; its words are frozen
+there so the digest he approves is the one every go-live names, and a changed
+plan is a new `proposal_id`. Each amplification pilot in `lists/pilots.json`
+is reported by its verdict path, never as a proposal: its recorded verdict,
+or a hold saying it awaits measurement (or a verdict), when its judge window
+ends and what closes it.
 
 **Errors.** 401 `unauthorized`, 403 `forbidden`, 409 `report_conflict` or
 `engine_inactive`, 413 `payload_too_large`, 429 `rate_limited`, 5xx

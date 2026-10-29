@@ -2,6 +2,14 @@
 
 Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
+29 October measurement checkpoint: read `.scratch/channel-audit/daily-20261029/REVIEW.md`. Codex native access recovered; Substack source report remains empty for seven days, Instagram pilot has no non-follower views, and the LinkedIn manual post remains unconfirmed. Buffer drafts untouched. Preserve provider metric timestamps; this is a roughly 60-63h sample. Next real route checks follow the newer Monday 2 November transition plan.
+
+28 October operational checkpoint: read
+`.scratch/channel-audit/daily-20261028/REVIEW.md` before acting. Buffer reconciled;
+native metrics/engagement remain blocked by browser timeouts, not proven sign-out.
+Local GA4 directive read lacks engine configuration. Reuse existing evidence,
+preserve the LinkedIn drafts and follow the newer exact-payload release gate.
+
 27 October architecture upgrade: a run session reads `docs/RUN.md` and its pack (`python growth.py run pack SPEC`) instead of the standing docs; the plan is `docs/plans/2026-10-27-engine-architecture.md`. Every earlier instruction below still holds where the rulings recorded in `CHANGES.md` on 27 October do not supersede it.
 
 Lanes (27 October): `docs/LANES.md` says what runs alone (GitHub Actions; there are no Claude routines, Krish, 29 Oct 2026), what waits for one press in Control Center and what waits for Krish's hands; `docs/SETUP-ONCE.md` holds his one-time steps. No session holds the Control Center engine key: the GitHub runner holds it, Codex workspace runs on his PC use the `engine-token` file (`docs/KEY.md`), and a cloud session reads Control Center through the Control Center connector. Never set or read `CONTROL_CENTER_ENGINE_TOKEN` in a cloud session.

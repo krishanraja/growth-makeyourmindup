@@ -22,6 +22,7 @@ from urllib.parse import urlsplit
 from ..core import TIMEZONE, calendar_date, http_url, instant, ny_time, read_json, today as ny_today
 from ..operations import METRICS, validate_observation
 from ..packs import EM_DASH
+from ..share import rules_or_default as share_rules_or_default
 
 ROOT = Path(__file__).resolve().parents[2]
 AWAITS = "classification awaits Krish's approval"
@@ -583,6 +584,54 @@ def northstar(capture, today=None, root=ROOT, sources_path='invariants/sources.j
                       level['urgency'], level['urgency_reason'])
     return {'line': line, 'classification': classified, 'urgency': level, 'week_of': week.isoformat(),
             'week_target': target, 'paid_subscribers': paid_week(capture), 'not_counted_because': why}
+
+
+# Built to be sent: the snackable lane's primary measure ---------------------
+
+# Krish, 2026-10-28: snackable posts are built to be sent from one person to
+# another. Sends (native shares) per reach and saves per reach are their primary
+# measure, a house hypothesis until MYMU's own dated data confirms it; the
+# What-Works Analyst judges them with judge() like any other indicator.
+SNACKABLE_PRIMARY = ('sends_per_reach', 'saves_per_reach')
+
+
+def share_fields(channel, rules=None):
+    """Which Buffer metric counts as sends, saves and reach on a channel (read 28 Oct 2026; social/share.json)."""
+    rules = share_rules_or_default(rules)
+    fields = rules['measure']['buffer_fields']['channels'].get(channel)
+    if fields is None:
+        raise ValueError('no share measurement fields recorded for channel ' + str(channel))
+    return fields
+
+
+def share_rates(channel, metrics, rules=None):
+    """Sends and saves per reach for one snackable post, from its exposed metrics.
+
+    metrics maps a Buffer metric type to its value as read. A field the channel
+    does not expose, or a post that does not show it, is None ("not shown"),
+    never zero; a reach of zero gives no ratio.
+    """
+    rules = share_rules_or_default(rules)
+    if not isinstance(metrics, dict):
+        raise ValueError('metrics must map metric types to values')
+    fields = share_fields(channel, rules)
+
+    def value(name):
+        if fields[name] is None:
+            return None
+        return count(metrics.get(fields[name]), fields[name])
+
+    reach, sends, saves = value('reach'), value('sends'), value('saves')
+    # A repost is public amplification, never a one-to-one send: kept apart, never in sends_per_reach.
+    out = {'channel': channel, 'status': rules['measure']['status'], 'fields': fields,
+           'reach': reach, 'sends': sends, 'saves': saves,
+           'public_reposts': value('public_reposts') if fields.get('public_reposts') else None}
+    for key, numerator in (('sends_per_reach', sends), ('saves_per_reach', saves)):
+        out[key] = None if numerator is None or not reach else numerator / reach
+        out[key.replace('per_reach', 'per_1000_reached')] = (None if out[key] is None
+                                                             else round(out[key] * 1000, 1))
+    out['not_shown'] = [k for k in ('reach', 'sends', 'saves') if out[k] is None]
+    return out
 
 
 # What-Works verdicts -----------------------------------------------------

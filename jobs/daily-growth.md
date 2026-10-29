@@ -56,8 +56,14 @@ format; it is not responsible for finding Growth's opportunities for it.
    no Chrome or other external-browser fallback is authorised.
    Never export cookies, credentials or API keys. Preserve user drafts.
    When the official Buffer connector is available, verify get_account and
-   the named organization, then list_channels and reconcile existing drafts
-   by native ID before preparing another. Prefer it for Buffer reads and
+   the named organization. The organisation is shared with other ventures:
+   use each package's pinned buffer_channel_id, which list_channels only
+   confirms, filter list_posts by that channelId and reconcile existing
+   drafts by native ID before preparing another. Before any edit_post of a
+   reused draft, read it with get_post and run `python growth.py social
+   preflight PACKAGE.json --target GET_POST.json`; it refuses a draft on any
+   other channel, one that is not a draft and one imported from the
+   network. Prefer the connector for Buffer reads and
    explicit draft-only operations; browser work still stays inside Codex.
    Never use a tool's default add-to-queue mode: saveToDraft must be true,
    with no due time or publication. Journal before any create/save, then

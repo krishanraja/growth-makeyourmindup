@@ -12,6 +12,10 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    includes a delayed piece from an earlier day, not just today's date.
    A catalog change does not prove a pack was prepared or a post published.
    Check local envelopes and real completion evidence before duplicating work.
+   Then run `python growth.py backlog` and take the oldest unamplified piece
+   that is still useful as a second source for a new native edition
+   (docs/ENGINE.md, "The content backlog"). Record each live edition with
+   `growth.py backlog record` once its native URL reads back.
 2. Record a literal source excerpt for the forwardable finding, named facts,
    quote or dated call. Establish the article/video pair only from explicit
    published links or a human verification record. If unavailable, keep the

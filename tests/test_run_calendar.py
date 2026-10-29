@@ -5,8 +5,9 @@ import io
 import json
 import unittest
 
+from engine import intensity
 from engine.run import cli
-from engine.run.calendar import CALENDAR, WEEKDAYS, lint, resolve, timezone_errors
+from engine.run.calendar import CALENDAR, WEEKDAYS, daily_caps, lint, resolve, timezone_errors
 from engine.run.invariants import ROOT, load_authority
 from engine.social import inventory
 
@@ -117,15 +118,37 @@ class CalendarTests(unittest.TestCase):
     def test_caps_are_quoted_from_the_corpus(self):
         calendar = v1()
         sources = {c['channel']: c['source_file'] for c in calendar['caps']}
-        self.assertEqual(sources['substack-notes'], 'social/guides/other-channels.md')
+        self.assertEqual(sources['linkedin'], 'docs/plans/2026-10-27-engine-architecture.md')
         records = inventory()['channel']
         for name in ('x', 'threads', 'instagram', 'facebook', 'tiktok', 'youtube'):
             self.assertEqual(records[name]['daily_posts_target'], 1, name)
-        calendar['caps'][0]['quote'] = 'Approved Notes, up to nine a day as signed'
+        calendar['caps'][0]['quote'] = 'LinkedIn at most nine a week'
         self.assertIn('cap_quote', codes(calendar))
         calendar = v1()
         calendar['caps'][0]['source_file'] = '../outside.md'
         self.assertIn('cap_source', codes(calendar))
+
+    def test_daily_caps_come_only_from_the_channel_records_and_intensity(self):
+        # Main's merge: social/channels and intensity.json are the one home for a daily cap.
+        # The calendar plans its own volume (a floor's max) and defers: it never restates a cap.
+        calendar = v1()
+        self.assertEqual([c for c in calendar['caps'] if c['per'] == 'day'], [])
+        records = inventory()['channel']
+        for urgency in (None, 1, 4):
+            expected = {n: intensity.daily_cap(r, urgency) for n, r in records.items()
+                        if intensity.daily_cap(r, urgency) is not None}
+            self.assertEqual(daily_caps(calendar, records, urgency), expected, urgency)
+        calendar['caps'].append({'channel': 'x', 'per': 'day', 'max': 4, 'source_file': 'docs/LANES.md',
+                                 'quote': 'There are no Claude routines (Krish, 29 Oct 2026)'})
+        self.assertIn('daily_cap_restated', codes(calendar))
+        # A floor's max above the cap holds for Krish; it never raises or lowers the cap.
+        calendar = v1()
+        calendar['floors'][2]['max'] = 4
+        result = lint(calendar)
+        self.assertTrue(result['valid'], result['errors'])
+        self.assertIn('x: the calendar allows 4 a day, but the cap is 1', ' '.join(result['held']))
+        calendar['floors'][0]['max'] = 1
+        self.assertEqual(daily_caps(calendar, records)['substack-notes'], 2)
 
     def test_a_result_card_runs_only_after_its_poll(self):
         kept, bumped = resolve(v1(), inventory()['channel'])

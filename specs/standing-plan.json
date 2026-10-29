@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "note": "The standing W45 to W52 plan (docs/RUN.md, Gates). The GitHub runner proposes it once as stage plan behind strategy, and never again while it waits on Krish or after he decides. Its words are frozen here so the digest he approves is the digest every go-live names; a changed plan is a new proposal_id, made in an interactive session.",
+  "proposal_id": "makeyourmindup:plan:w45-w52",
+  "title": "Approve the standing W45 to W52 plan: channels, cadence and the gate rhythm",
+  "why": "Every go-live from 2 November names this plan as its parent, so nothing signed goes live until he approves it once.",
+  "weeks": [
+    "2026-11-02",
+    "2026-11-09",
+    "2026-11-16",
+    "2026-11-23",
+    "2026-11-30",
+    "2026-12-07",
+    "2026-12-14",
+    "2026-12-21"
+  ],
+  "channels": [
+    "substack",
+    "substack-notes",
+    "threads",
+    "x",
+    "tiktok",
+    "instagram",
+    "facebook",
+    "youtube",
+    "linkedin"
+  ],
+  "exact_payload": "Standing plan, W45 to W52 (2 November to 27 December 2026)\n\nAim: new publication subscribers a week from organic posts and shares, zero paid. The weekly targets come from the ladder in docs/NORTH_STAR.md: W45 86, W46 162, W47 271, W48 424, W49 636, W50 925, W51 1,312, W52 1,826.\n\nChannels and cadence:\n- substack (home.makeyourmindup.ai): the three pieces a week keep their editorial rhythm, follow.the.money on Monday, under.the.hood on Wednesday, mind.the.gap on Friday. Growth adds no article.\n- substack-notes (his Substack profile, @mindmakerlive): up to two Notes a day, as he signs them.\n- threads (@krishraja1): one a day, in his own warm personal voice.\n- x and tiktok (@therealkrisho): one useful post a day each where an approved native edition exists, in his personal voice.\n- instagram (makeyourmind.up), facebook and youtube: one useful post a day each where an approved native edition exists, in the publication's editorial voice; Instagram and Facebook go out as a pair.\n- linkedin: unscheduled drafts only. He makes every final click. No daily quota.\nA slot with no approved edition is recorded as missing, never filled with unapproved creative or a duplicate.\n\nGate rhythm:\n- G-A, Sunday, up to 15 minutes: the week's Notes, Threads and evergreen slots as one go-live naming this plan; a payload over 8,000 characters splits into go-lives that come one after another.\n- G-B, Monday, Wednesday and Friday, up to 5 minutes each: one piece's batch across channels, once Content Engine's checked package arrives.\n- G-X, express, up to 2 minutes: an approved idea joins the go-live already waiting; at most one a day.\n- Check-ins on Sunday, with the What-Works ledger, and on Wednesday: how the week stands against its target, measured where it can be.\n\nProduction: Content Engine makes every edition except Notes and memes, which the Canva lane makes. Growth packages, delivers and measures.\n\nMeasurement: Substack's growth sources are the number. GA4 per post comes through Control Center on utm_content. Each post gets a verdict at its judge window: a Note at 24 hours; LinkedIn, X and Threads at 48 hours; a Reel, Short or TikTok at 72 hours; subscriber impact at 7 days.\n\nWalls: nothing goes live without his yes on that exact go-live. Spend stays 0. No comments, follows, messages or setting changes.\n\nHis time: 20 minutes a weekday and 30 on Sunday, gates first.\n\nHow it closes: each week's go-lives name this plan. His no on this plan, or on any check-in, stops it."
+}

@@ -11,19 +11,25 @@
   "guide": "social/guides/buffer.md",
   "min_assets": 1,
   "max_assets": 1,
+  "snackable": true,
   "delivery_checks": [
     "One frame of a three-frame Story (hook, proof, action), built in Canva only from the piece's approved assets; Story artwork itself stays content-engine's.",
     "One frame per post, in order; no invented interactive controls, illustration boilerplate or link-sticker claim.",
     "Keep paired Meta outputs deduplicated; verify feed delivery before the Story runs.",
+    "Share mechanic: the hook frame works with no context, so a person sends the Story to one specific person in a private message; the share block names that person as its receiver.",
+    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
     "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
   ],
   "measurements": [
+    "Primary measure (Krish, 28 October 2026): sends, meaning native shares, per reach and saves per reach against the format's own channel median; a house hypothesis until MYMU's own dated data confirms it (lesson share-rate-measure).",
     "Exposed first/last-frame reach, exits, replies and continuation taps; preserve unavailable values.",
     "Compare relevant follower and attributable subscriber movement after actual delivery."
   ],
   "lessons": [
     "revision-identity",
     "growth-measurement",
-    "canva-lane-boundary"
+    "canva-lane-boundary",
+    "built-to-be-sent",
+    "share-rate-measure"
   ]
 }

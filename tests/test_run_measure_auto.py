@@ -18,6 +18,7 @@ from engine.core import instant, read_json, write_json
 from engine.control_center import validate_report
 from engine.run import measure, measure_auto
 from engine.run.measure_auto import NEW_CHANNEL, verdicts
+from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.run.release import BUFFER_NAME
 from test_control_center import StandIn, TOKEN
 
@@ -34,7 +35,8 @@ def channel_id(n):
     return '{:024x}'.format(0xabc000 + n)
 
 
-CHANNEL_IDS = {cid: channel_id(i) for i, cid in enumerate(sorted(BUFFER_NAME))}
+# The pinned Buffer channelIds (engine/buffer_channels.py): main's channel lock refuses any other.
+CHANNEL_IDS = dict(BUFFER_CHANNEL_ID)
 
 
 def post(n, cid, days_ago, impressions=None, text='TEST FIXTURE ONLY. A synthetic post.', via='api', with_metrics=True,

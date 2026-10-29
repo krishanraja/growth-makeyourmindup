@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "kind": "crew",
-  "note": "The crew of plan section 3. lint and check name the planned function each card is enforced by; cards load only for the crew in play, and W45 loads rows 1, 6, 10, 11 and the Release Gate.",
+  "note": "The crew of plan section 3. lint and check name the planned function each card is enforced by; cards load only for the crew in play, and W45 loads rows 1, 6, 10, 11 and the Release Gate. Row 13, the blind Send-Test Reader, joined on 28 Oct 2026 under Krish's ruling that snackable posts are built to be sent (CHANGES.md).",
   "crew": [
     {
       "id": "substack",
@@ -298,6 +298,38 @@
       "check": "engine/channel_audit.py:reconcile",
       "card": "crew/channel-auditor/card.md",
       "lens": "crew/channel-auditor/lens.md",
+      "w45": false
+    },
+    {
+      "id": "send-test",
+      "row": 13,
+      "name": "Send-Test Reader (blind, new)",
+      "owns": [
+        "the blind send test",
+        "share block match"
+      ],
+      "channels": [
+        "instagram",
+        "facebook",
+        "youtube",
+        "tiktok",
+        "x",
+        "threads",
+        "linkedin",
+        "substack-notes"
+      ],
+      "formats": [
+        "meme",
+        "carousel",
+        "single-image",
+        "short-video",
+        "story",
+        "note"
+      ],
+      "lint": "engine/share.py:share_errors",
+      "check": "engine/share.py:compare_send_test",
+      "card": "crew/send-test/card.md",
+      "lens": "crew/send-test/lens.md",
       "w45": false
     },
     {

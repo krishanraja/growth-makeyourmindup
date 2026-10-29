@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "kind": "authority",
-  "note": "What the engine may do alone, under Krish's 27 Oct 2026 rulings (CHANGES.md, rules R92 to R94). engine/run/invariants.py:load_authority validates this closed shape and posting_lane reads it. Only Krish changes it.",
+  "note": "What the engine may do alone, under Krish's 27 Oct 2026 rulings (CHANGES.md, rules R101 to R103). engine/run/invariants.py:load_authority validates this closed shape and posting_lane reads it. Only Krish changes it.",
   "source_file": "CHANGES.md",
   "first_signed_week": "2026-W45",
   "show_before_post_until": "2026-11-29",

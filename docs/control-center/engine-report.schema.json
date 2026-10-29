@@ -20,9 +20,10 @@
       "enum": [
         "1.0.0",
         "1.1.0",
-        "1.2.0"
+        "1.2.0",
+        "1.14.0"
       ],
-      "description": "1.1.0 adds a proposal's stage and parent_proposal_id, 1.2.0 its subject_ref; an older report carrying a newer field is refused."
+      "description": "1.1.0 adds a proposal's stage and parent_proposal_id, 1.2.0 its subject_ref; an older report carrying a newer field is refused; 1.14.0 an engagement task, a version 2 action of kind copy_open in exact_payload (ENGINE-PROTOCOL.md)."
     },
     "engine_id": {
       "type": "string",

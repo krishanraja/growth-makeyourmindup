@@ -1,0 +1,621 @@
+{
+  "schema_version": 1,
+  "kind": "share_rules",
+  "ruling": "Krish, 2026-10-28 (CHANGES.md): every snackable post is built to be sent from one person to another for a specific reason, never by asking for the share.",
+  "status": "The rule that every snackable package declares why one person sends it to another is Krish's ruling. Which jobs, moments and format mechanics actually earn sends is a house hypothesis until MYMU's own dated sends-per-reach readings confirm it.",
+  "background": [
+    "Berger and Milkman (2012), What Makes Online Content Viral?, Journal of Marketing Research 49(2), 192 to 205: across New York Times articles, positive content and content evoking high-arousal emotions (awe, anger, anxiety) made the most-emailed list more often, sadness less, controlling for how surprising, interesting or practically useful it was.",
+    "Jonah Berger, Contagious: Why Things Catch On (Simon and Schuster): the STEPPS model of why people share, namely social currency, triggers, emotion, public, practical value and stories.",
+    "Both are published background on why people share in general, not measured MYMU results."
+  ],
+  "snackable_formats_owner": "Each social/formats/<id>.json says whether it is snackable; a snackable package must carry a share block.",
+  "jobs": {
+    "in_the_know": "Sending it makes the sender look ahead of the news: they saw it first.",
+    "helps_them": "It solves a problem the receiver has right now, complete on its own.",
+    "so_us": "It names a situation the two of them share: this is so us.",
+    "settles_it": "It settles a question or an argument between them, with its source.",
+    "warns_them": "It flags a risk the receiver faces, calmly and sourced; never fear framing.",
+    "laugh_or_awe": "It will make the receiver laugh or feel awe."
+  },
+  "dm_line_max_chars": 120,
+  "min_specific_words": {
+    "dm_line": 3,
+    "moment": 3
+  },
+  "filler_words": [
+    "a",
+    "an",
+    "the",
+    "this",
+    "that",
+    "these",
+    "those",
+    "it",
+    "its",
+    "it's",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "am",
+    "will",
+    "would",
+    "can",
+    "could",
+    "should",
+    "shall",
+    "may",
+    "might",
+    "must",
+    "do",
+    "does",
+    "did",
+    "have",
+    "has",
+    "had",
+    "i",
+    "i'm",
+    "i've",
+    "i'd",
+    "me",
+    "my",
+    "mine",
+    "you",
+    "you're",
+    "you've",
+    "you'll",
+    "you'd",
+    "your",
+    "yours",
+    "we",
+    "we're",
+    "us",
+    "our",
+    "ours",
+    "they",
+    "they're",
+    "them",
+    "their",
+    "he",
+    "him",
+    "his",
+    "she",
+    "her",
+    "hers",
+    "of",
+    "to",
+    "in",
+    "on",
+    "at",
+    "for",
+    "with",
+    "from",
+    "by",
+    "as",
+    "about",
+    "into",
+    "over",
+    "and",
+    "or",
+    "but",
+    "so",
+    "if",
+    "then",
+    "than",
+    "just",
+    "very",
+    "really",
+    "also",
+    "too",
+    "who",
+    "whom",
+    "whose",
+    "which",
+    "what",
+    "when",
+    "where",
+    "one",
+    "some",
+    "any",
+    "all",
+    "every",
+    "each",
+    "own",
+    "other",
+    "another",
+    "same",
+    "there",
+    "here",
+    "up",
+    "out",
+    "not",
+    "no",
+    "yes"
+  ],
+  "crowd_words": [
+    "everyone",
+    "everybody",
+    "anyone",
+    "anybody",
+    "network",
+    "followers",
+    "follower",
+    "audience",
+    "connections",
+    "friends",
+    "people",
+    "world",
+    "community",
+    "public",
+    "internet",
+    "subscribers",
+    "contacts",
+    "folks",
+    "guys",
+    "fans",
+    "readers",
+    "viewers"
+  ],
+  "generic_words": [
+    "someone",
+    "somebody",
+    "friend",
+    "colleague",
+    "colleagues",
+    "coworker",
+    "coworkers",
+    "co-worker",
+    "co-workers",
+    "person",
+    "peer",
+    "peers",
+    "contact",
+    "mate",
+    "mates",
+    "others",
+    "team",
+    "teammate",
+    "teammates",
+    "buddy",
+    "pal",
+    "bestie",
+    "anyone",
+    "guy"
+  ],
+  "descriptor_words_about": "Words that describe a receiver without identifying one on their own (ranks and topics); the send test never matches on them alone.",
+  "descriptor_words": [
+    "head",
+    "director",
+    "lead",
+    "leader",
+    "senior",
+    "junior",
+    "chief",
+    "vp",
+    "vice",
+    "president",
+    "officer",
+    "executive",
+    "principal",
+    "associate",
+    "deputy",
+    "assistant",
+    "new",
+    "old",
+    "former",
+    "first",
+    "ai"
+  ],
+  "vague_qualifiers_about": "Words that leave a receiver or sender unnamed when nothing else names them: someone you know, the right person, a friend at work, her group chat. Only the role, before its first clause break and preposition, is judged.",
+  "vague_qualifiers": [
+    "whoever",
+    "whomever",
+    "know",
+    "knows",
+    "right",
+    "whole",
+    "work",
+    "tech",
+    "get",
+    "gets",
+    "like",
+    "likes",
+    "chat",
+    "chats",
+    "group",
+    "linkedin",
+    "random",
+    "certain",
+    "senior",
+    "junior",
+    "new"
+  ],
+  "role_prepositions_about": "Where the role in a receiver ends and its setting begins: a friend at work names a friend, not a role.",
+  "role_prepositions": [
+    "in",
+    "at",
+    "on",
+    "from",
+    "for",
+    "with",
+    "by",
+    "into",
+    "over",
+    "within",
+    "inside",
+    "across",
+    "around",
+    "near",
+    "outside",
+    "about",
+    "like"
+  ],
+  "receiver_relation_about": "A receiver opening with my, her or his is the sender's own; one opening with a or an and naming no one personal (a CEO at a competitor) is someone else's. A reader who names someone else's where the post was built for the sender's own has named another person.",
+  "receiver_own_openers": [
+    "my",
+    "her",
+    "his",
+    "their",
+    "our",
+    "your"
+  ],
+  "receiver_other_openers": [
+    "a",
+    "an"
+  ],
+  "receiver_personal_words": [
+    "i",
+    "me",
+    "my",
+    "we",
+    "us",
+    "our",
+    "she",
+    "her",
+    "he",
+    "him",
+    "his",
+    "they",
+    "them",
+    "their",
+    "you",
+    "your",
+    "mine",
+    "ours",
+    "hers",
+    "theirs",
+    "yours"
+  ],
+  "receiver_aliases": {
+    "ceo": [
+      "chief executive officer",
+      "chief executive",
+      "managing director",
+      "md"
+    ],
+    "cfo": [
+      "chief financial officer",
+      "finance director",
+      "fd"
+    ],
+    "cto": [
+      "chief technology officer",
+      "chief technical officer"
+    ],
+    "coo": [
+      "chief operating officer"
+    ],
+    "cmo": [
+      "chief marketing officer",
+      "marketing director"
+    ],
+    "cio": [
+      "chief information officer"
+    ],
+    "founder": [
+      "founders"
+    ],
+    "cofounder": [
+      "co-founder",
+      "co-founders",
+      "cofounders",
+      "co founder"
+    ],
+    "board": [
+      "board members",
+      "board member",
+      "non-executive",
+      "chair",
+      "chairman",
+      "chairwoman"
+    ],
+    "investor": [
+      "investors",
+      "vc",
+      "venture capitalist"
+    ]
+  },
+  "receiver_clause_breaks": [
+    ",",
+    ";",
+    "(",
+    " who ",
+    " who'd ",
+    " who's ",
+    " whoever ",
+    " whomever ",
+    " you'd ",
+    " that ",
+    " which ",
+    " whose ",
+    " where ",
+    " when ",
+    " while ",
+    " because "
+  ],
+  "generic_dm_phrases": [
+    "saw this and thought of you",
+    "thought of you",
+    "thought you'd like this",
+    "thought you would like this",
+    "thought you'd find this interesting",
+    "thought you might like this",
+    "you'll like this",
+    "you will like this",
+    "you might like this",
+    "you'd like this",
+    "you would like this",
+    "check this out",
+    "check it out",
+    "have a look",
+    "take a look",
+    "worth a read",
+    "worth a look",
+    "worth a watch",
+    "must read",
+    "must watch",
+    "interesting read",
+    "interesting post",
+    "good read",
+    "great read",
+    "fyi",
+    "for your info",
+    "lol",
+    "haha",
+    "this is good",
+    "this is great",
+    "this is interesting",
+    "so good",
+    "so true",
+    "love this",
+    "read this",
+    "watch this",
+    "look at this",
+    "have you seen this",
+    "seen this",
+    "sharing this",
+    "sending this",
+    "relevant",
+    "interesting",
+    "useful",
+    "important",
+    "nice",
+    "cool",
+    "wow",
+    "ha",
+    "need to see",
+    "needs to see",
+    "you need to see",
+    "must see",
+    "seriously",
+    "honestly",
+    "crazy",
+    "mind blowing",
+    "mind-blowing",
+    "right now",
+    "ok",
+    "okay",
+    "good stuff",
+    "stuff",
+    "yet",
+    "omg"
+  ],
+  "share_cta_scope_about": "Krish's ruling covers snackable posts, so a share call to action is refused in snackable post copy. Whether it is also refused in text posts, articles and the daily and radar drafts is his decision; all_post_copy would refuse it everywhere a post's words are checked.",
+  "share_cta_scope": "snackable",
+  "imperative_anchor_about": "Where an anchored ask can begin: the start of the copy, a new sentence or line, or straight after an opening if-clause, with an optional emoji or bullet and a softener such as please or so. A fact sentence that uses the same verb mid-clause (banks tag them as high risk; firms that repost it; X removed the share button) is never matched. Every ask is anchored except three that a true sentence about other people does not contain, which are refused anywhere: share it with your team, a friend or someone (share-with), please share (please-share) and someone needs to see this (needs-to-see-this).",
+  "imperative_anchor": "(?:^|(?<=[.!?:;])\\s|\\n|\\bif\\b[^.!?\\n]{0,80},)\\s*(?:[^\\w\\s]+\\s*)?(?:(?:please|pls|so|then|now|just|and|also|go on,?)\\s+)?",
+  "share_cta": [
+    {
+      "id": "share-this",
+      "pattern": "\\bshare (?:this|it|these)(?: (?:post|video|carousel|reel|note|one))?(?=\\s*(?:[.!,?]|$|with\\b|to\\b|if\\b|now\\b|and\\b|&|please\\b))",
+      "anchored": true
+    },
+    {
+      "id": "share-with",
+      "pattern": "\\bshare (?:it |this )?(?:with|to) (?:your|a friend|a colleague|someone|somebody)\\b"
+    },
+    {
+      "id": "please-share",
+      "pattern": "\\b(?:please|pls|smash) share\\b"
+    },
+    {
+      "id": "hit-share",
+      "pattern": "\\b(?:hit|go) share\\b",
+      "anchored": true
+    },
+    {
+      "id": "share-button",
+      "pattern": "\\b(?:hit|tap|press|click|smash|use) (?:the |that )?share button\\b",
+      "anchored": true
+    },
+    {
+      "id": "share-if",
+      "pattern": "\\bshare if\\b",
+      "anchored": true
+    },
+    {
+      "id": "like-and-share",
+      "pattern": "\\b(?:like|save|comment|follow|subscribe),? (?:and|&|\\+) share\\b",
+      "anchored": true
+    },
+    {
+      "id": "share-and",
+      "pattern": "\\bshare,? (?:and|&|\\+) (?:like|save|follow|subscribe|comment)\\b",
+      "anchored": true
+    },
+    {
+      "id": "tag-a-friend",
+      "pattern": "(?<!price )\\btag (?:a|an|your|someone|somebody|anyone|the (?:person|friend|colleague|one)|that (?:person|friend|colleague)|them|him|her|a friend|two|three)\\b",
+      "anchored": true
+    },
+    {
+      "id": "send-this-to",
+      "pattern": "\\bsend (?:this|it|these) (?:on )?to (?:someone|somebody|anyone|everyone|a friend|a colleague|a mate|your|the (?:person|friend|colleague|one)|that (?:person|friend|colleague)|whoever|every)\\b",
+      "anchored": true
+    },
+    {
+      "id": "send-to-someone",
+      "pattern": "\\bsend to (?:a friend|a colleague|someone|somebody|your)\\b",
+      "anchored": true
+    },
+    {
+      "id": "forward-this",
+      "pattern": "\\bforward (?:this|it|these) (?:(?:on )?to (?:someone|somebody|anyone|everyone|a friend|a colleague|a mate|your|the (?:person|friend|colleague|one)|that (?:person|friend|colleague)|whoever|every)\\b|on\\b|along\\b)",
+      "anchored": true
+    },
+    {
+      "id": "repost-if",
+      "pattern": "\\b(?:repost|reshare|re-share|retweet|restack|rt)(?: (?:this|it))? (?:if|for|to)\\b",
+      "anchored": true
+    },
+    {
+      "id": "repost-this",
+      "pattern": "\\b(?:repost|reshare|re-share|retweet|restack) (?:this|it)\\b",
+      "anchored": true
+    },
+    {
+      "id": "pass-it-on",
+      "pattern": "\\bpass (?:it|this) (?:on|along)\\b",
+      "anchored": true
+    },
+    {
+      "id": "spread-the-word",
+      "pattern": "\\bspread the word\\b",
+      "anchored": true
+    },
+    {
+      "id": "know-someone-who",
+      "pattern": "\\b(?:know|tag|send it to|send this to) (?:someone|somebody|anyone|a friend|a colleague) who\\b",
+      "anchored": true
+    },
+    {
+      "id": "needs-to-see-this",
+      "pattern": "\\b(?:someone|somebody|anyone|who|friend|colleague|boss|team) (?:you know )?(?:needs?|should) (?:to )?(?:see|read|hear|watch) this\\b"
+    },
+    {
+      "id": "drop-in-chat",
+      "pattern": "\\b(?:drop|post|send|share) (?:this|it) in (?:the|your) (?:group )?chat\\b",
+      "anchored": true
+    },
+    {
+      "id": "dm-this",
+      "pattern": "\\bdm (?:this|it) to\\b",
+      "anchored": true
+    }
+  ],
+  "send_test": {
+    "reader_card": "crew/send-test/card.md",
+    "answer_fields": [
+      "would_send",
+      "receiver",
+      "job",
+      "dm_line",
+      "why",
+      "request_sha256"
+    ],
+    "prompt": [
+      "You are a fresh reader scrolling a social feed. You see one post: its media and its copy, nothing else. You know nothing about who made it or why.",
+      "Decide honestly whether you would send this post, in a private message, to one specific person you know.",
+      "If you would, say who that person is by role and relationship (for example: my CEO, or the analyst on my team who builds the weekly report), which one job sending it does for you, and the exact words you would type when you send it.",
+      "If you would not send it to anyone, say so. Not sending is a normal answer; never invent a reason to send.",
+      "Jobs: in_the_know (it makes me look ahead of the news); helps_them (it solves a problem they have now); so_us (it names a situation we both live in); settles_it (it settles a question or argument between us); warns_them (it flags a risk they face before it bites); laugh_or_awe (it will make them laugh or feel awe).",
+      "Do not suggest changes to the post. Answer with JSON only, in this shape: {\"would_send\": true or false, \"receiver\": \"who\" or null, \"job\": one job or null, \"dm_line\": \"the words you would type\" or null, \"why\": \"one sentence\", \"request_sha256\": \"the request_sha256 given with this request\"}."
+    ],
+    "reader": {
+      "persona": null,
+      "decision": "Krish's to make (28 Oct 2026). No persona keeps the reader fully blind and tests whether anyone would send the post. Giving it the North Star audience (a senior business leader judging AI's commercial impact) would test whether the right people would send it, at some risk of priming. Until he chooses, the reader has no persona."
+    }
+  },
+  "measure": {
+    "primary": [
+      "sends_per_reach",
+      "saves_per_reach"
+    ],
+    "status": "house hypothesis until MYMU's own dated data confirms it",
+    "buffer_fields": {
+      "observed": "2026-10-28, read only through Buffer list_posts with includeMetrics and get_aggregated_post_metrics; field names only, every value stays in private evidence",
+      "channels": {
+        "instagram": {
+          "status": "observed",
+          "sends": "shares",
+          "saves": "saves",
+          "reach": "reach",
+          "public_reposts": null
+        },
+        "facebook": {
+          "status": "observed",
+          "sends": "shares",
+          "saves": null,
+          "reach": "reach",
+          "public_reposts": null
+        },
+        "tiktok": {
+          "status": "observed",
+          "sends": "shares",
+          "saves": null,
+          "reach": "reach",
+          "public_reposts": null
+        },
+        "x": {
+          "status": "observed",
+          "sends": null,
+          "saves": null,
+          "reach": null,
+          "public_reposts": "reposts"
+        },
+        "youtube": {
+          "status": "observed",
+          "sends": null,
+          "saves": null,
+          "reach": null,
+          "public_reposts": null
+        },
+        "linkedin": {
+          "status": "observed",
+          "sends": null,
+          "saves": null,
+          "reach": "reach",
+          "public_reposts": null
+        },
+        "threads": {
+          "status": "not_observed",
+          "sends": null,
+          "saves": null,
+          "reach": null,
+          "public_reposts": null
+        },
+        "substack-notes": {
+          "status": "not_observed",
+          "sends": null,
+          "saves": null,
+          "reach": null,
+          "public_reposts": null
+        }
+      },
+      "public_reposts_about": "A repost is public amplification, not a one-to-one send, so it is never counted as sends; where a channel shows reposts they are kept apart as public_reposts."
+    }
+  }
+}

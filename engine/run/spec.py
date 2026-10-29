@@ -8,10 +8,15 @@ import datetime as dt
 import json
 from pathlib import Path
 import re
+from urllib.parse import parse_qs, urlsplit
 
 from ..control_center import sha256_hex
-from ..core import TIMEZONE, UTC, calendar_date, http_url, instant, ny_time, read_json, write_json
+from ..copy_lint import copy_lint_errors
+from ..core import TIMEZONE, UTC, calendar_date, canonical, http_url, instant, ny_time, read_json, write_json
+from .. import intensity
 from ..packs import prose_errors
+from ..share import (compare_send_test, cta_applies, cta_errors, share_errors, share_line,
+                     slot_send_test_request, stage_slot_send_test)
 from ..social import inventory, validate
 from .plain import lint_text as plain_lint
 
@@ -97,7 +102,26 @@ def computed(spec, root=ROOT):
         pass
     for slot in spec['slots']:
         slot['payload_sha256'] = payload_sha256(slot)
+        derived = forward_line(slot)
+        if derived is not None:
+            slot['forward_line'] = derived
     return spec
+
+
+def forward_line(slot):
+    """The forward_line a slot's share block computes (engine/share.py:share_line), or None without a valid one."""
+    share = slot.get('share') if isinstance(slot, dict) else None
+    if not isinstance(share, dict):
+        return None
+    try:
+        return share_line(share)
+    except ValueError:
+        return None
+
+
+def snackable(record):
+    """A format record marked snackable: its slots are built to be sent (Krish, 2026-10-28)."""
+    return isinstance(record, dict) and record.get('snackable') is True
 
 
 def skeleton(start, kind='week', run_id=None, root=ROOT):
@@ -158,16 +182,89 @@ def social_records(root=ROOT):
     return {'channel': found['channel'], 'format': found['format']}
 
 
-def daily_cap(record):
+def daily_cap(record, urgency=None, root=ROOT):
     """Scheduled posts a channel takes per New York day, from its record; None means no engine cap.
 
     A human-only channel (LinkedIn) records null: its slots are unscheduled drafts.
+    At U3 to U5 the cap rises only to the channel's own policy bound in
+    engine/social.py (engine/intensity.py).
     """
-    cap = record.get('daily_posts_target') if isinstance(record, dict) else None
-    return cap if isinstance(cap, int) and not isinstance(cap, bool) else None
+    return intensity.daily_cap(record, urgency, root)
 
 
-def _slot(slot, at, channels, formats, tests, manifest, window):
+def ecosystem(root=ROOT):
+    """The routes into Krish's wider ecosystem, from journeys.json (its one home)."""
+    path = Path(root) / 'journeys.json'
+    block = read_json(path if path.is_file() else ROOT / 'journeys.json')['ecosystem']
+    return {'routes': {r['route_id']: r for r in block['routes']},
+            'alone': set(block['not_enough_alone']['hosts']), 'placements': set(block['placements'])}
+
+
+URL_IN_TEXT = re.compile(r'https?://[^\s<>"]+')
+
+
+def _video_id(parts):
+    """The YouTube video id a watch, youtu.be or live URL names, or None."""
+    host = parts.hostname.lower()
+    if host == 'youtu.be':
+        return parts.path.strip('/').split('/')[0] or None
+    if parts.path == '/watch':
+        return (parse_qs(parts.query).get('v') or [None])[0]
+    if parts.path.startswith('/live/'):
+        return parts.path.split('/')[2] or None
+    return None
+
+
+def on_route(parts, route):
+    """Whether a URL is on a route: its host, and one of its paths or verified video ids."""
+    if parts.hostname.lower() not in route['hosts']:
+        return False
+    prefixes, videos = route.get('path_prefixes'), route.get('video_ids') or []
+    if prefixes is None and not videos:
+        return True
+    path = parts.path.rstrip('/').lower() or '/'
+    if prefixes and any(path == p.rstrip('/').lower() or path.startswith(p.rstrip('/').lower() + '/') for p in prefixes):
+        return True
+    return _video_id(parts) in videos
+
+
+def ecosystem_errors(slot, at, routes):
+    """Why a slot has no route into the wider ecosystem, or []. A newsletter link alone is not one."""
+    sid = slot['slot_id']
+    cta = slot.get('ecosystem_cta')
+
+    def fail(message, where=''):
+        return [finding('ecosystem_cta', at + '.ecosystem_cta' + where, message, sid)]
+    if cta is None:
+        return fail('no route into the wider ecosystem: name the long video, the podcast or Mindmake '
+                    '(journeys.json, ecosystem); the newsletter alone is not enough')
+    route = routes['routes'].get(cta['route'])
+    if route is None:
+        return fail('unknown ecosystem route ' + cta['route'] + '; a new route is a row in journeys.json', '.route')
+    url = cta['url']
+    parts = urlsplit(url) if http_url(url) and url.startswith('https://') else None
+    host = parts.hostname.lower() if parts else None
+    if parts is None:
+        return fail('the route needs an https URL', '.url')
+    if host in routes['alone']:
+        return fail('a newsletter link is not a route beyond the newsletter', '.url')
+    if route.get('verified') is not True:
+        return fail('the ' + cta['route'] + ' route is not verified yet (journeys.json: ' + route['what']
+                    + '); name a verified route', '.route')
+    if not on_route(parts, route):
+        return fail(url + ' is not on the ' + cta['route'] + ' route (' + route['what'] + ')', '.url')
+    if cta['placement'] not in routes['placements']:
+        return fail('unknown placement ' + cta['placement'], '.placement')
+    if cta['placement'] == 'in_post':
+        found = {canonical(u.rstrip('.,;:!?)')) for u in URL_IN_TEXT.findall(slot['words']) if http_url(u.rstrip('.,;:!?)'))}
+        if canonical(url) not in found:
+            return fail('an in_post route must have its URL in the words', '.placement')
+    if cta['placement'] == 'first_reply' and slot['link_placement'] != 'first_reply':
+        return fail('a first_reply route needs link_placement first_reply', '.placement')
+    return []
+
+
+def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urgency=None, root=ROOT):
     errors, warnings = [], []
     sid = slot['slot_id']
     channel, fmt = channels.get(slot['channel']), formats.get(slot['format'])
@@ -187,11 +284,35 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
         errors.append(finding('krish_click_due_at', at + '.due_at',
                               'a krish_click slot stays an unscheduled draft: due_at must be null', sid))
     errors += [finding('prose', at + '.words', 'words ' + e, sid) for e in prose_errors(slot['words'])]
-    # Plain English on every caption (Krish, 27 Oct 2026, R92): it blocks a carousel, the new
+    # Plain English on every caption (Krish, 27 Oct 2026, R101): it blocks a carousel, the new
     # format he named, and is guidance elsewhere until he widens it.
     plain = [finding('plain_' + f['code'], at + '.words', 'words: ' + f['detail'], sid)
              for f in plain_lint(slot['words'])]
     (errors if slot['format'] == 'carousel' else warnings).extend(plain)
+    try:
+        lint = copy_lint_errors(slot['words'], 'channel_copy')
+    except ValueError as exc:
+        lint = ['copy lint could not run: ' + str(exc)]
+    errors += [finding('copy_lint', at + '.words', 'words: ' + e, sid) for e in lint]
+    # Built to be sent (Krish, 2026-10-28): a snackable slot says why one person sends it to another, its
+    # forward_line is computed from that, and the share comes from the content, never a request.
+    snack = snackable(fmt)
+    share = slot.get('share')
+    if snack and share is None:
+        errors.append(finding('share_required', at + '.share', 'a snackable slot needs a share block: who sends it'
+                              ' to whom, for which job, in what words (social/share.json)', sid))
+    elif share is not None:
+        found = share_errors(share, snack)
+        errors += [finding('share', at + '.share', 'share ' + e, sid) for e in found]
+        derived = forward_line(slot)
+        if not found and derived is not None and slot['forward_line'] != derived:
+            errors.append(finding('forward_line', at + '.forward_line', 'forward_line is computed from share:'
+                                  ' run new --from', sid))
+    if cta_applies(snack):
+        errors += [finding('share_cta', at + '.words', 'words ask for the share (' + e + '); the share must come'
+                           ' from the content (social/share.json)', sid) for e in cta_errors(slot['words'])]
+    if routes is not None:
+        errors += ecosystem_errors(slot, at, routes)
     warnings += [finding('forward_line_prose', at + '.forward_line', 'forward_line ' + e, sid)
                  for e in prose_errors(slot['forward_line'])]
     listed, approved = manifest
@@ -219,7 +340,7 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
     if slot['due_at'] is not None and not window[0] <= instant(slot['due_at']) < window[1]:
         warnings.append(finding('due_outside_window', at + '.due_at', 'due_at falls outside the run window', sid))
     if slot['publish_mode'] == 'engine' and slot['due_at'] is None:
-        cap = daily_cap(channel)
+        cap = daily_cap(channel, urgency, root)
         warnings.append(finding('engine_unscheduled', at + '.due_at',
                                 'an engine slot needs a due_at to release'
                                 + ('' if cap is None else ', and only scheduled slots count towards the '
@@ -227,8 +348,11 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
     return errors, warnings
 
 
-def lint(spec, records=None, root=ROOT):
-    """Errors block the run; warnings are soft guidance only."""
+def lint(spec, records=None, root=ROOT, urgency=None):
+    """Errors block the run; warnings are soft guidance only.
+
+    urgency is the North Star urgency (1 to 5) that sets the daily caps; None
+    keeps each channel record's own target. The command line reads it."""
     try:
         validate(spec, read_json(SCHEMA))
     except ValueError as exc:
@@ -271,12 +395,13 @@ def lint(spec, records=None, root=ROOT):
             if item['creative_approval_ref'] is not None:
                 approved.add(entry['sha256'])
     seen, per_day = set(), {}
+    routes = ecosystem(root)
     for i, slot in enumerate(spec['slots']):
         at = '$.slots[%d]' % i
         if slot['slot_id'] in seen:
             errors.append(finding('duplicate_slot_id', at + '.slot_id', 'slot_id must be unique', slot['slot_id']))
         seen.add(slot['slot_id'])
-        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window)
+        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window, routes, urgency, root)
         errors += more
         warnings += soft
         # Story frames are not feed posts: the calendar's stories floor governs
@@ -285,18 +410,19 @@ def lint(spec, records=None, root=ROOT):
             key = (slot['channel'], ny_time(slot['due_at']).date().isoformat())
             per_day.setdefault(key, []).append(slot['slot_id'])
     for (channel, day), ids in sorted(per_day.items()):
-        cap = daily_cap(channels.get(channel))
+        cap = daily_cap(channels.get(channel), urgency, root)
         if cap is not None and len(ids) > cap:
             errors.append(finding('posts_per_day', '$.slots', str(len(ids)) + ' scheduled ' + channel + ' slots on '
-                                  + day + ' (New York); its record allows at most ' + str(cap) + ' a day'))
+                                  + day + ' (New York); ' + ('at U' + str(urgency) + ' it takes'
+                                  if intensity.raised(urgency, root) else 'its record allows') + ' at most ' + str(cap) + ' a day'))
     for channel, test in sorted(tests.items()):
         if not any(s['channel'] == channel and s['experiment_arm'] for s in spec['slots']):
             warnings.append(finding('experiment_unused', '$.experiments', 'experiment ' + test['id'] + ' has no slot on an arm'))
     return {'errors': errors, 'warnings': warnings}
 
 
-def lint_report(spec, records=None, root=ROOT):
-    result = lint(spec, records, root)
+def lint_report(spec, records=None, root=ROOT, urgency=None):
+    result = lint(spec, records, root, urgency)
     try:
         digest = lint_digest(spec)
     except (ValueError, AttributeError):
@@ -428,7 +554,32 @@ def row(slot, stage, reason=None):
             'next': STAGES[index + 1] if index + 1 < len(STAGES) else None, 'reason': reason}
 
 
-def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None):
+def send_test_reason(slot, review, label):
+    """None while the recorded blind answer still passes against this slot's share block, else why not.
+
+    payload_sha256 does not cover the share block, so a stored pass is never
+    trusted: the reader's answer is compared again with the share block and the
+    request as they stand now (R99). A changed receiver or job, or a request the
+    answer was not given for, sends the slot back to linted for a fresh reader.
+    """
+    tested = review.get('send_test')
+    answer = tested.get('reader_answer') if isinstance(tested, dict) else None
+    if not isinstance(answer, dict):
+        return label + ' carries no reader_answer to compare again; record the send test with run send-test --answer'
+    if slot.get('share') is None:
+        return label + ' is a send test, but the slot declares no share block for it to match'
+    try:
+        result = compare_send_test(slot['share'], answer, slot_send_test_request(slot))
+    except (ValueError, KeyError, TypeError) as exc:
+        return label + ' no longer counts: ' + str(exc)
+    if result['verdict'] != 'pass':
+        return (label + ' no longer passes against this share block (' + '; '.join(result['reasons'])
+                + '); run a fresh blind reader with run send-test')
+    return None
+
+
+def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None, snack=False):
+    """snack: the slot's format is snackable, so its review is the blind send test (crew/send-test/)."""
     sid = slot['slot_id']
     if lint_reason:
         return row(slot, 'drafted', lint_reason)
@@ -441,6 +592,10 @@ def slot_status(slot, folder, lint_reason, decision, decision_reason, window=Non
         reason = label + " must carry this slot's payload_sha256; a review of another payload never counts"
     elif review is not None and not _same(review, 'slot_id', sid):
         reason = label + ' reviewed another slot'
+    elif review is not None and snack and review.get('lens') != 'send-test':
+        reason = label + ' of a snackable slot is the blind send test: lens send-test (run send-test)'
+    elif review is not None and review.get('lens') == 'send-test':
+        reason = send_test_reason(slot, review, label)
     if reason:
         return row(slot, 'linted', reason)
     if decision_reason:
@@ -484,9 +639,10 @@ def slot_status(slot, folder, lint_reason, decision, decision_reason, window=Non
     return row(slot, 'verdict')
 
 
-def status(spec, runs=None, root=ROOT):
+def status(spec, runs=None, root=ROOT, records=None):
     """Each slot's furthest stage the evidence proves, and why it stops there."""
     validate(spec, read_json(SCHEMA))
+    formats = (records or social_records(root))['format']
     folder = run_dir(spec, runs, root)
     lint_record, lint_reason = _evidence(folder / 'lint.json', 'lint.json (run lint --record)')
     if lint_record is not None:
@@ -503,7 +659,8 @@ def status(spec, runs=None, root=ROOT):
     except ValueError:
         shown = folder.name
     return {'local_only': True, 'run_id': spec['run_id'], 'evidence': shown,
-            'slots': [slot_status(slot, folder, lint_reason, decision, decision_reason, window)
+            'slots': [slot_status(slot, folder, lint_reason, decision, decision_reason, window,
+                                  snackable(formats.get(slot['format'])))
                       for slot in spec['slots']]}
 
 
@@ -544,6 +701,37 @@ def fill_drafts(spec, posts):
     return spec
 
 
+# The blind send test for a slot -------------------------------------------
+
+def send_test_review(spec, slot_id, answer=None, stage=None, assets=None):
+    """A slot's blind request, or with the reader's answer the review record run status reads.
+
+    The record's lens is send-test and it carries the slot's payload_sha256, so a
+    later edit to the words, assets or format leaves it reviewing another payload.
+    With stage and assets, the slot's assets are found by name in the assets
+    folder, checked against their sha256 and copied under blind names, with
+    request.json, into the new stage folder: the only thing the reader is given.
+    """
+    validate(spec, read_json(SCHEMA))
+    slot = next((s for s in spec['slots'] if s['slot_id'] == slot_id), None)
+    if slot is None:
+        raise ValueError('no slot ' + str(slot_id) + ' in this spec')
+    if stage is not None:
+        if answer is not None or assets is None:
+            raise ValueError('--stage needs --assets and no --answer: stage the request, then compare the answer')
+        return dict(stage_slot_send_test(slot, stage, assets), staged=str(stage))
+    request = slot_send_test_request(slot)
+    if answer is None:
+        return request
+    if slot.get('share') is None:
+        raise ValueError(slot_id + ' declares no share block to compare against')
+    if slot['payload_sha256'] != payload_sha256(slot):
+        raise ValueError(slot_id + ': payload_sha256 does not recompute; run new --from first')
+    result = compare_send_test(slot['share'], answer, request)
+    return {'slot_id': slot_id, 'verdict': result['verdict'], 'lens': 'send-test',
+            'payload_sha256': slot['payload_sha256'], 'send_test': result}
+
+
 # Command line ---------------------------------------------------------------
 
 def main(argv=None):
@@ -553,7 +741,8 @@ def main(argv=None):
     p.add_argument('--start', help='YYYY-MM-DD in New York; a week starts on its Monday')
     p.add_argument('--kind', choices=sorted(LENGTH), default='week')
     p.add_argument('--run-id')
-    p.add_argument('--from', dest='source', help='a draft spec: fill week_target and every payload_sha256')
+    p.add_argument('--from', dest='source',
+                   help='a draft spec: fill week_target, every payload_sha256 and each forward_line with a share')
     p.add_argument('--out')
     p = sub.add_parser('drafts', help="fill each slot's Buffer draft id, channel id and meta from get_post readbacks")
     p.add_argument('spec')
@@ -564,6 +753,15 @@ def main(argv=None):
         p.add_argument('--runs-dir', help='evidence root (default .scratch/runs)')
         if name == 'lint':
             p.add_argument('--record', action='store_true', help='write lint.json for run status')
+    p = sub.add_parser('send-test', help="a slot's blind send test: the request, or with --answer its review record")
+    p.add_argument('spec')
+    p.add_argument('slot')
+    p.add_argument('--answer', help="the fresh reader's JSON answer to this slot's request")
+    p.add_argument('--record', action='store_true', help='write the review record to review/<slot>.json')
+    p.add_argument('--stage', help='a new or empty folder: the assets under blind names and request.json,'
+                                   ' the only things the reader is given')
+    p.add_argument('--assets', help="with --stage: a folder holding the slot's assets by their slot names")
+    p.add_argument('--runs-dir', help='evidence root (default .scratch/runs)')
     args = parser.parse_args(argv)
     try:
         if args.action == 'new':
@@ -585,10 +783,26 @@ def main(argv=None):
             write_json(args.spec, fill_drafts(spec, posts))
             print('spec rewritten locally with ' + str(len(posts)) + ' drafts: run lint --record again')
             return 0
+
+
+        if args.action == 'send-test':
+            if args.record and not args.answer:
+                raise ValueError('--record needs --answer: only a compared answer is review evidence')
+            if args.assets and not args.stage:
+                raise ValueError('--assets is read only with --stage')
+            if args.record and args.stage:
+                raise ValueError('--record needs a compared answer, not a staged request')
+            result = send_test_review(spec, args.slot, read_json(args.answer) if args.answer else None,
+                                      args.stage, args.assets)
+            if args.record:
+                write_json(run_dir(spec, args.runs_dir) / 'review' / (args.slot + '.json'),
+                           dict(result, recorded_at=instant().isoformat()))
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+            return int(bool(args.answer) and result['verdict'] != 'pass')
         if args.action == 'status':
             print(json.dumps(status(spec, args.runs_dir), indent=2))
             return 0
-        report = lint_report(spec)
+        report = lint_report(spec, urgency=intensity.state(ROOT)['urgency'])
         if args.record:
             write_json(run_dir(spec, args.runs_dir) / 'lint.json',
                        dict(report, recorded_at=instant().isoformat()))

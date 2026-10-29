@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
-as_of: 2026-10-27
-head: 5f3485c
+as_of: 2026-10-29
+head: fb61c1d
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -22,11 +22,53 @@ The makeyourmindup growth engine: it drafts the posts that bring new readers to 
 
 Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
 
-## Where it is right now (as of 2026-10-27)
+## Where it is right now (as of 2026-10-29)
 
-<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-27", "current_source": "Native Substack Growth sources, New subscribers, trailing 7 days, all categories: no subscribers found; this bounds week-to-date to zero. Private daily-20261027/substack-seven-day-sources.txt", "urgency": 4, "urgency_reason": "0 of 25; under 40%"} --> **North Star number: U4, far behind.** No new subscribers appear in the native trailing-seven-day source report on 27 October, so week-to-date organic subscribers are zero against 25 this week. This is the displayed measurement, not proof that reporting is instantaneous or that the new posts have had time to work.
+<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-29", "current_source": "Substack Growth sources, new subscribers, 7 days (2026-10-22 to 2026-10-29), read 2026-10-29: all sources 0, organic not classified", "urgency": 4, "urgency_reason": "0 of 25; under two fifths"} --> **North Star number: U4, far behind.** 0 of 25 new publication subscribers this week from organic posts and shares, read on 29 October 2026.
 
 Lifecycle: live. The detail is in `README.md`.
+
+28 October, Wave 1 of the plan Krish approved that day ("Make Your Mind Up:
+one weekly chain that runs on time"): release is pinned to this engine's
+eight Buffer channels by channelId as well as service and name, checked
+against a read-only list of all twelve channels in the shared organisation.
+The fulltime.fm, Heartside and both yourdoghasnotes channels are refused by
+id in every release step and in social preflight, which a Buffer draft
+package passes before the daily job saves it (`engine/buffer_channels.py`).
+Content-engine's copy lint (version 2026-10-29.3, which also refuses
+"Krish's read" and "illustrative" labels and, since 29 October, his name
+anywhere in public copy) is vendored and runs in run lint, social preflight
+(captions and alt text), release (words, carried alt text and titles),
+autonomous audit repairs, drafted pack replies and the post drafts the
+Control Center loop proposes. On a route not yet verified, release sends only the run's earliest
+approved post, as that route's capability check, and holds the rest. His 28
+October rulings are recorded: go-live is "Approve each day Monday", every
+route goes through Buffer with a first-post capability check, Growth makes
+derived carousels to content-engine's standard, owns the Tuesday, Thursday,
+Saturday and Sunday lane on Instagram, TikTok and Shorts, and prepares a
+daily 10-minute engage queue. Nothing new posts yet: the per-post go-live
+reads, the pull, the manifest, the lane and the queue are Wave 2.
+The share package (built to be sent, his 28 October ruling) is merged on the
+same branch: every snackable package and run slot declares a share block (who
+sends it to whom, for which job, in what words), snackable copy carries no
+generic share ask (refused in run lint, preflight and release), and a blind
+send-test reader must name the declared receiver and job before Krish sees it
+(R99; run status compares that answer again on every read). Sends and saves
+per reach are the snackable lane's measure, a house hypothesis until MYMU's
+own dated data confirms it. Pitches, swaps and partner notes are private
+emails he sends from his own address, so they may carry his signature; every
+public draft is still refused if it names him. 376 local tests pass (29 October).
+
+28 October daily readback is partial: Buffer My organization now has 12
+connections, including other ventures; only this engine's explicit scope applies.
+Four unscheduled drafts include two labelled engine checks; no scheduled/error
+items returned. Shopping-agent LinkedIn remains an untouched Buffer draft;
+separate native publication is unknown. Codex browser navigation timed out, so
+no fresh native subscriber/follower measurements or engagement candidates are
+claimed. The local read-only Control Center directive path lacks engine
+configuration, so GA4 events remain unverified. See
+`.scratch/channel-audit/daily-20261028/REVIEW.md` for the gate packet and recovery.
+The 27 October North Star reading below remains historical, not a new zero.
 
 27 October session closeout: the existing Drive 4 Growth folder is the versioned
 distribution library, with the shopping-agent v3 PDF and copy preserved.
@@ -99,17 +141,21 @@ publication, follower growth or financial ROI.
 
 ## What changed recently
 
-- 2026-10-27 (evening) **V1 of the daily engine is built: it runs without a session, a token in a session, or the PC.** GitHub Actions holds both keys and runs everything mechanical: the Control Center loop (05:10 UTC, with a 05:40 backup), a daily key check (06:50), release of approved go-lives into Buffer every 30 minutes (exact signed bytes only, once, never LinkedIn), measurement at 07:00, 13:00 and 19:00 (per-post verdicts, Google Analytics joined on `utm_content`), and the handoff that turns the routines' Buffer drafts into one-press go-lives. Three Claude routines (make daily, plan on Sundays, watch three times a day) build assets from ten Canva templates in the "Make Your Mind Up" kit and save Buffer drafts. Lanes are machine-checked (`lanes.json`, `docs/LANES.md`). Rulings that day: derivatives of an approved piece post everywhere with no per-post sign-off, shown to him first until 29 November; new formats such as carousels need his eyes and plain, human, humble English; no session holds the engine token; cost is metered by every run. 461 tests on Python 3.9 and 3.12.
-- 2026-10-27 **The engine is rebuilt on the bulletproof architecture, phases 0 to 2** (`docs/plans/2026-10-27-engine-architecture.md`). One signed run spec per week or piece (`growth.py run new|lint|status|pack`), computed readiness, a Release Gate pinned to this engine's nine Buffer channels, the autonomy loop (plan, go-live once, his amended words, a declined check-in stops its plan), 12 crew cards with the What-Works Analyst and the Measurement Specialist, a failure register F01 to F65 and G1 to G9 and quoted rules R1 to R91, each guarded by a test (323 tests). Rulings that day: Substack Notes (from his profile, @mindmakerlive) and Threads join; sign the week with an express lane for meme posts; a full Canva brand kit by Cowork (`docs/briefs/2026-10-27-canva-brand-kit-cowork.md`); secondary targets for followers and paid subscribers; the audit authority covers Facebook and Threads; GA4 comes through Control Center, which now sends per-post readings in this engine's directive (protocol 1.10.0, krishanraja/control-center#578, merged).
+- 2026-10-29 **V1 of the daily engine is merged with main (PR #19).** GitHub Actions (L0) runs everything mechanical with no session, no token in a session and no PC: the Control Center loop (05:10 UTC, backup 05:40), a daily key check (06:50), release of approved go-lives into Buffer every 30 minutes (`release.yml`, `run autorelease`: the exact signed words, assets, `meta` and Buffer channel, once, never LinkedIn, scheduled only 5 to 90 minutes before its time, and a loud `scheduled_after_decline` alarm), measurement at 07:00, 13:00 and 19:00, and the handoff that turns saved Buffer drafts into one-press go-lives. Under main's walls L0 release pins each account by name and channelId, holds any word that fails the copy lint (text, carried alt text, titles, first comments), any share ask, and every route not yet recorded as passed, whose one capability check goes through `run release`; today no route is recorded, so L0 releases nothing yet. Lanes are L0, L2 and L3 (`lanes.json`, `docs/LANES.md`; no Claude routines, Ruling, Krish, 2026-10-29); `invariants/authority.json` holds the standing derivative approval, shown first through 29 November; carousels and captions pass the plain-English lint; the Canva kit has its own lint; `calendar/v1.json` takes daily caps only from the channel records and `intensity.json`, so Threads and X stay at one a day until those change; makers follow `docs/TASTE.md` and read Inspiration House. Buffer stays for makeyourmindup and Heartside (Krish, 29 October); the plan purchase is his click, and Essentials keeps every capability the engine uses. Failures F66 to F99; this branch's rules R92 to R97 are renumbered R101 to R106 after main's R92 to R100. Waiting on Krish from it: the `BUFFER_API_KEY` GitHub secret (`docs/SETUP-ONCE.md`; release and measure do nothing with Buffer until it is set), trashing seven unused Canva drafts in the account root, and approving `invariants/sources.json` at G-A. 602 tests on Python 3.9 and 3.12.
+- 2026-10-29 **The cloud runner sends each ask once** (plan item D2). It stopped re-proposing the four planned experiments every day: it reads Krish's decisions and its own latest earlier report from Control Center, never resends an ask he answered or one still waiting, and proposes nothing if it cannot read them. The standing W45 to W52 plan (`specs/standing-plan.json`) goes on his list once, as a plan behind strategy. The 26 October carousel pilot (`lists/pilots.json`) is reported as awaiting measurement with what closes it, until the Sunday report records its verdict.
+- 2026-10-29 **Pitches, swaps and partner notes may carry his signature.** They are private emails Krish sends himself, not published content, so `engine/packs.py` skips only the `no_name` pattern for those pack kinds; every other copy-lint pattern still runs on them. The Tuesday pitch pack no longer fails its check on the sign-off in `jobs/pitches.md`.
+- 2026-10-29 **No content names Krish** (his ruling of 28 October: "Remember, no content refers to Krish, ever."). The copy lint is re-vendored at 2026-10-29.3 with the `no_name` pattern and the `article_body` surface, which `engine/copy_lint.py` now knows; alt text (as carousel text), release titles and the Control Center loop's post drafts are linted too; the doctrine says the publication speaks as "we" and his personal accounts stay personal, never naming him. Rule R100.
+- 2026-10-29 **Review fixes on the merged branch.** Share asks are refused only where they open a sentence, except three no true sentence about other people says, so true reporting ("X removed the share button") passes; run status compares a recorded send test again with the slot's share block; `social preflight --target` checks a reused Buffer draft's get_post readback before any edit_post; release holds a snackable slot that asks for the share and holds a route whose capability check another run released; `run send-test --stage` stages a slot's assets under blind names; the copy lint reads U+2028, U+2029 and U+0085 as line ends, as content-engine does; report and numbers packs may quote held copy; rule ids run past R99.
+- 2026-10-28 **Channel lock, copy lint and the plan's rulings** (Wave 1 of the plan Krish approved on 28 October). Release and social preflight pin each Buffer channel by channelId and deny the other ventures' channels by id; an unverified route releases only its first post as the capability check; content-engine's copy lint runs in run lint, preflight, release, audit repairs and pack drafts; `docs/PUBLISHING-AUTHORITY.md`, `docs/ENGINE-BOUNDARY.md` and `docs/CAROUSEL-STANDARD.md` record "Approve each day Monday", the Buffer routes, derived carousels, the off-day lane and the 10-minute engage queue. The share package adds the share block, the share-ask lint, the blind send test and sends per reach. Rules R92 to R99.
+- 2026-10-27 **The engine is rebuilt on the bulletproof architecture, phases 0 to 2** (`docs/plans/2026-10-27-engine-architecture.md`). One signed run spec per week or piece (`growth.py run new|lint|status|pack`), computed readiness, a Release Gate pinned to this engine's eight Buffer channels, the autonomy loop (plan, go-live once, his amended words, a declined check-in stops its plan), 12 crew cards with the What-Works Analyst and the Measurement Specialist, a failure register F01 to F65 and G1 to G9 and quoted rules R1 to R91, each guarded by a test (323 tests). Rulings that day: Substack Notes (from his profile, @mindmakerlive) and Threads join; sign the week with an express lane for meme posts; a full Canva brand kit by Cowork (`docs/briefs/2026-10-27-canva-brand-kit-cowork.md`); secondary targets for followers and paid subscribers; the audit authority covers Facebook and Threads; GA4 comes through Control Center, which now sends per-post readings in this engine's directive (protocol 1.10.0, krishanraja/control-center#578, merged).
 - 2026-10-26 **Drafts follow Krish's approved voice rules from the daily directive.** Control Center protocol 1.5.0 adds `taste` to the directive; `cc start` prints the approved rules as one labelled block and keeps it in `.scratch/cc/voice-rules.txt` for the drafting steps: how a draft is written, never what it is about, never fed to a check, score or queue. None approved yet means none invented; absent means unknown.
 - 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets how hard it pushes. The number is in `docs/NORTH_STAR.md`; contract: ai-harness `contract/north-star-metric.md`.
 
 ## What is next and what is waiting on Krish
 
-- Next: once this is on main, run the first live loop: a session or PC automation drafts W45 Notes and Threads, the handoff proposes them, Krish approves, release schedules them. There are no Claude routines to create (Ruling, Krish, 2026-10-29). The Buffer value memo is due 30 October for his 31 October decision.
-- Waiting on Krish: the `BUFFER_API_KEY` GitHub secret (`docs/SETUP-ONCE.md`; release and measure do nothing with Buffer until it is set); optionally remove the wrong token variable from the Claude cloud environment; trash seven unused Canva drafts the template build left in the account root; the Buffer plan by 31 October; approving `invariants/sources.json` at G-A; whether "send" go-lives are held.
-- North Star check (2026-10-27): holds.
-- North Star check (2026-10-29): holds. Removing the Claude routines moves no number; it brings the architecture into line with Krish's 29 Oct ruling.
+- Next: for Monday 2 November, when the Monday 26 piece goes live (his transition ruling), prepare each Buffer route's first real post as a capability check for him to approve that morning, through `growth.py run release` (it holds the rest of an unverified route), and record each route that passes in `social/tools/buffer.json`; then build Wave 2 by Saturday 7 November (one go-live decision read per post, the manifest, route checks, metrics, the engage queue and the off-day lane, first posts Tuesday 10 November). The GA4 event-name readback (`invariants/ga4.json`) is still open; LinkedIn stays his own click.
+- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry: @therealkrisho (X and TikTok), krishraja1 (Threads), linkedin.com/in/krish-raja and hello@krishraja.com (nothing renamed). The architecture branch is now merged into main. New Claude cloud scheduled tasks (the architecture plan's release and measure automations) are off the table: Krish, 2026-10-29, "I want zero Claude routines. No Claude schedules of any kind in this architecture"; a new schedule here is a GitHub Actions job.
+- North Star check (2026-10-29): holds.
 
 ## Read next
 

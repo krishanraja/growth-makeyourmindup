@@ -53,7 +53,7 @@
       "format": "note",
       "play": "P1",
       "due_at": "2026-11-02T09:30:00-05:00",
-      "words": "TEST FIXTURE ONLY. One leader asked how long a pilot should run before it earns a budget line. Our answer was six weeks, with one number agreed on the first day.",
+      "words": "TEST FIXTURE ONLY. One leader asked how long a pilot should run before it earns a budget line. Our answer was six weeks, with one number agreed on the first day. More from Mindmake: https://mindmake.co/",
       "assets": [
         {
           "name": "synthetic-note-image.png",
@@ -64,13 +64,26 @@
       ],
       "link_placement": null,
       "cta": false,
-      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "forward_line": "a head of operations at a mid-size insurer sends it to her CFO, who signs off the pilot budget (settles it): \"This is the six-week rule I meant: one number agreed on day one, then we decide.\"",
+      "share": {
+        "sender": "a head of operations at a mid-size insurer",
+        "receiver": "her CFO, who signs off the pilot budget",
+        "job": "settles_it",
+        "dm_line": "This is the six-week rule I meant: one number agreed on day one, then we decide.",
+        "moment": "the quarterly budget review where the pilot question comes back",
+        "standalone": true
+      },
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
       "meta": null,
       "buffer_channel_id": null,
-      "payload_sha256": "9ccca8cf8e55feba33a3b1b3fb637d1911b31f7aec445b75cea49ae94b81a468"
+      "ecosystem_cta": {
+        "route": "mindmake",
+        "url": "https://mindmake.co/",
+        "placement": "in_post"
+      },
+      "payload_sha256": "6edf142fff3b9204217a4bae600487a430d3ddbf9a3faf3047ff0b2add71fa61"
     },
     {
       "slot_id": "w45-mon-note-2",
@@ -78,17 +91,30 @@
       "format": "note",
       "play": "P9",
       "due_at": "2026-11-02T15:00:00-05:00",
-      "words": "TEST FIXTURE ONLY. If this helped, the full piece is free to read and free to subscribe to.",
+      "words": "TEST FIXTURE ONLY. If this helped, the full piece is free to read and free to subscribe to. Mindmake runs these pilots: https://mindmake.co/",
       "assets": [],
       "link_placement": "subscribe-path",
       "cta": true,
-      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "forward_line": "a product manager at a logistics firm sends it to his engineering lead, who is scoping the next pilot (helps them): \"The free piece behind this has the six-week pilot plan we keep arguing about.\"",
+      "share": {
+        "sender": "a product manager at a logistics firm",
+        "receiver": "his engineering lead, who is scoping the next pilot",
+        "job": "helps_them",
+        "dm_line": "The free piece behind this has the six-week pilot plan we keep arguing about.",
+        "moment": "the Friday planning call where the next pilot gets scoped",
+        "standalone": true
+      },
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
       "meta": null,
       "buffer_channel_id": null,
-      "payload_sha256": "fc6c48bdde8fbf30c7a102673a0485c6a9dcde874a5dc8f9f180d47db1282237"
+      "ecosystem_cta": {
+        "route": "mindmake",
+        "url": "https://mindmake.co/",
+        "placement": "in_post"
+      },
+      "payload_sha256": "a1bbc42ebd26bfe6d0e8799a318d099ca6833544efbbe92daaff23e4f5a13052"
     },
     {
       "slot_id": "w45-tue-note-1",
@@ -96,17 +122,30 @@
       "format": "note",
       "play": "P1",
       "due_at": "2026-11-03T09:30:00-05:00",
-      "words": "TEST FIXTURE ONLY. Three questions to ask before a second AI pilot. Which one would you add?",
+      "words": "TEST FIXTURE ONLY. Three questions to ask before a second AI pilot. Which one would you add? More from Mindmake: https://mindmake.co/",
       "assets": [],
       "link_placement": null,
       "cta": false,
-      "forward_line": "TEST FIXTURE ONLY. A team lead sends this to a peer who is planning a pilot.",
+      "forward_line": "an operations director at a regional bank sends it to her COO, who is weighing a second AI pilot (helps them): \"Three questions for Thursday before we sign off a second pilot. The second one is ours.\"",
+      "share": {
+        "sender": "an operations director at a regional bank",
+        "receiver": "her COO, who is weighing a second AI pilot",
+        "job": "helps_them",
+        "dm_line": "Three questions for Thursday before we sign off a second pilot. The second one is ours.",
+        "moment": "the week before the steering group decides on a second pilot",
+        "standalone": true
+      },
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
       "meta": null,
       "buffer_channel_id": null,
-      "payload_sha256": "065a9b8d24f995c458983720ada984a6d8425b1b058fce17e47c4375572093b6"
+      "ecosystem_cta": {
+        "route": "mindmake",
+        "url": "https://mindmake.co/",
+        "placement": "in_post"
+      },
+      "payload_sha256": "c50a7b46b119cb624100e21046b550bfbaac8a7adea0443a409144511c048349"
     },
     {
       "slot_id": "w45-mon-threads-1",
@@ -114,7 +153,7 @@
       "format": "text",
       "play": null,
       "due_at": "2026-11-02T12:00:00-05:00",
-      "words": "TEST FIXTURE ONLY. We timed a pilot review at six weeks and it changed the budget talk. https://home.makeyourmindup.ai/p/test-fixture",
+      "words": "TEST FIXTURE ONLY. We timed a pilot review at six weeks and it changed the budget talk. https://home.makeyourmindup.ai/p/test-fixture The long version is on the show: https://www.youtube.com/@makeyourmind-up",
       "assets": [],
       "link_placement": "in_post",
       "cta": true,
@@ -124,7 +163,12 @@
       "buffer_draft_id": null,
       "meta": null,
       "buffer_channel_id": null,
-      "payload_sha256": "394444d2036cfcb12e56c03e46c2d07fca4a71b161e720916263c2389f5236b1"
+      "ecosystem_cta": {
+        "route": "long-video",
+        "url": "https://www.youtube.com/@makeyourmind-up",
+        "placement": "in_post"
+      },
+      "payload_sha256": "b473bcd6e65b7e3b4b277ae1520137189a29f8135c8b14d0c53686f8d79151e1"
     },
     {
       "slot_id": "w45-wed-threads-1",
@@ -142,6 +186,11 @@
       "buffer_draft_id": null,
       "meta": null,
       "buffer_channel_id": null,
+      "ecosystem_cta": {
+        "route": "long-video",
+        "url": "https://www.youtube.com/@makeyourmind-up",
+        "placement": "first_reply"
+      },
       "payload_sha256": "e12616b81dec7da296f5ed8b780b91a286946f778e5fc65223c3f68f7411d3c6"
     }
   ],

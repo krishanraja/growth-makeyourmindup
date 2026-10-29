@@ -384,7 +384,14 @@ def carried(post):
 
 
 def edit_input(post, due_at, text=None):
-    """EditPostInput for one draft: id, words, every asset, metadata, exact time."""
+    """EditPostInput for one draft: id, words, every asset, metadata, exact time.
+
+    Every word it would schedule (the text, carried alt text, titles and first
+    comments) runs content-engine's copy lint the way release does
+    (engine/run/release.py copy_errors and media_copy_errors), so a failing word
+    holds as copy_lint_refused before any mutation (Krish, 28 Oct 2026: "no
+    content refers to Krish, ever")."""
+    from .release import copy_errors, media_copy_errors  # release imports this module
     if not isinstance(post.get('id'), str) or not BUFFER_ID.match(post['id']):
         raise CarryHold('bad_post_id')
     words = post.get('text') if text is None else text
@@ -392,6 +399,8 @@ def edit_input(post, due_at, text=None):
         raise CarryHold('no_words')
     payload = {'id': post['id'], 'text': words, 'mode': SCHEDULE_MODE, 'dueAt': due_at}
     payload.update(carried(post))
+    if copy_errors(payload['text']) or media_copy_errors(payload):
+        raise CarryHold('copy_lint_refused')
     return payload
 
 

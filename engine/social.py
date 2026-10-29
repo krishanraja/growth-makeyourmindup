@@ -6,12 +6,32 @@ import json
 from pathlib import Path
 import re
 
+from .buffer_channels import channel_id_errors
+from .copy_lint import copy_lint_errors
+from .share import (StaleSendTest, compare_send_test, cta_applies, cta_errors, load_rules as load_share_rules,
+                    send_test_request, share_errors, stage_send_test)
+
 
 ROOT = Path(__file__).resolve().parents[1]
+# Built to be sent (Ruling, Krish, 2026-10-28): every snackable format names its
+# share mechanic in its delivery checks and carries this lesson.
+SHARE_MECHANIC = 'Share mechanic: '
+SHARE_LESSON = 'built-to-be-sent'
 # Personal accounts Krish has scoped for delegated cadence of approved content:
 # X and TikTok (ruling of 26 Oct 2026) and Threads (ruling of 27 Oct 2026,
 # CHANGES.md). Every other personal account stays human_publish_only.
 DELEGATED_PERSONAL = ('x', 'tiktok', 'threads', 'substack-notes')
+
+
+# The posting policy (27 Oct): Substack Notes up to two a day, every other
+# account at most one. engine/intensity.py raises a cap only up to this.
+MAX_DAILY_POSTS = {'substack-notes': 2}
+DEFAULT_MAX_DAILY_POSTS = 1
+
+
+def max_daily_posts(channel_id):
+    """The most scheduled posts a day this repository's policy lets a channel take."""
+    return MAX_DAILY_POSTS.get(channel_id, DEFAULT_MAX_DAILY_POSTS)
 
 
 def read(path):
@@ -117,7 +137,7 @@ def inventory(root=ROOT):
             raise ValueError('human-only accounts have no automatic posting quota')
         # Notes post from Krish's own Substack profile at up to two a day as he
         # signs (27 Oct); every other account stays at one a day.
-        if (obj['daily_posts_target'] or 0) > 1 and obj['id'] != 'substack-notes':
+        if (obj['daily_posts_target'] or 0) > max_daily_posts(obj['id']):
             raise ValueError('only Substack Notes has a two-a-day target')
         for name in obj['formats']:
             if name not in result['format'] or obj['id'] not in result['format'][name]['channels']:
@@ -131,6 +151,11 @@ def inventory(root=ROOT):
             local_ref(root, obj['production_reference'])
         if obj['max_assets'] is not None and obj['min_assets'] > obj['max_assets']:
             raise ValueError('inconsistent format asset bounds')
+        mechanics = [c for c in obj['delivery_checks'] if c.startswith(SHARE_MECHANIC)]
+        if obj['snackable'] and (len(mechanics) != 1 or SHARE_LESSON not in obj['lessons']):
+            raise ValueError('a snackable format names one share mechanic and the built-to-be-sent lesson: ' + obj['id'])
+        if not obj['snackable'] and mechanics:
+            raise ValueError('only a snackable format carries a share mechanic: ' + obj['id'])
         for name in obj['channels']:
             if name not in result['channel'] or obj['id'] not in result['channel'][name]['formats']:
                 raise ValueError('format/channel mismatch: ' + name)
@@ -155,6 +180,7 @@ def inventory(root=ROOT):
         for obj in result[kind].values():
             if any(name not in result['lesson'] for name in obj['lessons']):
                 raise ValueError('unknown operating lesson reference')
+    load_share_rules(root / 'social' / 'share.json')
     return result
 
 
@@ -200,19 +226,76 @@ def package_digest(package):
                                      separators=(',', ':'), allow_nan=False).encode('utf-8')).hexdigest()
 
 
-def preflight(package, as_of=None, root=ROOT):
+def draft_target_errors(package, target):
+    """Why a get_post readback is not a Buffer draft this package may overwrite with edit_post.
+
+    edit_post names only a postId, never a channelId, and the Buffer organisation
+    is shared with other ventures, so a reused draft is read with get_post first:
+    it must sit on the package's pinned channel (never another venture's), be a
+    draft and not be a post imported from the network. The same checks release
+    runs on its own edit targets (engine/run/release.py:target_errors).
+    """
+    from .run.release import BUFFER_ID, CHANNELS, _post, target_errors  # local: release imports route from here
+    if package.get('tool') != 'buffer':
+        return ['a get_post edit target applies only to a Buffer package']
+    if package.get('channel') not in CHANNELS:
+        return ['Buffer has no route for ' + str(package.get('channel')) + ' in this engine']
+    post = _post(target)
+    if not isinstance(post, dict) or not (isinstance(post.get('id'), str) and BUFFER_ID.match(post['id'])):
+        return ['edit target was not read back with get_post']
+    errors = channel_id_errors(package['channel'], post.get('channelId'))
+    errors += [e for e in target_errors({'buffer_draft_id': post['id'], 'channel': package['channel']}, post,
+                                        package['buffer_channel_id']) if e not in errors]
+    return errors
+
+
+def preflight(package, as_of=None, root=ROOT, send_test=None, target=None):
+    """Structural package checks. send_test is the blind reader's answer, when one has run.
+
+    target is a get_post readback of an existing draft the package would be
+    saved over with edit_post; it must pass draft_target_errors first.
+    """
     validate(package, read(root / 'social' / 'schemas' / 'package.schema.json'))
     decision = route(package['channel'], package['format'], package['tool'], as_of, root)
     profile = decision['channel']
     if package['account_url'] != profile['account_url'] or package['account_context'] != profile['account_context']:
         raise ValueError('wrong account identity or speaking context')
+    if package['tool'] == 'buffer':
+        # The Buffer organisation is shared with other ventures: a draft saved
+        # through the connector names this engine's pinned channelId, the same
+        # table release reads (engine/buffer_channels.py), or nothing is saved.
+        pinned = channel_id_errors(package['channel'], package['buffer_channel_id'])
+        if pinned:
+            raise ValueError(pinned[0])
+    if target is not None:
+        wrong = draft_target_errors(package, target)
+        if wrong:
+            raise ValueError('edit_post target refused: ' + '; '.join(wrong))
     if profile['publication_mode'] == 'human_publish_only' and package['proposed_due_at'] is not None:
         raise ValueError('personal account packages must remain unscheduled for human publication')
     if has_boilerplate(package['caption']):
         raise ValueError('public illustration-disclaimer boilerplate is prohibited; retain private provenance and native metadata')
+    lint = copy_lint_errors(package['caption'], 'channel_copy')
+    if lint:
+        # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels; and no
+        # content refers to Krish, ever (his name is the lint's no_name pattern).
+        raise ValueError('the caption fails the copy lint: ' + '; '.join(lint))
+    for i, asset in enumerate(package['assets'], 1):
+        # Alt text is public and carries the picture's words, so it is read as carousel_text.
+        lint = copy_lint_errors(asset['alt_text'], 'carousel_text')
+        if lint:
+            raise ValueError('asset ' + str(i) + ' alt text fails the copy lint: ' + '; '.join(lint))
     if not package['voice_review_passed'] or not package['production']['approved']:
         raise ValueError('voice review and accepted production package are required')
     f = decision['format']
+    share_rules = load_share_rules(root / 'social' / 'share.json')
+    asks = cta_errors(package['caption'], share_rules) if cta_applies(f['snackable'], share_rules) else []
+    if asks:
+        raise ValueError('generic share call to action in the copy (' + asks[0] + '); the share must come from'
+                         ' the content, not a request (social/share.json)')
+    problems = share_errors(package['share'], f['snackable'], share_rules)
+    if problems:
+        raise ValueError('share block: ' + '; '.join(problems))
     if package['production']['owner'] != f['production_owner']:
         raise ValueError('production owner does not match the selected format')
     count = len(package['assets'])
@@ -232,12 +315,26 @@ def preflight(package, as_of=None, root=ROOT):
         holds.append('personal_account_human_final_publication_required')
     if not approval['approved'] and profile['publication_mode'] == 'human_publish_only':
         holds.append('exact_publication_approval_missing')
+    # The blind answer counts only for this exact revision: its request_sha256 must be this request's.
+    request = send_test_request(package, share_rules) if f['snackable'] or package['share'] is not None else None
+    tested = None
+    if send_test is not None and package['share'] is not None:
+        try:
+            tested = compare_send_test(package['share'], send_test, request, share_rules)
+        except StaleSendTest as exc:
+            tested = {'local_only': True, 'verdict': 'stale', 'reasons': [str(exc)],
+                      'request_sha256': request['request_sha256']}
+    if f['snackable'] and (tested is None or tested['verdict'] == 'stale'):
+        holds.append('blind_send_test_required_before_krish_sees_it')
+    elif tested is not None and tested['verdict'] == 'revise':
+        holds.append('blind_send_test_revise')
     # Even a matching stored approval is not authenticated go-live permission.
     holds.append('live_identity_schema_and_authority_readback_required_before_external_action')
     return {'local_only': True, 'structurally_valid': True, 'publication_authorized': False,
             'publication_mode': profile['publication_mode'],
             'package_id': package['id'], 'payload_sha256': digest, 'assets_checked': count,
-            'holds': holds}
+            'send_test_request_sha256': request['request_sha256'] if request else None,
+            'send_test': tested, 'edit_target_checked': target is not None, 'holds': holds}
 
 
 def command(argv=None):
@@ -248,6 +345,13 @@ def command(argv=None):
     p.add_argument('channel'); p.add_argument('format'); p.add_argument('--tool', default='buffer')
     p.add_argument('--as-of')
     p = sub.add_parser('preflight'); p.add_argument('file'); p.add_argument('--as-of')
+    p.add_argument('--send-test', help="the blind reader's JSON answer for this package")
+    p.add_argument('--target', help='a get_post readback of the draft edit_post would overwrite; required before'
+                                    ' any edit_post of a reused draft')
+    p = sub.add_parser('send-test', help='print the blind request for a fresh reader, stage it, or compare its answer')
+    p.add_argument('file'); p.add_argument('--answer', help="the reader's JSON answer to compare")
+    p.add_argument('--stage', help='a new or empty folder: the assets under blind names and request.json,'
+                                   ' the only things the reader is given')
     args = parser.parse_args(argv)
     try:
         if args.action == 'check':
@@ -255,8 +359,22 @@ def command(argv=None):
                       'records': {k: len(v) for k, v in inventory().items()}}
         elif args.action == 'route':
             result = route(args.channel, args.format, args.tool, args.as_of)
+        elif args.action == 'send-test':
+            package = read(args.file)
+            validate(package, read(ROOT / 'social' / 'schemas' / 'package.schema.json'))
+            if args.answer and args.stage:
+                raise ValueError('stage the request or compare an answer, not both')
+            if args.answer:
+                if package['share'] is None:
+                    raise ValueError('this package declares no share block to compare against')
+                result = compare_send_test(package['share'], read(args.answer), send_test_request(package))
+            elif args.stage:
+                result = dict(stage_send_test(package, args.stage), staged=str(args.stage))
+            else:
+                result = send_test_request(package)
         else:
-            result = preflight(read(args.file), args.as_of)
+            result = preflight(read(args.file), args.as_of, send_test=read(args.send_test) if args.send_test else None,
+                               target=read(args.target) if args.target else None)
     except (ValueError, KeyError, OSError) as exc:
         print(json.dumps({'valid': False, 'error': str(exc)}))
         return 1

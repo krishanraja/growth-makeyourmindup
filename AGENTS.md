@@ -157,6 +157,16 @@ Growth now produces, in Canva, the formats content-engine does not cover
 parallel-production line above; content-engine keeps every other format and
 its standards, and the lane applies them by reference.
 
+28 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md` and
+`docs/PUBLISHING-AUTHORITY.md`, "28 October 2026"): Growth also makes
+derived carousels to content-engine's standard ("take over posting as well
+as creating new assets like carousels") and owns the off-day lane (Tuesday,
+Thursday, Saturday and Sunday on Instagram, TikTok and YouTube Shorts).
+Go-live is "Approve each day Monday"; every route goes through Buffer,
+pinned by channelId to this engine's eight channels, and every post passes
+content-engine's copy lint. Engagement is a daily 10-minute queue across X,
+TikTok, Instagram and LinkedIn, still prepared only. LinkedIn stays his click.
+
 Growth strategy is self-contained here. Content-engine supplies production
 assets; Control Center is the eventual unified review surface. Scheduled
 jobs may use the supported growth routes. Interactive work makes no Control
@@ -181,6 +191,15 @@ set up to be fully self contained and a completely different system. Content
 Engine needs nothing to do with it, but Control Center certainly does."
 That historical separation is clarified by the 2026-10-26 ruling above:
 independent engines, with an explicit production-to-distribution handoff.
+
+## Intensity (Ruling, Krish, 2026-10-29)
+
+"At U3 to U5, engines and Control Center may raise volume caps up to each
+repo's existing policy bounds without a signed week spec. This is volume
+only: walls unchanged." Every report leads with the gap line ("X of Y, U-n,
+short by Z"), and `engine/intensity.py` raises the daily post and engagement
+caps to the bounds in `intensity.json`, a channel's posts only to its own
+policy bound in `engine/social.py` (docs/ENGINE.md, "Intensity").
 
 ## Outreach belongs to Control Center (Ruling, Krish, 2026-10-21)
 
@@ -466,8 +485,10 @@ project". After he adds them, run steps 5 to 7.
 ## Lists this engine keeps
 
 `lists/swaps.md` (Substacks asked, with dates and replies),
-`lists/pitches.md` (shows pitched) and `lists/partners.md` (the 100-account
-partner map and each partner's step on the ask ladder). A job that adds rows commits them to
+`lists/pitches.md` (shows pitched), `lists/partners.md` (the 100-account
+partner map and each partner's step on the ask ladder) and `lists/pilots.json`
+(each amplification pilot's measured windows and What-Works verdict, which the
+Sunday report records and the GitHub runner reports; never a reading). A job that adds rows commits them to
 `main` with a message naming the job and date. If it cannot push, it puts
 the new rows in its final message so the next session can commit them.
 

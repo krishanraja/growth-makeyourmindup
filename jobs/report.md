@@ -27,6 +27,11 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    metric, minimum sample and quality guardrail. Low sample means collect
    more. Propose keep/test/fix, with uncertainty; Krish decides kill/scale.
    `growth.py experiment` guards incomplete or undersampled decisions.
+   For each pilot in `lists/pilots.json` past its judge window, record the
+   windows measured (`measured`: window and `captured_at`) and, once the
+   What-Works Analyst gives one, its verdict (works, neutral, fails or
+   insufficient) with `verdict_recorded_at`. Never a reading or a number:
+   those stay in `.scratch`. The GitHub runner reports what is recorded.
 5. Frame tests with the test record mapping in `knowledge/COPY-DOCTRINE.md`
    (weakest link first, biggest variable first). Money-model or paid tier
    ideas appear only here, as proposals with evidence. Each recommendation

@@ -21,8 +21,11 @@ import sys
 import tempfile
 
 from . import meter
-from .control_center import (ENGINE_ID, SLUG, ProtocolError, action_key, build_report, golive_review, iso,
+from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, action_key, action_errors,
+                             build_report, canonical_json, copy_open, engage_action, golive_review, iso,
                              match_decisions, objective, proposal)
+from . import intensity
+from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
 from .operations import aggregate, daily_queue, validate_observation
 
@@ -129,15 +132,26 @@ class Loop:
             result['attempt_error'] = error.code
         return result
 
-    def finish(self, build, since):
-        """build(directive) returns (report, error_code or None)."""
+    def finish(self, build, since, degrade=None):
+        """build(directive) returns (report, error_code or None). degrade(directive) rebuilds it with the
+        engagement task as one plain proposal, used once when Control Center cannot take the task."""
         outcome = {}
         try:
             self.phase = 'work'
             report, work_error = build(self.directive)
             outcome['report'] = report
             self.phase = 'report'
-            posted = self.client.post_report(report)
+            try:
+                posted = self.client.post_report(report)
+            except ProtocolError as error:
+                # A refused or unconfirmed report was not stored, so the plain one is not a resend.
+                if not (degrade and error.code in ENGAGE_DEGRADE and any(copy_open(p) for p in report['proposals'])):
+                    raise
+                self.phase = 'work'
+                report, work_error = degrade(self.directive)
+                outcome.update(report=report, degraded=error.code)
+                self.phase = 'report'
+                posted = self.client.post_report(report)
             outcome['posted'] = posted
             if posted['conflict']:
                 # The same run_id already holds a different payload. Never
@@ -191,6 +205,31 @@ def _tests_ran(check):
     return int(found.group(1)) if found else None
 
 
+PLAN_FILE = Path('specs') / 'standing-plan.json'
+PILOTS_FILE = Path('lists') / 'pilots.json'
+# This engine adopted protocol 1.1.0 on 2026-10-19; none of its decisions is older.
+DECISIONS_SINCE = '2026-10-19T00:00:00Z'
+LOOKBACK_DAYS = 14
+# Control Center serves at most 100 decisions a read, the oldest first.
+DECISIONS_PAGE = 100
+DECISIONS_PAGES = 50
+HOLD_DETAIL_MAX = 1000
+WAITING = 'Waiting on Krish, not sent again'
+ANSWERED = 'Answered by Krish, not sent again'
+UNREAD = 'Could not read what Krish was already sent, so nothing was proposed'
+VERDICTS = ('works', 'neutral', 'fails', 'insufficient')
+
+
+def standing_plan(root):
+    """The standing W45 to W52 plan as a stage plan proposal behind strategy, or None without its file."""
+    path = Path(root) / PLAN_FILE
+    if not path.exists():
+        return None
+    plan = read_json(path)
+    return proposal(plan['proposal_id'], plan['title'], plan['why'], 'advice', 'strategy', 'plan_approved',
+                    exact_payload=plan['exact_payload'], reference='docs/RUN.md, Gates', stage='plan')
+
+
 def experiment_proposals(root):
     out = []
     for exp in read_json(Path(root) / 'experiments.json')['experiments']:
@@ -204,6 +243,130 @@ def experiment_proposals(root):
     return out
 
 
+def id_holds(reason, entries):
+    """Holds naming each entry whole, as many to a hold as fit its 1000-character detail: never clipped."""
+    out, line = [], ''
+    for entry in entries:
+        if line and len(line) + 2 + len(entry) > HOLD_DETAIL_MAX:
+            out.append({'reason': reason, 'detail': line})
+            line = ''
+        line = line + ', ' + entry if line else entry
+    return out + ([{'reason': reason, 'detail': line}] if line else [])
+
+
+def _decisions_until(client, cutoff):
+    """Every decision since this engine began and decided by cutoff, read page by page, or None.
+
+    The route serves the oldest 100 after since, so the next page starts at the
+    last decided_at seen. None when the pages do not end."""
+    since, out = instant(DECISIONS_SINCE), []
+    for _ in range(DECISIONS_PAGES):
+        page = client.decisions(since)
+        out += page
+        if len(page) < DECISIONS_PAGE:
+            return [d for d in out if not _after(d, cutoff)]
+        last = max((instant(d['decided_at']) for d in page if isinstance(d, dict) and d.get('decided_at')),
+                   default=None)
+        if last is None or last <= since:
+            return None
+        since = last
+    return None
+
+
+def _after(item, cutoff):
+    try:
+        return isinstance(item, dict) and bool(item.get('decided_at')) and instant(item['decided_at']) > cutoff
+    except (ValueError, TypeError):
+        return False
+
+
+def already_sent(client, now, directive=None, mode='live'):
+    """What Krish already has from this engine: {proposal_id: decision or 'pending'}, or None.
+
+    A clean runner keeps no state, so Control Center is the ledger. Every
+    decision since this engine began and decided by now counts, whatever
+    payload it was made on, read page by page: an answered ask is never sent
+    again. The latest earlier runner report of this run's mode that read its
+    ledger carries forward what it knew: its proposals and waiting hold as
+    pending, its answered hold as answered, so a decision past the route's
+    reach still counts. A report that could not read its ledger, or of the
+    other mode, is passed over. Today's own report is never read, and a
+    decision after now is not counted, so a rerun with the same --now makes
+    the same report. None when any read fails: then nothing is proposed."""
+    known, answered = {}, {}
+    cutoff = instant(now)
+    body = directive.get('directive', {}) if isinstance(directive, dict) else {}
+    try:
+        decisions = _decisions_until(client, cutoff)
+        if decisions is None:
+            return None
+        decisions = [d for d in body.get('decisions_since') or [] if not _after(d, cutoff)] + decisions
+        for day in range(1, LOOKBACK_DAYS + 1):
+            run_id = run_id_for('runner', cutoff - dt.timedelta(days=day))
+            try:
+                found = client.read_report(run_id).get('report')
+            except ProtocolError as error:
+                if error.code == 'not_found':
+                    continue
+                raise
+            if not isinstance(found, dict):
+                return None
+            reasons = [h.get('reason') for h in found.get('holds') or [] if isinstance(h, dict)]
+            if found.get('mode') != mode or UNREAD in reasons:
+                continue
+            for item in found.get('proposals') or []:
+                if isinstance(item, dict) and isinstance(item.get('proposal_id'), str):
+                    known[item['proposal_id']] = 'pending'
+            for hold in found.get('holds') or []:
+                if not isinstance(hold, dict) or not isinstance(hold.get('detail'), str):
+                    continue
+                entries = [e.strip() for e in hold['detail'].split(',') if e.strip()]
+                if hold.get('reason') == WAITING:
+                    known.update({pid: 'pending' for pid in entries})
+                elif hold.get('reason') == ANSWERED:
+                    answered.update(e.split('=', 1) for e in entries if '=' in e)
+            break
+    except ProtocolError:
+        return None
+    known.update(answered)
+    for item in decisions:
+        if isinstance(item, dict) and isinstance(item.get('proposal_id'), str):
+            known[item['proposal_id']] = str(item.get('decision') or 'decided')
+    return known
+
+
+def pilot_lines(root, now):
+    """Each pilot's verdict as an activity line, or a hold saying what it waits for. Never a proposal."""
+    path = Path(root) / PILOTS_FILE
+    if not path.exists():
+        return [], []
+    activity, holds = [], []
+    try:
+        pilots = read_json(path)['pilots']
+        for pilot in pilots:
+            pid, verdict = pilot['pilot_id'], pilot.get('verdict')
+            if verdict is not None:
+                if verdict not in VERDICTS or not pilot.get('verdict_recorded_at'):
+                    raise ValueError(pid)
+                activity.append({'line': 'Pilot ' + pid + ' verdict: ' + verdict + ' (recorded '
+                                 + iso(pilot['verdict_recorded_at'])[:10] + ' by the What-Works Analyst)'})
+                continue
+            windows = [m['window'] for m in pilot.get('measured') or [] if m.get('captured_at')]
+            due = instant(pilot['published_at']) + dt.timedelta(hours=pilot['judge_window_hours'])
+            when = ('its judge window ended ' if due <= instant(now) else 'its judge window ends ') + iso(due)[:10]
+            if windows:
+                holds.append({'reason': 'Pilot measured, verdict not recorded yet',
+                              'detail': pid + ': measured at ' + ', '.join(windows) + '; ' + when
+                                        + '; closed by ' + pilot['closes_on']})
+            else:
+                holds.append({'reason': 'Pilot awaiting measurement',
+                              'detail': pid + ': published ' + iso(pilot['published_at'])[:10] + ' on '
+                                        + ', '.join(pilot['channels']) + '; ' + when + '; closed by ' + pilot['closes_on']})
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return [], [{'reason': 'Pilot record unreadable', 'detail': str(PILOTS_FILE)}]
+    return activity, holds
+
+
 def automation_count(root):
     """How many automations automations.json defines, or None when it cannot be read."""
     try:
@@ -213,13 +376,32 @@ def automation_count(root):
     return len(entries) if isinstance(entries, list) else None
 
 
-def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, extra_activity=()):
+RUNNER_BACKLOG = ('counted from the public feed and the committed pilot records; editions recorded only '
+                  'in the publication workspace ledger are not visible to the runner')
+
+
+def backlog_line(backlog):
+    """The report's 'Backlog remaining N' line from (inventory, reason), or None when not read."""
+    from .backlog import summary_line
+    inventory, reason = backlog if backlog else (None, 'not read on this run')
+    if inventory is None:
+        return 'Backlog remaining: not counted, ' + reason
+    return summary_line(inventory, RUNNER_BACKLOG[0].upper() + RUNNER_BACKLOG[1:])
+
+
+def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None,
+                  backlog=None, gap=None, extra_activity=()):
+    """The runner's held report. sent is already_sent(): asks Krish has, answered or pending, are
+    never sent again, and None (not read) proposes nothing. backlog is backlog.for_runner():
+    (inventory, None) or (None, reason); None means it was not read. extra_activity: lines
+    the runner adds (the web_analytics shape it kept, its own cost so far)."""
     root = Path(root)
     automations = automation_count(root)
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
     by_name = {c['name']: c for c in checks}
     failed = [c['name'] for c in checks if not c['ok']]
-    activity = []
+    # Every report leads with the gap (Ruling, Krish, 2026-10-29; engine/intensity.py).
+    activity = [{'line': intensity.gap_line(gap or intensity.state(root, now))}]
     if directive_pulled:
         activity.append({'line': "Pulled today's directive on the GitHub runner"})
     tests = by_name.get('self_test')
@@ -248,17 +430,40 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
                      + ' reader journeys, ' + str(len(experiments)) + ' experiment templates, '
                      + str(sum(e.get('status') == 'running' for e in experiments)) + ' running'})
     activity += [{'line': line} for line in extra_activity]
-    activity.append({'line': 'Posted, sent, published and spent nothing'})
+    activity.append({'line': backlog_line(backlog)})
     holds = [{'reason': 'Drafts and dashboard numbers are made only in the publication workspace',
               'detail': 'The automations defined in automations.json' + (' (' + str(automations) + ')' if automations is not None else '')
                         + ' draft and read dashboards there and report as their own runs; this runner checks the engine offline.'}]
     if failed:
         holds.append({'reason': 'Offline checks failed on the runner', 'detail': ', '.join(failed)})
+    proposals, plan, asks = [], standing_plan(root), experiment_proposals(root)
+    if sent is None:
+        holds.append({'reason': UNREAD, 'detail': 'decisions or earlier runner reports could not be read'})
+    else:
+        waiting, answered = [], []
+        for item in ([plan] if plan else []) + asks:
+            pid = item['proposal_id']
+            if pid not in sent:
+                proposals.append(item)
+            elif sent[pid] == 'pending':
+                waiting.append(pid)
+            else:
+                answered.append(pid + '=' + sent[pid])
+                if plan and pid == plan['proposal_id']:
+                    activity.append({'line': 'The standing W45 to W52 plan is answered (' + sent[pid] + '); not proposed again'})
+        count_answered = sum(1 for item in asks if sent.get(item['proposal_id'], 'pending') != 'pending')
+        if count_answered:
+            activity.append({'line': 'Experiment asks Krish has answered: ' + str(count_answered) + '; none sent again'})
+        # Each id whole, so tomorrow's runner reads every one back (already_sent).
+        holds += id_holds(WAITING, waiting) + id_holds(ANSWERED, answered)
+    pilot_activity, pilot_holds = pilot_lines(root, now)
+    activity += pilot_activity + [{'line': 'Posted, sent, published and spent nothing'}]
+    holds += pilot_holds
     objectives = [
         objective('new_subscribers', reason=WORKSPACE_ONLY + '; a GitHub runner cannot read the Substack dashboard'),
         objective('paid_boosts_usd', reason=WORKSPACE_ONLY + '; ' + NO_SPEND)]
     report = build_report(run_id, mode, now, rev or revision(root), now, 'degraded' if failed else 'held',
-                          objectives, activity, experiment_proposals(root), [], holds)
+                          objectives, activity, proposals, [], holds)
     return report, ('offline_checks_failed' if failed else None)
 
 
@@ -383,6 +588,14 @@ def item_proposal(item, job, evidence):
              'strategy': 'Review the ' + kind + ' recommendation: ' + item.get('placement', kind),
              'none': 'Check the ' + kind + ' card: ' + item.get('placement', kind)}[wall]
     why = (item.get('why_now') or 'Prepared by the ' + kind + ' job.') + ' About ' + str(item.get('minutes', 1)) + ' minutes of Krish time.'
+    if wall in ('post', 'send'):
+        # The exact words reach the public once he presses, and the envelope may not have been sealed
+        # here, so the copy lint reads them again: no eyebrows, asterisks, AI notes or take labels
+        # (Krish, 2026-10-28), and "no content refers to Krish, ever" (Krish, 2026-10-28). A hit, or a
+        # lint that cannot run, raises, and the draft is held, never proposed.
+        lint = copy_lint_errors(item['text'], 'channel_copy')
+        if lint:
+            raise ValueError('the draft fails the copy lint: ' + '; '.join(lint))
     sources = []
     for ref in item.get('evidence_ids', []):
         source = evidence.get(ref)
@@ -392,6 +605,64 @@ def item_proposal(item, job, evidence):
                     wall, event, channel=item['platform'], exact_payload=item['text'],
                     target=item.get('target_url') or item.get('target_name'), evidence=sources,
                     reference=item.get('success_check'), expires_at=item.get('expires_at'))
+
+
+ENGAGE_JOBS = ('radar',)
+# Control Center refuses or cannot take the engagement task: the same taps then go as one plain proposal.
+ENGAGE_DEGRADE = ('schema_version_unsupported', 'schema_version_unconfirmed', 'copy_open_unsupported', 'bad_request')
+
+
+def _tap(item):
+    name = NAMES.get(item['platform'], item['platform'])
+    who = item.get('target_name') or item.get('placement') or 'the thread'
+    return {'label': name + ': ' + str(who), 'text': item['text'], 'url': item.get('target_url')}
+
+
+def engagement_task(items, now, evidence, cap, plain=False):
+    """The day's engagement taps as one ask (Control Center's copy_open, protocol 1.14.0).
+
+    Returns (proposal or None, holds, minutes). Each tap is the exact words to
+    copy and the public page to open; Krish pastes and posts them himself and
+    marks them carried out. Nothing here or in Control Center posts. A tap past
+    today's cap, or one that cannot be a tap, is held with its reason. plain
+    degrades the same taps to one plain-text proposal for a Control Center
+    that cannot take the task."""
+    taps, chosen, holds = [], [], []
+    for item in items:
+        tap = _tap(item)
+        problems = action_errors({'body': 'x', 'taps': [tap]})
+        if problems:
+            holds.append({'reason': 'Engagement draft cannot be a tap', 'detail': item['item_id'] + ': ' + problems[0]})
+        elif len(taps) >= cap:
+            holds.append({'reason': "Over today's engagement cap of " + str(cap), 'detail': item['item_id']})
+        else:
+            taps.append(tap)
+            chosen.append(item)
+    if not taps:
+        return None, holds, 0
+    minutes = sum(item.get('minutes', 1) for item in chosen)
+    body = ("Today's " + str(len(taps)) + (' reply or comment' if len(taps) == 1 else ' replies or comments')
+            + ' for Krish to post himself: each tap copies the exact words and opens the public page. About '
+            + str(minutes) + ' minutes.')
+    sources = []
+    for item in chosen:
+        for ref in item.get('evidence_ids', []):
+            source = evidence.get(ref)
+            if source and isinstance(source.get('url'), str) and source['url'].startswith('https://') and http_url(source['url']):
+                sources.append({'label': source['kind'].replace('_', ' '), 'url': source['url']})
+    expiries = [instant(i['expires_at']) for i in chosen if i.get('expires_at')]
+    if plain:
+        words = '\n\n'.join(str(n) + '. ' + t['label'] + '\nOpen: ' + t['url'] + '\nCopy: ' + t['text']
+                              for n, t in enumerate(taps, 1))
+        payload = body + '\n\n' + words
+    else:
+        payload = canonical_json(engage_action(body, taps))
+    item = proposal(SLUG + ':engage:' + today(now), "Post today's " + count(len(taps), 'engagement tap'),
+                    'As many as cleared the bar today, batched as one ask. ' + body, 'advice' if plain else 'prepared',
+                    'post', 'tapped', channel=ENGAGE_CHANNEL, exact_payload=payload, evidence=sources[:12],
+                    reference='Krish marks them carried out after posting each one himself',
+                    expires_at=min(expiries) if expiries else None)
+    return item, holds, minutes
 
 
 def completion_events(rows, now):
@@ -412,13 +683,22 @@ def completion_events(rows, now):
 
 
 def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=None, completions=None,
-                     mode='live', directive_pulled=False, rev=None, root='.'):
+                     mode='live', directive_pulled=False, rev=None, root='.', gap=None, plain_taps=False):
     if job not in KINDS:
         raise ValueError('unknown job ' + str(job))
     evidence = {e['evidence_id']: e for env in envelopes for e in env.get('evidence', [])}
     selected, deferred, queue = _items(envelopes, queue, now, job)
+    gap = gap or intensity.state(root, now)
     proposals, holds, minutes = [], [], 0
+    taps = [i for i in selected if (i.get('pack_kind') or job) in ENGAGE_JOBS]
+    if taps:
+        task, more, used = engagement_task(taps, now, evidence, intensity.engagement_taps(gap['urgency'], root), plain_taps)
+        proposals += [task] if task else []
+        holds += more
+        minutes += used
     for item in selected:
+        if item in taps:
+            continue
         if len(proposals) == 10:
             holds.append({'reason': 'Over the ten proposals one report carries', 'detail': item['item_id']})
             continue
@@ -441,9 +721,19 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     goal = new_subscribers(observations, now)
     objectives = [goal, objective('paid_boosts_usd', reason=NO_SPEND[0].upper() + NO_SPEND[1:])]
     events = completion_events(completions, now)
-    activity = []
+    activity = [{'line': intensity.gap_line(gap)}]
+    if intensity.raised(gap['urgency']):
+        activity.append({'line': 'At U' + str(gap['urgency']) + ' the volume caps rise to their bounds in intensity.json: '
+                         + str(intensity.engagement_taps(gap['urgency'], root)) + ' engagement taps a day; each channel'
+                         + "'s posts stay at its own policy bound (Substack Notes two a day, every other one);"
+                         + ' walls, spend and approvals unchanged'})
     if directive_pulled:
         activity.append({'line': "Pulled today's directive before reading any source"})
+    if taps and proposals and copy_open(proposals[0]) is not None:
+        activity.append({'line': 'Batched ' + count(len(json.loads(proposals[0]['exact_payload'])['taps']), 'engagement tap')
+                         + " into one copy and open ask on Krish's list; he posts each himself"})
+    elif taps and proposals and proposals[0]['channel'] == ENGAGE_CHANNEL:
+        activity.append({'line': 'Control Center could not take the copy and open task, so the same taps went as one plain ask'})
     activity.append({'line': 'Ran the ' + job + ' job and prepared ' + count(len(proposals), 'proposal') + ' for Krish, about '
                      + str(minutes) + ' minutes of the '
                      + str(queue.get('budget_minutes', 20)) + ' minute daily budget'})
@@ -711,6 +1001,8 @@ def describe(directive):
 
 def summary(outcome, public=False, matched=None):
     lines = []
+    if outcome.get('degraded'):
+        lines.append('engagement task not taken (' + outcome['degraded'] + '); the same taps went as one plain ask')
     posted = outcome.get('posted') or {}
     if outcome.get('report'):
         lines.append('report ' + outcome['report']['run_id'] + ' ' + outcome['report']['status']
@@ -752,10 +1044,11 @@ def cli(args, root, make_client, out=print, checks=None):
         # The 05:40 UTC backup reports under its own run_id, so it never conflicts with the dispatch's report.
         run_id = args.run_id or run_id_for('runner-backup' if getattr(args, 'backup', False) else 'runner', now)
         if not args.deliver:
-            report, error = runner_report(root, run_id, now, checks(root), args.mode)
+            report, error = runner_report(root, run_id, now, checks(root), args.mode, sent={})
             out('Dry run: no Control Center call. Report ' + report['status'] + ', payload_sha256 ' + report['payload_sha256'])
             return int(bool(error))
         client = make_client()
+        from .backlog import for_runner
         seen = {}
 
         def build(directive):
@@ -763,7 +1056,10 @@ def cli(args, root, make_client, out=print, checks=None):
             keep_web_analytics(root, directive)
             seen['web'] = web_analytics_summary(web_analytics_block(directive))
             lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web']), meter.cost_line('before this report')]
-            return runner_report(root, run_id, clock(), checks(root), args.mode, True, extra_activity=lines)
+            return runner_report(root, run_id, clock(), checks(root), args.mode, True,
+                                 sent=already_sent(client, clock(), directive, args.mode),
+                                 backlog=for_runner(root, clock()),
+                                 gap=intensity.state(root, clock(), directive), extra_activity=lines)
 
         outcome = run(client, 'runner', run_id, build, now - dt.timedelta(days=7), clock)
         if 'web' in seen:
@@ -780,12 +1076,13 @@ def cli(args, root, make_client, out=print, checks=None):
     if args.cc_cmd in ('start', 'run') and voice_file.exists():
         voice_file.unlink()  # Never let yesterday's rules stand in for today's, even on a dry run.
 
-    def build(directive):
+    def build(directive, plain_taps=False):
         return workspace_report(job, run_id, clock(), _load_many(args.envelope),
                                 read_json(args.queue) if args.queue else None,
                                 [o for rows in _load_many(args.observations) for o in rows],
                                 read_json(args.completions) if args.completions else None,
-                                args.mode, directive is not None, root=root)
+                                args.mode, directive is not None, root=root,
+                                gap=intensity.state(root, clock(), directive), plain_taps=plain_taps)
 
     if not args.deliver:
         if args.cc_cmd == 'start':
@@ -822,7 +1119,7 @@ def cli(args, root, make_client, out=print, checks=None):
             out('attempt started: finish this job with growth.py cc finish --job ' + job + ' --deliver')
             return 0
     since = decisions_since(root, now)
-    outcome = loop.finish(build, since)
+    outcome = loop.finish(build, since, degrade=lambda d: build(d, plain_taps=True))
     if outcome.get('report'):
         write_json(state_path(root, 'report-' + job + '.json'), outcome['report'])
     matched = None

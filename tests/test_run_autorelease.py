@@ -15,6 +15,7 @@ import re
 import tempfile
 import threading
 import unittest
+from unittest import mock
 from unittest.mock import patch
 
 try:
@@ -27,6 +28,7 @@ from engine.run import autorelease, buffer_api
 from engine.run.autorelease import (line_digest, may_release, parse_manifest, show_before_post_until,
                                     staged_report_run_id, standing_derivative_allowed)
 from engine.run.buffer_api import Buffer, BufferAuthError, BufferError, CarryHold
+from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.run.release import BUFFER_NAME, CHANNELS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,7 +39,8 @@ PLAN = 'makeyourmindup:plan:w45-w52'
 GOLIVE = 'makeyourmindup:golive:2026-W45:week'
 P_THREADS, P_X, P_LINKEDIN, P_UNSIGNED = ('aaaaaaaaaaaaaaaaaaaaaa01', 'aaaaaaaaaaaaaaaaaaaaaa02',
                                           'aaaaaaaaaaaaaaaaaaaaaa03', 'aaaaaaaaaaaaaaaaaaaaaa09')
-CH_THREADS, CH_X, CH_LINKEDIN = ('cccccccccccccccccccccc01', 'cccccccccccccccccccccc02', 'cccccccccccccccccccccc03')
+# The pinned Buffer channelIds (engine/buffer_channels.py): main's channel lock refuses any other.
+CH_THREADS, CH_X, CH_LINKEDIN = (BUFFER_CHANNEL_ID['threads'], BUFFER_CHANNEL_ID['x'], BUFFER_CHANNEL_ID['linkedin'])
 CH_FOR = {'threads': CH_THREADS, 'x': CH_X, 'linkedin': CH_LINKEDIN}
 WORDS_THREADS = 'Synthetic fixture words for the threads slot.'
 WORDS_X = 'Synthetic fixture words for the x slot.'
@@ -152,7 +155,7 @@ def account(channel, channel_id=None):
 
 
 def line(slot_id, channel, words, draft, assets=(), mode='engine', due=DUE, meta=None, channel_id=None):
-    item = {'slot_id': slot_id, 'channel': channel, 'format': 'post', 'due_at': due, 'link_placement': None,
+    item = {'slot_id': slot_id, 'channel': channel, 'format': 'text', 'due_at': due, 'link_placement': None,
             'publish_mode': mode, 'buffer_draft_id': draft, 'words': words, 'assets': list(assets),
             'meta': meta, 'buffer_channel_id': channel_id or CH_FOR.get(channel, CH_THREADS), 'payload_sha256': None}
     item['payload_sha256'] = line_digest(item)
@@ -240,6 +243,10 @@ class AutoreleaseTests(unittest.TestCase):
         self.cc.reports, self.cc.calls, self.cc.decisions = {}, [], []
         self.buf.reset()
         self.fix = Fixture(self.cc, self.buf)
+        # The fixture's routes stand as recorded passed; test_an_unverified_route_holds proves the real record.
+        patcher = mock.patch.object(autorelease, 'route_holds', lambda slot, as_of: ([], True, '2026-11-02'))
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def run_once(self, deliver=True, now=NOW, buffer=None):
         summary, code = autorelease.autorelease(self.cc.client(), buffer or self.buf.client(), now, deliver, fetch)
@@ -281,6 +288,79 @@ class AutoreleaseTests(unittest.TestCase):
         self.assertEqual(summary['holds'], {'draft_differs_from_signed': 1})
         self.assertEqual(self.buf.posts[P_THREADS]['status'], 'draft')
         self.assertNotIn(P_THREADS, json.dumps([c['variables'] for c in self.buf.mutations()]))
+
+    def resign(self):
+        """Sign the threads and x lines again from their drafts as they now stand."""
+        posts = self.buf.posts
+        lines = [line('threads-1', 'threads', posts[P_THREADS]['text'], P_THREADS, [sha(IMAGE)],
+                      meta=meta_of(posts[P_THREADS], [sha(IMAGE)])),
+                 line('x-1', 'x', posts[P_X]['text'], P_X, meta=meta_of(posts[P_X])), self.fix.lines[2]]
+        golive = self.fix.publish(lines)
+        self.cc.decisions = [Fixture.decision(self.fix.plan, '2026-11-01T12:00:00Z'),
+                             Fixture.decision(golive, '2026-11-03T14:00:00Z')]
+
+    def test_a_word_failing_main_copy_lint_holds_before_any_edit(self):
+        # Krish, 28 Oct 2026: "Remember, no content refers to Krish, ever." L0 release runs the same
+        # copy lint as `run release` on every word it would schedule, even one he signed.
+        self.buf.posts[P_X]['text'] = 'Synthetic words: Krish Raja on the chip money.'
+        self.buf.posts[P_THREADS]['assets'][0]['image']['altText'] = 'Krish Raja holding the chart.'
+        self.resign()
+        summary, code = self.run_once()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'copy_lint_refused': 2})
+        self.assertEqual(self.buf.mutations(), [])
+        self.assertEqual((self.buf.posts[P_X]['status'], self.buf.posts[P_THREADS]['status']), ('draft', 'draft'))
+        self.assertNotIn('Krish Raja', json.dumps(summary), 'the summary carries codes, never words')
+        # The same draft with clean words and alt text schedules.
+        self.buf.posts[P_X]['text'] = WORDS_X
+        self.buf.posts[P_THREADS]['assets'][0]['image']['altText'] = 'Synthetic alt text'
+        self.resign()
+        summary, _ = self.run_once()
+        self.assertEqual(summary['slots'], {'krish_click': 1, 'scheduled': 2})
+
+    def test_an_unverified_route_holds_and_a_share_ask_holds(self):
+        # Main's R95 on the L0 path: a route not verified and fresh releases only its one capability
+        # check, through `run release`; here it holds, with no read and no edit of the draft.
+        mock.patch.stopall()
+        holds, known, _ = autorelease.route_holds(self.fix.lines[0], '2026-11-04')
+        self.assertTrue(known and holds, 'social/tools/buffer.json records no Threads text route as passed yet')
+        summary, code = self.run_once()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'route_not_verified': 2})
+        self.assertEqual(self.buf.mutations(), [])
+        self.assertEqual([c for c in self.buf.calls if c['op'] == 'GetPost'], [])
+        # Main's R99 on the L0 path: a snackable post that asks for the share holds.
+        snack = dict(self.fix.lines[1], format='note', words='Please share this with your team.')
+        self.assertTrue(autorelease.share_ask_errors(snack, snack['words']))
+        self.assertEqual(autorelease.share_ask_errors(self.fix.lines[1], WORDS_X), [])
+
+    def test_a_share_ask_in_a_snackable_line_holds_before_any_read(self):
+        lines = [dict(self.fix.lines[1], format='note', words='Please share this with your team.')]
+        run = autorelease.Run(self.buf.client(), NOW, True, fetch)
+        run.slot(lines[0], lines[0], {'decision': 'approved', 'stage': 'go_live'})
+        self.assertEqual(run.holds, {'share_ask_refused': 1})
+        self.assertEqual([c for c in self.buf.calls if c['op'] == 'GetPost'], [])
+
+    def test_carried_titles_and_first_comments_run_the_copy_lint(self):
+        # buffer_api carries a video title, a TikTok title and a first comment that `run release`
+        # never builds; edit_input lints them through release's own media_copy_errors.
+        api = self.buf.client()
+        post = api.get_post(P_X)
+        video = {'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {'title': "Krish's test"}}
+        cases = (dict(post, assets=[video]),
+                 dict(post, metadata={'__typename': 'TiktokPostMetadata', 'title': 'A chart by @TheRealKrisho',
+                                      'isAiGenerated': False}),
+                 dict(post, metadata={'__typename': 'FacebookPostMetadata', 'type': 'post',
+                                      'firstComment': 'Krish Raja wrote the long read.', 'linkAttachment': None}))
+        for case in cases:
+            with self.assertRaisesRegex(CarryHold, 'copy_lint_refused'):
+                buffer_api.edit_input(case, DUE)
+            with self.assertRaisesRegex(CarryHold, 'copy_lint_refused'):
+                api.schedule_draft(case, DUE)
+        with self.assertRaisesRegex(CarryHold, 'copy_lint_refused'):
+            buffer_api.edit_input(post, DUE, 'Signed words naming Krish.')
+        self.assertEqual(api.mutations, 0)
+        self.assertEqual(buffer_api.edit_input(post, DUE)['text'], WORDS_X)
 
     def test_one_changed_word_holds(self):
         self.buf.posts[P_X]['text'] = WORDS_X.replace('words', 'word')
@@ -335,7 +415,8 @@ class AutoreleaseTests(unittest.TestCase):
         self.assertEqual(self.buf.mutations(), [])
 
     def test_an_amended_decision_posts_his_version(self):
-        his_words = 'Synthetic words Krish amended for the threads slot.'
+        # His words never name him (no_name, Krish, 28 Oct 2026), even in a fixture.
+        his_words = 'Synthetic words he amended for the threads slot.'
         amended = [dict(self.fix.lines[0], words=his_words), self.fix.lines[2]]  # he also dropped x-1
         text = manifest(amended)
         self.cc.decisions[-1] = Fixture.decision(self.fix.golive, '2026-11-03T14:00:00Z', amended=True,
@@ -496,7 +577,7 @@ class AutoreleaseTests(unittest.TestCase):
 
     def test_a_changed_approval_after_scheduling_is_loud(self):
         self.run_once()
-        his_words = 'Synthetic words Krish amended after the first yes.'
+        his_words = 'Synthetic words he amended after the first yes.'
         text = manifest([dict(self.fix.lines[0], words=his_words), self.fix.lines[1], self.fix.lines[2]])
         self.cc.decisions.append(Fixture.decision(self.fix.golive, '2026-11-04T13:10:00Z', amended=True,
                                                   exact_payload=text, amount_usd=None,

@@ -11,6 +11,7 @@
   "guide": "social/guides/formats.md",
   "min_assets": 0,
   "max_assets": 1,
+  "snackable": false,
   "delivery_checks": [
     "A native poll asking the piece's own question in plain words; the result card, when made, reports only the counts the platform shows.",
     "The result card uses the brand kit and an approved template; the poll itself carries no image.",

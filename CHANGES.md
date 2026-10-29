@@ -16,6 +16,112 @@
   schedules of any kind in this architecture'); GitHub Actions jobs remain the
   only schedules; making is done by sessions and the PC automations under the
   same walls; the taste procedure moves to docs/TASTE.md.
+
+- 2026-10-29: "At U3 to U5, engines and Control Center may raise volume caps
+  up to each repo's existing policy bounds without a signed week spec. This
+  is volume only: walls unchanged." The engagement doctrine moves from
+  "fewer good candidates beat quota fillers" to as many as clear the bar,
+  batched as one copy and open ask on his list (docs/ENGAGEMENT-LOOP.md,
+  jobs/radar.md). The backlog (`growth.py backlog`) and the ecosystem route
+  on every run spec slot (`ecosystem_cta`) come from the same day's plan.
+
+- 2026-10-29: no content names Krish. Krish, 28 October: "Remember, no
+  content refers to Krish, ever. I still see that popping up from time to
+  time. Even articles written are not authored by Krish. My face only, for
+  assets and the video format." On 29 October he answered the questions it
+  raised. Articles speak as "We", the publication; scripts he speaks keep
+  "I". Of his personal accounts: "No, personal stays personal", so first
+  person stays there, but never his name in the text. Of another person
+  called Krish: "Yes, block it", so the name rule has no override.
+  - content-engine owns the pattern (`no_name`, copy lint version
+    2026-10-29.3, which also adds the `article_body` surface that only the
+    name rule reads). This engine re-vendored it unchanged, and its reader
+    knows the new surface, since an unknown one raises and holds every
+    release.
+  - Every public word Growth writes runs it: slot words in run lint,
+    captions and alt text in social preflight, words, carried alt text and
+    titles in release, drafted pack replies, autonomous audit repairs, and
+    each post draft the Control Center loop would propose.
+  - The publication's own lanes and proof speak as the publication ("we");
+    his personal accounts speak as him ("I"), never naming him
+    (`knowledge/COPY-DOCTRINE.md`, `docs/ACCOUNT-VOICE.md`). Buffer channel
+    names and account handles are his to change and stay as they are.
+
+- 2026-10-28: built to be sent. Krish: "for the growth repo, think about
+  virality in the content, I dont think there is enough of it at the moment.
+  that comes from the shareability from one human to another in a "you will
+  like this" kind of way. I am not talking about just saying "share this with
+  your friends" in the comments, I am talking about ensuring all the produced
+  snackable content is likelier to be shared for a specific reason."
+  - Every snackable package (meme, carousel, single image, short video, Story,
+    Note) declares a share block: a specific sender and receiver, one job from
+    a fixed list, the exact DM line the sender would type, the everyday moment
+    that brings it to mind and a standalone check
+    (`social/schemas/package.schema.json`, `social/share.json`).
+  - Generic share calls to action in snackable post copy are refused where
+    they open a sentence; three that a true sentence about other people does
+    not contain ("share it with your team", "please share", "someone needs to
+    see this") are refused anywhere. The share comes from the content, never
+    a request.
+    Whether text posts, articles and daily and radar drafts are refused too is
+    Krish's decision (`share_cta_scope` in `social/share.json`).
+  - Each snackable format names its share mechanic in its delivery checks; for
+    content-engine's formats it is a proposed hook in Growth's brief, never a
+    production standard Growth holds. `hooks.json` gains a share formula, a
+    house hypothesis like the rest.
+  - A blind send-test reader (`crew/send-test/`) sees only the post, staged
+    under blind names, and must name the declared receiver and job before
+    Krish sees it. Its answer is bound to that exact revision by
+    `request_sha256`, so a revised post needs a fresh reader. A snackable run
+    slot carries the same share block, and its review is the send test
+    (`docs/RUN.md`).
+  - Sends per reach and saves per reach become the snackable lane's primary
+    measure in What-Works, house hypotheses until MYMU's own dated data
+    confirms them.
+
+- 2026-10-28: Krish approved the plan "Make Your Mind Up: one weekly chain
+  that runs on time", and with it these rulings for this engine (his words,
+  28 October; approving the plan was his yes to recording them):
+  - Growth makes carousels: "take over posting as well as creating new
+    assets like carousels". Growth makes derived carousels to
+    content-engine's standard. This supersedes the 26 October production
+    split for carousels only (`docs/ENGINE-BOUNDARY.md`).
+  - Go-live: "Approve each day Monday". Approving a day on the Monday final
+    board authorises scheduling exactly those posts; Growth reads them back
+    and he can pull each one until its slot (`docs/PUBLISHING-AUTHORITY.md`).
+  - Routes: "buffer is connected to youtube and substack". Every route goes
+    through Buffer, and each route's first real post is a capability check
+    he approves on that Monday. LinkedIn stays his click.
+  - Never the Full Time or Heartside channels: release is pinned to this
+    engine's eight Buffer channels by channelId, and the other ventures'
+    channels in the same Buffer organisation are denied by id.
+  - Engagement: "10 min daily queue is fine, add Instagram and LinkedIn to
+    this, and make sure everything is one click copiable and the click
+    through goes precisely where i need to engage." Still prepared only:
+    he submits every reply.
+  - Copy: "don't add stupid eyebrow text and asterisks and "generated by
+    AI" and "Krish's take" verbal diahorrea like you tend to. This needs to
+    feel like a world class media channel". content-engine owns the copy
+    lint; this engine vendors it (`vendor/content-engine/copy-lint`) and
+    run lint, social preflight and release refuse any copy that hits it.
+  - The off-day lane: "I also want the Make Your Mind Up Instagram, TikTok,
+    and YouTube Shorts to post on days that are not mon/weds/fri, with
+    memes, positive uplifting AI news carousels, or simple valuable advice
+    on how to level up with AI ... the growth repo should be accountable
+    for this and this should show me quickly for approval, and when I one
+    click green light it puts it in the next available slot". And: "I'm
+    happy to plan the Tuesday, Thursday, Saturday, and Sunday content
+    within the Sunday ideas session if you give me a few options to
+    approve as you do the Mon/wed/fri".
+  - Rhythm: "record the entire week on a Sunday, but it does not go live
+    until the Monday after (8 days later)". Pieces go live Monday,
+    Wednesday and Friday of the week after recording.
+  Later the same day, on labels: "It's just the ones that
+  say "Krish's read" or "illustrative" that are stupid because they add no
+  value to the content." content-engine owns the patterns and added both
+  (copy lint version 2026-10-29.1, `take_label` and `illustration_label`);
+  this engine re-vendored that version unchanged.
+
 - 2026-10-27 (late): the engine reads Inspiration House, robustly, both ways.
   Krish: "Make sure you're wiring into the Inspiration House repository in a
   way that is incredibly robust because that's where I put in videos or

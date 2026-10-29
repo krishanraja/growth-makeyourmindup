@@ -1,7 +1,7 @@
 {
   "threads-1": {
     "id": "bbbbbbbbbbbbbbbbbbbbbb01",
-    "channelId": "cccccccccccccccccccccc02",
+    "channelId": "6adccb77778b240e2fafbe75",
     "channelService": "threads",
     "status": "scheduled",
     "text": "Synthetic Threads post for tests. What would you ask first?",
@@ -18,7 +18,7 @@
   },
   "ig-story-1": {
     "id": "aaaaaaaaaaaaaaaaaaaaaa01",
-    "channelId": "cccccccccccccccccccccc03",
+    "channelId": "6adccb3a778b240e2fafbb63",
     "channelService": "instagram",
     "status": "scheduled",
     "text": "Synthetic Story frame one.",

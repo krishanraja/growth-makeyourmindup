@@ -115,11 +115,16 @@
     },
     {
       "id": "F12",
-      "title": "Illustration boilerplate in public copy",
-      "source": "lesson public-copy-and-stories; docs/PUBLISHING-AUTHORITY.md (R43)",
-      "guard": "engine/social.py:preflight",
+      "title": "Illustration boilerplate in public copy; since 28 Oct 2026, every pattern of the copy lint",
+      "source": "lesson public-copy-and-stories; docs/PUBLISHING-AUTHORITY.md (R43); Krish's copy ruling of 28 Oct 2026 (R92; vendor/content-engine/copy-lint)",
+      "guard": "engine/social.py:preflight; engine/copy_lint.py:copy_lint; engine/run/spec.py:lint; engine/run/release.py:copy_errors",
       "tests": [
-        "test_public_illustration_boilerplate_is_rejected_without_banning_ai_topics"
+        "test_public_illustration_boilerplate_is_rejected_without_banning_ai_topics",
+        "test_copy_lint_refuses_eyebrows_asterisks_ai_notes_and_take_labels",
+        "test_every_pattern_krish_named_is_refused_where_he_named_it",
+        "test_copy_lint_is_a_lint_error_on_slot_words",
+        "test_copy_lint_holds_a_signed_slot_and_releases_the_rest",
+        "test_unreadable_copy_lint_holds_everything"
       ],
       "status": "tested"
     },
@@ -554,9 +559,9 @@
     },
     {
       "id": "F55",
-      "title": "The Buffer organisation is shared with other ventures' channels; a service alone never identifies this engine's account, so release is pinned by service and name",
-      "source": "Buffer list_channels read 2026-10-27 (engine/run/release.py BUFFER_NAME note)",
-      "guard": "engine/run/release.py:resolve_channel holds a renamed or missing channel instead of guessing",
+      "title": "The Buffer organisation is shared with other ventures' channels; a service alone never identifies this engine's account, so release is pinned by service, name and channelId, and the other ventures' channel ids are denied",
+      "source": "Buffer list_channels read 2026-10-27 and 2026-10-28 (engine/run/release.py BUFFER_NAME and engine/buffer_channels.py BUFFER_CHANNEL_ID and DENIED_CHANNELS notes); plan of 28 Oct 2026, W5; the 28 Oct channelId lock and denylist are rule R93, with their tests",
+      "guard": "engine/run/release.py:resolve_channel holds a renamed, missing, re-pointed or denied channel instead of guessing; engine/buffer_channels.py:channel_id_errors, read by release and by engine/social.py:preflight before a Buffer draft is saved; engine/run/release.py:argument_errors; engine/run/release.py:check_readback",
       "tests": [
         "test_release_is_pinned_to_this_engines_buffer_channels"
       ],
@@ -672,7 +677,7 @@
     {
       "id": "F66",
       "title": "A derivative posts before its publish board or the four-week preview, or a new format posts without its own approval",
-      "source": "CHANGES.md 2026-10-27 (evening), standing approval for derivatives (R92)",
+      "source": "CHANGES.md 2026-10-27 (evening), standing approval for derivatives (R101)",
       "guard": "engine/run/invariants.py:load_authority and engine/run/invariants.py:may_post_alone",
       "tests": [
         "test_authority_encodes_the_27_october_standing_approval",
@@ -687,7 +692,7 @@
     {
       "id": "F67",
       "title": "A workflow or job runs in no lane, an L0 job holds an action from his hands or his eyes, or a Claude schedule comes back (there are no Claude routines)",
-      "source": "CHANGES.md 2026-10-27 (evening), lanes ruling (R94); 2026-10-29, no Claude routines and no Claude schedules of any kind",
+      "source": "CHANGES.md 2026-10-27 (evening), lanes ruling (R103); 2026-10-29, no Claude routines and no Claude schedules of any kind",
       "guard": "engine/run/invariants.py:check_lanes and engine/run/invariants.py:load_lanes",
       "tests": [
         "test_every_workflow_and_job_is_in_one_lane",
@@ -702,7 +707,7 @@
     {
       "id": "F68",
       "title": "A session or a CI job holds the Control Center engine key",
-      "source": "CHANGES.md 2026-10-27 (evening), keys ruling (R93)",
+      "source": "CHANGES.md 2026-10-27 (evening), keys ruling (R102)",
       "guard": "engine/run/invariants.py:check_lanes (engine key per workflow)",
       "tests": [
         "test_the_engine_key_lives_only_on_the_github_runner"
@@ -711,8 +716,8 @@
     },
     {
       "id": "F69",
-      "title": "A posting calendar row lands in the wrong lane or format, or the resolved week misses a floor or passes a quoted cap",
-      "source": "calendar/v1.json, the V1 posting calendar (R92, R94)",
+      "title": "A posting calendar row lands in the wrong lane or format, or the resolved week misses a floor or passes a cap (a daily cap read from its channel record and intensity.json, a weekly cap quoted)",
+      "source": "calendar/v1.json, the V1 posting calendar (R101, R103)",
       "guard": "engine/run/calendar.py:lint and engine/run/calendar.py:resolve",
       "tests": [
         "test_v1_calendar_lints_clean_and_meets_its_floors",
@@ -721,6 +726,7 @@
         "test_formats_producers_and_templates_must_exist",
         "test_floors_and_caps_are_checked_on_the_resolved_week",
         "test_caps_are_quoted_from_the_corpus",
+        "test_daily_caps_come_only_from_the_channel_records_and_intensity",
         "test_a_result_card_runs_only_after_its_poll",
         "test_timezone_and_preview_date_are_checked",
         "test_calendar_lint_is_a_run_route"
@@ -730,7 +736,7 @@
     {
       "id": "F70",
       "title": "A carousel or caption is not plain English, human and humble",
-      "source": "CHANGES.md 2026-10-27 (evening) (R92); social/lessons/carousel-plain-english.json",
+      "source": "CHANGES.md 2026-10-27 (evening) (R101); social/lessons/carousel-plain-english.json",
       "guard": "engine/run/plain.py:lint_carousel and engine/run/plain.py:lint_text",
       "tests": [
         "test_good_synthetic_carousel_passes",
@@ -918,7 +924,7 @@
     {
       "id": "F83",
       "title": "doctor calls a session with no engine token not ready, or prints or uses a foreign token",
-      "source": "V1 build, 27 Oct 2026: runner hardening; no session holds the engine key (R93)",
+      "source": "V1 build, 27 Oct 2026: runner hardening; no session holds the engine key (R102)",
       "guard": "growth.py:engine_token_mode and growth.py:doctor (session mode is OK, a foreign token is a warning); growth.py:engine_client refuses a token that is not gen1_. Outside engine/, so the register cannot check these paths",
       "tests": [
         "test_no_engine_token_is_session_mode_and_ready",
@@ -931,7 +937,7 @@
     {
       "id": "F84",
       "title": "A run or a session reports no cost of its own",
-      "source": "V1 build, 27 Oct 2026: self-metering (R93: \"Same for the cost baseline\")",
+      "source": "V1 build, 27 Oct 2026: self-metering (R102: \"Same for the cost baseline\")",
       "guard": "engine/meter.py:install counts every urllib call once and engine/meter.py:cost_line prints seconds and calls only; engine/run/cost.py:self_meter reads the latest session for run cost self",
       "tests": [
         "test_one_counter_sees_every_urllib_call",
@@ -964,7 +970,7 @@
     {
       "id": "F86",
       "title": "A LinkedIn slot reaches a go-live as an engine post, or release reads or schedules a LinkedIn draft",
-      "source": "V1 build, 27 Oct 2026: L0 handoff and release; LinkedIn stays his own final click (R62, R96)",
+      "source": "V1 build, 27 Oct 2026: L0 handoff and release; LinkedIn stays his own final click (R62, R105)",
       "guard": "engine/run/handoff.py:rebuild turns every LinkedIn line to krish_click with its own digest; engine/run/autorelease.py:slot makes no call for a krish_click slot",
       "tests": [
         "test_linkedin_always_goes_in_as_krish_click",
@@ -975,7 +981,7 @@
     {
       "id": "F87",
       "title": "A new kind of post rides in a batch go-live, or derivatives are read from a key authority.json does not use",
-      "source": "V1 build, 27 Oct 2026: merge e28626f: release and handoff read derivative formats one way (R92, R97)",
+      "source": "V1 build, 27 Oct 2026: merge e28626f: release and handoff read derivative formats one way (R101, R106)",
       "guard": "engine/run/autorelease.py:derivative_formats reads the derivative classes of invariants/authority.json for both; engine/run/handoff.py:needs_own_review and engine/run/handoff.py:new_formats give every other format a go-live of its own",
       "tests": [
         "test_a_new_kind_of_post_is_its_own_go_live",

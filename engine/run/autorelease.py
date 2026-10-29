@@ -23,6 +23,13 @@ Center and Buffer and prints the plan as counts, and sends no mutation.
    what the edit will send besides the words and the time (first comment,
    titles, privacy, tags, alt text and the rest; buffer_api.signed_meta). It
    must equal the payload_sha256 the engine signed.
+   A route not verified and fresh in social/tools/buffer.json holds as
+   `route_not_verified` (its one capability check goes through `run release`),
+   and a snackable post that asks for the share as `share_ask_refused`.
+   Every word the edit would schedule (the text, carried alt text, titles
+   and first comments) runs content-engine's copy lint as `run release` does
+   (buffer_api.edit_input, through release.copy_errors and
+   release.media_copy_errors); a failing word holds as `copy_lint_refused`.
 3. Match, still a draft, due more than five minutes ahead: one editPost to
    customScheduled at the signed due_at, carrying the whole draft forward,
    then a fresh readback that must say scheduled at that time, in those
@@ -73,7 +80,8 @@ from engine.control_center import (APPROVED_ORIGIN, RUN_ID, Client, ProtocolErro
 from engine.core import calendar_date, instant, read_json, today
 from engine.run import buffer_api
 from engine.run.buffer_api import Buffer, BufferAuthError, BufferError, CarryHold
-from engine.run.release import BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, account_hold, slot_digest
+from engine.run.release import (BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, account_hold, route_holds,
+                                share_ask_errors, slot_digest)
 from engine.run.spec import LENGTH, ny_midnight
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -476,6 +484,16 @@ class Run:
             # Further out it stays a draft with no read and no edit: a No, an
             # amendment or a changed file before then stops it.
             return self.count('not_yet_due')
+        # Main's walls, as `run release` holds them (R95, R99): a route not yet
+        # verified and fresh in social/tools/buffer.json releases only its one
+        # capability check, which goes through `run release` on the Monday he
+        # approves it; here it holds until the route is recorded as passed. A
+        # snackable post never asks for the share.
+        unverified, _, _ = route_holds(signed, instant(self.now).date().isoformat())
+        if unverified:
+            return self.hold('route_not_verified')
+        if share_ask_errors(signed, signed['words']):
+            return self.hold('share_ask_refused')
         post, code = self._read(signed['buffer_draft_id'])
         if code:
             return self.hold(code)
