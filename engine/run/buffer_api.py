@@ -4,7 +4,8 @@ It reads posts and turns one signed draft into a post scheduled at an exact
 time. It has no immediate-publish path and no removal path: the only mutation
 it can send is editPost with mode customScheduled and an exact dueAt, on a
 post that is still a draft, carrying the draft's whole payload forward (an
-edit is revalidated as a whole post, lesson F01).
+edit is revalidated as a whole post, lesson F01). The maker's one draft save
+lives apart, in engine/run/buffer_drafts.py.
 
 It never logs or raises with post text, URLs or the key: errors carry a
 lower_snake code only.
@@ -471,19 +472,47 @@ def signed_meta(post, hashes):
 def download_sha256(url, cap=ASSET_CAP, timeout=ASSET_TIMEOUT, loopback_for_tests=False):
     """sha256 and size of the bytes at url, read fresh, capped. Never sends a key.
     Any failure raises BufferError with a code; the caller holds."""
+    digest, size, _ = download_facts(url, cap, timeout, loopback_for_tests)
+    return digest, size
+
+
+def file_type(head):
+    """A file's extension from its first bytes (png, jpg, gif, webp, mp4, mov, webm), or None for anything else
+    (an HTML page, a document): a mock is only ever a picture or a video."""
+    if head.startswith(b'\x89PNG\r\n\x1a\n'):
+        return 'png'
+    if head.startswith(b'\xff\xd8\xff'):
+        return 'jpg'
+    if head[:4] == b'GIF8':
+        return 'gif'
+    if head[:4] == b'RIFF' and head[8:12] == b'WEBP':
+        return 'webp'
+    if head[4:8] == b'ftyp':
+        return 'mov' if head[8:12] == b'qt  ' else 'mp4'
+    if head.startswith(b'\x1a\x45\xdf\xa3'):
+        return 'webm'
+    return None
+
+
+def download_facts(url, cap=ASSET_CAP, timeout=ASSET_TIMEOUT, loopback_for_tests=False):
+    """(sha256, size, extension) of the bytes at url, read fresh and capped; the extension is file_type of
+    the first bytes.
+    Never sends a key. Any failure raises BufferError with a code; the caller holds."""
     if not isinstance(url, str) or not (url.startswith('https://') or (loopback_for_tests and LOOPBACK.match(url))):
         raise BufferError('asset_url_refused')
     handlers = [_HttpsRedirectOnly(loopback_for_tests)]
     if loopback_for_tests:
         handlers.append(urllib.request.ProxyHandler({}))
     request = urllib.request.Request(url, method='GET', headers={'Accept': '*/*'})
-    digest, size = hashlib.sha256(), 0
+    digest, size, head = hashlib.sha256(), 0, b''
     try:
         with urllib.request.build_opener(*handlers).open(request, timeout=timeout) as response:
             while True:
                 chunk = response.read(1 << 16)
                 if not chunk:
                     break
+                if len(head) < 16:
+                    head += chunk[:16 - len(head)]
                 size += len(chunk)
                 if size > cap:
                     raise BufferError('asset_too_large')
@@ -494,4 +523,4 @@ def download_sha256(url, cap=ASSET_CAP, timeout=ASSET_TIMEOUT, loopback_for_test
         raise BufferError('asset_download_failed') from None
     if size == 0:
         raise BufferError('asset_download_failed')
-    return digest.hexdigest(), size
+    return digest.hexdigest(), size, file_type(head)
