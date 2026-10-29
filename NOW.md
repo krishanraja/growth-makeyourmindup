@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-10-29
-head: fb61c1d
+head: a4bd50f
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -154,7 +154,7 @@ publication, follower growth or financial ROI.
 ## What is next and what is waiting on Krish
 
 - Next: for Monday 2 November, when the Monday 26 piece goes live (his transition ruling), prepare each Buffer route's first real post as a capability check for him to approve that morning, through `growth.py run release` (it holds the rest of an unverified route), and record each route that passes in `social/tools/buffer.json`; then build Wave 2 by Saturday 7 November (one go-live decision read per post, the manifest, route checks, metrics, the engage queue and the off-day lane, first posts Tuesday 10 November). The GA4 event-name readback (`invariants/ga4.json`) is still open; LinkedIn stays his own click.
-- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry: @therealkrisho (X and TikTok), krishraja1 (Threads), linkedin.com/in/krish-raja and hello@krishraja.com (nothing renamed). The architecture branch is now merged into main. New Claude cloud scheduled tasks (the architecture plan's release and measure automations) are off the table: Krish, 2026-10-29, "I want zero Claude routines. No Claude schedules of any kind in this architecture"; a new schedule here is a GitHub Actions job.
+- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake);  the Buffer plan purchase (his click: he keeps Buffer for makeyourmindup and Heartside, 29 October; Essentials keeps every capability the engine uses, Full Time is added at its launch); whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry: @therealkrisho (X and TikTok), krishraja1 (Threads), linkedin.com/in/krish-raja and hello@krishraja.com (nothing renamed). The architecture branch is now merged into main. New Claude cloud scheduled tasks (the architecture plan's release and measure automations) are off the table: Krish, 2026-10-29, "I want zero Claude routines. No Claude schedules of any kind in this architecture"; a new schedule here is a GitHub Actions job.
 - North Star check (2026-10-29): holds.
 
 ## Read next
