@@ -311,14 +311,27 @@ repository is public. It uploads no artifact. A missing secret or variable
 stops the job with an error and nothing reported.
 
 **Each ask once** (plan item D2, 2026-10-29). Before it reports, the runner
-reads what Krish already has: every decision since 2026-10-19 and the latest
-earlier runner report within 14 days, including that report's
-"Waiting on Krish, not sent again" hold (`already_sent`). A clean runner keeps
-no state, so Control Center is the ledger. An ask he answered (approved,
-declined or done, on any payload) is never sent again; one still waiting is
-named in the waiting hold and not resent; today's own report is never read,
-so a rerun replays. If any read fails, nothing is proposed and the hold says
-so. The standing W45 to W52 plan (`specs/standing-plan.json`, docs/RUN.md
+reads what Krish already has (`already_sent`). A clean runner keeps no state,
+so Control Center is the ledger. It reads every decision since 2026-10-19,
+page by page, because the route serves only the oldest 100 after `since`; a
+decision dated after the run's own time is not counted. It also reads the
+latest earlier runner report of the same mode within 14 days that read its
+own ledger. That report's proposals and its "Waiting on Krish, not sent
+again" holds count as pending, and its "Answered by Krish, not sent again"
+holds (`id=decision`) count as answered, so a decision the route no longer
+reaches still counts. A report of the other mode (a synthetic run never
+counts for a live one), or one that could not read its ledger, is passed
+over. Each hold names whole ids, as many as fit its 1,000 characters, and
+starts another when they do not; an id is never clipped. An ask he answered
+(approved, declined or done, on any payload) is never sent again; one still
+waiting is named in a waiting hold and not resent. Today's own report is
+never read, so a rerun with the same `--now` makes the same report and
+replays; a rerun at a later time changes `observed_at`, and may see a newer
+decision, so Control Center keeps the first report and the attempt is
+journaled as a conflict. If any read fails, or the decision pages do not
+end, nothing is proposed and the hold says so. Fourteen days in a row
+without a readable ledger would lose what it carried, and the asks would go
+again. The standing W45 to W52 plan (`specs/standing-plan.json`, docs/RUN.md
 "Gates") goes once as `stage: "plan"` behind `strategy`; its words are frozen
 there so the digest he approves is the one every go-live names, and a changed
 plan is a new `proposal_id`. Each amplification pilot in `lists/pilots.json`

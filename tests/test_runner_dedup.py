@@ -52,13 +52,19 @@ def holds(report, reason):
 class FakeClient:
     """Answers decisions and report reads from memory; any listed failure raises."""
 
-    def __init__(self, decisions=(), reports=None, fail=None):
+    def __init__(self, decisions=(), reports=None, fail=None, paged=False):
         self._decisions, self._reports, self._fail, self.reads = list(decisions), dict(reports or {}), fail, []
+        self._paged = paged
 
     def decisions(self, since):
         if self._fail == 'decisions':
             raise ProtocolError('server_error', 500)
-        return copy.deepcopy(self._decisions)
+        if not self._paged:
+            return copy.deepcopy(self._decisions)
+        # As Control Center serves them: after since, oldest first, at most 100.
+        rows = sorted((d for d in self._decisions if instant(d['decided_at']) > instant(since)),
+                      key=lambda d: instant(d['decided_at']))
+        return copy.deepcopy(rows[:100])
 
     def read_report(self, run_id):
         self.reads.append(run_id)
@@ -99,7 +105,7 @@ class AlreadySentTests(unittest.TestCase):
         older = run_id_for('runner', instant(NOW).replace(day=10))
         client = FakeClient([{'proposal_id': EXPERIMENTS[0], 'decision': 'declined', 'decided_at': NOW}],
                             {YESTERDAY: earlier, older: {'proposals': [{'proposal_id': 'makeyourmindup:old'}], 'holds': []}})
-        known = already_sent(client, instant(NOW))
+        known = already_sent(client, instant(NOW), mode='synthetic')
         self.assertEqual(known[EXPERIMENTS[0]], 'declined')
         self.assertEqual(known[PLAN_ID], 'pending')
         self.assertNotIn('makeyourmindup:old', known)  # Stops at the latest report it finds.
@@ -110,11 +116,68 @@ class AlreadySentTests(unittest.TestCase):
                                 sent={})[0]
         day_two = runner_report(ROOT, 'makeyourmindup:2026-10-15:runner', NOW, checks(), 'synthetic', True, 'fixture',
                                 sent=already_sent(FakeClient(reports={'makeyourmindup:2026-10-14:runner': day_one}),
-                                                  instant('2026-10-15T18:00:00Z')))[0]
+                                                  instant('2026-10-15T18:00:00Z'), mode='synthetic'))[0]
         self.assertEqual(day_two['proposals'], [])
         # No report on the 16th; the 17th still finds every ask in the 15th's waiting hold.
-        known = already_sent(FakeClient(reports={'makeyourmindup:2026-10-15:runner': day_two}), instant(NOW))
+        known = already_sent(FakeClient(reports={'makeyourmindup:2026-10-15:runner': day_two}), instant(NOW),
+                             mode='synthetic')
         self.assertEqual({pid for pid, state in known.items() if state == 'pending'}, {PLAN_ID, *EXPERIMENTS})
+
+    def test_an_unread_day_is_passed_over_so_nothing_is_sent_again(self):
+        # Day one sends the plan and the experiments; day two cannot read its ledger.
+        day_one = runner_report(ROOT, 'makeyourmindup:2026-10-15:runner', NOW, checks(), 'synthetic', True, 'fixture',
+                                sent={})[0]
+        day_two = runner_report(ROOT, 'makeyourmindup:2026-10-16:runner', NOW, checks(), 'synthetic', True, 'fixture',
+                                sent=None)[0]
+        client = FakeClient(reports={'makeyourmindup:2026-10-15:runner': day_one,
+                                     'makeyourmindup:2026-10-16:runner': day_two})
+        known = already_sent(client, instant(NOW), mode='synthetic')
+        self.assertEqual({pid for pid, state in known.items() if state == 'pending'}, {PLAN_ID, *EXPERIMENTS})
+        day_three = runner_report(ROOT, YESTERDAY, NOW, checks(), 'synthetic', True, 'fixture', sent=known)[0]
+        self.assertEqual(day_three['proposals'], [])
+
+    def test_a_report_of_the_other_mode_never_counts(self):
+        synthetic = runner_report(ROOT, YESTERDAY, NOW, checks(), 'synthetic', True, 'fixture', sent={})[0]
+        known = already_sent(FakeClient(reports={YESTERDAY: synthetic}), instant(NOW), mode='live')
+        self.assertEqual(known, {})  # A live run still sends the plan a synthetic run reported.
+        live = runner_report(ROOT, YESTERDAY, NOW, checks(), 'live', True, 'fixture', sent={})[0]
+        older = run_id_for('runner', instant(NOW).replace(day=15))
+        known = already_sent(FakeClient(reports={YESTERDAY: synthetic, older: live}), instant(NOW), mode='live')
+        self.assertEqual(known[PLAN_ID], 'pending')
+
+    def test_decisions_are_read_page_by_page_past_the_route_s_100(self):
+        noise = [{'proposal_id': 'makeyourmindup:pack:' + str(n), 'decision': 'done',
+                  'decided_at': '2026-10-20T00:%02d:%02dZ' % (n // 60, n % 60)} for n in range(250)]
+        late = {'proposal_id': PLAN_ID, 'decision': 'approved', 'decided_at': '2026-10-27T12:00:00Z'}
+        known = already_sent(FakeClient(noise + [late], paged=True), instant('2026-10-29T12:00:00Z'))
+        self.assertEqual(known[PLAN_ID], 'approved')
+        self.assertEqual(len(known), 251)
+
+    def test_answered_asks_are_carried_forward_past_the_route_s_reach(self):
+        answered = runner_report(ROOT, YESTERDAY, NOW, checks(), 'synthetic', True, 'fixture',
+                                 sent={PLAN_ID: 'approved', EXPERIMENTS[0]: 'declined'})[0]
+        self.assertEqual(holds(answered, cc_loop.ANSWERED), [PLAN_ID + '=approved, ' + EXPERIMENTS[0] + '=declined'])
+        # The decisions themselves are no longer served; the hold still names them.
+        known = already_sent(FakeClient(reports={YESTERDAY: answered}), instant(NOW), mode='synthetic')
+        self.assertEqual((known[PLAN_ID], known[EXPERIMENTS[0]]), ('approved', 'declined'))
+        report = runner_report(ROOT, 'makeyourmindup:2026-10-17:runner', NOW, checks(), 'synthetic', True, 'fixture',
+                               sent=known)[0]
+        self.assertEqual(report['proposals'], [])
+
+    def test_a_decision_after_now_is_not_counted_so_a_rerun_matches(self):
+        client = FakeClient([{'proposal_id': PLAN_ID, 'decision': 'approved', 'decided_at': '2026-10-17T20:00:00Z'}])
+        self.assertNotIn(PLAN_ID, already_sent(client, instant('2026-10-17T18:00:00Z')))
+        self.assertEqual(already_sent(client, instant('2026-10-17T21:00:00Z'))[PLAN_ID], 'approved')
+
+    def test_a_long_waiting_list_is_split_never_clipped(self):
+        many = ['makeyourmindup:experiment:' + 'x' * 25 + str(n) for n in range(60)]
+        held = cc_loop.id_holds(cc_loop.WAITING, many)
+        self.assertGreater(len(held), 1)
+        self.assertTrue(all(len(h['detail']) <= 1000 for h in held))
+        report = build_report(YESTERDAY, 'synthetic', NOW, 'fixture', NOW, 'held',
+                              [objective('new_subscribers', reason='Fixture: not measured')], [], [], [], held)
+        known = already_sent(FakeClient(reports={YESTERDAY: report}), instant(NOW), mode='synthetic')
+        self.assertEqual(set(known), set(many))
 
     def test_a_failed_read_returns_none(self):
         self.assertIsNone(already_sent(FakeClient(fail='decisions'), instant(NOW)))
@@ -131,6 +194,7 @@ class RunnerDedupTests(unittest.TestCase):
         self.assertEqual(ids(report), [PLAN_ID])
         self.assertEqual(report['schema_version'], '1.1.0')
         self.assertEqual(holds(report, cc_loop.WAITING), [', '.join(EXPERIMENTS)])
+        self.assertEqual(holds(report, cc_loop.ANSWERED), [])
 
     def test_pending_plan_is_not_sent_again(self):
         report = self.report({PLAN_ID: 'pending', **{e: 'pending' for e in EXPERIMENTS}})

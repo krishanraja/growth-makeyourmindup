@@ -195,7 +195,12 @@ PILOTS_FILE = Path('lists') / 'pilots.json'
 # This engine adopted protocol 1.1.0 on 2026-10-19; none of its decisions is older.
 DECISIONS_SINCE = '2026-10-19T00:00:00Z'
 LOOKBACK_DAYS = 14
+# Control Center serves at most 100 decisions a read, the oldest first.
+DECISIONS_PAGE = 100
+DECISIONS_PAGES = 50
+HOLD_DETAIL_MAX = 1000
 WAITING = 'Waiting on Krish, not sent again'
+ANSWERED = 'Answered by Krish, not sent again'
 UNREAD = 'Could not read what Krish was already sent, so nothing was proposed'
 VERDICTS = ('works', 'neutral', 'fails', 'insufficient')
 
@@ -223,21 +228,66 @@ def experiment_proposals(root):
     return out
 
 
-def already_sent(client, now, directive=None):
+def id_holds(reason, entries):
+    """Holds naming each entry whole, as many to a hold as fit its 1000-character detail: never clipped."""
+    out, line = [], ''
+    for entry in entries:
+        if line and len(line) + 2 + len(entry) > HOLD_DETAIL_MAX:
+            out.append({'reason': reason, 'detail': line})
+            line = ''
+        line = line + ', ' + entry if line else entry
+    return out + ([{'reason': reason, 'detail': line}] if line else [])
+
+
+def _decisions_until(client, cutoff):
+    """Every decision since this engine began and decided by cutoff, read page by page, or None.
+
+    The route serves the oldest 100 after since, so the next page starts at the
+    last decided_at seen. None when the pages do not end."""
+    since, out = instant(DECISIONS_SINCE), []
+    for _ in range(DECISIONS_PAGES):
+        page = client.decisions(since)
+        out += page
+        if len(page) < DECISIONS_PAGE:
+            return [d for d in out if not _after(d, cutoff)]
+        last = max((instant(d['decided_at']) for d in page if isinstance(d, dict) and d.get('decided_at')),
+                   default=None)
+        if last is None or last <= since:
+            return None
+        since = last
+    return None
+
+
+def _after(item, cutoff):
+    try:
+        return isinstance(item, dict) and bool(item.get('decided_at')) and instant(item['decided_at']) > cutoff
+    except (ValueError, TypeError):
+        return False
+
+
+def already_sent(client, now, directive=None, mode='live'):
     """What Krish already has from this engine: {proposal_id: decision or 'pending'}, or None.
 
     A clean runner keeps no state, so Control Center is the ledger. Every
-    decision since this engine began counts, whatever payload it was made on:
-    an answered ask is never sent again. A proposal in the latest earlier
-    runner report, or carried forward in its waiting hold, with no decision
-    is still pending. Today's own report is never read, so a rerun replays
-    the same payload. None when any read fails: then nothing is proposed."""
-    known = {}
+    decision since this engine began and decided by now counts, whatever
+    payload it was made on, read page by page: an answered ask is never sent
+    again. The latest earlier runner report of this run's mode that read its
+    ledger carries forward what it knew: its proposals and waiting hold as
+    pending, its answered hold as answered, so a decision past the route's
+    reach still counts. A report that could not read its ledger, or of the
+    other mode, is passed over. Today's own report is never read, and a
+    decision after now is not counted, so a rerun with the same --now makes
+    the same report. None when any read fails: then nothing is proposed."""
+    known, answered = {}, {}
+    cutoff = instant(now)
     body = directive.get('directive', {}) if isinstance(directive, dict) else {}
     try:
-        decisions = list(body.get('decisions_since') or []) + client.decisions(instant(DECISIONS_SINCE))
+        decisions = _decisions_until(client, cutoff)
+        if decisions is None:
+            return None
+        decisions = [d for d in body.get('decisions_since') or [] if not _after(d, cutoff)] + decisions
         for day in range(1, LOOKBACK_DAYS + 1):
-            run_id = run_id_for('runner', instant(now) - dt.timedelta(days=day))
+            run_id = run_id_for('runner', cutoff - dt.timedelta(days=day))
             try:
                 found = client.read_report(run_id).get('report')
             except ProtocolError as error:
@@ -246,15 +296,24 @@ def already_sent(client, now, directive=None):
                 raise
             if not isinstance(found, dict):
                 return None
+            reasons = [h.get('reason') for h in found.get('holds') or [] if isinstance(h, dict)]
+            if found.get('mode') != mode or UNREAD in reasons:
+                continue
             for item in found.get('proposals') or []:
                 if isinstance(item, dict) and isinstance(item.get('proposal_id'), str):
                     known[item['proposal_id']] = 'pending'
             for hold in found.get('holds') or []:
-                if isinstance(hold, dict) and hold.get('reason') == WAITING and isinstance(hold.get('detail'), str):
-                    known.update({pid.strip(): 'pending' for pid in hold['detail'].split(',') if pid.strip()})
+                if not isinstance(hold, dict) or not isinstance(hold.get('detail'), str):
+                    continue
+                entries = [e.strip() for e in hold['detail'].split(',') if e.strip()]
+                if hold.get('reason') == WAITING:
+                    known.update({pid: 'pending' for pid in entries})
+                elif hold.get('reason') == ANSWERED:
+                    answered.update(e.split('=', 1) for e in entries if '=' in e)
             break
     except ProtocolError:
         return None
+    known.update(answered)
     for item in decisions:
         if isinstance(item, dict) and isinstance(item.get('proposal_id'), str):
             known[item['proposal_id']] = str(item.get('decision') or 'decided')
@@ -347,20 +406,22 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     if sent is None:
         holds.append({'reason': UNREAD, 'detail': 'decisions or earlier runner reports could not be read'})
     else:
-        waiting = []
+        waiting, answered = [], []
         for item in ([plan] if plan else []) + asks:
             pid = item['proposal_id']
             if pid not in sent:
                 proposals.append(item)
             elif sent[pid] == 'pending':
                 waiting.append(pid)
-            elif plan and pid == plan['proposal_id']:
-                activity.append({'line': 'The standing W45 to W52 plan is answered (' + sent[pid] + '); not proposed again'})
-        answered = sum(1 for item in asks if sent.get(item['proposal_id'], 'pending') != 'pending')
-        if answered:
-            activity.append({'line': 'Experiment asks Krish has answered: ' + str(answered) + '; none sent again'})
-        if waiting:
-            holds.append({'reason': WAITING, 'detail': ', '.join(waiting)})
+            else:
+                answered.append(pid + '=' + sent[pid])
+                if plan and pid == plan['proposal_id']:
+                    activity.append({'line': 'The standing W45 to W52 plan is answered (' + sent[pid] + '); not proposed again'})
+        count_answered = sum(1 for item in asks if sent.get(item['proposal_id'], 'pending') != 'pending')
+        if count_answered:
+            activity.append({'line': 'Experiment asks Krish has answered: ' + str(count_answered) + '; none sent again'})
+        # Each id whole, so tomorrow's runner reads every one back (already_sent).
+        holds += id_holds(WAITING, waiting) + id_holds(ANSWERED, answered)
     pilot_activity, pilot_holds = pilot_lines(root, now)
     activity += pilot_activity + [{'line': 'Posted, sent, published and spent nothing'}]
     holds += pilot_holds
@@ -794,7 +855,7 @@ def cli(args, root, make_client, out=print, checks=None):
         client = make_client()
         outcome = run(client, 'runner', run_id,
                       lambda d: runner_report(root, run_id, clock(), checks(root), args.mode, True,
-                                              sent=already_sent(client, clock(), d)),
+                                              sent=already_sent(client, clock(), d, args.mode)),
                       now - dt.timedelta(days=7), clock)
         for line in summary(outcome, public=True):
             out(line)
