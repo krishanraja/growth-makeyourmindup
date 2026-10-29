@@ -51,8 +51,9 @@ ready concept with its hash. The Sunday report job carries it when
 `.scratch/mix/plan-<Monday>.json` exists (`engine/cc_loop.py`, `mix_proposal`).
 His yes approves each ready concept at its hash; deleting or changing a
 concept's line in his amended version stops that concept (`mix.approved_map`,
-`mix.amended_out`); changing any other line approves none until a plan
-carrying his change is approved; his no approves none and stops them all.
+`mix.amended_out`), under every later version too; changing or adding any
+other line approves none until a plan carrying his change is approved; his no
+on any part of any version approves none and stops them all.
 
 Then `growth.py run new --start <Monday> --mix <plan file>` puts the ready
 concepts in the week's spec. In the loop's own run, right after it reads his

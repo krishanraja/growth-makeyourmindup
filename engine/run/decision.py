@@ -233,6 +233,16 @@ def cc_readback(week_of, parts, cfg, decisions, ledger=None, now=None):
     every = sorted({c['concept_id'] for _, record in parts for c in (record or {}).get('concepts') or []
                     if isinstance(c, dict) and isinstance(c.get('concept_id'), str)})
     stops, _ = _stops(items, decisions, ledger)
+    # His no on any part of the week, in any version (a part a later version dropped included), stops it (R111).
+    ever = sorted({d['proposal_id'] for d in decisions or [] if isinstance(d, dict)
+                   and mix_rules.week_part(d.get('proposal_id'), week_of)} - {item.get('proposal_id') for item in items})
+    if any(_declined(other, decisions, stops) for other in ever):
+        sha = items[0].get('payload_sha256') if items else None
+        return {'schema': RECORD, 'proposal_id': pid, 'week_of': week_of,
+                'plan_payload_sha256': sha if isinstance(sha, str) and SHA_HEX.match(sha) else None,
+                'read_at': iso(now), 'decided_at': None, 'amended': False, 'amended_sha256': None, 'approved': {},
+                'stopped_concepts': every, 'changed_concepts': [], 'plan_lines_changed': 0, 'hold': None,
+                'decision': 'declined'}, None
     for item in items:
         if _declined(item.get('proposal_id'), decisions, stops):
             # Read first, before any part is trusted: his no on one part stops every concept of the week.

@@ -138,8 +138,9 @@ def version_run_id(week_label, number):
     return SLUG + ':mixplan:' + week_label + ':' + str(number)
 
 
-def claim_run_id(key):
-    return SLUG + ':claimed:' + hashlib.sha256(key.encode('utf-8')).hexdigest()[:32]
+def claim_run_id(proposal_id):
+    """One claim per go-live, whatever decision it acted under: a go-live acts once (review 3, S4)."""
+    return SLUG + ':claimed:' + hashlib.sha256(proposal_id.encode('utf-8')).hexdigest()[:32]
 
 
 # Writing -----------------------------------------------------------------------

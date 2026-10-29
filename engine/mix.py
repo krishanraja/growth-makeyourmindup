@@ -318,6 +318,14 @@ def proposal_id(week_of):
     return SLUG + ':mix:%d-W%02d' % (year, week)
 
 
+def week_part(pid, week_of):
+    """True when pid is any part of the week's plan, in any version: the plan id itself or it with :p<n>.
+
+    His no on any of them stops the week for good, whatever later versions carry (R111)."""
+    base = proposal_id(week_of)
+    return isinstance(pid, str) and (pid == base or (pid.startswith(base + ':p') and pid[len(base) + 2:].isdigit()))
+
+
 def _channels(names):
     names = list(names)
     if sorted(names) == sorted(CHANNEL_NAMES):
@@ -414,13 +422,13 @@ WALLS_LINE = 'Walls: spend 0; no comments, follows or messages.'
 
 def _terms(mix, channels):
     return ('Concepts. Your yes approves each ready concept below at its hash: its idea, its claim, the channels'
-            ' named and its mock files. A post made from it may then go out on those channels with no further'
-            ' ask, only in its format above, with only its mock files and its claim word for word. Each post'
+            ' named and its mock files. A post made from it may then go out on those channels, once on each a week,'
+            ' with no further ask, only in its format above, with only its mock files and its claim word for word. Each post'
             ' still needs a passing review of its own exact words and room under its channel\'s daily cap when it'
             ' goes out (at most ' + _caps_line(mix, channels) + ' a day), and must pass copy lint, the share rule, the channel lock and, on a route not yet'
             ' verified, the one capability check; a post that fails any of these is held, never posted. Delete'
-            ' or change a concept\'s line and that concept and every post from it stop. Change any other line and'
-            ' no concept is approved until a plan carrying your change is approved. Your no stops them all.'
+            ' or change a concept\'s line and that concept and every post from it stop. Change or add any other'
+            ' line and no concept is approved until a plan carrying your change is approved. Your no stops them all.'
             ' LinkedIn stays your click.')
 
 
@@ -586,10 +594,20 @@ def plan_lines_changed(mix, cfg, approved_text):
 
 
 def lines_changed(engine_text, approved_text):
-    """How many of the engine's own non-concept lines his version changed or dropped (any part's words)."""
+    """How many plan lines his version changed, dropped or added (any part's words).
+
+    The engine's own non-concept lines he changed or dropped count, and so does every
+    line he added that is not his edit of a concept's own line (amended_out stops that
+    concept): a term he writes in ("nothing on X this week") is his, and the engine
+    cannot enforce it, so it holds the week like any other changed term (R112)."""
     kept = {_line(line) for line in str(approved_text).split('\n')}
-    ours = [line for line in str(engine_text).split('\n') if line.strip() and not line.startswith('- ')]
-    return sum(1 for line in ours if _line(line) not in kept)
+    engine_lines = [line for line in str(engine_text).split('\n') if line.strip()]
+    ours = {_line(line) for line in engine_lines}
+    dropped = sum(1 for line in engine_lines if not line.startswith('- ') and _line(line) not in kept)
+    concept_ids = {line[2:].split(' (', 1)[0] for line in engine_lines if line.startswith('- ')}
+    added = sum(1 for line in str(approved_text).split('\n') if line.strip() and _line(line) not in ours
+                and not (line.startswith('- ') and line[2:].split(' (', 1)[0] in concept_ids))
+    return max(dropped, added)
 
 
 # Learning -------------------------------------------------------------------

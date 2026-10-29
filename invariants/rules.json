@@ -1478,6 +1478,48 @@
         "test_the_date_is_read_from_the_file",
         "test_a_new_kind_of_post_is_its_own_go_live"
       ]
+    },
+    {
+      "id": "R111",
+      "statement": "His no on any part of a week's plan, in any version and at any time, stops every concept of that week for good, and a concept he deleted or edited in any amended yes stays stopped.",
+      "source_file": "CHANGES.md",
+      "quote": "His no, or a stop on a concept, stops all of its posts.",
+      "enforced_by": [
+        "engine/mix.py:week_part",
+        "engine/run/autorelease.py:week_state",
+        "engine/run/autorelease.py:amended_away",
+        "engine/run/decision.py:cc_readback"
+      ],
+      "tests": [
+        "test_a_no_on_a_part_a_later_version_dropped_still_stops_the_week",
+        "test_a_concept_he_stopped_in_an_earlier_version_stays_stopped"
+      ]
+    },
+    {
+      "id": "R112",
+      "statement": "A line he adds to his amended yes on a mix plan is a term of his; the engine cannot enforce it, so no concept is approved until a plan carrying it is approved.",
+      "source_file": "CHANGES.md",
+      "quote": "I just need to be in control of the idea and the mocks",
+      "enforced_by": [
+        "engine/mix.py:lines_changed"
+      ],
+      "tests": [
+        "test_a_line_he_adds_to_his_amended_yes_holds_every_concept"
+      ]
+    },
+    {
+      "id": "R113",
+      "statement": "A concept goes out at most once on each channel in a New York week: a second Buffer draft of it on that channel holds, and the mock he opens from the ask is a file he approves.",
+      "source_file": "CHANGES.md",
+      "quote": "three or four a day per channel, no piece twice on a channel in a week",
+      "enforced_by": [
+        "engine/run/autorelease.py:first_of_concept",
+        "engine/run/handoff.py:check_mock_links"
+      ],
+      "tests": [
+        "test_one_concept_posts_once_per_channel_a_week",
+        "test_a_mock_link_must_be_one_of_the_files_he_approves"
+      ]
     }
   ]
 }

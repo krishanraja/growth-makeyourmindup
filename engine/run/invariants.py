@@ -16,7 +16,7 @@ RULE_FIELDS = ('id', 'statement', 'source_file', 'quote', 'enforced_by', 'tests'
 FAILURE_FIELDS = ('id', 'title', 'source', 'guard', 'tests', 'status')
 STATUSES = ('tested', 'doc-only', 'process', 'open', 'superseded', 'pending-build')
 # F01 to F54 and G1 to G9 are the plan appendix; F55 onwards were learned after it.
-LAST_F = 119
+LAST_F = 130
 FAILURE_IDS = (tuple('F{:02d}'.format(n) for n in range(1, LAST_F + 1))
                + tuple('G{}'.format(n) for n in range(1, 10)))
 CREW_FIELDS = ('id', 'name', 'owns', 'channels', 'formats', 'lint', 'check', 'card', 'lens', 'w45')

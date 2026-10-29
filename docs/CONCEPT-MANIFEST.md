@@ -22,16 +22,19 @@ each run's `decision.json` and spec signature. `growth.py run decide SPEC` does
 the same for a run spec made later. Nothing else writes them, and never by
 hand.
 
-- His no on the plan, on any digest at any time, or a stop on it in the
+- His no on the plan, on any digest at any time, on any part of any
+  version (a part a later version dropped included), or a stop on it in the
   go-live ledger stops every concept. It is read first, before anything
   about the plan file is trusted. A stop never lifts.
 - His yes on the plan's exact `payload_sha256` approves each ready concept.
 - His amended yes, when `amended_sha256` recomputes, approves each ready
   concept whose line stands in his version exactly; a line he deleted or
   changed stops that concept (`stopped_concepts`; changed ones also in
-  `changed_concepts`). If he changed any other line of the plan (a cap, a
-  channel, the slots, the walls), nothing is approved: his terms cannot be
-  enforced from the engine's plan (`concept_hold` `amended_plan_terms`).
+  `changed_concepts`), and stays stopped under every later version. If he
+  changed any other line of the plan (a cap, a channel, the slots, the
+  walls), or added one ("nothing on X this week"), nothing is approved: his
+  terms cannot be enforced from the engine's plan (`concept_hold`
+  `amended_plan_terms`).
 - A stale yes, an amendment that does not recompute or an undated decision
   approves nothing.
 
@@ -78,7 +81,9 @@ The concept part:
   carry on it, as the approved plan states} (`engine/mix.py` `ceiling`). The
   cap counts every scheduled post on the channel across every run, signed or
   derived. Release enforces the lower of this and the live cap
-  (`engine/intensity.py` `daily_cap`); an executor never exceeds either.
+  (`engine/intensity.py` `daily_cap`): no concept post goes out past either.
+  A post he signs one by one is his own call and is never held by the cap;
+  it is counted first, so concept posts make room for it.
 - `stopped_concepts`, `changed_concepts`: concept ids. A stopped concept holds
   every post made from it, including one signed alone.
 
@@ -140,12 +145,29 @@ part from Control Center readbacks, bound by digest, every run.
   `concept_id` and `review`; the handoff rebuilds it from its Buffer draft
   and reports the review at `makeyourmindup:review:<payload_sha256[:12]>`
   (the full sha in the record), listed in that New York day's index
-  (`makeyourmindup:derived:<day>:<n>`). It is never a go-live.
+  (`makeyourmindup:derived:<day>:<n>`, each entry with its `concept_id`
+  and `buffer_draft_id`). It is never a go-live. The review is the maker's
+  own, attested by the dispatch and bound to the post's exact
+  `payload_sha256`; it is not an independent judge.
+- Mock links. Each mock view link in a part's evidence is downloaded by the
+  handoff and must hash to one of its concept's `mock_sha256`, so the
+  picture he opens is the file he approves (`mock_link_differs_from_mock`
+  refuses the plan).
 - The checks, in order: a `concept_hold` or an unresolved stop holds every
-  derived slot loudly; then on the draft read fresh, release's own
+  derived slot loudly; his no on the week is read next, before every other
+  gate, and once he has said no to a plan or a check-in, every post of a
+  stopped week (this one and next) still to come is checked each run, so
+  one still scheduled is loud at once (`scheduled_after_decline`); a
+  concept's second Buffer draft on one channel that week holds
+  (`concept_once_per_channel_week`); then on the draft read fresh, release's own
   `concepts.authority` (placement, mock files, the claim, not stopped),
   `concept_post_hold` (the review at the rebuilt digest, judged by
   `spec.review_reason`; the daily cap counted from every post scheduled on
   the channel that New York day in Buffer, plus each post he signed for it),
   copy lint, share asks, the route and the channel lock; then the draft
-  digest, meta, format shape and the 5 to 90 minute window.
+  digest, meta, format shape and the 5 to 90 minute window. A draft more
+  than 30 minutes past its time is no longer read: loud once, then quiet.
+  A newer plan version he has not answered holds quietly, like a first one.
+- The local `run release plan` counts the day from a fresh Buffer
+  `list_posts` readback too (`--scheduled`); without one, a concept post
+  holds (`concept_daily_cap_unknown`).

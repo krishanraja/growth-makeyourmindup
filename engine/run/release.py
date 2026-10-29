@@ -988,7 +988,7 @@ def concept_post_hold(slot, decision, review, caps, per_day, formats=None):
 
 def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None,
                  other_checks=None, stopped_proposals=(), unresolved_stops=(), reviews=None, caps=None,
-                 other_scheduled=None):
+                 other_scheduled=None, buffer_scheduled=None):
     """Arguments for signed, unreleased slots only, once per slot.
 
     asset_paths maps slot_id to its ordered local files; without them a slot
@@ -1005,6 +1005,10 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
     over this run's ledger, other runs' scheduled releases (other_scheduled,
     a list of {channel, due_at}) and the posts Krish signed one by one in this
     spec. Either missing holds the post: his signature is no longer the cap.
+    The day is counted from Buffer too (buffer_scheduled, a fresh list_posts
+    readback of scheduled, sending and sent posts on the pinned channels), so a
+    post L0 autorelease scheduled counts here as it does there (review 3, S5);
+    with no such read a concept post holds (concept_daily_cap_unknown).
     """
     if not isinstance(spec, dict) or not isinstance(spec.get('slots'), list):
         raise ValueError('run spec needs a slots list')
@@ -1040,8 +1044,20 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
     for slot in spec['slots']:
         if by_krish.get(slot['slot_id']) == slot['payload_sha256'] and slot['slot_id'] not in released_here \
                 and not is_draft(slot) and slot['due_at']:
-            scheduled.append({'channel': slot['channel'], 'due_at': slot['due_at']})
+            scheduled.append({'channel': slot['channel'], 'due_at': slot['due_at'],
+                              'buffer_draft_id': slot.get('buffer_draft_id')})
+    # Buffer's own posts on the pinned channels, once each; what this repo's ledgers or his slots name and
+    # Buffer already holds is not counted twice.
+    pinned = {cid: channel for channel, cid in BUFFER_CHANNEL_ID.items()}
+    in_buffer = set()
+    for post in buffer_scheduled or []:
+        if isinstance(post, dict) and post.get('status') in ('scheduled', 'sending', 'sent') \
+                and post.get('channelId') in pinned and post.get('id') not in in_buffer:
+            in_buffer.add(post.get('id'))
+            scheduled.append({'channel': pinned[post['channelId']], 'due_at': post.get('dueAt'), 'buffer': True})
     for entry in scheduled:
+        if not entry.get('buffer') and (entry.get('post_id') or entry.get('buffer_draft_id')) in in_buffer - {None}:
+            continue
         day = day_of(entry)
         if day and entry.get('channel'):
             per_day[(entry['channel'], day)] = per_day.get((entry['channel'], day), 0) + 1
@@ -1117,6 +1133,9 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
         by_concept = sid not in by_krish
         if by_concept:
             reason = concept_post_hold(slot, decision, reviews.get(sid), caps, per_day, formats)
+            if not reason and not is_draft(slot) and buffer_scheduled is None:
+                reason = ('concept_daily_cap_unknown: no fresh Buffer read of the day (--scheduled), so a post'
+                          ' L0 autorelease scheduled could not be counted')
             if reason:
                 hold(reason)
                 continue
@@ -1379,7 +1398,7 @@ def other_scheduled(root, run_id):
         for entry in released.values():
             if isinstance(entry, dict) and entry.get('scheduled') is not False:
                 found.append({'channel': entry.get('channel'), 'due_at': entry.get('due_at'),
-                              'planned_at': entry.get('planned_at')})
+                              'planned_at': entry.get('planned_at'), 'post_id': entry.get('post_id')})
     return found
 
 
@@ -1455,6 +1474,8 @@ def main(argv=None, root=None):
     p.add_argument('--assets', help='folder of fresh downloads of each asset url, made under .scratch just before release')
     p.add_argument('--channels', help='the live list_channels readback: a list of {id, service}')
     p.add_argument('--targets', help='slot_id to a fresh get_post of its buffer_draft_id')
+    p.add_argument('--scheduled', help="a fresh list_posts readback (scheduled, sending, sent) on this engine's pinned"
+                   " channels for the release days; a concept post holds without it")
     p.add_argument('--now')
     c = sub.add_parser('check')
     c.add_argument('spec'); c.add_argument('--readback', required=True)
@@ -1480,7 +1501,8 @@ def main(argv=None, root=None):
                                       other_capability_checks(root, spec['run_id']), stopped_plans(root),
                                       unresolved_stops(root), run_reviews(spec, root),
                                       concept_caps(intensity.state(root)['urgency'], root),
-                                      other_scheduled(root, spec['run_id']))
+                                      other_scheduled(root, spec['run_id']),
+                                      read_json(args.scheduled) if args.scheduled else None)
                 if result['calls']:
                     write_json(ledger_path, result['ledger'])
                 if result['holds']:

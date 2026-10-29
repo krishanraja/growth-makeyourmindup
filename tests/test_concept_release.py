@@ -55,12 +55,21 @@ def small_plan():
                     urgency=4)
 
 
+def stage_fetch(url):
+    """The fixture's downloads: each synthetic mock view link serves the first mock file (handoff.check_mock_links)."""
+    prefix = 'https://drive.google.com/synthetic-view/'
+    if url.startswith(prefix):
+        return url[len(prefix):], 10  # the synthetic view of a mock serves exactly that mock
+    return fetch(url)
+
+
 def dispatch_of(plan, links=True):
     """The growth-mix-plan client_payload: the plan file's own fields (ten top-level keys at most)."""
     body = {key: copy.deepcopy(plan[key]) for key in handoff.MIX_KEYS}
     for concept in body['concepts']:
-        if links:
-            concept['mock_links'] = ['https://drive.google.com/synthetic-view/' + concept['concept_id']]
+        if links and concept['mock_sha256']:
+            # A link shows one of the files he approves; a concept with none has no link (check_mock_links).
+            concept['mock_links'] = ['https://drive.google.com/synthetic-view/' + concept['mock_sha256'][0]]
     return body
 
 
@@ -83,7 +92,7 @@ class Stage:
         buf.posts[P_DERIVED] = self.post
 
     def handoff(self, event, payload, now=PLANNED):
-        summary, code = handoff.handoff(event, payload, self.cc.client(), self.buf.client(), now, True, fetch, ROOT,
+        summary, code = handoff.handoff(event, payload, self.cc.client(), self.buf.client(), now, True, stage_fetch, ROOT,
                                         str(Path(self.tmp) / 'handoff.json'))
         return summary, code
 
@@ -164,7 +173,7 @@ class ConceptReleaseTests(unittest.TestCase):
         self.assertEqual(items[0]['exact_payload'], mix.payload_text(self.stage.plan, mix.load()),
                          'the words he reads are the plan file the loop would ask, recomputed by the runner')
         self.assertEqual(items[0]['evidence'][0]['url'],
-                         'https://drive.google.com/synthetic-view/' + self.stage.concept['concept_id'])
+                         'https://drive.google.com/synthetic-view/' + self.stage.concept['mock_sha256'][0])
         self.assertIn(cc_records.version_run_id('2026-W46', 1), self.cc.reports)
         self.stage.decide(items[0])
         self.stage.hand_derived()
@@ -335,7 +344,9 @@ class ConceptReleaseTests(unittest.TestCase):
         self.assertEqual(code, 0, summary)
         self.assertIn(cc_records.version_run_id('2026-W46', 2), self.cc.reports)
         summary, code = self.release()
-        self.assertEqual((code, summary['derived']['weeks']), (1, {'2026-W46': 'stale_approval'}), summary)
+        # A newer version waits for his answer like a first one: held, quietly (review 3, S6).
+        self.assertEqual((code, summary['derived']['weeks']), (0, {'2026-W46': 'stale_approval'}), summary)
+        self.assertEqual(summary['holds'], {'concept_not_approved': 1}, summary)
         self.assertEqual(self.buf.mutations(), [])
         # The same plan sent again is the same version: nothing new is reported.
         before = len(self.cc.reports)

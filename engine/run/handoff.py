@@ -876,7 +876,9 @@ def derived_reports(records, now, root):
              ' schedules it once its concept is approved', 'Posted, sent, published and spent nothing'], now, rev))
         day = ny_time(record['slot']['due_at']).date().isoformat()
         days.setdefault(day, []).append({'payload_sha256': record['payload_sha256'],
-                                         'due_at': record['slot']['due_at'], 'channel': record['slot']['channel']})
+                                         'due_at': record['slot']['due_at'], 'channel': record['slot']['channel'],
+                                         'concept_id': record['slot']['concept_id'],
+                                         'buffer_draft_id': record['slot']['buffer_draft_id']})
     return reports, {day: sorted(entries, key=lambda e: (instant(e['due_at']), e['payload_sha256']))
                      for day, entries in sorted(days.items())}
 
@@ -918,6 +920,24 @@ def deliver_index(cc, day, entries, now, root, summary):
 
 
 # The weekly ideas board (growth-mix-plan) --------------------------------------------------------
+
+def check_mock_links(mix, links, fetch):
+    """Every mock link he opens from the ask is one of the files he approves (review 3, S7).
+
+    Each link is downloaded fresh and must hash to one of its concept's mock_sha256,
+    so the picture shown and the hash bound are the same file. A link that cannot be
+    read, or reads as another file, refuses the whole plan: nothing is half shown."""
+    by_id = {c['concept_id']: c for c in mix['concepts']}
+    for cid, urls in sorted(links.items()):
+        mocks = set(by_id[cid]['mock_sha256'])
+        for url in urls:
+            try:
+                got = fetch(url)
+            except (BufferError, CarryHold):
+                raise PayloadRejected('mock_link_unreadable') from None
+            if (got[0] if isinstance(got, tuple) else got) not in mocks:
+                raise PayloadRejected('mock_link_differs_from_mock')
+
 
 def part_record(mix, number, parts, group):
     """What a plan part's report carries beside its proposal: its concepts, whole, and the week's targets."""
@@ -994,6 +1014,7 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             raise PayloadRejected('unknown_event')
         if event == MIX_PLAN:
             mix, links, cfg = validate_mix_plan(payload, root)
+            check_mock_links(mix, links, fetch or (lambda url: buffer_api.download_sha256(url)))
             try:
                 reports, version = mix_reports(mix, links, cfg, now, root)
             except ValueError:

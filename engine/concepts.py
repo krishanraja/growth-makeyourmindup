@@ -97,9 +97,24 @@ def match_errors(slot, concept, formats=None):
     strange = [h for h in used if h not in mocks]
     if strange:
         out.append(str(len(strange)) + ' asset(s) are not the approved mock files (a re-render is a new hash and needs a new approval)')
-    if collapse(concept['claim']) not in collapse(slot['words']):
+    if not carries(concept['claim'], slot['words']):
         out.append("the words do not carry the concept's approved claim word for word")
     return out
+
+
+def carries(claim, words):
+    """True when words carry the claim word for word: as whole words, so "10% of pilots" is not in "110% of pilots"."""
+    claim, words = collapse(claim), collapse(words)
+    if not claim:
+        return False
+    start = words.find(claim)
+    while start != -1:
+        before = words[start - 1] if start else ''
+        after = words[start + len(claim):start + len(claim) + 1]
+        if not (claim[0].isalnum() and before.isalnum()) and not (claim[-1].isalnum() and after.isalnum()):
+            return True
+        start = words.find(claim, start + 1)
+    return False
 
 
 def concept_errors(concept):

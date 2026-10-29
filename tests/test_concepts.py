@@ -82,13 +82,14 @@ class ReleaseByConcept(unittest.TestCase):
         self.spec['signature']['concepts_digest'] = concepts.concepts_digest(self.decision.get('concepts') or {})
         self.spec['signature']['concept_proposal_id'] = MIX_PLAN
 
-    def plan(self, stopped=(), unresolved=(), reviews=None, caps=None, other=None, ledger=None):
+    def plan(self, stopped=(), unresolved=(), reviews=None, caps=None, other=None, ledger=None, buffer=()):
         paths = {s['slot_id']: [self.dir / a['name'] for a in s['assets']] for s in self.spec['slots']}
         if reviews is None:
             reviews = {s['slot_id']: send_test_pass(s) for s in self.spec['slots'] if s.get('share')}
         return release.release_plan(self.spec, self.decision, ledger, paths, self.channels, NOW, self.targets,
                                     stopped_proposals=stopped, unresolved_stops=unresolved, reviews=reviews,
-                                    caps=dict(CAPS) if caps is None else caps, other_scheduled=other)
+                                    caps=dict(CAPS) if caps is None else caps, other_scheduled=other,
+                                    buffer_scheduled=None if buffer is None else list(buffer))
 
     def holds(self, result):
         return {h['slot_id']: h['hold'] for h in result['holds']}
@@ -190,6 +191,24 @@ class ReleaseByConcept(unittest.TestCase):
         self.assertTrue(hold.startswith('concept_daily_cap_unknown'), hold)
         entry = self.plan()['ledger']['released']['tiktok-photo-1']
         self.assertEqual(entry['due_at'], self.slot['due_at'], 'the ledger records the day it lands on')
+
+    def test_the_cap_counts_what_buffer_holds_so_l0_posts_count_here(self):
+        # Review 3, S5: posts L0 autorelease scheduled live only in Buffer; `run release` counts them from a
+        # fresh list_posts readback, and without one a concept post holds rather than guess the day.
+        pinned = release.BUFFER_CHANNEL_ID['tiktok']
+        day = [{'id': 'c%023d' % n, 'channelId': pinned, 'dueAt': '2026-11-03T13:30:00Z', 'status': 'scheduled'}
+               for n in range(4)]
+        hold = self.holds(self.plan(buffer=day))['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_daily_cap_reached'), hold)
+        self.assertEqual(self.holds(self.plan(buffer=day[:3])), {})
+        self.assertEqual(self.holds(self.plan(buffer=day[:3] + [day[0]])), {}, 'one Buffer post counts once')
+        elsewhere = [dict(post, channelId='d' * 24) for post in day]
+        self.assertEqual(self.holds(self.plan(buffer=elsewhere)), {}, 'another channel is not this cap')
+        hold = self.holds(self.plan(buffer=None))['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_daily_cap_unknown'), hold)
+        # A post in another run's ledger that Buffer already holds is not counted twice.
+        ledger = [{'channel': 'tiktok', 'due_at': '2026-11-03T08:30:00-05:00', 'post_id': post['id']} for post in day[:3]]
+        self.assertEqual(self.holds(self.plan(other=ledger, buffer=day[:3])), {})
 
     def test_the_cap_his_plan_states_is_kept_under_a_higher_live_cap(self):
         # decision.json concept_daily_caps is the most a day the approved plan stated; release keeps the lower.

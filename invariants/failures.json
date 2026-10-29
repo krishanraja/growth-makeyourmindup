@@ -1363,6 +1363,117 @@
       "status": "tested"
     },
     {
+      "id": "F120",
+      "title": "His no on a part of the week's plan was forgotten once a later, shorter version dropped that part",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:week_state reads a decline on every part id of the week in any version (engine/mix.py:week_part); engine/run/decision.py:cc_readback does the same",
+      "tests": [
+        "test_a_no_on_a_part_a_later_version_dropped_still_stops_the_week"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F121",
+      "title": "A line he added to his amended yes was ignored, so every concept was approved under the engine's terms, not his",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/mix.py:lines_changed counts every line he added that is not his edit of a concept's own line, so his term holds the week (amended_plan_terms)",
+      "tests": [
+        "test_a_line_he_adds_to_his_amended_yes_holds_every_concept"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F122",
+      "title": "A concept he stopped by deleting or editing its line in an earlier version went out once a later version re-listed it",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:amended_away unions the concepts he deleted or edited in every amended yes on the week, read from the words each was made on",
+      "tests": [
+        "test_a_concept_he_stopped_in_an_earlier_version_stays_stopped"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F123",
+      "title": "One approved concept could go out several times on one channel the same day",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:first_of_concept: one Buffer draft per concept, channel and New York week; index entries carry concept_id and buffer_draft_id (engine/run/handoff.py:derived_reports)",
+      "tests": [
+        "test_one_concept_posts_once_per_channel_a_week"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F124",
+      "title": "A post scheduled for later in a declined week was alarmed only near its time, and a stale route hid the alarm",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:derived_lane reads a stopped week's every post still to come once he has declined a plan or check-in; engine/run/autorelease.py:derived reads the stop before every other gate",
+      "tests": [
+        "test_a_declined_week_with_a_post_scheduled_for_later_is_loud_now"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F125",
+      "title": "A go-live claimed under one decision acted again under a later one",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/cc_records.py:claim_run_id is per go-live (proposal_id); engine/run/autorelease.py:seed_claims finds a claim made under any decision",
+      "tests": [
+        "test_a_go_live_claimed_under_an_earlier_decision_never_acts_again"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F126",
+      "title": "The local run release cap could not see posts L0 autorelease scheduled in Buffer",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/release.py:release_plan counts the day from a fresh Buffer list_posts readback (--scheduled) and holds a concept post without one",
+      "tests": [
+        "test_the_cap_counts_what_buffer_holds_so_l0_posts_count_here"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F127",
+      "title": "A past-due draft, and a newer plan version he had not answered, were loud every run all day, training him to ignore the alarm",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/autorelease.py:derived_entries no longer reads a draft LATE past its time; engine/run/autorelease.py:week_state holds stale_approval quietly",
+      "tests": [
+        "test_a_past_due_draft_is_loud_once_then_quiet",
+        "test_a_newer_plan_version_withdraws_his_earlier_yes"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F128",
+      "title": "The mock he opened from the ask was never compared with the mock hash he approved",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/run/handoff.py:check_mock_links downloads each mock view link and requires it to hash to one of its concept's mock_sha256",
+      "tests": [
+        "test_a_mock_link_must_be_one_of_the_files_he_approves"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F129",
+      "title": "A claim matched inside a longer number or word: a claim about 10 pilots passed in words about 110 pilots",
+      "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
+      "guard": "engine/concepts.py:carries matches the claim as whole words",
+      "tests": [
+        "test_a_claim_is_carried_as_whole_words"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F130",
+      "title": "A log leak check matched a private figure's digits inside the report's sha256 and failed by chance",
+      "source": "CI on PR #19 head 442aa51, 29 Oct 2026: self-test (ubuntu-24.04, 3.9)",
+      "guard": "tests/test_run_measure_auto.py matches the figure as a whole number; the digest covers the run's measured cost, so it changes every run",
+      "tests": [
+        "test_dry_run_reads_fakes_reports_locally_and_logs_only_counts"
+      ],
+      "status": "tested"
+    },
+    {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",
