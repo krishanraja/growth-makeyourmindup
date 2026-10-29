@@ -1201,6 +1201,34 @@
         "test_share_ask_holds_a_signed_snackable_slot",
         "test_snackable_slot_send_test_is_staged_under_blind_names"
       ]
+    },
+    {
+      "id": "R100",
+      "statement": "No public word names Krish: content-engine's copy lint no_name pattern, vendored unchanged, refuses his name, its spellings and handles in run lint, preflight captions and alt text, release words, carried alt text and titles, autonomous audit repairs, drafted pack replies and the post drafts the Control Center loop proposes. No override, another Krish included; first person stays on his personal accounts.",
+      "source_file": "CHANGES.md",
+      "quote": "Remember, no content refers to Krish, ever. I still see that popping up from time to time. Even articles written are not authored by Krish. My face only, for assets and the video format.",
+      "enforced_by": [
+        "engine/copy_lint.py:copy_lint",
+        "engine/run/spec.py:lint",
+        "engine/social.py:preflight",
+        "engine/run/release.py:copy_errors",
+        "engine/run/release.py:media_copy_errors",
+        "engine/channel_audit.py:repair_plan",
+        "engine/packs.py:problems",
+        "engine/cc_loop.py:item_proposal"
+      ],
+      "tests": [
+        "test_his_name_is_refused_on_every_public_surface_the_article_body_too",
+        "test_only_the_name_rule_reads_the_article_body",
+        "test_vendored_config_is_the_pinned_upstream_file",
+        "test_his_name_is_refused_in_the_caption_and_the_alt_text",
+        "test_copy_lint_holds_a_signed_slot_and_releases_the_rest",
+        "test_a_name_in_carried_alt_text_holds_the_edit",
+        "test_live_copy_repairs_pass_the_copy_lint",
+        "test_drafted_replies_pass_the_copy_lint",
+        "test_copy_lint_is_a_lint_error_on_slot_words",
+        "test_a_draft_that_names_him_is_held_not_proposed"
+      ]
     }
   ]
 }

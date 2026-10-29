@@ -256,8 +256,14 @@ def preflight(package, as_of=None, root=ROOT, send_test=None, target=None):
         raise ValueError('public illustration-disclaimer boilerplate is prohibited; retain private provenance and native metadata')
     lint = copy_lint_errors(package['caption'], 'channel_copy')
     if lint:
-        # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels.
+        # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels; and no
+        # content refers to Krish, ever (his name is the lint's no_name pattern).
         raise ValueError('the caption fails the copy lint: ' + '; '.join(lint))
+    for i, asset in enumerate(package['assets'], 1):
+        # Alt text is public and carries the picture's words, so it is read as carousel_text.
+        lint = copy_lint_errors(asset['alt_text'], 'carousel_text')
+        if lint:
+            raise ValueError('asset ' + str(i) + ' alt text fails the copy lint: ' + '; '.join(lint))
     if not package['voice_review_passed'] or not package['production']['approved']:
         raise ValueError('voice review and accepted production package are required')
     f = decision['format']

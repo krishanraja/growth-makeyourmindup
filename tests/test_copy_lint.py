@@ -64,6 +64,28 @@ class CopyLintTests(unittest.TestCase):
             for surface in NAMED_SURFACES + ('titles', 'video_onscreen'):
                 self.assertEqual(copy_lint.copy_lint(text, surface), [], (text, surface))
 
+    def test_his_name_is_refused_on_every_public_surface_the_article_body_too(self):
+        # Krish, 2026-10-28: "Remember, no content refers to Krish, ever. I still see that popping up
+        # from time to time. Even articles written are not authored by Krish. My face only, for assets
+        # and the video format." Asked whether another Krish may be named, he picked "Yes, block it".
+        self.assertEqual(copy_lint.SURFACES, ('channel_copy', 'carousel_text', 'video_onscreen', 'titles',
+                                              'article_metadata', 'article_body'))
+        for text in ('By Krish Raja', "Krish's test of the chip money", 'Follow @TheRealKrisho',
+                     'More at krishraja.com', 'KRISH', 'krish_raja1 on Threads', 'Krishan Raja wrote this'):
+            for surface in copy_lint.SURFACES:
+                self.assertIn('no_name', [h['id'] for h in copy_lint.copy_lint(text, surface)], (text, surface))
+        # The publication speaks as "we"; his personal posts may say "I". Neither names him.
+        for text in ('We tested it on the chip money.', 'I ran the test myself.', 'Our test: the chip money.'):
+            for surface in copy_lint.SURFACES:
+                self.assertNotIn('no_name', [h['id'] for h in copy_lint.copy_lint(text, surface)], (text, surface))
+
+    def test_only_the_name_rule_reads_the_article_body(self):
+        # The body's markdown emphasis and headings are the markdown itself, so no other pattern reads it.
+        body = '## BREAKING: the money\n\nThe *real* cost is the lock-in. My take: watch the lawyers.'
+        self.assertEqual(copy_lint.copy_lint(body, 'article_body'), [])
+        self.assertEqual([h['id'] for h in copy_lint.copy_lint(body + ' Krish says so.', 'article_body')],
+                         ['no_name'])
+
     def test_odd_spaces_and_line_ends_are_read_as_content_engine_reads_them(self):
         self.assertEqual([h['id'] for h in copy_lint.copy_lint('Hot take: no', 'channel_copy')], ['take_label'])
         hit = copy_lint.copy_lint('First line.\r\nMy take: second', 'channel_copy')[0]
