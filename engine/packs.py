@@ -30,6 +30,11 @@ NUMBER_WIRE = ('platform', 'followers', 'new_this_week', 'reach', 'visits', 'new
 # (cc_loop.WALLS puts them behind strategy and none, not post or send), so a report can quote the
 # copy the lint held. Every other kind, and a draft checked with no kind, is public copy.
 INTERNAL_KINDS = ('report', 'numbers')
+# Private outreach Krish sends himself from his own address (a pitch, a swap, a partner note). It is not
+# published content, so it may be signed with his name; every other lint pattern still runs on it.
+# Krish, 2026-10-28: "Remember, no content refers to Krish, ever." The pitch sign-off in jobs/pitches.md
+# is his own email signature, not content.
+PRIVATE_OUTREACH_KINDS = ('pitches', 'swaps', 'partners')
 
 
 def x_weight(text):
@@ -74,7 +79,10 @@ def problems(item, kind=None):
     # asterisks, AI notes or take labels); an unreadable lint refuses the pack.
     if kind not in INTERNAL_KINDS:
         try:
-            errors += copy_lint_errors(text, 'channel_copy')
+            hits = copy_lint_errors(text, 'channel_copy')
+            if kind in PRIVATE_OUTREACH_KINDS:
+                hits = [h for h in hits if not h.startswith('copy lint no_name:')]
+            errors += hits
         except ValueError as exc:
             errors.append('copy lint could not run: ' + str(exc))
     if len(text.encode('utf-16-le')) // 2 > 4000:

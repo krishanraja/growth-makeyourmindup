@@ -52,8 +52,10 @@ Channel lock (28 October 2026): the Buffer organisation is shared with other
 ventures, so a channel acts only when its service, name and channelId all
 match this engine's pinned entry, and an id on the denylist is refused
 wherever it appears: list_channels, a built call, an edit target or a
-readback. Copy lint (Krish, 28 October 2026): a slot whose words hit
-content-engine's copy lint (engine/copy_lint.py) is held and never emitted.
+readback. Copy lint (Krish, 28 October 2026): a slot whose words, or the alt
+text and titles its call carries, hit content-engine's copy lint
+(engine/copy_lint.py) is held and never emitted; his name is one of its
+patterns ("no content refers to Krish, ever").
 Capability checks (28 October 2026): on a channel and format that
 social.route does not show as verified and fresh, only the run's earliest
 signed post releases, as the route's capability check; the rest hold until
@@ -465,12 +467,36 @@ def _has_null_link_attachment(value):
     return False
 
 
-def copy_errors(text):
+def copy_errors(text, applies_to='channel_copy'):
     """The copy lint on one post's words, as refusals; an unreadable lint refuses too."""
     try:
-        return copy_lint_errors(text, 'channel_copy')
+        return copy_lint_errors(text, applies_to)
     except ValueError as exc:
         return ['copy lint could not run, so nothing releases: ' + str(exc)]
+
+
+def media_copy_errors(args):
+    """The copy lint on the public words a call's assets and metadata carry, besides its text.
+
+    An image's alt text carries the picture's words, so it is read as carousel_text; a
+    document or metadata title is read as titles. Alt text carried forward from a stored
+    draft is public too, so a name in it holds the slot like a name in the text
+    (Krish, 2026-10-28: "no content refers to Krish, ever").
+    """
+    out = []
+    for asset in args.get('assets') or []:
+        for kind, body in (asset.items() if isinstance(asset, dict) else ()):
+            if not isinstance(body, dict):
+                continue
+            alt = (body.get('metadata') or {}).get('altText') if isinstance(body.get('metadata'), dict) else None
+            if isinstance(alt, str):
+                out += ['alt text ' + e for e in copy_errors(alt, 'carousel_text')]
+            if isinstance(body.get('title'), str):
+                out += [kind + ' title ' + e for e in copy_errors(body['title'], 'titles')]
+    for service, meta in (args.get('metadata') or {}).items():
+        if isinstance(meta, dict) and isinstance(meta.get('title'), str):
+            out += [service + ' title ' + e for e in copy_errors(meta['title'], 'titles')]
+    return out
 
 
 def snackable_formats():
@@ -518,6 +544,7 @@ def argument_errors(call, slot, formats=None):
     if 'text' in args:
         out += copy_errors(args['text'])
         out += share_ask_errors(slot, args['text'], formats)
+    out += media_copy_errors(args)
     if service != CHANNELS[slot['channel']][0]:
         out.append('the call is for another service than the slot')
     if args.get('mode') not in (None, 'customScheduled'):

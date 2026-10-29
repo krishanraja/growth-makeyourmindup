@@ -158,6 +158,24 @@ class SocialContractsTests(unittest.TestCase):
             p['caption'] = 'Why is Disney eating the scraps of bankrupt Character.AI?'
             self.assertTrue(preflight(p, '2026-10-26')['structurally_valid'])
 
+    def test_his_name_is_refused_in_the_caption_and_the_alt_text(self):
+        # Krish, 2026-10-28: "Remember, no content refers to Krish, ever." On the personal LinkedIn
+        # account too: first person is allowed there, his name in the text never is.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self.fixture(Path(tmp) / 'asset.bin')
+            for caption in ('A test by Krish Raja on the chip money.', 'More at krishraja.com',
+                            'Follow @TheRealKrisho for the next one.'):
+                p['caption'] = caption
+                with self.assertRaisesRegex(ValueError, 'fails the copy lint: copy lint no_name'):
+                    preflight(p, '2026-10-26')
+            p['caption'] = 'I ran the test on the chip money. Here is what we found.'
+            self.assertTrue(preflight(p, '2026-10-26')['structurally_valid'])
+            p['assets'][0]['alt_text'] = 'Krish holding the chart of chip spending.'
+            with self.assertRaisesRegex(ValueError, 'asset 1 alt text fails the copy lint: copy lint no_name'):
+                preflight(p, '2026-10-26')
+            p['assets'][0]['alt_text'] = 'A man holding the chart of chip spending.'
+            self.assertTrue(preflight(p, '2026-10-26')['structurally_valid'])
+
     def test_buffer_package_names_this_engines_pinned_channel_id(self):
         # Plan of 28 Oct 2026, W5: never the Full Time or Heartside channels. The daily draft job
         # saves Buffer drafts through the connector, so preflight holds it to release's table.

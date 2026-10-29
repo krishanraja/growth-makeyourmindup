@@ -1,5 +1,27 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29: no content names Krish. Krish, 28 October: "Remember, no
+  content refers to Krish, ever. I still see that popping up from time to
+  time. Even articles written are not authored by Krish. My face only, for
+  assets and the video format." On 29 October he answered the questions it
+  raised. Articles speak as "We", the publication; scripts he speaks keep
+  "I". Of his personal accounts: "No, personal stays personal", so first
+  person stays there, but never his name in the text. Of another person
+  called Krish: "Yes, block it", so the name rule has no override.
+  - content-engine owns the pattern (`no_name`, copy lint version
+    2026-10-29.3, which also adds the `article_body` surface that only the
+    name rule reads). This engine re-vendored it unchanged, and its reader
+    knows the new surface, since an unknown one raises and holds every
+    release.
+  - Every public word Growth writes runs it: slot words in run lint,
+    captions and alt text in social preflight, words, carried alt text and
+    titles in release, drafted pack replies, autonomous audit repairs, and
+    each post draft the Control Center loop would propose.
+  - The publication's own lanes and proof speak as the publication ("we");
+    his personal accounts speak as him ("I"), never naming him
+    (`knowledge/COPY-DOCTRINE.md`, `docs/ACCOUNT-VOICE.md`). Buffer channel
+    names and account handles are his to change and stay as they are.
+
 - 2026-10-28: built to be sent. Krish: "for the growth repo, think about
   virality in the content, I dont think there is enough of it at the moment.
   that comes from the shareability from one human to another in a "you will

@@ -35,10 +35,12 @@ against a read-only list of all twelve channels in the shared organisation.
 The fulltime.fm, Heartside and both yourdoghasnotes channels are refused by
 id in every release step and in social preflight, which a Buffer draft
 package passes before the daily job saves it (`engine/buffer_channels.py`).
-Content-engine's copy lint (version 2026-10-29.1, which also refuses
-"Krish's read" and "illustrative" labels) is vendored and runs in run lint,
-social preflight, release, autonomous audit repairs and drafted pack
-replies. On a route not yet verified, release sends only the run's earliest
+Content-engine's copy lint (version 2026-10-29.3, which also refuses
+"Krish's read" and "illustrative" labels and, since 29 October, his name
+anywhere in public copy) is vendored and runs in run lint, social preflight
+(captions and alt text), release (words, carried alt text and titles),
+autonomous audit repairs, drafted pack replies and the post drafts the
+Control Center loop proposes. On a route not yet verified, release sends only the run's earliest
 approved post, as that route's capability check, and holds the rest. His 28
 October rulings are recorded: go-live is "Approve each day Monday", every
 route goes through Buffer with a first-post capability check, Growth makes
@@ -53,7 +55,7 @@ generic share ask (refused in run lint, preflight and release), and a blind
 send-test reader must name the declared receiver and job before Krish sees it
 (R99; run status compares that answer again on every read). Sends and saves
 per reach are the snackable lane's measure, a house hypothesis until MYMU's
-own dated data confirms it. 370 local tests pass.
+own dated data confirms it. 375 local tests pass.
 
 28 October daily readback is partial: Buffer My organization now has 12
 connections, including other ventures; only this engine's explicit scope applies.
@@ -137,6 +139,7 @@ publication, follower growth or financial ROI.
 
 ## What changed recently
 
+- 2026-10-29 **No content names Krish** (his ruling of 28 October: "Remember, no content refers to Krish, ever."). The copy lint is re-vendored at 2026-10-29.3 with the `no_name` pattern and the `article_body` surface, which `engine/copy_lint.py` now knows; alt text (as carousel text), release titles and the Control Center loop's post drafts are linted too; the doctrine says the publication speaks as "we" and his personal accounts stay personal, never naming him. Rule R100.
 - 2026-10-29 **Review fixes on the merged branch.** Share asks are refused only where they open a sentence, except three no true sentence about other people says, so true reporting ("X removed the share button") passes; run status compares a recorded send test again with the slot's share block; `social preflight --target` checks a reused Buffer draft's get_post readback before any edit_post; release holds a snackable slot that asks for the share and holds a route whose capability check another run released; `run send-test --stage` stages a slot's assets under blind names; the copy lint reads U+2028, U+2029 and U+0085 as line ends, as content-engine does; report and numbers packs may quote held copy; rule ids run past R99.
 - 2026-10-28 **Channel lock, copy lint and the plan's rulings** (Wave 1 of the plan Krish approved on 28 October). Release and social preflight pin each Buffer channel by channelId and deny the other ventures' channels by id; an unverified route releases only its first post as the capability check; content-engine's copy lint runs in run lint, preflight, release, audit repairs and pack drafts; `docs/PUBLISHING-AUTHORITY.md`, `docs/ENGINE-BOUNDARY.md` and `docs/CAROUSEL-STANDARD.md` record "Approve each day Monday", the Buffer routes, derived carousels, the off-day lane and the 10-minute engage queue. The share package adds the share block, the share-ask lint, the blind send test and sends per reach. Rules R92 to R99.
 - 2026-10-27 **The engine is rebuilt on the bulletproof architecture, phases 0 to 2** (`docs/plans/2026-10-27-engine-architecture.md`). One signed run spec per week or piece (`growth.py run new|lint|status|pack`), computed readiness, a Release Gate pinned to this engine's eight Buffer channels, the autonomy loop (plan, go-live once, his amended words, a declined check-in stops its plan), 12 crew cards with the What-Works Analyst and the Measurement Specialist, a failure register F01 to F65 and G1 to G9 and quoted rules R1 to R91, each guarded by a test (323 tests). Rulings that day: Substack Notes (from his profile, @mindmakerlive) and Threads join; sign the week with an express lane for meme posts; a full Canva brand kit by Cowork (`docs/briefs/2026-10-27-canva-brand-kit-cowork.md`); secondary targets for followers and paid subscribers; the audit authority covers Facebook and Threads; GA4 comes through Control Center, which now sends per-post readings in this engine's directive (protocol 1.10.0, krishanraja/control-center#578, merged).
@@ -146,7 +149,7 @@ publication, follower growth or financial ROI.
 ## What is next and what is waiting on Krish
 
 - Next: for Monday 2 November, when the Monday 26 piece goes live (his transition ruling), prepare each Buffer route's first real post as a capability check for him to approve that morning, through `growth.py run release` (it holds the rest of an unverified route), and record each route that passes in `social/tools/buffer.json`; then build Wave 2 by Saturday 7 November (one go-live decision read per post, the manifest, route checks, metrics, the engage queue and the off-day lane, first posts Tuesday 10 November). The GA4 event-name readback (`invariants/ga4.json`) is still open; LinkedIn stays his own click.
-- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; new cloud scheduled tasks; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`). The architecture branch is now merged into main.
+- Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; new cloud scheduled tasks; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); whether private outreach (pitches, swaps, partners) may carry his name and contact, because `jobs/pitches.md` signs every pitch "Krish Raja, makeyourmindup.ai, hello@krishraja.com" and the no_name lint in `packs.problems` now refuses that sign-off, so every Tuesday pitch pack fails its pack check until he answers (a known conflict, not a broken job: either outreach is not content and keeps his name, or he chooses a new signature and contact address); and his own handles and address that spell his name, which public copy can no longer carry: @therealkrisho (X and TikTok), krishraja1 (Threads), linkedin.com/in/krish-raja and hello@krishraja.com (nothing renamed). The architecture branch is now merged into main.
 - North Star check (2026-10-29): holds.
 
 ## Read next

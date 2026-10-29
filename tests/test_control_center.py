@@ -266,6 +266,18 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(first['proposal_id'], edited['proposal_id'])
         self.assertNotEqual(first['payload_sha256'], edited['payload_sha256'])
 
+    def test_a_draft_that_names_him_is_held_not_proposed(self):
+        # Krish, 2026-10-28: "Remember, no content refers to Krish, ever." An envelope the report reads
+        # unsealed, edited after sealing, still meets the copy lint before it becomes a post proposal.
+        env = envelope()
+        env['pack']['items'][0]['text'] = 'TEST FIXTURE ONLY. Krish asked one useful question.'
+        self.assertEqual(len(workspace_report('daily', 'r1', NOW, [envelope()], rev='fixture')[0]['proposals']), 1)
+        report = workspace_report('daily', 'r1', NOW, [env], rev='fixture')[0]
+        self.assertEqual(report['proposals'], [])
+        held = [h['detail'] for h in report['holds'] if h['reason'] == 'Draft could not become a proposal']
+        self.assertEqual(len(held), 1)
+        self.assertIn('the draft fails the copy lint: copy lint no_name', held[0])
+
     def test_a_merged_queue_reports_only_this_jobs_work(self):
         env = envelope()
         selected = [{**env['pack']['items'][0], **env['metadata'][0], 'pack_kind': 'daily'},

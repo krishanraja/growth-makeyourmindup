@@ -27,6 +27,11 @@ apology or a formulaic claim to know nothing. Wit stays kind and subordinate
 to a useful finding. Do not copy the publication caption onto a personal post.
 
 Personal post wrappers may use I/my when describing Krish's verified test.
+They never name him: personal stays personal (Krish, 29 October: "No,
+personal stays personal"), so first person is fine, but his name, a
+spelling or handle of it, or a possessive of it never appears in the text
+(Krish, 28 October: "Remember, no content refers to Krish, ever."). The copy
+lint refuses it, with no override.
 This does not rewrite the approved carousel artwork, whose reader-centred
 wording and absence of I/me/my remain governed by content-engine's standard.
 
@@ -37,7 +42,8 @@ Krish's personal account. The personal-sharing requirement above does not
 apply there. Use its accepted publication voice: clear, useful, visually
 specific and dryly humorous where earned. Do not impersonate Krish or force
 a humble first-person introduction onto this publication account. Truth,
-kindness, evidence and production quality still apply.
+kindness, evidence and production quality still apply. Like every
+publication surface, it speaks as "we" and never names Krish.
 
 ## Required review before any save or go-live
 

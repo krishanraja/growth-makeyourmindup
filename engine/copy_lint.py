@@ -20,7 +20,9 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / 'vendor' / 'content-engine' / 'copy-lint' / 'copy-lint.json'
-SURFACES = ('channel_copy', 'carousel_text', 'video_onscreen', 'titles', 'article_metadata')
+# article_body is the article's markdown body, which only the name rule reads (no_name: Krish, 2026-10-28,
+# "no content refers to Krish, ever"); content-engine's reader names the same six.
+SURFACES = ('channel_copy', 'carousel_text', 'video_onscreen', 'titles', 'article_metadata', 'article_body')
 _FLAGS = {'i': re.IGNORECASE, 'm': re.MULTILINE}
 _SPACES = re.compile('[\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]')
 # content-engine's reader at the pinned commit turns U+2028, U+2029 and U+0085 into line ends
