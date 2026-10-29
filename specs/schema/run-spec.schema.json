@@ -296,6 +296,51 @@
             "type": "string",
             "minLength": 1
           },
+          "share": {
+            "type": "object",
+            "description": "Optional; required on a snackable format (social/formats/<id>.json): who sends this slot to whom, for which job, with the exact words. Checked by engine/share.py:share_errors; run new --from computes forward_line from it. Not part of payload_sha256.",
+            "properties": {
+              "sender": {
+                "type": "string",
+                "minLength": 1
+              },
+              "receiver": {
+                "type": "string",
+                "minLength": 1
+              },
+              "job": {
+                "type": "string",
+                "enum": [
+                  "in_the_know",
+                  "helps_them",
+                  "so_us",
+                  "settles_it",
+                  "warns_them",
+                  "laugh_or_awe"
+                ]
+              },
+              "dm_line": {
+                "type": "string",
+                "minLength": 1
+              },
+              "moment": {
+                "type": "string",
+                "minLength": 1
+              },
+              "standalone": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sender",
+              "receiver",
+              "job",
+              "dm_line",
+              "moment",
+              "standalone"
+            ],
+            "additionalProperties": false
+          },
           "experiment_arm": {
             "type": [
               "string",

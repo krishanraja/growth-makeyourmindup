@@ -22,6 +22,7 @@ import tempfile
 
 from .control_center import (ENGINE_ID, SLUG, ProtocolError, action_key, build_report, golive_review, iso,
                              match_decisions, objective, proposal)
+from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
 from .operations import aggregate, daily_queue, validate_observation
 
@@ -381,6 +382,14 @@ def item_proposal(item, job, evidence):
              'strategy': 'Review the ' + kind + ' recommendation: ' + item.get('placement', kind),
              'none': 'Check the ' + kind + ' card: ' + item.get('placement', kind)}[wall]
     why = (item.get('why_now') or 'Prepared by the ' + kind + ' job.') + ' About ' + str(item.get('minutes', 1)) + ' minutes of Krish time.'
+    if wall in ('post', 'send'):
+        # The exact words reach the public once he presses, and the envelope may not have been sealed
+        # here, so the copy lint reads them again: no eyebrows, asterisks, AI notes or take labels
+        # (Krish, 2026-10-28), and "no content refers to Krish, ever" (Krish, 2026-10-28). A hit, or a
+        # lint that cannot run, raises, and the draft is held, never proposed.
+        lint = copy_lint_errors(item['text'], 'channel_copy')
+        if lint:
+            raise ValueError('the draft fails the copy lint: ' + '; '.join(lint))
     sources = []
     for ref in item.get('evidence_ids', []):
         source = evidence.get(ref)

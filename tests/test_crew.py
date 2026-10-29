@@ -30,10 +30,29 @@ class CrewTests(unittest.TestCase):
     def setUp(self):
         self.crew = load_registry()
 
-    def test_registry_lists_the_twelve_specialists_and_the_release_gate(self):
-        self.assertEqual(len(self.crew), 13)
-        self.assertEqual(sorted(e['row'] for e in self.crew if e['row'] is not None), list(range(1, 13)))
+    def test_registry_lists_the_specialists_and_the_release_gate(self):
+        # Twelve from plan section 3, then row 13, the blind Send-Test Reader (Krish, 2026-10-28).
+        self.assertEqual(len(self.crew), 14)
+        self.assertEqual(sorted(e['row'] for e in self.crew if e['row'] is not None), list(range(1, 14)))
         self.assertEqual([e['id'] for e in self.crew if e['row'] is None], ['release-gate'])
+        self.assertEqual(next(e for e in self.crew if e['row'] == 13)['id'], 'send-test')
+
+    def test_send_test_reader_is_blind_and_cites_the_ruling(self):
+        entry = next(e for e in self.crew if e['id'] == 'send-test')
+        self.assertEqual((entry['lint'], entry['check']),
+                         ('engine/share.py:share_errors', 'engine/share.py:compare_send_test'))
+        self.assertFalse(entry['w45'])
+        self.assertEqual(set(entry['formats']), {'meme', 'carousel', 'single-image', 'short-video', 'story', 'note'})
+        card = collapse((ROOT / entry['card']).read_text(encoding='utf-8'))
+        for phrase in ('never the share block', 'Back for revision with the reader\'s answer',
+                       'growth.py social send-test', 'R99'):
+            self.assertIn(phrase, card)
+
+    def test_what_works_card_makes_share_rates_the_snackable_measure(self):
+        text = collapse((ROOT / 'crew' / 'what-works' / 'card.md').read_text(encoding='utf-8'))
+        for phrase in ('sends (native shares) per reach and saves per reach', 'share_rates',
+                       "a house hypothesis until MYMU's own dated data confirms it", 'never zero'):
+            self.assertIn(phrase, text)
 
     def test_every_entry_has_card_and_lens_within_size(self):
         for entry in self.crew:

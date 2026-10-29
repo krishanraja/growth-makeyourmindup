@@ -179,3 +179,14 @@ class TaskCardTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PrivateOutreachSignOff(unittest.TestCase):
+    """A pitch Krish sends from his own address may carry his signature; a public draft may not."""
+
+    def test_pitch_may_be_signed_but_public_copy_may_not(self):
+        from engine.packs import problems
+        item = {'platform': 'email', 'target_url': 'https://example.org', 'target_name': 'A host', 'why': 'fit',
+                'text': 'Would love to talk about the AI passports piece. Krish Raja, makeyourmindup.ai', 'status': 'draft'}
+        self.assertFalse([e for e in problems(item, 'pitches') if 'no_name' in e])
+        self.assertTrue([e for e in problems(item, 'daily') if 'no_name' in e])

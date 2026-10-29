@@ -15,15 +15,19 @@
   "guide": "social/guides/formats.md",
   "min_assets": 1,
   "max_assets": 1,
+  "snackable": true,
   "delivery_checks": [
     "An ad-hoc idea from Krish is built, shown to him, and queued only after he approves the exact payload.",
     "Brand kit and an approved template only; every quote is a literal match to the published piece.",
     "Where realistic synthetic media is present, apply the native AI label where the destination supports it; never add illustration boilerplate to public copy.",
     "On YouTube a meme is a real video file, never a still posing as video.",
+    "Share mechanic: recognition of one specific situation the receiver is in, so the sender's message is that this is them; the share block names that situation as its moment.",
+    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
     "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
     "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
   ],
   "measurements": [
+    "Primary measure (Krish, 28 October 2026): sends, meaning native shares, per reach and saves per reach against the format's own channel median; a house hypothesis until MYMU's own dated data confirms it (lesson share-rate-measure).",
     "Dated exposed reach and meaningful engagement, preserving missing values.",
     "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
     "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts."
@@ -31,6 +35,8 @@
   "lessons": [
     "revision-identity",
     "growth-measurement",
-    "canva-lane-boundary"
+    "canva-lane-boundary",
+    "built-to-be-sent",
+    "share-rate-measure"
   ]
 }

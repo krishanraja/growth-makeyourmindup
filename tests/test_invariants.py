@@ -12,6 +12,7 @@ from engine.run.invariants import (FAILURE_IDS, RULE_SOURCES, ROOT, check_failur
                                    check_rule_links, collapse, house_errors, load_boundary,
                                    load_failures, load_rules, load_sources)
 from engine.run.invariants import test_names as defined_tests  # not collected as a test
+from engine.run.invariants import _card_errors as card_errors
 
 GA4_TESTS = ('test_ga4_credentials_accept_raw_or_base64_json', 'test_rs256_signature_verifies_with_public_key',
              'test_ga4_transport_only_allows_google_origins_and_never_logs_secrets',
@@ -81,6 +82,25 @@ class RuleTests(unittest.TestCase):
                        'brand kit in Canva with computer use', 'In a signed-in browser you may open pages',
                        'signed out from another browser'):
             self.assertIn(anchor, quotes)
+
+    def test_rule_ids_run_past_r99(self):
+        # R99 was the last two-digit id; the next ruling's rule is R100, and a card may cite it.
+        quote = 'The engine never acts on a platform without an approved go-live'
+        with tempfile.TemporaryDirectory() as folder:
+            root = fixture_root(folder, quote + ', read in its own run.\n', quote)
+            path = root / 'invariants' / 'rules.json'
+            data = json.loads(path.read_text(encoding='utf-8'))
+            data['rules'].append(dict(data['rules'][0], id='R100'))
+            path.write_text(json.dumps(data), encoding='utf-8')
+            self.assertEqual([r['id'] for r in load_rules(root)], ['R01', 'R100'])
+            for bad in ('R1000', 'R1', 'R10a'):
+                data['rules'][1]['id'] = bad
+                path.write_text(json.dumps(data), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, 'rule id must be unique'):
+                    load_rules(root)
+        card = '| If | Then |\n|---|---|\n| A | B, P1, R100 |\n| C | D |\n| E | F |\n'
+        self.assertEqual(card_errors(card, ['R01', 'R100']), [])
+        self.assertIn('cites unknown rule R100', card_errors(card, ['R01']))
 
     def test_rule_guards_and_tests_exist(self):
         self.assertEqual(check_rule_links(load_rules()), [])

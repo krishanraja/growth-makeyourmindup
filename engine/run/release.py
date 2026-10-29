@@ -47,6 +47,23 @@ signed as one document, so a bad line means the signing cannot be trusted.
 Asset bytes: --assets must be a folder of fresh downloads of each asset url,
 made into .scratch immediately before release. Buffer fetches the url, and
 the Drive 4 Growth library is editable by link, so older copies prove nothing.
+
+Channel lock (28 October 2026): the Buffer organisation is shared with other
+ventures, so a channel acts only when its service, name and channelId all
+match this engine's pinned entry, and an id on the denylist is refused
+wherever it appears: list_channels, a built call, an edit target or a
+readback. Copy lint (Krish, 28 October 2026): a slot whose words, or the alt
+text and titles its call carries, hit content-engine's copy lint
+(engine/copy_lint.py) is held and never emitted; his name is one of its
+patterns ("no content refers to Krish, ever").
+Capability checks (28 October 2026): on a channel and format that
+social.route does not show as verified and fresh, only the run's earliest
+signed post releases, as the route's capability check; the rest hold until
+the route is recorded as passed in social/tools/buffer.json. A check already
+released, in this run's ledger or any other run's under .scratch/runs, is the
+route's one check: nothing else on the route releases, in any run, until the
+route is recorded as passed. Share asks (Krish, 28 October 2026, R99): a
+snackable slot whose words ask for the share is held, as the copy lint holds.
 """
 import argparse
 import hashlib
@@ -56,8 +73,12 @@ import re
 import sys
 from urllib.parse import urlsplit
 
+from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, channel_id_errors
 from engine.control_center import sha256_hex
+from engine.copy_lint import copy_lint_errors, version as copy_lint_version
 from engine.core import instant, locked, read_json, write_json
+from engine.share import cta_applies, cta_errors
+from engine.social import inventory, route
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_CHECKED = '2026-10-27'
@@ -93,6 +114,8 @@ CHANNEL_PROFILE = {'substack-notes': 'substack-notes', 'threads': 'threads', 'x'
 BUFFER_NAME = {'substack-notes': 'Krish', 'threads': 'krishraja1', 'x': 'TheRealKrisho',
                'instagram': 'makeyourmind.up', 'facebook': 'Makeyourmind/up', 'tiktok': 'therealkrisho',
                'youtube': 'makeyourmindup', 'linkedin': 'krish-raja'}
+# BUFFER_CHANNEL_ID and DENIED_CHANNELS live in engine/buffer_channels.py, the
+# one table release and social preflight both read.
 # Native post URLs that carry the account handle as their first path segment.
 HANDLE_IN_PATH = ('x', 'tiktok', 'threads', 'substack-notes')
 KRISH_CLICK_ONLY = ('linkedin',)
@@ -137,8 +160,8 @@ def is_draft(slot):
 
 def check_slot(slot):
     """Refuse a malformed slot or one whose stored digest is not its own."""
-    if not isinstance(slot, dict) or set(slot) != SLOT_KEYS:
-        raise ValueError('slot must carry exactly the run-spec slot fields')
+    if not isinstance(slot, dict) or set(slot) - {'share'} != SLOT_KEYS:
+        raise ValueError('slot must carry exactly the run-spec slot fields (share is optional)')
     sid = slot['slot_id']
     if not isinstance(sid, str) or not sid.strip():
         raise ValueError('slot_id is required')
@@ -274,7 +297,7 @@ def service_meta(post, service):
 
 
 def resolve_channel(slot, channels):
-    """This engine's one Buffer channel for the slot, pinned by service and name."""
+    """This engine's one Buffer channel for the slot, pinned by service, name and channelId."""
     if isinstance(channels, dict):
         channels = channels.get('channels')
     service = CHANNELS[slot['channel']][0]
@@ -288,6 +311,9 @@ def resolve_channel(slot, channels):
     channel = found[0]
     if not (isinstance(channel.get('id'), str) and BUFFER_ID.match(channel['id'])):
         raise ValueError('Buffer channelId is malformed in the list_channels readback')
+    errors = channel_id_errors(slot['channel'], channel['id'])
+    if errors:
+        raise ValueError(errors[0] + '; never guess')
     if channel.get('isDisconnected') or channel.get('isLocked'):
         raise ValueError('Buffer channel for ' + service + ' is disconnected or locked')
     return channel
@@ -371,7 +397,7 @@ def _metadata(slot, ai=False):
     return None
 
 
-def call_arguments(slot, channel, now=None, target=None):
+def call_arguments(slot, channel, now=None, target=None, formats=None):
     """The one exact Buffer call for a checked slot, or a ValueError hold.
 
     channel is this slot's entry from a live list_channels readback; target
@@ -392,6 +418,9 @@ def call_arguments(slot, channel, now=None, target=None):
     if not isinstance(channel, dict) or channel.get('service') != service \
             or not (isinstance(channel.get('id'), str) and BUFFER_ID.match(channel['id'])):
         raise ValueError('Buffer channel must be the live ' + service + ' entry from list_channels')
+    pinned = channel_id_errors(slot['channel'], channel['id'])
+    if pinned:
+        raise ValueError(pinned[0])
     draft = is_draft(slot)
     if not draft and instant(slot['due_at']) <= instant(now):
         raise ValueError('due_at is not in the future')
@@ -422,7 +451,7 @@ def call_arguments(slot, channel, now=None, target=None):
                      'saveToDraft': False, 'dueAt': slot['due_at']})
     call = {'server': SERVER, 'tool': tool, 'slot_id': sid, 'payload_sha256': slot['payload_sha256'],
             'service': service, 'channel_id': channel['id'], 'arguments': args}
-    errors = argument_errors(call, slot)
+    errors = argument_errors(call, slot, formats)
     if errors:
         raise ValueError('; '.join(errors))
     return call
@@ -438,14 +467,84 @@ def _has_null_link_attachment(value):
     return False
 
 
-def argument_errors(call, slot):
-    """Guards on any Buffer call, however it was built."""
+def copy_errors(text, applies_to='channel_copy'):
+    """The copy lint on one post's words, as refusals; an unreadable lint refuses too."""
+    try:
+        return copy_lint_errors(text, applies_to)
+    except ValueError as exc:
+        return ['copy lint could not run, so nothing releases: ' + str(exc)]
+
+
+def media_copy_errors(args):
+    """The copy lint on the public words a call's assets and metadata carry, besides its text.
+
+    An image's alt text carries the picture's words, so it is read as carousel_text; a
+    document or metadata title is read as titles. Alt text carried forward from a stored
+    draft is public too, so a name in it holds the slot like a name in the text
+    (Krish, 2026-10-28: "no content refers to Krish, ever").
+    """
+    out = []
+    for asset in args.get('assets') or []:
+        for kind, body in (asset.items() if isinstance(asset, dict) else ()):
+            if not isinstance(body, dict):
+                continue
+            alt = (body.get('metadata') or {}).get('altText') if isinstance(body.get('metadata'), dict) else None
+            if isinstance(alt, str):
+                out += ['alt text ' + e for e in copy_errors(alt, 'carousel_text')]
+            if isinstance(body.get('title'), str):
+                out += [kind + ' title ' + e for e in copy_errors(body['title'], 'titles')]
+    for service, meta in (args.get('metadata') or {}).items():
+        if isinstance(meta, dict) and isinstance(meta.get('title'), str):
+            out += [service + ' title ' + e for e in copy_errors(meta['title'], 'titles')]
+    return out
+
+
+def snackable_formats():
+    """format id -> snackable, from the social records; None when they cannot be read."""
+    try:
+        return {fid: record.get('snackable') is True for fid, record in inventory()['format'].items()}
+    except (ValueError, KeyError, OSError, TypeError):
+        return None
+
+
+def share_ask_errors(slot, text, formats=None):
+    """Share asks in a snackable slot's words, as refusals (R99); a check that cannot run refuses too.
+
+    Run lint and social preflight refuse them first; release checks the signed
+    words again, as it does the copy lint, because it never reads lint.json.
+    """
+    formats = snackable_formats() if formats is None else formats
+    if formats is None or slot['format'] not in formats:
+        return ['share asks could not be checked, so nothing releases: no social format record for '
+                + str(slot['format'])]
+    try:
+        if not cta_applies(formats[slot['format']]):
+            return []
+        return ['share call to action ' + e for e in cta_errors(text)]
+    except ValueError as exc:
+        return ['share asks could not be checked, so nothing releases: ' + str(exc)]
+
+
+def argument_errors(call, slot, formats=None):
+    """Guards on any Buffer call, however it was built. formats: snackable_formats(), read once by a plan."""
     args = call.get('arguments', {})
     meta = args.get('metadata') or {}
     service = call.get('service', CHANNELS[slot['channel']][0])
     out = []
     if call.get('tool') not in ('create_post', 'edit_post'):
         out.append('only create_post or edit_post is emitted')
+    named = [c for c in (call.get('channel_id'), args.get('channelId')) if c is not None]
+    if call.get('tool') == 'create_post' and 'channelId' not in args:
+        out.append('a create_post names its pinned Buffer channelId')
+    if not named:
+        out.append('the call names no Buffer channel; release only acts on a pinned channel')
+    for i, channel_id in enumerate(named):
+        if channel_id not in named[:i]:
+            out += channel_id_errors(slot['channel'], channel_id)
+    if 'text' in args:
+        out += copy_errors(args['text'])
+        out += share_ask_errors(slot, args['text'], formats)
+    out += media_copy_errors(args)
     if service != CHANNELS[slot['channel']][0]:
         out.append('the call is for another service than the slot')
     if args.get('mode') not in (None, 'customScheduled'):
@@ -529,14 +628,101 @@ def approved_creative(spec):
     return approved
 
 
-def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None):
+def route_holds(slot, as_of):
+    """(holds, known, since): social.route's capability holds for the slot's channel and format.
+
+    known is False when the route cannot be read at all (a format the channel
+    does not carry, or a broken social/ record); such a slot always holds.
+    since is the date its capability record was last verified, or None.
+    """
+    try:
+        decision = route(CHANNEL_PROFILE[slot['channel']], slot['format'], as_of=as_of)
+    except (ValueError, KeyError) as exc:
+        return ['route_unknown: ' + str(exc)], False, None
+    record = decision.get('known_capability') or {}
+    return decision['holds'], True, record.get('verified_at')
+
+
+def capability_checks(spec, signed, ledger=None):
+    """(channel, format) -> slot_id of the route's capability check in this run.
+
+    On a route not yet verified in social/tools/buffer.json, that one post is
+    the route's capability check (docs/PUBLISHING-AUTHORITY.md, 28 October):
+    the check this run's ledger already released, else the earliest signed,
+    scheduled slot on the route, so a slot signed later never becomes a second check.
+    """
+    scheduled = [s for s in spec['slots'] if not is_draft(s) and signed.get(s['slot_id']) == s['payload_sha256']]
+    first = {}
+    slots = {s['slot_id']: s for s in spec['slots']}
+    for sid, entry in sorted(((ledger or {}).get('released') or {}).items()):
+        if isinstance(entry, dict) and entry.get('capability_check') is True:
+            slot = slots.get(sid) or entry
+            if isinstance(slot.get('channel'), str) and isinstance(slot.get('format'), str):
+                first.setdefault((slot['channel'], slot['format']), sid)
+    for slot in sorted(scheduled, key=lambda s: instant(s['due_at'])):
+        first.setdefault((slot['channel'], slot['format']), slot['slot_id'])
+    return first
+
+
+def other_capability_checks(root, run_id):
+    """Capability checks released in other runs' ledgers under .scratch/runs, as dicts.
+
+    A ledger that cannot be read refuses the plan: without it no route can say
+    whether its check is still waiting to be recorded as passed.
+    """
+    base = Path(root) / '.scratch' / 'runs'
+    own = safe_name(run_id)
+    found = []
+    for path in sorted(base.glob('*/ledger.json')) if base.is_dir() else []:
+        if path.parent.name == own:
+            continue
+        try:
+            ledger = read_json(path)
+            released = ledger['released']
+            if not isinstance(released, dict):
+                raise TypeError('released is not a map')
+        except (ValueError, KeyError, TypeError, OSError) as exc:
+            raise ValueError('another run\'s release ledger cannot be read, so no route can tell whether its'
+                             ' capability check is pending: ' + path.parent.name + ' (' + str(exc) + ')') from None
+        if ledger.get('run_id') == run_id:
+            continue  # this run's own ledger, which release_plan reads as its ledger
+        for sid, entry in sorted(released.items()):
+            if isinstance(entry, dict) and entry.get('capability_check') is True:
+                found.append({'run_id': ledger.get('run_id'), 'slot_id': sid, 'channel': entry.get('channel'),
+                              'format': entry.get('format'), 'planned_at': entry.get('planned_at')})
+    return found
+
+
+def pending_check(key, other_checks, since):
+    """Another run's capability check on this route that the route's record has not caught up with.
+
+    A check planned on or before the record's last verified date is what that
+    record already settled. A check whose format or date was not recorded
+    counts as pending: unknown never releases.
+    """
+    for check in other_checks or []:
+        if check.get('channel') != key[0] or check.get('format') not in (key[1], None):
+            continue
+        try:
+            planned = instant(check['planned_at']).date().isoformat()
+        except (KeyError, TypeError, ValueError):
+            planned = None
+        if since and planned and planned <= since:
+            continue
+        return check
+    return None
+
+
+def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None,
+                 other_checks=None):
     """Arguments for signed, unreleased slots only, once per slot.
 
     asset_paths maps slot_id to its ordered local files; without them a slot
     with assets is held, because its bytes cannot be checked. channels is the
     live list_channels readback; targets maps slot_id to a fresh get_post of
-    its buffer_draft_id. Returns calls, holds and the updated ledger; the
-    caller saves the ledger.
+    its buffer_draft_id. other_checks lists the capability checks other runs
+    released (other_capability_checks). Returns calls, holds and the updated
+    ledger; the caller saves the ledger.
     """
     if not isinstance(spec, dict) or not isinstance(spec.get('slots'), list):
         raise ValueError('run spec needs a slots list')
@@ -547,13 +733,18 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
     asset_paths = asset_paths or {}
     targets = targets or {}
     approved = approved_creative(spec)
-    seen, calls, holds = set(), [], []
+    seen = set()
     for slot in spec['slots']:
         check_slot(slot)
+        if slot['slot_id'] in seen:
+            raise ValueError('duplicate slot_id: ' + slot['slot_id'])
+        seen.add(slot['slot_id'])
+    as_of = instant(now).date().isoformat()
+    first_post, routes = capability_checks(spec, signed, ledger), {}
+    formats = snackable_formats()
+    calls, holds = [], []
+    for slot in spec['slots']:
         sid = slot['slot_id']
-        if sid in seen:
-            raise ValueError('duplicate slot_id: ' + sid)
-        seen.add(sid)
 
         def hold(reason):
             holds.append({'slot_id': sid, 'hold': reason})
@@ -566,6 +757,39 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
             hold('already_released_once' if done.get('payload_sha256') == slot['payload_sha256']
                  else 'released_earlier_with_another_payload')
             continue
+        lint = copy_errors(slot['words'])
+        if lint:
+            # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels.
+            hold('copy_lint_refused: ' + '; '.join(lint))
+            continue
+        asks = share_ask_errors(slot, slot['words'], formats)
+        if asks:
+            # Krish, 28 Oct 2026: a snackable post is shared for a reason, never asked for the share.
+            hold('share_cta_refused: ' + '; '.join(asks))
+            continue
+        capability_check = False
+        if not is_draft(slot):
+            key = (slot['channel'], slot['format'])
+            if key not in routes:
+                routes[key] = route_holds(slot, as_of)
+            unchecked, known, since = routes[key]
+            if not known:
+                hold(unchecked[0])
+                continue
+            pending = pending_check(key, other_checks, since) if unchecked else None
+            if pending:
+                # "until a route has passed it, the route holds": across runs, not only within one.
+                hold('route_capability_check_pending: ' + str(pending.get('run_id')) + ' released '
+                     + str(pending.get('slot_id')) + " as this route's capability check; nothing else on the route"
+                     ' releases until social/tools/buffer.json records the route as passed')
+                continue
+            if unchecked and first_post.get(key) != sid:
+                # Krish, 28 Oct 2026: each route's first real post is its capability
+                # check; until the route has passed it, the rest of the route holds.
+                hold('route_not_verified: ' + '; '.join(unchecked) + '; its capability check is '
+                     + first_post[key] + ', and the rest wait until the route is recorded as passed')
+                continue
+            capability_check = bool(unchecked)
         if slot['publish_mode'] == 'engine' and any(a['sha256'] not in approved for a in slot['assets']):
             hold('creative_not_approved')
             continue
@@ -589,14 +813,18 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
                 else:
                     hold('edit_would_drop_link_preview')
                 continue
-            call = call_arguments(slot, channel, now, target)
+            call = call_arguments(slot, channel, now, target, formats)
         except ValueError as exc:
             hold(str(exc))
             continue
         calls.append(call)
         entry = {'payload_sha256': slot['payload_sha256'], 'tool': call['tool'], 'channel': slot['channel'],
-                 'service': call['service'], 'channel_id': call['channel_id'],
-                 'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat()}
+                 'format': slot['format'], 'service': call['service'], 'channel_id': call['channel_id'],
+                 'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat(),
+                 'copy_lint_version': copy_lint_version()}
+        if capability_check:
+            # The route's first real post: its readback is the capability check.
+            call['capability_check'] = entry['capability_check'] = True
         if target is not None:
             # The before-state, journalled ahead of the mutation.
             entry['target_sha256'] = _readback_digest(target)
@@ -646,6 +874,9 @@ def check_readback(slot, post, stage, ledger, accounts=None):
         raise ValueError(sid + ': readback is on another service')
     if not post.get('channelId') or post['channelId'] != entry.get('channel_id'):
         raise ValueError(sid + ': readback is on another Buffer channel than the one released')
+    pinned = channel_id_errors(slot['channel'], post['channelId'])
+    if pinned:
+        raise ValueError(sid + ': ' + pinned[0])
     if post.get('text') != slot['words']:
         raise ValueError(sid + ': readback text differs from the signed words')
     if len(post.get('assets') or []) != len(slot['assets']) and slot['format'] != 'story':
@@ -742,6 +973,8 @@ def engine_publications(posts, ledger, accounts=None):
         channel = entry.get('channel')
         if channel not in CHANNELS or p.get('channelService') != CHANNELS[channel][0]:
             continue
+        if channel_id_errors(channel, p.get('channelId')):
+            continue
         if native_host(channel, p.get('externalLink'), (accounts or {}).get(channel)):
             out.append(p)
     return out
@@ -827,7 +1060,8 @@ def main(argv=None, root=None):
             if args.action == 'plan':
                 result = release_plan(spec, read_json(args.decision), ledger, _ordered_assets(spec, args.assets),
                                       read_json(args.channels) if args.channels else None, args.now,
-                                      read_json(args.targets) if args.targets else None)
+                                      read_json(args.targets) if args.targets else None,
+                                      other_capability_checks(root, spec['run_id']))
                 if result['calls']:
                     write_json(ledger_path, result['ledger'])
                 if result['holds']:

@@ -1,7 +1,7 @@
 {
   "ig-story-1": {
     "id": "aaaaaaaaaaaaaaaaaaaaaa01",
-    "channelId": "cccccccccccccccccccccc03",
+    "channelId": "6adccb3a778b240e2fafbb63",
     "channelService": "instagram",
     "status": "draft",
     "via": "api",
@@ -28,7 +28,7 @@
   },
   "linkedin-1": {
     "id": "aaaaaaaaaaaaaaaaaaaaaa02",
-    "channelId": "cccccccccccccccccccccc05",
+    "channelId": "6adccba0778b240e2fafc06d",
     "channelService": "linkedin",
     "status": "draft",
     "via": "buffer",
@@ -52,7 +52,7 @@
   },
   "x-1": {
     "id": "aaaaaaaaaaaaaaaaaaaaaa03",
-    "channelId": "cccccccccccccccccccccc06",
+    "channelId": "6adccbf5778b240e2fafc457",
     "channelService": "twitter",
     "status": "draft",
     "via": "api",
