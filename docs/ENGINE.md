@@ -281,7 +281,8 @@ labels Krish confirmed go in a `--completions` JSON list,
 `{label, item_id, at, evidence_url, confirmed_by: "Krish"}`, where the
 label is Published, Sent, Applied, Verified or Reviewed; each becomes an
 event. Skipped is his Purge and arrives as `declined`. Planned experiment
-templates are `strategy` proposals for his decision to start one.
+templates are `strategy` proposals for his decision to start one, sent once
+by the GitHub runner (below).
 
 **Objectives.** `new_subscribers` (people, New York week) is the sum of this
 week's Substack `new_free` observations, validated and added with the same
@@ -308,6 +309,22 @@ missing with "Measured only in the publication workspace", and its log
 prints only codes, counts and digests, never the directive, because this
 repository is public. It uploads no artifact. A missing secret or variable
 stops the job with an error and nothing reported.
+
+**Each ask once** (plan item D2, 2026-10-29). Before it reports, the runner
+reads what Krish already has: every decision since 2026-10-19 and the latest
+earlier runner report within 14 days, including that report's
+"Waiting on Krish, not sent again" hold (`already_sent`). A clean runner keeps
+no state, so Control Center is the ledger. An ask he answered (approved,
+declined or done, on any payload) is never sent again; one still waiting is
+named in the waiting hold and not resent; today's own report is never read,
+so a rerun replays. If any read fails, nothing is proposed and the hold says
+so. The standing W45 to W52 plan (`specs/standing-plan.json`, docs/RUN.md
+"Gates") goes once as `stage: "plan"` behind `strategy`; its words are frozen
+there so the digest he approves is the one every go-live names, and a changed
+plan is a new `proposal_id`. Each amplification pilot in `lists/pilots.json`
+is reported by its verdict path, never as a proposal: its recorded verdict,
+or a hold saying it awaits measurement (or a verdict), when its judge window
+ends and what closes it.
 
 **Errors.** 401 `unauthorized`, 403 `forbidden`, 409 `report_conflict` or
 `engine_inactive`, 413 `payload_too_large`, 429 `rate_limited`, 5xx
