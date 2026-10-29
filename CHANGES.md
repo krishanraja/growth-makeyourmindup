@@ -1,5 +1,24 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (Wave 2, W2.11 and W2.12; Wave 3, W3.3): one local layout, a
+  shorter NOW.md and the chat backstop.
+  - W2.11 (R120): `config/studio.json` `local_roots` names the repos,
+    worktrees and runtime folders; `engine/studio.py` resolves them and a CI
+    test refuses a hard-coded folder on his machine anywhere else. Moving an
+    existing clone waits on his consent row (W3.4); the handover no longer
+    names a folder.
+  - W2.12: NOW.md's older status paragraphs and the 27 and 28 October
+    entries moved verbatim to `docs/history/LOG.md`; a test caps NOW.md at
+    16 KB.
+  - W3.3 (R121): a SessionEnd hook (`.claude/settings.json`,
+    `scripts/taste_backstop.py`) keeps only his typed lines a local filter
+    flags as a correction or a rejection, scrubbed of anything shaped like a
+    key, token, address or number, tagged makeyourmindup, in the ignored
+    `.scratch/taste/backstop.jsonl`, each once. Asked how the lines reach
+    Control Center when no session holds the key, Krish chose "Local file,
+    runner posts". The runner that posts them waits on Control Center naming
+    the route for `taste_reports` (brief of 29 October); until then nothing
+    is sent.
 - 2026-10-29 (Wave 2, W2.9): the off-day lane. His brief: "First posts on
   Tuesday 10 November" and "0 off-day posts land on Monday, Wednesday or
   Friday". Asked in this session which ruling wins, the off-day weekdays or

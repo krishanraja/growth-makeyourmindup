@@ -32,3 +32,13 @@ middle. Every example in Growth's tests is synthetic.
 - Growth's reports will carry `engage_done`, `offday_stocked` and
   `offday_slots_filled` facts as activity lines first; name the field you
   want them in for DONE_CHECKS and Growth adds it.
+
+## Control Center: the chat backstop (W3.3)
+
+- Each chain repository's SessionEnd hook now keeps Krish's flagged,
+  scrubbed correction and rejection lines locally (`.scratch/taste/
+  backstop.jsonl`, schema `growth-taste-backstop/1`: venture, repository,
+  line, line_sha256, session, noted_at). Krish chose "Local file, runner
+  posts". Name the report route and field that take them into
+  `taste_reports` for an engine-keyed runner, and Growth's PC runner posts
+  them, once each by line_sha256.

@@ -59,88 +59,9 @@ own dated data confirms it. Pitches, swaps and partner notes are private
 emails he sends from his own address, so they may carry his signature; every
 public draft is still refused if it names him. 376 local tests pass (29 October).
 
-28 October daily readback is partial: Buffer My organization now has 12
-connections, including other ventures; only this engine's explicit scope applies.
-Four unscheduled drafts include two labelled engine checks; no scheduled/error
-items returned. Shopping-agent LinkedIn remains an untouched Buffer draft;
-separate native publication is unknown. Codex browser navigation timed out, so
-no fresh native subscriber/follower measurements or engagement candidates are
-claimed. The local read-only Control Center directive path lacks engine
-configuration, so GA4 events remain unverified. See
-`.scratch/channel-audit/daily-20261028/REVIEW.md` for the gate packet and recovery.
-The 27 October North Star reading below remains historical, not a new zero.
-
-27 October session closeout: the existing Drive 4 Growth folder is the versioned
-distribution library, with the shopping-agent v3 PDF and copy preserved.
-`docs/ASSET-STORAGE.md` now governs every session; `docs/SESSION-HANDOVER.md`
-points to the private asset inventory and recovery archive. Private evidence
-stays local because the supplied Drive folder is editable by link. Content
-Engine production originals remain in their existing home. Krish will publish
-LinkedIn manually in Buffer; publication is not claimed. Existing daily/weekly
-automations continue and must follow the storage/closeout rule.
-
-27 October daily run: native early pilot metrics and all scoped audience baselines were refreshed. The pilot is only about 12-15 hours old; exact 24-hour comparisons remain pending. No additional approved native supply is queued. Shopping-agent LinkedIn document and background comment are prepared separately; Krish explicitly chose manual publication. Buffer stores the correct PDF but loses its saved preview; native LinkedIn processed and preserved six pages. One source-verified professional conversation and a specific native amplification brief are in the private daily-20261027/REVIEW.md. Existing Muse Short related-video continuation still persists. No public changes, engagement submission or paid-offer changes occurred.
-
-
-The social operating system is structured under social/: seven scoped channel
-profiles, six format delivery contracts, one Buffer tool profile, dated
-evidence-linked lessons and five closed schemas. `growth.py social check`,
-`social route` and `social preflight` run offline without credentials or
-external writes. Routes reuse verified procedures and expose bounded
-capability rechecks; preflight verifies exact package identity and asset
-bytes without authenticating approval or granting publication authority.
-Content-engine retains all creative production standards. Lessons distinguish
-accepted user rules, observed tool behaviour and untested growth hypotheses.
-
-Growth owns amplification ideas, channel strategy, social management,
-authorised distribution and measurement. Content-engine alone owns
-production and production standards for every format. Growth passes account
-context into its briefs rather than maintaining a parallel production canon.
-
-The approved eight-card Grok Bot vs Muse carousel was scheduled on publication
-Instagram and Facebook for 26 October at 18:30 Europe/London. Both now read
-Sent with native links: Facebook at 18:30:57 and Instagram at 18:32:27. Both
-native posts were independently reopened with the correct account/caption/art.
-The fresh social-manager chat published the existing X scorecard and TikTok
-eight-photo draft at 20:44 and 20:46 London, then all six existing Story drafts
-at 20:55-20:56 in hook/proof/action order on both Meta accounts. Every native
-destination was reopened. Content Engine's frame-1 repair clears header and
-reply controls; frames 2 and 3 retain their original hashes. Facebook's live
-AI-content overlay touches the final frame's small wordmark, recorded for the
-next production pass. The approved continuation points to the live carousel;
-Buffer's Instagram Link sticker requires Notify Me, so it was not added.
-LinkedIn remains an unscheduled draft for Krish's final click, with no live
-edits. There are no duplicate feeds or public illustration boilerplate.
-The paid offer is unchanged. Buffer MCP and all scoped owner browser surfaces
-were accessible. Browser work uses only Codex in-app tabs, never native desktop
-apps or OS dialogs. Private receipts are in the existing pilot's fresh-owner/.
-Daily 09:00 and Saturday 12:00 London automations now target the fresh owner;
-the existing schedules were preserved and no duplicate automation was created.
-The structured registry now separates voice context from publication authority,
-and adds native Story delivery checks plus a public boilerplate guard.
-The full local suite passed 168 tests. Private state, all candidate assets,
-accepted hashes, journals and a zero-context handover are preserved on disk.
-Personal LinkedIn's goal is trust and relevant professional relationships,
-with no daily posting quota. Daily follower growth execution follows
-docs/FOLLOWER-GROWTH.md; new subscribers from useful organic sharing remains
-the publication North Star. See docs/SESSION-HANDOVER.md for continuation.
-
-Personal-account voice is now non-negotiable in docs/ACCOUNT-VOICE.md:
-sincere, warm, humble and pleased to share something useful. Publication
-Instagram retains its editorial voice. BROWSER.md covers supported draft
-operations and preserves the separate publication approval gate.
-
-The channel audit remains partial; incomplete account windows and checkpoints
-stay open in private evidence. An earlier saved-editor check read "I put";
-the current linked video page renders "Iput", so the surfaces need reconciling
-before claiming that typo fixed everywhere. No new body save was made. The live paid
-offer is unchanged. Use only the signed-in Codex browser; never Skyvern,
-Chrome, cookie export or Stripe. Daily work and trial observations are
-recorded privately; scheduled wakeups and prepared drafts are not proof of
-publication, follower growth or financial ROI.
-
 ## What changed recently
 
+- 2026-10-29 **Wave 2's Growth parts are built, in PRs #32 to #34 (stacked, open).** W2.8: a go-live dispatch can name content-engine's piece manifest, and any draft that is not exactly its channel's post is held (R115); one go-live per post through `per_item_review`, with his No before release as the Pull; each engage tap opens the exact post or profile (R116); sends and saves per reach reach the measure report (R117); YouTube long-form is a route. W2.9, after his "Mix wins: every day": `growth.py mix offdays`, `mix topup` (never the series slot or over a cap, R118) and `mix clock`; a filler claim with a figure names its source (R119). W2.11 and W2.12: `config/studio.json` and a path guard (R120); NOW.md history moved to `docs/history/LOG.md` under a 16 KB cap. W3.3: a SessionEnd hook keeps his flagged, scrubbed corrections locally (R121). Nothing posted, sent or spent.
 - 2026-10-29 **The mock kit matches the published artwork.** The renderer (`render/`, `scripts/render_mocks.mjs`) now draws the wordmark, two-tone headlines, versus rows, number cards, video chapter cards and evidence cards from the 19 and 26 October publish boards Krish pointed to; `render/KIT.md` marks each rule observed or interpreted. The passports motif and his headshot are left out (his ruling; no content names him). Every template renders byte-identically, so a mock's hash is reproducible. The W45 board went to his list as three asks.
 - 2026-10-29 **PR #19 merged (`fe391f0`) after four adversarial reviews of the concept posting path.** His no on any part of any version stops the week for good; a line he adds or changes in an amended yes holds it; a concept he deleted or edited stays stopped; a concept goes out once per channel a week, as Buffer shows it; a post still scheduled or sent after his no is loud; the mock link he opens must download to a mock hash he approves; the local `run release` counts the day from Buffer too. Failures F120 to F132, rules R111 to R113, 745 tests on Python 3.9 and 3.12. Read back on main: keys, measure and release each ran green by hand with counts-only logs (release stops at "BUFFER_API_KEY not set"). The first W45 `growth-mix-plan` dispatch was refused `bad_weights`: GitHub hands the client_payload over with its keys reordered, and the handoff required mix.json's order. It now accepts any order and restores mix.json's (F132). The W45 board is published privately for Krish with every mock and its hash.
 - 2026-10-29 **Concept approval runs on GitHub Actions** (branch of PR #19, merged with main's PR #26). Main's rules R101 to R104 keep their numbers; this branch's R101 to R106 are now R105 to R110. L0 `run autorelease` is the one executor for posts made from an idea and mock Krish approved in the week's mix plan: it reads the plan, his decision and each post's review back from Control Center by digest (never a local file, a dispatch or a PC `.scratch`), applies main's own readback rules (`engine/run/decision.py` `judge`, `cc_readback`, `concept_part`) and release's own checks (`concepts.authority`, `release.concept_post_hold` with `spec.review_reason`, the daily cap counted from Buffer), and schedules each 5 to 90 minutes before its time. A new handoff event, `growth-mix-plan`, takes the ideas board to his list without a PC `.scratch`, in parts of at most 8,000 characters when a week is longer. The go-live ledger is real on the runner (claims kept in Control Center), and a go-live naming more than one New York day holds (R94). Failures F111 to F119. Built and tested, not activated: nothing has been dispatched or scheduled this way.
@@ -149,16 +70,13 @@ publication, follower growth or financial ROI.
 - 2026-10-29 **Pitches, swaps and partner notes may carry his signature.** They are private emails Krish sends himself, not published content, so `engine/packs.py` skips only the `no_name` pattern for those pack kinds; every other copy-lint pattern still runs on them. The Tuesday pitch pack no longer fails its check on the sign-off in `jobs/pitches.md`.
 - 2026-10-29 **No content names Krish** (his ruling of 28 October: "Remember, no content refers to Krish, ever."). The copy lint is re-vendored at 2026-10-29.3 with the `no_name` pattern and the `article_body` surface, which `engine/copy_lint.py` now knows; alt text (as carousel text), release titles and the Control Center loop's post drafts are linted too; the doctrine says the publication speaks as "we" and his personal accounts stay personal, never naming him. Rule R100.
 - 2026-10-29 **Review fixes on the merged branch.** Share asks are refused only where they open a sentence, except three no true sentence about other people says, so true reporting ("X removed the share button") passes; run status compares a recorded send test again with the slot's share block; `social preflight --target` checks a reused Buffer draft's get_post readback before any edit_post; release holds a snackable slot that asks for the share and holds a route whose capability check another run released; `run send-test --stage` stages a slot's assets under blind names; the copy lint reads U+2028, U+2029 and U+0085 as line ends, as content-engine does; report and numbers packs may quote held copy; rule ids run past R99.
-- 2026-10-28 **Channel lock, copy lint and the plan's rulings** (Wave 1 of the plan Krish approved on 28 October). Release and social preflight pin each Buffer channel by channelId and deny the other ventures' channels by id; an unverified route releases only its first post as the capability check; content-engine's copy lint runs in run lint, preflight, release, audit repairs and pack drafts; `docs/PUBLISHING-AUTHORITY.md`, `docs/ENGINE-BOUNDARY.md` and `docs/CAROUSEL-STANDARD.md` record "Approve each day Monday", the Buffer routes, derived carousels, the off-day lane and the 10-minute engage queue. The share package adds the share block, the share-ask lint, the blind send test and sends per reach. Rules R92 to R99.
-- 2026-10-27 **The engine is rebuilt on the bulletproof architecture, phases 0 to 2** (`docs/plans/2026-10-27-engine-architecture.md`). One signed run spec per week or piece (`growth.py run new|lint|status|pack`), computed readiness, a Release Gate pinned to this engine's eight Buffer channels, the autonomy loop (plan, go-live once, his amended words, a declined check-in stops its plan), 12 crew cards with the What-Works Analyst and the Measurement Specialist, a failure register F01 to F65 and G1 to G9 and quoted rules R1 to R91, each guarded by a test (323 tests). Rulings that day: Substack Notes (from his profile, @mindmakerlive) and Threads join; sign the week with an express lane for meme posts; a full Canva brand kit by Cowork (`docs/briefs/2026-10-27-canva-brand-kit-cowork.md`); secondary targets for followers and paid subscribers; the audit authority covers Facebook and Threads; GA4 comes through Control Center, which now sends per-post readings in this engine's directive (protocol 1.10.0, krishanraja/control-center#578, merged).
-- 2026-10-26 **Drafts follow Krish's approved voice rules from the daily directive.** Control Center protocol 1.5.0 adds `taste` to the directive; `cc start` prints the approved rules as one labelled block and keeps it in `.scratch/cc/voice-rules.txt` for the drafting steps: how a draft is written, never what it is about, never fed to a check, score or queue. None approved yet means none invented; absent means unknown.
-- 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets how hard it pushes. The number is in `docs/NORTH_STAR.md`; contract: ai-harness `contract/north-star-metric.md`.
 
 ## What is next and what is waiting on Krish
 
-- Next: Krish approves the W45 mix plan on his list (dispatched 29 October after F132: 25 ready ideas in three asks of at most 8,000 characters, each read back by digest; no mock links, he views the mocks on the private board page). The `BUFFER_API_KEY` secret is set and the key check reads Buffer ok (29 October), so release acts on his approvals from now on. Then build the maker (a GitHub Actions job that drafts each day's posts from approved concepts and hands them off with their reviews) and the Saturday board job. After that, a session dispatches the week of 9 November's mix plan (`growth-mix-plan`, `docs/CONCEPT-MANIFEST.md`) so Krish approves its ideas and mocks on his list, then hands off each derived draft with its review in the go-live manifest; release schedules them. Also: for Monday 2 November, when the Monday 26 piece goes live (his transition ruling), prepare each Buffer route's first real post as a capability check for him to approve that morning, through `growth.py run release` (it holds the rest of an unverified route), and record each route that passes in `social/tools/buffer.json`; then build Wave 2 by Saturday 7 November (one go-live decision read per post, the manifest, route checks, metrics, the engage queue and the off-day lane, first posts Tuesday 10 November). The GA4 event-name readback (`invariants/ga4.json`) is still open; LinkedIn stays his own click.
+- Next: merge #32, #33 and #34 in order (each green on CI), and PR #31 (the maker) beside them. Then content-engine writes `0 Publish/manifest.json` and dispatches with `piece_manifest` and `per_item_review` on every slot (`docs/briefs/2026-10-29-wave2-content-engine-and-control-center.md`), and Control Center names the fields for `engage_done`, `offday_stocked`, `offday_slots_filled` and the backstop's `taste_reports` route. Krish approves the W45 mix plan on his list. For Monday 2 November, prepare each Buffer route's first real post as its capability check for him, through `growth.py run release`, and record each that passes in `social/tools/buffer.json`. First off-day posts Tuesday 10 November. The GA4 event-name readback (`invariants/ga4.json`) is still open; LinkedIn stays his own click.
 - Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake);  the Buffer plan purchase (his click: he keeps Buffer for makeyourmindup and Heartside, 29 October; Essentials keeps every capability the engine uses, Full Time is added at its launch); whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry: @therealkrisho (X and TikTok), krishraja1 (Threads), linkedin.com/in/krish-raja and hello@krishraja.com (nothing renamed). The architecture branch is now merged into main. New Claude cloud scheduled tasks (the architecture plan's release and measure automations) are off the table: Krish, 2026-10-29, "I want zero Claude routines. No Claude schedules of any kind in this architecture"; a new schedule here is a GitHub Actions job.
-- North Star check (2026-10-29, after the merge): holds. Still 0 of 25 at U4; this session moved the floor's machinery, not the number: once he approves W45 and the `BUFFER_API_KEY` secret is set, Instagram, YouTube Shorts, TikTok and X can carry three to four posts a day.
+- North Star check (2026-10-29, Wave 2 session): holds. Still 0 of 25 at U4; Wave 2 moved the posting path (approved posts checked against the board, top-ups into free slots), not the number.
+- Earlier check (2026-10-29, after the merge): holds. Still 0 of 25 at U4; this session moved the floor's machinery, not the number: once he approves W45 and the `BUFFER_API_KEY` secret is set, Instagram, YouTube Shorts, TikTok and X can carry three to four posts a day.
 
 ## Read next
 

@@ -1,0 +1,10 @@
+{
+  "schema": "studio/1",
+  "why": "W2.11, one local layout (Krish's saved Wave 2 brief): every reader resolves its folders from here, and the CI path guard refuses a hard-coded one anywhere else. Moving an existing clone waits on his consent row for that exact folder (Wave 3, W3.4); until then a clone stays where it is.",
+  "local_roots": {
+    "repos": "C:\\Users\\krish\\dev\\makeyourmindup\\{repo}",
+    "worktrees": "C:\\Users\\krish\\dev\\makeyourmindup\\.worktrees\\{repo}\\{branch}",
+    "runtime": "%LOCALAPPDATA%\\makeyourmindup\\"
+  },
+  "preserve": [".scratch"]
+}
