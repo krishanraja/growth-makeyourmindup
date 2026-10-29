@@ -262,6 +262,32 @@
         "account-connection"
       ],
       "secrets": []
+    },
+    {
+      "id": "maker",
+      "lane": "L0_code",
+      "workflow": "maker.yml",
+      "trigger": "04:30 UTC daily with --deliver, for the next New York day; by hand a dry run unless deliver is ticked (today or tomorrow in New York only)",
+      "may_write": [
+        "Buffer drafts saved with saveToDraft true and no due time, made only from ideas and mock files Krish approved in the week's mix plan",
+        "each draft's review and the day's index in Control Center, through the handoff's own code, read back by digest"
+      ],
+      "never": [
+        "schedule, publish or delete a post",
+        "make a draft on LinkedIn or on any channel but Instagram, YouTube, TikTok and X",
+        "use a mock file whose bytes do not hash to its approved sha256",
+        "make a second draft of one concept on one channel in a week",
+        "change the words or digest of anything Krish approved"
+      ],
+      "actions": [
+        "make-concept-drafts",
+        "record-derived-reviews"
+      ],
+      "secrets": [
+        "CONTROL_CENTER_ENGINE_TOKEN",
+        "BUFFER_API_KEY",
+        "ANTHROPIC_API_KEY"
+      ]
     }
   ],
   "automations": [

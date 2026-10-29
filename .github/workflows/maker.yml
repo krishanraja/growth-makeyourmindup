@@ -1,0 +1,72 @@
+name: maker
+# Lane L0. Every day at 04:30 UTC (just before or just after midnight in New
+# York) the maker reads the ideas and mocks Krish approved in the week's mix
+# plan from Control Center, makes the next New York day's posts from them as
+# Buffer drafts (saved as drafts with no due time, never published), and hands
+# each one off with its review, so release.yml can schedule it later under
+# every gate. The words and their blind review come from the Anthropic API.
+# Run by hand it is a dry run unless deliver is ticked: it writes and reviews
+# the words but saves nothing and reports nothing. It never schedules,
+# publishes or deletes, and never touches LinkedIn. This repository is
+# public, so the log carries only counts and reason codes: no words, URLs,
+# ids or keys, and nothing is uploaded.
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+    inputs:
+      deliver:
+        description: 'Save the drafts in Buffer and hand them off (off: a dry run)'
+        required: false
+        type: boolean
+        default: false
+      day:
+        description: 'The New York day to make, YYYY-MM-DD: today or tomorrow there only (empty: the next day)'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maker
+  cancel-in-progress: false
+
+jobs:
+  maker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MAKER_DELIVER: ${{ github.event_name == 'schedule' || inputs.deliver }}
+      MAKER_DAY: ${{ inputs.day }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Make tomorrow's drafts from approved ideas and mocks
+        env:
+          CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
+          CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$CONTROL_CENTER_ENGINE_TOKEN" ]; then
+            echo "::error::The CONTROL_CENTER_ENGINE_TOKEN secret is not set for this repository. Nothing was made."
+            exit 1
+          fi
+          if [ -z "$BUFFER_API_KEY" ]; then
+            echo "::error::The BUFFER_API_KEY secret is not set for this repository. Nothing was made."
+            exit 1
+          fi
+          set -- run maker
+          if [ "$MAKER_DELIVER" = "true" ]; then
+            set -- "$@" --deliver
+          fi
+          if [ -n "$MAKER_DAY" ]; then
+            set -- "$@" --day "$MAKER_DAY"
+          fi
+          python growth.py "$@"
