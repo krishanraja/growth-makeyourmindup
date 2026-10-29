@@ -31,7 +31,8 @@ The historical first-run instructions below are not a reason to republish.
 
 ```text
 Take over daily social management and follower growth for makeyourmindup.
-Work from C:\Users\krish\dev\mindmake\growth-makeyourmindup, never the profile root.
+Work from this repository's own clone, never the profile root; its folder is
+config/studio.json local_roots.repos once Krish's W3.4 consent moves it.
 Read AGENTS.md, NOW.md, BROWSER.md, docs/NORTH_STAR.md,
 docs/PUBLISHING-AUTHORITY.md, docs/ACCOUNT-VOICE.md, social/README.md,
 jobs/daily-growth.md and docs/FOLLOWER-GROWTH.md. Apply the canonical harness.

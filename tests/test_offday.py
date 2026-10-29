@@ -95,3 +95,32 @@ class OffDays(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ClockLines(unittest.TestCase):
+    """W2.2 clock facts reach the report as activity lines until Control Center names their fields."""
+
+    def test_offday_and_backstop_facts_are_reported_and_unknown_is_said(self):
+        import json
+        from pathlib import Path
+        import tempfile
+        from engine import cc_loop
+        from engine.core import write_json
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for name in ('mix.json',):
+                (root / name).write_text((Path(mix.ROOT) / name).read_text(encoding='utf-8'), encoding='utf-8')
+            import shutil
+            shutil.copytree(Path(mix.ROOT) / 'social', root / 'social')
+            shutil.copy(Path(mix.ROOT) / 'intensity.json', root / 'intensity.json')
+            self.assertEqual(cc_loop.clock_lines(root, '2026-11-08T12:00:00Z'), [])
+            write_json(root / cc_loop.MIX_DIR / ('plan-' + WEEK + '.json'), full_plan())
+            (root / cc_loop.BACKSTOP_FILE).parent.mkdir(parents=True)
+            (root / cc_loop.BACKSTOP_FILE).write_text(json.dumps({'posted': False}) + '\n' + json.dumps({'posted': True})
+                                                      + '\n', encoding='utf-8')
+            lines = cc_loop.clock_lines(root, '2026-11-08T12:00:00Z', taps=4)
+        joined = ' | '.join(lines)
+        self.assertIn('Clock engage: 4 engagement taps', joined)
+        self.assertIn('Clock offday for the week of ' + WEEK + ': offday_stocked', joined)
+        self.assertIn('Chat backstop: 1 flagged line', joined)
+        self.assertIn('none sent', joined)
