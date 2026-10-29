@@ -1105,15 +1105,18 @@
     },
     {
       "id": "R94",
-      "statement": "Go-live is approved per day on the Monday final board; it authorises scheduling exactly that day's approved payloads, read back from Buffer. Pulling a post until its slot is Wave 2 (plan W5) and is not built or claimed here.",
+      "statement": "Go-live is approved per day on the Monday final board; it authorises scheduling exactly that day's approved payloads, read back from Buffer. The handoff proposes one go-live per New York calendar day, split at 8,000 characters only within that day, so one press never authorises more than one day's posts (F106). Pulling a post until its slot is Wave 2 (plan W5) and is not built or claimed here.",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Approving a day on the Monday final board authorises scheduling exactly that day's posts, nothing more.",
       "enforced_by": [
-        "engine/run/release.py:release_plan"
+        "engine/run/release.py:release_plan",
+        "engine/run/handoff.py:golive_proposals",
+        "engine/run/handoff.py:by_day"
       ],
       "tests": [
         "test_release_refuses_unsigned_or_mismatched_slot",
-        "test_release_once_per_slot"
+        "test_release_once_per_slot",
+        "test_one_go_live_per_new_york_day"
       ]
     },
     {

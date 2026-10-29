@@ -43,10 +43,12 @@ LENGTH = {'week': 7, 'piece': 8, 'express': 1}
 
 def payload(slot):
     """Exactly what Krish signs for one slot; no other field moves the digest."""
+    from .release import SLOT_DOMAIN  # release imports nothing from here
     return {'channel': slot['channel'], 'format': slot['format'], 'words': slot['words'],
             'assets': [asset['sha256'] for asset in slot['assets']],
             'link_placement': slot['link_placement'], 'due_at': slot['due_at'],
-            'publish_mode': slot['publish_mode'], 'meta': slot['meta'], 'buffer_channel_id': slot['buffer_channel_id']}
+            'publish_mode': slot['publish_mode'], 'meta': slot['meta'], 'buffer_channel_id': slot['buffer_channel_id'],
+            'domain': SLOT_DOMAIN}
 
 
 def payload_sha256(slot):

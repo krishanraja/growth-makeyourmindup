@@ -59,7 +59,7 @@
       "buffer_draft_id": null,
       "meta": null,
       "buffer_channel_id": null,
-      "payload_sha256": "d712d36776e43e9fc3cd256e1f03bb9e5c76da2e50e6d4461ca3fa97543ebf49"
+      "payload_sha256": "52aa199f170d46c6da17357c147ac4f012deffceda7d423ed36ff54882368860"
     },
     {
       "slot_id": "threads-1",
@@ -77,7 +77,7 @@
       "buffer_draft_id": null,
       "meta": null,
       "buffer_channel_id": null,
-      "payload_sha256": "735b8a23358d0451be0fa336f477bf7b122e22feeb6c67609aa081f19efe1078"
+      "payload_sha256": "a05e310dbcfa7564d9f3b1137d1219ff1062e39c258fb7b20991b278d172a98d"
     },
     {
       "slot_id": "ig-story-1",
@@ -100,9 +100,29 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa01",
-      "meta": null,
+      "meta": {
+        "assets": [
+          {
+            "image": {
+              "sha256": "08ef523a2094c191daab36e94b658c49e05eb90a402627b6daa616d1af0eaca7",
+              "metadata": {
+                "altText": "Synthetic alt text for frame one."
+              }
+            }
+          }
+        ],
+        "schedulingType": "automatic",
+        "saveToDraft": false,
+        "metadata": {
+          "instagram": {
+            "type": "story",
+            "shouldShareToFeed": false,
+            "isAiGenerated": true
+          }
+        }
+      },
       "buffer_channel_id": null,
-      "payload_sha256": "3994c2f4abf547cfa448e28ae10ab36830488d6796ec2f3753e6b9ef11e5d8b0"
+      "payload_sha256": "ace13cd7ff23a75ff5a4309e1ae7ef2122ec1f6cf89aac3871b01ad73c7337d7"
     },
     {
       "slot_id": "tiktok-photo-1",
@@ -133,7 +153,7 @@
       "buffer_draft_id": null,
       "meta": null,
       "buffer_channel_id": null,
-      "payload_sha256": "d06441e9a8d7ad4476f598242c537bde56cc899f7cf6fbd894e1bb34ad8c30a4"
+      "payload_sha256": "a0bdc7e1e11218cef9b89241679e23257856596ad1f8e6f0cfc9a88f2fd9c82d"
     },
     {
       "slot_id": "linkedin-1",
@@ -158,7 +178,7 @@
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa02",
       "meta": null,
       "buffer_channel_id": null,
-      "payload_sha256": "35c7ad41532d5575474feb5e25be071bb2698060fd4be12c0d58b041b20bad78"
+      "payload_sha256": "14d5e9a01fe019457aae4074577fc6b29405a3af603f9de63a9a6e32c594b90f"
     },
     {
       "slot_id": "x-1",
@@ -181,14 +201,24 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa03",
-      "meta": null,
+      "meta": {
+        "assets": [
+          {
+            "image": {
+              "sha256": "2af8201f46f1f62223c55124101d104f206c416af92f1602b40b7d422b48a787"
+            }
+          }
+        ],
+        "schedulingType": "automatic",
+        "saveToDraft": false
+      },
       "buffer_channel_id": null,
-      "payload_sha256": "4064e88b685698ecf969342f3ba1cc4109c5dce45d7a293bfee6a68748082736"
+      "payload_sha256": "07236a34c2b15bdf91f7fd616a382db73afcb576f98741af5b88a5610e498161"
     }
   ],
   "signature": {
     "go_live_proposal_id": "synthetic-go-live-1",
-    "decision_digest": "50f5d2110b3fe27ce99e05649335928dea75ed675d6df1c7dae05047f380c841",
+    "decision_digest": "e32c38277022698508566526f60c02186d4d2bd8d262529c870cb6512f0afc06",
     "signed_at": "2026-11-01T10:00:00-05:00"
   }
 }

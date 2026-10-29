@@ -71,6 +71,25 @@ POST_FIELDS = '''id status text dueAt channelId channelService schedulingType vi
       ... on VideoAsset { video { title thumbnailOffset } } }
     metadata { ''' + METADATA_FIELDS + ''' }'''
 
+# What the edit does with each field the reads select (F109). An edit is revalidated as a
+# whole post (F01), so a field selected here that the edit neither sends nor holds on would
+# be dropped from the post: a draft with any other field set holds as uncarried_field_set.
+# `type` is carried as the post's shape on the services whose input takes none, and an
+# asset's mimeType follows its file. A newly selected field holds until it is listed here.
+HANDLED_METADATA = {
+    'InstagramPostMetadata': {'type', 'shouldShareToFeed', 'isAiGenerated', 'firstComment', 'link', 'stickerFields',
+                              'geolocation'},
+    'FacebookPostMetadata': {'type', 'firstComment', 'linkAttachment'},
+    'TwitterPostMetadata': {'type', 'isAiGenerated', 'threadCount', 'retweet'},
+    'ThreadsPostMetadata': {'type', 'topic', 'locationId', 'locationName', 'threadCount', 'linkAttachment'},
+    'TiktokPostMetadata': {'type', 'isAiGenerated', 'title'},
+    'YoutubePostMetadata': {'type', 'title', 'category', 'privacy', 'madeForKids', 'notifySubscribers', 'embeddable',
+                            'license', 'isAiGenerated'},
+    'SubstackPostMetadata': {'type', 'linkAttachment'},
+}
+HANDLED_ASSET = {'type', 'source', 'mimeType', 'image', 'video', 'document'}
+HANDLED_MEDIA = {'image': {'altText', 'userTags'}, 'video': {'title', 'thumbnailOffset'}}
+
 ACCOUNT_QUERY = 'query AccountCheck { account { id organizations { id } } }'
 POST_QUERY = 'query GetPost($input: PostInput!) { post(input: $input) { ' + POST_FIELDS + ' } }'
 POSTS_QUERY = ('query ListPosts($first: Int, $after: String, $input: PostsInput!) { posts(first: $first, after: $after, '
@@ -168,10 +187,12 @@ class Buffer:
             raise BufferError('response_too_large')
         return raw
 
-    def _graphql(self, operation, query, variables=None):
+    def _graphql(self, operation, query, variables=None, retry=True):
+        """One GraphQL call. A read is tried twice on a transient failure; a mutation passes
+        retry=False and is sent once, because a failure may still have landed (F107)."""
         body = {'operationName': operation, 'query': query, 'variables': variables or {}}
         raw = None
-        for attempt in (1, 2):
+        for attempt in ((1, 2) if retry else (1,)):
             try:
                 raw = self._send(body)
                 break
@@ -182,13 +203,13 @@ class Buffer:
                 error.close()
                 if status in (401, 403):
                     raise BufferAuthError(status) from None
-                if attempt == 1 and _transient(error):
+                if retry and attempt == 1 and _transient(error):
                     continue
                 if status == 429:
                     raise BufferError('buffer_rate_limited', status) from None
                 raise BufferError('buffer_server_error' if status >= 500 else 'buffer_rejected', status) from None
             except (urllib.error.URLError, OSError, http.client.HTTPException) as error:
-                if attempt == 1 and _transient(error):
+                if retry and attempt == 1 and _transient(error):
                     continue
                 reason = getattr(error, 'reason', error)
                 raise BufferError('buffer_timeout' if isinstance(reason, socket.timeout) else 'buffer_unreachable') from None
@@ -260,7 +281,7 @@ class Buffer:
             raise BufferError('no_due_at')
         payload = edit_input(post, due_at, text)
         self.mutations += 1
-        result = self._graphql('ScheduleDraft', SCHEDULE_MUTATION, {'input': payload}).get('editPost')
+        result = self._graphql('ScheduleDraft', SCHEDULE_MUTATION, {'input': payload}, retry=False).get('editPost')
         if not isinstance(result, dict):
             raise BufferError('buffer_bad_response')
         if result.get('__typename') != 'PostActionSuccess' or not isinstance(result.get('post'), dict):
@@ -271,11 +292,19 @@ class Buffer:
 
 # Carrying a draft forward ---------------------------------------------------
 
+def _uncarried(record, handled):
+    """True when the record sets a field (truthy) the edit does not handle (F109)."""
+    return isinstance(record, dict) and any(value for key, value in record.items()
+                                            if key != '__typename' and key not in handled)
+
+
 def _asset_input(asset):
     kind = asset.get('type') if isinstance(asset, dict) else None
     url = asset.get('source') if isinstance(asset, dict) else None
     if not isinstance(url, str) or not url:
         raise CarryHold('asset_without_source')
+    if _uncarried(asset, HANDLED_ASSET) or _uncarried(asset.get(kind), HANDLED_MEDIA.get(kind, ())):
+        raise CarryHold('uncarried_field_set')
     if kind == 'image':
         body = {'url': url}
         image = asset.get('image') or {}
@@ -315,6 +344,10 @@ def _metadata_input(post):
         raise CarryHold('unknown_metadata')
     kind = meta.get('__typename')
     has_video = any(isinstance(a, dict) and a.get('type') == 'video' for a in post.get('assets') or [])
+    if kind == 'LinkedInPostMetadata':
+        raise CarryHold('linkedin_is_krish_click')
+    if kind in HANDLED_METADATA and _uncarried(meta, HANDLED_METADATA[kind]):
+        raise CarryHold('uncarried_field_set')  # e.g. a Facebook title: EditPostInput has nowhere to put it
     if kind == 'InstagramPostMetadata':
         stickers = meta.get('stickerFields') or {}
         if meta.get('link') or (isinstance(stickers, dict) and any(stickers.values())):
@@ -336,8 +369,6 @@ def _metadata_input(post):
         if meta.get('firstComment'):
             out['firstComment'] = meta['firstComment']
         return {'facebook': out}
-    if kind == 'LinkedInPostMetadata':
-        raise CarryHold('linkedin_is_krish_click')
     if kind == 'TwitterPostMetadata':
         if (meta.get('threadCount') or 0) > 0 or meta.get('retweet'):
             raise CarryHold('thread_not_carried')

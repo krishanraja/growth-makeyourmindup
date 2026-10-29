@@ -21,7 +21,7 @@ import sys
 import tempfile
 
 from . import meter
-from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, action_key, action_errors,
+from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, _decided_at, action_key, action_errors,
                              build_report, canonical_json, copy_open, engage_action, golive_review, iso,
                              match_decisions, objective, proposal)
 from . import intensity
@@ -254,23 +254,49 @@ def id_holds(reason, entries):
     return out + ([{'reason': reason, 'detail': line}] if line else [])
 
 
-def _decisions_until(client, cutoff):
-    """Every decision since this engine began and decided by cutoff, read page by page, or None.
+def _decision_key(item):
+    """A decision's identity: its whole record. The route gives no id, and two reads of
+    one decision are the same record."""
+    return json.dumps(item, sort_keys=True, separators=(',', ':'), ensure_ascii=False, default=str)
 
-    The route serves the oldest 100 after since, so the next page starts at the
-    last decided_at seen. None when the pages do not end."""
-    since, out = instant(DECISIONS_SINCE), []
+
+def decisions_paged(client, since):
+    """Every decision after since, oldest first, each once, read page by page; None when
+    the pages do not end (the caller fails closed: decisions_unpaged).
+
+    Control Center serves at most DECISIONS_PAGE decisions a read, the oldest first,
+    after since to the second. A page that is short is the last. The next page starts
+    one second before the last decided_at seen, so a decision sharing that time (a tie
+    at the page boundary) is read again rather than dropped, and a decision read twice
+    counts once. A full page that moves since no further (more than a page of decisions
+    inside one second), or more than DECISIONS_PAGES pages, is None: never a guess.
+    Shared by the runner's ledger read and both L0 lanes (engine.run.autorelease and
+    engine.run.handoff)."""
+    since, out, seen = instant(since), [], set()
     for _ in range(DECISIONS_PAGES):
         page = client.decisions(since)
-        out += page
+        for item in page:
+            key = _decision_key(item)
+            if key not in seen:
+                seen.add(key)
+                out.append(item)
         if len(page) < DECISIONS_PAGE:
-            return [d for d in out if not _after(d, cutoff)]
-        last = max((instant(d['decided_at']) for d in page if isinstance(d, dict) and d.get('decided_at')),
-                   default=None)
-        if last is None or last <= since:
+            return out
+        times = [_decided_at(d) for d in page if isinstance(d, dict)]
+        last = max((t for t in times if t is not None), default=None)
+        if last is None:
             return None
-        since = last
+        following = last - dt.timedelta(seconds=1)
+        if following <= since:
+            return None
+        since = following
     return None
+
+
+def _decisions_until(client, cutoff):
+    """Every decision since this engine began and decided by cutoff, read page by page, or None."""
+    out = decisions_paged(client, DECISIONS_SINCE)
+    return None if out is None else [d for d in out if not _after(d, cutoff)]
 
 
 def _after(item, cutoff):

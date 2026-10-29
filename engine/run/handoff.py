@@ -19,19 +19,26 @@ Three event types, each with a closed client_payload (unknown keys refused):
   `wrong_account`) and the slot digest is rebuilt from it exactly as
   autorelease rebuilds it (autorelease.draft_line, which covers the draft's
   Buffer channel id and its meta: everything the edit sends besides the
-  words and the time). A slot whose rebuilt digest is not the dispatch's
-  payload_sha256 is held (`handoff_digest_mismatch`), as is any slot
+  words and the time). A slot whose rebuilt run-spec digest
+  (autorelease.spec_digest, what the maker's spec signs) is not the dispatch's
+  payload_sha256 is held (`handoff_digest_mismatch`); the manifest line it
+  becomes is signed under the go-live domain (autorelease.line_digest). So is
+  a slot whose signed format is not what the draft is
+  (`format_differs_from_draft`), and any slot
   autorelease could not carry, a due_at that is no real date (`bad_due_at`)
   and one outside the run window its run_id names (`due_outside_run_window`).
-  The why Krish reads names, in plain words, the first comment, titles,
-  privacy, location, AI label and tagged accounts that go out with each post.
+  The why Krish reads names, in plain words, the day, and the alt text,
+  first comment, titles, privacy, location, AI label and tagged accounts
+  that go out with each post.
   LinkedIn always goes in as krish_click. The slots that pass become the
   `growth-golive-manifest/1` exact_payload autorelease reads, each go-live a
   `post` wall with target null under the newest open plan Krish approved,
   reported in its own report whose run_id is
-  `<proposal_id>:<first 12 hex of payload_sha256>`, then read back. A
-  manifest over 8,000 characters splits into go-lives that come forward one
-  after another (`:p1`, `:p2`, ...). A slot marked per_item_review, or whose
+  `<proposal_id>:<first 12 hex of payload_sha256>`, then read back. One
+  go-live per New York day (R94: a yes authorises exactly that day's posts;
+  `:<YYYY-MM-DD>` when a dispatch spans days), and a day over 8,000
+  characters splits into go-lives that come forward one after another
+  (`:p1`, `:p2`, ...). A slot marked per_item_review, or whose
   format is a new kind (carousel, meme, opinion, reactive, or the list in
   invariants/authority.json), is its own go-live (`:item-1`, ...), so he
   sees it alone.
@@ -54,14 +61,14 @@ from pathlib import Path
 import re
 import sys
 
-from engine.cc_loop import NO_SPEND, revision
+from engine.cc_loop import NO_SPEND, decisions_paged, revision
 from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _plan_open, _stops,
                                    build_report, canonical_json, objective, proposal, sha256_hex)
-from engine.core import instant, today, write_json
+from engine.core import instant, ny_time, today, write_json
 from engine.run import autorelease, buffer_api
 from engine.run.autorelease import (DUE_MARGIN, LINE_KEYS, MANIFEST_SCHEMA, MAX_REPORT_READS, _authority, draft_line,
                                     due_instant, line_digest, read_proposal, run_window, show_before_post_until,
-                                    staged_report_run_id)
+                                    spec_digest, staged_report_run_id)
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
 from engine.run.release import BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, account_hold
 from engine.run.spec import RUN_ID as SPEC_RUN_ID
@@ -317,11 +324,15 @@ def rebuild(buffer, slot, fetch, now, window=None):
               'buffer_draft_id': slot['buffer_draft_id']}
     try:
         line = draft_line(post, fields, fetch)
+    except CarryHold as hold:
+        return None, hold.code  # format_differs_from_draft: the label is not what the draft is
     except BufferAuthError:
         raise
     except BufferError as error:
         return None, error.code if error.code.startswith('asset_') else 'asset_download_failed'
-    if line['payload_sha256'] != slot['payload_sha256']:
+    # The dispatch carries the maker's run-spec slot digest; the manifest line is signed
+    # under the go-live domain (line_digest), so the two paths never share one (F105).
+    if spec_digest(line) != slot['payload_sha256']:
         return None, 'handoff_digest_mismatch'
     if not isinstance(line['words'], str) or not line['words'].strip():
         return None, 'no_words'
@@ -421,13 +432,17 @@ def meta_words(line):
             bits.append('labelled as made with AI')
         if service == 'instagram' and fields.get('shouldShareToFeed') is False and fields.get('type') != 'story':
             bits.append('not shared to the feed')
-    tags, titles = [], []
+    alts, tags, titles = [], [], []
     for asset in meta.get('assets') or []:
         inner = next(iter(asset.values())) if isinstance(asset, dict) and len(asset) == 1 else {}
         extra = (inner or {}).get('metadata') or {}
+        if extra.get('altText'):
+            alts.append(_quoted(extra['altText']))  # F110: alt text is public words, so he reads it
         tags += ['@' + str(t.get('handle')) for t in extra.get('userTags') or [] if isinstance(t, dict)]
         if extra.get('title'):
             titles.append(_quoted(extra['title']))
+    if alts:
+        bits.append('alt text ' + ', '.join(alts))
     if tags:
         bits.append('tags ' + ', '.join(tags))
     if titles:
@@ -437,28 +452,42 @@ def meta_words(line):
     return NAMES.get(line['channel'], line['channel']) + ' post ' + line['slot_id'] + ': ' + '; '.join(bits) + '.'
 
 
-def golive_words(lines, kind, part, parts, day, root, express):
-    """The title and why: in plain words, what his yes does."""
+def post_day(line):
+    """The New York calendar day a line goes out on, or None when it has no time."""
+    return ny_time(line['due_at']).date() if line.get('due_at') else None
+
+
+def _day_words(day):
+    return day.strftime('%A ') + str(day.day) + day.strftime(' %B')
+
+
+def golive_words(lines, kind, part, parts, day, root, express, on=None):
+    """The title and why: in plain words, what his yes does. on is the New York day its
+    posts go out (R94: a yes authorises exactly that day's posts, nothing more)."""
     where = _channels(lines)
+    when = ' on ' + _day_words(on) if on else ''
     if kind == 'item':
         line = lines[0]
-        title = 'New kind of post, yours to check: ' + _a(line['format']) + ' on ' + where
+        title = 'New kind of post, yours to check: ' + _a(line['format']) + ' on ' + where + (',' + when if on else '')
         why = 'This is ' + _a(line['format']) + ', a kind of post you see one at a time, so it comes to you on its own. '
     elif express:
-        title = 'Your quick idea, ready to go: ' + _posts(len(lines)) + ' on ' + where
+        title = 'Your quick idea, ready to go' + when + ': ' + _posts(len(lines)) + ' on ' + where
         why = 'Built from the idea you added in Buffer Ideas. '
     else:
-        title = 'Go live: ' + _posts(len(lines)) + ' on ' + where
+        title = 'Go live' + when + ': ' + _posts(len(lines)) + ' on ' + where
         why = ''
     if parts > 1:
         title += ' (part ' + str(part) + ' of ' + str(parts) + ')'
-        why += 'This batch is too long for one approval, so it comes in ' + str(parts) + ' parts, one after another. '
+        why += ('This day is too long for one approval, so it comes in ' + str(parts) + ' parts, one after another. '
+                if on else 'This batch is too long for one approval, so it comes in ' + str(parts)
+                + ' parts, one after another. ')
     engine = [line for line in lines if line['publish_mode'] == 'engine']
     clicks = len(lines) - len(engine)
     if engine:
         why += ('Yes schedules ' + ('this exact post' if len(engine) == 1 else 'these ' + str(len(engine)) + ' exact posts')
-                + ' in Buffer for the time shown, once. A yes schedules each post about an hour before it is due. '
-                'Until then, No stops it. ')
+                + ' in Buffer' + (when + ', New York time,' if on else ' for the time shown,') + ' once. '
+                + ('Nothing on another day: each day comes to you as its own go-live. ' if on else '')
+                + 'A yes schedules each post about an hour before it is due. Until then, No stops it. ')
     if clicks:
         why += (_posts(clicks) + (' stays' if clicks == 1 else ' stay') + ' a draft in Buffer for you to publish yourself'
                 + (', as LinkedIn always does. ' if any(line['channel'] in KRISH_CLICK_ONLY for line in lines) else '. '))
@@ -482,7 +511,25 @@ def _long_date(value):
     return str(day.day) + ' ' + day.strftime('%B %Y')
 
 
+def by_day(lines):
+    """The batch lines grouped by the New York day they go out, in day order. A line
+    with no time (a draft for his own click, which schedules nothing) rides with the
+    first day, or alone when no line has a time."""
+    days = {}
+    for line in lines:
+        days.setdefault(post_day(line), []).append(line)
+    undated = days.pop(None, [])
+    order = sorted(days)
+    if not order:
+        return [(None, undated)] if undated else []
+    days[order[0]] = undated + days[order[0]]
+    return [(on, days[on]) for on in order]
+
+
 def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
+    """The go-lives one dispatch becomes: one per New York day (R94, F106), each day
+    split into parts of PAYLOAD_CAP characters when it must be, and each new kind of post
+    on its own, so one press never authorises more than one day's posts."""
     run_id, express = manifest['run_id'], bool(manifest.get('express'))
     base = SLUG + ':golive:' + _rest(run_id)
     review = {line['slot_id'] for line, slot in lines if needs_own_review(slot, formats)}
@@ -490,22 +537,29 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
     items = [line for line, _ in lines if line['slot_id'] in review]
     day = today(now)
 
-    def fits(kind):
+    def fits(kind, on):
         # Worst-case numbering, so a group that fits here fits once it is numbered.
-        return lambda group: len(' '.join(golive_words(group, kind, 99, 99, day, root, express)[1].split())) <= WHY_CAP
+        return lambda group: len(' '.join(golive_words(group, kind, 99, 99, day, root, express, on)[1].split())) \
+            <= WHY_CAP
 
-    groups = [('batch', part) for part in pack(run_id, batch, slots, fits('batch'))]
-    groups += [('item', part) for line in items for part in pack(run_id, [line], slots, fits('item'))]
+    days = by_day(batch)
+    groups = []
+    for on, day_lines in days:
+        parts = pack(run_id, day_lines, slots, fits('batch', on))
+        prefix = base if len(days) == 1 else base + ':' + on.isoformat()
+        groups += [('batch', on, prefix, len(parts), number, part) for number, part in enumerate(parts, 1)]
+    for line in items:
+        on = post_day(line)
+        groups += [('item', on, base, 1, 1, part) for part in pack(run_id, [line], slots, fits('item', on))]
     out = []
-    batches = sum(kind == 'batch' for kind, _ in groups)
-    numbers = {'batch': 0, 'item': 0}
-    for kind, group in groups:
-        numbers[kind] += 1
+    numbers = {'item': 0}
+    for kind, on, prefix, parts, number, group in groups:
         if kind == 'batch':
-            pid = base if batches == 1 else base + ':p' + str(numbers['batch'])
+            pid = prefix if parts == 1 else prefix + ':p' + str(number)
         else:
+            numbers['item'] += 1
             pid = base + ':item-' + str(numbers['item'])
-        title, why = golive_words(group, kind, numbers[kind], batches if kind == 'batch' else 1, day, root, express)
+        title, why = golive_words(group, kind, number, parts, day, root, express, on)
         dues = [instant(line['due_at']) for line in group if line['publish_mode'] == 'engine' and line['due_at']]
         item = proposal(pid, title, why, 'prepared', 'post', 'published', channel='buffer',
                         exact_payload=manifest_text(run_id, group), target=None,
@@ -625,7 +679,10 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             summary['recorded'] = 1
             write_json(path, {'event': event, 'deliver': bool(deliver), 'recorded': 1, 'reports': []})
             return _finish(summary, slots)
-        decisions = cc.decisions(now - autorelease.LOOKBACK)
+        # Every page of his decisions (F100): a No past the first 100 still stops the plan.
+        decisions = decisions_paged(cc, now - autorelease.LOOKBACK)
+        if decisions is None:
+            raise autorelease.Unpaged()
         plan, reason = open_plan(cc, decisions, now)
         if event == GO_LIVE:
             fetch = fetch or (lambda url: buffer_api.download_sha256(url))
@@ -673,6 +730,8 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
         summary['error'] = error.code
     except ProtocolError as error:
         summary['error'] = 'control_center_' + error.code
+    except autorelease.Unpaged:
+        summary['error'] = 'decisions_unpaged'
     return _finish(summary, slots)
 
 

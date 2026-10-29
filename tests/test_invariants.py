@@ -241,7 +241,7 @@ class FailureRegisterTests(unittest.TestCase):
         # that content, on this engine's own account.
         failures = {f['id']: f for f in load_failures()}
         new = FAILURE_IDS[92:99]
-        self.assertEqual((new[0], new[-1], FAILURE_IDS[99]), ('F93', 'F99', 'G1'))
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[99]), ('F93', 'F99', 'F100'))
         self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
         for fid, guard, test in (
                 ('F93', 'buffer_api.py:signed_meta', 'test_a_metadata_change_after_approval_holds'),
@@ -251,6 +251,28 @@ class FailureRegisterTests(unittest.TestCase):
                 ('F97', 'GITHUB_EVENT_PATH', 'test_no_step_env_carries_the_payload'),
                 ('F98', 'autorelease.py:signed_golives', 'test_old_go_lives_never_starve_a_new_one'),
                 ('F99', 'autorelease.py:due_instant', 'test_an_impossible_due_date_holds_that_slot_only')):
+            self.assertIn(guard, failures[fid]['guard'], fid)
+            self.assertIn(test, failures[fid]['tests'], fid)
+
+    def test_register_records_the_second_posting_path_review(self):
+        # The second adversarial review of PR #19 (29 Oct 2026): paging, the format label, every
+        # carried word, the loud alarm, signed meta, two digest domains and one day a press.
+        failures = {f['id']: f for f in load_failures()}
+        new = FAILURE_IDS[99:110]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[110]), ('F100', 'F110', 'G1'))
+        self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
+        for fid, guard, test in (
+                ('F100', 'cc_loop.py:decisions_paged', 'test_his_no_past_the_hundredth_decision_stops_the_release'),
+                ('F101', 'release.py:format_shape_errors', 'test_a_format_label_that_is_not_the_draft_holds'),
+                ('F102', 'release.py:media_copy_errors', 'test_every_carried_free_text_field_runs_the_copy_lint'),
+                ('F103', 'autorelease.py:sweep_scheduled', 'test_an_unresolved_stop_is_loud_and_lists_what_is_scheduled'),
+                ('F104', 'release.py:call_arguments', 'test_an_engine_edit_with_no_signed_meta_holds'),
+                ('F105', 'autorelease.py:line_digest', 'test_a_golive_line_digest_is_never_a_run_spec_slot_digest'),
+                ('F106', 'handoff.py:golive_proposals', 'test_one_go_live_per_new_york_day'),
+                ('F107', 'buffer_api.py:schedule_draft', 'test_the_edit_is_never_resent'),
+                ('F108', 'autorelease.py:slot', 'test_an_amended_time_outside_the_run_window_holds'),
+                ('F109', 'buffer_api.py:_uncarried', 'test_a_field_read_but_never_carried_holds'),
+                ('F110', 'handoff.py:meta_words', 'test_the_why_names_alt_text_in_plain_words')):
             self.assertIn(guard, failures[fid]['guard'], fid)
             self.assertIn(test, failures[fid]['tests'], fid)
 

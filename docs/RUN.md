@@ -12,14 +12,14 @@ and measures it. LinkedIn stays his own click. Nothing is spent.
 
 A session does one job, then ends at a gate packet:
 
-- **Release:** only L0 `release.yml` (`run autorelease`), for a go-live he
-  approved ("Approve each day Monday", 28 Oct), read from Control Center in
-  its own run into `decision.json`, never by hand. Only this engine's eight
-  Buffer channels (name and channelId); copy lint or a share ask holds; an
-  unverified route holds until its one check (`run release`) passes. A draft
-  is scheduled 5 to 90 minutes before its time, so a No first stops it;
-  scheduled after a No fails the run. Sessions save drafts, never
-  `--deliver`. Scheduled is never live.
+- **Release, two paths.** L0 `run autorelease` schedules the go-lives he
+  approved in Control Center (`release.yml`, never by hand), one go-live per
+  New York day ("Approve each day Monday", 28 Oct). `run release` is only
+  each route's capability check. Only this engine's eight Buffer channels;
+  copy lint, a share ask or a format unlike its draft holds. A draft is
+  scheduled 5 to 90 minutes before its time, so a No first stops it;
+  scheduled after a No, or while a stop cannot be read, fails the run.
+  Sessions save drafts, never `--deliver`. Scheduled is never live.
 - **Measure:** L0 `measure.yml` gives verdicts thrice daily; a session reads
   back "sent" and native URLs, metrics at their windows and the express
   intake.
@@ -83,7 +83,8 @@ with no `ecosystem_cta` (docs/ENGINE.md). Warning: an engine slot with no
 
 A slot's `payload_sha256` digests (`canonical_json`) exactly `channel`,
 `format`, `words`, ordered asset hashes, `link_placement`, `due_at`,
-`publish_mode`, `meta` (an edit's other fields) and `buffer_channel_id`.
+`publish_mode`, `meta` (an edit's other fields), `buffer_channel_id` and the
+run-spec domain; a go-live line has its own, so no yes acts on both paths.
 
 ## Readiness is computed, never written
 
@@ -117,15 +118,14 @@ Draft counts are never outcomes.
 
 - **Standing plan:** one `plan` proposal (wall `strategy`) for W45 to W52;
   every go-live names it as `parent_proposal_id`.
-- **G-A, Sunday (up to 15 min):** the week's Notes, Threads and evergreen slots
-  as one go-live; payloads up to 8,000 characters, split if larger.
+- **G-A, Sunday (up to 15 min):** the week's Notes, Threads and evergreen slots,
+  a go-live a day; each up to 8,000 characters, split if larger.
 - **G-B, Mon/Wed/Fri (up to 5 min each):** a piece's batch across channels.
 - **G-X, express (up to 2 min):** joins the waiting go-live; one a day.
 - **Check-ins:** Sunday (with the What-Works ledger) and Wednesday.
 
 Control Center shows one ask per engine at a time. Release checks each slot's
-bytes against its signed manifest line; a file in 4 Growth is never trusted
-for where it lives.
+bytes against its signed manifest line; a file in 4 Growth is never trusted.
 
 ## Budgets (provisional until the Phase 0 baseline)
 
@@ -138,11 +138,11 @@ for where it lives.
 1. Approved delivery assets and exact copy go to the Drive
    **4 Growth** library, one `YYYY-MM-DD - Topic - Channel` folder each with
    a SHA-256 manifest; no other Growth root.
-2. Private evidence (readbacks, journals, inventories) stays in `.scratch/`;
-   never in 4 Growth, which anyone with its link can edit.
+2. Private evidence stays in `.scratch/`; never in 4 Growth, which anyone
+   with its link can edit.
 3. Lessons go to `social/lessons/`; run `python growth.py social check`.
-4. Creative feedback goes to Content Engine through its handoff;
-   Growth records the distribution need, Content Engine owns the craft.
+4. Creative feedback goes to Content Engine through its handoff; it owns
+   the craft.
 5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:
    what is draft, approved, scheduled, published, held or unknown.
 6. Snapshot run evidence before cleanup.
@@ -155,5 +155,5 @@ for where it lives.
 - `docs/ACCOUNT-VOICE.md`: X, TikTok, Threads and LinkedIn are his personal
   accounts, in his own voice (sincere, warm, humble).
 - `AGENTS.md` ("The rules that never bend", "Autonomy"): outreach belongs to
-  Control Center; this engine never delivers pitches, partners or swaps packs
-  (`post --deliver` refuses them).
+  Control Center; this engine never delivers pitches, partners or swaps
+  packs.

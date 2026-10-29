@@ -49,17 +49,18 @@ METADATA = {'threads': {'__typename': 'ThreadsPostMetadata', 'type': 'post', 'th
             'x': {'__typename': 'TwitterPostMetadata', 'type': 'post', 'isAiGenerated': False, 'threadCount': 0,
                   'retweet': None},
             'linkedin': None,
-            'instagram': {'__typename': 'InstagramPostMetadata', 'type': 'carousel', 'shouldShareToFeed': True,
+            'instagram': {'__typename': 'InstagramPostMetadata', 'type': 'post', 'shouldShareToFeed': True,
                           'isAiGenerated': None, 'firstComment': None, 'link': None, 'stickerFields': None,
                           'geolocation': None}}
 
 
-def maker_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=DUE, fmt='text', review=False,
+def maker_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=DUE, fmt=None, review=False,
                meta=None, channel_id=None):
     """One slot as a maker dispatches it: ids, codes, a time and the spec's digest."""
-    digest = line_digest({'channel': channel, 'format': fmt, 'words': words, 'link_placement': None,
-                          'due_at': due, 'publish_mode': mode, 'assets': list(assets), 'meta': meta,
-                          'buffer_channel_id': channel_id or CH[channel]})
+    fmt = fmt or ('single-image' if len(assets) == 1 else 'text')  # the draft's own shape (release.FORMAT_SHAPE)
+    digest = autorelease.spec_digest({'channel': channel, 'format': fmt, 'words': words, 'link_placement': None,
+                                      'due_at': due, 'publish_mode': mode, 'assets': list(assets), 'meta': meta,
+                                      'buffer_channel_id': channel_id or CH[channel]})
     return {'slot': slot_id, 'channel': channel, 'buffer_draft_id': draft, 'payload_sha256': digest,
             'per_item_review': review, 'format': fmt, 'due_at': due, 'link_placement': None, 'publish_mode': mode}
 
@@ -155,7 +156,10 @@ class HandoffTests(unittest.TestCase):
         lines = parse_manifest(item['exact_payload'], engine=True)
         self.assertEqual(sorted(lines), ['linkedin-1', 'threads-1', 'x-1'])
         for slot in self.fix.slots:
-            self.assertEqual(lines[slot['slot']]['payload_sha256'], slot['payload_sha256'])
+            # The dispatch carries the run-spec digest; the line is signed under the go-live domain (F105).
+            self.assertEqual(autorelease.spec_digest(lines[slot['slot']]), slot['payload_sha256'])
+            self.assertEqual(lines[slot['slot']]['payload_sha256'], line_digest(lines[slot['slot']]))
+            self.assertNotEqual(lines[slot['slot']]['payload_sha256'], slot['payload_sha256'])
         self.assertEqual(lines['threads-1']['assets'], [sha(IMAGE)])
         self.assertEqual(json.loads(item['exact_payload'])['run_id'], RUN)
         self.assertIn('Yes schedules these 2 exact posts in Buffer', item['why'])
@@ -236,8 +240,12 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(sorted(seen), ['x-%02d' % i for i in range(30)])
 
     def test_a_new_kind_of_post_is_its_own_go_live(self):
-        self.fix.draft(P_CAROUSEL, 'instagram', [self.fix.image])
-        self.fix.slots.append(self.fix.maker('ig-1', 'instagram', P_CAROUSEL, [sha(IMAGE)], fmt='carousel'))
+        # A carousel is two images or more (social/formats/carousel.json), stored as an Instagram post.
+        self.buf.media['img2.png'] = IMAGE + b'second frame\n'
+        second = dict(self.fix.image, source=self.buf.base + '/media/img2.png')
+        self.fix.draft(P_CAROUSEL, 'instagram', [self.fix.image, second])
+        self.fix.slots.append(self.fix.maker('ig-1', 'instagram', P_CAROUSEL, [sha(IMAGE), sha(IMAGE + b'second frame\n')],
+                                             fmt='carousel'))
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['proposals'], {'go_live': 2})
@@ -387,7 +395,7 @@ class HandoffTests(unittest.TestCase):
         from engine.run import spec as specmod
         self.instagram_draft()
         post = self.buf.posts[P_CAROUSEL]
-        slot = {'slot_id': 'ig-1', 'channel': 'instagram', 'format': 'text', 'play': None, 'due_at': DUE,
+        slot = {'slot_id': 'ig-1', 'channel': 'instagram', 'format': 'single-image', 'play': None, 'due_at': DUE,
                 'words': post['text'], 'assets': [{'name': 'img.png', 'sha256': sha(IMAGE), 'url': self.fix.image['source'],
                                                    'bytes': len(IMAGE)}], 'link_placement': None, 'cta': False,
                 'forward_line': 'Synthetic.', 'experiment_arm': None, 'publish_mode': 'engine',
@@ -396,7 +404,8 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual((filled['buffer_draft_id'], filled['buffer_channel_id']), (P_CAROUSEL, CH['instagram']))
         line, code = handoff.rebuild(self.buf.client(), dict(self.fix.slots[-1], slot='ig-1'), fetch, NOW)
         self.assertIsNone(code)
-        self.assertEqual(filled['payload_sha256'], line['payload_sha256'])
+        self.assertEqual(filled['payload_sha256'], autorelease.spec_digest(line))
+        self.assertNotEqual(filled['payload_sha256'], line['payload_sha256'])  # the go-live domain (F105)
         # A draft on another account is refused at fill time too.
         post['channel']['name'] = 'synthetic-other-venture'
         with self.assertRaisesRegex(ValueError, 'wrong_account'):
@@ -425,6 +434,79 @@ class HandoffTests(unittest.TestCase):
         self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, due='2026-11-20T14:00:00Z')
         summary, _ = self.run_handoff()
         self.assertEqual(summary['holds'], {'due_outside_run_window': 1})
+
+    # The second adversarial review of the posting path, 29 Oct 2026 ------------------------
+
+    def test_the_handoff_reads_every_page_of_decisions(self):
+        # F100: his No on the plan is the 102nd decision, past the first page of 100.
+        self.cc.honour_since = True
+        self.addCleanup(setattr, self.cc, 'honour_since', False)
+        filler = [{'proposal_id': 'makeyourmindup:experiment:e%03d' % n, 'decision': 'declined', 'stage': None,
+                   'decided_at': '2026-11-01T%02d:%02d:00Z' % (13 + n // 60, n % 60), 'payload_sha256': 'e' * 64,
+                   'amended': False} for n in range(100)]
+        self.cc.decisions += filler + [self.fix.decision(self.fix.plan, '2026-11-02T12:00:00Z', decision='declined')]
+        summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'no_open_plan': 3})
+        self.assertEqual(self.proposals(), [])
+        # A route that never pages out fails closed and loud.
+        self.cc.honour_since = False
+        self.cc.decisions = filler + filler[:50] + self.cc.decisions
+        self.cc.decisions = [dict(d, proposal_id=d['proposal_id'] + ':%d' % i) for i, d in enumerate(self.cc.decisions)]
+        summary, code = self.run_handoff()
+        self.assertEqual((code, summary['error']), (1, 'decisions_unpaged'), summary)
+
+    def test_a_format_label_that_is_not_the_draft_holds_in_the_handoff(self):
+        # F101: a Reel labelled carousel is not a carousel; the dispatch's label is checked
+        # against the draft's assets and its Instagram type.
+        video = b'synthetic handoff video bytes\n'
+        self.buf.media['v.mp4'] = video
+        reel = {'type': 'video', 'source': self.buf.base + '/media/v.mp4', 'mimeType': 'video/mp4',
+                'video': {'title': None, 'thumbnailOffset': None}}
+        self.fix.draft(P_CAROUSEL, 'instagram', [reel], metadata=dict(METADATA['instagram'], type='reel'))
+        self.fix.slots.append(self.fix.maker('ig-1', 'instagram', P_CAROUSEL, [sha(video)], fmt='carousel'))
+        summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'format_differs_from_draft': 1})
+        self.assertNotIn('ig-1', parse_manifest(self.proposals()[0]['exact_payload']))
+
+    def test_one_go_live_per_new_york_day(self):
+        # R94, F106: approving a day authorises exactly that day's posts. 03:30 UTC on 5 November
+        # is 22:30 on Wednesday 4 November in New York, so it rides with that day.
+        self.fix.slots[0] = self.fix.maker('threads-1', 'threads', P_THREADS, [sha(IMAGE)], due='2026-11-05T03:30:00Z')
+        self.fix.draft(P_CAROUSEL, 'x')
+        self.fix.slots.append(self.fix.maker('x-2', 'x', P_CAROUSEL, due='2026-11-05T14:00:00Z'))
+        summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['proposals'], {'go_live': 2})
+        by_id = {p['proposal_id']: p for p in self.proposals()}
+        self.assertEqual(sorted(by_id), [GOLIVE + ':2026-11-04', GOLIVE + ':2026-11-05'])
+        first, second = by_id[GOLIVE + ':2026-11-04'], by_id[GOLIVE + ':2026-11-05']
+        self.assertEqual(sorted(parse_manifest(first['exact_payload'])), ['linkedin-1', 'threads-1', 'x-1'])
+        self.assertEqual(sorted(parse_manifest(second['exact_payload'])), ['x-2'])
+        self.assertIn('Wednesday 4 November', first['title'])
+        self.assertIn('Thursday 5 November', second['title'])
+        self.assertIn('Yes schedules these 2 exact posts in Buffer on Wednesday 4 November, New York time, once',
+                      first['why'])
+        self.assertIn('Nothing on another day', first['why'])
+        # The release reads each day's go-live alone: his yes on the 4th never schedules the 5th.
+        self.cc.decisions.append(self.fix.decision(first, '2026-11-03T16:00:00Z'))
+        with mock.patch.object(autorelease, 'route_holds', lambda slot, as_of: ([], True, '2026-11-02')):
+            released, _ = autorelease.autorelease(self.cc.client(), self.buf.client(), '2026-11-05T02:30:00Z',
+                                                  True, fetch)
+            self.assertEqual(released['golives']['releasable'], 1)
+            self.assertEqual(self.buf.posts[P_THREADS]['status'], 'scheduled')
+            released, _ = autorelease.autorelease(self.cc.client(), self.buf.client(), '2026-11-05T13:00:00Z',
+                                                  True, fetch)
+        self.assertEqual(released['golives']['releasable'], 0)
+        self.assertEqual(self.buf.posts[P_CAROUSEL]['status'], 'draft')
+
+    def test_the_why_names_alt_text_in_plain_words(self):
+        # F110: the alt text goes out with the post, so the why he reads says it in plain words.
+        summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        [item] = self.proposals()
+        self.assertIn('Threads post threads-1: alt text "Synthetic alt text".', item['why'])
 
 
 class WorkflowTests(unittest.TestCase):

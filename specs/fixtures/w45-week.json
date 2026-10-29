@@ -83,7 +83,7 @@
         "url": "https://mindmake.co/",
         "placement": "in_post"
       },
-      "payload_sha256": "6edf142fff3b9204217a4bae600487a430d3ddbf9a3faf3047ff0b2add71fa61"
+      "payload_sha256": "dab842d9fff96249bc48df087ed17a913b72f4c404cb53c4b4d52ffdb6d903d4"
     },
     {
       "slot_id": "w45-mon-note-2",
@@ -114,7 +114,7 @@
         "url": "https://mindmake.co/",
         "placement": "in_post"
       },
-      "payload_sha256": "a1bbc42ebd26bfe6d0e8799a318d099ca6833544efbbe92daaff23e4f5a13052"
+      "payload_sha256": "2f07670643346a83b11b7dff4bef4f66ff76f2bf7edc3cacb3ca63fe8efbf19b"
     },
     {
       "slot_id": "w45-tue-note-1",
@@ -145,7 +145,7 @@
         "url": "https://mindmake.co/",
         "placement": "in_post"
       },
-      "payload_sha256": "c50a7b46b119cb624100e21046b550bfbaac8a7adea0443a409144511c048349"
+      "payload_sha256": "b8ade386d3b55754231856c91ce6e1b27a55939cdeba835046051b0fb5734607"
     },
     {
       "slot_id": "w45-mon-threads-1",
@@ -168,7 +168,7 @@
         "url": "https://www.youtube.com/@makeyourmind-up",
         "placement": "in_post"
       },
-      "payload_sha256": "b473bcd6e65b7e3b4b277ae1520137189a29f8135c8b14d0c53686f8d79151e1"
+      "payload_sha256": "d8797a474f70b57350422e8bf810d45b827f80d26dba4a06472eb3ec8221cc9f"
     },
     {
       "slot_id": "w45-wed-threads-1",
@@ -191,7 +191,7 @@
         "url": "https://www.youtube.com/@makeyourmind-up",
         "placement": "first_reply"
       },
-      "payload_sha256": "e12616b81dec7da296f5ed8b780b91a286946f778e5fc65223c3f68f7411d3c6"
+      "payload_sha256": "c7d260498c891e3f39c3a24fdbe8931e70a23ab866283c09b6d5c8f761cfaecb"
     }
   ],
   "experiments": [

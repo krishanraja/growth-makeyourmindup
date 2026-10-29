@@ -16,7 +16,7 @@ RULE_FIELDS = ('id', 'statement', 'source_file', 'quote', 'enforced_by', 'tests'
 FAILURE_FIELDS = ('id', 'title', 'source', 'guard', 'tests', 'status')
 STATUSES = ('tested', 'doc-only', 'process', 'open', 'superseded', 'pending-build')
 # F01 to F54 and G1 to G9 are the plan appendix; F55 onwards were learned after it.
-LAST_F = 99
+LAST_F = 110
 FAILURE_IDS = (tuple('F{:02d}'.format(n) for n in range(1, LAST_F + 1))
                + tuple('G{}'.format(n) for n in range(1, 10)))
 CREW_FIELDS = ('id', 'name', 'owns', 'channels', 'formats', 'lint', 'check', 'card', 'lens', 'w45')
@@ -32,7 +32,7 @@ HOUSE = re.compile('\u2014|\x25|\\bper ?cent\\b', re.I)
 PLAY = re.compile(r'\bP[1-9]\b')
 # Two or three digits: R01 to R99, then R100 onwards for the rulings still to come.
 RULE_REF = re.compile(r'\bR\d{2,3}\b')
-FAILURE_REF = re.compile(r'\b(?:F\d\d|G[1-9])\b')
+FAILURE_REF = re.compile(r'\b(?:F\d{2,3}|G[1-9])\b')  # F01 to F99, then F100 onwards
 
 
 def read(path):

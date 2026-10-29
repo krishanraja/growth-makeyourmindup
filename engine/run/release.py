@@ -64,6 +64,13 @@ released, in this run's ledger or any other run's under .scratch/runs, is the
 route's one check: nothing else on the route releases, in any run, until the
 route is recorded as passed. Share asks (Krish, 28 October 2026, R99): a
 snackable slot whose words ask for the share is held, as the copy lint holds.
+
+Two paths, kept apart (F105): L0 `run autorelease` schedules the go-lives Krish
+approves in Control Center. This module is only each route's capability check:
+on a route verified and fresh, an engine-scheduled slot holds as
+route_served_by_l0, and a run-spec slot digest (SLOT_DOMAIN) never equals a
+go-live line digest (LINE_DOMAIN), so one approval never acts through both.
+An engine-scheduled edit with no signed `meta` holds (draft_meta_not_signed).
 """
 import argparse
 import hashlib
@@ -99,6 +106,10 @@ ASSET_KEYS = {'name', 'sha256', 'url', 'bytes'}
 # meta: exactly what an edit sends besides the words and the time (buffer_api.signed_meta);
 # buffer_channel_id: the one Buffer account the draft is on. Both are filled from the draft.
 DIGEST_KEYS = ('channel', 'format', 'words', 'link_placement', 'due_at', 'publish_mode', 'meta', 'buffer_channel_id')
+# The constant each path hashes in with those fields (F105): a run-spec slot that `run
+# release` acts on, and a go-live line L0 autorelease acts on, never share a digest.
+SLOT_DOMAIN = 'growth-run-spec-slot/1'
+LINE_DOMAIN = 'growth-golive-line/1'
 # Channel id -> (Buffer service, native hosts). Hosts match exactly.
 CHANNELS = {
     'substack-notes': ('substack', ('substack.com', 'www.substack.com')),
@@ -132,6 +143,31 @@ MEDIA = {'.png': 'image', '.jpg': 'image', '.jpeg': 'image', '.gif': 'image', '.
 NEEDS_MEDIA = ('instagram', 'tiktok', 'youtube')
 NO_MIXED_MEDIA = ('instagram', 'facebook', 'tiktok')
 STORY_TYPED = ('instagram', 'facebook')
+# Format -> the draft shape it is (F101), the one table both L0 lanes check a signed
+# format against the draft itself with (format_shape_errors): the asset kinds Buffer
+# stores it as and, on the services whose metadata type decides Story, Reel or feed post,
+# the types it may be. How many assets each takes is its record's own min_assets and
+# max_assets (social/formats/<id>.json), read by format_shape; the records do not name
+# kinds or types, so those live here. The 26 Oct carousel pilot was an Instagram post of
+# eight images (social/guides/buffer.md); a video on Instagram or Facebook is a Reel.
+_STILL = frozenset({'image'})
+FORMAT_SHAPE = {
+    'article': {'kinds': frozenset(), 'types': frozenset({'post'})},
+    'text': {'kinds': frozenset(), 'types': frozenset({'post'})},
+    'note': {'kinds': _STILL, 'types': frozenset({'post'})},
+    'poll': {'kinds': _STILL, 'types': frozenset({'post'})},
+    'single-image': {'kinds': _STILL, 'types': frozenset({'post'})},
+    'quote-card': {'kinds': _STILL, 'types': frozenset({'post'})},
+    'receipt-card': {'kinds': _STILL, 'types': frozenset({'post'})},
+    'scorecard': {'kinds': _STILL, 'types': frozenset({'post'})},
+    'carousel': {'kinds': _STILL, 'types': frozenset({'post'})},
+    'meme': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'post', 'reel'})},
+    'short-video': {'kinds': frozenset({'video'}), 'types': frozenset({'reel'})},
+    'story': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'story'})},
+    'story-frame': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'story'})},
+}
+# Services whose Buffer metadata type is what makes a post a Story, a Reel or a feed post.
+TYPED_SERVICES = ('instagram', 'facebook')
 PREVIEW_CLEAR_ROUTE = {
     'tool': 'execute_mutation', 'server': SERVER,
     'mutation': 'editPost(input: $input)', 'input_type': 'EditPostInput!',
@@ -142,11 +178,53 @@ DROP_HOLD = 'edit_would_drop_alt_text_or_ai_label'
 
 # Slot identity -------------------------------------------------------------
 
-def slot_digest(slot):
-    """sha256 of the canonical JSON of exactly what would act."""
+def slot_digest(slot, domain=None):
+    """sha256 of the canonical JSON of exactly what would act, under its path's domain.
+
+    The run-spec slot (this module, `run release`, and spec.payload_sha256) and the
+    go-live line (engine.run.autorelease.line_digest, L0) hash the same fields, each with
+    its own constant domain, so one path's approval never matches the other's (F105)."""
     body = {key: slot[key] for key in DIGEST_KEYS}
     body['assets'] = [asset['sha256'] for asset in slot['assets']]
+    body['domain'] = SLOT_DOMAIN if domain is None else domain
     return sha256_hex(body)
+
+
+def format_shape(fmt):
+    """{kinds, types, min, max} for a format: FORMAT_SHAPE with the asset counts its record
+    in social/formats gives. None for a format with no shape or a record that cannot be read."""
+    rule = FORMAT_SHAPE.get(fmt)
+    if rule is None:
+        return None
+    try:
+        record = inventory()['format'][fmt]
+    except (ValueError, KeyError, OSError, TypeError):
+        return None
+    return {'kinds': rule['kinds'], 'types': rule['types'], 'min': record.get('min_assets'),
+            'max': record.get('max_assets')}
+
+
+def format_shape_errors(fmt, post):
+    """Where a draft is not the format its line is signed as (F101): its asset count and
+    kinds (image, video, document) and, on Instagram and Facebook, its metadata type
+    (story, reel, post). A format with no known shape is an error too: never trusted."""
+    shape = format_shape(fmt)
+    if shape is None:
+        return ['no draft shape is known for format ' + str(fmt)]
+    post = post if isinstance(post, dict) else {}
+    kinds = [a.get('type') if isinstance(a, dict) else None for a in post.get('assets') or []]
+    out = []
+    if (shape['min'] is not None and len(kinds) < shape['min']) or \
+            (shape['max'] is not None and len(kinds) > shape['max']):
+        out.append(fmt + ' takes ' + str(shape['min']) + ' to ' + str(shape['max']) + ' assets, the draft has '
+                   + str(len(kinds)))
+    if any(kind not in shape['kinds'] for kind in kinds):
+        out.append(fmt + ' is never a ' + ' or '.join(sorted({str(k) for k in kinds} - shape['kinds'])) + ' asset')
+    if post.get('channelService') in TYPED_SERVICES:
+        meta = post.get('metadata') if isinstance(post.get('metadata'), dict) else {}
+        if meta.get('type') not in shape['types']:
+            out.append(fmt + ' is never stored as ' + str(meta.get('type')))
+    return out
 
 
 def media_kind(asset):
@@ -460,6 +538,10 @@ def call_arguments(slot, channel, now=None, target=None, formats=None):
     args, alts, ai = {}, {}, False
     if slot['buffer_draft_id']:
         tool = 'edit_post'
+        if not draft and slot['meta'] is None:
+            # F104: with no signed meta nothing he signed binds the alt text or AI label the
+            # edit would carry forward from the draft, so an engine-scheduled edit holds.
+            raise ValueError('draft_meta_not_signed')
         errors = target_errors(slot, target, channel['id'])
         if errors:
             raise ValueError('; '.join(errors))
@@ -508,34 +590,52 @@ def copy_errors(text, applies_to='channel_copy'):
         return ['copy lint could not run, so nothing releases: ' + str(exc)]
 
 
+# Keys whose strings an edit carries that are not public words: links, ids, digests and
+# the codes Buffer fixes (a post type, a YouTube category, privacy or licence). The
+# post's own text is read by copy_errors. Every other string a call's assets or metadata
+# carry is public words and is linted, so a free-text field buffer_api learns to carry
+# later is read from the start (F102).
+NOT_WORDS = frozenset({'url', 'sha256', 'thumbnailUrl', 'id', 'locationId', 'type', 'categoryId', 'privacy',
+                       'license'})
+# How each field is named in a refusal, and the lint surface it is read as (default titles).
+WORDS_LABEL = {'altText': 'alt text', 'firstComment': 'first comment', 'title': 'title', 'topic': 'topic',
+               'locationName': 'location name', 'text': 'location', 'handle': 'tagged account'}
+WORDS_SURFACE = {'altText': 'carousel_text', 'firstComment': 'channel_copy'}
+
+
+def _carried_words(value, key=None):
+    """(key, text) for every string under value whose key carries public words."""
+    if isinstance(value, dict):
+        for name, item in value.items():
+            yield from _carried_words(item, name)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _carried_words(item, key)
+    elif isinstance(value, str) and key not in NOT_WORDS:
+        yield key, value
+
+
 def media_copy_errors(args):
     """The copy lint on the public words a call's assets and metadata carry, besides its text.
 
     An image's alt text carries the picture's words, so it is read as carousel_text; a
-    document, video or metadata title is read as titles, and a first comment as
-    channel_copy. Alt text carried forward from a stored draft is public too, so a name
-    in it holds the slot like a name in the text (Krish, 2026-10-28: "no content refers
-    to Krish, ever"). L0 release reads every edit it schedules through here too
-    (engine/run/buffer_api.py edit_input), where a draft carries video titles and first
-    comments forward.
+    first comment as channel_copy; every other carried words (a document, video or
+    metadata title, a Threads topic or location name, an Instagram location, each tagged
+    account's handle) as titles, which the no_name rule reads too. Words carried forward
+    from a stored draft are public, so a name in them holds the slot like a name in the
+    text (Krish, 2026-10-28: "no content refers to Krish, ever"). L0 release reads every
+    edit it schedules through here too (engine/run/buffer_api.py edit_input).
     """
     out = []
     for asset in args.get('assets') or []:
         for kind, body in (asset.items() if isinstance(asset, dict) else ()):
-            if not isinstance(body, dict):
-                continue
-            media = body.get('metadata') if isinstance(body.get('metadata'), dict) else {}
-            alt = media.get('altText')
-            if isinstance(alt, str):
-                out += ['alt text ' + e for e in copy_errors(alt, 'carousel_text')]
-            for title in (body.get('title'), media.get('title')):
-                if isinstance(title, str):
-                    out += [kind + ' title ' + e for e in copy_errors(title, 'titles')]
+            for key, text in _carried_words(body):
+                label = 'alt text' if key == 'altText' else kind + ' ' + WORDS_LABEL.get(key, str(key))
+                out += [label + ' ' + e for e in copy_errors(text, WORDS_SURFACE.get(key, 'titles'))]
     for service, meta in (args.get('metadata') or {}).items():
-        if isinstance(meta, dict) and isinstance(meta.get('title'), str):
-            out += [service + ' title ' + e for e in copy_errors(meta['title'], 'titles')]
-        if isinstance(meta, dict) and isinstance(meta.get('firstComment'), str):
-            out += [service + ' first comment ' + e for e in copy_errors(meta['firstComment'])]
+        for key, text in _carried_words(meta):
+            out += [service + ' ' + WORDS_LABEL.get(key, str(key)) + ' ' + e
+                    for e in copy_errors(text, WORDS_SURFACE.get(key, 'titles'))]
     return out
 
 
@@ -815,6 +915,14 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
             unchecked, known, since = routes[key]
             if not known:
                 hold(unchecked[0])
+                continue
+            if not unchecked:
+                # F105: a route verified and fresh is L0's. The go-live he approves goes out
+                # through `run autorelease`; `run release` is only each route's capability
+                # check, so one approval never acts through both paths (and never posts twice).
+                hold('route_served_by_l0: this route is verified and fresh in social/tools/buffer.json, so an'
+                     ' approved go-live goes out through L0 `run autorelease`; `run release` is only each'
+                     " route's capability check")
                 continue
             pending = pending_check(key, other_checks, since) if unchecked else None
             if pending:

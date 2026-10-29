@@ -5,7 +5,9 @@ no session and no PC. Without --deliver it is a dry run: it reads Control
 Center and Buffer and prints the plan as counts, and sends no mutation.
 
 1. Signed go-lives. Krish's decisions are read from Control Center
-   (engine.control_center.Client). Each approved go-live, its plan and any
+   (engine.control_center.Client), every page of them (engine.cc_loop.
+   decisions_paged: 100 a read, ties at a page edge kept; pages that never
+   end fail the run as decisions_unpaged). Each approved go-live, its plan and any
    declined check-in are read back from the report that proposed them, and
    engine.cc_loop.claim_golives decides which go-lives may act (approved on
    the exact digest, plan open and not stopped, in date; an amended yes acts
@@ -16,13 +18,16 @@ Center and Buffer and prints the plan as counts, and sends no mutation.
    every 30 minutes and GitHub cron can run late, so 90 minutes is the
    window). Then its Buffer draft is read fresh, it must be on this engine's
    own Buffer account (release.BUFFER_NAME, else `wrong_account`), and the
-   slot digest (engine.run.release.slot_digest) is rebuilt from the draft:
+   line digest (line_digest, the go-live domain) is rebuilt from the draft:
    its text, its channel and Buffer channel id, the signed format, link
    placement, due time and publish mode, the sha256 of each asset's bytes
    downloaded now (capped at 50 MB; any failure holds), and `meta`: exactly
    what the edit will send besides the words and the time (first comment,
    titles, privacy, tags, alt text and the rest; buffer_api.signed_meta). It
    must equal the payload_sha256 the engine signed.
+   The signed format must be what the draft is (asset count and kinds, and
+   the Instagram or Facebook type), else `format_differs_from_draft`; a due_at
+   outside its go-live's run window holds as `due_outside_run_window`.
    A route not verified and fresh in social/tools/buffer.json holds as
    `route_not_verified` (its one capability check goes through `run release`),
    and a snackable post that asks for the share as `share_ask_refused`.
@@ -40,7 +45,11 @@ Center and Buffer and prints the plan as counts, and sends no mutation.
    drafts scheduled from the earlier yes. Each such draft still scheduled,
    and not exactly the version he now approves, is reported loudly as
    `scheduled_after_decline`: the run exits non-zero so GitHub emails Krish.
-   It is never unscheduled here; that is his call.
+   A stop that cannot be read (`stop_unresolved`), a capped read
+   (`too_many_reads`) or an undated decision is loud too, and then every post
+   scheduled on the pinned channels that no standing signed line matches is
+   listed as `scheduled_after_decline`. It is never unscheduled here; that is
+   his call.
 5. Anything else holds with a reason code. Nothing is retried blindly and
    nothing without a signed decision is touched. LinkedIn and every
    krish_click slot stay drafts for Krish. A post already scheduled or sent in
@@ -59,7 +68,9 @@ target null; its exact_payload is the manifest, canonical JSON of
 {"schema": "growth-golive-manifest/1", "run_id": ..., "slots": [line, ...]},
 each line {slot_id, channel, format, due_at, link_placement, publish_mode,
 buffer_draft_id, buffer_channel_id, words, assets: [sha256, ...], meta,
-payload_sha256}, where payload_sha256 is release.slot_digest of the line.
+payload_sha256}, where payload_sha256 is line_digest of the line: the
+release.slot_digest fields under the go-live domain, never equal to a run-spec
+slot's digest, so a go-live yes is never a `run release` decision (F105).
 Krish may amend a line's words or due_at, or drop a line, or turn a line to
 krish_click; any other amendment holds. A line whose due_at is not a real
 date holds alone (`bad_due_at`). engine.run.handoff is the builder: it turns a maker's
@@ -74,14 +85,15 @@ import re
 import sys
 import tempfile
 
-from engine.cc_loop import claim_golives, decisions_since
+from engine.cc_loop import claim_golives, decisions_paged, decisions_since
 from engine.control_center import (APPROVED_ORIGIN, RUN_ID, Client, ProtocolError, _decided_at, _latest,
                                    amendment_ok, report_digest)
+from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.core import calendar_date, instant, read_json, today
 from engine.run import buffer_api
 from engine.run.buffer_api import Buffer, BufferAuthError, BufferError, CarryHold
-from engine.run.release import (BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, account_hold, route_holds,
-                                share_ask_errors, slot_digest)
+from engine.run.release import (BUFFER_ID, CHANNELS, DUE_AT, HEX64, KRISH_CLICK_ONLY, LINE_DOMAIN, account_hold,
+                                format_shape_errors, route_holds, share_ask_errors, slot_digest)
 from engine.run.spec import LENGTH, ny_midnight
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -98,6 +110,9 @@ DUE_MARGIN = dt.timedelta(minutes=5)
 SCHEDULE_WINDOW = dt.timedelta(minutes=90)
 MAX_REPORT_READS = 24
 MAX_ALARM_READS = 12
+# Go-live holds that mean the run cannot tell whether a yes still stands (F103): each is
+# loud (exit 1), as is every *too_many_reads, and each lists what is scheduled.
+UNKNOWN_HOLDS = ('stop_unresolved', 'undated_decision')
 # A go-live's id names its run (engine.run.handoff): the run window bounds every due_at in it.
 GOLIVE_RUN = re.compile(r'^makeyourmindup:(?:golive:)?(\d{4}-W\d{2}|\d{4}-\d{2}-\d{2}):(week|piece|express)(?::|$)')
 SERVICE_CHANNEL = {service: channel for channel, (service, _) in CHANNELS.items()}
@@ -176,6 +191,14 @@ def may_release(slot, golive_decision, board_decision, today, root=None):
 # The signed manifest ---------------------------------------------------------
 
 def line_digest(line):
+    """A go-live line's digest: the slot fields under the go-live domain (F105)."""
+    return slot_digest({**line, 'assets': [{'sha256': h} for h in line['assets']]}, LINE_DOMAIN)
+
+
+def spec_digest(line):
+    """The run-spec slot digest of the same fields (release.slot_digest): what a maker's
+    dispatch carries, from its spec, and what the handoff checks a rebuilt draft against.
+    It never signs a go-live line."""
     return slot_digest({**line, 'assets': [{'sha256': h} for h in line['assets']]})
 
 
@@ -210,8 +233,13 @@ def draft_line(post, fields, fetch):
     downloaded now (fetch(url) returns (sha256, size) or raises BufferError).
     Every other digest field (format, due_at, link_placement, publish_mode)
     comes from fields, and payload_sha256 is the rebuilt line's own digest.
+    The signed format must be what the draft is (release.format_shape_errors:
+    its asset count and kinds and its Instagram or Facebook type), else
+    CarryHold('format_differs_from_draft'), before any download (F101).
     Shared by the release (autorelease) and the handoff that proposes the
     go-live (engine.run.handoff), so both rebuild a slot exactly the same way."""
+    if format_shape_errors(fields.get('format'), post):
+        raise CarryHold('format_differs_from_draft')
     hashes = []
     for source in asset_sources(post):
         digest, _ = fetch(source)
@@ -425,8 +453,12 @@ class Run:
 
     def _matches(self, post, signed):
         """The full rebuilt digest (words, channel, Buffer account, asset bytes and
-        meta) and, when scheduled, the time: never words and time alone."""
-        rebuilt = draft_line(post, signed, self.fetch)
+        meta) and, when scheduled, the time: never words and time alone. A post that
+        is not the signed format never matches."""
+        try:
+            rebuilt = draft_line(post, signed, self.fetch)
+        except CarryHold:
+            return False
         if rebuilt['payload_sha256'] != line_digest(signed):
             return False
         if post.get('status') == 'scheduled':
@@ -461,8 +493,9 @@ class Run:
         except BufferError as error:
             return None, error.code
 
-    def slot(self, signed, engine_line, golive_decision):
-        """Release one signed line, or count why not."""
+    def slot(self, signed, engine_line, golive_decision, window=None):
+        """Release one signed line, or count why not. window is the (start, end) of the
+        run its go-live names: a due_at outside it (his amended time too) holds."""
         if engine_line is None:
             return self.hold('amended_slot_unknown')
         changed = {k for k in LINE_KEYS if signed[k] != engine_line[k]} - AMENDABLE
@@ -479,6 +512,8 @@ class Run:
         due = due_instant(signed['due_at'])
         if due is None:
             return self.hold('bad_due_at')
+        if window is not None and not window[0] <= due < window[1]:
+            return self.hold('due_outside_run_window')  # F108: the handoff's check, on his amended time too
         self.signed[signed['buffer_draft_id']] = signed
         if due - self.clock() > SCHEDULE_WINDOW:
             # Further out it stays a draft with no read and no edit: a No, an
@@ -567,6 +602,7 @@ class Run:
         except ValueError as error:
             return self.hold(str(error))
         decision = {'decision': 'approved', 'stage': 'go_live'}
+        window = run_window(action['proposal_id'])
         for sid in sorted(bad):
             self.hold(bad[sid])
         for sid in sorted(engine_lines):
@@ -574,7 +610,7 @@ class Run:
                 self.count('unsigned')
         for sid in sorted(signed_lines):
             if sid not in bad:
-                self.slot(signed_lines[sid], engine_lines.get(sid), decision)
+                self.slot(signed_lines[sid], engine_lines.get(sid), decision, window)
 
     def check_scheduled(self, line):
         """The alarm for one line of a yes that no longer stands: its draft must
@@ -588,6 +624,34 @@ class Run:
             self.holds['revoked_unreadable'] = self.holds.get('revoked_unreadable', 0) + 1
             self.loud.append('revoked_unreadable')
             return
+        self.alarm(post)
+
+    def sweep_scheduled(self, organizations):
+        """While a stop or a read cannot be told (F103), every post scheduled on this
+        engine's own channels (the pinned ids, LinkedIn aside: it is only ever his click)
+        that no standing signed line of this run matches exactly is reported loudly as
+        scheduled_after_decline. Lists only; never unschedules."""
+        pinned = sorted(cid for channel, cid in BUFFER_CHANNEL_ID.items() if channel not in KRISH_CLICK_ONLY)
+        posts = {}
+        try:
+            for organization in organizations:
+                for post in self.buffer.list_posts(organization, ['scheduled', 'sending'], pinned):
+                    if isinstance(post, dict) and post.get('channelId') in pinned and isinstance(post.get('id'), str):
+                        posts[post['id']] = post
+        except BufferAuthError:
+            raise
+        except BufferError:
+            self.holds['scheduled_unlisted'] = self.holds.get('scheduled_unlisted', 0) + 1
+            self.loud.append('scheduled_unlisted')
+            return
+        for post_id in sorted(posts):
+            if post_id not in self.alarm_checked:
+                self.alarm_checked.add(post_id)
+                self.alarm(posts[post_id])
+
+    def alarm(self, post):
+        """Loud unless the post is not scheduled, or is exactly what a standing yes signs."""
+        draft = post.get('id')
         if post.get('status') not in ('scheduled', 'sending'):
             return
         current = self.signed.get(draft)
@@ -639,6 +703,10 @@ def check_revoked(cc, run, decisions, stopped, now, held):
 
 # The run ----------------------------------------------------------------------------
 
+class Unpaged(Exception):
+    """Krish's decisions did not page out within the cap: nothing is read as complete."""
+
+
 def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None, root=None, clock=None):
     """Returns (summary, exit_code). summary holds counts and codes only.
 
@@ -654,12 +722,15 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
     run = Run(buffer, now, deliver, fetch, root, clock)
     folder = None
     try:
-        buffer.account_check()
+        organizations = buffer.account_check().get('organization_ids') or []
         if state_root is None:
             folder = tempfile.TemporaryDirectory()
             state_root = folder.name
         since = min(decisions_since(state_root, now), now - LOOKBACK)
-        decisions = cc.decisions(since)
+        # Control Center serves 100 decisions a read, the oldest first: every page, or nothing (F100).
+        decisions = decisions_paged(cc, since)
+        if decisions is None:
+            raise Unpaged()
         summary['decisions_read'] = len(decisions)
         held = summary['golives']['held']
         proposals = signed_golives(cc, decisions, held, now)
@@ -675,12 +746,22 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
                    for item in review['holds'] if item['reason'] == 'plan_stopped'
                    and item['proposal_id'] in by_id and item['proposal_id'] in latest]
         check_revoked(cc, run, decisions, stopped, now, held)
+        # F103: a stop or a read that cannot be told is loud, and then every post scheduled
+        # on this engine's channels that no standing signed line matches is listed loudly.
+        if review['unresolved'] and 'stop_unresolved' not in held:
+            held['stop_unresolved'] = 1
+        unknown = sorted(code for code in held if code in UNKNOWN_HOLDS or code.endswith('too_many_reads'))
+        run.loud += unknown
+        if unknown or 'revoked_unchecked' in run.loud:
+            run.sweep_scheduled(organizations)
     except BufferAuthError as error:
         summary['error'] = error.code
     except BufferError as error:
         summary['error'] = error.code
     except ProtocolError as error:
         summary['error'] = 'control_center_' + error.code
+    except Unpaged:
+        summary['error'] = 'decisions_unpaged'
     finally:
         if folder is not None:
             folder.cleanup()

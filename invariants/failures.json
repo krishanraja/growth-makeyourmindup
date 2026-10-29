@@ -1142,6 +1142,126 @@
       "status": "tested"
     },
     {
+      "id": "F100",
+      "title": "Krish's decisions are read in one call, so a No past the 100th decision is never seen and a go-live he stopped is scheduled",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: autorelease and handoff called cc.decisions(since) once; Control Center serves at most 100 a read, the oldest first",
+      "guard": "engine/cc_loop.py:decisions_paged reads from since page by page until a short page, starts each next page one second before the last decided_at so a tie at the boundary is read again, keeps each decision once by its whole record, and returns None when the pages do not end; engine/run/autorelease.py:autorelease and engine/run/handoff.py:handoff fail closed and loud on it as decisions_unpaged (exit 1)",
+      "tests": [
+        "test_his_no_past_the_hundredth_decision_stops_the_release",
+        "test_a_tie_at_the_page_boundary_is_never_dropped",
+        "test_decisions_that_never_page_out_fail_loud",
+        "test_the_handoff_reads_every_page_of_decisions"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F101",
+      "title": "The format a dispatch names is trusted, so a Reel signed as a carousel or a video signed as a single image goes out under the wrong label",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: draft_line and the handoff's rebuild took format from the dispatch without looking at the draft",
+      "guard": "engine/run/release.py:format_shape_errors checks the draft against release.py's FORMAT_SHAPE table (asset kinds; the Instagram and Facebook type) and engine/run/release.py:format_shape (asset counts from social/formats); engine/run/autorelease.py:draft_line raises format_differs_from_draft, which engine/run/handoff.py:rebuild and the release hold",
+      "tests": [
+        "test_a_format_label_that_is_not_the_draft_holds",
+        "test_a_format_label_that_is_not_the_draft_holds_in_the_handoff",
+        "test_the_format_shape_table_covers_every_format_record"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F102",
+      "title": "Some carried public words skip the copy lint: a Threads topic or location, an Instagram location or a tagged handle could name Krish",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: release.media_copy_errors read alt text, titles and first comments only",
+      "guard": "engine/run/release.py:media_copy_errors lints every string an edit's assets and metadata carry (engine/run/release.py:_carried_words) except links, ids and fixed codes (NOT_WORDS), so no_name reads them as titles; engine/run/buffer_api.py:edit_input holds copy_lint_refused",
+      "tests": [
+        "test_every_carried_free_text_field_runs_the_copy_lint"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F103",
+      "title": "An unresolved stop, a capped read or an undated decision holds quietly while posts from an earlier yes stay scheduled",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: stop_unresolved, too_many_reads and undated_decision were counted but not loud, and nothing listed what was scheduled",
+      "guard": "engine/run/autorelease.py:autorelease makes each UNKNOWN_HOLDS code and every too_many_reads loud (exit 1) and then engine/run/autorelease.py:sweep_scheduled lists the posts scheduled on the pinned channels, alarming scheduled_after_decline on any no standing signed line matches",
+      "tests": [
+        "test_an_unresolved_stop_is_loud_and_lists_what_is_scheduled",
+        "test_a_capped_read_or_an_undated_decision_is_loud"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F104",
+      "title": "run release with a draft id and null meta schedules alt text and an AI label nobody signed",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: release_plan compared the draft with the signed meta only when meta was set, and call_arguments carried the draft's alt text and AI flag forward",
+      "guard": "engine/run/release.py:call_arguments holds an engine-scheduled edit whose meta is null as draft_meta_not_signed",
+      "tests": [
+        "test_an_engine_edit_with_no_signed_meta_holds",
+        "test_edit_carries_alt_text_and_ai_flag_forward"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F105",
+      "title": "One approval can act through both release paths: a go-live line and a run-spec slot hashed the same fields to the same digest",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: slot_digest and line_digest hashed the same keys, and run release could create a post on a route L0 already serves",
+      "guard": "engine/run/release.py:slot_digest hashes SLOT_DOMAIN in with the fields and engine/run/autorelease.py:line_digest LINE_DOMAIN (engine/run/autorelease.py:spec_digest is the run-spec one the handoff checks a dispatch against); engine/run/release.py:release_plan holds every engine-scheduled slot on a route verified and fresh as route_served_by_l0; docs/RUN.md states the two paths apart",
+      "tests": [
+        "test_a_golive_line_digest_is_never_a_run_spec_slot_digest",
+        "test_run_release_is_only_each_routes_capability_check",
+        "test_run_doc_is_small_and_house_clean",
+        "test_payload_digest_recomputed"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F106",
+      "title": "One press authorises a week: the handoff packs a week's posts into one go-live, against R94's exactly that day's posts",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: golive_proposals packed every batch line of a run into one go-live, split only at 8,000 characters",
+      "guard": "engine/run/handoff.py:golive_proposals makes one go-live per New York day (engine/run/handoff.py:by_day, engine/run/handoff.py:post_day), keeps the 8,000-character split within a day, and engine/run/handoff.py:golive_words names the day in the title and the why",
+      "tests": [
+        "test_one_go_live_per_new_york_day"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F107",
+      "title": "A transient failure on the editPost mutation is resent, so an edit that landed could be sent twice",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: buffer_api._graphql retried every operation once on a 5xx or a timeout",
+      "guard": "engine/run/buffer_api.py:schedule_draft calls engine/run/buffer_api.py:_graphql with retry=False; the release reads back instead",
+      "tests": [
+        "test_the_edit_is_never_resent"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F108",
+      "title": "An amended due_at outside its go-live's run window is scheduled; only the handoff checked the window",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: Run.slot never compared Krish's amended time with the run the go-live names",
+      "guard": "engine/run/autorelease.py:slot holds a due_at outside engine/run/autorelease.py:run_window of its go-live as due_outside_run_window",
+      "tests": [
+        "test_an_amended_time_outside_the_run_window_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F109",
+      "title": "A field the reads select but the edit does not carry (a Facebook title) is silently dropped from the post",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: _metadata_input read FacebookPostMetadata.title and sent nothing for it; an edit is revalidated as a whole post (F01)",
+      "guard": "engine/run/buffer_api.py:_metadata_input and engine/run/buffer_api.py:_asset_input hold uncarried_field_set when engine/run/buffer_api.py:_uncarried finds a set field outside HANDLED_METADATA, HANDLED_ASSET or HANDLED_MEDIA",
+      "tests": [
+        "test_a_field_read_but_never_carried_holds"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F110",
+      "title": "Alt text goes out with a post but the why Krish reads does not name it",
+      "source": "Second adversarial review of PR #19, 29 Oct 2026: meta_words named first comments, titles, location and tags, never alt text",
+      "guard": "engine/run/handoff.py:meta_words names each image's alt text in plain words",
+      "tests": [
+        "test_the_why_names_alt_text_in_plain_words"
+      ],
+      "status": "tested"
+    },
+    {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",

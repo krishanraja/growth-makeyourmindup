@@ -154,8 +154,10 @@ def account(channel, channel_id=None):
             'isDisconnected': False, 'isLocked': False}
 
 
-def line(slot_id, channel, words, draft, assets=(), mode='engine', due=DUE, meta=None, channel_id=None):
-    item = {'slot_id': slot_id, 'channel': channel, 'format': 'text', 'due_at': due, 'link_placement': None,
+def line(slot_id, channel, words, draft, assets=(), mode='engine', due=DUE, meta=None, channel_id=None, fmt=None):
+    # The format matches the draft's shape (release.FORMAT_SHAPE): one image is single-image, none is text.
+    fmt = fmt or ('single-image' if len(assets) == 1 else 'text')
+    item = {'slot_id': slot_id, 'channel': channel, 'format': fmt, 'due_at': due, 'link_placement': None,
             'publish_mode': mode, 'buffer_draft_id': draft, 'words': words, 'assets': list(assets),
             'meta': meta, 'buffer_channel_id': channel_id or CH_FOR.get(channel, CH_THREADS), 'payload_sha256': None}
     item['payload_sha256'] = line_digest(item)
@@ -678,11 +680,141 @@ class AutoreleaseTests(unittest.TestCase):
         self.assertEqual(code, 1)
 
     def test_the_readback_checks_the_meta(self):
-        self.buf.on_schedule = lambda post: (post.get('metadata') or {}).update(topic='Synthetic topic Buffer added')
+        # Buffer adds a topic to the Threads post as it saves the edit (a field Threads carries).
+        self.buf.on_schedule = lambda post: (post.get('metadata') or {}).update(topic='Synthetic topic Buffer added') \
+            if post.get('channelService') == 'threads' else None
         summary, code = self.run_once()
         self.assertEqual((code, summary['loud']), (1, ['readback_mismatch']))
         self.assertEqual(summary['holds'], {'readback_mismatch': 1})
         self.assertEqual(summary['slots']['scheduled'], 1)
+
+    # The second adversarial review of the posting path, 29 Oct 2026 ------------------------
+
+    def page_like_control_center(self):
+        """The stand-in serves only decisions after since, 100 a read, as the real route does."""
+        self.cc.honour_since = True
+        self.addCleanup(setattr, self.cc, 'honour_since', False)
+
+    @staticmethod
+    def filler(count, start='2026-10-20T00:00:00Z'):
+        """count older decisions on proposals that are not go-lives, one a minute from start."""
+        import datetime as dt
+        from engine.core import instant
+        base = instant(start)
+        return [{'proposal_id': 'makeyourmindup:experiment:e%03d' % n, 'decision': 'declined', 'stage': None,
+                 'decided_at': (base + dt.timedelta(minutes=n)).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                 'payload_sha256': 'e' * 64, 'amended': False} for n in range(count)]
+
+    def test_his_no_past_the_hundredth_decision_stops_the_release(self):
+        # F100: Control Center serves 100 decisions a read, the oldest first. His No is the 101st.
+        self.page_like_control_center()
+        no = Fixture.decision(self.fix.golive, '2026-11-04T12:30:00Z', decision='declined')
+        self.cc.decisions = self.filler(98) + self.cc.decisions + [no]
+        summary, code = self.run_once()
+        self.assertEqual(summary['decisions_read'], 101, summary)
+        self.assertEqual(summary['golives']['releasable'], 0)
+        self.assertEqual(self.buf.mutations(), [])
+        self.assertEqual(code, 0, summary)
+
+    def test_a_tie_at_the_page_boundary_is_never_dropped(self):
+        # F100: the 100th decision (his yes) and the 101st (his No) share one decided_at. A next
+        # page read strictly after that time would drop the No; it is read again and kept once.
+        self.page_like_control_center()
+        no = Fixture.decision(self.fix.golive, '2026-11-03T14:00:00Z', decision='declined')
+        self.cc.decisions = self.filler(98) + self.cc.decisions + [no]
+        summary, code = self.run_once()
+        self.assertEqual(summary['decisions_read'], 101, summary)
+        self.assertEqual(self.buf.mutations(), [])
+        self.assertEqual(code, 0, summary)
+
+    def test_decisions_that_never_page_out_fail_loud(self):
+        # F100: a route that keeps serving the same full page (or pages past the cap) is never
+        # read as complete: the run fails closed and loud, and touches nothing.
+        self.cc.decisions = self.filler(150) + self.cc.decisions
+        summary, code = self.run_once()
+        self.assertEqual((code, summary['error']), (1, 'decisions_unpaged'), summary)
+        self.assertEqual(self.buf.mutations(), [])
+        self.assertEqual([c for c in self.buf.calls if c['op'] == 'GetPost'], [])
+
+    def test_a_format_label_that_is_not_the_draft_holds(self):
+        # F101: the dispatch's format is signed, but a video on X labelled single-image is not one.
+        video = b'synthetic autorelease video bytes\n'
+        self.buf.media['v.mp4'] = video
+        self.buf.posts[P_X]['assets'] = [{'type': 'video', 'source': self.buf.base + '/media/v.mp4',
+                                          'mimeType': 'video/mp4', 'video': {'title': None, 'thumbnailOffset': None}}]
+        lines = [self.fix.lines[0], line('x-1', 'x', WORDS_X, P_X, [sha(video)], fmt='single-image',
+                                         meta=meta_of(self.buf.posts[P_X], [sha(video)])), self.fix.lines[2]]
+        golive = self.fix.publish(lines)
+        self.cc.decisions[-1] = Fixture.decision(golive, '2026-11-03T14:00:00Z')
+        summary, code = self.run_once()
+        self.assertEqual(summary['holds'], {'format_differs_from_draft': 1}, summary)
+        self.assertEqual(self.buf.posts[P_X]['status'], 'draft')
+        self.assertEqual(summary['slots'].get('scheduled'), 1)
+        # A Reel labelled carousel is refused where the line is rebuilt, whichever lane rebuilds it.
+        reel = {'id': P_UNSIGNED, 'text': 'Synthetic reel words.', 'channelService': 'instagram',
+                'channelId': BUFFER_CHANNEL_ID['instagram'],
+                'assets': [{'type': 'video', 'source': self.buf.base + '/media/v.mp4',
+                            'video': {'title': None, 'thumbnailOffset': None}}],
+                'metadata': {'__typename': 'InstagramPostMetadata', 'type': 'reel', 'shouldShareToFeed': True}}
+        fields = {'slot_id': 'ig-1', 'format': 'carousel', 'due_at': DUE, 'link_placement': None,
+                  'publish_mode': 'engine', 'buffer_draft_id': P_UNSIGNED}
+        with self.assertRaisesRegex(CarryHold, 'format_differs_from_draft'):
+            autorelease.draft_line(reel, fields, fetch)
+        self.assertEqual(autorelease.draft_line(reel, dict(fields, format='short-video'), fetch)['format'],
+                         'short-video')
+
+    def test_an_unresolved_stop_is_loud_and_lists_what_is_scheduled(self):
+        # F103: a declined check-in whose report cannot be read may stop the plan behind these posts.
+        self.run_once()
+        self.assertEqual((self.buf.posts[P_THREADS]['status'], self.buf.posts[P_X]['status']), ('scheduled', 'scheduled'))
+        self.cc.decisions.append({'proposal_id': 'makeyourmindup:checkin:2026-W45', 'decision': 'declined',
+                                  'stage': 'check_in', 'decided_at': '2026-11-04T13:10:00Z',
+                                  'payload_sha256': 'b' * 64, 'amended': False})
+        summary, code = self.run_once(now='2026-11-04T13:20:00Z')
+        self.assertEqual(code, 1, summary)
+        self.assertIn('stop_unresolved', summary['loud'])
+        self.assertIn('scheduled_after_decline', summary['loud'])
+        self.assertEqual(summary['holds'], {'scheduled_after_decline': 2})
+        self.assertEqual(summary['mutations'], 0)
+
+    def test_a_capped_read_or_an_undated_decision_is_loud(self):
+        # F103: his plan No, with the go-live behind it past the read cap: what it scheduled is listed.
+        self.run_once()
+        self.cc.decisions.append(Fixture.decision(self.fix.plan, '2026-11-04T13:10:00Z', decision='declined'))
+        with mock.patch.object(autorelease, 'MAX_REPORT_READS', 0):
+            summary, code = self.run_once(now='2026-11-04T13:20:00Z')
+        self.assertEqual(code, 1, summary)
+        self.assertIn('too_many_reads', summary['loud'])
+        self.assertEqual(summary['holds'], {'scheduled_after_decline': 2})
+        # A decision whose time cannot be read holds its go-live, loudly.
+        self.setUp()
+        self.cc.decisions.append(dict(Fixture.decision(self.fix.golive, None), decided_at=None, decision='declined'))
+        summary, code = self.run_once()
+        self.assertEqual(summary['golives']['held'], {'undated_decision': 1})
+        self.assertEqual((code, summary['loud']), (1, ['undated_decision']), summary)
+        self.assertEqual(self.buf.mutations(), [])
+
+    def test_a_golive_line_digest_is_never_a_run_spec_slot_digest(self):
+        # F105: the same words, time and draft hash differently on the two paths, so one
+        # approval can never be replayed as the other.
+        from engine.run import release
+        for item in self.fix.lines:
+            as_slot = dict(item, assets=[{'sha256': h} for h in item['assets']])
+            self.assertNotEqual(line_digest(item), release.slot_digest(as_slot))
+            self.assertEqual(autorelease.spec_digest(item), release.slot_digest(as_slot))
+
+    def test_an_amended_time_outside_the_run_window_holds(self):
+        # F108: the W45 go-live's run starts at New York midnight on Monday 2 November; he moved
+        # the threads post to Sunday 1 November.
+        early = '2026-11-01T14:00:00Z'
+        text = manifest([dict(self.fix.lines[0], due_at=early), self.fix.lines[2]])
+        self.cc.decisions[-1] = Fixture.decision(self.fix.golive, '2026-11-01T10:00:00Z', amended=True,
+                                                 exact_payload=text, amount_usd=None,
+                                                 amended_sha256=amended_digest(None, text))
+        summary, code = self.run_once(now='2026-11-01T13:00:00Z')
+        self.assertEqual(summary['holds'], {'due_outside_run_window': 1}, summary)
+        self.assertEqual(self.buf.mutations(), [])
+        self.assertEqual(self.buf.posts[P_THREADS]['status'], 'draft')
 
 
 class BufferClientTests(unittest.TestCase):
@@ -713,6 +845,89 @@ class BufferClientTests(unittest.TestCase):
         with self.assertRaises(BufferError) as caught:
             api.get_post(P_X)
         self.assertEqual((caught.exception.code, api.requests), ('buffer_rejected', 1))
+
+    def test_the_edit_is_never_resent(self):
+        # F107: a 5xx on editPost may have landed, so the mutation is sent once; the caller reads back.
+        api = self.buf.client()
+        post = api.get_post(P_X)
+        self.buf.fail_next = [503]
+        with self.assertRaises(BufferError) as caught:
+            api.schedule_draft(post, DUE)
+        self.assertEqual(caught.exception.code, 'buffer_server_error')
+        self.assertEqual(len(self.buf.mutations()), 1)
+        self.assertEqual(self.buf.posts[P_X]['status'], 'draft')
+
+    def test_a_field_read_but_never_carried_holds(self):
+        # F109: an edit is a whole post, so a field the edit cannot carry (a Facebook title) would be lost.
+        post = self.buf.client().get_post(P_X)
+        facebook = dict(post, metadata={'__typename': 'FacebookPostMetadata', 'type': 'post', 'firstComment': None,
+                                        'title': 'Synthetic title the edit cannot carry', 'linkAttachment': None})
+        with self.assertRaisesRegex(CarryHold, 'uncarried_field_set'):
+            buffer_api.edit_input(facebook, DUE)
+        image = {'type': 'image', 'source': 'https://example.invalid/a.png', 'mimeType': 'image/png',
+                 'image': {'altText': 'Synthetic alt text', 'userTags': None, 'caption': 'Synthetic caption'}}
+        with self.assertRaisesRegex(CarryHold, 'uncarried_field_set'):
+            buffer_api.edit_input(dict(post, assets=[image]), DUE)
+        facebook['metadata']['title'] = None
+        self.assertEqual(buffer_api.edit_input(facebook, DUE)['metadata'], {'facebook': {'type': 'post'}})
+
+    def test_every_carried_free_text_field_runs_the_copy_lint(self):
+        # F102: the Threads topic and location, the Instagram location and every tagged handle are
+        # public words too, and no public word names Krish (no_name, 28 Oct 2026).
+        from engine.run.release import media_copy_errors
+        post = self.buf.client().get_post(P_X)
+        image = {'type': 'image', 'source': 'https://example.invalid/a.png',
+                 'image': {'altText': 'A synthetic chart', 'userTags': [{'handle': 'krishraja', 'x': 0.5, 'y': 0.5}]}}
+        cases = (dict(post, assets=[image]),
+                 dict(post, metadata={'__typename': 'InstagramPostMetadata', 'type': 'post', 'shouldShareToFeed': True,
+                                      'geolocation': {'id': '1', 'text': 'Krish Raja HQ'}}),
+                 dict(post, metadata={'__typename': 'ThreadsPostMetadata', 'type': 'post', 'threadCount': 0,
+                                      'topic': 'Krish Raja'}),
+                 dict(post, metadata={'__typename': 'ThreadsPostMetadata', 'type': 'post', 'threadCount': 0,
+                                      'locationName': 'TheRealKrisho studio'}))
+        for case in cases:
+            with self.assertRaisesRegex(CarryHold, 'copy_lint_refused'):
+                buffer_api.edit_input(case, DUE)
+        # Every string an edit carries, bar ids, links, times and fixed codes, is read by the lint.
+        not_words = {'id', 'url', 'dueAt', 'mode', 'schedulingType', 'type', 'categoryId', 'privacy',
+                     'license', 'locationId'}
+        full = [dict(post, assets=[dict(image, image={'altText': 'A synthetic chart',
+                                                      'userTags': [{'handle': 'synthetic.someone', 'x': 0.5, 'y': 0.5}]}),
+                                   {'type': 'video', 'source': 'https://example.invalid/v.mp4',
+                                    'video': {'title': 'A synthetic title', 'thumbnailOffset': 3}}]),
+                dict(post, metadata={'__typename': 'InstagramPostMetadata', 'type': 'post', 'shouldShareToFeed': True,
+                                     'firstComment': 'A synthetic comment', 'geolocation': {'id': '1', 'text': 'A place'}}),
+                dict(post, metadata={'__typename': 'ThreadsPostMetadata', 'type': 'post', 'threadCount': 0,
+                                     'topic': 'A topic', 'locationId': '1', 'locationName': 'A place'}),
+                dict(post, metadata={'__typename': 'FacebookPostMetadata', 'type': 'post', 'firstComment': 'A comment'}),
+                dict(post, assets=[{'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {}}],
+                     metadata={'__typename': 'TiktokPostMetadata', 'type': 'post', 'title': 'A title'}),
+                dict(post, metadata={'__typename': 'YoutubePostMetadata', 'type': 'video', 'title': 'A title',
+                                     'category': {'categoryId': '22'}, 'privacy': 'public', 'license': 'youtube'})]
+
+        def leaves(value, path=()):
+            if isinstance(value, dict):
+                for key, item in value.items():
+                    yield from leaves(item, path + (key,))
+            elif isinstance(value, list):
+                for index, item in enumerate(value):
+                    yield from leaves(item, path + (index,))
+            elif isinstance(value, str) and path[-1] not in not_words and path != ('text',):
+                yield path  # the post's own text is copy_errors', not media_copy_errors'
+
+        checked = 0
+        for case in full:
+            payload = buffer_api.edit_input(case, DUE)
+            self.assertEqual(media_copy_errors(payload), [])
+            for path in leaves(payload):
+                named = copy.deepcopy(payload)
+                spot = named
+                for key in path[:-1]:
+                    spot = spot[key]
+                spot[path[-1]] = 'Krish Raja'
+                self.assertTrue(any('no_name' in e for e in media_copy_errors(named)), path)
+                checked += 1
+        self.assertGreaterEqual(checked, 10)
 
     def test_401_and_403_are_auth_errors_never_retried(self):
         api = self.buf.client('wrong-key')
@@ -787,7 +1002,7 @@ class BufferClientTests(unittest.TestCase):
 
 class SignedMetaTests(unittest.TestCase):
     """B1: the review's probe, as tests. Every field the edit sends moves the digest."""
-    FIELDS = {'slot_id': 's1', 'format': 'post', 'due_at': DUE, 'link_placement': None, 'publish_mode': 'engine',
+    FIELDS = {'slot_id': 's1', 'format': 'single-image', 'due_at': DUE, 'link_placement': None, 'publish_mode': 'engine',
               'buffer_draft_id': 'a' * 24}
 
     @staticmethod
@@ -799,7 +1014,11 @@ class SignedMetaTests(unittest.TestCase):
                 'channelId': 'c' * 24, 'via': 'api', 'assets': assets, 'metadata': metadata}
 
     def digest(self, post):
-        return autorelease.draft_line(post, self.FIELDS, self.fetch)['payload_sha256']
+        # Each draft is signed as the format it is (release.FORMAT_SHAPE, F101).
+        kind = (post.get('metadata') or {}).get('type')
+        video = any(a.get('type') == 'video' for a in post['assets'])
+        fmt = 'story' if kind == 'story' else 'short-video' if video else 'single-image'
+        return autorelease.draft_line(post, dict(self.FIELDS, format=fmt), self.fetch)['payload_sha256']
 
     def instagram(self, kind, first_comment, tags=None):
         image = {'type': 'image', 'source': 'https://example.invalid/a.png',

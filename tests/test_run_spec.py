@@ -192,7 +192,8 @@ class RunSpecLintTests(SyntheticLadder):
         body = {'channel': first['channel'], 'format': first['format'], 'words': first['words'],
                 'assets': [a['sha256'] for a in first['assets']], 'link_placement': first['link_placement'],
                 'due_at': first['due_at'], 'publish_mode': first['publish_mode'], 'meta': first['meta'],
-                'buffer_channel_id': first['buffer_channel_id']}
+                'buffer_channel_id': first['buffer_channel_id'],
+                'domain': 'growth-run-spec-slot/1'}  # F105: never a go-live line's digest
         expected = hashlib.sha256(json.dumps(body, sort_keys=True, separators=(',', ':'),
                                              ensure_ascii=False).encode('utf-8')).hexdigest()
         self.assertEqual(payload_sha256(first), expected)

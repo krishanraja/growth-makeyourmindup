@@ -23,7 +23,7 @@ from engine.cc_loop import (Loop, completion_events, describe, new_subscribers, 
 from engine.control_center import (ENGINE_ID, Client, ProtocolError, build_report, canonical_json,
                                    load_schema, match_decisions, objective, payload_digest, proposal,
                                    report_digest, schema_errors, validate_report, whole)
-from engine.core import identity, read_json, write_json
+from engine.core import identity, instant, read_json, write_json
 from engine.packs import seal
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +52,9 @@ class StandIn:
         self.token = token
         self.attempts, self.reports, self.calls = {}, {}, []
         self.decisions = []
+        # True: serve only decisions after since, as the real route does. Older fixtures
+        # feed decisions dated before the reader's since, so it is off unless a test pages.
+        self.honour_since = False
         self.inactive = False
         self.redirect = False
         self.directive_extra = {}
@@ -119,8 +122,8 @@ class StandIn:
                                             'payload_sha256': found['payload_sha256'], 'accepted_at': NOW,
                                             'report': found})
                 if method == 'GET' and route == 'decisions':
-                    parse_qs(parts.query)['since']
-                    return self.reply(200, {'ok': True, 'decisions': stand.decisions})
+                    since = parse_qs(parts.query)['since'][0]
+                    return self.reply(200, {'ok': True, 'decisions': stand.serve_decisions(since)})
                 return self.reply(404, {'error': 'not_found'})
 
             def do_GET(self):
@@ -131,6 +134,26 @@ class StandIn:
 
         self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+
+    # As Control Center serves them (engine/cc_loop.py, DECISIONS_PAGE): the oldest first,
+    # at most 100 a read, and (honour_since) only those after since, to the second. A
+    # decision whose time cannot be read is served on every page, so it is never lost.
+    PAGE = 100
+
+    def serve_decisions(self, since):
+        cut = instant(since)
+        dated, undated = [], []
+        for index, item in enumerate(self.decisions):
+            try:
+                if not isinstance(item.get('decided_at'), str):
+                    raise ValueError('undated')  # instant(None) is now: never read it as a time
+                at = instant(item['decided_at'])
+            except (TypeError, ValueError, AttributeError):
+                undated.append(item)
+                continue
+            if at > cut or not self.honour_since:
+                dated.append((at, index, item))
+        return [item for _, _, item in sorted(dated, key=lambda row: row[:2])][:self.PAGE] + undated
 
     @property
     def base(self):
