@@ -8,6 +8,7 @@ import re
 import unicodedata
 from urllib.parse import parse_qsl, urlsplit
 
+from .copy_lint import copy_lint_errors
 from .core import KINDS, OWN_HOSTS, PLATFORMS, calendar_date, canonical, http_url, identity, instant
 
 EM_DASH = re.compile('\u2014')
@@ -65,6 +66,12 @@ def problems(item, kind=None):
     if item.get('platform') not in PLATFORMS:
         errors.append('unknown platform')
     errors += prose_errors(text)
+    # The draft is public once he pastes it (Krish, 28 Oct 2026: no eyebrows,
+    # asterisks, AI notes or take labels); an unreadable lint refuses the pack.
+    try:
+        errors += copy_lint_errors(text, 'channel_copy')
+    except ValueError as exc:
+        errors.append('copy lint could not run: ' + str(exc))
     if len(text.encode('utf-16-le')) // 2 > 4000:
         errors.append('exceeds the API limit of 4000 UTF-16 units')
     if item.get('platform') == 'x':
