@@ -277,7 +277,7 @@ def validate_mix_plan(value, root=None):
                 or not 0 <= row['floor'] <= row['target'] <= mix_rules.max_daily_posts(channel) or row['target'] < 1:
             raise PayloadRejected('bad_targets')
     weights = value['weights']
-    if not isinstance(weights, dict) or list(weights) != list(lanes) or any(
+    if not isinstance(weights, dict) or sorted(weights) != sorted(lanes) or any(
             type(w) is not int or not lanes[n]['min'] <= w <= lanes[n]['max'] for n, w in weights.items()):
         raise PayloadRejected('bad_weights')
     moved = value['moved']
@@ -355,6 +355,11 @@ def validate_mix_plan(value, root=None):
             isinstance(f, dict) and set(f) == {'channel', 'day', 'lane', 'needs'}
             and all(_text(f[k], 200) for k in f) for f in shortfalls):
         raise PayloadRejected('bad_shortfalls')
+    # GitHub delivers a client_payload with its keys reordered: every map is put back in mix.json's own
+    # order, so the words he reads are the same whatever order the dispatch arrived in.
+    targets = {c: {'target': targets[c]['target'], 'floor': targets[c]['floor']} for c in channels}
+    weights = {n: weights[n] for n in lanes}
+    moved = {n: {k: moved[n][k] for k in ('from', 'to', 'judged', 'score')} for n in lanes if n in moved}
     mix = {'week_of': week[0].isoformat(), 'targets': targets, 'weights': weights, 'moved': moved,
            'slots': slots, 'concepts': concepts, 'shortfalls': shortfalls}
     return mix, links, cfg

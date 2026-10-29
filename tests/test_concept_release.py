@@ -461,6 +461,24 @@ class ConceptReleaseTests(unittest.TestCase):
         self.assertEqual(self.cc.reports, {}, 'nothing refused is reported')
         self.assertLessEqual(len(handoff.MIX_KEYS), 10, 'a client_payload holds at most ten top-level keys')
 
+    def test_the_plan_reads_the_same_whatever_order_github_delivers_its_keys_in(self):
+        # 29 Oct 2026: GitHub handed the W45 client_payload over with its keys reordered, and the handoff
+        # refused it (bad_weights). Every map is now put back in mix.json's order, so the words are the same.
+        body = dispatch_of(full_plan())
+        lanes = list(body['weights'])
+        body['moved'] = {lanes[0]: {'from': 50, 'to': 55, 'judged': 12, 'score': 0.4},
+                         lanes[1]: {'from': 25, 'to': 20, 'judged': 9, 'score': -0.2}}
+        shuffled = json.loads(json.dumps(body, sort_keys=True))
+        self.assertNotEqual(list(shuffled['weights']), lanes, 'the fixture really reorders the weights')
+        words = []
+        for value in (body, shuffled):
+            mix_doc, links, cfg = handoff.validate_mix_plan(copy.deepcopy(value))
+            built, _ = mix.part_proposals(mix_doc, cfg, links=links)
+            words.append([(item['proposal_id'], item['exact_payload'], item['payload_sha256']) for item in built])
+        self.assertEqual(words[0], words[1])
+        summary, code = self.stage.handoff(handoff.MIX_PLAN, shuffled)
+        self.assertEqual((code, summary['error']), (0, None), summary)
+
     def test_a_full_week_over_eight_thousand_characters_comes_in_parts_in_order(self):
         plan = full_plan()
         stage = Stage(self.cc, self.buf, plan)

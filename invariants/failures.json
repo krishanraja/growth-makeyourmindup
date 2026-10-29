@@ -1488,6 +1488,16 @@
       "status": "tested"
     },
     {
+      "id": "F132",
+      "title": "The weekly mix plan was refused because GitHub delivered its client_payload with the keys reordered",
+      "source": "W45 growth-mix-plan dispatch, 29 Oct 2026: handoff refused bad_weights on main fe391f0",
+      "guard": "engine/run/handoff.py:validate_mix_plan accepts targets, weights and moved in any order and puts each back in mix.json's order",
+      "tests": [
+        "test_the_plan_reads_the_same_whatever_order_github_delivers_its_keys_in"
+      ],
+      "status": "tested"
+    },
+    {
       "id": "G1",
       "title": "channel_audit allows autonomous LinkedIn edits, against the 26 Oct ruling",
       "source": "docs/plans/2026-10-27-engine-architecture.md Context G1",
