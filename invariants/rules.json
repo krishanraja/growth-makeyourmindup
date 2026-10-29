@@ -1522,6 +1522,23 @@
       ]
     },
     {
+      "id": "R114",
+      "statement": "The code renderer draws every post; Codex only art-directs a piece kit, which the renderer checks (house colours and fonts painted, byte-identical renders, no pictures of people, nothing remote) before any mock of it reaches his approval.",
+      "source_file": "CHANGES.md",
+      "quote": "we need to find a way of combining strengths",
+      "enforced_by": [
+        "engine/run/artdirect.py:kit_errors",
+        "engine/run/artdirect.py:painted_errors",
+        "engine/run/artdirect.py:gate"
+      ],
+      "tests": [
+        "test_an_off_kit_colour",
+        "test_a_remote_font",
+        "test_an_img",
+        "test_the_wordmark_a_person_a_secret_and_a_stray_file"
+      ]
+    },
+    {
       "id": "R115",
       "statement": "A go-live dispatch that names content-engine's piece manifest proposes only drafts that are exactly its post for their channel (words, assets in order, alt text); a manifest not passed QA, unapproved or not its sha holds every slot.",
       "source_file": "CHANGES.md",

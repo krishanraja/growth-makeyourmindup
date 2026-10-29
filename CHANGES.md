@@ -57,6 +57,20 @@
     real post passes as the capability check he approves on its Monday. A
     Substack article is never released (Buffer's Substack channel is his
     Notes profile): it stays a saved draft for his click.
+- 2026-10-29 (late): the code renderer draws every post; Codex art-directs
+  one visual idea per piece. Krish judged a blind bake-off of three makers
+  (the code renderer, Codex and Canva) on the same seven images and picked the
+  renderer. Of Canva he said: "Canva feels more like a powerpoint designer did
+  it rather than a designer". Then: "the most stunning visual art direction
+  I've seen thus far comes from the AI Passports post. I am pretty sure that
+  was Codex? If so, we need to find a way of combining strengths". So each
+  Saturday `artdirect.yml` has Codex invent one visual idea per piece as a
+  piece kit (`render/pieces/`, house colours and fonts only), the renderer
+  draws every post from it with its checks as the gate, and his concept
+  approval binds the exact mock hashes. Canva is read-only reference. On the
+  lane: "keep it in L0", so art direction runs in GitHub Actions though it
+  runs a model.
+
 - 2026-10-29 (evening): the prepaid credits share is read, and its spending is
   a procedure. The runner reads `credits` and spends nothing
   (`engine/credits.py`, `tests/test_credits.py`). `docs/CREDITS.md` is how a

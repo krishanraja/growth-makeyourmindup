@@ -109,3 +109,65 @@ The reference images are private. They are never copied into this repository.
 - The 19 October number card that compares three companies in two columns (read and write prices)
   is not a template yet. The number card takes one value per row.
 - Screenshots, logos and app icons are not reproduced; typed words and letter tiles stand in for them.
+
+## Piece kits
+
+Krish ruled on 29 October 2026 that the code renderer makes every post, that Codex art-directs one
+visual idea for each piece, and that Canva is for reference only. The bar is the piece about why
+every country wants its own AI, where one object from that story ran through every card and frame.
+A piece kit is one such idea, written as code the renderer can use.
+
+### What a piece kit holds
+
+`render/pieces/<piece_id>/` holds these files and nothing else:
+
+- `idea.md`: one plain paragraph that names the visual idea.
+- `piece.css`: the look of the idea, built only from the house tokens in `kit.css`.
+- `templates/*.html`: the idea at each size. Each page links `kit.css`, then `piece.css`, and ends
+  with `fit.js`, so fitting and fonts work as on every house page.
+- `templates.json`: the templates, in the same shape as `render/templates.json`, with the kind
+  `piece_kit` and the piece's id.
+
+A render job names a piece template as `piece:<piece_id>/<template>`. The synthetic example is
+`render/pieces/synthetic-receipt-tape/`: a made-up money story told as one long till receipt.
+
+### What Codex may do
+
+- Invent one idea for one piece, true to that story and no other, and use it on every template.
+- Arrange the eight kit colours, the four kit fonts and the wordmark however the idea needs, with
+  boxes, borders, gradients, shapes and opacity.
+- Write in the piece's own folder only, with no network. `render/ARTDIRECT_PROMPT.md` is its brief.
+
+### What Codex may not do
+
+- Use a colour or font outside the kit, a filter or a blend mode, or change a kit token.
+- Use a picture of any kind (an image, a drawing file, a canvas or a video), or draw, describe or
+  name a person.
+- Reach anything outside `render/`: no web address and no `url()`. Fonts come only from
+  `render/fonts`, through `kit.css`.
+- Restyle the wordmark. It may only size and place it.
+- Reuse an idea. The passports idea belongs to its one piece, so no kit may use it, and no kit may
+  copy a house template or another piece's kit.
+- Put the piece's title, its claims or a real figure in the kit. Examples are placeholders, as in
+  the house file, and the real words are filled in outside this repository.
+- Use an em dash, or words a 12 year old could not follow.
+
+### The renderer's checks are the gate
+
+- The static checks: `python growth.py run artdirect check render/pieces/<piece_id>`.
+- Two renders of every template that give the same bytes (`--verify`), and the colours and fonts
+  the page really painted, held to the kit. A page that asks for anything the renderer refuses, such
+  as a remote font or a missing picture, is refused itself.
+- A kit that fails any check is removed, and that piece goes out in the house kit (code
+  `piece_kit_refused`). `tests/test_piece_kits.py` runs the same checks on every kit here, and shows
+  each one failing on a planted colour outside the kit, a remote font and an image.
+- Codex works on three pieces a week at most unless a run is given another cap, and the run's
+  summary counts the tokens it used. Its log holds counts and codes only.
+
+### What his approval binds
+
+- Kits reach this repository only through the pull request "Piece kits for week W", which the
+  workflow (`.github/workflows/artdirect.yml`) never merges.
+- His approval of a concept in the week's mix plan binds the exact mock hashes: the images rendered
+  from these templates with that concept's words. A kit changed after that makes new mocks, and the
+  concept needs his approval again.

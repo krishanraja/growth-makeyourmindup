@@ -1,0 +1,93 @@
+name: artdirect
+# Lane L0. Every Saturday at 07:00 UTC, and by hand, Codex art-directs the
+# coming week: ONE visual idea per piece, built as a piece kit under
+# render/pieces/<piece_id>/ (render/KIT.md, "Piece kits"; Krish, 29 Oct 2026).
+# Codex runs with no network, in the piece's own folder, at most max_pieces
+# times (the spend cap). The gate is the engine's static checks, then two
+# renders of every kit (scripts/render_mocks.mjs --verify) held to the kit's
+# colours and fonts; a kit that fails is removed and that piece goes out in
+# the house kit (piece_kit_refused). The kits that pass go to Krish as one
+# pull request, "Piece kits for week <W>", which this workflow never merges;
+# his concept approval binds the exact mock hashes. This repository is
+# public, so the log carries only counts and codes, nothing is uploaded, and
+# the OpenAI key reaches only the step that runs Codex, as OPENAI_API_KEY.
+on:
+  schedule:
+    - cron: '0 7 * * 6'
+  workflow_dispatch:
+    inputs:
+      max_pieces:
+        description: 'The spend cap: how many pieces Codex may art-direct this run'
+        required: false
+        type: number
+        default: 3
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: artdirect
+  cancel-in-progress: false
+
+jobs:
+  artdirect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install the Codex CLI and the renderer's Chromium (pinned)
+        run: |
+          npm install --global --no-audit --no-fund @openai/codex@0.165.0 playwright@1.63.0 > /dev/null
+          npx --yes playwright@1.63.0 install --with-deps chromium > /dev/null
+          codex --version
+      - name: Art-direct the coming week (Codex, no network, capped)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
+          MAX_PIECES: ${{ inputs.max_pieces || 3 }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "The OpenAI key is missing (code openai_key_missing): no piece kits this week"
+            exit 1
+          fi
+          trap 'rm -f "$HOME/.codex/auth.json"' EXIT
+          printenv OPENAI_API_KEY | codex login --with-api-key > /dev/null 2>&1
+          python growth.py run artdirect make --max-pieces "$MAX_PIECES" --out .scratch/artdirect
+      - name: Render each kit twice and hold it to the kit
+        run: |
+          mkdir -p .scratch/artdirect/rendered
+          for jobs in .scratch/artdirect/jobs/*.json; do
+            [ -e "$jobs" ] || continue
+            id=$(basename "$jobs" .json)
+            node scripts/render_mocks.mjs "$jobs" --out-dir ".scratch/artdirect/png/$id" --verify \
+              --manifest ".scratch/artdirect/rendered/$id.json" > /dev/null 2>&1 \
+              || rm -f ".scratch/artdirect/rendered/$id.json"
+          done
+          python growth.py run artdirect gate --out .scratch/artdirect
+      - name: Open the pull request (never merged here)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ ! -s .scratch/artdirect/passed.txt ]; then
+            echo "No piece kit passed this run; every piece uses the house kit"
+            exit 0
+          fi
+          week=$(python -c "import json; print(json.load(open('.scratch/artdirect/summary.json'))['week'])")
+          branch="piece-kits/$week-$GITHUB_RUN_ID"
+          gh auth setup-git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -q -c "$branch"
+          while read -r id; do git add -- "render/pieces/$id"; done < .scratch/artdirect/passed.txt
+          { echo "Piece kits for week $week"; echo; cat .scratch/artdirect/pr.md; } > .scratch/artdirect/commit.txt
+          git commit -q -F .scratch/artdirect/commit.txt
+          git push -q origin "HEAD:refs/heads/$branch"
+          gh pr create --base "$BASE" --head "$branch" --title "Piece kits for week $week" \
+            --body-file .scratch/artdirect/pr.md > /dev/null
+          echo "Opened one pull request with $(wc -l < .scratch/artdirect/passed.txt) piece kits for week $week"
