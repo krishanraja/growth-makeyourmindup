@@ -59,6 +59,8 @@ class StandIn:
         self.inactive = False
         self.redirect = False
         self.directive_extra = {}
+        # Served at GET capabilities when set (a report above 1.0.0 confirms its version there).
+        self.capabilities = None
         stand = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -96,6 +98,8 @@ class StandIn:
                         return self.reply(409, {'error': 'conflict'})
                     stand.attempts[body['attempt_id']] = body
                     return self.reply(200, {'ok': True, 'attempt': body, 'replayed': old == body})
+                if method == 'GET' and route == 'capabilities' and stand.capabilities is not None:
+                    return self.reply(200, stand.capabilities)
                 if method == 'GET' and route == 'directive':
                     return self.reply(200, {'ok': True, 'chosen_by': 'rule', 'directive': {
                         'schema_version': '1.0.0', 'directive_id': 'makeyourmindup:2026-10-17',

@@ -21,6 +21,7 @@ import urllib.request
 from urllib.parse import parse_qsl, quote, unquote, urlsplit
 
 from .core import instant
+from .credits import spent_errors
 
 SLUG = 'makeyourmindup'
 ENGINE_ID = 'growth-makeyourmindup'
@@ -34,6 +35,10 @@ AUTONOMY_FIELDS = ('stage', 'parent_proposal_id')
 # 1.14.0 adds the engagement task: a version 2 action of kind copy_open on the
 # engage channel, behind post, that Krish carries out himself (docs/control-center).
 ENGAGE_VERSION = '1.14.0'
+# 1.16.0 adds credits_spent, the prepaid credits a run spent of the directive's
+# credits share (engine/credits.py); raised only when a report carries one.
+CREDITS_VERSION = '1.16.0'
+CREDITS_FEATURE = 'credits'
 ENGAGE_CHANNEL = 'engage'
 ENGAGE_KIND = 'copy_open'
 MAX_TAPS = 25
@@ -371,8 +376,11 @@ def copy_open_errors(item):
     return errors
 
 
-def report_version(proposals):
-    """1.14.0 when a proposal is an engagement task, 1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
+def report_version(proposals, credits_spent=None):
+    """1.16.0 when the report carries credits_spent, 1.14.0 when a proposal is an engagement task,
+    1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
+    if credits_spent:
+        return CREDITS_VERSION
     proposals = [item for item in proposals or [] if isinstance(item, dict)]
     if any(copy_open(item) for item in proposals):
         return ENGAGE_VERSION
@@ -409,9 +417,12 @@ def proposal(proposal_id, title, why, kind, wall, close_event, channel=None, exa
 
 def validate_report(report):
     errors = schema_errors(report, load_schema())
-    expected = report_version(report.get('proposals') if isinstance(report.get('proposals'), list) else [])
+    expected = report_version(report.get('proposals') if isinstance(report.get('proposals'), list) else [],
+                              report.get('credits_spent'))
     if report.get('schema_version') != expected:
-        errors.append('schema_version must be ' + expected + ': raise it only for a field a proposal uses')
+        errors.append('schema_version must be ' + expected + ': raise it only for a field the report uses')
+    if 'credits_spent' in report:
+        errors += spent_errors(report['credits_spent'])
     if report.get('engine_id') != ENGINE_ID or report.get('product_slug') != PRODUCT_SLUG:
         errors.append('report must name ' + ENGINE_ID + ' and ' + PRODUCT_SLUG)
     for item in report.get('objectives', []):
@@ -442,10 +453,11 @@ def validate_report(report):
 
 
 def build_report(run_id, mode, observed_at, revision, captured_at, status, objectives=(),
-                 activity=(), proposals=(), events=(), holds=()):
+                 activity=(), proposals=(), events=(), holds=(), credits_spent=None):
     proposals = list(proposals)
+    credits_spent = list(credits_spent or [])
     report = whole({
-        'schema_version': report_version(proposals), 'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
+        'schema_version': report_version(proposals, credits_spent), 'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
         'run_id': run_id, 'mode': mode, 'observed_at': iso(observed_at),
         'source': {'revision': clip(revision, 128), 'captured_at': iso(captured_at)},
         'status': status, 'objectives': list(objectives),
@@ -453,6 +465,9 @@ def build_report(run_id, mode, observed_at, revision, captured_at, status, objec
         'proposals': proposals, 'events': list(events),
         'holds': [{'reason': clip(h['reason'], 200), 'detail': clip(h['detail'], 1000) if h.get('detail') else None}
                   for h in holds]})
+    if credits_spent:
+        # Only when this run spent credits, so a report without it is unchanged.
+        report['credits_spent'] = whole(credits_spent)
     report['payload_sha256'] = report_digest(report)
     return validate_report(report)
 
@@ -567,8 +582,8 @@ class Client:
         """Report once, then read it back. A 409 is read back, never retried."""
         validate_report(report)
         if report['schema_version'] != SCHEMA_VERSION:
-            self.confirm_version(report['schema_version'],
-                                 ENGAGE_KIND if report['schema_version'] == ENGAGE_VERSION else None)
+            feature = {ENGAGE_VERSION: ENGAGE_KIND, CREDITS_VERSION: CREDITS_FEATURE}.get(report['schema_version'])
+            self.confirm_version(report['schema_version'], feature)
         ours = report['payload_sha256']
         try:
             result = self._request('POST', 'reports', report, idempotency_key=report['run_id'])

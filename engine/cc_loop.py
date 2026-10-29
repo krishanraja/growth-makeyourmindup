@@ -25,6 +25,7 @@ from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, _de
                              build_report, canonical_json, copy_open, engage_action, golive_review, iso,
                              match_decisions, objective, proposal, _stops)
 from . import intensity
+from .credits import credits_block, credits_lines
 from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
 from .operations import aggregate, daily_queue, validate_observation
@@ -1225,7 +1226,9 @@ def cli(args, root, make_client, out=print, checks=None):
             # Keep the block for the measure job, and say what it holds, shape only.
             keep_web_analytics(root, directive)
             seen['web'] = web_analytics_summary(web_analytics_block(directive))
-            lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web']), meter.cost_line('before this report')]
+            lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web'])]
+            # The share of each prepaid pool (1.16.0); the runner spends none of it (docs/CREDITS.md is how a session does).
+            lines += credits_lines(credits_block(directive)) + [meter.cost_line('before this report')]
             return runner_report(root, run_id, clock(), checks(root), args.mode, True,
                                  sent=already_sent(client, clock(), directive, args.mode),
                                  backlog=for_runner(root, clock()),
