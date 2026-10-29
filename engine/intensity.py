@@ -15,6 +15,7 @@ import re
 
 from .core import instant, ny_time, read_json
 from .run import measure
+from .social import max_daily_posts
 
 ROOT = Path(__file__).resolve().parents[1]
 BOUNDS = 'intensity.json'
@@ -26,8 +27,8 @@ def bounds(root=ROOT):
     taps = value['engagement_taps']['by_urgency']
     if sorted(taps) != ['1', '2', '3', '4', '5'] or any(not isinstance(v, int) or not 1 <= v <= 25 for v in taps.values()):
         raise ValueError('intensity.json engagement_taps needs U1 to U5, each 1 to 25')
-    if value['daily_posts']['bound'] not in (1, 2):
-        raise ValueError('intensity.json daily_posts bound stays within the channel schema maximum of 2')
+    if value['daily_posts'].get('bound') != 'social_policy':
+        raise ValueError('intensity.json daily_posts bound is the channel policy in engine/social.py, never a number of its own')
     return value
 
 
@@ -103,11 +104,17 @@ def raised(urgency, root=ROOT):
 def daily_cap(record, urgency=None, root=ROOT):
     """Scheduled posts a channel takes per New York day at this urgency; None means no engine cap.
 
-    A null record (a human-only channel) stays null at every urgency."""
+    At U3 and above the cap rises only to that channel's own policy bound
+    (engine/social.py: Substack Notes two, every other channel one), never to
+    the schema's maximum. A null record (a human-only channel) stays null at
+    every urgency."""
     cap = record.get('daily_posts_target') if isinstance(record, dict) else None
     if not isinstance(cap, int) or isinstance(cap, bool):
         return None
-    return max(cap, bounds(root)['daily_posts']['bound']) if raised(urgency, root) else cap
+    if not raised(urgency, root):
+        return cap
+    bounds(root)
+    return max(cap, max_daily_posts(record.get('id')))
 
 
 def engagement_taps(urgency=None, root=ROOT):

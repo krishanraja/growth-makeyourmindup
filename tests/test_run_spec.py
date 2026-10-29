@@ -15,7 +15,7 @@ from engine.control_center import sha256_hex
 from engine.core import write_json
 from engine.run import cli
 from engine.run import spec as spec_module
-from engine.run.spec import (computed, lint, lint_digest, main, payload_sha256, run_dir, skeleton,
+from engine.run.spec import (computed, ecosystem, ecosystem_errors, lint, lint_digest, main, payload_sha256, run_dir, skeleton,
                              social_records, status, week_target)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -173,7 +173,8 @@ class RunSpecLintTests(SyntheticLadder):
     def test_linkedin_slot_must_be_krish_click(self):
         spec = fixture('w45-week')
         draft = dict(spec['slots'][3], slot_id='w45-linkedin-1', channel='linkedin', experiment_arm=None,
-                     link_placement=None, words='TEST FIXTURE ONLY. A LinkedIn draft for Krish to post himself.')
+                     link_placement=None, words='TEST FIXTURE ONLY. A LinkedIn draft for Krish to post himself. https://mindmake.co/',
+                     ecosystem_cta={'route': 'mindmake', 'url': 'https://mindmake.co/', 'placement': 'in_post'})
         spec['slots'].append(draft)
         for mode, due, expected in (('engine', None, {'publish_mode'}),
                                     ('engine', '2026-11-05T09:00:00-05:00', {'publish_mode'}),
@@ -231,10 +232,16 @@ class RunSpecLintTests(SyntheticLadder):
         newsletter = {'route': 'mindmake', 'url': 'https://home.makeyourmindup.ai/p/test-fixture', 'placement': 'in_post'}
         self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=newsletter)), [('ecosystem_cta', 'url')],
                          'the newsletter alone is not a route')
-        wrong = {'route': 'podcast', 'url': 'https://mindmake.co/', 'placement': 'profile'}
+        wrong = {'route': 'long-video', 'url': 'https://mindmake.co/', 'placement': 'in_post'}
         self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=wrong)), [('ecosystem_cta', 'url')])
-        unknown = {'route': 'hologram', 'url': 'https://mindmake.co/', 'placement': 'profile'}
+        unknown = {'route': 'hologram', 'url': 'https://mindmake.co/', 'placement': 'in_post'}
         self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=unknown)), [('ecosystem_cta', 'route')])
+        podcast = {'route': 'podcast', 'url': 'https://open.spotify.com/show/unverified', 'placement': 'in_post'}
+        self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=podcast)), [('ecosystem_cta', 'route')],
+                         'the podcast route stays off until its URL is verified')
+        profile = {'route': 'mindmake', 'url': 'https://mindmake.co/', 'placement': 'profile'}
+        self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=profile)), [('schema', '$')],
+                         'a profile link is not a placement')
         absent = {'route': 'mindmake', 'url': 'https://mindmake.co/', 'placement': 'in_post'}
         self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=absent)), [('ecosystem_cta', 'placement')],
                          'an in_post route has its URL in the words')
@@ -247,6 +254,26 @@ class RunSpecLintTests(SyntheticLadder):
             s['payload_sha256'] = payload_sha256(s)
             s['ecosystem_cta'] = absent
         self.assertEqual(ecosystem_codes(in_words), [], 'the URL in the words, tracked or not, carries the route')
+
+    def test_the_long_video_route_is_the_show_only(self):
+        routes = ecosystem(ROOT)
+
+        def errors(url, videos=None):
+            if videos is not None:
+                routes['routes']['long-video']['video_ids'] = videos
+            spec = fixture('w45-week')
+            s = slot(spec, 'w45-mon-threads-1')
+            s['words'] += ' ' + url
+            s['payload_sha256'] = payload_sha256(s)
+            s['ecosystem_cta'] = {'route': 'long-video', 'url': url, 'placement': 'in_post'}
+            return [e['at'].rsplit('.', 1)[-1] for e in ecosystem_errors(s, '$', routes)]
+        self.assertEqual(errors('https://www.youtube.com/@makeyourmind-up/videos'), [], "the show's own channel")
+        self.assertEqual(errors('https://m.youtube.com/@MakeYourMind-Up'), [], 'any case, any YouTube host')
+        self.assertEqual(errors('https://www.youtube.com/@someone-else'), ['url'], "another channel is not the show")
+        self.assertEqual(errors('https://www.youtube.com/@makeyourmind-upstart'), ['url'], 'a longer handle is someone else')
+        self.assertEqual(errors('https://www.youtube.com/watch?v=abcdefghijk'), ['url'], 'an unlisted video is not the show')
+        self.assertEqual(errors('https://www.youtube.com/watch?v=abcdefghijk', ['abcdefghijk']), [], 'a verified long video')
+        self.assertEqual(errors('https://youtu.be/abcdefghijk'), [], 'its short link too')
 
     def test_every_journey_names_a_known_ecosystem_route(self):
         journeys = json.loads((ROOT / 'journeys.json').read_text(encoding='utf-8'))

@@ -18,7 +18,7 @@ import re
 import socket
 import urllib.error
 import urllib.request
-from urllib.parse import quote
+from urllib.parse import parse_qsl, quote, unquote, urlsplit
 
 from .core import instant
 
@@ -37,8 +37,42 @@ ENGAGE_VERSION = '1.14.0'
 ENGAGE_CHANNEL = 'engage'
 ENGAGE_KIND = 'copy_open'
 MAX_TAPS = 25
-EMAIL = re.compile(r'[^\s@<>()]+@[^\s@<>()]+\.[A-Za-z]{2,}')
-PHONE = re.compile(r'(?:\+\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b')
+# A tap is checked by Control Center's own rule (src/lib/growthEngines.ts,
+# parseTap and tapUrlCarriesContact), so one bad tap is held here on its own
+# rather than refused there with the whole day's batch.
+EMAIL = re.compile(r'[^\s@]+@[^\s@]+\.[a-z]{2,}', re.I)
+PHONE_RUN = re.compile(r'\+?[0-9][0-9\s().-]{8,}[0-9]')
+CHAT_HOSTS = frozenset(('wa.me', 'api.whatsapp.com', 'web.whatsapp.com', 'chat.whatsapp.com', 't.me',
+                        'telegram.me', 'telegram.dog', 'signal.me', 'sms.to'))
+CONTACT_KEYS = re.compile(r'^(?:to|cc|bcc|phone|tel|mobile|number|recipient|recipients|email|mail)$', re.I)
+TAP_URL_MAX = 2000
+
+
+def has_phone(text):
+    """Any run of ten digits or more, however it is spaced: Control Center's hasPhone."""
+    return any(len(re.sub(r'[^0-9]', '', run)) >= 10 for run in PHONE_RUN.findall(text))
+
+
+def tap_url_carries_contact(url):
+    """Whether a tap's page is a private chat or carries an address or number (Control Center's rule).
+
+    A bare run of digits in a path is a post id, never read as a number."""
+    try:
+        parts = urlsplit(url)
+        host = (parts.hostname or '').lower()
+    except ValueError:
+        return True
+    host = host[4:] if host.startswith('www.') else host
+    if host in CHAT_HOSTS or (host.endswith('whatsapp.com') and re.search(r'/send\b', parts.path)):
+        return True
+    if any(CONTACT_KEYS.match(k) and v.strip() for k, v in parse_qsl(parts.query, keep_blank_values=True)):
+        return True
+    raw = parts.path + ('?' + parts.query if parts.query else '') + ('#' + parts.fragment if parts.fragment else '')
+    rest = unquote(raw)
+    if EMAIL.search(rest):
+        return True
+    return any(len(re.sub(r'[^0-9]', '', run)) >= 10 and (run.startswith('+') or re.search(r'[^0-9]', run))
+               for run in PHONE_RUN.findall(rest))
 STAGES = ('plan', 'go_live', 'check_in')
 GO_LIVE_WALLS = ('send', 'post', 'spend')
 TIMEZONE = 'America/New_York'
@@ -303,11 +337,13 @@ def action_errors(action):
             errors.append(at + ' needs a one-line label of up to 80 characters')
         if not isinstance(tap['text'], str) or not tap['text'].strip() or len(tap['text']) > 2200:
             errors.append(at + ' needs its exact words, up to 2200 characters')
-        elif EMAIL.search(tap['text']) or PHONE.search(tap['text']):
+        elif EMAIL.search(tap['text']) or has_phone(tap['text']):
             errors.append(at + ' words carry an email address or a phone number')
         url = tap['url']
-        if not (isinstance(url, str) and re.match(r'^https://[^\s/@]+(/\S*)?$', url)):
-            errors.append(at + ' needs a public https page with no login in it')
+        if not (isinstance(url, str) and len(url) <= TAP_URL_MAX and re.match(r'^https://[^\s/@]+(/\S*)?$', url)):
+            errors.append(at + ' needs a public https page with no login in it, up to ' + str(TAP_URL_MAX) + ' characters')
+        elif tap_url_carries_contact(url):
+            errors.append(at + ' page is a private chat or carries an address or a number')
     return errors
 
 

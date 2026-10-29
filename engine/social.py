@@ -14,6 +14,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DELEGATED_PERSONAL = ('x', 'tiktok', 'threads', 'substack-notes')
 
 
+# The posting policy (27 Oct): Substack Notes up to two a day, every other
+# account at most one. engine/intensity.py raises a cap only up to this.
+MAX_DAILY_POSTS = {'substack-notes': 2}
+DEFAULT_MAX_DAILY_POSTS = 1
+
+
+def max_daily_posts(channel_id):
+    """The most scheduled posts a day this repository's policy lets a channel take."""
+    return MAX_DAILY_POSTS.get(channel_id, DEFAULT_MAX_DAILY_POSTS)
+
+
 def read(path):
     return json.loads(Path(path).read_text(encoding='utf-8-sig'))
 
@@ -117,7 +128,7 @@ def inventory(root=ROOT):
             raise ValueError('human-only accounts have no automatic posting quota')
         # Notes post from Krish's own Substack profile at up to two a day as he
         # signs (27 Oct); every other account stays at one a day.
-        if (obj['daily_posts_target'] or 0) > 1 and obj['id'] != 'substack-notes':
+        if (obj['daily_posts_target'] or 0) > max_daily_posts(obj['id']):
             raise ValueError('only Substack Notes has a two-a-day target')
         for name in obj['formats']:
             if name not in result['format'] or obj['id'] not in result['format'][name]['channels']:

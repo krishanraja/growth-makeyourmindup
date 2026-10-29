@@ -63,7 +63,7 @@ format, or a format the channel does not take (`social/channels`,
 human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a `krish_click` slot with a `due_at`; `spend_usd` above 0; two
 experiments on one channel; an arm that is not registered; an asset hash that
 is not 64 lowercase hex; more scheduled slots on a New York day than the
-channel's `daily_posts_target` (null: no cap; U3+ raises it, `intensity.json`); an engine slot asset in no
+channel's `daily_posts_target` (null: no cap; U3+ raises it only to the channel's policy bound in `engine/social.py`); an engine slot asset in no
 manifest with a `creative_approval_ref` (release holds it too); a window
 that is not New York midnights 7 (week, from a Monday), 8 (piece) or 1
 (express) days long; a slot with no `ecosystem_cta`. Warnings include an engine slot with no `due_at`: it

@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 
 from ..control_center import sha256_hex
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 from ..core import TIMEZONE, UTC, calendar_date, canonical, http_url, instant, ny_time, read_json, write_json
 from .. import intensity
@@ -160,7 +160,8 @@ def daily_cap(record, urgency=None, root=ROOT):
     """Scheduled posts a channel takes per New York day, from its record; None means no engine cap.
 
     A human-only channel (LinkedIn) records null: its slots are unscheduled drafts.
-    At U3 to U5 the cap rises to the bound in intensity.json (engine/intensity.py).
+    At U3 to U5 the cap rises only to the channel's own policy bound in
+    engine/social.py (engine/intensity.py).
     """
     return intensity.daily_cap(record, urgency, root)
 
@@ -174,6 +175,31 @@ def ecosystem(root=ROOT):
 
 
 URL_IN_TEXT = re.compile(r'https?://[^\s<>"]+')
+
+
+def _video_id(parts):
+    """The YouTube video id a watch, youtu.be or live URL names, or None."""
+    host = parts.hostname.lower()
+    if host == 'youtu.be':
+        return parts.path.strip('/').split('/')[0] or None
+    if parts.path == '/watch':
+        return (parse_qs(parts.query).get('v') or [None])[0]
+    if parts.path.startswith('/live/'):
+        return parts.path.split('/')[2] or None
+    return None
+
+
+def on_route(parts, route):
+    """Whether a URL is on a route: its host, and one of its paths or verified video ids."""
+    if parts.hostname.lower() not in route['hosts']:
+        return False
+    prefixes, videos = route.get('path_prefixes'), route.get('video_ids') or []
+    if prefixes is None and not videos:
+        return True
+    path = parts.path.rstrip('/').lower() or '/'
+    if prefixes and any(path == p.rstrip('/').lower() or path.startswith(p.rstrip('/').lower() + '/') for p in prefixes):
+        return True
+    return _video_id(parts) in videos
 
 
 def ecosystem_errors(slot, at, routes):
@@ -196,7 +222,10 @@ def ecosystem_errors(slot, at, routes):
         return fail('the route needs an https URL', '.url')
     if host in routes['alone']:
         return fail('a newsletter link is not a route beyond the newsletter', '.url')
-    if host not in route['hosts'] or (route['path_prefix'] and not parts.path.startswith(route['path_prefix'])):
+    if route.get('verified') is not True:
+        return fail('the ' + cta['route'] + ' route is not verified yet (journeys.json: ' + route['what']
+                    + '); name a verified route', '.route')
+    if not on_route(parts, route):
         return fail(url + ' is not on the ' + cta['route'] + ' route (' + route['what'] + ')', '.url')
     if cta['placement'] not in routes['placements']:
         return fail('unknown placement ' + cta['placement'], '.placement')
@@ -209,7 +238,7 @@ def ecosystem_errors(slot, at, routes):
     return []
 
 
-def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urgency=None):
+def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urgency=None, root=ROOT):
     errors, warnings = [], []
     sid = slot['slot_id']
     channel, fmt = channels.get(slot['channel']), formats.get(slot['format'])
@@ -258,7 +287,7 @@ def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urg
     if slot['due_at'] is not None and not window[0] <= instant(slot['due_at']) < window[1]:
         warnings.append(finding('due_outside_window', at + '.due_at', 'due_at falls outside the run window', sid))
     if slot['publish_mode'] == 'engine' and slot['due_at'] is None:
-        cap = daily_cap(channel, urgency)
+        cap = daily_cap(channel, urgency, root)
         warnings.append(finding('engine_unscheduled', at + '.due_at',
                                 'an engine slot needs a due_at to release'
                                 + ('' if cap is None else ', and only scheduled slots count towards the '
@@ -319,18 +348,18 @@ def lint(spec, records=None, root=ROOT, urgency=None):
         if slot['slot_id'] in seen:
             errors.append(finding('duplicate_slot_id', at + '.slot_id', 'slot_id must be unique', slot['slot_id']))
         seen.add(slot['slot_id'])
-        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window, routes, urgency)
+        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window, routes, urgency, root)
         errors += more
         warnings += soft
         if slot['due_at'] is not None:
             key = (slot['channel'], ny_time(slot['due_at']).date().isoformat())
             per_day.setdefault(key, []).append(slot['slot_id'])
     for (channel, day), ids in sorted(per_day.items()):
-        cap = daily_cap(channels.get(channel), urgency)
+        cap = daily_cap(channels.get(channel), urgency, root)
         if cap is not None and len(ids) > cap:
             errors.append(finding('posts_per_day', '$.slots', str(len(ids)) + ' scheduled ' + channel + ' slots on '
                                   + day + ' (New York); ' + ('at U' + str(urgency) + ' it takes'
-                                  if intensity.raised(urgency) else 'its record allows') + ' at most ' + str(cap) + ' a day'))
+                                  if intensity.raised(urgency, root) else 'its record allows') + ' at most ' + str(cap) + ' a day'))
     for channel, test in sorted(tests.items()):
         if not any(s['channel'] == channel and s['experiment_arm'] for s in spec['slots']):
             warnings.append(finding('experiment_unused', '$.experiments', 'experiment ' + test['id'] + ' has no slot on an arm'))

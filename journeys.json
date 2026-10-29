@@ -2,35 +2,45 @@
   "schema_version": 2,
   "principle": "one useful next action matched to reader intent; loops are measured transitions, not links everywhere",
   "ecosystem": {
-    "rule": "Every slot a run spec carries names one route into Krish's wider ecosystem beyond the newsletter (ecosystem_cta; engine/run/spec.py lint). The publication is the front door to Mindmake (NOW.md), so a newsletter link or subscribe ask alone is not a route. A new route is a row here.",
+    "rule": "Every slot a run spec carries names one route into Krish's wider ecosystem beyond the newsletter (ecosystem_cta; engine/run/spec.py lint). The publication is the front door to Mindmake (NOW.md), so a newsletter link or subscribe ask alone is not a route. A route counts only when verified is true: the podcast stays off until the show's Spotify URL is verified. A YouTube URL counts only on the show's own channel path or as a long video whose id is in video_ids. A new route, or a newly verified video, is a row here.",
     "routes": [
       {
         "route_id": "long-video",
-        "what": "the show's long YouTube video or channel",
+        "what": "the show's own YouTube channel, @makeyourmind-up, or one of its long videos named in video_ids",
+        "verified": true,
         "hosts": [
           "youtube.com",
           "www.youtube.com",
-          "youtu.be",
-          "m.youtube.com"
+          "m.youtube.com",
+          "youtu.be"
         ],
-        "path_prefix": null
+        "path_prefixes": [
+          "/@makeyourmind-up"
+        ],
+        "video_ids": []
       },
       {
         "route_id": "podcast",
         "what": "the show Make Your Mind Up on Spotify, once its URL is verified",
+        "verified": false,
         "hosts": [
           "open.spotify.com"
         ],
-        "path_prefix": "/show/"
+        "path_prefixes": [
+          "/show/"
+        ],
+        "video_ids": []
       },
       {
         "route_id": "mindmake",
         "what": "Mindmake, Krish's company, at mindmake.co",
+        "verified": true,
         "hosts": [
           "mindmake.co",
           "www.mindmake.co"
         ],
-        "path_prefix": null
+        "path_prefixes": null,
+        "video_ids": []
       }
     ],
     "not_enough_alone": {
@@ -43,9 +53,9 @@
     },
     "placements": {
       "in_post": "the route's URL is in the slot's words",
-      "first_reply": "the route's URL goes in the first reply; the slot's link_placement must be first_reply",
-      "profile": "the account's profile link carries the route; the weekly channel audit verifies it"
-    }
+      "first_reply": "the route's URL goes in the first reply; the slot's link_placement must be first_reply"
+    },
+    "no_profile_placement": "A profile link is not a placement: the only profile link the engine may set is the newsletter's subscribe page (engine/channel_audit.py), which is not a route beyond the newsletter."
   },
   "journeys": [
     {

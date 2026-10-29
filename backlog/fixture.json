@@ -82,7 +82,8 @@
     "remaining": 0,
     "partial": 1,
     "covered": 0,
-    "editions_open": 7
+    "editions_open": 7,
+    "formats_open": 27
   },
   "pieces": [
     {
@@ -109,6 +110,116 @@
         "threads",
         "tiktok",
         "youtube"
+      ],
+      "formats_open": [
+        {
+          "channel": "facebook",
+          "format": "carousel"
+        },
+        {
+          "channel": "facebook",
+          "format": "single-image"
+        },
+        {
+          "channel": "facebook",
+          "format": "short-video"
+        },
+        {
+          "channel": "facebook",
+          "format": "text"
+        },
+        {
+          "channel": "facebook",
+          "format": "story"
+        },
+        {
+          "channel": "facebook",
+          "format": "meme"
+        },
+        {
+          "channel": "instagram",
+          "format": "carousel"
+        },
+        {
+          "channel": "instagram",
+          "format": "single-image"
+        },
+        {
+          "channel": "instagram",
+          "format": "short-video"
+        },
+        {
+          "channel": "instagram",
+          "format": "story"
+        },
+        {
+          "channel": "instagram",
+          "format": "meme"
+        },
+        {
+          "channel": "linkedin",
+          "format": "carousel"
+        },
+        {
+          "channel": "linkedin",
+          "format": "single-image"
+        },
+        {
+          "channel": "linkedin",
+          "format": "text"
+        },
+        {
+          "channel": "linkedin",
+          "format": "short-video"
+        },
+        {
+          "channel": "substack-notes",
+          "format": "note"
+        },
+        {
+          "channel": "threads",
+          "format": "text"
+        },
+        {
+          "channel": "threads",
+          "format": "single-image"
+        },
+        {
+          "channel": "threads",
+          "format": "meme"
+        },
+        {
+          "channel": "tiktok",
+          "format": "carousel"
+        },
+        {
+          "channel": "tiktok",
+          "format": "short-video"
+        },
+        {
+          "channel": "tiktok",
+          "format": "meme"
+        },
+        {
+          "channel": "x",
+          "format": "single-image"
+        },
+        {
+          "channel": "x",
+          "format": "short-video"
+        },
+        {
+          "channel": "x",
+          "format": "meme"
+        },
+        {
+          "channel": "youtube",
+          "format": "short-video"
+        },
+        {
+          "channel": "youtube",
+          "format": "meme"
+        }
       ]
     }
   ]

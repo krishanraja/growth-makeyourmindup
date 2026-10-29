@@ -712,9 +712,9 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     activity = [{'line': intensity.gap_line(gap)}]
     if intensity.raised(gap['urgency']):
         activity.append({'line': 'At U' + str(gap['urgency']) + ' the volume caps rise to their bounds in intensity.json: '
-                         + str(intensity.engagement_taps(gap['urgency'], root)) + ' engagement taps a day and up to '
-                         + str(intensity.bounds(root)['daily_posts']['bound'])
-                         + ' scheduled posts a channel a day; walls, spend and approvals unchanged'})
+                         + str(intensity.engagement_taps(gap['urgency'], root)) + ' engagement taps a day; each channel'
+                         + "'s posts stay at its own policy bound (Substack Notes two a day, every other one);"
+                         + ' walls, spend and approvals unchanged'})
     if directive_pulled:
         activity.append({'line': "Pulled today's directive before reading any source"})
     if taps and proposals and copy_open(proposals[0]) is not None:

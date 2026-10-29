@@ -15,6 +15,7 @@ Only the schemas and a synthetic fixture are committed (backlog/).
 Nothing here posts, sends or writes outside .scratch/.
 """
 import argparse
+import http.client
 import json
 from pathlib import Path
 
@@ -128,16 +129,22 @@ def build(rows, catalog=None, editions=None, root=ROOT, now=None, feed_days=FEED
         made = [e for url in urls for e in editions.get(canonical(url), [])]
         done = {e['channel'] for e in made}
         open_channels = [c for c in matrix if c not in done]
+        # A format is open until an edition in that exact format exists; an edition
+        # that names no format (a pilot listing channels only) touches the channel
+        # but closes none of its formats.
+        made_formats = {(e['channel'], e['format']) for e in made if e['format'] is not None}
+        open_formats = [{'channel': c, 'format': f} for c, fs in matrix.items() for f in fs if (c, f) not in made_formats]
         status = 'unamplified' if not made else ('partial' if open_channels else 'covered')
         out.append({'piece_id': pid, 'url': row['url'], 'title': row['title'], 'kind': row['kind'],
                     'published_at': instant(row['published_at']).isoformat(),
                     'video_post_url': urls[1] if len(urls) > 1 else None,
-                    'status': status, 'editions': made, 'channels_open': open_channels})
+                    'status': status, 'editions': made, 'channels_open': open_channels, 'formats_open': open_formats})
     out.sort(key=lambda p: (STATUSES.index(p['status']), p['published_at'], p['piece_id']))
     summary = {'pieces': len(out), 'remaining': sum(p['status'] == 'unamplified' for p in out),
                'partial': sum(p['status'] == 'partial' for p in out),
                'covered': sum(p['status'] == 'covered' for p in out),
-               'editions_open': sum(len(p['channels_open']) for p in out)}
+               'editions_open': sum(len(p['channels_open']) for p in out),
+               'formats_open': sum(len(p['formats_open']) for p in out)}
     result = {'schema_version': 1, 'kind': 'backlog_inventory', 'observed_at': instant(now).isoformat(),
               'feed_days': feed_days, 'sources': list(sources or []),
               'channels': [{'channel': c, 'formats': f} for c, f in matrix.items()],
@@ -155,7 +162,7 @@ def summary_line(inventory, where=None):
     s = inventory['summary']
     line = ('Backlog remaining ' + str(s['remaining']) + ': ' + str(s['remaining']) + ' of ' + str(s['pieces'])
             + ' published pieces have no native edition yet, ' + str(s['partial']) + ' partly amplified, '
-            + str(s['editions_open']) + ' channel editions open')
+            + str(s['editions_open']) + ' channel editions open, ' + str(s['formats_open']) + ' channel formats open')
     first = oldest_unamplified(inventory, 1)
     if first:
         line += '. Oldest unamplified: ' + first[0]['title'] + ' (' + first[0]['published_at'][:10] + ')'
@@ -170,7 +177,9 @@ def for_runner(root=ROOT, now=None, fetch=None):
     try:
         rows = (fetch or read_feed)(FEED_DAYS, now)
         return build(rows, None, pilot_editions(root), root, now, FEED_DAYS, ['public feed', str(PILOTS)]), None
-    except (ValueError, KeyError, TypeError, OSError):
+    except (ValueError, KeyError, TypeError, OSError, http.client.HTTPException):
+        # A connection cut mid-read is an HTTPException (IncompleteRead), not an OSError;
+        # one informational line never takes the runner report down.
         return None, 'the public feed or the pilot records could not be read on this run'
 
 

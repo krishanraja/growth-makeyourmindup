@@ -50,9 +50,15 @@ class Backlog(unittest.TestCase):
         mine = [p for p in result['pieces'] if p['url'] == ARTICLE]
         self.assertEqual(mine[0]['status'], 'partial')
         self.assertNotIn('x', mine[0]['channels_open'])
+        self.assertNotIn({'channel': 'x', 'format': 'text'}, mine[0]['formats_open'])
+        other = [f for f in matrix['x'] if f != 'text']
+        self.assertEqual([f['format'] for f in mine[0]['formats_open'] if f['channel'] == 'x'], other,
+                         "one format made leaves the channel's other formats open")
         every = {ARTICLE: [{'channel': c, 'format': None, 'source': 'ledger', 'native_url': None} for c in matrix]}
         covered = [p for p in build(rows(), OLD, every, ROOT, NOW)['pieces'] if p['url'] == ARTICLE][0]
         self.assertEqual((covered['status'], covered['channels_open']), ('covered', []))
+        self.assertEqual(len(covered['formats_open']), sum(len(f) for f in matrix.values()),
+                         'an edition with no format closes no format')
 
     def test_a_video_post_with_an_explicit_link_folds_into_its_article(self):
         result = build(rows(), None, {VIDEO: [{'channel': 'youtube', 'format': 'short-video', 'source': 'ledger',
@@ -110,6 +116,11 @@ class Backlog(unittest.TestCase):
         self.assertEqual(unread[0], None)
         self.assertEqual(backlog_line(unread), 'Backlog remaining: not counted, ' + unread[1])
         self.assertTrue(backlog_line(None).startswith('Backlog remaining: not counted'))
+
+        def cut(days, now):
+            import http.client
+            raise http.client.IncompleteRead(b'partial')
+        self.assertEqual(for_runner(ROOT, NOW, fetch=cut), unread, 'a connection cut mid-read is not counted, never a crash')
 
     def test_cli_writes_the_inventory_locally(self):
         import growth

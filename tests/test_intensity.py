@@ -75,9 +75,14 @@ class Intensity(unittest.TestCase):
     def test_u3_and_above_raise_caps_to_the_policy_bounds_only(self):
         root = synthetic(self.folder)
         for level, taps in ((3, 10), (4, 15), (5, 20)):
-            self.assertEqual(intensity.daily_cap({'daily_posts_target': 1}, level, root), 2)
-            self.assertEqual(intensity.daily_cap({'daily_posts_target': 2}, level, root), 2, 'never above the bound')
-            self.assertIsNone(intensity.daily_cap({'daily_posts_target': None}, level, root), 'a human-only channel stays manual')
+            for name in ('instagram', 'facebook', 'x', 'threads', 'tiktok', 'youtube'):
+                self.assertEqual(intensity.daily_cap({'id': name, 'daily_posts_target': 1}, level, root), 1,
+                                 name + ' stays at its policy bound of one a day')
+            self.assertEqual(intensity.daily_cap({'id': 'substack-notes', 'daily_posts_target': 1}, level, root), 2,
+                             'Substack Notes rises to its ruled two')
+            self.assertEqual(intensity.daily_cap({'id': 'substack-notes', 'daily_posts_target': 2}, level, root), 2, 'never above the bound')
+            self.assertIsNone(intensity.daily_cap({'id': 'linkedin', 'daily_posts_target': None}, level, root),
+                              'a human-only channel stays manual')
             self.assertEqual(intensity.engagement_taps(level, root), taps)
         self.assertLessEqual(max(intensity.bounds(root)['engagement_taps']['by_urgency'].values()), 25,
                              "within Control Center's copy_open bound")
@@ -104,11 +109,10 @@ class Intensity(unittest.TestCase):
         codes = lambda level: {e['code'] for e in lint(computed(spec), RECORDS, urgency=level)['errors']} - {'week_target'}
         self.assertEqual(codes(None), {'posts_per_day'})
         self.assertEqual(codes(2), {'posts_per_day'})
-        self.assertEqual(codes(3), set(), 'U3 takes two Threads posts a day')
-        third = copy.deepcopy(second)
-        third.update(slot_id='w45-mon-threads-3', due_at='2026-11-02T21:00:00-05:00')
-        spec['slots'].append(third)
-        self.assertEqual(codes(5), {'posts_per_day'}, 'never past the bound')
+        for level in (3, 4, 5):
+            self.assertEqual(codes(level), {'posts_per_day'}, 'Threads stays at one a day at U' + str(level))
+        self.assertIn('at U4 it takes at most 1 a day', ' '.join(
+            e['message'] for e in lint(computed(spec), RECORDS, urgency=4)['errors'] if e['code'] == 'posts_per_day'))
 
     def test_reports_lead_with_the_gap_line(self):
         root = synthetic(self.folder, 0, '2026-10-27', 4, '0 of 25; under two fifths')

@@ -4,7 +4,7 @@ from pathlib import Path
 import unittest
 
 from engine.cc_loop import Loop, workspace_report
-from engine.control_center import (ENGAGE_VERSION, ProtocolError, copy_open, engage_action, proposal,
+from engine.control_center import (ENGAGE_VERSION, ProtocolError, action_errors, copy_open, engage_action, proposal,
                                    validate_report)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -68,6 +68,30 @@ class EngagementTask(unittest.TestCase):
             engage_action('body', [{'label': 'x', 'text': 'Call 415 555 0100', 'url': 'https://a.b/'}])
         with self.assertRaises(ValueError):
             engage_action('body', [])
+
+    def test_taps_follow_control_centers_own_rule(self):
+        def errors(text='Fixture.', url='https://a.b/c'):
+            return action_errors({'body': 'x', 'taps': [{'label': 'x', 'text': text, 'url': url}]})
+        # src/lib/growthEngines.ts: any run of ten digits however spaced, and a page of 2000 characters at most.
+        self.assertTrue(errors('Seen in 2024 2025 2026 and since.'))
+        self.assertTrue(errors('Ring 4155550100.'))
+        self.assertTrue(errors('Write to SOMEONE@EXAMPLE.ORG'))
+        self.assertEqual(errors('Up 40 percent since 2024.'), [], 'a year or a figure is not a number to ring')
+        self.assertTrue(errors(url='https://a.b/' + 'c' * 2000))
+        self.assertTrue(errors(url='https://wa.me/14155550100'), 'a private chat is not a public page')
+        self.assertTrue(errors(url='https://a.b/share?to=someone'), 'a contact key is refused')
+        self.assertTrue(errors(url='https://a.b/p/someone%40example.org'), 'an encoded address is refused')
+        self.assertEqual(errors(url='https://x.com/someone/status/1849000000000000000'), [], 'a post id is not a number')
+        self.assertEqual(errors(url='https://www.linkedin.com/feed/update/urn:li:activity:7254000000000000000/'), [])
+
+    def test_one_bad_tap_is_held_alone(self):
+        envelope, queue = radar(3)
+        envelope['pack']['items'][1]['text'] = 'TEST FIXTURE ONLY. We ran it in 2024 2025 2026.'
+        result = workspace_report('radar', 'makeyourmindup:2026-10-29:radar', NOW, [envelope], queue, rev='fixture',
+                                  root=ROOT, gap=GAP)[0]
+        self.assertEqual(len(copy_open(result['proposals'][0])['taps']), 2, 'the other taps still go')
+        held = [h for h in result['holds'] if h['reason'] == 'Engagement draft cannot be a tap']
+        self.assertEqual([h['detail'].split(':')[0] for h in held], ['radar-1'])
 
     def test_report_refuses_a_task_off_the_post_wall(self):
         payload = json.dumps(engage_action('body', [{'label': 'x', 'text': 'Fixture.', 'url': 'https://a.b/c'}]))

@@ -117,6 +117,10 @@ and merges `.scratch/catalog.json`, so a piece that has left the feed stays
 in the backlog. A video post folds into its article only on an explicit
 published link, the same rule as discovery. The open channels are every
 channel record in `social/channels/` except `substack`, the piece's home.
+Each piece also lists its open formats (`formats_open`): every channel and
+format pair with no edition in that exact format, so one Instagram carousel
+closes Instagram as a channel but leaves its short video and story open. An
+edition that names no format closes none.
 
 A native edition counts from two places: a committed pilot in
 `lists/pilots.json` that names its `piece_url` (and its `editions`), and the
@@ -137,16 +141,21 @@ Every run spec slot names a route into the wider ecosystem
 (`ecosystem_cta`, `engine/run/spec.py` lint). The
 publication is the front door to Mindmake (NOW.md), so a post that only
 points at the newsletter, an article or the subscribe page has no route
-beyond it. Each slot names one route from `journeys.json` (`ecosystem`):
-the long YouTube video or channel, the Spotify show once its URL is
-verified, or Mindmake at mindmake.co, with its URL and placement:
-`in_post` (the URL is in the words, tracked or not), `first_reply` (the
-slot's `link_placement` is `first_reply`) or `profile` (the account's
-profile link carries it, which the weekly channel audit verifies). Lint
-refuses no route, an unknown route, a newsletter URL, a URL off the route,
+beyond it. Each slot names one verified route from `journeys.json`
+(`ecosystem`): the show's own YouTube channel (`/@makeyourmind-up`) or a
+long video whose id is in the route's `video_ids`, or Mindmake at
+mindmake.co. The Spotify show is a route row with `verified` false, so lint
+refuses it until its URL is verified. Each names its URL and placement:
+`in_post` (the URL is in the words, tracked or not) or `first_reply` (the
+slot's `link_placement` is `first_reply`). A profile link is not a
+placement: the only profile link the engine may set is the newsletter's
+subscribe page (`engine/channel_audit.py`), which is no route beyond the
+newsletter. Lint refuses no route, an unknown or unverified route, a
+newsletter URL, a URL off the route (another channel, an unlisted video),
 an `in_post` URL missing from the words and a `first_reply` route without a
-first-reply placement. A new route is a row in `journeys.json`; each
-journey there names the route its readers continue on (`ecosystem_route`).
+first-reply placement. A new route, or a newly verified video, is a row in
+`journeys.json`; each journey there names the route its readers continue
+on (`ecosystem_route`).
 `ecosystem_cta` is outside the digest: an `in_post` URL is already in the
 signed words.
 
@@ -163,10 +172,12 @@ measured is U4; a week with no ladder rung raises nothing. Every report,
 from the runner and from each workspace job, leads with the gap line
 "X of Y, U-n, short by Z" (an unmeasured week reads "not measured of Y, U4,
 short by unknown", never zero). At U3 and above the caps rise to the bounds
-in `intensity.json`: a channel's scheduled posts a day to the channel
-schema's maximum of 2 (`run lint` reads the urgency; a human-only channel
-stays manual), and the day's engagement taps from 5 to 10, 15 and 20 at U3,
-U4 and U5, under Control Center's 25. Walls, zero spend, approvals, the
+in `intensity.json`: a channel's scheduled posts a day only to its own
+policy bound in `engine/social.py` (Substack Notes two, every other channel
+one, the 27 Oct ruling; every channel already sits there, so `run lint`
+reads the urgency and no channel gains a post; a human-only channel stays
+manual), and the day's engagement taps from 5 to 10, 15 and 20 at U3, U4
+and U5, under Control Center's 25. Raised volume comes from the taps. Walls, zero spend, approvals, the
 creative bar and Krish's 20 and 30 minute budget never move with it.
 
 ## Tracking and the work queue

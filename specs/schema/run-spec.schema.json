@@ -343,8 +343,7 @@
                 "type": "string",
                 "enum": [
                   "in_post",
-                  "first_reply",
-                  "profile"
+                  "first_reply"
                 ]
               }
             },

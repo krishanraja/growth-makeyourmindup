@@ -188,7 +188,8 @@ independent engines, with an explicit production-to-distribution handoff.
 repo's existing policy bounds without a signed week spec. This is volume
 only: walls unchanged." Every report leads with the gap line ("X of Y, U-n,
 short by Z"), and `engine/intensity.py` raises the daily post and engagement
-caps to the bounds in `intensity.json` (docs/ENGINE.md, "Intensity").
+caps to the bounds in `intensity.json`, a channel's posts only to its own
+policy bound in `engine/social.py` (docs/ENGINE.md, "Intensity").
 
 ## Outreach belongs to Control Center (Ruling, Krish, 2026-10-21)
 
