@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>scorecard</title>
+<link rel="stylesheet" href="../kit.css">
+<style>
+  :root { --w: 1080px; --h: 1350px; }
+  .title { margin: 48px 0 0; }
+  .rule { margin: 40px 0 48px; }
+  .grow { justify-content: flex-start; }
+  .note { margin: 40px 0 56px; }
+</style></head>
+<body><div class="frame">
+  <div class="label">{{label}}</div>
+  <h1 class="heading title" style="font-size:88px">{{title}}</h1>
+  <div class="rule"></div>
+  <div class="grow" data-fit="rows"><div class="rows">{{rows:rows}}</div></div>
+  <p class="small note" data-empty-hide>{{note}}</p>
+  <div class="footer"><span>makeyourmindup.ai</span></div>
+</div><script src="../fit.js"></script></body></html>

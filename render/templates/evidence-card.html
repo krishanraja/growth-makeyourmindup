@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>evidence card</title>
+<link rel="stylesheet" href="../kit.css">
+<style>
+  /* What happened, shown as framed panels: what came in, then each actor with its own coloured bar and status. */
+  :root { --w: 1280px; --h: 820px; --margin: 54px; --top: 26px; --bottom: 28px; --wm: 32px; }
+  html, body { background: var(--ink-deep); }
+  .masthead { padding-bottom: 22px; }
+  .masthead .label { font-weight: 400; font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.8; }
+  .stage { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 40px; margin: 36px 0 26px; }
+  .top { flex: 1 1 0; min-height: 0; display: flex; align-items: stretch; }
+
+  /* What came in: a cream card on a green shadow. */
+  .incoming { position: relative; width: 416px; flex: none; }
+  .incoming .shade { position: absolute; left: 10px; top: 10px; right: -10px; bottom: -10px; background: var(--green); opacity: 0.45; }
+  .incoming .card { position: relative; height: 100%; background: var(--cream); color: var(--ink); display: flex; flex-direction: column; }
+  .incoming .head { font-family: var(--mono); font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase; padding: 14px 22px 12px;
+    border-bottom: 2px solid var(--green); flex: none; }
+  .incoming .grow { padding: 16px 22px 20px; justify-content: flex-start; }
+  .incoming .said { font-family: var(--body); font-weight: 700; line-height: 1.16; color: var(--ink); }
+  .incoming .tag { align-self: flex-start; margin-top: 16px; font-family: var(--mono); font-size: 18px; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--green); border: 2px solid var(--green); padding: 6px 12px; }
+
+  /* The line from what came in to the first actor. */
+  .link { width: 80px; flex: none; display: flex; align-items: center; color: var(--cream); }
+  .link .arrow { width: 100%; height: 3px; margin: 0; vertical-align: 0; opacity: 0.6; }
+  .link .arrow::after { width: 14px; height: 14px; border-top-width: 3px; border-right-width: 3px; }
+
+  /* An actor: a framed panel with a coloured bar on the left, a tile, the name, a mono status. */
+  .panel { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column;
+    border: 2px solid var(--green); border-left: 8px solid var(--mint); padding: 18px 26px 20px 28px; }
+  .panel::before { content: ''; position: absolute; inset: 0; background: var(--green); opacity: 0.2; }
+  .panel > * { position: relative; }
+  .panel.second { border-left-color: var(--lilac); }
+  .who { display: flex; align-items: center; gap: 18px; flex: none; }
+  .tile { width: 52px; height: 52px; flex: none; overflow: hidden; white-space: nowrap; background: var(--mint); color: transparent;
+    font-family: var(--heading); font-size: 36px; line-height: 52px; padding-left: 15px; }
+  .tile::first-letter { color: var(--ink); }
+  .second .tile { background: var(--lilac); }
+  .name { font-family: var(--heading); font-size: 34px; line-height: 1; text-transform: uppercase; color: var(--cream); }
+  .status { margin-left: auto; font-family: var(--mono); font-size: 19px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--mint); text-align: right; }
+  .second .status { color: var(--lilac); }
+  .panel .grow { justify-content: flex-start; margin-top: 16px; }
+  .quote { font-family: var(--heading); line-height: 1.04; color: var(--cream); }
+  .quote::before { content: '\201C'; }
+  .quote::after { content: '\201D'; }
+  .note { font-family: var(--body); font-weight: 400; line-height: 1.3; color: var(--cream); opacity: 0.86; margin-top: 12px; }
+
+  /* The second actor's words, as an excerpt on cream with a lilac tag. */
+  .excerpt { position: relative; flex: 1 1 auto; min-height: 0; margin-top: 16px; background: var(--cream); border: 2px solid var(--lilac);
+    padding: 22px 26px 18px; display: flex; flex-direction: column; justify-content: center; }
+  .excerpt .words { font-family: var(--body); font-weight: 500; line-height: 1.3; color: var(--ink); }
+  .excerpt .tag { position: absolute; top: 0; right: 0; background: var(--lilac); color: var(--ink); font-family: var(--mono);
+    font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; padding: 7px 14px; }
+  .second { flex: 1.25 1 0; }
+  /* With one actor the top row keeps its own height, centred on the card. */
+  .stage:has(> .second[style*="none"]) { justify-content: center; }
+  .stage:has(> .second[style*="none"]) .top { flex: 0 1 auto; height: 270px; }
+
+  .footer { font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mint); opacity: 0.8; }
+</style></head>
+<body><div class="frame">
+  <div class="masthead"><div class="wordmark"><span class="mark"><i></i><i></i><i></i></span><span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div><div class="label">{{series}}</div></div>
+  <div class="stage">
+    <div class="top">
+      <div class="incoming"><div class="shade"></div><div class="card">
+        <div class="head">{{incoming_label}}</div>
+        <div class="grow" data-fit="what came in"><p class="said" data-max="32" data-min="20">{{incoming}}</p><p class="tag" data-max="18" data-min="14" data-empty-hide>{{incoming_tag}}</p></div>
+      </div></div>
+      <div class="link"><span class="arrow"></span></div>
+      <div class="panel">
+        <div class="who"><span class="tile">{{actor}}</span><span class="name">{{actor}}</span><span class="status">{{actor_status}}</span></div>
+        <div class="grow" data-fit="the first actor"><p class="quote" data-max="58" data-min="32">{{actor_quote}}</p><p class="note" data-max="23" data-min="17" data-empty-hide>{{actor_note}}</p></div>
+      </div>
+    </div>
+    <div class="panel second" data-empty-hide>
+      <div class="who"><span class="tile">{{actor2}}</span><span class="name">{{actor2}}</span><span class="status">{{actor2_status}}</span></div>
+      <div class="excerpt" data-fit="the second actor's words"><p class="words" data-max="28" data-min="18">{{actor2_text}}</p><span class="tag" data-empty-hide>{{actor2_tag}}</span></div>
+    </div>
+  </div>
+  <div class="footer"><span>{{foot_left}}</span><span>{{foot_right}}</span></div>
+</div><script src="../fit.js"></script></body></html>

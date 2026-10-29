@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>profile art</title>
+<link rel="stylesheet" href="../kit.css">
+<style>
+  /* Profile pictures are cropped to a circle, so the words sit inside its middle. */
+  :root { --w: 1080px; --h: 1080px; --margin: 216px; }
+  .frame { align-items: center; justify-content: center; text-align: center; }
+  .grow { align-items: center; width: 100%; }
+  .rule { margin: 40px auto; }
+</style></head>
+<body><div class="frame">
+  <div class="grow" data-fit="wordmark">
+    <h1 class="heading" data-max="150" data-min="80">{{line1}}</h1>
+    <div class="rule"></div>
+    <p class="label" data-max="40" data-min="30" data-empty-hide>{{line2}}</p>
+  </div>
+</div><script src="../fit.js"></script></body></html>
