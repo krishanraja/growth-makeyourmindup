@@ -1,5 +1,12 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (evening): the prepaid credits share is read, and its spending is
+  a procedure. The runner reads `credits` and spends nothing
+  (`engine/credits.py`, `tests/test_credits.py`). `docs/CREDITS.md` is how a
+  session with the ElevenLabs and Apify connectors spends the share through
+  Control Center. Krish chose "Scheduled sessions" for every engine, but this
+  repository's 29 Oct ruling allows no Claude schedules, so no schedule runs it
+  here until he says which one does.
 - 2026-10-29 (later): flood the four short-form channels, approve the idea
   and the mock. Krish: "For Make Your Mind Up I think the engine needs to
   strategize how to repurpose all the previous posts into carousels and

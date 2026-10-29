@@ -1,0 +1,4 @@
+Status: The runner reads the directive's prepaid `credits` (protocol 1.16.0), names each pool's share in its report and spends nothing; `engine/credits.py` guards any spend made in this process and raises a report to 1.16.0 only when it carries `credits_spent`. `docs/CREDITS.md` is the procedure a session with the Control Center, ElevenLabs and Apify connectors follows to spend the share. No Claude schedule runs it here: this repository's 29 Oct ruling allows none.
+Next: Krish names who runs docs/CREDITS.md each day (an interactive session, a PC automation, or an exception to the no-Claude-schedules ruling).
+Changed: engine/credits.py, engine/control_center.py (CREDITS_VERSION, report_version, build_report, post_report), engine/cc_loop.py (runner credits lines), docs/CREDITS.md, tests/test_credits.py, docs/GET-GOING.md Step 6, docs/CONTROL-CENTER-BRIEF.md "Prepaid credits", CHANGES.md.
+North Star check (2026-10-29): holds.
