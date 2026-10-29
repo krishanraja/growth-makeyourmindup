@@ -172,6 +172,25 @@ class ReleaseByConcept(unittest.TestCase):
         entry = self.plan()['ledger']['released']['tiktok-photo-1']
         self.assertEqual(entry['due_at'], self.slot['due_at'], 'the ledger records the day it lands on')
 
+    def test_the_cap_his_plan_states_is_kept_under_a_higher_live_cap(self):
+        # decision.json concept_daily_caps is the most a day the approved plan stated; release keeps the lower.
+        day = [{'channel': 'tiktok', 'due_at': '2026-11-03T08:30:00-05:00'}] * 2
+        self.decision['concept_daily_caps'] = {'tiktok': 2}
+        hold = self.holds(self.plan(other=day))['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_daily_cap_reached'), hold)
+        self.assertIn('at most 2 a day', hold)
+        self.decision['concept_daily_caps'] = {'tiktok': 'four'}
+        hold = self.holds(self.plan())['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_daily_cap_unknown'), hold)
+        self.decision['concept_daily_caps'] = {'tiktok': 9}
+        self.assertEqual(self.holds(self.plan(other=day)), {})
+        hold = self.holds(self.plan(other=day * 2))['tiktok-photo-1']
+        self.assertIn('at most 4 a day', hold, 'a higher stated cap never lifts the live one')
+
+    def test_a_held_decision_cannot_approve_a_concept(self):
+        self.decision['concept_hold'] = 'stale_approval: test'
+        self.assertIn('holds its concepts', concepts.decision_errors(self.spec, self.decision))
+
     def test_the_release_command_counts_other_runs_ledgers_for_the_cap(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

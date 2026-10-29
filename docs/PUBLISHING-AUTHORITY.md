@@ -183,18 +183,25 @@ rulings above; everything above stands unless a line here says otherwise.
   one of the concept's approved placements, carry only its mock files (a
   re-render is a new hash and a new approval) and carry its claim word for
   word. Release holds anything else as `departs_from_approved_mock`.
-- **His no stops it.** A decline of the mix plan approves nothing; a concept
-  he deletes or changes in his amended payload is stopped; a concept he purges
+- **His no stops it.** A decline of the mix plan, on any digest, approves
+  nothing and is read before anything else about the plan; a concept he
+  deletes or changes in his amended payload is stopped; any other line he
+  changes approves nothing until a plan carrying his change is approved; a concept he purges
   later (`stopped_concepts`), or a stop on the mix plan in the loop's go-live
   ledger, holds every post made from it, including any signed one by one.
 - **Each post still clears the bar and the cap.** With no signature of his
   on each post, release holds one with no passing review at its own payload,
-  one past its channel's four a day across every run, and every concept post
-  while a decline is unmatched to its plan.
+  one past the lower of its channel's live cap and the cap the plan states
+  (four a day) across every run, and every concept post while a decline is
+  unmatched to its plan; the loop records stops and unmatched declines in
+  the go-live ledger each run.
 - **The mix plan is the go-live for its concepts.** The loop's own run
   writes his decision into `decision.json` (R104). With no go-live for the
   week the decision is concept-only, and only posts made from an approved
   concept can release; any other post still needs the week's go-live.
+  Every loop run checks the approval again and fails closed: a plan file
+  that no longer rebuilds, a yes on another plan digest or an unmatched
+  decline leaves no concept approved (`concept_hold`).
   Built and wired, not yet activated: nothing has gone out this way.
 - **Volume.** Instagram, YouTube, TikTok and X take four scheduled posts a
   day with a floor of three. Every other channel keeps its bound.

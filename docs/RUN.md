@@ -9,6 +9,7 @@ A run carries one signed spec (`growth-run-spec/1`) from draft to verdict:
 a `week`, one published `piece` (days 0 to 7) or one `express` idea. Krish
 signs exact payloads, or a concept's idea and mock (R101); the engine releases
 exactly that, reads it back and measures it. LinkedIn stays his click.
+Nothing is spent.
 
 A session does one job, then ends at a gate packet:
 
@@ -44,8 +45,7 @@ spends.
   findings and status 6 KB), is refused; narrow it. Crew cards load by the
   registry flag for the run's week, else by channel.
 - `run card lint FILE`: a Codex task card, before dispatch.
-- `run release plan|check SPEC ...`: exact Buffer call arguments, then
-  readback evidence.
+- `run release plan|check SPEC ...`: Buffer call arguments, then readback.
 - `run decide SPEC`: decision.json from the week's mix plan decision.
 - `run send-test SPEC SLOT`: the blind send test.
 - `run measure`, `northstar`, `verdict`, `cost`, `ga4`: see `--help`.
@@ -122,8 +122,8 @@ bytes against its signed manifest line, never where a file lives.
 
 ## Budgets (provisional until the Phase 0 baseline)
 
-- Release: up to 45 calls, 1M tokens, 30 engine minutes (about 16 posts a
-  day on the four concept channels, plus their readbacks).
+- Release: up to 45 calls, 1M tokens, 30 engine minutes (about 16 concept
+  posts a day plus readbacks) until Phase 0 replaces it.
 - Measure: up to 20 calls, 0.5M tokens.
 - Express: up to 15 calls, 0.5M tokens.
 - Krish: 20 minutes a weekday, 30 on Sunday; gates first.

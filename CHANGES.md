@@ -44,6 +44,14 @@
     still needs the week's go-live. The release budget rises to 45 calls for
     about 16 posts a day plus readbacks (`docs/RUN.md`). Built and wired, not
     yet activated.
+  - Review fixes to the readback, same day: his no is read before the plan
+    file is trusted; an amended version that changes any plan line other
+    than a concept's approves nothing; a declined check-in not yet matched
+    to its plan holds every concept, and the loop now records stops and
+    unmatched declines in the go-live ledger each run; a yes on another plan
+    digest approves nothing; every run rewrites decision.json and fails
+    closed with the reason in `concept_hold`. The plan states each channel's
+    most posts a day, and release keeps under it too.
 
 - 2026-10-29: "At U3 to U5, engines and Control Center may raise volume caps
   up to each repo's existing policy bounds without a signed week spec. This

@@ -78,11 +78,49 @@ class Readback(unittest.TestCase):
         self.assertEqual(record['changed_concepts'], [edit])
         self.assertEqual(len(record['approved']), len(ids) - 2)
 
-    def test_his_changed_plan_lines_are_counted_for_the_next_plan(self):
-        text = self.item['exact_payload'].replace('Walls: spend 0;', 'Walls: spend 0, and keep it light;')
-        record, _ = self.read([amended(self.item, text)])
-        self.assertEqual(record['plan_lines_changed'], 1)
-        self.assertEqual(record['approved'], mix.approved_map(self.mix))
+    def test_his_changed_plan_terms_approve_nothing(self):
+        # His version, not the engine's: a changed cap, channel or wall line cannot be enforced, so nothing goes.
+        text = self.item['exact_payload']
+        cap = 'room under its channel\'s daily cap when it goes out (at most Instagram 4,'
+        self.assertIn(cap, text)
+        for edit in (text.replace(cap, cap.replace('Instagram 4', 'Instagram 1')),
+                     text.replace('Planned slots a day on all four channels:',
+                                  'Planned slots a day on all four channels (no TikTok this week):'),
+                     text.replace('Walls: spend 0;', 'Walls: spend 0, and keep it light;')):
+            record, why = self.read([amended(self.item, edit)])
+            self.assertIsNone(why)
+            self.assertEqual((record['decision'], record['approved'], record['plan_lines_changed']), ('held', {}, 1))
+            self.assertTrue(record['hold'].startswith(decide.HOLD_TERMS))
+            spec = week_spec(self.mix)
+            decision, _ = decide.apply(spec, record, None, dict(test_concepts.CAPS), self.item['payload_sha256'],
+                                       now=NOW)
+            self.assertEqual(decision['concepts'], {})
+            self.assertTrue(decision['concept_hold'].startswith(decide.HOLD_TERMS))
+        approved = self.read([yes(self.item)])[0]
+        self.assertEqual(decide.sticky(approved, record)['approved'], {}, 'his later amendment replaces his yes')
+
+    def test_a_decline_is_read_before_the_plan_file_is_trusted(self):
+        cfg = copy.deepcopy(self.cfg)
+        cfg['reserved']['days'] = {k: 0 for k in cfg['reserved']['days']}
+        self.cfg = cfg
+        with self.assertRaisesRegex(ValueError, 'changed after its proposal'):
+            self.read([yes(self.item)])
+        record, why = self.read([dict(yes(self.item), decision='declined')])
+        self.assertIsNone(why)
+        self.assertEqual((record['decision'], record['approved']), ('declined', {}))
+        record, _ = self.read([dict(yes(self.item), decision='declined', payload_sha256='0' * 64, decided_at=None)])
+        self.assertEqual(record['decision'], 'declined', 'a no counts on any digest, dated or not')
+
+    def test_a_declined_check_in_not_yet_matched_holds_every_concept(self):
+        checkin = {'proposal_id': 'makeyourmindup:checkin:unknown', 'decision': 'declined', 'decided_at': DECIDED,
+                   'payload_sha256': 'a' * 64, 'stage': 'check_in'}
+        rows = match_decisions([yes(self.item), checkin], self.reported)
+        self.assertEqual(rows[1]['stage'], 'check_in', 'match_decisions keeps the stage')
+        record, why = self.read([yes(self.item), checkin])
+        self.assertIsNone(record)
+        self.assertTrue(why.startswith(decide.HOLD_UNRESOLVED), why)
+        record, why = self.read([yes(self.item)], {'unresolved': {'makeyourmindup:checkin:unknown': {}}})
+        self.assertIsNone(record, 'an unresolved stop kept in the go-live ledger holds too')
 
     def test_a_decline_or_a_stopped_plan_stops_every_concept(self):
         record, _ = self.read([dict(yes(self.item), decision='declined')])
@@ -142,9 +180,10 @@ class Apply(unittest.TestCase):
         reported = [self.mix['proposal']]
         self.record = decide.readback(self.mix, self.cfg, reported, match_decisions([yes(self.mix['proposal'])],
                                                                                     reported), None, NOW)[0]
+        self.sha = self.mix['proposal']['payload_sha256']
 
     def test_concept_only_decision_and_signature(self):
-        decision, signature = decide.apply(self.spec, self.record, None, dict(test_concepts.CAPS), NOW)
+        decision, signature = decide.apply(self.spec, self.record, None, dict(test_concepts.CAPS), self.sha, now=NOW)
         self.assertEqual((decision['proposal_id'], decision['decision'], decision['slots']), (None, None, {}))
         self.assertEqual(decision['concepts'], mix.approved_map(self.mix))
         self.assertEqual(decision['concept_proposal_id'], PID)
@@ -158,7 +197,7 @@ class Apply(unittest.TestCase):
         self.assertIsNone(spec_module.decision_errors(signed, decision))
 
     def test_each_manifest_entry_recomputes_to_its_approved_hash_and_matches_the_schema(self):
-        decision, _ = decide.apply(self.spec, self.record, None, dict(test_concepts.CAPS), NOW)
+        decision, _ = decide.apply(self.spec, self.record, None, dict(test_concepts.CAPS), self.sha, now=NOW)
         validate(decision, read_json(ROOT / 'specs' / 'schema' / 'decision.schema.json'))
         self.assertEqual(sorted(e['concept_id'] for e in decision['concept_manifest']), sorted(decision['concepts']))
         for entry in decision['concept_manifest']:
@@ -173,13 +212,13 @@ class Apply(unittest.TestCase):
         cid = sorted(self.record['approved'])[0]
         record = copy.deepcopy(self.record)
         record['approved'][cid] = 'a' * 64
-        decision, _ = decide.apply(self.spec, record, None, dict(test_concepts.CAPS), NOW)
+        decision, _ = decide.apply(self.spec, record, None, dict(test_concepts.CAPS), self.sha, now=NOW)
         self.assertNotIn(cid, decision['concepts'])
 
     def test_a_declined_week_applies_no_concept_and_releases_nothing(self):
         # Even a record that lists no concept stops every concept the spec carries.
         record = dict(self.record, decision='declined', approved=dict(self.record['approved']), stopped_concepts=[])
-        decision, signature = decide.apply(self.spec, record, None, dict(test_concepts.CAPS), NOW)
+        decision, signature = decide.apply(self.spec, record, None, dict(test_concepts.CAPS), self.sha, now=NOW)
         self.assertEqual(decision['concepts'], {})
         self.assertEqual(sorted(decision['stopped_concepts']), sorted(concepts.by_id(self.spec)))
         signed = dict(self.spec, signature=signature)
@@ -188,7 +227,7 @@ class Apply(unittest.TestCase):
         self.assertIn('no go-live and no concept', spec_module.decision_errors(signed, decision))
 
     def test_a_concept_only_decision_under_a_go_live_signature_is_refused(self):
-        decision, signature = decide.apply(self.spec, self.record, None, dict(test_concepts.CAPS), NOW)
+        decision, signature = decide.apply(self.spec, self.record, None, dict(test_concepts.CAPS), self.sha, now=NOW)
         signed = dict(self.spec, signature=dict(signature, go_live_proposal_id='makeyourmindup:golive:w46'))
         self.assertFalse(release.concept_only(signed, decision))
         with self.assertRaisesRegex(ValueError, 'no approved go-live decision'):
@@ -198,9 +237,9 @@ class Apply(unittest.TestCase):
 
     def test_an_earlier_stop_in_decision_json_stays(self):
         cid = sorted(self.record['approved'])[0]
-        first, signature = decide.apply(self.spec, self.record, None, dict(test_concepts.CAPS), NOW)
+        first, signature = decide.apply(self.spec, self.record, None, dict(test_concepts.CAPS), self.sha, now=NOW)
         first['stopped_concepts'] = [cid]
-        decision, _ = decide.apply(dict(self.spec, signature=signature), self.record, first, dict(test_concepts.CAPS), NOW)
+        decision, _ = decide.apply(dict(self.spec, signature=signature), self.record, first, dict(test_concepts.CAPS), self.sha, now=NOW)
         self.assertNotIn(cid, decision['concepts'])
         self.assertIn(cid, decision['stopped_concepts'])
 
@@ -210,23 +249,23 @@ class Apply(unittest.TestCase):
                     'decided_at': DECIDED, 'slots': slots}
         spec = dict(self.spec, signature={'go_live_proposal_id': 'makeyourmindup:golive:w46',
                                           'decision_digest': sha256_hex(slots), 'signed_at': DECIDED})
-        decision, signature = decide.apply(spec, self.record, existing, dict(test_concepts.CAPS), NOW)
+        decision, signature = decide.apply(spec, self.record, existing, dict(test_concepts.CAPS), self.sha, now=NOW)
         self.assertEqual((decision['proposal_id'], decision['slots']), ('makeyourmindup:golive:w46', slots))
         self.assertEqual(signature['decision_digest'], sha256_hex(slots))
         self.assertFalse(release.concept_only(dict(spec, signature=signature), decision))
         tampered = dict(existing, slots={'notes-1': 'c' * 64})
         with self.assertRaisesRegex(ValueError, 'does not match the spec signature'):
-            decide.apply(spec, self.record, tampered, dict(test_concepts.CAPS), NOW)
+            decide.apply(spec, self.record, tampered, dict(test_concepts.CAPS), self.sha, now=NOW)
 
     def test_a_channel_with_no_readable_cap_applies_nothing(self):
-        with self.assertRaisesRegex(ValueError, 'no readable daily cap'):
-            decide.apply(self.spec, self.record, None, {'instagram': 4}, NOW)
+        with self.assertRaisesRegex(ValueError, 'no daily cap in the approved plan'):
+            decide.apply(self.spec, self.record, None, {'instagram': 4}, self.sha, now=NOW)
 
     def test_another_week_is_refused(self):
         other = spec_module.skeleton('2026-11-16')
         other['concepts'] = self.spec['concepts']
         with self.assertRaisesRegex(ValueError, 'does not match the mix plan'):
-            decide.apply(other, self.record, None, dict(test_concepts.CAPS), NOW)
+            decide.apply(other, self.record, None, dict(test_concepts.CAPS), self.sha, now=NOW)
 
 
 class ConceptOnlyRelease(unittest.TestCase):
@@ -308,6 +347,7 @@ class LoopHook(unittest.TestCase):
         result = full_plan()
         with tempfile.TemporaryDirectory() as folder:
             root = self.workspace(folder)
+            write_json(decide.plan_path(root, WEEK), result)
             spec = week_spec(result)
             spec_path = spec_module.run_dir(spec, None, root) / 'spec.json'
             write_json(spec_path, spec)
@@ -324,6 +364,99 @@ class LoopHook(unittest.TestCase):
         source = (ROOT / 'engine' / 'cc_loop.py').read_text(encoding='utf-8')
         at = source.index('matched = remember(root, outcome[')
         self.assertIn('after_readback(root, matched, now)', source[at:at + 600])
+
+
+class FailClosed(unittest.TestCase):
+    """Every run checks the approval again; what no longer holds is withdrawn from decision.json."""
+
+    workspace = LoopHook.workspace
+
+    def setUp(self):
+        self.folder = tempfile.TemporaryDirectory()
+        self.root = self.workspace(self.folder.name)
+        self.result = full_plan()
+        self.item = self.result['proposal']
+        write_json(decide.plan_path(self.root, WEEK), self.result)
+        self.spec = week_spec(self.result)
+        self.spec_path = spec_module.run_dir(self.spec, None, self.root) / 'spec.json'
+        write_json(self.spec_path, self.spec)
+        self.report = {'run_id': 'makeyourmindup:2026-11-08:report', 'proposals': [self.item]}
+        self.loop([yes(self.item)], NOW)
+        self.assertEqual(self.written()['concepts'], mix.approved_map(self.result))
+
+    def tearDown(self):
+        self.folder.cleanup()
+
+    def loop(self, decisions, at, proposals=None):
+        report = dict(self.report, proposals=proposals or self.report['proposals'])
+        matched = cc_loop.remember(self.root, report, decisions, at)
+        return decide.after_readback(self.root, matched, at)
+
+    def written(self):
+        return read_json(self.spec_path.parent / 'decision.json')
+
+    def assert_withdrawn(self, code):
+        written = self.written()
+        self.assertEqual(written['concepts'], {})
+        self.assertTrue((written['concept_hold'] or '').startswith(code), written['concept_hold'])
+        signed = read_json(self.spec_path)
+        self.assertEqual(signed['signature']['concepts_digest'], concepts.concepts_digest({}))
+        self.assertIsNone(concepts.decision_errors(signed, written))
+
+    def test_a_decline_after_the_config_changed_still_stops_every_concept(self):
+        cfg = read_json(self.root / 'mix.json')
+        cfg['reserved']['days'] = {k: 0 for k in cfg['reserved']['days']}
+        write_json(self.root / 'mix.json', cfg)
+        self.loop([], '2026-11-09T07:00:00-05:00')
+        self.assert_withdrawn(decide.UNTRUSTED)
+        lines = self.loop([dict(yes(self.item), decision='declined', decided_at='2026-11-09T08:00:00-05:00')],
+                         '2026-11-09T08:30:00-05:00')
+        self.assertEqual(read_json(decide.record_path(self.root, WEEK))['decision'], 'declined', lines)
+        self.assertEqual(sorted(self.written()['stopped_concepts']), sorted(concepts.by_id(self.spec)))
+        self.assertIn('makeyourmindup:mix:2026-W46', release.stopped_plans(self.root))
+
+    def test_a_yes_on_a_plan_since_changed_approves_nothing(self):
+        # The plan file is rebuilt and reported with a new digest; his yes was on the old one.
+        changed = copy.deepcopy(self.result)
+        changed['concepts'] = [c for c in changed['concepts'] if c['concept_id'] != sorted(mix.approved_map(
+            self.result))[0]]
+        changed['proposal'] = mix.plan_proposal(changed, mix.load(self.root))
+        self.assertNotEqual(changed['proposal']['payload_sha256'], self.item['payload_sha256'])
+        write_json(decide.plan_path(self.root, WEEK), changed)
+        self.loop([], '2026-11-09T07:00:00-05:00', [changed['proposal']])
+        self.assertEqual(read_json(decide.record_path(self.root, WEEK))['decision'], 'approved')
+        self.assert_withdrawn(decide.STALE)
+
+    def test_an_unmatched_declined_check_in_withdraws_and_is_kept_in_the_ledger(self):
+        checkin = {'proposal_id': 'makeyourmindup:checkin:unknown', 'decision': 'declined',
+                   'decided_at': '2026-11-09T07:00:00-05:00', 'payload_sha256': 'a' * 64, 'stage': 'check_in'}
+        self.loop([checkin], '2026-11-09T07:30:00-05:00')
+        self.assert_withdrawn(decide.HOLD_UNRESOLVED)
+        self.assertEqual(release.unresolved_stops(self.root), ('makeyourmindup:checkin:unknown',))
+        self.loop([], '2026-11-09T08:30:00-05:00')
+        self.assert_withdrawn(decide.HOLD_UNRESOLVED)
+
+    def test_a_record_that_cannot_be_applied_is_withdrawn_not_left_standing(self):
+        path = decide.record_path(self.root, WEEK)
+        write_json(path, dict(read_json(path), decided_at='not a time'))
+        line = decide.write_run(self.root, self.spec_path, '2026-11-09T07:00:00-05:00')
+        self.assertIn('held: not_applied', line)
+        self.assert_withdrawn('not_applied')
+
+    def test_a_declined_check_in_on_the_plan_stops_it(self):
+        checkin = proposal_for_checkin(self.item)
+        self.loop([{'proposal_id': checkin['proposal_id'], 'decision': 'declined',
+                   'decided_at': '2026-11-09T07:00:00-05:00', 'payload_sha256': checkin['payload_sha256']}],
+                 '2026-11-09T07:30:00-05:00', [self.item, checkin])
+        self.assertEqual(self.written()['concepts'], {})
+        self.assertEqual(read_json(decide.record_path(self.root, WEEK))['decision'], 'declined')
+
+
+def proposal_for_checkin(plan_item):
+    from engine.control_center import proposal
+    return proposal('makeyourmindup:checkin:mix-w46', 'On track?', 'How the week is going.', 'advice', 'strategy',
+                    'plan_on_track', exact_payload='On track.', reference='docs/MIX.md', stage='check_in',
+                    parent_proposal_id=plan_item['proposal_id'])
 
 
 class PlanWords(unittest.TestCase):
@@ -344,7 +477,9 @@ class PlanWords(unittest.TestCase):
         text = full_plan()['proposal']['exact_payload']
         for claim in ('makes and posts every post', 'never under', 'Delete a concept\'s line to leave it out'):
             self.assertNotIn(claim, text)
-        for rule in ('passing review of its own exact words', 'room under 4 posts a day', 'copy lint', 'channel lock',
+        for rule in ('passing review of its own exact words', "room under its channel's daily cap when it goes out"
+                     ' (at most Instagram 4, YouTube Shorts 4, TikTok 4, X 4 a day)', 'copy lint', 'channel lock',
+                     'Change any other line and no concept is approved until a plan carrying your change is approved',
                      'capability check', 'change a concept\'s line and that concept and every post from it stop',
                      'Your no stops them all', 'LinkedIn stays your click'):
             self.assertIn(rule, text)

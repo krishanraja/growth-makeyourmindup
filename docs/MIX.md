@@ -51,7 +51,8 @@ ready concept with its hash. The Sunday report job carries it when
 `.scratch/mix/plan-<Monday>.json` exists (`engine/cc_loop.py`, `mix_proposal`).
 His yes approves each ready concept at its hash; deleting or changing a
 concept's line in his amended version stops that concept (`mix.approved_map`,
-`mix.amended_out`); his no approves none and stops them all.
+`mix.amended_out`); changing any other line approves none until a plan
+carrying his change is approved; his no approves none and stops them all.
 
 Then `growth.py run new --start <Monday> --mix <plan file>` puts the ready
 concepts in the week's spec. In the loop's own run, right after it reads his
@@ -74,8 +75,9 @@ Because no signature of his covers each such post, release holds it unless:
 - `review/<slot>.json` passes it at its own `payload_sha256` (the blind send
   test for a snackable format), so words added after the claim are reviewed
   too (`concept_post_not_reviewed`);
-- its channel's New York day has room under the daily cap (four on these
-  channels, `engine/intensity.py`), counted over this run's ledger, every
+- its channel's New York day has room under the daily cap (the lower of the
+  live cap, `engine/intensity.py`, and the most a day the approved plan
+  states, decision.json `concept_daily_caps`; four on these channels), counted over this run's ledger, every
   other run's scheduled releases and the posts he signed one by one in the
   spec, which keep their place (`concept_daily_cap_reached`; an unreadable cap
   holds as `concept_daily_cap_unknown`);
@@ -84,7 +86,11 @@ Because no signature of his covers each such post, release holds it unless:
   post holds (`concept_stop_unresolved`).
 
 A concept in `stopped_concepts`, or a stop on the mix plan proposal in the
-loop's go-live ledger, holds every post from it. Copy lint, share asks, the
+loop's go-live ledger, holds every post from it. The loop records stops and
+unmatched declines in that ledger each run (`cc_loop.record_stops`), and
+rewrites decision.json with no concept approved, the reason in
+`concept_hold`, whenever the plan file no longer rebuilds, his yes was on
+another plan digest, or a decline is unmatched. Copy lint, share asks, the
 ecosystem route, the channel lock and route capability checks still run on
 every post. LinkedIn stays his click.
 
@@ -97,7 +103,8 @@ posts made from it (no separate `creative_approval_ref`).
 
 Concept approval is built, tested and wired into the loop's run (R104): his
 decision on the week's mix plan reaches decision.json in the run that reads
-it. It acts only once a week's plan has been reported, he has decided it, the
+it, and every later run checks it again and withdraws what no longer holds.
+It acts only once a week's plan has been reported, he has decided it, the
 week's spec carries its concepts and a release session runs `run release`;
 built and wired is not activated, and no post has gone out this way yet. A
 release session then plans up to 16 concept posts a day on these channels plus

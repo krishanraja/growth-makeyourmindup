@@ -34,7 +34,7 @@ from . import concepts as concept_rules
 from . import intensity
 from .control_center import proposal
 from .core import TIMEZONE, calendar_date, http_url, ny_time, read_json, write_json
-from .social import inventory as social_inventory
+from .social import inventory as social_inventory, max_daily_posts
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = 'mix.json'
@@ -340,10 +340,19 @@ def _days(days):
     return ', '.join(d[:3] for d in days)
 
 
+def ceiling(mix, channel):
+    """The most posts a day release can allow on a channel this week: its planned target, or its policy
+    bound if urgency rises (engine/intensity.py daily_cap never goes above either)."""
+    return max(mix['targets'][channel]['target'], max_daily_posts(channel))
+
+
+def _caps_line(mix, channels):
+    return ', '.join(CHANNEL_NAMES[c] + ' ' + str(ceiling(mix, c)) for c in channels)
+
+
 def payload_text(mix, cfg):
     """The exact words Krish approves. Every sentence in it is what release does, no more (R101, R103)."""
     channels = cfg['channels']
-    cap = mix['targets'][channels[0]]['target']
     ready = {c['concept_id'] for c in mix['concepts'] if c['ready']}
     waiting = {c['concept_id'] for c in mix['concepts'] if not c['ready']}
     per_day = {}
@@ -394,10 +403,11 @@ def payload_text(mix, cfg):
     lines.append('Concepts. Your yes approves each ready concept below at its hash: its idea, its claim, the channels'
                  ' named and its mock files. A post made from it may then go out on those channels with no further'
                  ' ask, only in its format above, with only its mock files and its claim word for word. Each post'
-                 ' still needs a passing review of its own exact words and room under ' + str(cap) + ' posts a day on'
-                 ' its channel, and must pass copy lint, the share rule, the channel lock and, on a route not yet'
+                 ' still needs a passing review of its own exact words and room under its channel\'s daily cap when it'
+                 ' goes out (at most ' + _caps_line(mix, channels) + ' a day), and must pass copy lint, the share rule, the channel lock and, on a route not yet'
                  ' verified, the one capability check; a post that fails any of these is held, never posted. Delete'
-                 ' or change a concept\'s line and that concept and every post from it stop. Your no stops them all.'
+                 ' or change a concept\'s line and that concept and every post from it stop. Change any other line and'
+                 ' no concept is approved until a plan carrying your change is approved. Your no stops them all.'
                  ' LinkedIn stays your click.')
     for c in mix['concepts']:
         lines.append(concept_line(c))
@@ -414,8 +424,8 @@ def plan_proposal(mix, cfg):
     return proposal(proposal_id(mix['week_of']),
                     'Approve the week of ' + mix['week_of'] + ': ' + str(ready_count) + ' ideas and their mocks',
                     'One press approves the ideas and mocks for the week; posts made exactly from them may then go'
-                    ' out on Instagram, YouTube, TikTok and X, each still reviewed and at most '
-                    + str(mix['targets'][cfg['channels'][0]]['target']) + ' a day per channel.',
+                    ' out on Instagram, YouTube, TikTok and X, each still reviewed, at most '
+                    + _caps_line(mix, cfg['channels']) + ' a day.',
                     'advice', 'strategy', 'plan_approved', exact_payload=text, reference='docs/MIX.md',
                     stage='plan')
 

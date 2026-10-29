@@ -22,7 +22,7 @@ import tempfile
 
 from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, action_key, action_errors,
                              build_report, canonical_json, copy_open, engage_action, golive_review, iso,
-                             match_decisions, objective, proposal)
+                             match_decisions, objective, proposal, _stops)
 from . import intensity
 from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
@@ -857,6 +857,27 @@ def claim_golives(root, proposals, decisions, now=None):
                 'decided_at': action['decided_at'], 'claimed_at': at}
         write_json(path, {key: dict(sorted(ledger[key].items())) for key in ('acted', 'stopped', 'unresolved')})
     return review
+
+
+def record_stops(root, proposals, decisions):
+    """Record Krish's stops in the go-live ledger and return it: plans he stopped stay stopped,
+    and declined check-ins whose plan is not known yet are listed as unresolved.
+
+    The same rule claim_golives applies (control_center._stops), run in every loop
+    run, so release (engine/run/release.py stopped_plans, unresolved_stops) and the
+    mix plan readback read stops that were really written. Claims nothing and
+    acts on nothing."""
+    path = state_path(root, GOLIVE_LEDGER)
+    given = [p for p in proposals or [] if isinstance(p, dict)]
+    known = {p.get('proposal_id') for p in given}
+    merged = given + [p for p in remembered_proposals(root) if p['proposal_id'] not in known]
+    with locked(path):
+        ledger = golive_ledger(root)
+        stopped, unresolved = _stops(merged, decisions, ledger)
+        ledger['stopped'].update({pid: why for pid, why in stopped.items() if pid not in ledger['stopped']})
+        ledger['unresolved'] = dict(unresolved)
+        write_json(path, {key: dict(sorted(ledger[key].items())) for key in ('acted', 'stopped', 'unresolved')})
+    return ledger
 
 
 def decisions_since(root, now):

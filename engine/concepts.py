@@ -181,6 +181,8 @@ def decision_errors(spec, decision):
         return 'decision.json concept_proposal_id is not the mix plan the signature names'
     if not approved:
         return None
+    if decision.get('concept_hold') is not None:
+        return 'decision.json holds its concepts (' + str(decision['concept_hold']) + ') yet approves some'
     if signature.get('concepts_digest') != concepts_digest(approved):
         return 'decision.json concepts do not match the signed concepts_digest; a mismatch is never signed'
     # A no on the mix plan must be able to stop its concepts, so the signature names that plan (R101).

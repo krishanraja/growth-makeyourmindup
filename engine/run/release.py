@@ -945,6 +945,10 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
                 continue
             if not is_draft(slot):
                 cap = caps.get(slot['channel'])
+                # The plan he approved states the most a day per channel; release keeps under it too.
+                stated = (decision.get('concept_daily_caps') or {}).get(slot['channel'], cap)
+                if isinstance(cap, int) and not isinstance(cap, bool):
+                    cap = min(cap, stated) if isinstance(stated, int) and not isinstance(stated, bool) else None
                 key = (slot['channel'], day_of({'due_at': slot['due_at']}))
                 if not isinstance(cap, int) or isinstance(cap, bool) or key[1] is None:
                     hold('concept_daily_cap_unknown: ' + slot['channel'] + ' has no readable daily cap')
