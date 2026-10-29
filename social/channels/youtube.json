@@ -7,6 +7,7 @@
   "mission": "Use accepted Shorts to introduce an idea and connect to its verified matching full video.",
   "formats": [
     "short-video",
+    "long-video",
     "meme"
   ],
   "guide": "social/guides/other-channels.md",

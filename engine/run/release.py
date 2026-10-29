@@ -180,6 +180,7 @@ FORMAT_SHAPE = {
     'carousel': {'kinds': _STILL, 'types': frozenset({'post'})},
     'meme': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'post', 'reel'})},
     'short-video': {'kinds': frozenset({'video'}), 'types': frozenset({'reel'})},
+    'long-video': {'kinds': frozenset({'video'}), 'types': frozenset({'post'})},
     'story': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'story'})},
     'story-frame': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'story'})},
 }

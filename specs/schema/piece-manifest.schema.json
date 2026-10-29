@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Content-engine's piece manifest (0 Publish/manifest.json): what Growth checks a go-live against (W2.8)",
+  "description": "Written by content-engine once Krish approves a piece's publish board. Growth reads it by a direct download link and its sha256 named in the go-live dispatch (piece_manifest) and holds any Buffer draft that is not exactly its channel's post (engine/run/piece_manifest.py). It authorises nothing on its own.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "piece_id",
+    "approval_sha256",
+    "qa",
+    "assets",
+    "channels"
+  ],
+  "properties": {
+    "schema": {
+      "const": "content-engine-piece-manifest/1"
+    },
+    "piece_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]{0,119}$"
+    },
+    "approval_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Digest of Krish's publish-board approval this manifest was made under."
+    },
+    "qa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "checked_at"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "passed",
+            "held",
+            "failed"
+          ]
+        },
+        "checked_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "drive_id",
+          "sha256",
+          "order"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$"
+          },
+          "drive_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{10,100}$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "channels": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "enum": [
+          "substack-notes",
+          "threads",
+          "x",
+          "instagram",
+          "facebook",
+          "tiktok",
+          "youtube",
+          "linkedin"
+        ]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "words",
+          "alt_text",
+          "assets"
+        ],
+        "properties": {
+          "words": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The exact words of that channel's post."
+          },
+          "alt_text": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "One per asset, in the channel's asset order."
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "description": "Asset names, in the order the post carries them."
+          }
+        }
+      }
+    }
+  }
+}

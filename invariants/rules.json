@@ -1520,6 +1520,49 @@
         "test_one_concept_posts_once_per_channel_a_week",
         "test_a_mock_link_must_be_one_of_the_files_he_approves"
       ]
+    },
+    {
+      "id": "R115",
+      "statement": "A go-live dispatch that names content-engine's piece manifest proposes only drafts that are exactly its post for their channel (words, assets in order, alt text); a manifest not passed QA, unapproved or not its sha holds every slot.",
+      "source_file": "CHANGES.md",
+      "quote": "Drive ids, sha256, order, exact copy per channel, alt text, QA state and the approval digest.",
+      "enforced_by": [
+        "engine/run/piece_manifest.py:line_hold",
+        "engine/run/piece_manifest.py:parse",
+        "engine/run/handoff.py:handoff"
+      ],
+      "tests": [
+        "test_a_draft_edited_away_from_the_manifest_is_held",
+        "test_one_byte_changed_in_a_line_is_held",
+        "test_a_manifest_that_is_not_passed_holds_every_slot"
+      ]
+    },
+    {
+      "id": "R116",
+      "statement": "Each engagement tap on X, TikTok, Instagram or LinkedIn opens the exact post or profile, never a feed, search or short link, and a LinkedIn reply carries no link.",
+      "source_file": "CHANGES.md",
+      "quote": "make sure everything is one click copiable and the click through goes precisely where i need to engage.",
+      "enforced_by": [
+        "engine/engage.py:target_kind",
+        "engine/engage.py:tap_errors",
+        "engine/cc_loop.py:engagement_task"
+      ],
+      "tests": [
+        "test_each_queue_platform_opens_its_exact_post_or_profile",
+        "test_a_tap_that_does_not_open_its_exact_target_is_held_by_name"
+      ]
+    },
+    {
+      "id": "R117",
+      "statement": "The measure report carries sends and saves per reach for each channel, labelled with their hypothesis status, and says not shown rather than zero.",
+      "source_file": "CHANGES.md",
+      "quote": "marked as hypotheses until his own data confirms them.",
+      "enforced_by": [
+        "engine/run/measure_auto.py:share_part"
+      ],
+      "tests": [
+        "test_sends_and_saves_per_reach_reach_the_report_as_a_hypothesis"
+      ]
     }
   ]
 }

@@ -468,6 +468,35 @@ def signed_meta(post, hashes):
 
 # Media bytes -----------------------------------------------------------------
 
+def download_bytes(url, cap=ASSET_CAP, timeout=ASSET_TIMEOUT, loopback_for_tests=False):
+    """The bytes at url, read fresh, capped. Never sends a key. Any failure raises
+    BufferError with a code; the caller holds."""
+    if not isinstance(url, str) or not (url.startswith('https://') or (loopback_for_tests and LOOPBACK.match(url))):
+        raise BufferError('asset_url_refused')
+    handlers = [_HttpsRedirectOnly(loopback_for_tests)]
+    if loopback_for_tests:
+        handlers.append(urllib.request.ProxyHandler({}))
+    request = urllib.request.Request(url, method='GET', headers={'Accept': '*/*'})
+    chunks, size = [], 0
+    try:
+        with urllib.request.build_opener(*handlers).open(request, timeout=timeout) as response:
+            while True:
+                chunk = response.read(1 << 16)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > cap:
+                    raise BufferError('asset_too_large')
+                chunks.append(chunk)
+    except BufferError:
+        raise
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException):
+        raise BufferError('asset_download_failed') from None
+    if size == 0:
+        raise BufferError('asset_download_failed')
+    return b''.join(chunks)
+
+
 def download_sha256(url, cap=ASSET_CAP, timeout=ASSET_TIMEOUT, loopback_for_tests=False):
     """sha256 and size of the bytes at url, read fresh, capped. Never sends a key.
     Any failure raises BufferError with a code; the caller holds."""
