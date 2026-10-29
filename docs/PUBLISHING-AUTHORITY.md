@@ -112,13 +112,20 @@ line here says otherwise.
   read in the engine's own run (AGENTS.md, Autonomy). Growth schedules it,
   reads it back from Buffer and checks the sha. He can pull any post until
   its slot, and a pulled post is never scheduled again without a new
-  approval. Reading one decision per post is Wave 2 work (plan W5); until
-  it lands, release reads the signed `decision.json` as `docs/RUN.md` says.
+  approval. Reading one decision per post, and the pull, are Wave 2 work
+  (plan W5); until they land, release reads the signed `decision.json` as
+  `docs/RUN.md` says, and nothing in this repository pulls a scheduled post.
 - **Routes all go through Buffer:** "buffer is connected to youtube and
   substack". That covers Instagram Reels and carousels, TikTok, X, YouTube
   Shorts and long-form, and Substack. Each route's first real post is a
   capability check he approves on that Monday; until a route has passed
-  it, the route holds. If Buffer's Substack channel carries only Notes (it
+  it, the route holds. Release enforces this: on a route that
+  `social/tools/buffer.json` does not show as verified and fresh, it
+  schedules only the run's earliest approved post, marked
+  `capability_check`, and holds the rest as `route_not_verified`. When that
+  post's live readback passes, a reviewed change records the route there as
+  verified, with the date and the tested operation, and the rest release.
+  If Buffer's Substack channel carries only Notes (it
   is his personal profile today), the article falls back to a saved draft
   with a deep link, and he clicks publish. Release does not post articles
   or YouTube today: YouTube waits on a signed title and category in the

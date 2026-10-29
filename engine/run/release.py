@@ -54,6 +54,10 @@ match this engine's pinned entry, and an id on the denylist is refused
 wherever it appears: list_channels, a built call, an edit target or a
 readback. Copy lint (Krish, 28 October 2026): a slot whose words hit
 content-engine's copy lint (engine/copy_lint.py) is held and never emitted.
+Capability checks (28 October 2026): on a channel and format that
+social.route does not show as verified and fresh, only the run's earliest
+signed post releases, as the route's capability check; the rest hold until
+the route is recorded as passed in social/tools/buffer.json.
 """
 import argparse
 import hashlib
@@ -67,6 +71,7 @@ from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, channel_i
 from engine.control_center import sha256_hex
 from engine.copy_lint import copy_lint_errors, version as copy_lint_version
 from engine.core import instant, locked, read_json, write_json
+from engine.social import route
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_CHECKED = '2026-10-27'
@@ -564,6 +569,31 @@ def approved_creative(spec):
     return approved
 
 
+def route_holds(slot, as_of):
+    """(holds, known): social.route's capability holds for the slot's channel and format.
+
+    known is False when the route cannot be read at all (a format the channel
+    does not carry, or a broken social/ record); such a slot always holds.
+    """
+    try:
+        return route(CHANNEL_PROFILE[slot['channel']], slot['format'], as_of=as_of)['holds'], True
+    except (ValueError, KeyError) as exc:
+        return ['route_unknown: ' + str(exc)], False
+
+
+def capability_checks(spec, signed):
+    """(channel, format) -> slot_id of the earliest signed, scheduled slot on it.
+
+    On a route not yet verified in social/tools/buffer.json, that one post is
+    the route's capability check (docs/PUBLISHING-AUTHORITY.md, 28 October).
+    """
+    scheduled = [s for s in spec['slots'] if not is_draft(s) and signed.get(s['slot_id']) == s['payload_sha256']]
+    first = {}
+    for slot in sorted(scheduled, key=lambda s: instant(s['due_at'])):
+        first.setdefault((slot['channel'], slot['format']), slot['slot_id'])
+    return first
+
+
 def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None):
     """Arguments for signed, unreleased slots only, once per slot.
 
@@ -582,13 +612,17 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
     asset_paths = asset_paths or {}
     targets = targets or {}
     approved = approved_creative(spec)
-    seen, calls, holds = set(), [], []
+    seen = set()
     for slot in spec['slots']:
         check_slot(slot)
+        if slot['slot_id'] in seen:
+            raise ValueError('duplicate slot_id: ' + slot['slot_id'])
+        seen.add(slot['slot_id'])
+    as_of = instant(now).date().isoformat()
+    first_post, routes = capability_checks(spec, signed), {}
+    calls, holds = [], []
+    for slot in spec['slots']:
         sid = slot['slot_id']
-        if sid in seen:
-            raise ValueError('duplicate slot_id: ' + sid)
-        seen.add(sid)
 
         def hold(reason):
             holds.append({'slot_id': sid, 'hold': reason})
@@ -606,6 +640,22 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
             # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels.
             hold('copy_lint_refused: ' + '; '.join(lint))
             continue
+        capability_check = False
+        if not is_draft(slot):
+            key = (slot['channel'], slot['format'])
+            if key not in routes:
+                routes[key] = route_holds(slot, as_of)
+            unchecked, known = routes[key]
+            if not known:
+                hold(unchecked[0])
+                continue
+            if unchecked and first_post.get(key) != sid:
+                # Krish, 28 Oct 2026: each route's first real post is its capability
+                # check; until the route has passed it, the rest of the route holds.
+                hold('route_not_verified: ' + '; '.join(unchecked) + '; its capability check is '
+                     + first_post[key] + ', and the rest wait until the route is recorded as passed')
+                continue
+            capability_check = bool(unchecked)
         if slot['publish_mode'] == 'engine' and any(a['sha256'] not in approved for a in slot['assets']):
             hold('creative_not_approved')
             continue
@@ -638,6 +688,9 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
                  'service': call['service'], 'channel_id': call['channel_id'],
                  'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat(),
                  'copy_lint_version': copy_lint_version()}
+        if capability_check:
+            # The route's first real post: its readback is the capability check.
+            call['capability_check'] = entry['capability_check'] = True
         if target is not None:
             # The before-state, journalled ahead of the mutation.
             entry['target_sha256'] = _readback_digest(target)

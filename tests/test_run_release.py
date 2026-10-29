@@ -355,6 +355,53 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(third['calls'], [])
         self.assertIn({'slot_id': 'notes-1', 'hold': 'released_earlier_with_another_payload'}, third['holds'])
 
+    def test_unchecked_route_releases_only_its_capability_check(self):
+        # docs/PUBLISHING-AUTHORITY.md, 28 Oct 2026: "Each route's first real post is a capability
+        # check he approves on that Monday; until a route has passed it, the route holds."
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        for sid, due in (('notes-1', '2026-11-04T08:30:00-05:00'), ('threads-1', '2026-11-02T09:00:00-05:00'),
+                         ('tiktok-photo-1', '2026-11-05T19:00:00-05:00')):
+            twin = copy.deepcopy(self.slots[sid])
+            twin.update(slot_id=sid[:-1] + '2', due_at=due, words=twin['words'] + ' A second post.')
+            spec['slots'].append(twin)
+            resign(twin, decision, spec)
+        result = self.plan(spec, decision)
+        calls, holds = self.by_slot(result), self.holds(result)
+        # Notes and Threads are unverified routes: the earliest post by due_at goes, the rest hold.
+        self.assertTrue(calls['notes-1']['capability_check'])
+        self.assertTrue(result['ledger']['released']['notes-1']['capability_check'])
+        self.assertNotIn('notes-2', calls)
+        self.assertTrue(holds['notes-2'].startswith(
+            'route_not_verified: capability_not_verified_for_selected_channel_and_format'))
+        self.assertIn('its capability check is notes-1', holds['notes-2'])
+        self.assertTrue(calls['threads-2']['capability_check'])
+        self.assertNotIn('threads-1', calls)
+        self.assertIn('its capability check is threads-2', holds['threads-1'])
+        # A verified route releases every approved post and marks none as a check.
+        for sid in ('tiktok-photo-1', 'tiktok-photo-2'):
+            self.assertNotIn('capability_check', calls[sid])
+            self.assertNotIn('capability_check', result['ledger']['released'][sid])
+        # Once the check is released, the rest still wait for the route to be recorded as passed.
+        again = self.plan(spec, decision, result['ledger'])
+        self.assertEqual(again['calls'], [])
+        self.assertTrue(self.holds(again)['notes-2'].startswith('route_not_verified'))
+        self.assertEqual(self.holds(again)['notes-1'], 'already_released_once')
+        with patch.object(release, 'route', lambda *a, **k: {'holds': []}):
+            passed = self.plan(spec, decision, result['ledger'])
+        self.assertEqual(set(self.by_slot(passed)), {'notes-2', 'threads-1'})
+        # A stale observation is a recheck: only the route's earliest post goes.
+        stale = release.release_plan(spec, decision, None, self.paths(spec), self.channels,
+                                     '2026-11-03T12:00:00-05:00', self.targets)
+        self.assertTrue(self.by_slot(stale)['tiktok-photo-1']['capability_check'])
+        self.assertIn('capability_observation_requires_recheck', self.holds(stale)['tiktok-photo-2'])
+        # A format the channel does not carry is never a check: it always holds.
+        odd = copy.deepcopy(self.spec)
+        odd_decision = copy.deepcopy(self.decision)
+        notes = [s for s in odd['slots'] if s['slot_id'] == 'notes-1'][0]
+        notes['format'] = 'carousel'
+        resign(notes, odd_decision, odd)
+        self.assertTrue(self.holds(self.plan(odd, odd_decision))['notes-1'].startswith('route_unknown: '))
+
     def test_release_refuses_unsigned_or_mismatched_slot(self):
         spec = copy.deepcopy(self.spec)
         decision = copy.deepcopy(self.decision)

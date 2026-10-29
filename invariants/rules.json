@@ -1098,7 +1098,7 @@
     },
     {
       "id": "R94",
-      "statement": "Go-live is approved per day on the Monday final board; it authorises scheduling exactly that day's approved payloads, read back from Buffer, and he can pull each until its slot.",
+      "statement": "Go-live is approved per day on the Monday final board; it authorises scheduling exactly that day's approved payloads, read back from Buffer. Pulling a post until its slot is Wave 2 (plan W5) and is not built or claimed here.",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Approving a day on the Monday final board authorises scheduling exactly that day's posts, nothing more.",
       "enforced_by": [
@@ -1111,13 +1111,16 @@
     },
     {
       "id": "R95",
-      "statement": "Every route goes through Buffer, and each route's first real post is a capability check he approves; an unchecked route holds, and an article falls back to a saved draft if Buffer's Substack channel carries only Notes.",
+      "statement": "Every route goes through Buffer, and each route's first real post is a capability check he approves: on a route not yet verified and fresh, release schedules only the run's earliest approved post and holds the rest until the route is recorded as passed. Release posts no article; the saved-draft fallback for an article is Wave 2.",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Each route's first real post is a capability check he approves on that Monday; until a route has passed it, the route holds.",
       "enforced_by": [
-        "engine/social.py:route"
+        "engine/social.py:route",
+        "engine/run/release.py:capability_checks",
+        "engine/run/release.py:release_plan"
       ],
       "tests": [
+        "test_unchecked_route_releases_only_its_capability_check",
         "test_unknown_document_route_is_not_inferred_from_png_success",
         "test_stale_and_future_observations_require_bounded_recheck"
       ]

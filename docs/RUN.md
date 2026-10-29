@@ -19,9 +19,10 @@ A session does one job, then ends at a gate packet:
   go-live decision the engine reads from Control Center in its own run
   ("Approve each day Monday", 28 Oct). `decision.json` is written only from
   that readback, never by hand. Release acts only on this engine's eight
-  Buffer channels, pinned by channelId (other ventures' ids are refused), and
-  holds a slot whose words fail the copy lint. An interactive session never
-  releases and never uses `--deliver`. Scheduled is never live.
+  Buffer channels, pinned by channelId, holds a slot whose words fail the
+  copy lint, and releases only an unverified route's first post, its check.
+  An interactive session never releases and never uses `--deliver`.
+  Scheduled is never live.
 - **Measure (daily):** read back "sent" and the native URL, capture metrics at
   their windows, write verdicts, check the express intake.
 - **Express:** build one approved idea into the waiting go-live, or its own.
