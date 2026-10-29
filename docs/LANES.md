@@ -23,9 +23,16 @@ Nobody has to be awake or online for these.
 | Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
 | The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea | when that maker wakes it | when that maker wakes it |
 | The test suite (`check.yml`) | on every push and pull request | on every push and pull request |
+| Art direction (`artdirect.yml`): Codex invents one visual idea for each piece of the coming week and builds it as a piece kit (`render/KIT.md`, "Piece kits"), with no network, only in that piece's own folder, and on at most three pieces a run. The renderer's checks are the gate: a kit that fails is removed and that piece uses the house kit. The kits that pass come to Krish as one pull request, "Piece kits for week W", which the workflow never merges. Its log carries counts and codes only | Saturdays 07:00 | 07:00 |
 
 Only this lane holds the Control Center engine key. It is a GitHub
 repository secret. No chat session holds it.
+
+Art direction is the one L0 job that runs a model. Codex makes there under
+the same walls as every maker: it writes only a piece kit, which reaches the
+repository only through a pull request Krish merges, and it never posts,
+sends, schedules or spends beyond its capped run. Its key is the repository
+secret `OPEN_AI_API_KEY`, given to that one step and to no other job.
 
 ### How release reads what Krish approved
 
@@ -74,7 +81,8 @@ Krish's PC (below) are kept as they are.
 
 Making is not a lane of its own. Canva assets, words, Buffer drafts and the
 week's packet are made by interactive sessions and by the existing jobs on
-Krish's PC, under the same walls:
+Krish's PC, and each piece's visual idea by Codex in the art direction job
+(L0, above), under the same walls:
 
 - Making leaves drafts and proposals only: it never publishes, schedules,
   sends, deletes or spends. A Buffer post is saved with `saveToDraft: true`

@@ -262,6 +262,30 @@
         "account-connection"
       ],
       "secrets": []
+    },
+    {
+      "id": "artdirect",
+      "lane": "L0_code",
+      "workflow": "artdirect.yml",
+      "trigger": "Saturdays 07:00 UTC, and by hand",
+      "may_write": [
+        "piece kits under render/pieces/<piece_id>/ that passed the static checks and two identical renders in kit colours and fonts, on a new branch",
+        "one pull request titled \"Piece kits for week <W>\", with counts and codes only"
+      ],
+      "never": [
+        "merge its pull request or push to the default branch",
+        "give Codex the network, or let it write outside the piece's own folder",
+        "run Codex on more pieces than its cap (three unless set lower or higher by hand)",
+        "keep a kit that fails a check: that piece falls back to the house kit (piece_kit_refused)",
+        "post, send, publish, schedule or spend beyond the capped Codex runs",
+        "log a title, a claim, a word of a kit or a key"
+      ],
+      "actions": [
+        "propose-piece-kits"
+      ],
+      "secrets": [
+        "OPEN_AI_API_KEY"
+      ]
     }
   ],
   "automations": [

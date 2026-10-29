@@ -418,9 +418,9 @@ for this engine follows `docs/TASTE.md`.
 Separately, Control Center wakes `.github/workflows/control-center.yml`
 every morning; that GitHub runner checks the engine offline and reports
 what a clean runner can see. Its numbers are always "measured only in the
-publication workspace". GitHub Actions runs six workflows, all lane L0
-(`docs/LANES.md`): control-center, release, measure, keys, handoff and
-check. The nine automations below run on Krish's PC and are kept until W46.
+publication workspace". GitHub Actions runs seven workflows, all lane L0
+(`docs/LANES.md`): control-center, release, measure, keys, handoff,
+artdirect and check. The nine automations below run on Krish's PC and are kept until W46.
 
 ## The schedule (New York time)
 
