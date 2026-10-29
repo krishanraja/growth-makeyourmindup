@@ -257,6 +257,45 @@ def mix_proposal(root, now):
         return None, {'reason': "Next week's mix could not be read", 'detail': str(exc)[:900]}
 
 
+BACKSTOP_FILE = Path('.scratch') / 'taste' / 'backstop.jsonl'
+
+
+def clock_lines(root, now, taps=0):
+    """Wave 2 clock facts for Control Center's DONE_CHECKS (W2.2), as activity lines until it names their fields.
+
+    engage: the taps prepared today (engage_done itself is Krish's marks); offday:
+    this week's mix plan file, if there is one (engine/offday.py clock); backstop:
+    the flagged lines the SessionEnd hook kept locally (scripts/taste_backstop.py),
+    waiting on Control Center's taste_reports route. Unknown is said, never zero."""
+    from . import offday
+    lines = []
+    if taps:
+        lines.append('Clock engage: ' + count(taps, 'engagement tap') + " ready for Krish today; engage_done is his marks")
+    monday = next_monday(now) - dt.timedelta(days=7)
+    for day in (monday, monday + dt.timedelta(days=7)):
+        path = Path(root) / MIX_DIR / ('plan-' + day.isoformat() + '.json')
+        if not path.is_file():
+            continue
+        try:
+            facts = offday.clock(read_json(path), now, root=root)
+        except (ValueError, OSError, KeyError, TypeError, AttributeError):
+            lines.append('Clock offday for the week of ' + day.isoformat() + ': the plan file could not be read')
+            continue
+        lines.append('Clock offday for the week of ' + day.isoformat() + ': offday_stocked '
+                     + ('yes' if facts['offday_stocked'] else 'no') + ', ' + str(facts['stocked_slots']) + ' of '
+                     + str(facts['filler_slots']) + ' filler slots ready, due ' + facts['stocked_by'][:16])
+    path = Path(root) / BACKSTOP_FILE
+    if path.is_file():
+        try:
+            waiting = sum(1 for raw in path.read_text(encoding='utf-8').splitlines()
+                          if raw.strip() and json.loads(raw).get('posted') is False)
+            lines.append('Chat backstop: ' + count(waiting, 'flagged line') + " of Krish's kept locally, waiting on "
+                         "Control Center's taste_reports route; none sent")
+        except (ValueError, OSError, AttributeError):
+            lines.append('Chat backstop: its local file could not be read')
+    return lines
+
+
 def plan_proposals(mix):
     """([proposal], hold) for one week's mix doc: its plan proposal, then any later parts in order.
 
@@ -816,6 +855,9 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
         activity.append({'line': observation_line(observations, now)})
     if events:
         activity.append({'line': 'Recorded ' + count(len(events), 'completion') + ' Krish confirmed'})
+    tapped = len(json.loads(proposals[0]['exact_payload'])['taps']) if taps and proposals \
+        and copy_open(proposals[0]) is not None else 0
+    activity += [{'line': line} for line in clock_lines(root, now, tapped)]
     activity.append({'line': 'Posted, sent, published and spent nothing; Krish acts on each proposal himself'})
     if job == 'numbers' and goal['availability'] != 'measured':
         status = 'degraded'
