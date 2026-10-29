@@ -53,6 +53,9 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    unread day reports the count as missing with its reason, never as zero.
    It must print "readback digest matches" and "attempt succeeded". If it
    prints a failure code instead, name that code in the final message.
+9. Then file the chat backstop's kept lines in Control Center:
+   `python growth.py cc backstop --deliver` (counts only; a line Control Center
+   already holds answers duplicate).
 
 ## 27 October 2026: GA4 and the North Star line
 

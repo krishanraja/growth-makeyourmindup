@@ -228,6 +228,8 @@ def main(argv=None):
             x.add_argument('--backup', action='store_true', help="the scheduled backup of Control Center's morning dispatch")
         x.add_argument('--deliver', action='store_true'); x.add_argument('--mode', choices=('live', 'synthetic'), default='live')
         x.add_argument('--run-id'); x.add_argument('--now')
+    bs = ccsub.add_parser('backstop', help="file the chat backstop's kept lines in taste_reports, once each")
+    bs.add_argument('--deliver', action='store_true'); bs.add_argument('--now')
     args = parser.parse_args(argv)
     if args.self_test:
         return self_test()
@@ -335,7 +337,7 @@ def main(argv=None):
         print(json.dumps(run(ROOT, args.out, args.live), indent=2)); return 0
     if args.cmd == 'cc':
         if not args.cc_cmd:
-            raise ValueError('choose cc start, finish, run or runner')
+            raise ValueError('choose cc start, finish, run, runner or backstop')
         from engine.cc_loop import cli
         return cli(args, ROOT, engine_client)
     parser.print_help()
