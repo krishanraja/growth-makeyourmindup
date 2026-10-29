@@ -38,7 +38,10 @@ class CopyLintTests(unittest.TestCase):
             'ai_self_note': ('This video was made with Runway.',),
             'ai_illustration_note': ('The illustrations were generated with AI.',),
             'ai_credit_line': ('Visuals by Midjourney',),
-            'take_label': ("Krish's take: the money moved to the chips", 'My take: watch the lawyers'),
+            'take_label': ("Krish's take: the money moved to the chips", 'My take: watch the lawyers',
+                           "Krish's read: the money moved to the chips"),
+            # Krish, 28 Oct 2026: the labels "Krish's read" or "illustrative" "add no value to the content".
+            'illustration_label': ('ILLUSTRATIVE', '(illustrative)', '[Illustrative]', 'Illustrative'),
         }
         for pattern, examples in named.items():
             for text in examples:

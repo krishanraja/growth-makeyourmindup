@@ -39,9 +39,9 @@
     Wednesday and Friday of the week after recording.
   Later the same day, on labels: "It's just the ones that
   say "Krish's read" or "illustrative" that are stupid because they add no
-  value to the content." The vendored copy lint (version 2026-10-28.1) does
-  not catch either label yet; content-engine owns the patterns, and this
-  engine takes them when it re-vendors.
+  value to the content." content-engine owns the patterns and added both
+  (copy lint version 2026-10-29.1, `take_label` and `illustration_label`);
+  this engine re-vendored that version unchanged.
 
 - 2026-10-27 (later still): "apply the Control Center change yourself". For
   this one change only, rule 7 (stay in this repository) is lifted: the

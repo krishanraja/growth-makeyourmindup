@@ -17,12 +17,14 @@ it reaches Buffer.
 
 - Repository: `krishanraja/content-engine`
 - Path: `config/copy-lint.json`
-- Commit: `1881d38f1a1d74521e40d239bd1f11886396c9d4` (branch
-  `claude/fervent-brown-d8e55b-copylint`, 28 Oct 2026, Wave 1 of the plan;
+- Commit: `c3b85b101a618ffbd5e6cc11f5df6bad8e76746d` (branch
+  `claude/fervent-brown-d8e55b-copylint`, 29 Oct 2026, Wave 1 of the plan;
   if a squash merge gives it another commit on main, the sha256 below is the
   line that binds)
-- Version: `2026-10-28.1`
-- sha256: `60cda03aae33826886267ee1b602cd1d2b07d2181d2bc3b3e528e41af16aad76`
+- Version: `2026-10-29.1`: adds "Krish's read" to `take_label` and the
+  `illustration_label` pattern, after Krish said the labels "Krish's read"
+  and "illustrative" "add no value to the content".
+- sha256: `36fbbb01a62c025bc3f6e8858651818a5dcb24d3f17d6bc71b115e3ad7c2ceac`
 
 The vendored file is byte for byte the upstream file. `tests/test_copy_lint.py`
 checks its sha256 and version against the lines above, so a changed copy
