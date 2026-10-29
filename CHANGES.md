@@ -1,5 +1,29 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (Wave 2, W2.9): the off-day lane. His brief: "First posts on
+  Tuesday 10 November" and "0 off-day posts land on Monday, Wednesday or
+  Friday". Asked in this session which ruling wins, the off-day weekdays or
+  the 29 October flood ruling that runs the same lanes every day, Krish
+  chose "Mix wins: every day".
+  - No weekday ban: the meme, positive news and level-up lanes run every day.
+    The brief's Monday, Wednesday and Friday test is dropped; R97's weekday
+    line is superseded (`docs/PUBLISHING-AUTHORITY.md`).
+  - The mid-week top-up (R118): `growth.py mix topup` gives the next free
+    filler slot for one post from a fresh Buffer readback, never the series
+    slot, never a day at the lower of the plan's cap and the live cap, never
+    a slot taken and never inside release's 90-minute window.
+  - The Sunday Off-days section: `growth.py mix offdays` gives two or three
+    options a day (format, source, draft copy, share line) as data for
+    content-engine's Sunday board, and says which day is short.
+  - The clock facts for Control Center: `growth.py mix clock` gives
+    offday_stocked (every filler slot ready by Sunday 20:00 New York) and
+    offday_slots_filled.
+  - Floor never 2, his words of 29 October: "nothing made up, and every
+    number credited to its producer." A filler idea whose claim carries a
+    figure (money, a share, a multiple, a large count) and no source is
+    refused (R119).
+  - `calendar/v1.json` keeps its meme rows as V1's own check; mix.json is
+    what lays out which days carry which lane.
 - 2026-10-29 (Wave 2, W2.8): Growth posts what he approved. From Krish's
   saved Wave 2 brief (plan of 28 October, amended 29 October): "content-engine
   writes `0 Publish/manifest.json` per piece: Drive ids, sha256, order, exact

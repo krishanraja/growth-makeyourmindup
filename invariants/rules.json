@@ -1153,7 +1153,7 @@
     },
     {
       "id": "R97",
-      "statement": "Growth owns the Tuesday, Thursday, Saturday and Sunday lane on Instagram, TikTok and YouTube Shorts; each post is approved with one press and goes in the next free off-day slot, never on Monday, Wednesday or Friday or over a daily cap.",
+      "statement": "Growth owns the Tuesday, Thursday, Saturday and Sunday lane on Instagram, TikTok and YouTube Shorts; each post is approved with one press and goes in the next free off-day slot, never on Monday, Wednesday or Friday or over a daily cap. Superseded on the weekdays on 29 October 2026 (\"Mix wins: every day\"): the lanes run every day, and a top-up never takes the series slot or a day over its cap (R118).",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Growth puts the post in the next free off-day slot on each chosen channel, never on Monday, Wednesday or Friday and never over a daily cap, and reads it back.",
       "enforced_by": [
@@ -1562,6 +1562,32 @@
       ],
       "tests": [
         "test_sends_and_saves_per_reach_reach_the_report_as_a_hypothesis"
+      ]
+    },
+    {
+      "id": "R118",
+      "statement": "A mid-week top-up takes the next free filler slot of the week's mix on its channel: never the Monday, Wednesday or Friday series slot, never a day already at the lower of the plan's cap and the live cap, never a slot already taken and never inside release's 90-minute window.",
+      "source_file": "CHANGES.md",
+      "quote": "Asked in this session which ruling wins, the off-day weekdays or the 29 October flood ruling that runs the same lanes every day, Krish chose \"Mix wins: every day\".",
+      "enforced_by": [
+        "engine/offday.py:next_free_slot",
+        "engine/offday.py:day_cap"
+      ],
+      "tests": [
+        "test_topup_takes_the_next_free_filler_slot_and_never_the_series_slot",
+        "test_no_topup_lands_over_a_cap_or_in_the_series_slot_across_every_hour_of_the_week"
+      ]
+    },
+    {
+      "id": "R119",
+      "statement": "A filler idea whose claim carries a figure (money, a share, a multiple, a large count) names the source that produced it, or it is refused.",
+      "source_file": "CHANGES.md",
+      "quote": "nothing made up, and every number credited to its producer.",
+      "enforced_by": [
+        "engine/mix.py:idea_pool"
+      ],
+      "tests": [
+        "test_a_claim_with_a_figure_names_its_source"
       ]
     }
   ]
