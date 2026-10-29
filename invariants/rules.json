@@ -1648,6 +1648,21 @@
         "test_a_mix_post_at_another_time_that_day_is_never_ticked_as_the_piece",
         "test_a_scheduled_post_is_not_ticked_until_buffer_shows_it_sent"
       ]
+    },
+    {
+      "id": "R123",
+      "statement": "A go-live's report names this engine's pinned Buffer channels and the other ventures' ids as denied, so Control Center approves a post only on this engine's own account; per-post numbers Buffer does not show are null, never zero.",
+      "source_file": "CHANGES.md",
+      "quote": "Control Center now\n  approves a go-live of posts only after a live report says which Buffer channel id is this engine's\n  for each channel (control-center #626).",
+      "enforced_by": [
+        "engine/run/handoff.py:reports_for",
+        "engine/control_center.py:v17_errors"
+      ],
+      "tests": [
+        "test_buffer_channels_name_every_pinned_channel_and_deny_the_other_ventures",
+        "test_an_id_both_allowed_and_denied_is_refused_locally",
+        "test_post_metrics_take_null_never_zero_and_refuse_fractions"
+      ]
     }
   ]
 }

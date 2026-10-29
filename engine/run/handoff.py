@@ -100,7 +100,7 @@ from pathlib import Path
 import re
 import sys
 
-from engine import concepts as concept_rules, mix as mix_rules
+from engine import buffer_channels, concepts as concept_rules, mix as mix_rules
 from engine.cc_loop import NO_SPEND, decisions_paged, plan_proposals, revision
 from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _plan_open, _stops,
                                    build_report, canonical_json, objective, proposal, sha256_hex)
@@ -117,7 +117,10 @@ from engine.social import inventory
 ROOT = Path(__file__).resolve().parents[2]
 GO_LIVE, WEEK_PACKET, MAKE_PIECE = 'growth-go-live-manifest', 'growth-week-packet', 'growth-make-piece'
 MIX_PLAN = 'growth-mix-plan'
-EVENTS = (GO_LIVE, WEEK_PACKET, MAKE_PIECE, MIX_PLAN)
+# Control Center's Clear on "Off-day posts: N ready" (protocol 1.17.0): nothing is owed back; his answer is kept
+# there per report_run_id, and the maker fills free slots on its own schedule behind Growth's own gates.
+OFFDAY_TOPUP = 'growth-offday-topup'
+EVENTS = (GO_LIVE, WEEK_PACKET, MAKE_PIECE, MIX_PLAN, OFFDAY_TOPUP)
 MAX_PAYLOAD_BYTES = 65536
 MAX_SLOTS = 60
 PAYLOAD_CAP = 8000
@@ -134,6 +137,9 @@ MANIFEST_SLOT_KEYS = frozenset({'slot', 'channel', 'buffer_draft_id', 'payload_s
 PACKET_KEYS, PACKET_SLOT_KEYS = (frozenset({'run_id', 'week', 'spec_sha256', 'slots'}),
                                  frozenset({'slot', 'channel', 'payload_sha256'}))
 PIECE_KEYS = frozenset({'piece_id'})
+TOPUP_KEYS = frozenset({'engine_id', 'report_run_id', 'week_of', 'request_id'})
+TOPUP_RUN_ID = re.compile(r'^[A-Za-z0-9][A-Za-z0-9:._-]{0,199}$')
+ISO_DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 # A slot made from an approved concept: its concept and its review (never words of the post).
 DERIVED_KEYS = frozenset({'concept_id', 'review'})
 REVIEW_KEYS = frozenset({'slot_id', 'verdict', 'lens', 'payload_sha256', 'reader_answer', 'share', 'asset_names'})
@@ -288,6 +294,18 @@ def validate_piece(value):
     return value
 
 
+def validate_topup(value):
+    _closed(value, TOPUP_KEYS)
+    if not all(isinstance(value[k], str) for k in TOPUP_KEYS):
+        raise PayloadRejected('bad_topup')
+    if not PIECE_ID.match(value['engine_id']) or not TOPUP_RUN_ID.match(value['report_run_id']):
+        raise PayloadRejected('bad_topup')
+    if not ISO_DATE.match(value['week_of']) or not value['request_id'].startswith(value['report_run_id'] + '@') \
+            or len(value['request_id']) > 260:
+        raise PayloadRejected('bad_topup')
+    return value
+
+
 def validate_mix_plan(value, root=None):
     """The mix plan's closed shape, checked against mix.json and the social records. Returns the
     plan as engine/mix.py builds it, with every concept's ready, text_only and concept_sha256
@@ -416,7 +434,7 @@ def validate_mock_files(value, mix):
 
 
 VALIDATORS = {GO_LIVE: validate_manifest, WEEK_PACKET: validate_packet, MAKE_PIECE: validate_piece,
-              MIX_PLAN: lambda value: value}
+              MIX_PLAN: lambda value: value, OFFDAY_TOPUP: validate_topup}
 
 
 def load_payload(path):
@@ -850,8 +868,11 @@ def reports_for(items, slots, now, root, activity):
     rev, out = revision(root), []
     for index, item in enumerate(items):
         holds = _holds(slots) if index == 0 else []
+        # A go-live of posts is approved only once a live report names this engine's Buffer channels
+        # (protocol 1.17.0), so the report that carries it names them too.
+        chans = buffer_channels.report_field() if MANIFEST_SCHEMA in (item.get('exact_payload') or '') else None
         out.append(build_report(staged_report_run_id(item['proposal_id'], item['payload_sha256']), 'live', now, rev,
-                                now, 'ready', _objectives(), activity, [item], [], holds))
+                                now, 'ready', _objectives(), activity, [item], [], holds, buffer_channels=chans))
     return out
 
 
@@ -1168,8 +1189,10 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                     deliver_mocks(cc, mix, version, files, now, root, summary)
             return _finish(summary, slots)
         VALIDATORS[event](payload)
-        if event == MAKE_PIECE:
-            # The maker that sent it does the making; the runner only records that it was asked.
+        if event in (MAKE_PIECE, OFFDAY_TOPUP):
+            # The maker does the making (a top-up fills the next free filler slots on its own schedule,
+            # behind every gate); the runner only records that it was asked. Each press carries its own
+            # request_id, so a repeat of the same press is the same record.
             summary['recorded'] = 1
             write_json(path, {'event': event, 'deliver': bool(deliver), 'recorded': 1, 'reports': []})
             return _finish(summary, slots)

@@ -17,7 +17,7 @@ from urllib.parse import urlsplit
 from engine import cc_loop
 from engine.cc_loop import (claim_golives, golive_ledger, new_subscribers, observation_line, runner_report,
                             workspace_report)
-from engine.control_center import (AUTONOMY_VERSION, SCHEMA_VERSION, amended_digest, build_report,
+from engine.control_center import (AUTONOMY_VERSION, CHANNELS_VERSION, SCHEMA_VERSION, amended_digest, build_report,
                                    golive_actions, golive_review, match_decisions, objective, proposal,
                                    report_digest, validate_report)
 from engine.core import read_json
@@ -61,7 +61,7 @@ def amended(item, words, amount=None, at=NOW):
 class CapableStandIn(StandIn):
     """The stand-in, also serving capabilities with the versions given (None: no such route)."""
 
-    def __init__(self, versions=(SCHEMA_VERSION, AUTONOMY_VERSION)):
+    def __init__(self, versions=(SCHEMA_VERSION, AUTONOMY_VERSION, CHANNELS_VERSION)):
         super().__init__()
         self.versions = None if versions is None else list(versions)
         stand, base = self, self.server.RequestHandlerClass

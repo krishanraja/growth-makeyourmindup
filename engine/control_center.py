@@ -39,6 +39,16 @@ ENGAGE_VERSION = '1.14.0'
 # credits share (engine/credits.py); raised only when a report carries one.
 CREDITS_VERSION = '1.16.0'
 CREDITS_FEATURE = 'credits'
+# 1.17.0 adds buffer_channels, post_metrics and offdays, top-level report fields (W2.8, W2.9). A go-live of
+# posts is approved only once a live report has said which Buffer channel id is this engine's for each
+# channel; raised only when a report carries one of them.
+CHANNELS_VERSION = '1.17.0'
+V17_FIELDS = ('buffer_channels', 'post_metrics', 'offdays')
+CHANNEL_NAME = re.compile(r'^[a-z][a-z0-9_-]{0,31}$')
+BUFFER_ID_TEXT = re.compile(r'^[A-Za-z0-9]{8,64}$')
+SLOT_TEXT = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$')
+CONCEPT_TEXT = re.compile(r'^[a-z0-9][a-z0-9-]{0,63}$')
+METRIC_KEYS = ('reach', 'sends', 'saves', 'likes', 'comments')
 ENGAGE_CHANNEL = 'engage'
 ENGAGE_KIND = 'copy_open'
 MAX_TAPS = 25
@@ -235,16 +245,26 @@ def schema_errors(value, schema, path='report'):
                 errors.append(path + ' must be a date-time with an offset')
     if _type_ok(value, 'number') and 'minimum' in schema and value < schema['minimum']:
         errors.append(path + ' is below ' + str(schema['minimum']))
+    if _type_ok(value, 'number') and 'maximum' in schema and value > schema['maximum']:
+        errors.append(path + ' is above ' + str(schema['maximum']))
     if isinstance(value, dict):
         props = schema.get('properties', {})
+        # A map (1.17.0 buffer_channels.allowed, offdays.days): its keys are named by propertyNames and
+        # every value is checked against additionalProperties. Any other object stays closed.
+        each = schema.get('additionalProperties') if isinstance(schema.get('additionalProperties'), dict) else None
+        names = (schema.get('propertyNames') or {}).get('pattern')
+        if 'maxProperties' in schema and len(value) > schema['maxProperties']:
+            errors.append(path + ' has more than ' + str(schema['maxProperties']) + ' entries')
         for key in schema.get('required', []):
             if key not in value:
                 errors.append(path + '.' + key + ' is required')
         for key, item in value.items():
-            if key not in props:
-                errors.append(path + '.' + key + ' is not a protocol field')
-            else:
+            if key in props:
                 errors += schema_errors(item, props[key], path + '.' + key)
+            elif each is not None and (names is None or _pattern_ok(names, key)):
+                errors += schema_errors(item, each, path + '.' + key)
+            else:
+                errors.append(path + '.' + key + ' is not a protocol field')
     if isinstance(value, list):
         if 'maxItems' in schema and len(value) > schema['maxItems']:
             errors.append(path + ' has more than ' + str(schema['maxItems']) + ' entries')
@@ -376,9 +396,11 @@ def copy_open_errors(item):
     return errors
 
 
-def report_version(proposals, credits_spent=None):
-    """1.16.0 when the report carries credits_spent, 1.14.0 when a proposal is an engagement task,
-    1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
+def report_version(proposals, credits_spent=None, v17=False):
+    """1.17.0 when the report carries buffer_channels, post_metrics or offdays, 1.16.0 when it carries
+    credits_spent, 1.14.0 when a proposal is an engagement task, 1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
+    if v17:
+        return CHANNELS_VERSION
     if credits_spent:
         return CREDITS_VERSION
     proposals = [item for item in proposals or [] if isinstance(item, dict)]
@@ -415,14 +437,40 @@ def proposal(proposal_id, title, why, kind, wall, close_event, channel=None, exa
     return item
 
 
+def v17_errors(report):
+    """The 1.17.0 rules the JSON schema cannot say (Control Center's parseBufferChannels, parsePostMetrics, parseOffdays)."""
+    errors = []
+    chans = report.get('buffer_channels')
+    if isinstance(chans, dict):
+        allowed = chans.get('allowed') if isinstance(chans.get('allowed'), dict) else {}
+        denied = chans.get('denied') if isinstance(chans.get('denied'), list) else []
+        if set(allowed.values()) & set(denied):
+            errors.append('buffer_channels lists an id as both allowed and denied')
+        if len(set(allowed.values())) != len(allowed):
+            errors.append('buffer_channels gives two channels the same id')
+    for item in report.get('post_metrics') or [] if isinstance(report.get('post_metrics'), list) else []:
+        for key in METRIC_KEYS:
+            value = item.get(key) if isinstance(item, dict) else None
+            if value is not None and (isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 10 ** 10):
+                errors.append('post_metrics ' + key + ' must be a whole number from 0 or null')
+    offdays = report.get('offdays')
+    if isinstance(offdays, dict):
+        for options in (offdays.get('days') or {}).values() if isinstance(offdays.get('days'), dict) else []:
+            for option in options if isinstance(options, list) else []:
+                if not isinstance(option, dict) or not CONCEPT_TEXT.match(str(option.get('concept_id', ''))):
+                    errors.append('offdays concept_id is not a slug Control Center takes')
+    return errors
+
+
 def validate_report(report):
     errors = schema_errors(report, load_schema())
     expected = report_version(report.get('proposals') if isinstance(report.get('proposals'), list) else [],
-                              report.get('credits_spent'))
+                              report.get('credits_spent'), any(k in report for k in V17_FIELDS))
     if report.get('schema_version') != expected:
         errors.append('schema_version must be ' + expected + ': raise it only for a field the report uses')
     if 'credits_spent' in report:
         errors += spent_errors(report['credits_spent'])
+    errors += v17_errors(report)
     if report.get('engine_id') != ENGINE_ID or report.get('product_slug') != PRODUCT_SLUG:
         errors.append('report must name ' + ENGINE_ID + ' and ' + PRODUCT_SLUG)
     for item in report.get('objectives', []):
@@ -453,11 +501,14 @@ def validate_report(report):
 
 
 def build_report(run_id, mode, observed_at, revision, captured_at, status, objectives=(),
-                 activity=(), proposals=(), events=(), holds=(), credits_spent=None):
+                 activity=(), proposals=(), events=(), holds=(), credits_spent=None, buffer_channels=None,
+                 post_metrics=None, offdays=None):
     proposals = list(proposals)
     credits_spent = list(credits_spent or [])
+    extra = {k: v for k, v in (('buffer_channels', buffer_channels), ('post_metrics', post_metrics or None),
+                               ('offdays', offdays)) if v is not None}
     report = whole({
-        'schema_version': report_version(proposals, credits_spent), 'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
+        'schema_version': report_version(proposals, credits_spent, bool(extra)), 'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
         'run_id': run_id, 'mode': mode, 'observed_at': iso(observed_at),
         'source': {'revision': clip(revision, 128), 'captured_at': iso(captured_at)},
         'status': status, 'objectives': list(objectives),
@@ -468,6 +519,8 @@ def build_report(run_id, mode, observed_at, revision, captured_at, status, objec
     if credits_spent:
         # Only when this run spent credits, so a report without it is unchanged.
         report['credits_spent'] = whole(credits_spent)
+    for key, value in extra.items():
+        report[key] = whole(value)
     report['payload_sha256'] = report_digest(report)
     return validate_report(report)
 
@@ -583,6 +636,7 @@ class Client:
         validate_report(report)
         if report['schema_version'] != SCHEMA_VERSION:
             feature = {ENGAGE_VERSION: ENGAGE_KIND, CREDITS_VERSION: CREDITS_FEATURE}.get(report['schema_version'])
+            # 1.17.0 names no feature flag: its version in capabilities is the whole check.
             self.confirm_version(report['schema_version'], feature)
         ours = report['payload_sha256']
         try:

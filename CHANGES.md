@@ -1,5 +1,18 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (late night): Growth speaks Control Center protocol 1.17.0 (R123). Control Center now
+  approves a go-live of posts only after a live report says which Buffer channel id is this engine's
+  for each channel (control-center #626).
+  - Each go-live's own report carries `buffer_channels` (the pinned table in
+    `engine/buffer_channels.py`, and the other ventures' ids as denied).
+  - The measure report carries `post_metrics`: each sent post's reach, sends, saves, likes and
+    comments as Buffer shows them, null when not shown, never zero.
+  - The daily report carries `offdays` (growth-offdays/1) when a mix plan is kept, for his
+    "Off-day posts: N ready" item.
+  - `growth-offday-topup` (his Clear on that item) is accepted and recorded; nothing is owed back, and
+    the maker fills free slots on its own schedule behind every gate.
+  - Still open: the ", c of d filler slots filled" suffix on the off-day clock line waits on a record
+    of which filler slots were filled.
 - 2026-10-29 (night): Growth ticks the publish board (R122). Krish: "Now
   that the growth repo takes care of more or less ALL posting, we need the
   growth repo to keep the publish board check boxes update with what it has

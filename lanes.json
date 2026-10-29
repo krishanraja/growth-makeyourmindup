@@ -113,7 +113,7 @@
       "id": "handoff",
       "lane": "L0_code",
       "workflow": "handoff.yml",
-      "trigger": "repository_dispatch from a session or PC automation that saved the drafts (growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan), and by hand (a dry run unless deliver is ticked)",
+      "trigger": "repository_dispatch from a session or PC automation that saved the drafts (growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan, growth-offday-topup), and by hand (a dry run unless deliver is ticked)",
       "may_write": [
         "a go-live, plan or check-in proposal to Control Center, built from Buffer drafts whose digest matches the dispatch's, with its readback"
       ],
