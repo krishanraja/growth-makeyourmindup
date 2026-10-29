@@ -58,6 +58,7 @@ from urllib.parse import urlsplit
 
 from engine.control_center import sha256_hex
 from engine.core import instant, locked, read_json, write_json
+from engine.run.buffer_api import signed_meta
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_CHECKED = '2026-10-27'
@@ -69,9 +70,12 @@ PLAY = re.compile(r'^P[1-9]$')
 ASSET_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9 ._-]*$')
 SAFE = re.compile(r'[^A-Za-z0-9._-]+')
 SLOT_KEYS = {'slot_id', 'channel', 'format', 'play', 'due_at', 'words', 'assets', 'link_placement',
-             'cta', 'forward_line', 'experiment_arm', 'publish_mode', 'buffer_draft_id', 'payload_sha256'}
+             'cta', 'forward_line', 'experiment_arm', 'publish_mode', 'buffer_draft_id', 'meta',
+             'buffer_channel_id', 'payload_sha256'}
 ASSET_KEYS = {'name', 'sha256', 'url', 'bytes'}
-DIGEST_KEYS = ('channel', 'format', 'words', 'link_placement', 'due_at', 'publish_mode')
+# meta: exactly what an edit sends besides the words and the time (buffer_api.signed_meta);
+# buffer_channel_id: the one Buffer account the draft is on. Both are filled from the draft.
+DIGEST_KEYS = ('channel', 'format', 'words', 'link_placement', 'due_at', 'publish_mode', 'meta', 'buffer_channel_id')
 # Channel id -> (Buffer service, native hosts). Hosts match exactly.
 CHANNELS = {
     'substack-notes': ('substack', ('substack.com', 'www.substack.com')),
@@ -169,6 +173,11 @@ def check_slot(slot):
     if slot['buffer_draft_id'] is not None and not (isinstance(slot['buffer_draft_id'], str)
                                                     and BUFFER_ID.match(slot['buffer_draft_id'])):
         raise ValueError(sid + ': buffer_draft_id must be a Buffer post id or null')
+    if slot['buffer_channel_id'] is not None and not (isinstance(slot['buffer_channel_id'], str)
+                                                      and BUFFER_ID.match(slot['buffer_channel_id'])):
+        raise ValueError(sid + ': buffer_channel_id must be a Buffer channel id or null')
+    if slot['meta'] is not None and not isinstance(slot['meta'], dict):
+        raise ValueError(sid + ': meta must be an object or null')
     if not isinstance(slot['assets'], list):
         raise ValueError(sid + ': assets must be a list')
     for asset in slot['assets']:
@@ -293,6 +302,21 @@ def resolve_channel(slot, channels):
     return channel
 
 
+def account_hold(channel, post):
+    """'wrong_account' unless the post is on this engine's own Buffer channel for
+    the slot's channel: the service and BUFFER_NAME, read from the post itself.
+    The organisation is shared with other ventures, so a service alone never pins it."""
+    if not isinstance(post, dict) or channel not in CHANNELS:
+        return 'wrong_account'
+    try:
+        found = resolve_channel({'channel': channel}, [post.get('channel')])
+    except ValueError:
+        return 'wrong_account'
+    if found['id'] != post.get('channelId'):
+        return 'wrong_account'
+    return None
+
+
 def target_errors(slot, target, channel_id):
     """F01 groundwork: an edit acts only on the intended, still-draft post."""
     target = _post(target)
@@ -305,6 +329,8 @@ def target_errors(slot, target, channel_id):
         out.append('edit target is on another service')
     if target.get('channelId') != channel_id:
         out.append('edit target is on another Buffer channel')
+    if slot['buffer_channel_id'] is not None and target.get('channelId') != slot['buffer_channel_id']:
+        out.append('wrong_account: edit target is not on the signed Buffer channel')
     if target.get('status') != 'draft':
         out.append('edit target is not a draft')
     if target.get('via') == 'network':
@@ -392,6 +418,8 @@ def call_arguments(slot, channel, now=None, target=None):
     if not isinstance(channel, dict) or channel.get('service') != service \
             or not (isinstance(channel.get('id'), str) and BUFFER_ID.match(channel['id'])):
         raise ValueError('Buffer channel must be the live ' + service + ' entry from list_channels')
+    if slot['buffer_channel_id'] is not None and channel['id'] != slot['buffer_channel_id']:
+        raise ValueError('wrong_account: the live channel is not the signed Buffer channel')
     draft = is_draft(slot)
     if not draft and instant(slot['due_at']) <= instant(now):
         raise ValueError('due_at is not in the future')
@@ -581,6 +609,12 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
         target = _post(targets.get(sid)) if slot['buffer_draft_id'] else None
         try:
             channel = resolve_channel(slot, channels)
+            if slot['buffer_draft_id'] and slot['meta'] is not None and not target_errors(slot, target, channel['id']):
+                sources = [a.get('source') for a in target.get('assets') or [] if isinstance(a, dict)]
+                if sources != [a['url'] for a in slot['assets']] or signed_meta(
+                        target, [a['sha256'] for a in slot['assets']]) != slot['meta']:
+                    hold('draft_differs_from_signed')
+                    continue
             if slot['buffer_draft_id'] and not target_errors(slot, target, channel['id']) \
                     and stored_link_preview(slot, target):
                 # F03: the saved preview is cleared only through the mutation route.

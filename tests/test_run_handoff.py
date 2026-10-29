@@ -21,13 +21,15 @@ except ImportError:  # run as tests.test_run_handoff
     from tests.test_run_autorelease import BufferStandIn, fetch, sha, staged_report
 
 from engine.control_center import proposal
-from engine.run import autorelease, handoff
+from engine.run import autorelease, buffer_api, handoff
 from engine.run.autorelease import line_digest, parse_manifest, staged_report_run_id
 from engine.run.handoff import GO_LIVE, MAKE_PIECE, PAYLOAD_CAP, WEEK_PACKET
+from engine.run.release import BUFFER_NAME, CHANNELS
 
 ROOT = Path(__file__).resolve().parents[1]
 NOW = '2026-11-03T15:00:00Z'
 DUE = '2026-11-04T14:00:00Z'
+RELEASE_NOW = '2026-11-04T13:00:00Z'  # an hour before DUE: release schedules only this near
 RUN = 'makeyourmindup:2026-11-03:piece'
 GOLIVE = 'makeyourmindup:golive:2026-11-03:piece'
 PLAN = 'makeyourmindup:plan:w45-w52'
@@ -48,10 +50,12 @@ METADATA = {'threads': {'__typename': 'ThreadsPostMetadata', 'type': 'post', 'th
                           'geolocation': None}}
 
 
-def routine_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=DUE, fmt='text', review=False):
+def routine_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=DUE, fmt='text', review=False,
+                 meta=None, channel_id=CH):
     """One slot as a routine dispatches it: ids, codes, a time and the spec's digest."""
     digest = line_digest({'channel': channel, 'format': fmt, 'words': words, 'link_placement': None,
-                          'due_at': due, 'publish_mode': mode, 'assets': list(assets)})
+                          'due_at': due, 'publish_mode': mode, 'assets': list(assets), 'meta': meta,
+                          'buffer_channel_id': channel_id})
     return {'slot': slot_id, 'channel': channel, 'buffer_draft_id': draft, 'payload_sha256': digest,
             'per_item_review': review, 'format': fmt, 'due_at': due, 'link_placement': None, 'publish_mode': mode}
 
@@ -67,20 +71,28 @@ class Fixture:
         self.draft(P_THREADS, 'threads', [self.image])
         self.draft(P_X, 'x')
         self.draft(P_LINKEDIN, 'linkedin')
-        self.slots = [routine_slot('threads-1', 'threads', P_THREADS, WORDS[P_THREADS], [sha(IMAGE)]),
-                      routine_slot('x-1', 'x', P_X, WORDS[P_X]),
-                      routine_slot('linkedin-1', 'linkedin', P_LINKEDIN, WORDS[P_LINKEDIN], mode='krish_click', due=None)]
+        self.slots = [self.routine('threads-1', 'threads', P_THREADS, [sha(IMAGE)]),
+                      self.routine('x-1', 'x', P_X),
+                      self.routine('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None)]
         self.plan = proposal(PLAN, 'Synthetic standing plan', 'Synthetic why', 'advice', 'strategy', 'reviewed',
                              exact_payload='Synthetic standing plan words.', stage='plan')
         report = staged_report(self.plan)
         cc.reports[report['run_id']] = report
         cc.decisions = [self.decision(self.plan, '2026-11-01T12:00:00Z')]
 
-    def draft(self, post_id, channel, assets=(), words=None, status='draft'):
+    def draft(self, post_id, channel, assets=(), words=None, status='draft', metadata=None):
         self.buf.posts[post_id] = {'id': post_id, 'status': status, 'dueAt': None, 'schedulingType': 'automatic',
                                    'via': 'api', 'text': words or WORDS[post_id], 'channelId': CH,
+                                   'channel': {'id': CH, 'name': BUFFER_NAME[channel], 'service': CHANNELS[channel][0],
+                                               'isDisconnected': False, 'isLocked': False},
                                    'channelService': SERVICE[channel], 'assets': list(assets),
-                                   'metadata': METADATA[channel]}
+                                   'metadata': metadata if metadata is not None else METADATA[channel]}
+
+    def routine(self, slot_id, channel, post_id, assets=(), words=None, **extra):
+        """The routine's slot for a saved draft: its digest covers the draft's meta and channel."""
+        meta = buffer_api.signed_meta(self.buf.posts[post_id], list(assets))
+        return routine_slot(slot_id, channel, post_id, words or self.buf.posts[post_id]['text'], assets,
+                            meta=meta, **extra)
 
     def payload(self, **extra):
         return dict({'run_id': RUN, 'slots': self.slots}, **extra)
@@ -143,13 +155,14 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(lines['threads-1']['assets'], [sha(IMAGE)])
         self.assertEqual(json.loads(item['exact_payload'])['run_id'], RUN)
         self.assertIn('Yes schedules these 2 exact posts in Buffer', item['why'])
+        self.assertIn('A yes schedules each post about an hour before it is due. Until then, No stops it.', item['why'])
         self.assertIn('Until 29 November 2026 you see every batch', item['why'])
         self.assertIn('LinkedIn', item['why'])
         # Nothing was scheduled by the handoff.
         self.assertEqual(self.buf.mutations(), [])
         # Krish approves; autorelease finds that exact go-live and schedules it once.
         self.cc.decisions.append(self.fix.decision(item, '2026-11-03T14:30:00Z'))
-        released, code = autorelease.autorelease(self.cc.client(), self.buf.client(), NOW, True, fetch)
+        released, code = autorelease.autorelease(self.cc.client(), self.buf.client(), RELEASE_NOW, True, fetch)
         self.assertEqual(code, 0, released)
         self.assertEqual(released['slots'], {'krish_click': 1, 'scheduled': 2})
         self.assertEqual(self.buf.posts[P_X]['status'], 'scheduled')
@@ -182,7 +195,7 @@ class HandoffTests(unittest.TestCase):
         self.assertNotIn('x-1', parse_manifest(self.proposals()[0]['exact_payload']))
 
     def test_linkedin_always_goes_in_as_krish_click(self):
-        self.fix.slots[2] = routine_slot('linkedin-1', 'linkedin', P_LINKEDIN, WORDS[P_LINKEDIN], mode='engine')
+        self.fix.slots[2] = self.fix.routine('linkedin-1', 'linkedin', P_LINKEDIN, mode='engine')
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['slots'], {'linkedin_to_krish_click': 1, 'proposed': 3})
@@ -196,7 +209,7 @@ class HandoffTests(unittest.TestCase):
         for index in range(30):
             post_id = 'ffffffffffffffffffffff' + '%02d' % index
             self.fix.draft(post_id, 'x', words=long_words)
-            slots.append(routine_slot('x-%02d' % index, 'x', post_id, long_words))
+            slots.append(self.fix.routine('x-%02d' % index, 'x', post_id))
         summary, code = self.run_handoff({'run_id': RUN, 'slots': slots})
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['slots'], {'proposed': 30})
@@ -214,8 +227,7 @@ class HandoffTests(unittest.TestCase):
 
     def test_a_new_kind_of_post_is_its_own_go_live(self):
         self.fix.draft(P_CAROUSEL, 'instagram', [self.fix.image])
-        self.fix.slots.append(routine_slot('ig-1', 'instagram', P_CAROUSEL, WORDS[P_CAROUSEL], [sha(IMAGE)],
-                                           fmt='carousel', review=False))
+        self.fix.slots.append(self.fix.routine('ig-1', 'instagram', P_CAROUSEL, [sha(IMAGE)], fmt='carousel'))
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['proposals'], {'go_live': 2})
@@ -233,7 +245,7 @@ class HandoffTests(unittest.TestCase):
                 {'show_before_post_until': '2026-11-01', 'derivative_formats': [{'class': 'quote-card', 'formats': ['quote-card']}]}), encoding='utf-8')
             summary, _ = self.run_handoff(root=root)
         self.assertEqual(summary['proposals'], {'go_live': 3})
-        self.assertTrue(all('Until' not in p['why'] for p in self.proposals()))
+        self.assertTrue(all('you see every batch' not in p['why'] for p in self.proposals()))
 
     def test_routine_per_item_review_is_honoured(self):
         self.fix.slots[1]['per_item_review'] = True
@@ -326,6 +338,84 @@ class HandoffTests(unittest.TestCase):
                 self.assertEqual(growth.main(['run', 'handoff', '--event', GO_LIVE, '--payload', str(path)]), 1)
         self.assertEqual(json.loads(out.getvalue())['error'], 'buffer_key_missing')
 
+    # B1: what goes out besides the words is signed and shown --------------------------
+
+    def instagram_draft(self, first_comment='Synthetic first comment for the post.', tags=None):
+        image = dict(self.fix.image, image={'altText': 'Synthetic alt text',
+                                            'userTags': tags or [{'handle': 'synthetic.someone', 'x': 0.5, 'y': 0.25}]})
+        self.fix.draft(P_CAROUSEL, 'instagram', [image], metadata=dict(METADATA['instagram'], type='post',
+                                                                        firstComment=first_comment))
+        self.fix.slots.append(self.fix.routine('ig-1', 'instagram', P_CAROUSEL, [sha(IMAGE)]))
+
+    def test_the_why_names_what_goes_out_with_the_words(self):
+        self.instagram_draft()
+        summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        [item] = self.proposals()
+        self.assertIn('Instagram post ig-1: first comment "Synthetic first comment for the post."', item['why'])
+        self.assertIn('tags @synthetic.someone', item['why'])
+        line = parse_manifest(item['exact_payload'])['ig-1']
+        self.assertEqual(line['meta']['metadata']['instagram']['firstComment'], 'Synthetic first comment for the post.')
+        self.assertLessEqual(len(item['why']), handoff.WHY_CAP)
+
+    def test_a_metadata_change_after_the_routine_holds(self):
+        self.instagram_draft()
+        self.buf.posts[P_CAROUSEL]['metadata']['firstComment'] = 'Synthetic comment changed after lint.'
+        summary, _ = self.run_handoff()
+        self.assertEqual(summary['holds'], {'handoff_digest_mismatch': 1})
+        self.assertNotIn('ig-1', parse_manifest(self.proposals()[0]['exact_payload']))
+
+    def test_details_that_cannot_be_shown_whole_are_never_proposed(self):
+        self.instagram_draft(first_comment='Synthetic long first comment. ' * 40)
+        summary, _ = self.run_handoff()
+        self.assertEqual(summary['holds'], {'details_too_long': 1})
+        self.assertTrue(all(len(p['why']) <= handoff.WHY_CAP for p in self.proposals()))
+
+    def test_the_spec_digest_equals_the_handoff_digest(self):
+        # The routine fills meta and the channel id from its own readback (run drafts); the
+        # runner rebuilds the same line from the draft and must reach the same digest.
+        from engine.run import spec as specmod
+        self.instagram_draft()
+        post = self.buf.posts[P_CAROUSEL]
+        slot = {'slot_id': 'ig-1', 'channel': 'instagram', 'format': 'text', 'play': None, 'due_at': DUE,
+                'words': post['text'], 'assets': [{'name': 'img.png', 'sha256': sha(IMAGE), 'url': self.fix.image['source'],
+                                                   'bytes': len(IMAGE)}], 'link_placement': None, 'cta': False,
+                'forward_line': 'Synthetic.', 'experiment_arm': None, 'publish_mode': 'engine',
+                'buffer_draft_id': None, 'meta': None, 'buffer_channel_id': None, 'payload_sha256': None}
+        filled = specmod.fill_drafts({'slots': [slot]}, {'ig-1': {'post': post}})['slots'][0]
+        self.assertEqual((filled['buffer_draft_id'], filled['buffer_channel_id']), (P_CAROUSEL, CH))
+        line, code = handoff.rebuild(self.buf.client(), dict(self.fix.slots[-1], slot='ig-1'), fetch, NOW)
+        self.assertIsNone(code)
+        self.assertEqual(filled['payload_sha256'], line['payload_sha256'])
+        # A draft on another account is refused at fill time too.
+        post['channel']['name'] = 'synthetic-other-venture'
+        with self.assertRaisesRegex(ValueError, 'wrong_account'):
+            specmod.fill_drafts({'slots': [slot]}, {'ig-1': post})
+
+    # B2 ---------------------------------------------------------------------------------
+
+    def test_a_draft_on_another_account_is_never_proposed(self):
+        self.buf.posts[P_X]['channel']['name'] = 'synthetic-other-venture'
+        summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'wrong_account': 1})
+        self.assertNotIn('x-1', parse_manifest(self.proposals()[0]['exact_payload']))
+
+    # S5 and the run window -----------------------------------------------------------------
+
+    def test_an_impossible_due_date_holds_that_slot_in_the_handoff(self):
+        self.fix.slots[1] = self.fix.routine('x-1', 'x', P_X, due='2026-02-30T14:00:00Z')
+        summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'bad_due_at': 1})
+        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 2})
+
+    def test_a_due_outside_the_run_window_holds(self):
+        # The run 2026-11-03:piece ends at New York midnight on 11 November.
+        self.fix.slots[1] = self.fix.routine('x-1', 'x', P_X, due='2026-11-20T14:00:00Z')
+        summary, _ = self.run_handoff()
+        self.assertEqual(summary['holds'], {'due_outside_run_window': 1})
+
 
 class WorkflowTests(unittest.TestCase):
     def setUp(self):
@@ -353,12 +443,33 @@ class WorkflowTests(unittest.TestCase):
         blocks = self.run_blocks()
         self.assertGreaterEqual(len(blocks), 2)
         for block in blocks:
-            body = '\n'.join(block)
-            self.assertNotIn('${{', body)
-            self.assertNotIn('client_payload', body)
-        payload_lines = [ln.strip() for ln in self.text.splitlines() if 'github.event.client_payload' in ln or 'inputs.payload' in ln]
-        self.assertTrue(payload_lines)
-        self.assertTrue(all(ln.startswith('HANDOFF_PAYLOAD:') for ln in payload_lines), payload_lines)
+            self.assertNotIn('${{', '\n'.join(block))
+
+    def test_no_step_env_carries_the_payload(self):
+        # S2: GitHub prints env values in the log header, so the payload is read in Python
+        # from the event file and written to RUNNER_TEMP, never passed through env.
+        for needle in ('github.event.client_payload', 'inputs.payload', 'toJson(github.event', 'HANDOFF_PAYLOAD'):
+            self.assertNotIn(needle, self.text)
+        self.assertIn("os.environ['GITHUB_EVENT_PATH']", self.text)
+        self.assertIn("event.get('client_payload')", self.text)
+
+    def test_the_payload_step_writes_the_event_payload(self):
+        import os
+        import subprocess
+        import sys
+        block = '\n'.join(self.run_blocks()[0])
+        script = block.split("<<'PY'", 1)[1].rsplit('PY', 1)[0]
+        script = '\n'.join(line[10:] for line in script.splitlines())
+        payload = {'run_id': RUN, 'slots': []}
+        with tempfile.TemporaryDirectory() as folder:
+            event = Path(folder) / 'event.json'
+            for name, body in (('repository_dispatch', {'action': GO_LIVE, 'client_payload': payload}),
+                               ('workflow_dispatch', {'inputs': {'payload': json.dumps(payload)}})):
+                event.write_text(json.dumps(body), encoding='utf-8')
+                env = dict(os.environ, GITHUB_EVENT_PATH=str(event), GITHUB_EVENT_NAME=name, RUNNER_TEMP=folder)
+                subprocess.run([sys.executable, '-c', script], env=env, check=True)
+                written = json.loads((Path(folder) / 'handoff-payload.json').read_text(encoding='utf-8'))
+                self.assertEqual(written, payload, name)
 
     def test_triggers_secrets_and_limits(self):
         self.assertEqual(set(re.findall(r'secrets\.([A-Za-z0-9_]+)', self.text)),

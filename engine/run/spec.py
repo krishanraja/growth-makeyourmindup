@@ -19,7 +19,10 @@ ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = ROOT / 'specs' / 'schema' / 'run-spec.schema.json'
 RUNS = Path('.scratch') / 'runs'
 STAGES = ('drafted', 'linted', 'reviewed', 'signed', 'queued', 'live', 'measured', 'verdict')
-DIGESTED = ('channel', 'format', 'words', 'assets', 'link_placement', 'due_at', 'publish_mode')
+# meta and buffer_channel_id come from the saved Buffer draft (run drafts); both are
+# null until then. Mirrors engine/run/release.py DIGEST_KEYS.
+DIGESTED = ('channel', 'format', 'words', 'assets', 'link_placement', 'due_at', 'publish_mode', 'meta',
+            'buffer_channel_id')
 SHA = re.compile(r'^[0-9a-f]{64}$')
 RUN_ID = re.compile(r'^[A-Za-z0-9](?:[A-Za-z0-9:.-]{0,118}[A-Za-z0-9])?$')
 LENS = re.compile(r'^[a-z0-9][a-z0-9-]*$')
@@ -38,7 +41,7 @@ def payload(slot):
     return {'channel': slot['channel'], 'format': slot['format'], 'words': slot['words'],
             'assets': [asset['sha256'] for asset in slot['assets']],
             'link_placement': slot['link_placement'], 'due_at': slot['due_at'],
-            'publish_mode': slot['publish_mode']}
+            'publish_mode': slot['publish_mode'], 'meta': slot['meta'], 'buffer_channel_id': slot['buffer_channel_id']}
 
 
 def payload_sha256(slot):
@@ -332,8 +335,8 @@ def _same(value, key, expected):
 def amended_errors(slot, amended, window=None):
     if not isinstance(amended, dict) or set(amended) != set(DIGESTED):
         return 'an amended payload carries exactly ' + ', '.join(DIGESTED)
-    if any(amended[key] != slot[key] for key in ('channel', 'format', 'publish_mode')):
-        return 'an amendment cannot change channel, format or publish_mode'
+    if any(amended[key] != slot[key] for key in ('channel', 'format', 'publish_mode', 'meta', 'buffer_channel_id')):
+        return 'an amendment cannot change channel, format, publish_mode, meta or buffer_channel_id'
     if not isinstance(amended['words'], str) or not amended['words'].strip():
         return 'amended words are empty'
     if not isinstance(amended['assets'], list) or not all(isinstance(x, str) and SHA.match(x) for x in amended['assets']):
@@ -504,6 +507,43 @@ def status(spec, runs=None, root=ROOT):
                       for slot in spec['slots']]}
 
 
+# The saved Buffer drafts ------------------------------------------------------
+
+def fill_drafts(spec, posts):
+    """A copy with each slot's buffer_draft_id, buffer_channel_id and meta read from
+    its saved draft, and every payload_sha256 recomputed. posts maps slot_id to a
+    get_post readback. The draft must be on this engine's own Buffer account, in
+    the slot's exact words, with the slot's asset urls in order; else ValueError."""
+    from .buffer_api import signed_meta
+    from .release import CHANNELS, account_hold
+    spec = json.loads(json.dumps(spec))
+    slots = {slot['slot_id']: slot for slot in spec['slots']}
+    for sid, post in sorted(posts.items()):
+        slot = slots.get(sid)
+        if slot is None:
+            raise ValueError(sid + ': no such slot')
+        post = post.get('post') if isinstance(post, dict) and isinstance(post.get('post'), dict) else post
+        if not isinstance(post, dict) or not isinstance(post.get('id'), str):
+            raise ValueError(sid + ': readback is not a Buffer post')
+        if slot.get('buffer_draft_id') not in (None, post['id']):
+            raise ValueError(sid + ': readback is another draft than buffer_draft_id')
+        if slot['channel'] not in CHANNELS or post.get('channelService') != CHANNELS[slot['channel']][0]:
+            raise ValueError(sid + ': draft is on another service')
+        if account_hold(slot['channel'], post):
+            raise ValueError(sid + ': wrong_account: the draft is not on this engine\'s Buffer channel')
+        if post.get('status') != 'draft' or post.get('text') != slot['words']:
+            raise ValueError(sid + ': expected a draft in the slot\'s exact words')
+        sources = [a.get('source') if isinstance(a, dict) else None for a in post.get('assets') or []]
+        if sources != [asset['url'] for asset in slot['assets']]:
+            raise ValueError(sid + ': draft assets are not the slot\'s asset urls in order')
+        slot['buffer_draft_id'] = post['id']
+        slot['buffer_channel_id'] = post['channelId']
+        slot['meta'] = signed_meta(post, [asset['sha256'] for asset in slot['assets']])
+    for slot in spec['slots']:
+        slot['payload_sha256'] = payload_sha256(slot)
+    return spec
+
+
 # Command line ---------------------------------------------------------------
 
 def main(argv=None):
@@ -515,6 +555,9 @@ def main(argv=None):
     p.add_argument('--run-id')
     p.add_argument('--from', dest='source', help='a draft spec: fill week_target and every payload_sha256')
     p.add_argument('--out')
+    p = sub.add_parser('drafts', help="fill each slot's Buffer draft id, channel id and meta from get_post readbacks")
+    p.add_argument('spec')
+    p.add_argument('--posts', required=True, help='a folder of <slot_id>.json get_post readbacks')
     for name in ('lint', 'status'):
         p = sub.add_parser(name)
         p.add_argument('spec')
@@ -536,6 +579,12 @@ def main(argv=None):
             print('spec written locally: ' + args.out + '; no external write')
             return 0
         spec = read_json(args.spec)
+        if args.action == 'drafts':
+            folder = Path(args.posts)
+            posts = {path.stem: read_json(path) for path in sorted(folder.glob('*.json'))}
+            write_json(args.spec, fill_drafts(spec, posts))
+            print('spec rewritten locally with ' + str(len(posts)) + ' drafts: run lint --record again')
+            return 0
         if args.action == 'status':
             print(json.dumps(status(spec, args.runs_dir), indent=2))
             return 0

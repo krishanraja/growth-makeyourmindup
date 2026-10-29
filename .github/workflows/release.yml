@@ -1,7 +1,9 @@
 name: release
 # Lane L0. Every 30 minutes the engine reads Krish's signed go-lives from
 # Control Center and schedules in Buffer exactly what he signed, once, at the
-# signed time. No model, no session, no PC. It never publishes immediately and
+# signed time, each draft about an hour before it is due (until then a No
+# stops it; one still scheduled after a No fails this run, so GitHub emails
+# him). No model, no session, no PC. It never publishes immediately and
 # never removes a post; LinkedIn stays his own click. This repository is
 # public, so the log carries only counts and reason codes: no words, URLs,
 # ids or keys, and nothing is uploaded.

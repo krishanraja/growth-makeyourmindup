@@ -142,7 +142,8 @@ class RunSpecLintTests(SyntheticLadder):
         first = spec['slots'][0]
         body = {'channel': first['channel'], 'format': first['format'], 'words': first['words'],
                 'assets': [a['sha256'] for a in first['assets']], 'link_placement': first['link_placement'],
-                'due_at': first['due_at'], 'publish_mode': first['publish_mode']}
+                'due_at': first['due_at'], 'publish_mode': first['publish_mode'], 'meta': first['meta'],
+                'buffer_channel_id': first['buffer_channel_id']}
         expected = hashlib.sha256(json.dumps(body, sort_keys=True, separators=(',', ':'),
                                              ensure_ascii=False).encode('utf-8')).hexdigest()
         self.assertEqual(payload_sha256(first), expected)
@@ -155,7 +156,9 @@ class RunSpecLintTests(SyntheticLadder):
             changed = dict(first, **{key: value})
             self.assertEqual(payload_sha256(changed), before, key + ' is not part of the signed payload')
         for key, value in (('words', first['words'] + ' One more line.'), ('due_at', '2026-11-02T10:30:00-05:00'),
-                           ('link_placement', 'first_reply'), ('assets', [dict(first['assets'][0], sha256='a' * 64)])):
+                           ('link_placement', 'first_reply'), ('assets', [dict(first['assets'][0], sha256='a' * 64)]),
+                           ('meta', {'metadata': {'threads': {'topic': 'TEST FIXTURE ONLY'}}}),
+                           ('buffer_channel_id', 'c' * 24)):
             changed = copy.deepcopy(spec)
             changed['slots'][0][key] = value
             self.assertNotEqual(payload_sha256(changed['slots'][0]), before, key)
@@ -459,7 +462,8 @@ class RunStatusTests(SyntheticLadder):
             self.put('decision.json', dict(decision, **change))
             self.assertEqual(self.stage()[0], 'reviewed', change)
         # Krish amends: his version is what is signed, and only its digest may be queued.
-        amended = {k: self.slot[k] for k in ('channel', 'format', 'link_placement', 'due_at', 'publish_mode')}
+        amended = {k: self.slot[k] for k in ('channel', 'format', 'link_placement', 'due_at', 'publish_mode', 'meta',
+                                             'buffer_channel_id')}
         amended.update(words='TEST FIXTURE ONLY. Krish reworded this line.', assets=[])
         self.signed(digest=sha256_hex(amended), amended=amended)
         self.assertEqual(self.stage()[0], 'signed')

@@ -317,6 +317,20 @@
             ],
             "minLength": 1
           },
+          "meta": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "buffer_channel_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "pattern": "^[a-f0-9]{24}$"
+          },
           "payload_sha256": {
             "type": "string",
             "minLength": 1,
@@ -337,6 +351,8 @@
           "experiment_arm",
           "publish_mode",
           "buffer_draft_id",
+          "meta",
+          "buffer_channel_id",
           "payload_sha256"
         ],
         "additionalProperties": false

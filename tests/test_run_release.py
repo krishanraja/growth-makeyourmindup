@@ -139,6 +139,19 @@ class ReleaseTests(unittest.TestCase):
         self.assertNotIn('ig-story-1', self.by_slot(result))
         self.assertEqual(self.holds(result)['ig-story-1'], 'edit_would_drop_alt_text_or_ai_label')
 
+    def test_a_signed_account_or_meta_that_differs_holds(self):
+        # B1 and B2 on the session path: the signed Buffer channel and the signed meta bind too.
+        self.assertIn('x-1', self.by_slot(self.plan()))
+        notes = self.spec['slots'][0]
+        notes['buffer_channel_id'] = 'cccccccccccccccccccccc99'
+        resign(notes, self.decision, self.spec)
+        x = [s for s in self.spec['slots'] if s['slot_id'] == 'x-1'][0]
+        x['meta'] = {'metadata': {'twitter': {'isAiGenerated': True}}}
+        resign(x, self.decision, self.spec)
+        holds = self.holds(self.plan())
+        self.assertIn('wrong_account', holds[notes['slot_id']])
+        self.assertEqual(holds['x-1'], 'draft_differs_from_signed')
+
     def test_tiktok_photo_never_sets_ai_flag(self):
         slot = self.slots['tiktok-photo-1']
         args = self.by_slot(self.plan())['tiktok-photo-1']['arguments']

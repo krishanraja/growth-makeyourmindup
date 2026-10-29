@@ -7,8 +7,9 @@ name: handoff
 # never schedules, publishes, sends or spends; release.yml acts only after he
 # approves. This repository is public, so the log carries only counts and
 # reason codes: no words, URLs, ids or keys, and nothing is uploaded. The
-# client_payload reaches the job only through an environment variable that
-# Python writes to a file; it is never placed in a shell line.
+# client_payload is read in Python from the event file ($GITHUB_EVENT_PATH)
+# and written to $RUNNER_TEMP. It is never placed in a step's env (GitHub
+# prints env values in the log header) and never in a shell line.
 on:
   repository_dispatch:
     types: [growth-go-live-manifest, growth-week-packet, growth-make-piece]
@@ -51,14 +52,19 @@ jobs:
         with:
           python-version: '3.12'
       - name: Write the payload to a file
-        env:
-          HANDOFF_PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJson(github.event.client_payload) || inputs.payload }}
         run: |
           python - <<'PY'
+          import json
           import os
+          with open(os.environ['GITHUB_EVENT_PATH'], encoding='utf-8') as handle:
+              event = json.load(handle)
+          if os.environ.get('GITHUB_EVENT_NAME') == 'repository_dispatch':
+              text = json.dumps(event.get('client_payload'))
+          else:
+              text = (event.get('inputs') or {}).get('payload') or ''
           path = os.path.join(os.environ['RUNNER_TEMP'], 'handoff-payload.json')
           with open(path, 'w', encoding='utf-8') as handle:
-              handle.write(os.environ.get('HANDOFF_PAYLOAD', ''))
+              handle.write(text)
           PY
       - name: Propose to Control Center
         env:

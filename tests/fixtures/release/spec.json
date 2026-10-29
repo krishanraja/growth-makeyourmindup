@@ -13,11 +13,31 @@
         "revision": "approved v1 (synthetic)",
         "approval_scope": "TEST FIXTURE ONLY",
         "files": [
-          {"name": "frame-1.png", "bytes": 34, "sha256": "08ef523a2094c191daab36e94b658c49e05eb90a402627b6daa616d1af0eaca7"},
-          {"name": "frame-2.png", "bytes": 34, "sha256": "37a2a0888af44a4e67e73d5e149aec5d3272aaa6c21010498a6371adfa522c30"},
-          {"name": "frame-3.png", "bytes": 34, "sha256": "6de93a159e389350409d36cf61316b1e602673d88c4f26a238bd474127204739"},
-          {"name": "frame-4.png", "bytes": 34, "sha256": "5a806107f736ece03fb46dba93eb3722bfa5b3a65fc7c44519b8c8fb65858c43"},
-          {"name": "frame-5.png", "bytes": 34, "sha256": "2af8201f46f1f62223c55124101d104f206c416af92f1602b40b7d422b48a787"}
+          {
+            "name": "frame-1.png",
+            "bytes": 34,
+            "sha256": "08ef523a2094c191daab36e94b658c49e05eb90a402627b6daa616d1af0eaca7"
+          },
+          {
+            "name": "frame-2.png",
+            "bytes": 34,
+            "sha256": "37a2a0888af44a4e67e73d5e149aec5d3272aaa6c21010498a6371adfa522c30"
+          },
+          {
+            "name": "frame-3.png",
+            "bytes": 34,
+            "sha256": "6de93a159e389350409d36cf61316b1e602673d88c4f26a238bd474127204739"
+          },
+          {
+            "name": "frame-4.png",
+            "bytes": 34,
+            "sha256": "5a806107f736ece03fb46dba93eb3722bfa5b3a65fc7c44519b8c8fb65858c43"
+          },
+          {
+            "name": "frame-5.png",
+            "bytes": 34,
+            "sha256": "2af8201f46f1f62223c55124101d104f206c416af92f1602b40b7d422b48a787"
+          }
         ]
       }
     }
@@ -37,7 +57,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "de7c5259261e54246e78e90b766adb6c10befdd5722c20d228cfecd30d126f70"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "d712d36776e43e9fc3cd256e1f03bb9e5c76da2e50e6d4461ca3fa97543ebf49"
     },
     {
       "slot_id": "threads-1",
@@ -53,7 +75,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "103812534e3dc28c243f09cee979d363ab3eafddb96527ecea9bf451ca6a5dda"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "735b8a23358d0451be0fa336f477bf7b122e22feeb6c67609aa081f19efe1078"
     },
     {
       "slot_id": "ig-story-1",
@@ -76,7 +100,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa01",
-      "payload_sha256": "cfda3222ea9865b8e85f8a002d1d4dd4b792b1734f059d076b2a66472a5cb9b6"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "3994c2f4abf547cfa448e28ae10ab36830488d6796ec2f3753e6b9ef11e5d8b0"
     },
     {
       "slot_id": "tiktok-photo-1",
@@ -105,7 +131,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "988445b7e60754ff6ed965b2cce65c8d400fa389b8b36775df3e2ee6241c1121"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "d06441e9a8d7ad4476f598242c537bde56cc899f7cf6fbd894e1bb34ad8c30a4"
     },
     {
       "slot_id": "linkedin-1",
@@ -128,7 +156,9 @@
       "experiment_arm": null,
       "publish_mode": "krish_click",
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa02",
-      "payload_sha256": "3a4d9502a0dbccf158a646cc1b8209a98a927c225ba56ed5216fa7ff89396db7"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "35c7ad41532d5575474feb5e25be071bb2698060fd4be12c0d58b041b20bad78"
     },
     {
       "slot_id": "x-1",
@@ -151,12 +181,14 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa03",
-      "payload_sha256": "bd73fb76298ef6e30abaee69e8b0329ac7116d61ccbae196cc6b6ae272e1a72a"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "4064e88b685698ecf969342f3ba1cc4109c5dce45d7a293bfee6a68748082736"
     }
   ],
   "signature": {
     "go_live_proposal_id": "synthetic-go-live-1",
-    "decision_digest": "8a4d2a84ef957217d075910f32e3c09041603bac5381970707233972f843afdf",
+    "decision_digest": "50f5d2110b3fe27ce99e05649335928dea75ed675d6df1c7dae05047f380c841",
     "signed_at": "2026-11-01T10:00:00-05:00"
   }
 }
