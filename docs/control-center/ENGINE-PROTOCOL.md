@@ -19,7 +19,7 @@ Control Center only ever adds within 1.x: a new minor version adds fields, never
 
 - **Accept any 1.x** in what Control Center serves (the directive, capabilities, decisions), and ignore a field you do not know. Never require an exact version back.
 - **Send the version you speak.** `capabilities.schema_versions` lists every version Control Center takes; check that yours is in it.
-- **Raise yours only for a field you use.** 1.1.0 adds a proposal's `stage` and `parent_proposal_id`; 1.2.0 adds its `subject_ref`; 1.4.0 adds the North Star number and urgency to the directive (below), and nothing to the report. 1.5.0 adds `taste`, Krish's approved voice rules, to the directive (below), and nothing to the report.
+- **Raise yours only for a field you use.** 1.1.0 adds a proposal's `stage` and `parent_proposal_id`; 1.2.0 adds its `subject_ref`; 1.4.0 adds the North Star number and urgency to the directive (below), and nothing to the report. 1.5.0 adds `taste`, Krish's approved voice rules, to the directive (below), and nothing to the report. 1.14.0 adds the engagement task, a version 2 action of kind `copy_open` behind the post wall (`features.copy_open`, below), and `tapped` to a decision's `carried_out`. This copy records only the versions this engine reads or sends; Control Center's own copy lists every version between.
 
 On 2026-10-19 Control Center began serving 1.1.0. Legibility required exactly 1.0.0 back from capabilities, and Mindmake from the directive, so both stopped on every run (`receiver_contract_mismatch`, `directive_invalid`) and reported nothing for two days. That is why this rule exists.
 
@@ -256,6 +256,22 @@ A go-live of creative work (a post, a video, a caption) meets the engine's own q
 **Handcrafted:** prepare the exact artifact and stop. Krish sends, posts or spends himself.
 
 Either way, the walls rule holds: nothing goes out without a decision whose digest matches what goes out.
+
+## The engagement task: copy and open (1.14.0)
+
+Recorded from Control Center's protocol on 2026-10-29 (its lane defined it
+in parallel; Control Center named the kind `copy_open`, which is what this
+engine sends). An engagement task is a batch of replies or comments Krish
+posts himself, each one tap: the exact words are copied and the public page
+opens, where he pastes and posts them. Control Center never posts, sends or
+opens anything for him. It shows on his one list and on the engine's tile
+on his home screen widget, and closes when he says he posted them.
+
+- **Served where.** Capabilities say `features.copy_open: true`; send it at 1.14.0 or later.
+- **The action.** A walled proposal behind `post`, with no `stage` and no `row`, whose `exact_payload` is a version 2 action: `{ "version": 2, "channel": "engage", "kind": "copy_open", "body": "<what the taps are for, up to 1000 characters>", "taps": [{ "label", "text", "url" }] }`. One to 25 taps. `label` is one line of up to 80 characters; `text` is the exact words, up to 2200 characters, with no email address and no phone number in them; `url` is the public https page he opens, with no login in it. It goes to no person. Refused at the report before 1.14.0, behind another wall, with a stage, on a row, or malformed.
+- **As many as clear the bar, in one ask.** One ask per engine still holds, so the day's taps go as one task rather than one proposal each.
+- **Closing.** His Clear is recorded as `carried_out: tapped`; a plain Clear without it is refused, so his yes is never read as "post it", and the shared executor refuses any decision he carried out.
+- **This engine** (`engine/cc_loop.py`, `engagement_task`): `proposal_id` `makeyourmindup:engage:<New York date>`, close event `tapped`. Where capabilities do not list 1.14.0 or `copy_open`, or the report is refused with a 400, it sends the same taps once as one plain `advice` proposal behind `post` at its older version.
 
 ## On his list: one ask at a time, one copy of a thing
 

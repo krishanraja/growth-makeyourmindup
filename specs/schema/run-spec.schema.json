@@ -366,6 +366,38 @@
             "type": "string",
             "minLength": 1,
             "pattern": "^[0-9a-f]{64}$"
+          },
+          "ecosystem_cta": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "The slot's route into Krish's wider ecosystem beyond the newsletter: one of journeys.json ecosystem.routes, where it is placed, and its URL. Lint refuses a slot without one. Not part of payload_sha256: an in_post URL is already in the signed words.",
+            "properties": {
+              "route": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[a-z0-9][a-z0-9-]*$"
+              },
+              "url": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^https://\\S+$"
+              },
+              "placement": {
+                "type": "string",
+                "enum": [
+                  "in_post",
+                  "first_reply"
+                ]
+              }
+            },
+            "required": [
+              "route",
+              "url",
+              "placement"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [

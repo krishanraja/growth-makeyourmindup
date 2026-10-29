@@ -91,6 +91,8 @@ ASSET_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9 ._-]*$')
 SAFE = re.compile(r'[^A-Za-z0-9._-]+')
 SLOT_KEYS = {'slot_id', 'channel', 'format', 'play', 'due_at', 'words', 'assets', 'link_placement',
              'cta', 'forward_line', 'experiment_arm', 'publish_mode', 'buffer_draft_id', 'payload_sha256'}
+# Optional on a slot and outside its digest: share (built to be sent) and ecosystem_cta (lint's route).
+OPTIONAL_SLOT_KEYS = {'share', 'ecosystem_cta'}
 ASSET_KEYS = {'name', 'sha256', 'url', 'bytes'}
 DIGEST_KEYS = ('channel', 'format', 'words', 'link_placement', 'due_at', 'publish_mode')
 # Channel id -> (Buffer service, native hosts). Hosts match exactly.
@@ -160,8 +162,8 @@ def is_draft(slot):
 
 def check_slot(slot):
     """Refuse a malformed slot or one whose stored digest is not its own."""
-    if not isinstance(slot, dict) or set(slot) - {'share'} != SLOT_KEYS:
-        raise ValueError('slot must carry exactly the run-spec slot fields (share is optional)')
+    if not isinstance(slot, dict) or set(slot) - OPTIONAL_SLOT_KEYS != SLOT_KEYS:
+        raise ValueError('slot must carry exactly the run-spec slot fields (share and ecosystem_cta are optional)')
     sid = slot['slot_id']
     if not isinstance(sid, str) or not sid.strip():
         raise ValueError('slot_id is required')

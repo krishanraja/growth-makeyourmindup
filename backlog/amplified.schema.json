@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Local amplification ledger",
+  "description": "Each live native edition made of a published piece. The live file is .scratch/backlog/amplified.json, written by growth.py backlog record; it is never committed.",
+  "type": "object",
+  "required": ["schema_version", "editions"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "editions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["piece_url", "channel", "format", "native_url", "at"],
+        "additionalProperties": false,
+        "properties": {
+          "piece_url": {"type": "string", "pattern": "^https?://\\S+$"},
+          "channel": {"type": "string", "minLength": 1},
+          "format": {"type": ["string", "null"], "minLength": 1},
+          "native_url": {"type": "string", "pattern": "^https://\\S+$"},
+          "at": {"type": "string", "format": "date-time"}
+        }
+      }
+    }
+  }
+}

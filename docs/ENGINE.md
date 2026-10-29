@@ -107,6 +107,79 @@ and real action evidence before deciding whether an unchanged piece needs
 recovery, follow-up or no work. Publication after the nominal slot is
 picked up at the next existing run, then allocated within the shared budget.
 
+## The content backlog
+
+`python growth.py backlog` lists every published piece against the channels
+it could run on, oldest unamplified first, then partly amplified, then
+covered, and ends with "Backlog remaining N": the pieces with no native
+edition yet. It reads the public feed as far back as it reaches (366 days)
+and merges `.scratch/catalog.json`, so a piece that has left the feed stays
+in the backlog. A video post folds into its article only on an explicit
+published link, the same rule as discovery. The open channels are every
+channel record in `social/channels/` except `substack`, the piece's home.
+Each piece also lists its open formats (`formats_open`): every channel and
+format pair with no edition in that exact format, so one Instagram carousel
+closes Instagram as a channel but leaves its short video and story open. An
+edition that names no format closes none.
+
+A native edition counts from two places: a committed pilot in
+`lists/pilots.json` that names its `piece_url` (and its `editions`), and the
+local ledger `.scratch/backlog/amplified.json`. Add a live edition with
+`python growth.py backlog record --piece URL --channel ID --format ID
+--native-url URL --at TIME` once its native URL reads back; a draft or a
+scheduled post is never an edition. The inventory is written to
+`.scratch/backlog/inventory.json`. Only `backlog/inventory.schema.json`,
+`backlog/amplified.schema.json` and the synthetic `backlog/fixture.json` are
+committed. The GitHub runner reports "Backlog remaining N" from the public
+feed and the committed pilots only, and says that workspace editions are not
+visible to it. The day's pack takes the oldest unamplified piece worth a new
+edition alongside the day's new piece (`jobs/daily-pack.md`).
+
+## Ecosystem routes
+
+Every run spec slot names a route into the wider ecosystem
+(`ecosystem_cta`, `engine/run/spec.py` lint). The
+publication is the front door to Mindmake (NOW.md), so a post that only
+points at the newsletter, an article or the subscribe page has no route
+beyond it. Each slot names one verified route from `journeys.json`
+(`ecosystem`): the show's own YouTube channel (`/@makeyourmind-up`) or a
+long video whose id is in the route's `video_ids`, or Mindmake at
+mindmake.co. The Spotify show is a route row with `verified` false, so lint
+refuses it until its URL is verified. Each names its URL and placement:
+`in_post` (the URL is in the words, tracked or not) or `first_reply` (the
+slot's `link_placement` is `first_reply`). A profile link is not a
+placement: the only profile link the engine may set is the newsletter's
+subscribe page (`engine/channel_audit.py`), which is no route beyond the
+newsletter. Lint refuses no route, an unknown or unverified route, a
+newsletter URL, a URL off the route (another channel, an unlisted video),
+an `in_post` URL missing from the words and a `first_reply` route without a
+first-reply placement. A new route, or a newly verified video, is a row in
+`journeys.json`; each journey there names the route its readers continue
+on (`ecosystem_route`).
+`ecosystem_cta` is outside the digest: an `in_post` URL is already in the
+signed words.
+
+## Intensity: the gap sets the volume
+
+Ruling (Krish, 2026-10-29): At U3 to U5, engines and Control Center may
+raise volume caps up to each repo's existing policy bounds without a signed
+week spec. This is volume only: walls unchanged.
+
+`engine/intensity.py` reads this week's gap from NOW.md's state line and the
+ladder in docs/NORTH_STAR.md, and takes Control Center's urgency instead
+when the directive's `north_star.intensity` is higher. A week nobody has
+measured is U4; a week with no ladder rung raises nothing. Every report,
+from the runner and from each workspace job, leads with the gap line
+"X of Y, U-n, short by Z" (an unmeasured week reads "not measured of Y, U4,
+short by unknown", never zero). At U3 and above the caps rise to the bounds
+in `intensity.json`: a channel's scheduled posts a day only to its own
+policy bound in `engine/social.py` (Substack Notes two, every other channel
+one, the 27 Oct ruling; every channel already sits there, so `run lint`
+reads the urgency and no channel gains a post; a human-only channel stays
+manual), and the day's engagement taps from 5 to 10, 15 and 20 at U3, U4
+and U5, under Control Center's 25. Raised volume comes from the taps. Walls, zero spend, approvals, the
+creative bar and Krish's 20 and 30 minute budget never move with it.
+
 ## Tracking and the work queue
 
 ```powershell
@@ -265,11 +338,31 @@ attempt `failed` with `report_conflict`.
 
 | Pack kind | Wall | Closes on |
 |---|---|---|
-| daily, radar | `post`, with the exact words | `published` |
+| daily | `post`, with the exact words | `published` |
+| radar | `post`: one engagement task for the day (below) | `tapped` |
 | conversion | `post`, the exact copy | `applied` |
 | pitches, swaps, partners | `send`, with the exact words | `sent` |
 | report | `strategy` | `reviewed` |
 | numbers | `none` | `verified` |
+
+**The engagement task (protocol 1.14.0).** The radar's selected replies and
+comments go as one ask, `makeyourmindup:engage:<New York date>`, never one
+proposal each: Control Center's version 2 action of kind `copy_open` on the
+`engage` channel, behind `post`, with no stage. Its `exact_payload` is the
+canonical JSON `{version: 2, channel: "engage", kind: "copy_open", body,
+taps: [{label, text, url}]}`: each tap the exact words to copy and the public
+https page to open. Krish pastes and posts each one himself and marks the
+task carried out (`tapped`); nothing in this engine or Control Center posts.
+The task carries as many as cleared the bar, up to today's cap
+(`intensity.json`: 5, then 10, 15 and 20 at U3, U4 and U5); a tap past the
+cap, or one with no public https page or with an address or a phone number
+in its words, is held by name. The report goes at 1.14.0 only where
+capabilities list it and `features.copy_open` is true. If Control Center
+cannot take the task (`schema_version_unsupported`,
+`schema_version_unconfirmed`, `copy_open_unsupported` or a 400), the loop
+rebuilds the report once with the same taps as one plain `advice` proposal
+behind `post`, at the old version, and says so; nothing else is resent.
+The wire shape is in `docs/control-center/ENGINE-PROTOCOL.md`.
 
 `proposal_id` is `makeyourmindup:<item_id>`, so it survives a copy edit
 while `payload_sha256` (SHA-256 of the canonical `{channel, exact_payload,

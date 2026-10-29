@@ -49,6 +49,18 @@ def holds(report, reason):
     return [h['detail'] for h in report['holds'] if h['reason'] == reason]
 
 
+
+def setUpModule():
+    # The runner reads the public feed for its backlog line; unit tests stay offline.
+    global _OFFLINE
+    from engine import backlog
+    _OFFLINE = patch.object(backlog, 'read_feed', side_effect=OSError('offline test'))
+    _OFFLINE.start()
+
+
+def tearDownModule():
+    _OFFLINE.stop()
+
 class FakeClient:
     """Answers decisions and report reads from memory; any listed failure raises."""
 

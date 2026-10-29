@@ -33,10 +33,17 @@ not establish audience quality or subscriber attribution.
 
 ## Three routines
 
-1. Daily review pack: three LinkedIn opportunities and, when genuinely
-   useful, up to two opportunities across the other channels. This stays
-   inside the existing shared 20-minute human budget. Target five minutes
-   for this engagement pack. Fewer good candidates beat quota fillers.
+1. Daily engagement taps: as many as clear the bar, across LinkedIn and
+   the other channels, up to the day's cap (`intensity.json`: 5 at U1 and
+   U2, then 10, 15 and 20 at U3, U4 and U5). The bar does not move with the
+   cap: every tap responds to the actual thread, is fresh, fits and is one
+   Krish would be glad to post; a filler that misses it is skipped, never
+   counted. The taps go to Control Center as one ask, its copy and open task
+   (docs/ENGINE.md, "The engagement task"): the exact words and the public
+   page for each, which he copies, pastes and posts himself, then marks
+   carried out. They stay inside the shared 20-minute human budget, about a
+   minute a tap. Updated 2026-10-29 from "fewer good candidates beat quota
+   fillers": Krish asked for as many easy ones as possible.
 2. Publishing queue: choose and brief distinct native editions from published
    source stories, receive finished assets from content-engine, then manage
    platform delivery. Read ENGINE-BOUNDARY.md. Production standards and
@@ -94,7 +101,7 @@ supporting evidence. No paid boosts, engagement pods or follow/unfollow loops.
 
 | Channel | Controllable weekly work | Provisional 14-day outcome target |
 |---|---|---|
-| LinkedIn | Three suggestions per weekday; Krish chooses whether to comment. Start with one useful contribution per weekday, with no quota filler. | Five substantive exchanges with relevant people; follower target set after first verified baseline |
+| LinkedIn | As many suggestions per weekday as clear the bar, in the day's one copy and open ask; Krish chooses which to post. No filler below the bar. | Five substantive exchanges with relevant people; follower target set after first verified baseline |
 | Instagram | Five native carousel/Reel editions prepared; test opening, useful save/share payoff and relevant continuation | 25 net new followers |
 | YouTube | Five native Shorts prepared from the same source stories; match long-video continuation when available and approved | 10 net new subscribers |
 | TikTok | Five native photo/video editions prepared; test hook, pace and a workable next step | 20 net new followers |
@@ -191,7 +198,8 @@ not a second queue or orchestrator. Prepare a three-card daily engagement
 view containing source evidence, exact comment, optional question, expiry,
 estimated time and explicit states. Keep total human time in the shared
 budget. Support a browser handoff that never submits or overwrites a human
-draft. No Skyvern and no Stripe. Do not make Control Center writes from an
+draft. Since 2026-10-29 the day's cards go as Control Center's one copy and
+open task, each with its exact words and public link. No Skyvern and no Stripe. Do not make Control Center writes from an
 interactive session; hand off any receiver/UI work to its owner.
 
 Keep proposed follower targets separate from measured observations. Persist
