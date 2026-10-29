@@ -1,5 +1,16 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29: Buffer stays. Krish: "OK, I will keep Buffer for heartside
+  and makeyourmindup for now", and of Full Time: "I can add fulltime when
+  ready to launch that, its a while away still". The memo he asked for
+  ("it is on you to prove Buffer's ROI to me by then") applied the rule fixed
+  on 27 October: Buffer is the only working route for the channels the plan
+  needs (every route goes through Buffer, 28 October), the free plan holds 3
+  channels against this engine's 8, and Essentials keeps every capability the
+  engine uses (Team's approval workflows answered the routines, which are
+  gone). Early results (10 Buffer-sent posts, 26 to 29 October) are too few to
+  judge either way. The plan purchase is his click.
+
 - 2026-10-29: No Claude routines: the make, plan and watch routines are removed
   under Krish's 29 Oct ruling ('I want zero Claude routines. No Claude
   schedules of any kind in this architecture'); GitHub Actions jobs remain the
