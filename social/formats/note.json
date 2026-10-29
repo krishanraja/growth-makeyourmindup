@@ -10,14 +10,18 @@
   "guide": "social/guides/formats.md",
   "min_assets": 0,
   "max_assets": 1,
+  "snackable": true,
   "delivery_checks": [
     "Native Note copy written for the Notes feed, not a pasted article excerpt; every quote is a literal match to the published piece.",
     "Any image is an approved Canva export from the brand kit and an approved template, listed in its 4 Growth manifest.",
     "No outside link in a reach Note; verify the subscribe path live.",
+    "Share mechanic: one line a reader would quote or forward to a named person, complete without the article behind it.",
+    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
     "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
     "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
   ],
   "measurements": [
+    "Primary measure (Krish, 28 October 2026): sends, meaning native shares, per reach and saves per reach against the format's own channel median; a house hypothesis until MYMU's own dated data confirms it (lesson share-rate-measure).",
     "Dated exposed reach and meaningful engagement, preserving missing values.",
     "Relevant follower/profile movement and source-attributed publication subscriptions where exposed.",
     "24-hour, 72-hour and seven-day readback after actual publication; no financial ROI inference from draft counts.",
@@ -27,6 +31,8 @@
     "revision-identity",
     "growth-measurement",
     "canva-lane-boundary",
-    "notes-threads-in-scope"
+    "notes-threads-in-scope",
+    "built-to-be-sent",
+    "share-rate-measure"
   ]
 }

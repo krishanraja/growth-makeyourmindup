@@ -229,3 +229,7 @@ Krish's rules win. Each one is listed so no session "fixes" it back:
 12. **Money models and paid tiers are only Sunday-report proposals**, with
     evidence and Krish's decision. No upsell, downsell or continuity offer is
     drafted for any reader.
+13. **Snackable posts never ask to be shared** (Krish, 2026-10-28). The
+    corpus's share and forward asks stay with the newsletter; a meme,
+    carousel, image, short, Story or Note earns the send with its content,
+    for a reason its package's share block names (`social/share.json`).

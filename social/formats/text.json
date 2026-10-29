@@ -13,6 +13,7 @@
   "guide": "social/guides/formats.md",
   "min_assets": 0,
   "max_assets": 0,
+  "snackable": false,
   "delivery_checks": [
     "Use source-verified native copy and test the intended destination; do not paste another account caption.",
     "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",

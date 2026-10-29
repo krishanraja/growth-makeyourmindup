@@ -153,8 +153,8 @@ def is_draft(slot):
 
 def check_slot(slot):
     """Refuse a malformed slot or one whose stored digest is not its own."""
-    if not isinstance(slot, dict) or set(slot) != SLOT_KEYS:
-        raise ValueError('slot must carry exactly the run-spec slot fields')
+    if not isinstance(slot, dict) or set(slot) - {'share'} != SLOT_KEYS:
+        raise ValueError('slot must carry exactly the run-spec slot fields (share is optional)')
     sid = slot['slot_id']
     if not isinstance(sid, str) or not sid.strip():
         raise ValueError('slot_id is required')

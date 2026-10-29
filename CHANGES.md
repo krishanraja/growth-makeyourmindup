@@ -1,5 +1,34 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-28: built to be sent. Krish: "for the growth repo, think about
+  virality in the content, I dont think there is enough of it at the moment.
+  that comes from the shareability from one human to another in a "you will
+  like this" kind of way. I am not talking about just saying "share this with
+  your friends" in the comments, I am talking about ensuring all the produced
+  snackable content is likelier to be shared for a specific reason."
+  - Every snackable package (meme, carousel, single image, short video, Story,
+    Note) declares a share block: a specific sender and receiver, one job from
+    a fixed list, the exact DM line the sender would type, the everyday moment
+    that brings it to mind and a standalone check
+    (`social/schemas/package.schema.json`, `social/share.json`).
+  - Generic share calls to action in snackable post copy are refused where
+    they open a sentence; the share comes from the content, never a request.
+    Whether text posts, articles and daily and radar drafts are refused too is
+    Krish's decision (`share_cta_scope` in `social/share.json`).
+  - Each snackable format names its share mechanic in its delivery checks; for
+    content-engine's formats it is a proposed hook in Growth's brief, never a
+    production standard Growth holds. `hooks.json` gains a share formula, a
+    house hypothesis like the rest.
+  - A blind send-test reader (`crew/send-test/`) sees only the post, staged
+    under blind names, and must name the declared receiver and job before
+    Krish sees it. Its answer is bound to that exact revision by
+    `request_sha256`, so a revised post needs a fresh reader. A snackable run
+    slot carries the same share block, and its review is the send test
+    (`docs/RUN.md`).
+  - Sends per reach and saves per reach become the snackable lane's primary
+    measure in What-Works, house hypotheses until MYMU's own dated data
+    confirms them.
+
 - 2026-10-28: Krish approved the plan "Make Your Mind Up: one weekly chain
   that runs on time", and with it these rulings for this engine (his words,
   28 October; approving the plan was his yes to recording them):
