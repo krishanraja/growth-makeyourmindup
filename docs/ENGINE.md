@@ -318,7 +318,7 @@ terminal attempt (`succeeded`, or `failed` with a lower_snake code).
 
 | Command | What it does |
 |---|---|
-| `growth.py cc start --job KIND --deliver` | Journal the start, pull and print the directive, keep the attempt in `.scratch/cc/KIND.state.json` and Krish's approved voice rules (protocol 1.5.0 `taste`) in `.scratch/cc/voice-rules.txt` for drafting only |
+| `growth.py cc start --job KIND --deliver` | Journal the start, pull and print the directive, keep the attempt in `.scratch/cc/KIND.state.json`, Krish's approved voice rules (protocol 1.5.0 `taste`) in `.scratch/cc/voice-rules.txt` for drafting only, and his inspiration board (1.15.0 `inspiration`) in `.scratch/cc/inspiration.txt` for planning |
 | `growth.py cc finish --job KIND --envelope F --queue F [--observations F]... [--completions F] --deliver` | Build the report from the job's files, report, read back, read decisions, journal the end |
 | `growth.py cc run --job KIND ... --deliver` | Both in one call |
 | `growth.py cc runner --deliver` | The GitHub runner's loop (below) |
@@ -336,6 +336,26 @@ list prints "None approved yet" and nothing is invented. Nothing that
 checks, scores, queues or reports a draft reads them, and the GitHub
 runner never prints them. The report stays at 1.0.0: 1.5.0 adds nothing
 to it.
+
+**His inspiration board is the baseline (1.15.0).** Krish, 2026-10-29:
+"When the growth-makeyourmindup repository plans: In all this content, it
+should know what I've suggested already and try and use that as the
+baseline standard." From 1.15.0 the directive may carry `inspiration`:
+what he saved on Control Center's inspiration board, why in his words, and
+what he wants tried. A trial is one of four taps: record like this (he
+records a piece to camera in that style, often for the off days), reskin
+the news (positive or real-world AI news rebuilt as our post), reskin the
+meme, and borrow the format (an infographic, a subtitle style, a carousel
+layout). `engine/cc_loop.py` (`inspiration_suggestions`,
+`inspiration_block`) writes it to `.scratch/cc/inspiration.txt` at every
+start. Every week, piece and express spec reads it before choosing slots:
+each tagged trial is either a slot that trials it, rebuilt in the
+publication's voice and look and never copied, or a line in the spec
+saying why it waits. His words are quoted as his; a reason he tapped is a
+guess he agreed with. Absent prints "Could not be read today" and nothing
+is invented; an empty list means he has suggested nothing yet. Like the
+voice rules, nothing that checks, scores, ranks, queues or reports a draft
+reads it, and the GitHub runner never prints it.
 
 **Identity.** Slug `makeyourmindup`, `engine_id` `growth-makeyourmindup`,
 `product_slug` `publication`. `run_id` is `makeyourmindup:<New York
