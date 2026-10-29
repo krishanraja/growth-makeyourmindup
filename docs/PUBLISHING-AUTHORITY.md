@@ -151,6 +151,12 @@ line here says otherwise.
   go-live decision bound to the payload sha256; Growth puts the post in the
   next free off-day slot on each chosen channel, never on Monday,
   Wednesday or Friday and never over a daily cap, and reads it back.
+  **Superseded on the weekdays, 29 October 2026.** Asked which of his two
+  rulings wins (this off-day lane, or the flood ruling's every-day mix), Krish
+  chose "Mix wins: every day". The meme, positive news and level-up lanes run
+  every day; a top-up goes in the next free filler slot of the week's mix,
+  never the Monday, Wednesday or Friday series slot and never over the lower
+  daily cap (`engine/offday.py`, R118).
 - **Engagement stays prepared only.** The daily queue is drafted here and
   he submits every reply himself; following and liking stay his.
 

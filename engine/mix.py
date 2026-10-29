@@ -29,6 +29,7 @@ import argparse
 import datetime as dt
 import json
 from pathlib import Path
+import re
 
 from . import concepts as concept_rules
 from . import intensity
@@ -42,6 +43,10 @@ SLUG = 'makeyourmindup'
 DAYS = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
 VERDICTS = ('works', 'neutral', 'fails', 'insufficient')
 CHANNEL_NAMES = {'instagram': 'Instagram', 'youtube': 'YouTube Shorts', 'tiktok': 'TikTok', 'x': 'X'}
+# A figure someone produced: money, a share, a multiple, a large count. Its claim must name that source
+# (floor never 2, Krish, 29 Oct: "every number credited to its producer").
+FIGURE = re.compile(r'[$£€]\s?\d|\d[\d,.]*\s?(?:%|percent\b|per cent\b|x\b|times\b|million\b|billion\b|trillion\b|[kmb]n?\b)'
+                    r'|\b\d{1,3}(?:,\d{3})+\b', re.I)
 LANE_NAMES = {'repurposed_carousel': 'repurposed carousels', 'meme': 'memes', 'positive_news': 'positive news',
               'level_up': 'level-up advice'}
 
@@ -224,6 +229,9 @@ def idea_pool(ideas, lane_name, lane, week):
         elif item.get('source_url') is not None and not (http_url(item['source_url'])
                                                           and item['source_url'].startswith('https://')):
             why = 'source_url must be https'
+        elif FIGURE.search(str(item.get('claim') or '')) and not item.get('source_url'):
+            # Floor never 2 (Krish, 29 Oct): nothing made up, and every number credited to its producer.
+            why = 'a claim with a number names the source that produced it'
         elif lane.get('needs_source'):
             if not item.get('source_url') or not item.get('source_date'):
                 why = 'positive news names its primary source and its date'
@@ -657,6 +665,9 @@ def learn(specs, runs_dir=None, root=ROOT):
 # Command line ---------------------------------------------------------------
 
 def command(argv, root=ROOT):
+    if argv and argv[0] in ('offdays', 'topup', 'clock'):
+        from .offday import command as offday
+        return offday(argv, root)
     parser = argparse.ArgumentParser(prog='growth.py mix', description='The weekly mix and its learning. Offline.')
     sub = parser.add_subparsers(dest='action', required=True)
     p = sub.add_parser('plan', help="lay out the week and the one plan proposal of Krish's ideas and mocks")
