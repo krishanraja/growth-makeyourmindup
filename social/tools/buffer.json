@@ -279,6 +279,7 @@
     "facebook-native-check-held",
     "native-release-readback",
     "buffer-document-preview-hold",
-    "shared-buffer-workspace"
+    "shared-buffer-workspace",
+    "provider-metric-freshness"
   ]
 }

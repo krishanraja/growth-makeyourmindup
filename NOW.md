@@ -24,7 +24,7 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 ## Where it is right now (as of 2026-10-29)
 
-<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-27", "current_source": "Native Substack Growth sources, New subscribers, trailing 7 days, all categories: no subscribers found; this bounds week-to-date to zero. Private daily-20261027/substack-seven-day-sources.txt", "urgency": 4, "urgency_reason": "0 of 25; under 40%"} --> **North Star number: U4, far behind.** No new subscribers appear in the native trailing-seven-day source report on 27 October, so week-to-date organic subscribers are zero against 25 this week. This is the displayed measurement, not proof that reporting is instantaneous or that the new posts have had time to work.
+<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-29", "current_source": "Substack Growth sources, new subscribers, 7 days (2026-10-22 to 2026-10-29), read 2026-10-29: all sources 0, organic not classified", "urgency": 4, "urgency_reason": "0 of 25; under two fifths"} --> **North Star number: U4, far behind.** 0 of 25 new publication subscribers this week from organic posts and shares, read on 29 October 2026.
 
 Lifecycle: live. The detail is in `README.md`.
 
