@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from engine import concepts
 from engine.core import write_json
@@ -65,6 +66,13 @@ class ReleaseByConcept(unittest.TestCase):
         del self.decision['slots']['tiktok-photo-1']
         self.decision['concepts'] = {'carousel-synthetic': self.concept['concept_sha256']}
         self.sign()
+        # Merge with the V1 branch (F105): `run release` is only each route's capability check, and a
+        # route verified and fresh is L0 autorelease's. The fixture's routes stand as not yet passed, so
+        # each post here is its route's one check and runs every concept gate; tests/test_run_autorelease.py
+        # proves the same gates on the L0 path (concept_post_hold and concepts.authority, called, not copied).
+        unverified = ['capability_not_verified_for_selected_channel_and_format']
+        patch.object(release, 'route', lambda *a, **k: {'holds': list(unverified)}).start()
+        self.addCleanup(patch.stopall)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -74,13 +82,14 @@ class ReleaseByConcept(unittest.TestCase):
         self.spec['signature']['concepts_digest'] = concepts.concepts_digest(self.decision.get('concepts') or {})
         self.spec['signature']['concept_proposal_id'] = MIX_PLAN
 
-    def plan(self, stopped=(), unresolved=(), reviews=None, caps=None, other=None, ledger=None):
+    def plan(self, stopped=(), unresolved=(), reviews=None, caps=None, other=None, ledger=None, buffer=()):
         paths = {s['slot_id']: [self.dir / a['name'] for a in s['assets']] for s in self.spec['slots']}
         if reviews is None:
             reviews = {s['slot_id']: send_test_pass(s) for s in self.spec['slots'] if s.get('share')}
         return release.release_plan(self.spec, self.decision, ledger, paths, self.channels, NOW, self.targets,
                                     stopped_proposals=stopped, unresolved_stops=unresolved, reviews=reviews,
-                                    caps=dict(CAPS) if caps is None else caps, other_scheduled=other)
+                                    caps=dict(CAPS) if caps is None else caps, other_scheduled=other,
+                                    buffer_scheduled=None if buffer is None else list(buffer))
 
     def holds(self, result):
         return {h['slot_id']: h['hold'] for h in result['holds']}
@@ -147,18 +156,29 @@ class ReleaseByConcept(unittest.TestCase):
             twin['payload_sha256'] = release.slot_digest(twin)
             self.spec['slots'].append(twin)
         reviews = {s['slot_id']: send_test_pass(s) for s in self.spec['slots'] if s.get('share')}
-        result = self.plan(reviews=reviews)
-        made = [c['slot_id'] for c in result['calls'] if c['slot_id'] == 'tiktok-photo-1' or c['slot_id'].startswith('twin')]
+        # F105: `run release` releases one post per unverified route (its capability check); every other
+        # post goes out through L0, which counts the day with the same gate, release.concept_post_hold.
+        posts = [s for s in self.spec['slots'] if s['slot_id'] == 'tiktok-photo-1' or s['slot_id'].startswith('twin')]
+        per_day, made, capped = {}, [], []
+        for post in posts:
+            reason = release.concept_post_hold(post, self.decision, reviews[post['slot_id']], dict(CAPS), per_day,
+                                               release.snackable_formats())
+            if reason:
+                capped.append(reason)
+                continue
+            made.append(post['slot_id'])
+            key = (post['channel'], release.day_of(post))
+            per_day[key] = per_day.get(key, 0) + 1
         self.assertEqual(len(made), 4, 'at most four a New York day on TikTok')
-        capped = [h for sid, h in self.holds(result).items() if sid.startswith('twin')]
         self.assertEqual(len(capped), 6)
         self.assertTrue(all(h.startswith('concept_daily_cap_reached') for h in capped), capped)
+        # In `run release` itself only the route's one check goes out; the twins wait for the route.
+        result = self.plan(reviews=reviews)
+        self.assertEqual(len([c for c in result['calls'] if c['slot_id'] in {p['slot_id'] for p in posts}]), 1)
         # Unreviewed words never ride on the claim: without their own review the twins hold.
-        result = self.plan(reviews={'tiktok-photo-1': send_test_pass(self.slot)})
-        made = [c['slot_id'] for c in result['calls'] if c['slot_id'].startswith('twin')]
-        self.assertEqual(made, [])
-        self.assertTrue(all(h.startswith('concept_post_not_reviewed') for sid, h in self.holds(result).items()
-                            if sid.startswith('twin')))
+        for post in posts[1:]:
+            reason = release.concept_post_hold(post, self.decision, None, dict(CAPS), {}, release.snackable_formats())
+            self.assertTrue(reason.startswith('concept_post_not_reviewed'), reason)
 
     def test_the_cap_counts_other_runs_and_this_runs_ledger(self):
         day = [{'channel': 'tiktok', 'due_at': '2026-11-03T08:30:00-05:00'}] * 4
@@ -171,6 +191,29 @@ class ReleaseByConcept(unittest.TestCase):
         self.assertTrue(hold.startswith('concept_daily_cap_unknown'), hold)
         entry = self.plan()['ledger']['released']['tiktok-photo-1']
         self.assertEqual(entry['due_at'], self.slot['due_at'], 'the ledger records the day it lands on')
+
+    def test_the_cap_counts_what_buffer_holds_so_l0_posts_count_here(self):
+        # Review 3, S5: posts L0 autorelease scheduled live only in Buffer; `run release` counts them from a
+        # fresh list_posts readback, and without one a concept post holds rather than guess the day.
+        pinned = release.BUFFER_CHANNEL_ID['tiktok']
+        day = [{'id': 'c%023d' % n, 'channelId': pinned, 'dueAt': '2026-11-03T13:30:00Z', 'status': 'scheduled'}
+               for n in range(4)]
+        hold = self.holds(self.plan(buffer=day))['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_daily_cap_reached'), hold)
+        self.assertEqual(self.holds(self.plan(buffer=day[:3])), {})
+        self.assertEqual(self.holds(self.plan(buffer=day[:3] + [day[0]])), {}, 'one Buffer post counts once')
+        elsewhere = [dict(post, channelId='d' * 24) for post in day]
+        self.assertEqual(self.holds(self.plan(buffer=elsewhere)), {}, 'another channel is not this cap')
+        hold = self.holds(self.plan(buffer=None))['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_daily_cap_unknown'), hold)
+        # Review 4: a raw response object, or posts without ids, never pass for an empty day.
+        for bad in ({'posts': day}, [{'channelId': pinned, 'status': 'scheduled'}]):
+            with self.assertRaises(ValueError):
+                self.plan(buffer=None) if False else release.release_plan(
+                    self.spec, self.decision, None, {}, self.channels, NOW, self.targets, buffer_scheduled=bad)
+        # A post in another run's ledger that Buffer already holds is not counted twice.
+        ledger = [{'channel': 'tiktok', 'due_at': '2026-11-03T08:30:00-05:00', 'post_id': post['id']} for post in day[:3]]
+        self.assertEqual(self.holds(self.plan(other=ledger, buffer=day[:3])), {})
 
     def test_the_cap_his_plan_states_is_kept_under_a_higher_live_cap(self):
         # decision.json concept_daily_caps is the most a day the approved plan stated; release keeps the lower.
@@ -287,7 +330,8 @@ class LintAndStatus(unittest.TestCase):
         base['slots'] = [{'slot_id': 'x-concept', 'channel': 'x', 'format': 'text', 'play': None,
                           'due_at': '2026-11-03T08:30:00-05:00', 'words': words, 'assets': [], 'link_placement': None,
                           'cta': False, 'forward_line': 'not shared', 'experiment_arm': None, 'publish_mode': 'engine',
-                          'buffer_draft_id': None, 'concept_id': 'level-up-pilot',
+                          'buffer_draft_id': None, 'meta': None, 'buffer_channel_id': None,
+                          'concept_id': 'level-up-pilot',
                           'ecosystem_cta': {'route': 'mindmake', 'url': 'https://mindmake.co/', 'placement': 'in_post'},
                           'payload_sha256': '0' * 64}]
         return spec_module.computed(base)

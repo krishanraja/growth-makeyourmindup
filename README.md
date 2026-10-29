@@ -16,6 +16,21 @@ Growth also produces, in Canva, the formats content-engine does not cover
 (today Substack Notes and memes; `docs/ENGINE-BOUNDARY.md`, "the Canva
 lane"). Content-engine keeps every other format and all production standards.
 
+## Lanes: what runs alone and what needs Krish
+
+[docs/LANES.md](docs/LANES.md) says, in plain words, what runs on its own
+(L0 GitHub Actions), what waits for one press in Control Center (L2) and
+what waits for Krish's hands (L3: LinkedIn, the Buffer plan, one-time set-up
+in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs six
+workflows: control-center, release, measure, keys, handoff and check. There
+are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct
+2026): a new schedule is a GitHub Actions job. Making (Canva assets, words,
+Buffer drafts) is done by sessions and the nine automations on Krish's PC
+(below, kept until W46) under the same walls, and follows
+[docs/TASTE.md](docs/TASTE.md). Only the GitHub
+runner holds the Control Center engine key; sessions read Control Center
+through its connector.
+
 ## Weekly channel audit
 
 [docs/CHANNEL-AUDIT.md](docs/CHANNEL-AUDIT.md) records the accepted brief,
@@ -101,7 +116,8 @@ python growth.py cc runner
 
 ## Existing runtime
 
-There are nine scheduled job definitions in `automations.json`. The ninth,
+There are nine scheduled job definitions in `automations.json`, run on
+Krish's PC and kept until W46 (`lanes.json`). The ninth,
 the weekly answer piece, was added on 21 October 2026; Krish creates it in
 Codex by saying "create the automations" again, which updates the existing
 eight and adds the new one. The weekly conversion slot now runs the channel

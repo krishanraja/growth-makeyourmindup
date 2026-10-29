@@ -1,0 +1,38 @@
+name: keys
+# Every morning before release and measure, check that the engine's two keys
+# still work: the Control Center engine token (a read of capabilities) and,
+# once it is set, the Buffer API key (an account read). A refused or missing
+# key fails this run, so GitHub emails Krish the day it happens, even on a
+# day nothing posts. It reads ids only and prints pass or fail codes, never
+# a value: this repository is public.
+on:
+  schedule:
+    - cron: '50 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keys
+  cancel-in-progress: false
+
+jobs:
+  keys:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
+    steps:
+      - name: Start the run clock
+        run: echo "GROWTH_RUN_STARTED=$(date +%s)" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Check the keys
+        run: python growth.py run keys

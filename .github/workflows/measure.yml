@@ -1,0 +1,46 @@
+name: measure
+# Three times a day the measure job reads this engine's sent posts and their
+# metrics from Buffer, pulls today's directive for Control Center's GA4 rows,
+# joins them on utm_content, gives each post a verdict against its own
+# channel's median and reports the aggregates to Control Center with a
+# readback. It never posts, sends, publishes or spends, and it uploads
+# nothing: this repository is public, so its log carries only counts of
+# verdicts, codes, digests and the cost line. Without BUFFER_API_KEY it still
+# measures the GA4 part and says "Buffer not configured".
+on:
+  schedule:
+    - cron: '0 7,13,19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: measure
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
+    steps:
+      - name: Start the run clock
+        run: echo "GROWTH_RUN_STARTED=$(date +%s)" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Check the keys
+        run: python growth.py run keys
+      - name: Measure and report to Control Center
+        run: |
+          if [ -z "$BUFFER_API_KEY" ]; then
+            echo "Buffer not configured: measuring the GA4 part only"
+          fi
+          python growth.py run measure auto --deliver

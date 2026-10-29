@@ -11,7 +11,9 @@
     "short-video",
     "text",
     "story",
-    "meme"
+    "meme",
+    "quote-card",
+    "story-frame"
   ],
   "guide": "social/guides/other-channels.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "kind": "authority",
+  "note": "What the engine may do alone, under Krish's 27 Oct 2026 rulings (CHANGES.md, rules R105 to R107). engine/run/invariants.py:load_authority validates this closed shape and posting_lane reads it. Only Krish changes it.",
+  "source_file": "CHANGES.md",
+  "first_signed_week": "2026-W45",
+  "show_before_post_until": "2026-11-29",
+  "publish_board": {
+    "includes": ["article", "assets", "video-recordings"],
+    "approved_in": "Control Center, one press",
+    "unlocks": "every derivative format of that piece, on every channel but LinkedIn"
+  },
+  "derivative_formats": [
+    {"class": "quote-card", "what": "A card quoting the approved piece word for word", "formats": ["quote-card"]},
+    {"class": "receipt-card", "what": "A card showing a sourced fact from the approved piece", "formats": ["receipt-card"]},
+    {"class": "note-quote", "what": "A Substack Note quoting the approved piece", "formats": ["note"]},
+    {"class": "post-quote", "what": "A Threads or X post quoting the approved piece", "formats": ["text", "single-image"]},
+    {"class": "story-from-assets", "what": "Story frames built only from the piece's approved assets", "formats": ["story", "story-frame"]},
+    {"class": "video-cut", "what": "Shorts, Reels and TikTok cuts of the approved video", "formats": ["short-video"]},
+    {"class": "article-reshare", "what": "The plain re-share or restack of the published article", "formats": ["text", "single-image", "note"]}
+  ],
+  "new_formats_need_eyes": [
+    {"class": "carousel", "what": "A plain-English carousel; per-item approval", "formats": ["carousel"]},
+    {"class": "meme", "what": "A meme for Instagram, TikTok or YouTube; per-item approval", "formats": ["meme"]},
+    {"class": "opinion", "what": "A post that says something the piece does not", "formats": ["text", "note", "single-image"]},
+    {"class": "reactive", "what": "A post reacting to news or another account", "formats": ["text", "note", "single-image"]}
+  ],
+  "any_other_class": "needs_eyes",
+  "krish_hands": [
+    {"id": "linkedin-posting", "what": "Posting on his personal LinkedIn; the engine only drafts", "channels": ["linkedin"]},
+    {"id": "plan-purchase", "what": "Buying or upgrading a plan, such as Buffer's", "channels": []},
+    {"id": "credential-creation", "what": "Creating, rotating or placing a key or password", "channels": []},
+    {"id": "account-connection", "what": "Connecting an account to a tool, such as a channel in Buffer", "channels": []}
+  ]
+}

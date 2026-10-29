@@ -1,0 +1,413 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "growth-calendar/1",
+  "description": "The posting calendar (calendar/v1.json). Closed; validated by engine/social.py:validate, then linted by engine/run/calendar.py:lint, which derives each lane from invariants/authority.json.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "growth-calendar/1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "approved"
+      ]
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tz": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority": {
+      "type": "string",
+      "const": "invariants/authority.json"
+    },
+    "kit": {
+      "type": "string",
+      "const": "social/brand/kit.json"
+    },
+    "preview_until": {
+      "type": "string",
+      "format": "date"
+    },
+    "pieces": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "series": {
+            "type": "string",
+            "minLength": 1
+          },
+          "weekday": {
+            "type": "string",
+            "enum": [
+              "MO",
+              "TU",
+              "WE",
+              "TH",
+              "FR",
+              "SA",
+              "SU"
+            ]
+          }
+        },
+        "required": [
+          "series",
+          "weekday"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "templates": {
+      "type": "object"
+    },
+    "wave": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "at": {
+            "type": "string",
+            "pattern": "^(?:publish\\+(?:[1-9]|1[0-9]|2[0-3])h|(?:[01][0-9]|2[0-3]):[0-5][0-9]|draft)$"
+          },
+          "channel": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "format": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "class": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "template": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "producer": {
+            "type": "string",
+            "enum": [
+              "content-engine",
+              "canva-lane",
+              "words"
+            ]
+          },
+          "lane": {
+            "type": "string",
+            "enum": [
+              "L0_code",
+              "L2_eyes",
+              "L3_hands"
+            ]
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "requires": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "link": {
+            "type": "string",
+            "enum": [
+              "none",
+              "reply",
+              "last",
+              "in_post"
+            ]
+          },
+          "days": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          }
+        },
+        "required": [
+          "at",
+          "channel",
+          "class",
+          "days",
+          "format",
+          "id",
+          "lane",
+          "link",
+          "priority",
+          "producer",
+          "requires",
+          "template"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "weekly": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "at": {
+            "type": "string",
+            "pattern": "^(?:publish\\+(?:[1-9]|1[0-9]|2[0-3])h|(?:[01][0-9]|2[0-3]):[0-5][0-9]|draft)$"
+          },
+          "channel": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "format": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "class": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "template": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "producer": {
+            "type": "string",
+            "enum": [
+              "content-engine",
+              "canva-lane",
+              "words"
+            ]
+          },
+          "lane": {
+            "type": "string",
+            "enum": [
+              "L0_code",
+              "L2_eyes",
+              "L3_hands"
+            ]
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "requires": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "link": {
+            "type": "string",
+            "enum": [
+              "none",
+              "reply",
+              "last",
+              "in_post"
+            ]
+          },
+          "weekday": {
+            "type": "string",
+            "enum": [
+              "MO",
+              "TU",
+              "WE",
+              "TH",
+              "FR",
+              "SA",
+              "SU"
+            ]
+          }
+        },
+        "required": [
+          "at",
+          "channel",
+          "class",
+          "format",
+          "id",
+          "lane",
+          "link",
+          "priority",
+          "producer",
+          "requires",
+          "template",
+          "weekday"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "floors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "min": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "max": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "channel",
+          "min",
+          "max"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "stories": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          }
+        },
+        "templates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          }
+        }
+      },
+      "required": [
+        "channels",
+        "templates"
+      ],
+      "additionalProperties": false
+    },
+    "memes": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          }
+        },
+        "min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "channels",
+        "min",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "caps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "per": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week"
+            ]
+          },
+          "max": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "source_file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "channel",
+          "per",
+          "max",
+          "source_file",
+          "quote"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "authority",
+    "caps",
+    "floors",
+    "id",
+    "kit",
+    "memes",
+    "note",
+    "pieces",
+    "preview_until",
+    "schema",
+    "status",
+    "stories",
+    "templates",
+    "tz",
+    "wave",
+    "weekly"
+  ],
+  "additionalProperties": false
+}

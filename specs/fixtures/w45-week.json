@@ -76,12 +76,14 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "meta": null,
+      "buffer_channel_id": null,
       "ecosystem_cta": {
         "route": "mindmake",
         "url": "https://mindmake.co/",
         "placement": "in_post"
       },
-      "payload_sha256": "b8767f75ffae1934e412cb0eebbfc1118106d3e1beabeb21d07e9bcf68d76004"
+      "payload_sha256": "dab842d9fff96249bc48df087ed17a913b72f4c404cb53c4b4d52ffdb6d903d4"
     },
     {
       "slot_id": "w45-mon-note-2",
@@ -105,12 +107,14 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "meta": null,
+      "buffer_channel_id": null,
       "ecosystem_cta": {
         "route": "mindmake",
         "url": "https://mindmake.co/",
         "placement": "in_post"
       },
-      "payload_sha256": "6d3eceafe1d14cf20203c1579fd9d7f428c6b37210b092e89cc62882056fcc63"
+      "payload_sha256": "2f07670643346a83b11b7dff4bef4f66ff76f2bf7edc3cacb3ca63fe8efbf19b"
     },
     {
       "slot_id": "w45-tue-note-1",
@@ -134,12 +138,14 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "meta": null,
+      "buffer_channel_id": null,
       "ecosystem_cta": {
         "route": "mindmake",
         "url": "https://mindmake.co/",
         "placement": "in_post"
       },
-      "payload_sha256": "db53180898192d303664502175ef6e949b7ee5a9931f9a31bff6a5c532b9c66b"
+      "payload_sha256": "b8ade386d3b55754231856c91ce6e1b27a55939cdeba835046051b0fb5734607"
     },
     {
       "slot_id": "w45-mon-threads-1",
@@ -155,12 +161,14 @@
       "experiment_arm": "in_post",
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "meta": null,
+      "buffer_channel_id": null,
       "ecosystem_cta": {
         "route": "long-video",
         "url": "https://www.youtube.com/@makeyourmind-up",
         "placement": "in_post"
       },
-      "payload_sha256": "464bd451c49c14112990af0549f68568e2baea2089a9bcd235ebb5d415b2873a"
+      "payload_sha256": "d8797a474f70b57350422e8bf810d45b827f80d26dba4a06472eb3ec8221cc9f"
     },
     {
       "slot_id": "w45-wed-threads-1",
@@ -176,12 +184,14 @@
       "experiment_arm": "first_reply",
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "meta": null,
+      "buffer_channel_id": null,
       "ecosystem_cta": {
         "route": "long-video",
         "url": "https://www.youtube.com/@makeyourmind-up",
         "placement": "first_reply"
       },
-      "payload_sha256": "ceb5a45d84c86d769353f0c7337cf0714d2dd47b41763dcc247818a76bbeb556"
+      "payload_sha256": "c7d260498c891e3f39c3a24fdbe8931e70a23ab866283c09b6d5c8f761cfaecb"
     }
   ],
   "experiments": [

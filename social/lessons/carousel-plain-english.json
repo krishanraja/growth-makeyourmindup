@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "carousel-plain-english",
+  "category": "format",
+  "scope": [
+    "carousel",
+    "caption",
+    "instagram",
+    "facebook"
+  ],
+  "status": "accepted",
+  "finding": "A carousel is a new format: each one needs Krish's eyes before it posts, and its cards and caption must be plain English, human and humble. Short sentences (16 words on average, none over 25), no jargon, no em dashes, no stacked two-word fragments, and at least one first-person line with a hedge or a thanks. engine/run/plain.py checks this; every other caption gets the same check as guidance.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "CHANGES.md, 2026-10-27 (evening) entry: \"However I think you're going to be creating new formats like carousels. The last one that went up on Make Your Mind Up Instagram was good but could have been better. It wasn't plain English and human and humble enough.\"",
+    "observed_at": "2026-10-27",
+    "result": "invariants/authority.json lists carousel as a new format that needs his eyes; engine/run/plain.py lints carousel cards and captions; growth.py run carousel lint runs it."
+  },
+  "revisit_when": "Krish approves enough carousels to move them to the derivatives list, or changes the plain-English bar.",
+  "supersedes": null
+}

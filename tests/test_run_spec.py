@@ -191,7 +191,9 @@ class RunSpecLintTests(SyntheticLadder):
         first = spec['slots'][0]
         body = {'channel': first['channel'], 'format': first['format'], 'words': first['words'],
                 'assets': [a['sha256'] for a in first['assets']], 'link_placement': first['link_placement'],
-                'due_at': first['due_at'], 'publish_mode': first['publish_mode']}
+                'due_at': first['due_at'], 'publish_mode': first['publish_mode'], 'meta': first['meta'],
+                'buffer_channel_id': first['buffer_channel_id'],
+                'domain': 'growth-run-spec-slot/1'}  # F105: never a go-live line's digest
         expected = hashlib.sha256(json.dumps(body, sort_keys=True, separators=(',', ':'),
                                              ensure_ascii=False).encode('utf-8')).hexdigest()
         self.assertEqual(payload_sha256(first), expected)
@@ -204,7 +206,9 @@ class RunSpecLintTests(SyntheticLadder):
             changed = dict(first, **{key: value})
             self.assertEqual(payload_sha256(changed), before, key + ' is not part of the signed payload')
         for key, value in (('words', first['words'] + ' One more line.'), ('due_at', '2026-11-02T10:30:00-05:00'),
-                           ('link_placement', 'first_reply'), ('assets', [dict(first['assets'][0], sha256='a' * 64)])):
+                           ('link_placement', 'first_reply'), ('assets', [dict(first['assets'][0], sha256='a' * 64)]),
+                           ('meta', {'metadata': {'threads': {'topic': 'TEST FIXTURE ONLY'}}}),
+                           ('buffer_channel_id', 'c' * 24)):
             changed = copy.deepcopy(spec)
             changed['slots'][0][key] = value
             self.assertNotEqual(payload_sha256(changed['slots'][0]), before, key)
@@ -247,6 +251,16 @@ class RunSpecLintTests(SyntheticLadder):
         self.assertEqual(codes(computed(spec)), {'posts_per_day'}, 'a third Note on one New York day fails')
         late['due_at'] = '2026-11-03T05:00:00Z'
         self.assertEqual(codes(computed(spec)), set(), 'midnight in New York starts Tuesday')
+
+    def test_story_frames_do_not_count_against_the_feed_cap(self):
+        # The calendar's stories floor governs Story frames; the feed cap counts feed posts only.
+        from engine.run import calendar as cal, spec as spec_module
+        self.assertEqual(spec_module.STORY_FORMATS, cal.STORY_FORMATS)
+        spec = fixture('w45-week')
+        third = copy.deepcopy(spec['slots'][1])
+        third.update(slot_id='w45-mon-note-story', due_at='2026-11-02T22:00:00Z', format='story-frame')
+        spec['slots'].append(third)
+        self.assertNotIn('posts_per_day', codes(computed(spec)), 'a Story frame is not a third feed post')
 
     def test_every_channel_is_capped_by_its_record(self):
         spec = fixture('w45-week')
@@ -658,7 +672,8 @@ class RunStatusTests(SyntheticLadder):
             self.put('decision.json', dict(decision, **change))
             self.assertEqual(self.stage()[0], 'reviewed', change)
         # Krish amends: his version is what is signed, and only its digest may be queued.
-        amended = {k: self.slot[k] for k in ('channel', 'format', 'link_placement', 'due_at', 'publish_mode')}
+        amended = {k: self.slot[k] for k in ('channel', 'format', 'link_placement', 'due_at', 'publish_mode', 'meta',
+                                             'buffer_channel_id')}
         amended.update(words='TEST FIXTURE ONLY. Krish reworded this line.', assets=[])
         self.signed(digest=sha256_hex(amended), amended=amended)
         self.assertEqual(self.stage()[0], 'signed')

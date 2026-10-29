@@ -8,6 +8,7 @@ import tempfile
 import unittest
 
 from engine.core import write_json
+from engine.run.invariants import collapse
 from engine.packs import EM_DASH, PERCENT
 from engine.run.cards import card_errors
 from engine.run.cards import main as card_main
@@ -137,9 +138,18 @@ class RunPackTests(unittest.TestCase):
         self.assertLessEqual(len(narrowed.encode('utf-8')), MAX_BYTES, 'narrowing brings it back under')
 
     def test_run_doc_is_small_and_house_clean(self):
-        raw = (ROOT / 'docs' / 'RUN.md').read_bytes()
+        # Measured with LF endings: a Windows checkout adds a CR per line (F49).
+        raw = (ROOT / 'docs' / 'RUN.md').read_bytes().replace(b'\r\n', b'\n')
         self.assertLessEqual(len(raw), 8 * 1024)
+        # A Windows checkout (core.autocrlf) measures the same once its CRs are taken back out.
+        crlf = raw.replace(b'\n', b'\r\n')
+        self.assertGreater(len(crlf), len(raw))
+        self.assertEqual(crlf.replace(b'\r\n', b'\n'), raw)
         text = raw.decode('utf-8')
+        # F105: the two release paths, stated apart.
+        self.assertIn('L0 `run autorelease` schedules the go-lives he approved', collapse(text))
+        self.assertIn("`run release` is only each route's capability check", collapse(text))
+        self.assertIn('one go-live per New York day', collapse(text))
         self.assertFalse(EM_DASH.search(text))
         self.assertFalse(PERCENT.search(text))
         for command in ('run new', 'run lint', 'run status', 'run pack', 'run card lint', 'ASSET-STORAGE',

@@ -53,6 +53,23 @@
     closed with the reason in `concept_hold`. The plan states each channel's
     most posts a day, and release keeps under it too.
 
+- 2026-10-29: Buffer stays. Krish: "OK, I will keep Buffer for heartside
+  and makeyourmindup for now", and of Full Time: "I can add fulltime when
+  ready to launch that, its a while away still". The memo he asked for
+  ("it is on you to prove Buffer's ROI to me by then") applied the rule fixed
+  on 27 October: Buffer is the only working route for the channels the plan
+  needs (every route goes through Buffer, 28 October), the free plan holds 3
+  channels against this engine's 8, and Essentials keeps every capability the
+  engine uses (Team's approval workflows answered the routines, which are
+  gone). Early results (10 Buffer-sent posts, 26 to 29 October) are too few to
+  judge either way. The plan purchase is his click.
+
+- 2026-10-29: No Claude routines: the make, plan and watch routines are removed
+  under Krish's 29 Oct ruling ('I want zero Claude routines. No Claude
+  schedules of any kind in this architecture'); GitHub Actions jobs remain the
+  only schedules; making is done by sessions and the PC automations under the
+  same walls; the taste procedure moves to docs/TASTE.md.
+
 - 2026-10-29: "At U3 to U5, engines and Control Center may raise volume caps
   up to each repo's existing policy bounds without a signed week spec. This
   is volume only: walls unchanged." The engagement doctrine moves from
@@ -157,6 +174,49 @@
   value to the content." content-engine owns the patterns and added both
   (copy lint version 2026-10-29.1, `take_label` and `illustration_label`);
   this engine re-vendored that version unchanged.
+
+- 2026-10-27 (late): the engine reads Inspiration House, robustly, both ways.
+  Krish: "Make sure you're wiring into the Inspiration House repository in a
+  way that is incredibly robust because that's where I put in videos or
+  content. I put it in when I either love the production, it could be a
+  template for us, or I like the specific content. I'm always commenting in
+  detail on why I like something in there." He approved the plan in which a
+  maker may read his production examples (cards he routed to study the style,
+  and his form signals) as context for making, never a rule and never to
+  judge. `routines/taste.md` is how the routines read his approved rules and
+  examples and report back; `tests/test_taste_wiring.py` keeps every judge
+  away from taste; the Control Center tool and the Inspiration House rule line
+  are briefs in `docs/briefs/2026-10-28-*`.
+- 2026-10-27 (evening): three rulings on what the engine may do alone.
+  - Standing approval for derivatives: "Derivatives of approved pieces.
+    That actually includes Instagram as well as YouTube and TikTok. Once I'm
+    happy with the publish board (article, the assets and video recordings),
+    you should be able to just go for gold everywhere else. I would say that
+    for the first 4 weeks you need to show me before you post. However I
+    think you're going to be creating new formats like carousels. The last
+    one that went up on Make Your Mind Up Instagram was good but could have
+    been better. It wasn't plain English and human and humble enough."
+    `invariants/authority.json` holds it as data: the derivative formats
+    that post on every channel once he approves a piece's publish board;
+    each batch shown to him first through 2026-11-29 (W45 to W48, four
+    weeks from the first signed week); carousels, memes, opinion, reactive
+    posts and any other new format need his eyes item by item; carousel and
+    caption copy passes the plain-English lint (`engine/run/plain.py`).
+  - Keys: "Surely we can have a less fragile way of doing this than a
+    session engine token ... Give me the bulletproof version of this. Same
+    for the cost baseline." No session holds the engine key. Control Center
+    traffic runs only from the GitHub Actions runner, which reads the key as
+    a repository secret, and every run meters its own cost.
+  - Lanes: "set yourself daily autonomous tasks that don't really rely on
+    me. Separate your daily autonomous work ... from the things that you
+    need my eyes on to just approve versus the things that you need me to
+    push manually, like my personal LinkedIn posts that you've drafted."
+    `lanes.json` puts every job in exactly one lane: L0 code on GitHub
+    Actions (no model), L1 Claude routines (make, plan, watch), L2 his eyes
+    (one press in Control Center) and L3 his hands (LinkedIn, the Buffer
+    plan, one-time set-up). The nine automations keep running until the W46
+    cut-over. `calendar/v1.json` is the V1 posting calendar built on those
+    lanes, checked by `growth.py run calendar lint`.
 
 - 2026-10-27 (later still): "apply the Control Center change yourself". For
   this one change only, rule 7 (stay in this repository) is lifted: the

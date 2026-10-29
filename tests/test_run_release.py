@@ -51,6 +51,12 @@ class ReleaseTests(unittest.TestCase):
         self.dir = Path(self.tmp.name)
         for n in range(1, 6):
             (self.dir / ('frame-' + str(n) + '.png')).write_bytes(('synthetic release fixture frame ' + str(n) + '\n').encode())
+        # `run release` is only each route's capability check (F105): on a route verified and
+        # fresh, L0 serves the go-live. The fixture's routes stand as not yet passed, so each
+        # slot is its route's one check; the routing tests read the real records instead.
+        unverified = ['capability_not_verified_for_selected_channel_and_format']
+        patch.object(release, 'route', lambda *a, **k: {'holds': list(unverified)}).start()
+        self.addCleanup(patch.stopall)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -75,6 +81,14 @@ class ReleaseTests(unittest.TestCase):
         ledger = self.plan()['ledger']
         ledger['released']['threads-1']['post_id'] = THREADS_POST
         return ledger
+
+    def signed_for(self, targets, sid):
+        """A spec and decision with sid's meta signed from targets[sid], as `run drafts` fills it."""
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        slot = [s for s in spec['slots'] if s['slot_id'] == sid][0]
+        slot['meta'] = release.signed_meta(targets[sid], [a['sha256'] for a in slot['assets']])
+        resign(slot, decision, spec)
+        return spec, decision
 
     def by_slot(self, result):
         return {c['slot_id']: c for c in result['calls']}
@@ -133,21 +147,40 @@ class ReleaseTests(unittest.TestCase):
         targets = copy.deepcopy(self.targets)
         targets['x-1']['metadata']['isAiGenerated'] = True
         targets['x-1']['assets'][0]['image']['altText'] = 'Synthetic alt text for frame five.'
-        args = self.by_slot(self.plan(targets=targets))['x-1']['arguments']
+        # Added after signing, they hold (F104); signed, the edit carries them forward.
+        self.assertEqual(self.holds(self.plan(targets=targets))['x-1'], 'draft_differs_from_signed')
+        spec, decision = self.signed_for(targets, 'x-1')
+        args = self.by_slot(self.plan(spec, decision, targets=targets))['x-1']['arguments']
         self.assertEqual(args['assets'][0]['image']['metadata'], {'altText': 'Synthetic alt text for frame five.'})
         self.assertEqual(args['metadata'], {'twitter': {'isAiGenerated': True}})
         moved = copy.deepcopy(self.targets)
         moved['ig-story-1']['assets'][0]['source'] = 'https://buffer.example.org/synthetic/elsewhere.png'
         result = self.plan(targets=moved)
         self.assertNotIn('ig-story-1', self.by_slot(result))
-        self.assertEqual(self.holds(result)['ig-story-1'], 'edit_would_drop_alt_text_or_ai_label')
+        self.assertEqual(self.holds(result)['ig-story-1'], 'draft_differs_from_signed')  # the signed meta binds first
+        with self.assertRaisesRegex(ValueError, 'edit_would_drop_alt_text_or_ai_label'):
+            release.call_arguments(self.slots['ig-story-1'], self.channel('instagram'), NOW, moved['ig-story-1'])
+
+    def test_a_signed_account_or_meta_that_differs_holds(self):
+        # B1 and B2 on the session path: the signed Buffer channel and the signed meta bind too.
+        self.assertIn('x-1', self.by_slot(self.plan()))
+        notes = self.spec['slots'][0]
+        notes['buffer_channel_id'] = 'cccccccccccccccccccccc99'
+        resign(notes, self.decision, self.spec)
+        x = [s for s in self.spec['slots'] if s['slot_id'] == 'x-1'][0]
+        x['meta'] = {'metadata': {'twitter': {'isAiGenerated': True}}}
+        resign(x, self.decision, self.spec)
+        holds = self.holds(self.plan())
+        self.assertIn('wrong_account', holds[notes['slot_id']])
+        self.assertEqual(holds['x-1'], 'draft_differs_from_signed')
 
     def test_a_name_in_carried_alt_text_holds_the_edit(self):
         # Krish, 2026-10-28: "Remember, no content refers to Krish, ever." Alt text a stored draft
         # carries forward is public words too, read as carousel_text.
         targets = copy.deepcopy(self.targets)
         targets['x-1']['assets'][0]['image']['altText'] = 'Krish Raja holding the chart of chip spending.'
-        result = self.plan(targets=targets)
+        spec, decision = self.signed_for(targets, 'x-1')  # even signed, a name in it holds
+        result = self.plan(spec, decision, targets=targets)
         self.assertNotIn('x-1', self.by_slot(result))
         self.assertIn('alt text copy lint no_name', self.holds(result)['x-1'])
         self.assertIn('x-1', self.by_slot(self.plan()))
@@ -158,6 +191,56 @@ class ReleaseTests(unittest.TestCase):
         self.assertTrue(any(e.startswith('alt text copy lint no_name') for e in errors), errors)
         self.assertTrue(any(e.startswith('tiktok title copy lint no_name') for e in errors), errors)
 
+    def test_an_engine_edit_with_no_signed_meta_holds(self):
+        # F104: with meta null nothing he signed binds the alt text or the AI label the edit
+        # carries forward from the draft, so an engine-scheduled edit holds.
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        slot = [s for s in spec['slots'] if s['slot_id'] == 'x-1'][0]
+        slot['meta'] = None
+        resign(slot, decision, spec)
+        unverified = {'holds': ['capability_not_verified_for_selected_channel_and_format']}
+        with patch.object(release, 'route', lambda *a, **k: unverified):
+            result = self.plan(spec, decision)
+        self.assertEqual(self.holds(result)['x-1'], 'draft_meta_not_signed')
+        target = copy.deepcopy(self.targets['x-1'])
+        target['assets'][0]['image']['altText'] = 'Synthetic words nobody signed, edited in Buffer after signing.'
+        target['metadata']['isAiGenerated'] = True
+        with self.assertRaisesRegex(ValueError, 'draft_meta_not_signed'):
+            release.call_arguments(slot, self.channel('twitter'), NOW, target, {'single-image': True})
+
+    def test_the_format_shape_table_covers_every_format_record(self):
+        # F101: one table maps each format to the draft shape it is; the counts are the
+        # format records' own min_assets and max_assets.
+        records = {p.stem: json.loads(p.read_text(encoding='utf-8')) for p in (ROOT / 'social' / 'formats').glob('*.json')}
+        self.assertEqual(set(release.FORMAT_SHAPE), set(records))
+        for fid, record in records.items():
+            shape = release.format_shape(fid)
+            self.assertEqual((shape['min'], shape['max']), (record['min_assets'], record['max_assets']), fid)
+            self.assertTrue(shape['kinds'] <= {'image', 'video', 'document'}, fid)
+        image = {'type': 'image', 'source': 'https://example.org/a.png'}
+        video = {'type': 'video', 'source': 'https://example.org/v.mp4'}
+        reel = {'channelService': 'instagram', 'assets': [video],
+                'metadata': {'__typename': 'InstagramPostMetadata', 'type': 'reel'}}
+        self.assertEqual(release.format_shape_errors('short-video', reel), [])
+        self.assertTrue(release.format_shape_errors('carousel', reel))
+        self.assertTrue(release.format_shape_errors('single-image', {'channelService': 'twitter', 'assets': [video]}))
+        self.assertTrue(release.format_shape_errors('text', {'channelService': 'threads', 'assets': [image]}))
+        self.assertTrue(release.format_shape_errors('carousel', {'channelService': 'tiktok', 'assets': [image]}))
+        self.assertTrue(release.format_shape_errors('no-such-format', {'channelService': 'x', 'assets': []}))
+
+    def test_run_release_is_only_each_routes_capability_check(self):
+        # F105: on a route L0 serves (verified and fresh), an approved go-live goes out through
+        # `run autorelease`; `run release` never schedules there, so one yes never acts twice.
+        with patch.object(release, 'route', lambda *a, **k: {'holds': []}):
+            result = self.plan()
+        holds, calls = self.holds(result), self.by_slot(result)
+        for sid, slot in self.slots.items():
+            if release.is_draft(slot):
+                self.assertIn(sid, calls)  # a draft save for his own click still goes
+            else:
+                self.assertTrue(holds[sid].startswith('route_served_by_l0'), (sid, holds.get(sid)))
+                self.assertNotIn(sid, calls)
+
     def test_tiktok_photo_never_sets_ai_flag(self):
         slot = self.slots['tiktok-photo-1']
         args = self.by_slot(self.plan())['tiktok-photo-1']['arguments']
@@ -167,6 +250,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('TikTok photo posts never set the AI-generated flag', release.argument_errors(flagged, slot))
         drafted = copy.deepcopy(slot)
         drafted['buffer_draft_id'] = 'aaaaaaaaaaaaaaaaaaaaaa04'
+        drafted['meta'] = {'metadata': {'tiktok': {'isAiGenerated': True}}}  # even signed, it cannot be carried
         target = {'id': drafted['buffer_draft_id'], 'channelId': '6adccbdd778b240e2fafc32e',
                   'channelService': 'tiktok', 'status': 'draft', 'via': 'api', 'assets': [],
                   'metadata': {'isAiGenerated': True}}
@@ -374,6 +458,7 @@ class ReleaseTests(unittest.TestCase):
     def test_unchecked_route_releases_only_its_capability_check(self):
         # docs/PUBLISHING-AUTHORITY.md, 28 Oct 2026: "Each route's first real post is a capability
         # check he approves on that Monday; until a route has passed it, the route holds."
+        patch.stopall()  # the real route records
         spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
         for sid, due in (('notes-1', '2026-11-04T08:30:00-05:00'), ('threads-1', '2026-11-02T09:00:00-05:00'),
                          ('tiktok-photo-1', '2026-11-05T19:00:00-05:00')):
@@ -393,10 +478,11 @@ class ReleaseTests(unittest.TestCase):
         self.assertTrue(calls['threads-2']['capability_check'])
         self.assertNotIn('threads-1', calls)
         self.assertIn('its capability check is threads-2', holds['threads-1'])
-        # A verified route releases every approved post and marks none as a check.
+        # A verified route is L0's: `run release` schedules nothing on it (F105).
         for sid in ('tiktok-photo-1', 'tiktok-photo-2'):
-            self.assertNotIn('capability_check', calls[sid])
-            self.assertNotIn('capability_check', result['ledger']['released'][sid])
+            self.assertNotIn(sid, calls)
+            self.assertTrue(holds[sid].startswith('route_served_by_l0'), holds[sid])
+            self.assertNotIn(sid, result['ledger']['released'])
         # Once the check is released, the rest still wait for the route to be recorded as passed.
         again = self.plan(spec, decision, result['ledger'])
         self.assertEqual(again['calls'], [])
@@ -404,7 +490,10 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(self.holds(again)['notes-1'], 'already_released_once')
         with patch.object(release, 'route', lambda *a, **k: {'holds': []}):
             passed = self.plan(spec, decision, result['ledger'])
-        self.assertEqual(set(self.by_slot(passed)), {'notes-2', 'threads-1'})
+        # Once a route is recorded as passed, its posts are L0's to schedule, never this path's.
+        self.assertEqual(self.by_slot(passed), {})
+        for sid in ('notes-2', 'threads-1'):
+            self.assertTrue(self.holds(passed)[sid].startswith('route_served_by_l0'))
         # A stale observation is a recheck: only the route's earliest post goes.
         stale = release.release_plan(spec, decision, None, self.paths(spec), self.channels,
                                      '2026-11-03T12:00:00-05:00', self.targets)
@@ -421,6 +510,7 @@ class ReleaseTests(unittest.TestCase):
     def test_capability_check_holds_its_route_across_runs(self):
         # "until a route has passed it, the route holds": a check another run released, and not yet
         # recorded as passed, holds this run's route too, instead of becoming a second check.
+        patch.stopall()  # the real route records
         other = [{'run_id': 'synthetic:2026-W44:week', 'slot_id': 'notes-9', 'channel': 'substack-notes',
                   'format': 'note', 'planned_at': '2026-10-30T09:00:00-05:00'}]
         result = release.release_plan(self.spec, self.decision, None, self.paths(), self.channels, NOW,
@@ -436,11 +526,11 @@ class ReleaseTests(unittest.TestCase):
         unknown = [dict(other[0], format=None)]
         self.assertIn('notes-1', self.holds(release.release_plan(self.spec, self.decision, None, self.paths(),
                                                                  self.channels, NOW, self.targets, unknown)))
-        # Once the route is recorded as passed, nothing is pending.
+        # Once the route is recorded as passed, nothing is pending: it is L0's route (F105).
         with patch.object(release, 'route', lambda *a, **k: {'holds': []}):
             passed = release.release_plan(self.spec, self.decision, None, self.paths(), self.channels, NOW,
                                           self.targets, other)
-        self.assertIn('notes-1', self.by_slot(passed))
+        self.assertTrue(self.holds(passed)['notes-1'].startswith('route_served_by_l0'))
         # A stale verified route: a check planned before its record's date is settled, a later one waits.
         stale_now = '2026-11-03T12:00:00-05:00'
         tiktok = {'run_id': 'synthetic:2026-W44:week', 'slot_id': 'tiktok-9', 'channel': 'tiktok',

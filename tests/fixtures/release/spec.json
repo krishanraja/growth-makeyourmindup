@@ -13,11 +13,31 @@
         "revision": "approved v1 (synthetic)",
         "approval_scope": "TEST FIXTURE ONLY",
         "files": [
-          {"name": "frame-1.png", "bytes": 34, "sha256": "08ef523a2094c191daab36e94b658c49e05eb90a402627b6daa616d1af0eaca7"},
-          {"name": "frame-2.png", "bytes": 34, "sha256": "37a2a0888af44a4e67e73d5e149aec5d3272aaa6c21010498a6371adfa522c30"},
-          {"name": "frame-3.png", "bytes": 34, "sha256": "6de93a159e389350409d36cf61316b1e602673d88c4f26a238bd474127204739"},
-          {"name": "frame-4.png", "bytes": 34, "sha256": "5a806107f736ece03fb46dba93eb3722bfa5b3a65fc7c44519b8c8fb65858c43"},
-          {"name": "frame-5.png", "bytes": 34, "sha256": "2af8201f46f1f62223c55124101d104f206c416af92f1602b40b7d422b48a787"}
+          {
+            "name": "frame-1.png",
+            "bytes": 34,
+            "sha256": "08ef523a2094c191daab36e94b658c49e05eb90a402627b6daa616d1af0eaca7"
+          },
+          {
+            "name": "frame-2.png",
+            "bytes": 34,
+            "sha256": "37a2a0888af44a4e67e73d5e149aec5d3272aaa6c21010498a6371adfa522c30"
+          },
+          {
+            "name": "frame-3.png",
+            "bytes": 34,
+            "sha256": "6de93a159e389350409d36cf61316b1e602673d88c4f26a238bd474127204739"
+          },
+          {
+            "name": "frame-4.png",
+            "bytes": 34,
+            "sha256": "5a806107f736ece03fb46dba93eb3722bfa5b3a65fc7c44519b8c8fb65858c43"
+          },
+          {
+            "name": "frame-5.png",
+            "bytes": 34,
+            "sha256": "2af8201f46f1f62223c55124101d104f206c416af92f1602b40b7d422b48a787"
+          }
         ]
       }
     }
@@ -37,7 +57,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "de7c5259261e54246e78e90b766adb6c10befdd5722c20d228cfecd30d126f70"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "52aa199f170d46c6da17357c147ac4f012deffceda7d423ed36ff54882368860"
     },
     {
       "slot_id": "threads-1",
@@ -53,7 +75,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "103812534e3dc28c243f09cee979d363ab3eafddb96527ecea9bf451ca6a5dda"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "a05e310dbcfa7564d9f3b1137d1219ff1062e39c258fb7b20991b278d172a98d"
     },
     {
       "slot_id": "ig-story-1",
@@ -76,7 +100,29 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa01",
-      "payload_sha256": "cfda3222ea9865b8e85f8a002d1d4dd4b792b1734f059d076b2a66472a5cb9b6"
+      "meta": {
+        "assets": [
+          {
+            "image": {
+              "sha256": "08ef523a2094c191daab36e94b658c49e05eb90a402627b6daa616d1af0eaca7",
+              "metadata": {
+                "altText": "Synthetic alt text for frame one."
+              }
+            }
+          }
+        ],
+        "schedulingType": "automatic",
+        "saveToDraft": false,
+        "metadata": {
+          "instagram": {
+            "type": "story",
+            "shouldShareToFeed": false,
+            "isAiGenerated": true
+          }
+        }
+      },
+      "buffer_channel_id": null,
+      "payload_sha256": "ace13cd7ff23a75ff5a4309e1ae7ef2122ec1f6cf89aac3871b01ad73c7337d7"
     },
     {
       "slot_id": "tiktok-photo-1",
@@ -105,7 +151,9 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
-      "payload_sha256": "988445b7e60754ff6ed965b2cce65c8d400fa389b8b36775df3e2ee6241c1121"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "a0bdc7e1e11218cef9b89241679e23257856596ad1f8e6f0cfc9a88f2fd9c82d"
     },
     {
       "slot_id": "linkedin-1",
@@ -128,7 +176,9 @@
       "experiment_arm": null,
       "publish_mode": "krish_click",
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa02",
-      "payload_sha256": "3a4d9502a0dbccf158a646cc1b8209a98a927c225ba56ed5216fa7ff89396db7"
+      "meta": null,
+      "buffer_channel_id": null,
+      "payload_sha256": "14d5e9a01fe019457aae4074577fc6b29405a3af603f9de63a9a6e32c594b90f"
     },
     {
       "slot_id": "x-1",
@@ -151,12 +201,24 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa03",
-      "payload_sha256": "bd73fb76298ef6e30abaee69e8b0329ac7116d61ccbae196cc6b6ae272e1a72a"
+      "meta": {
+        "assets": [
+          {
+            "image": {
+              "sha256": "2af8201f46f1f62223c55124101d104f206c416af92f1602b40b7d422b48a787"
+            }
+          }
+        ],
+        "schedulingType": "automatic",
+        "saveToDraft": false
+      },
+      "buffer_channel_id": null,
+      "payload_sha256": "07236a34c2b15bdf91f7fd616a382db73afcb576f98741af5b88a5610e498161"
     }
   ],
   "signature": {
     "go_live_proposal_id": "synthetic-go-live-1",
-    "decision_digest": "8a4d2a84ef957217d075910f32e3c09041603bac5381970707233972f843afdf",
+    "decision_digest": "e32c38277022698508566526f60c02186d4d2bd8d262529c870cb6512f0afc06",
     "signed_at": "2026-11-01T10:00:00-05:00"
   }
 }
