@@ -16,8 +16,10 @@ A session does one job, then ends at a gate packet:
 - **Release:** only through `growth.py run release`, and only for an approved
   go-live decision the engine reads from Control Center in its own run
   ("Approve each day Monday", 28 Oct). `decision.json` is written only from
-  that readback, never by hand. It acts only on this engine's eight Buffer
-  channels, pinned by channelId, holds a slot whose words fail the copy lint,
+  that readback, never by hand. On Instagram, YouTube, TikTok and X an
+  approved concept is that decision for each post that matches its mock and
+  claim (`concept_id`, docs/MIX.md, R101). It acts only on this engine's eight
+  Buffer channels, pinned by channelId, holds a slot whose words fail the copy lint,
   and releases only an unverified route's first post, its check.
   An interactive session never releases or uses `--deliver`.
   Scheduled is never live.
@@ -67,7 +69,8 @@ on a human-publish-only channel (LinkedIn) or other than `engine` elsewhere; a
 channel; an unregistered arm; an asset hash that is not 64 lowercase hex; more
 scheduled slots on a New York day than the channel's `daily_posts_target`
 (null: no cap; U3+ lifts it to its policy bound); an engine slot asset in no
-manifest with a `creative_approval_ref` (release holds it too); a window that
+manifest with a `creative_approval_ref` or its concept's mock; a concept slot
+off its concept's placement, mock or claim; a window that
 is not New York midnights 7 (week, from a Monday), 8 (piece) or 1 (express)
 days long; a slot with no `ecosystem_cta` (docs/ENGINE.md). Warnings include
 an engine slot with no `due_at`: it cannot release, and the daily cap counts
@@ -122,7 +125,7 @@ for where it lives.
 
 ## Budgets (provisional until the Phase 0 baseline)
 
-- Release: up to 25 calls, 0.6M tokens, 15 engine minutes.
+- Release: up to 40 calls a day (16 flooded posts and readbacks), 0.6M tokens.
 - Measure: up to 20 calls, 0.5M tokens.
 - Express: up to 15 calls, 0.5M tokens.
 - Krish: 20 minutes a weekday, 30 on Sunday; gates first.
@@ -130,20 +133,15 @@ for where it lives.
 
 ## Closeout (docs/ASSET-STORAGE.md)
 
-1. Approved delivery assets and exact copy go to the Drive
-   **4 Growth** library, one `YYYY-MM-DD - Topic - Channel` folder each, with
-   a SHA-256 manifest. No other Growth root.
-2. Private evidence (readbacks, journals, inventories) stays in `.scratch/`;
-   never in 4 Growth, which anyone with its link can edit.
+1. Approved assets and exact copy go to Drive **4 Growth**, one
+   `YYYY-MM-DD - Topic - Channel` folder each, with a SHA-256 manifest.
+2. Private evidence stays in `.scratch/`, never in 4 Growth (link-editable).
 3. Lessons go to `social/lessons/`; run `python growth.py social check`.
-4. Creative feedback goes to Content Engine through its handoff;
-   Growth records the distribution need, Content Engine owns the craft.
-5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:
-   what is draft, approved, scheduled, published, held or unknown.
-6. Snapshot run evidence before workspace cleanup; a local archive is not an
-   off-device backup.
-7. If an automation changed, verify its owner and schedule; update existing
-   jobs, never duplicate them.
+4. Creative feedback goes to Content Engine through its handoff.
+5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated closeout: what
+   is draft, approved, scheduled, published, held or unknown.
+6. Snapshot run evidence before cleanup; a local archive is not a backup.
+7. If an automation changed, update the existing job, never duplicate it.
 
 ## Rules a run session also reads
 

@@ -1229,6 +1229,96 @@
         "test_copy_lint_is_a_lint_error_on_slot_words",
         "test_a_draft_that_names_him_is_held_not_proposed"
       ]
+    },
+    {
+      "id": "R101",
+      "statement": "On Instagram, YouTube, TikTok and X, Krish's approval of a concept (its idea, one claim and mock files, bound by concept_sha256 and listed in the week's mix plan proposal) authorises release of every post made from it with no per-post digest, through the same release gate and Buffer channel lock, only while the post is one of the concept's placements, carries only its mock files and carries its claim word for word; a post that departs is a lint error and is held at release, every other check still runs, his stop on a concept or on the mix plan holds every post from it, and LinkedIn stays his click.",
+      "source_file": "CHANGES.md",
+      "quote": "I just need to be in control of the idea and the mocks and then I'm happy to let you let that engine just go for gold.",
+      "enforced_by": [
+        "engine/concepts.py:authority",
+        "engine/concepts.py:match_errors",
+        "engine/concepts.py:stopped",
+        "engine/concepts.py:decision_errors",
+        "engine/run/release.py:authorised_digests",
+        "engine/run/release.py:release_plan",
+        "engine/run/release.py:stopped_plans",
+        "engine/run/spec.py:concept_lint",
+        "engine/run/spec.py:signed_digest"
+      ],
+      "tests": [
+        "test_an_approved_concept_releases_its_post_without_a_digest_of_its_own",
+        "test_a_post_whose_words_drop_the_claim_is_held",
+        "test_a_post_with_a_file_that_is_not_the_mock_is_held",
+        "test_a_post_on_a_placement_he_did_not_approve_is_held",
+        "test_a_concept_approved_at_another_hash_covers_nothing",
+        "test_a_concepts_map_that_does_not_match_the_signature_refuses_the_run",
+        "test_his_purge_on_a_concept_stops_every_post_from_it_even_one_signed_alone",
+        "test_a_stop_on_the_mix_plan_stops_every_concept_it_carried",
+        "test_the_release_command_reads_stopped_plans_from_the_loop_ledger",
+        "test_linkedin_and_other_channels_are_never_covered_by_a_concept",
+        "test_copy_lint_still_holds_a_concept_post",
+        "test_a_concept_slot_that_matches_lints_clean_and_its_hash_is_computed",
+        "test_a_slot_that_departs_from_its_concept_is_a_lint_error",
+        "test_signing_the_concept_approves_its_mock_for_the_posts_made_from_it",
+        "test_status_counts_a_concept_post_as_signed_and_a_stopped_one_as_not"
+      ]
+    },
+    {
+      "id": "R102",
+      "statement": "Instagram, YouTube, TikTok and X take up to four scheduled posts a day with a floor of three the weekly mix plans; their channel records, the social policy bound, run lint's daily cap and the urgency caps agree, no urgency caps them below three, and every other channel keeps its own bound.",
+      "source_file": "CHANGES.md",
+      "quote": "When it comes to Instagram, YouTube, and TikTok, I am more than happy to pump out three or four posts a day on all three of those platforms. Same with X and Twitter.",
+      "enforced_by": [
+        "engine/social.py:max_daily_posts",
+        "engine/social.py:inventory",
+        "engine/intensity.py:daily_cap",
+        "engine/run/spec.py:lint",
+        "engine/mix.py:day_times"
+      ],
+      "tests": [
+        "test_four_channels_take_four_a_day_with_a_floor_of_three",
+        "test_a_floor_above_its_target_is_refused",
+        "test_run_lint_takes_four_scheduled_x_posts_a_day_and_refuses_a_fifth",
+        "test_every_channel_gets_three_or_four_a_day_and_never_under_the_floor",
+        "test_u3_and_above_raise_caps_to_the_policy_bounds_only"
+      ]
+    },
+    {
+      "id": "R103",
+      "statement": "The weekly mix planner turns every past piece in the backlog inventory into carousel concepts, oldest unamplified first, and interleaves them with memes, positive news (a primary source dated within 7 days) and level-up advice at mix.json's weights, deterministically, with no piece or idea twice on one channel in a week and no empty slot filled; its concepts go to Krish as one plan proposal behind strategy listing every concept hash, the Sunday report carries it, and each post's What-Works verdict joined to its concept and lane moves a lane one step inside its bounds next week.",
+      "source_file": "CHANGES.md",
+      "quote": "For Make Your Mind Up I think the engine needs to strategize how to repurpose all the previous posts into carousels and intertwine them with the memes, positive news pieces, and the other filler pieces that we decided on.",
+      "enforced_by": [
+        "engine/mix.py:plan",
+        "engine/mix.py:quotas",
+        "engine/mix.py:interleave",
+        "engine/mix.py:idea_pool",
+        "engine/mix.py:plan_proposal",
+        "engine/mix.py:approved_map",
+        "engine/mix.py:learn",
+        "engine/mix.py:weights",
+        "engine/cc_loop.py:mix_proposal",
+        "engine/run/spec.py:with_mix"
+      ],
+      "tests": [
+        "test_the_default_ratio_is_half_repurposed_carousels",
+        "test_lanes_are_interleaved_through_the_week_not_bunched",
+        "test_oldest_unamplified_first_and_no_repeat_on_a_channel",
+        "test_a_format_already_made_on_a_channel_is_not_made_again",
+        "test_empty_slots_are_shortfalls_never_filled",
+        "test_positive_news_needs_a_fresh_primary_source",
+        "test_the_plan_is_deterministic",
+        "test_one_plan_proposal_behind_strategy_lists_every_ready_concept_hash",
+        "test_a_concept_without_its_mock_is_not_ready_and_carries_no_hash",
+        "test_his_amended_payload_leaves_out_the_concepts_he_deleted",
+        "test_run_new_mix_carries_the_ready_concepts_into_the_week",
+        "test_the_sunday_report_carries_next_weeks_mix_as_its_plan",
+        "test_verdicts_are_joined_to_concept_and_lane",
+        "test_the_ratio_moves_one_step_inside_its_bounds_on_judged_posts_only",
+        "test_the_next_plan_reads_what_was_learned",
+        "test_a_narrowed_pack_carries_only_the_concepts_its_posts_are_made_from"
+      ]
     }
   ]
 }

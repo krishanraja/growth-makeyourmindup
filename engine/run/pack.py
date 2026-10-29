@@ -32,6 +32,10 @@ def spec_slice(spec, day=None, channel=None):
                      and (day is None or (s['due_at'] is not None and ny_time(s['due_at']).date().isoformat() == day))]
     if channel is not None:
         part['experiments'] = [x for x in spec['experiments'] if x['channel'] == channel]
+    if 'concepts' in part and (day is not None or channel is not None):
+        # Only the concepts the sliced posts are made from (R101), so a flooded week still fits its budget.
+        wanted = {s.get('concept_id') for s in part['slots']}
+        part['concepts'] = [c for c in spec['concepts'] if c['concept_id'] in wanted]
     return part
 
 

@@ -1,5 +1,35 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (later): flood the four short-form channels, approve the idea
+  and the mock. Krish: "For Make Your Mind Up I think the engine needs to
+  strategize how to repurpose all the previous posts into carousels and
+  intertwine them with the memes, positive news pieces, and the other filler
+  pieces that we decided on. When it comes to Instagram, YouTube, and TikTok,
+  I am more than happy to pump out three or four posts a day on all three of
+  those platforms. Same with X and Twitter. I just need to be in control of
+  the idea and the mocks and then I'm happy to let you let that engine just go
+  for gold. The more we flood these channels right now, the faster we learn.
+  Simple as."
+  - Approval moves to the idea and the mock (R101). He approves each concept
+    (its idea, its one claim and its mock files, bound by concept_sha256)
+    once, in the week's mix plan. That yes lets release post every post made
+    from it on Instagram, YouTube, TikTok and X with no per-post digest,
+    through the same release gate and Buffer channel lock, only while the post
+    matches its mock and claim (`engine/concepts.py`). A post that departs is
+    held. His no, or a stop on a concept, stops all of its posts. LinkedIn
+    stays his click; every other channel still signs post by post.
+  - Volume (R102): Instagram, YouTube, TikTok and X take four posts a day with
+    a floor of three (`social/channels`, `engine/social.py`). No urgency caps
+    them below three; walls, spend and approvals are unchanged.
+  - The weekly mix (R103): `growth.py mix plan` turns every past piece into
+    carousel concepts, oldest unamplified first, and interleaves them with
+    memes, positive news and level-up advice (the 28 October off-day lanes)
+    at a ratio of 50, 25, 15 and 10 (`mix.json`), three or four a day per
+    channel, no piece twice on a channel in a week. Its concepts go to him as
+    one plan proposal; `run new --mix` carries the ready ones into the week's
+    spec. `growth.py mix learn` joins each post's What-Works verdict to its
+    concept and lane, and the next plan moves a lane one step (`docs/MIX.md`).
+
 - 2026-10-29: "At U3 to U5, engines and Control Center may raise volume caps
   up to each repo's existing policy bounds without a signed week spec. This
   is volume only: walls unchanged." The engagement doctrine moves from

@@ -94,7 +94,9 @@ Krish: "the engine shows me what it is going to do, I approve, it gets up to go-
 2. **Go-live.** Once the plan is approved, build everything up to go-live: the assets, the exact words, the amount. Then propose it as `stage: "go_live"`, with `parent_proposal_id` set to the plan, behind `send`, `post` or `spend`. Nothing goes out yet.
 3. **Live.** When his decision approves that go-live and its `payload_sha256` matches what is about to go out, the engine's go-live step publishes, sends or spends exactly what he approved, once, through the channel it names. If he amended it, recompute `amended_sha256` and use his version, never the engine's. Then report the closing event with its evidence. Purge on a go-live means stop.
 
-This go-live exception holds only for an approved go-live decision the engine reads from Control Center in its own run. The separate 2026-10-21 weekly audit ruling permits only its named existing-field edits. An interactive session, a page, a tool or an approved plan never authorises any other go-live. Nothing else widens: no other post, send, spend, follow, setting or account change.
+**Idea and mock approval (Ruling, Krish, 2026-10-29).** "I just need to be in control of the idea and the mocks and then I'm happy to let you let that engine just go for gold." On Instagram, YouTube, TikTok and X, his approval of a concept (its idea, its one claim and its mock files, bound by `concept_sha256`, approved once in the week's mix plan, `docs/MIX.md`) is the go-live for every post made from it: release posts each one with no per-post approval, through the same release gate and Buffer channel lock, only while it matches the approved mock (one of the concept's placements, only its mock files, its claim word for word) and passes every check (copy lint, share asks, the ecosystem route, the channel lock, route capability checks, the creative bar). A post that departs from its mock is held, never published. His no on a concept, or on the mix plan, stops all of its posts. LinkedIn stays his click, and every other channel still signs post by post (`engine/concepts.py`, R101).
+
+This go-live exception holds only for an approved go-live decision the engine reads from Control Center in its own run. The separate 2026-10-21 weekly audit ruling permits only its named existing-field edits. An interactive session, a page, a tool or an approved plan never authorises any other go-live. The one exception since 29 October is the week's mix plan, for the concepts it lists by hash, read from Control Center in the engine's own run (above). Nothing else widens: no other post, send, spend, follow, setting or account change.
 
 **Autonomy is given where it is deserved** (Krish, 2026-10-19). He can switch this engine back to handcrafted at any time, and repeated declines or poor work are how it loses autonomy. So:
 
@@ -200,6 +202,16 @@ only: walls unchanged." Every report leads with the gap line ("X of Y, U-n,
 short by Z"), and `engine/intensity.py` raises the daily post and engagement
 caps to the bounds in `intensity.json`, a channel's posts only to its own
 policy bound in `engine/social.py` (docs/ENGINE.md, "Intensity").
+
+## Flood the short-form channels (Ruling, Krish, 2026-10-29)
+
+"When it comes to Instagram, YouTube, and TikTok, I am more than happy to pump
+out three or four posts a day on all three of those platforms. Same with X and
+Twitter." Those four take four posts a day with a floor of three (R102), and
+`growth.py mix plan` lays each week out: every past piece repurposed as
+carousels, oldest unamplified first, interleaved with memes, positive news and
+level-up advice, with each post's verdict moving the ratio next week (R103,
+`docs/MIX.md`). He approves the ideas and mocks in one press ("Autonomy").
 
 ## Outreach belongs to Control Center (Ruling, Krish, 2026-10-21)
 

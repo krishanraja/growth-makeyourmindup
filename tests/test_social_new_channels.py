@@ -157,7 +157,7 @@ class NewChannelsTests(unittest.TestCase):
             threads = json.loads(threads_path.read_text(encoding='utf-8'))
             threads['daily_posts_target'] = 2
             threads_path.write_text(json.dumps(threads, indent=2), encoding='utf-8')
-            with self.assertRaisesRegex(ValueError, 'only Substack Notes has a two-a-day target'):
+            with self.assertRaisesRegex(ValueError, 'above its policy bound'):
                 inventory(root)
             # A delegated personal identity cannot be relabelled as a publication.
             threads.update(daily_posts_target=1, account_context='publication',
@@ -168,12 +168,12 @@ class NewChannelsTests(unittest.TestCase):
             threads.update(account_context='personal', publication_mode='approved_content_cadence')
             threads_path.write_text(json.dumps(threads, indent=2), encoding='utf-8')
             inventory(root)
-            # Two a day belongs to Substack Notes alone, not to every branded channel.
-            insta_path = root / 'social' / 'channels' / 'instagram.json'
-            insta = json.loads(insta_path.read_text(encoding='utf-8'))
-            insta['daily_posts_target'] = 2
-            insta_path.write_text(json.dumps(insta, indent=2), encoding='utf-8')
-            with self.assertRaisesRegex(ValueError, 'only Substack Notes has a two-a-day target'):
+            # Two a day is not every branded channel's: Facebook stays at one.
+            fb_path = root / 'social' / 'channels' / 'facebook.json'
+            fb = json.loads(fb_path.read_text(encoding='utf-8'))
+            fb['daily_posts_target'] = 2
+            fb_path.write_text(json.dumps(fb, indent=2), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'above its policy bound'):
                 inventory(root)
 
     def test_route_for_threads_text_holds_unverified_capability(self):

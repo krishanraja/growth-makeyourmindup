@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "ruling": "Ruling (Krish, 2026-10-29): repurpose every previous post into carousels interleaved with memes, positive news and the other filler lanes, three or four posts a day on Instagram, YouTube, TikTok and X; Krish approves each idea and its mock once, then the engine posts every post made from it.",
+  "quote": "For Make Your Mind Up I think the engine needs to strategize how to repurpose all the previous posts into carousels and intertwine them with the memes, positive news pieces, and the other filler pieces that we decided on.",
+  "channels": ["instagram", "youtube", "tiktok", "x"],
+  "slot_times": ["08:30", "12:30", "17:30", "20:30"],
+  "reserved": {
+    "days": {"Monday": 1, "Wednesday": 1, "Friday": 1},
+    "time": "12:30",
+    "why": "On the series days the piece's own 90-second cut takes one slot on each of the four channels (AGENTS.md, What you are growing), so the mix fills the other three there and all four on the other days."
+  },
+  "lanes": {
+    "repurposed_carousel": {
+      "weight": 50, "min": 30, "max": 70,
+      "source": "backlog",
+      "what": "a carousel made from a past piece, oldest unamplified first, to content-engine's carousel standard",
+      "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: derived carousels",
+      "placements": {"instagram": "carousel", "tiktok": "carousel", "youtube": "short-video", "x": "single-image"}
+    },
+    "meme": {
+      "weight": 25, "min": 10, "max": 40,
+      "source": "ideas",
+      "what": "a meme made fresh in the brand kit; a borrowed format is credited, someone else's image is never reposted",
+      "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: the off-day lane; social/guides/canva.md",
+      "placements": {"instagram": "meme", "tiktok": "meme", "youtube": "meme", "x": "meme"}
+    },
+    "positive_news": {
+      "weight": 15, "min": 5, "max": 30,
+      "source": "ideas",
+      "needs_source": true,
+      "fresh_days": 7,
+      "what": "an uplifting AI news carousel; every claim names its primary source, dated within 7 days",
+      "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: the off-day lane",
+      "placements": {"instagram": "carousel", "tiktok": "carousel", "youtube": "short-video", "x": "single-image"}
+    },
+    "level_up": {
+      "weight": 10, "min": 5, "max": 25,
+      "source": "ideas",
+      "what": "simple valuable advice on how to level up with AI, one practical move per post",
+      "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: the off-day lane",
+      "placements": {"instagram": "carousel", "tiktok": "carousel", "youtube": "short-video", "x": "text"}
+    }
+  },
+  "learning": {
+    "min_judged": 3,
+    "band": 0.34,
+    "step": 5,
+    "why": "A lane moves only on What-Works verdicts its own posts earned (verdict/<slot>.json, engine/run/measure.py): with at least min_judged judged posts last week, a lane whose works minus fails is at least band of its judged posts gains step, at most -band loses step, always inside its own min and max. Insufficient verdicts never count. Association, not cause."
+  }
+}

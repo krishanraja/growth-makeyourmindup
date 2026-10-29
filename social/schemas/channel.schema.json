@@ -82,7 +82,16 @@
         "null"
       ],
       "minimum": 1,
-      "maximum": 2
+      "maximum": 4
+    },
+    "daily_posts_floor": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1,
+      "maximum": 4,
+      "description": "Optional; the fewest posts a day the weekly mix plans on this channel (engine/mix.py). Only on a channel with a daily_posts_target, never above it."
     },
     "daily_drafts_max": {
       "type": [
