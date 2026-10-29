@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "kind": "backlog_inventory",
+  "observed_at": "2026-10-20T12:00:00+00:00",
+  "feed_days": 366,
+  "sources": [
+    "feed file",
+    "lists/pilots.json"
+  ],
+  "channels": [
+    {
+      "channel": "facebook",
+      "formats": [
+        "carousel",
+        "single-image",
+        "short-video",
+        "text",
+        "story",
+        "meme"
+      ]
+    },
+    {
+      "channel": "instagram",
+      "formats": [
+        "carousel",
+        "single-image",
+        "short-video",
+        "story",
+        "meme"
+      ]
+    },
+    {
+      "channel": "linkedin",
+      "formats": [
+        "carousel",
+        "single-image",
+        "text",
+        "short-video"
+      ]
+    },
+    {
+      "channel": "substack-notes",
+      "formats": [
+        "note"
+      ]
+    },
+    {
+      "channel": "threads",
+      "formats": [
+        "text",
+        "single-image",
+        "meme"
+      ]
+    },
+    {
+      "channel": "tiktok",
+      "formats": [
+        "carousel",
+        "short-video",
+        "meme"
+      ]
+    },
+    {
+      "channel": "x",
+      "formats": [
+        "single-image",
+        "text",
+        "short-video",
+        "meme"
+      ]
+    },
+    {
+      "channel": "youtube",
+      "formats": [
+        "short-video",
+        "meme"
+      ]
+    }
+  ],
+  "summary": {
+    "pieces": 1,
+    "remaining": 0,
+    "partial": 1,
+    "covered": 0,
+    "editions_open": 7
+  },
+  "pieces": [
+    {
+      "piece_id": "piece_40edd39642a5cb9085d1",
+      "url": "https://home.makeyourmindup.ai/p/test-fixture",
+      "title": "TEST FIXTURE: a useful AI question",
+      "kind": "article",
+      "published_at": "2026-10-16T17:00:00+00:00",
+      "video_post_url": "https://home.makeyourmindup.ai/p/test-fixture-video",
+      "status": "partial",
+      "editions": [
+        {
+          "channel": "x",
+          "format": "text",
+          "source": "ledger",
+          "native_url": "https://x.com/makeyourmindup/status/1"
+        }
+      ],
+      "channels_open": [
+        "facebook",
+        "instagram",
+        "linkedin",
+        "substack-notes",
+        "threads",
+        "tiktok",
+        "youtube"
+      ]
+    }
+  ]
+}

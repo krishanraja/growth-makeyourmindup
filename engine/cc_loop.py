@@ -361,9 +361,24 @@ def automation_count(root):
     return len(entries) if isinstance(entries, list) else None
 
 
-def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None):
+RUNNER_BACKLOG = ('counted from the public feed and the committed pilot records; editions recorded only '
+                  'in the publication workspace ledger are not visible to the runner')
+
+
+def backlog_line(backlog):
+    """The report's 'Backlog remaining N' line from (inventory, reason), or None when not read."""
+    from .backlog import summary_line
+    inventory, reason = backlog if backlog else (None, 'not read on this run')
+    if inventory is None:
+        return 'Backlog remaining: not counted, ' + reason
+    return summary_line(inventory, RUNNER_BACKLOG[0].upper() + RUNNER_BACKLOG[1:])
+
+
+def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None,
+                  backlog=None):
     """The runner's held report. sent is already_sent(): asks Krish has, answered or pending, are
-    never sent again, and None (not read) proposes nothing."""
+    never sent again, and None (not read) proposes nothing. backlog is backlog.for_runner():
+    (inventory, None) or (None, reason); None means it was not read."""
     root = Path(root)
     automations = automation_count(root)
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
@@ -397,6 +412,7 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     activity.append({'line': 'Read the committed plan: ' + str(len(channels)) + ' channels, ' + str(len(journeys))
                      + ' reader journeys, ' + str(len(experiments)) + ' experiment templates, '
                      + str(sum(e.get('status') == 'running' for e in experiments)) + ' running'})
+    activity.append({'line': backlog_line(backlog)})
     holds = [{'reason': 'Drafts and dashboard numbers are made only in the publication workspace',
               'detail': 'The automations defined in automations.json' + (' (' + str(automations) + ')' if automations is not None else '')
                         + ' draft and read dashboards there and report as their own runs; this runner checks the engine offline.'}]
@@ -853,9 +869,11 @@ def cli(args, root, make_client, out=print, checks=None):
             out('Dry run: no Control Center call. Report ' + report['status'] + ', payload_sha256 ' + report['payload_sha256'])
             return int(bool(error))
         client = make_client()
+        from .backlog import for_runner
         outcome = run(client, 'runner', run_id,
                       lambda d: runner_report(root, run_id, clock(), checks(root), args.mode, True,
-                                              sent=already_sent(client, clock(), d, args.mode)),
+                                              sent=already_sent(client, clock(), d, args.mode),
+                                              backlog=for_runner(root, clock())),
                       now - dt.timedelta(days=7), clock)
         for line in summary(outcome, public=True):
             out(line)

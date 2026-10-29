@@ -107,6 +107,30 @@ and real action evidence before deciding whether an unchanged piece needs
 recovery, follow-up or no work. Publication after the nominal slot is
 picked up at the next existing run, then allocated within the shared budget.
 
+## The content backlog
+
+`python growth.py backlog` lists every published piece against the channels
+it could run on, oldest unamplified first, then partly amplified, then
+covered, and ends with "Backlog remaining N": the pieces with no native
+edition yet. It reads the public feed as far back as it reaches (366 days)
+and merges `.scratch/catalog.json`, so a piece that has left the feed stays
+in the backlog. A video post folds into its article only on an explicit
+published link, the same rule as discovery. The open channels are every
+channel record in `social/channels/` except `substack`, the piece's home.
+
+A native edition counts from two places: a committed pilot in
+`lists/pilots.json` that names its `piece_url` (and its `editions`), and the
+local ledger `.scratch/backlog/amplified.json`. Add a live edition with
+`python growth.py backlog record --piece URL --channel ID --format ID
+--native-url URL --at TIME` once its native URL reads back; a draft or a
+scheduled post is never an edition. The inventory is written to
+`.scratch/backlog/inventory.json`. Only `backlog/inventory.schema.json`,
+`backlog/amplified.schema.json` and the synthetic `backlog/fixture.json` are
+committed. The GitHub runner reports "Backlog remaining N" from the public
+feed and the committed pilots only, and says that workspace editions are not
+visible to it. The day's pack takes the oldest unamplified piece worth a new
+edition alongside the day's new piece (`jobs/daily-pack.md`).
+
 ## Tracking and the work queue
 
 ```powershell

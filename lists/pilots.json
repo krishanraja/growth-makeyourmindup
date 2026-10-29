@@ -7,6 +7,15 @@
       "what": "One published piece amplified natively as the eight-card Grok Bot vs Muse carousel, with its X scorecard, TikTok photo edition and six Stories",
       "published_at": "2026-10-26T18:30:57Z",
       "channels": ["instagram", "facebook", "x", "tiktok"],
+      "piece_url": "https://home.makeyourmindup.ai/p/can-metas-muse-or-grok-bot-run-my",
+      "editions": [
+        {"channel": "instagram", "format": "carousel"},
+        {"channel": "facebook", "format": "carousel"},
+        {"channel": "x", "format": "single-image"},
+        {"channel": "tiktok", "format": "carousel"},
+        {"channel": "instagram", "format": "story"},
+        {"channel": "facebook", "format": "story"}
+      ],
       "judge_window_hours": 72,
       "closes_on": "the What-Works Analyst's verdict (works, neutral, fails or insufficient) against each channel's own median at its judge window, recorded here by the Sunday report job with the windows it measured",
       "evidence_ref": ".scratch/channel-audit/first-carousel-experiment-20261026/fresh-owner/CLOSEOUT.md",
