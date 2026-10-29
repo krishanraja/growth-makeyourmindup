@@ -168,9 +168,10 @@ rulings above; everything above stands unless a line here says otherwise.
 - **The concept is what he approves.** A concept is one idea, its one claim
   and its mock files, bound by `concept_sha256`. He approves each concept
   once, in the week's mix plan proposal (stage plan, behind strategy), whose
-  exact payload lists every concept hash. That yes reaches release as
+  exact payload lists every concept hash. That yes is to reach release as
   decision.json `concepts`, written only from the readback of his decision,
-  bound by the spec signature's `concepts_digest`.
+  bound by the spec signature's `concepts_digest` and `concept_proposal_id`
+  (the readback is not built yet; see "Not live yet" below).
 - **It authorises every post made from it.** On those four channels the
   engine makes, schedules and publishes each post derived from an approved
   concept with no per-post approval, through `growth.py run release`, the
@@ -186,6 +187,14 @@ rulings above; everything above stands unless a line here says otherwise.
   he deletes from his amended payload is not approved; a concept he purges
   later (`stopped_concepts`), or a stop on the mix plan in the loop's go-live
   ledger, holds every post made from it, including any signed one by one.
+- **Each post still clears the bar and the cap.** With no signature of his
+  on each post, release holds one with no passing review at its own payload,
+  one past its channel's four a day across every run, and every concept post
+  while a decline is unmatched to its plan.
+- **Not live yet.** Nothing writes his mix plan decision into
+  `decision.json` from the readback, and release still needs the week's
+  approved go-live decision. Until that readback lands, no post releases on a
+  concept approval alone (`docs/MIX.md`, "Not live yet").
 - **Volume.** Instagram, YouTube, TikTok and X take four scheduled posts a
   day with a floor of three. Every other channel keeps its bound.
 - **LinkedIn stays his click.** Unchanged: unscheduled drafts, and his final

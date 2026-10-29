@@ -69,8 +69,11 @@ Instagram, YouTube, TikTok and X a slot with no digest of its own releases when
 decision.json approves its concept at the concept_sha256 the signature's
 concepts_digest binds, and only while it matches the concept's placements, mock
 files and claim; a slot that departs holds as departs_from_approved_mock. A
-stopped concept, or a stopped mix plan proposal, holds every post made from it.
-Every other check above still runs on each post.
+stopped concept, or a stopped mix plan proposal, holds every post made from it,
+and so does any decline not yet matched to its plan. Such a post also needs a
+passing review at its payload_sha256 and room under its channel's daily cap,
+counted across every run's ledger. Every other check above still runs on each
+post.
 """
 import argparse
 import hashlib
@@ -84,9 +87,10 @@ from engine import concepts as concept_rules
 from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, channel_id_errors
 from engine.control_center import sha256_hex
 from engine.copy_lint import copy_lint_errors, version as copy_lint_version
-from engine.core import instant, locked, read_json, write_json
+from engine.core import instant, locked, ny_time, read_json, write_json
 from engine.share import cta_applies, cta_errors
 from engine.social import inventory, route
+from engine import intensity
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_CHECKED = '2026-10-27'
@@ -628,12 +632,18 @@ def _signed_digests(spec, decision):
     return slots
 
 
-def authorised_digests(spec, decision, signed, stopped_proposals=()):
+STOP_UNRESOLVED = 'concept_stop_unresolved'
+
+
+def authorised_digests(spec, decision, signed, stopped_proposals=(), unresolved_stops=(), formats=None):
     """(slot_id -> digest that may release, slot_id -> hold reason) from signed digests and approved concepts.
 
     A slot signed one by one keeps its digest unless Krish stopped its concept; a
     slot with no digest of its own is covered by its approved concept only while
-    it matches the concept's mock and claim (engine/concepts.py, R101).
+    it matches the concept's mock and claim (engine/concepts.py, R101). While a
+    decline in the loop's go-live ledger is not yet matched to its plan
+    (unresolved_stops), it may be a stop on the mix plan, so every post made from
+    a concept holds: unknown never releases.
     """
     out, reasons = {}, {}
     for slot in spec['slots']:
@@ -642,11 +652,15 @@ def authorised_digests(spec, decision, signed, stopped_proposals=()):
         if cid and concept_rules.stopped(decision, cid, stopped_proposals, spec.get('signature')):
             reasons[sid] = concept_rules.STOPPED + ': Krish stopped concept ' + cid + ', so none of its posts go out'
             continue
+        if cid and unresolved_stops:
+            reasons[sid] = (STOP_UNRESOLVED + ': ' + str(len(unresolved_stops)) + ' decline(s) in the go-live ledger'
+                            ' are not yet matched to their plan, so any of them may stop concept ' + cid)
+            continue
         if sid in signed:
             out[sid] = signed[sid]
             continue
         if cid:
-            digest, reason = concept_rules.authority(spec, slot, decision, stopped_proposals)
+            digest, reason = concept_rules.authority(spec, slot, decision, stopped_proposals, formats)
             if digest:
                 out[sid] = digest
             else:
@@ -756,8 +770,27 @@ def pending_check(key, other_checks, since):
     return None
 
 
+def day_of(entry):
+    """The New York day a scheduled release lands on, from its due_at (planned_at for an older entry)."""
+    when = entry.get('due_at') or entry.get('planned_at')
+    try:
+        return ny_time(when).date().isoformat() if when else None
+    except (ValueError, TypeError):
+        return None
+
+
+def concept_caps(urgency=None, root=ROOT):
+    """channel -> scheduled posts a New York day may carry (engine/intensity.py), None when unknown."""
+    try:
+        records = inventory(root)['channel']
+    except (ValueError, KeyError, OSError, TypeError):
+        return {}
+    return {c: intensity.daily_cap(records.get(c), urgency, root) for c in concept_rules.CONCEPT_CHANNELS}
+
+
 def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None,
-                 other_checks=None, stopped_proposals=()):
+                 other_checks=None, stopped_proposals=(), unresolved_stops=(), reviews=None, caps=None,
+                 other_scheduled=None):
     """Arguments for signed, unreleased slots only, once per slot.
 
     asset_paths maps slot_id to its ordered local files; without them a slot
@@ -766,6 +799,14 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
     its buffer_draft_id. other_checks lists the capability checks other runs
     released (other_capability_checks). Returns calls, holds and the updated
     ledger; the caller saves the ledger.
+
+    A post its concept authorises (no digest of Krish's own) also needs, in
+    reviews (slot_id -> review/<slot>.json), a passing review at its
+    payload_sha256, the creative bar, and room under its channel's daily cap
+    (caps, channel -> posts a New York day; default concept_caps()), counted
+    over this run's ledger, other runs' scheduled releases (other_scheduled,
+    a list of {channel, due_at}) and the posts Krish signed one by one in this
+    spec. Either missing holds the post: his signature is no longer the cap.
     """
     if not isinstance(spec, dict) or not isinstance(spec.get('slots'), list):
         raise ValueError('run spec needs a slots list')
@@ -782,8 +823,30 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
         if slot['slot_id'] in seen:
             raise ValueError('duplicate slot_id: ' + slot['slot_id'])
         seen.add(slot['slot_id'])
-    signed, concept_holds = authorised_digests(spec, decision, signed, stopped_proposals)
+    by_krish = dict(signed)
+    try:
+        format_records = inventory()['format']
+    except (ValueError, KeyError, OSError, TypeError):
+        format_records = None
+    signed, concept_holds = authorised_digests(spec, decision, signed, stopped_proposals, unresolved_stops,
+                                               format_records)
     concepts = concept_rules.by_id(spec)
+    reviews = reviews or {}
+    caps = concept_caps() if caps is None else caps
+    # Scheduled posts per (channel, New York day): other runs, this run's ledger, and every post Krish
+    # signed one by one in this spec, reserved first so a concept post never takes his place.
+    per_day = {}
+    released_here = ledger['released']
+    scheduled = list(other_scheduled or []) + [e for e in released_here.values() if isinstance(e, dict)
+                                                and e.get('scheduled') is not False]
+    for slot in spec['slots']:
+        if by_krish.get(slot['slot_id']) == slot['payload_sha256'] and slot['slot_id'] not in released_here \
+                and not is_draft(slot) and slot['due_at']:
+            scheduled.append({'channel': slot['channel'], 'due_at': slot['due_at']})
+    for entry in scheduled:
+        day = day_of(entry)
+        if day and entry.get('channel'):
+            per_day[(entry['channel'], day)] = per_day.get((entry['channel'], day), 0) + 1
     as_of = instant(now).date().isoformat()
     first_post, routes = capability_checks(spec, signed, ledger), {}
     formats = snackable_formats()
@@ -845,6 +908,24 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
         if slot['publish_mode'] == 'engine' and any(a['sha256'] not in approved | mocks for a in slot['assets']):
             hold('creative_not_approved')
             continue
+        by_concept = sid not in by_krish
+        if by_concept:
+            # The creative bar on a post with no digest of his own: a passing review at this payload.
+            from engine.run.spec import review_reason
+            reason = review_reason(slot, reviews.get(sid), snack=bool((formats or {}).get(slot['format'])))
+            if reason:
+                hold('concept_post_not_reviewed: ' + reason)
+                continue
+            if not is_draft(slot):
+                cap = caps.get(slot['channel'])
+                key = (slot['channel'], day_of({'due_at': slot['due_at']}))
+                if not isinstance(cap, int) or isinstance(cap, bool) or key[1] is None:
+                    hold('concept_daily_cap_unknown: ' + slot['channel'] + ' has no readable daily cap')
+                    continue
+                if per_day.get(key, 0) >= cap:
+                    hold('concept_daily_cap_reached: ' + slot['channel'] + ' already has ' + str(per_day[key])
+                         + ' scheduled on ' + key[1] + ' (New York), at most ' + str(cap) + ' a day')
+                    continue
         if slot['assets']:
             if sid not in asset_paths:
                 hold('asset_bytes_not_checked')
@@ -874,6 +955,14 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
                  'format': slot['format'], 'service': call['service'], 'channel_id': call['channel_id'],
                  'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat(),
                  'copy_lint_version': copy_lint_version()}
+        if not is_draft(slot):
+            # The day it lands on, so the daily cap counts it in every later plan (R102).
+            entry['due_at'] = slot['due_at']
+            if by_concept:
+                key = (slot['channel'], day_of(entry))
+                per_day[key] = per_day.get(key, 0) + 1
+        else:
+            entry['scheduled'] = False
         if slot.get('concept_id'):
             # Outcomes are learned per concept and lane (engine/mix.py learn).
             entry['concept_id'] = slot['concept_id']
@@ -1038,23 +1127,75 @@ def engine_publications(posts, ledger, accounts=None):
 
 # Command line --------------------------------------------------------------
 
+def _golive_ledger_part(root, key):
+    path = Path(root) / '.scratch' / 'cc' / 'golive-ledger.json'  # engine/cc_loop.py GOLIVE_LEDGER
+    if not path.exists():
+        return ()
+    try:
+        part = read_json(path).get(key) or {}
+        if not isinstance(part, dict):
+            raise TypeError(key + ' is not a map')
+    except (ValueError, TypeError, OSError, AttributeError) as exc:
+        raise ValueError('the go-live ledger cannot be read, so no concept can tell whether Krish stopped it: '
+                         + str(exc)) from None
+    return tuple(sorted(part))
+
+
 def stopped_plans(root):
     """Plan proposals Krish stopped, from the Control Center loop's local go-live ledger.
 
     A stop on the mix plan proposal stops every concept it carried (R101). A
     ledger that cannot be read refuses the plan: unknown never releases.
     """
-    path = Path(root) / '.scratch' / 'cc' / 'golive-ledger.json'  # engine/cc_loop.py GOLIVE_LEDGER
-    if not path.exists():
-        return ()
-    try:
-        stopped = read_json(path).get('stopped') or {}
-        if not isinstance(stopped, dict):
-            raise TypeError('stopped is not a map')
-    except (ValueError, TypeError, OSError, AttributeError) as exc:
-        raise ValueError('the go-live ledger cannot be read, so no concept can tell whether Krish stopped it: '
-                         + str(exc)) from None
-    return tuple(sorted(stopped))
+    return _golive_ledger_part(root, 'stopped')
+
+
+def unresolved_stops(root):
+    """Declines in the go-live ledger not yet matched to their plan (control_center.golive_review).
+
+    Any of them may be a stop on the mix plan, so while one is listed every
+    post made from a concept holds."""
+    return _golive_ledger_part(root, 'unresolved')
+
+
+def other_scheduled(root, run_id):
+    """Scheduled releases in other runs' ledgers, as {channel, due_at, planned_at}, for the daily cap.
+
+    A ledger that cannot be read refuses the plan: without it no channel can
+    say how many posts its day already carries."""
+    base = Path(root) / '.scratch' / 'runs'
+    found = []
+    for path in sorted(base.glob('*/ledger.json')) if base.is_dir() else []:
+        try:
+            ledger = read_json(path)
+            released = ledger['released']
+            if not isinstance(released, dict):
+                raise TypeError('released is not a map')
+        except (ValueError, KeyError, TypeError, OSError) as exc:
+            raise ValueError("another run's release ledger cannot be read, so no channel can count its day: "
+                             + path.parent.name + ' (' + str(exc) + ')') from None
+        if ledger.get('run_id') == run_id:
+            continue
+        for entry in released.values():
+            if isinstance(entry, dict) and entry.get('scheduled') is not False:
+                found.append({'channel': entry.get('channel'), 'due_at': entry.get('due_at'),
+                              'planned_at': entry.get('planned_at')})
+    return found
+
+
+def run_reviews(spec, root):
+    """slot_id -> its review/<slot>.json under the run's evidence folder (engine/run/spec.py run_dir)."""
+    from engine.run.spec import run_dir
+    folder = run_dir(spec, None, root) / 'review'
+    out = {}
+    for slot in spec['slots']:
+        path = folder / (str(slot['slot_id']) + '.json')
+        if path.is_file():
+            try:
+                out[slot['slot_id']] = read_json(path)
+            except (ValueError, OSError):
+                continue
+    return out
 
 
 def safe_name(value):
@@ -1136,7 +1277,10 @@ def main(argv=None, root=None):
                 result = release_plan(spec, read_json(args.decision), ledger, _ordered_assets(spec, args.assets),
                                       read_json(args.channels) if args.channels else None, args.now,
                                       read_json(args.targets) if args.targets else None,
-                                      other_capability_checks(root, spec['run_id']), stopped_plans(root))
+                                      other_capability_checks(root, spec['run_id']), stopped_plans(root),
+                                      unresolved_stops(root), run_reviews(spec, root),
+                                      concept_caps(intensity.state(root)['urgency'], root),
+                                      other_scheduled(root, spec['run_id']))
                 if result['calls']:
                     write_json(ledger_path, result['ledger'])
                 if result['holds']:

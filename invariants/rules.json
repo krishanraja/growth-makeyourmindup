@@ -1232,7 +1232,7 @@
     },
     {
       "id": "R101",
-      "statement": "On Instagram, YouTube, TikTok and X, Krish's approval of a concept (its idea, one claim and mock files, bound by concept_sha256 and listed in the week's mix plan proposal) authorises release of every post made from it with no per-post digest, through the same release gate and Buffer channel lock, only while the post is one of the concept's placements, carries only its mock files and carries its claim word for word; a post that departs is a lint error and is held at release, every other check still runs, his stop on a concept or on the mix plan holds every post from it, and LinkedIn stays his click.",
+      "statement": "On Instagram, YouTube, TikTok and X, Krish's approval of a concept (its idea, one claim and mock files, bound by concept_sha256 and listed in the week's mix plan proposal) authorises release of every post made from it with no per-post digest, through the same release gate and Buffer channel lock, only while the post is one of the concept's placements, carries only its mock files and carries its claim word for word; a post that departs is a lint error and is held at release, every other check still runs, his stop on a concept or on the mix plan holds every post from it, and so does any decline in the go-live ledger not yet matched to its plan; the signature must name the week's mix plan as concept_proposal_id; a post its concept authorises also needs a passing review at its own payload_sha256 and room under its channel's daily cap counted across every run's ledger; a text-only placement carries no mock file; and LinkedIn stays his click. Not live until the readback of his mix plan decision writes decision.json concepts.",
       "source_file": "CHANGES.md",
       "quote": "I just need to be in control of the idea and the mocks and then I'm happy to let you let that engine just go for gold.",
       "enforced_by": [
@@ -1244,7 +1244,14 @@
         "engine/run/release.py:release_plan",
         "engine/run/release.py:stopped_plans",
         "engine/run/spec.py:concept_lint",
-        "engine/run/spec.py:signed_digest"
+        "engine/run/spec.py:signed_digest",
+        "engine/concepts.py:text_only",
+        "engine/concepts.py:plan_proposal_id",
+        "engine/run/release.py:unresolved_stops",
+        "engine/run/release.py:other_scheduled",
+        "engine/run/release.py:concept_caps",
+        "engine/run/release.py:run_reviews",
+        "engine/run/spec.py:review_reason"
       ],
       "tests": [
         "test_an_approved_concept_releases_its_post_without_a_digest_of_its_own",
@@ -1261,7 +1268,14 @@
         "test_a_concept_slot_that_matches_lints_clean_and_its_hash_is_computed",
         "test_a_slot_that_departs_from_its_concept_is_a_lint_error",
         "test_signing_the_concept_approves_its_mock_for_the_posts_made_from_it",
-        "test_status_counts_a_concept_post_as_signed_and_a_stopped_one_as_not"
+        "test_status_counts_a_concept_post_as_signed_and_a_stopped_one_as_not",
+        "test_one_concept_never_posts_past_the_channel_daily_cap",
+        "test_the_cap_counts_other_runs_and_this_runs_ledger",
+        "test_a_concept_post_with_no_passing_review_is_held",
+        "test_an_unresolved_decline_holds_every_concept_post",
+        "test_concepts_without_the_mix_plan_in_the_signature_refuse_the_run",
+        "test_a_text_post_on_x_from_a_concept_with_mocks_is_not_held_for_carrying_none",
+        "test_the_release_command_counts_other_runs_ledgers_for_the_cap"
       ]
     },
     {

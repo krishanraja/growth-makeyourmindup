@@ -29,6 +29,11 @@
     one plan proposal; `run new --mix` carries the ready ones into the week's
     spec. `growth.py mix learn` joins each post's What-Works verdict to its
     concept and lane, and the next plan moves a lane one step (`docs/MIX.md`).
+  - Review fixes, same day: a concept post also needs a passing review at its
+    own payload and room under its channel's four a day across every run; an
+    unmatched decline holds every concept post; the signature must name the
+    week's mix plan. Concept approval is not live until the readback of his
+    mix plan decision writes `decision.json` (`docs/MIX.md`, "Not live yet").
 
 - 2026-10-29: "At U3 to U5, engines and Control Center may raise volume caps
   up to each repo's existing policy bounds without a signed week spec. This

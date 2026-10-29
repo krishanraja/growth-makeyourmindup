@@ -58,8 +58,28 @@ def by_id(spec):
     return {c['concept_id']: c for c in (spec.get('concepts') or []) if isinstance(c, dict) and 'concept_id' in c}
 
 
-def match_errors(slot, concept):
-    """Why a slot departs from its approved concept and mock, or []."""
+def text_only(fmt, formats=None):
+    """Whether a format carries no files at all (max_assets 0, such as X text); False when unknown.
+
+    A post in such a format is made from its concept's claim alone, so it
+    carries none of the mock files and is not held for it. When the format
+    records cannot be read it is not text only, so the post holds.
+    """
+    if formats is None:
+        try:
+            from .social import inventory
+            formats = inventory()['format']
+        except (ValueError, KeyError, OSError, TypeError):
+            return False
+    record = (formats or {}).get(fmt)
+    return isinstance(record, dict) and record.get('max_assets') == 0
+
+
+def match_errors(slot, concept, formats=None):
+    """Why a slot departs from its approved concept and mock, or [].
+
+    formats maps format id to its social record (engine/social.py); without it
+    the records are read from this repository."""
     out = []
     if slot['channel'] not in CONCEPT_CHANNELS:
         out.append(slot['channel'] + ' is not one of the concept channels (' + ', '.join(CONCEPT_CHANNELS)
@@ -70,7 +90,7 @@ def match_errors(slot, concept):
         out.append(slot['channel'] + ' ' + slot['format'] + ' is not one of the placements approved with the concept')
     mocks = set(concept['mock_sha256'])
     used = [a['sha256'] for a in slot['assets']]
-    if mocks and not used:
+    if mocks and not used and not text_only(slot['format'], formats):
         out.append('the post carries none of the approved mock files')
     if not mocks and used:
         out.append('the concept was approved with no mock files, so the post may carry none')
@@ -106,7 +126,20 @@ def stopped(decision, concept_id, stopped_proposals=(), signature=None):
     return bool(plan) and plan in set(stopped_proposals or ())
 
 
-def authority(spec, slot, decision, stopped_proposals=()):
+def plan_proposal_id(spec):
+    """The mix plan proposal for the spec's week (engine/mix.py proposal_id), or None without a window."""
+    from .core import ny_time
+    from .mix import proposal_id
+    start = (spec.get('window') or {}).get('start') if isinstance(spec.get('window'), dict) else None
+    if not start:
+        return None
+    try:
+        return proposal_id(ny_time(start).date().isoformat())
+    except (ValueError, TypeError):
+        return None
+
+
+def authority(spec, slot, decision, stopped_proposals=(), formats=None):
     """(digest, None) when Krish's concept approval covers this slot, else (None, reason).
 
     The digest is the slot's own payload_sha256: the post is bound to its
@@ -126,7 +159,7 @@ def authority(spec, slot, decision, stopped_proposals=()):
     approved = decision.get('concepts') if isinstance(decision, dict) else None
     if not isinstance(approved, dict) or approved.get(cid) != concept['concept_sha256']:
         return None, 'concept ' + cid + ' is not approved at this concept_sha256'
-    departs = match_errors(slot, concept)
+    departs = match_errors(slot, concept, formats)
     if departs:
         return None, DEPARTS + ': ' + '; '.join(departs)
     return slot['payload_sha256'], None
@@ -147,4 +180,11 @@ def decision_errors(spec, decision):
         return None
     if signature.get('concepts_digest') != concepts_digest(approved):
         return 'decision.json concepts do not match the signed concepts_digest; a mismatch is never signed'
+    # A no on the mix plan must be able to stop its concepts, so the signature names that plan (R101).
+    expected = plan_proposal_id(spec)
+    if expected is None:
+        return 'a spec with approved concepts needs its window, which names the mix plan for its week'
+    if signature.get('concept_proposal_id') != expected:
+        return ('the signature must name concept_proposal_id ' + expected
+                + ", the week's mix plan, so a stop on it stops every concept it carried")
     return None

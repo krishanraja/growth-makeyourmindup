@@ -13,11 +13,26 @@ import unittest
 from engine import concepts
 from engine.core import write_json
 from engine.run import release, spec as spec_module
+from engine.share import compare_send_test, slot_send_test_request
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = ROOT / 'tests' / 'fixtures' / 'release'
 NOW = '2026-11-01T12:00:00-05:00'
 MIX_PLAN = 'makeyourmindup:mix:2026-W45'
+W45 = {'start': '2026-11-02T00:00:00-05:00', 'end': '2026-11-09T00:00:00-05:00', 'tz': 'America/New_York'}
+SHARE = {'sender': 'a head of operations at a mid-size insurer', 'receiver': 'her CFO, who signs off the pilot budget',
+         'job': 'settles_it', 'dm_line': 'This is the six-week rule I meant: one number agreed on day one.',
+         'moment': 'the quarterly budget review where the pilot question comes back', 'standalone': True}
+CAPS = {'instagram': 4, 'youtube': 4, 'tiktok': 4, 'x': 4}
+
+
+def send_test_pass(slot):
+    """A synthetic blind reader's pass on this slot's exact payload, as run send-test --record writes it."""
+    request = slot_send_test_request(slot)
+    answer = {'would_send': True, 'receiver': 'my CFO', 'job': 'settles_it', 'dm_line': 'Synthetic line.',
+              'why': 'Synthetic.', 'request_sha256': request['request_sha256']}
+    return {'slot_id': slot['slot_id'], 'verdict': 'pass', 'lens': 'send-test',
+            'payload_sha256': slot['payload_sha256'], 'send_test': compare_send_test(slot['share'], answer, request)}
 
 
 def load(name):
@@ -44,7 +59,9 @@ class ReleaseByConcept(unittest.TestCase):
                         'placements': [{'channel': 'tiktok', 'format': 'carousel'}]}
         self.concept['concept_sha256'] = concepts.concept_sha256(self.concept)
         self.spec['concepts'] = [self.concept]
+        self.spec['window'] = dict(W45)
         self.slot['concept_id'] = 'carousel-synthetic'
+        self.slot['share'] = dict(SHARE)
         del self.decision['slots']['tiktok-photo-1']
         self.decision['concepts'] = {'carousel-synthetic': self.concept['concept_sha256']}
         self.sign()
@@ -57,10 +74,13 @@ class ReleaseByConcept(unittest.TestCase):
         self.spec['signature']['concepts_digest'] = concepts.concepts_digest(self.decision.get('concepts') or {})
         self.spec['signature']['concept_proposal_id'] = MIX_PLAN
 
-    def plan(self, stopped=()):
+    def plan(self, stopped=(), unresolved=(), reviews=None, caps=None, other=None, ledger=None):
         paths = {s['slot_id']: [self.dir / a['name'] for a in s['assets']] for s in self.spec['slots']}
-        return release.release_plan(self.spec, self.decision, None, paths, self.channels, NOW, self.targets,
-                                    stopped_proposals=stopped)
+        if reviews is None:
+            reviews = {s['slot_id']: send_test_pass(s) for s in self.spec['slots'] if s.get('share')}
+        return release.release_plan(self.spec, self.decision, ledger, paths, self.channels, NOW, self.targets,
+                                    stopped_proposals=stopped, unresolved_stops=unresolved, reviews=reviews,
+                                    caps=dict(CAPS) if caps is None else caps, other_scheduled=other)
 
     def holds(self, result):
         return {h['slot_id']: h['hold'] for h in result['holds']}
@@ -118,6 +138,86 @@ class ReleaseByConcept(unittest.TestCase):
         self.assertTrue(hold.startswith(concepts.STOPPED), hold)
         self.assertEqual(self.holds(self.plan(stopped=('another-plan',))), {})
 
+    def test_one_concept_never_posts_past_the_channel_daily_cap(self):
+        # Reviewer probe: nine copies of an approved post on the same day, each with new words after the claim.
+        for n in range(9):
+            twin = copy.deepcopy(self.slot)
+            twin['slot_id'] = 'twin-%d' % n
+            twin['words'] = self.slot['words'] + ' Variant %d, a sentence nobody reviewed.' % n
+            twin['payload_sha256'] = release.slot_digest(twin)
+            self.spec['slots'].append(twin)
+        reviews = {s['slot_id']: send_test_pass(s) for s in self.spec['slots'] if s.get('share')}
+        result = self.plan(reviews=reviews)
+        made = [c['slot_id'] for c in result['calls'] if c['slot_id'] == 'tiktok-photo-1' or c['slot_id'].startswith('twin')]
+        self.assertEqual(len(made), 4, 'at most four a New York day on TikTok')
+        capped = [h for sid, h in self.holds(result).items() if sid.startswith('twin')]
+        self.assertEqual(len(capped), 6)
+        self.assertTrue(all(h.startswith('concept_daily_cap_reached') for h in capped), capped)
+        # Unreviewed words never ride on the claim: without their own review the twins hold.
+        result = self.plan(reviews={'tiktok-photo-1': send_test_pass(self.slot)})
+        made = [c['slot_id'] for c in result['calls'] if c['slot_id'].startswith('twin')]
+        self.assertEqual(made, [])
+        self.assertTrue(all(h.startswith('concept_post_not_reviewed') for sid, h in self.holds(result).items()
+                            if sid.startswith('twin')))
+
+    def test_the_cap_counts_other_runs_and_this_runs_ledger(self):
+        day = [{'channel': 'tiktok', 'due_at': '2026-11-03T08:30:00-05:00'}] * 4
+        hold = self.holds(self.plan(other=day))['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_daily_cap_reached'), hold)
+        self.assertEqual(self.holds(self.plan(other=day[:3])), {})
+        other_day = [{'channel': 'tiktok', 'due_at': '2026-11-04T08:30:00-05:00'}] * 4
+        self.assertEqual(self.holds(self.plan(other=other_day)), {}, 'another New York day has its own four')
+        hold = self.holds(self.plan(caps={'tiktok': None}))['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_daily_cap_unknown'), hold)
+        entry = self.plan()['ledger']['released']['tiktok-photo-1']
+        self.assertEqual(entry['due_at'], self.slot['due_at'], 'the ledger records the day it lands on')
+
+    def test_the_release_command_counts_other_runs_ledgers_for_the_cap(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            self.assertEqual(release.other_scheduled(root, 'this-run'), [])
+            write_json(root / '.scratch' / 'runs' / 'other' / 'ledger.json', {'run_id': 'other-run', 'released': {
+                'a': {'channel': 'tiktok', 'due_at': '2026-11-03T08:30:00-05:00'},
+                'b': {'channel': 'linkedin', 'scheduled': False}}})
+            write_json(root / '.scratch' / 'runs' / 'mine' / 'ledger.json', {'run_id': 'this-run', 'released': {
+                'c': {'channel': 'tiktok', 'due_at': '2026-11-03T12:30:00-05:00'}}})
+            found = release.other_scheduled(root, 'this-run')
+            self.assertEqual([(f['channel'], f['due_at']) for f in found], [('tiktok', '2026-11-03T08:30:00-05:00')])
+            (root / '.scratch' / 'runs' / 'other' / 'ledger.json').write_text('not json', encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'cannot be read'):
+                release.other_scheduled(root, 'this-run')
+
+    def test_a_concept_post_with_no_passing_review_is_held(self):
+        hold = self.holds(self.plan(reviews={}))['tiktok-photo-1']
+        self.assertTrue(hold.startswith('concept_post_not_reviewed'), hold)
+        stale = send_test_pass(self.slot)
+        stale['payload_sha256'] = '0' * 64
+        hold = self.holds(self.plan(reviews={'tiktok-photo-1': stale}))['tiktok-photo-1']
+        self.assertIn('payload_sha256', hold)
+
+    def test_an_unresolved_decline_holds_every_concept_post(self):
+        hold = self.holds(self.plan(unresolved=('some-check-in',)))['tiktok-photo-1']
+        self.assertTrue(hold.startswith(release.STOP_UNRESOLVED), hold)
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            self.assertEqual(release.unresolved_stops(root), ())
+            write_json(root / '.scratch' / 'cc' / 'golive-ledger.json',
+                       {'acted': {}, 'stopped': {}, 'unresolved': {'check-in-1': 'declined'}})
+            self.assertEqual(release.unresolved_stops(root), ('check-in-1',))
+
+    def test_concepts_without_the_mix_plan_in_the_signature_refuse_the_run(self):
+        # Reviewer probe: with no concept_proposal_id a no on the mix plan could not stop the concept.
+        del self.spec['signature']['concept_proposal_id']
+        with self.assertRaisesRegex(ValueError, 'concept_proposal_id'):
+            self.plan(stopped=(MIX_PLAN,))
+        self.spec['signature']['concept_proposal_id'] = 'makeyourmindup:mix:2026-W46'
+        with self.assertRaisesRegex(ValueError, 'concept_proposal_id'):
+            self.plan()
+        self.spec['signature']['concept_proposal_id'] = MIX_PLAN
+        del self.spec['window']
+        with self.assertRaisesRegex(ValueError, 'window'):
+            self.plan()
+
     def test_the_release_command_reads_stopped_plans_from_the_loop_ledger(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -136,6 +236,18 @@ class ReleaseByConcept(unittest.TestCase):
         self.assertTrue(any('not one of the concept channels' in e for e in errors))
         self.assertTrue(any('LinkedIn stays his click' in e for e in errors))
         self.assertTrue(concepts.concept_errors(dict(self.concept, placements=[{'channel': 'threads', 'format': 'text'}])))
+
+    def test_a_text_post_on_x_from_a_concept_with_mocks_is_not_held_for_carrying_none(self):
+        # level_up places X as text (max_assets 0) beside carousels that carry the mock files.
+        concept = dict(self.concept, placements=[{'channel': 'tiktok', 'format': 'carousel'},
+                                                 {'channel': 'x', 'format': 'text'}])
+        x_post = dict(self.slot, channel='x', format='text', assets=[])
+        self.assertEqual(concepts.match_errors(x_post, concept), [])
+        unknown = concepts.match_errors(x_post, concept, formats={})
+        self.assertIn('the post carries none of the approved mock files', unknown,
+                      'a format whose records cannot be read is not text only')
+        carousel = dict(self.slot, assets=[])
+        self.assertIn('the post carries none of the approved mock files', concepts.match_errors(carousel, concept))
 
     def test_copy_lint_still_holds_a_concept_post(self):
         self.slot['words'] = self.claim + ' Generated by AI.'
@@ -217,6 +329,8 @@ class LintAndStatus(unittest.TestCase):
                              'signed_at': '2026-11-01T10:00:00-05:00'}
         self.assertIn('concepts_digest', spec_module.decision_errors(spec, decision))
         spec['signature']['concepts_digest'] = concepts.concepts_digest(decision['concepts'])
+        self.assertIn('concept_proposal_id', spec_module.decision_errors(spec, decision))
+        spec['signature']['concept_proposal_id'] = MIX_PLAN
         self.assertIsNone(spec_module.decision_errors(spec, decision))
 
 

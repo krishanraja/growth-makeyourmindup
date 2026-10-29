@@ -445,7 +445,7 @@ def lint(spec, records=None, root=ROOT, urgency=None):
                 # Signing the concept approves its mock files for the posts made from it (R101).
                 mocks = set(concept['mock_sha256'])
                 errors += [finding('concept_mismatch', at, 'departs from its approved concept: ' + e, slot['slot_id'])
-                           for e in concept_rules.match_errors(slot, concept)]
+                           for e in concept_rules.match_errors(slot, concept, formats)]
         more, soft = _slot(slot, at, channels, formats, tests, (listed | mocks, approved | mocks), window, routes,
                            urgency, root)
         errors += more
@@ -631,6 +631,28 @@ def send_test_reason(slot, review, label):
     return None
 
 
+def review_reason(slot, review, label=None, snack=False):
+    """None when a review record passes this slot at its payload_sha256, else why not.
+
+    Run status reads it for every slot; release reads it for a post its concept
+    authorises (R101), the creative bar on a post with no digest of its own.
+    """
+    label = label or 'review/' + str(slot.get('slot_id')) + '.json'
+    if not isinstance(review, dict):
+        return 'no ' + label
+    if review.get('verdict') != 'pass' or not isinstance(review.get('lens'), str) or not LENS.match(review['lens']):
+        return label + ' needs verdict pass and a lens id'
+    if review.get('payload_sha256') != slot['payload_sha256']:
+        return label + " must carry this slot's payload_sha256; a review of another payload never counts"
+    if not _same(review, 'slot_id', slot['slot_id']):
+        return label + ' reviewed another slot'
+    if snack and review.get('lens') != 'send-test':
+        return label + ' of a snackable slot is the blind send test: lens send-test (run send-test)'
+    if review.get('lens') == 'send-test':
+        return send_test_reason(slot, review, label)
+    return None
+
+
 def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None, snack=False, spec=None):
     """snack: the slot's format is snackable, so its review is the blind send test (crew/send-test/)."""
     sid = slot['slot_id']
@@ -638,17 +660,8 @@ def slot_status(slot, folder, lint_reason, decision, decision_reason, window=Non
         return row(slot, 'drafted', lint_reason)
     label = 'review/' + sid + '.json'
     review, reason = _evidence(folder / 'review' / (sid + '.json'), label)
-    if review is not None and (review.get('verdict') != 'pass' or not isinstance(review.get('lens'), str)
-                               or not LENS.match(review['lens'])):
-        reason = label + ' needs verdict pass and a lens id'
-    elif review is not None and review.get('payload_sha256') != slot['payload_sha256']:
-        reason = label + " must carry this slot's payload_sha256; a review of another payload never counts"
-    elif review is not None and not _same(review, 'slot_id', sid):
-        reason = label + ' reviewed another slot'
-    elif review is not None and snack and review.get('lens') != 'send-test':
-        reason = label + ' of a snackable slot is the blind send test: lens send-test (run send-test)'
-    elif review is not None and review.get('lens') == 'send-test':
-        reason = send_test_reason(slot, review, label)
+    if review is not None:
+        reason = review_reason(slot, review, label, snack)
     if reason:
         return row(slot, 'linted', reason)
     if decision_reason:

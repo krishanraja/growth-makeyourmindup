@@ -55,14 +55,54 @@ version leaves it out (`mix.approved_map`); his no approves none.
 Then `growth.py run new --start <Monday> --mix <plan file>` puts the ready
 concepts in the week's spec. decision.json carries `concepts`
 {concept_id: concept_sha256} from his decision's readback, never by hand, and
-the signature records `concepts_digest` and `concept_proposal_id`. Each post
-made from a concept names it in `concept_id`. Release posts it with no digest
-of its own while it matches the concept: one of its placements, only its mock
-files, its claim word for word. Anything else holds as
-`departs_from_approved_mock`. A concept in `stopped_concepts`, or a stop on the
-mix plan proposal in the loop's go-live ledger, holds every post from it.
-Copy lint, share asks, the ecosystem route, the channel lock and route
-capability checks still run on every post. LinkedIn stays his click.
+the signature records `concepts_digest` and `concept_proposal_id`, which must
+name the week's mix plan (`makeyourmindup:mix:<ISO week>`) or the run is
+refused, so his no on the plan can always stop its concepts. Each post made
+from a concept names it in `concept_id`. Release posts it with no digest of
+its own while it matches the concept: one of its placements, only its mock
+files, its claim word for word. A text-only placement (X text, no files) is
+made from the claim alone and carries no mock file. Anything else holds as
+`departs_from_approved_mock`.
+
+Because no signature of his covers each such post, release holds it unless:
+
+- `review/<slot>.json` passes it at its own `payload_sha256` (the blind send
+  test for a snackable format), so words added after the claim are reviewed
+  too (`concept_post_not_reviewed`);
+- its channel's New York day has room under the daily cap (four on these
+  channels, `engine/intensity.py`), counted over this run's ledger, every
+  other run's scheduled releases and the posts he signed one by one in the
+  spec, which keep their place (`concept_daily_cap_reached`; an unreadable cap
+  holds as `concept_daily_cap_unknown`);
+- no decline in the loop's go-live ledger is still unmatched to its plan
+  (`unresolved`): any of them may be his no on the mix plan, so every concept
+  post holds (`concept_stop_unresolved`).
+
+A concept in `stopped_concepts`, or a stop on the mix plan proposal in the
+loop's go-live ledger, holds every post from it. Copy lint, share asks, the
+ecosystem route, the channel lock and route capability checks still run on
+every post. LinkedIn stays his click.
+
+`run lint` checks concept slots too: a slot off its concept's placement, mock
+or claim is `concept_mismatch`, one naming a concept not in the spec is
+`unknown_concept`, and signing the concept approves its mock files for the
+posts made from it (no separate `creative_approval_ref`).
+
+## Not live yet: the readback
+
+Release reads concept approvals only from `decision.json` `concepts` and the
+signature's `concepts_digest` and `concept_proposal_id`. Nothing in this
+repository writes those yet from the readback of his decision on the mix plan
+(`mix.approved_map` is ready for it but nothing calls it), and release still
+needs the week's approved go-live decision (`docs/RUN.md`). A hand-edited
+`decision.json` is forbidden. So until that readback lands, in its own change
+with its tests, no post releases on a concept approval alone: concept posts
+hold, and every post still goes out only on his signed go-live as before.
+
+When it lands, a release session posts up to 16 a day on these channels plus
+their readbacks, above the provisional 25-call release budget in
+`docs/RUN.md`; that budget moves in the same change, after the Phase 0
+baseline.
 
 ## Learning
 
