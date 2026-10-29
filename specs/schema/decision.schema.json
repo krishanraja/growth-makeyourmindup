@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "decision.json: Krish's recorded decisions for one run (docs/RUN.md, docs/CONCEPT-MANIFEST.md)",
+  "description": "Written only from the readback of his Control Center decisions (engine/run/decision.py for the concept part). The go-live part is proposal_id, decision, decided_at, slots and amended; the concept part is concepts, concept_proposal_id, concept_decision, concept_manifest, concept_daily_caps, stopped_concepts and changed_concepts. A concept-only decision has proposal_id and decision null and slots {}.",
+  "type": "object",
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposal_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "description": "The week's go-live proposal, or null when the decision is concept-only."
+    },
+    "decision": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "approved",
+        null
+      ],
+      "description": "approved for a go-live decision; null when concept-only."
+    },
+    "decided_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "slots": {
+      "type": "object",
+      "description": "slot_id to the 64-hex digest Krish signed one by one; {} when concept-only."
+    },
+    "amended": {
+      "type": "object",
+      "description": "Optional; slot_id to Krish's amended payload."
+    },
+    "concepts": {
+      "type": "object",
+      "description": "concept_id to its 64-hex concept_sha256, approved in the week's mix plan; the spec signature's concepts_digest is the sha256 of this map's canonical JSON."
+    },
+    "concept_proposal_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^makeyourmindup:mix:[0-9]{4}-W[0-9]{2}$",
+      "description": "The mix plan proposal for the run's ISO week; equals the spec signature's concept_proposal_id."
+    },
+    "concept_decision": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "declined"
+          ]
+        },
+        "decided_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "plan_payload_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "amended": {
+          "type": "boolean"
+        },
+        "amended_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "read_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "decision",
+        "decided_at",
+        "plan_payload_sha256",
+        "amended",
+        "amended_sha256",
+        "read_at"
+      ],
+      "additionalProperties": false
+    },
+    "concept_manifest": {
+      "type": "array",
+      "description": "Each approved concept in full, one entry per key of concepts; concept_sha256 recomputes from the other fields (engine/concepts.py concept_payload).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "concept_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lane": {
+            "type": "string",
+            "minLength": 1
+          },
+          "idea": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "piece_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mock_sha256": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "placements": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "channel": {
+                  "type": "string",
+                  "enum": [
+                    "instagram",
+                    "youtube",
+                    "tiktok",
+                    "x"
+                  ]
+                },
+                "format": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "channel",
+                "format"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "concept_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "concept_id",
+          "lane",
+          "idea",
+          "claim",
+          "source_url",
+          "piece_id",
+          "mock_sha256",
+          "placements",
+          "concept_sha256"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "concept_daily_caps": {
+      "type": "object",
+      "description": "channel to the scheduled posts a New York day may carry on it, counted across every run, read when this file was written; release enforces the live cap and an executor never exceeds either."
+    },
+    "stopped_concepts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Concept ids Krish stopped: deleted or changed in his amended plan, or every concept when he declined it. A stop never lifts."
+    },
+    "changed_concepts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "The stopped concepts whose line he edited; the next plan reads his words."
+    }
+  },
+  "required": [
+    "run_id",
+    "proposal_id",
+    "decision",
+    "decided_at",
+    "slots"
+  ],
+  "additionalProperties": false
+}

@@ -318,45 +318,93 @@ def proposal_id(week_of):
     return SLUG + ':mix:%d-W%02d' % (year, week)
 
 
+def _channels(names):
+    names = list(names)
+    if sorted(names) == sorted(CHANNEL_NAMES):
+        return 'all four channels'
+    return ', '.join(CHANNEL_NAMES[c] for c in names)
+
+
+def concept_line(c):
+    """One concept's line in the plan Krish reads; his yes binds exactly this line, his edit of it stops it."""
+    head = '- ' + c['concept_id'] + ' (' + LANE_NAMES.get(c['lane'], c['lane']) + '): ' + c['idea']
+    if not c['ready']:
+        return head + '. Not ready, so not approved: ' + ('needs its claim and mock' if not c['claim'] else 'needs its mock')
+    files = len(c['mock_sha256'])
+    return (head + '. Claim: "' + c['claim'] + '" On ' + _channels(p['channel'] for p in c['placements'])
+            + ', ' + (str(files) + ' mock file' + ('' if files == 1 else 's') if files else 'text only, no files')
+            + '. Hash ' + c['concept_sha256'])
+
+
+def _days(days):
+    return ', '.join(d[:3] for d in days)
+
+
 def payload_text(mix, cfg):
-    """The exact words Krish approves: the mix, then every concept with its idea, claim and mock hashes."""
-    first = mix['targets'][cfg['channels'][0]]
-    days = sorted({d for d, n in cfg['reserved']['days'].items() if n}, key=DAYS.index)
-    lines = ['Mix for the week of ' + mix['week_of'] + ' (New York): ' + str(first['target'])
-             + ' posts a day on ' + ', '.join(CHANNEL_NAMES[c] for c in cfg['channels'])
-             + (', ' + str(first['target'] - 1) + ' on ' + '/'.join(d[:3] for d in days) + ' beside the piece' if days else '')
-             + ', never under ' + str(first['floor']) + '.',
-             'Ratio (weights): ' + ', '.join(LANE_NAMES.get(n, n) + ' ' + str(w) for n, w in mix['weights'].items()) + '.']
+    """The exact words Krish approves. Every sentence in it is what release does, no more (R101, R103)."""
+    channels = cfg['channels']
+    cap = mix['targets'][channels[0]]['target']
+    ready = {c['concept_id'] for c in mix['concepts'] if c['ready']}
+    waiting = {c['concept_id'] for c in mix['concepts'] if not c['ready']}
+    per_day = {}
+    for slot in mix['slots']:
+        row = per_day.setdefault(slot['channel'], {})
+        row[slot['day']] = row.get(slot['day'], 0) + 1
+    shapes = {}
+    for channel in channels:
+        counts = {}
+        for day in DAYS:
+            counts.setdefault(per_day.get(channel, {}).get(day, 0), []).append(day)
+        shape = '; '.join(str(n) + ' on ' + _days(ds) for n, ds in sorted(counts.items(), reverse=True))
+        shapes.setdefault(shape, []).append(channel)
+    reserved = sorted({d for d, n in cfg['reserved']['days'].items() if n}, key=DAYS.index)
+    lines = ['Mix for the week of ' + mix['week_of'] + ' (New York) on '
+             + ', '.join(CHANNEL_NAMES[c] for c in channels) + '.']
+    for shape, names in shapes.items():
+        lines.append('Planned slots a day on ' + _channels(names) + ': ' + shape
+                     + (' (the piece\'s own post on ' + _days(reserved) + ' is signed separately)' if reserved else '')
+                     + '.')
+    lines.append('Ratio (weights): ' + ', '.join(LANE_NAMES.get(n, n) + ' ' + str(w) for n, w in mix['weights'].items()) + '.')
+    formats = {}
+    for n, lane in cfg['lanes'].items():
+        formats.setdefault(', '.join(CHANNEL_NAMES[c] + ' ' + lane['placements'][c] for c in channels), []).append(
+            LANE_NAMES.get(n, n))
+    lines.append('Formats: ' + '; '.join(' and '.join(names) + ' as ' + where for where, names in formats.items()) + '.')
     if mix['moved']:
         lines.append('Learned from last week: ' + '; '.join(
             LANE_NAMES.get(n, n) + ' ' + str(m['from']) + ' to ' + str(m['to']) + ' on ' + str(m['judged']) + ' judged posts'
             for n, m in mix['moved'].items()) + '.')
-    for channel in cfg['channels']:
-        row = mix['per_channel'][channel]
-        lines.append(CHANNEL_NAMES[channel] + ': ' + ', '.join(str(row.get(n, 0)) + ' ' + LANE_NAMES.get(n, n)
-                                                         for n in cfg['lanes']) + '.')
+    for channel in channels:
+        rows = [s for s in mix['slots'] if s['channel'] == channel]
+        lanes_row = {}
+        for s in rows:
+            lanes_row[s['lane']] = lanes_row.get(s['lane'], 0) + 1
+        filled = sum(1 for s in rows if s['concept_id'] in ready)
+        wait = sum(1 for s in rows if s['concept_id'] in waiting)
+        lines.append(CHANNEL_NAMES[channel] + ': ' + str(len(rows)) + ' slots, ' + ', '.join(
+            str(lanes_row.get(n, 0)) + ' ' + LANE_NAMES.get(n, n) for n in cfg['lanes']) + '; ' + str(filled)
+            + ' with a ready concept, ' + str(wait) + ' waiting for a mock, ' + str(len(rows) - filled - wait) + ' empty.')
     order = {}
     for slot in mix['slots']:
-        if slot['channel'] == cfg['channels'][0]:
+        if slot['channel'] == channels[0]:
             order.setdefault(slot['day'], []).append(LANE_NAMES.get(slot['lane'], slot['lane']).split()[-1])
-    lines.append('Day by day: ' + '; '.join(d[:3] + ' ' + ', '.join(v) for d, v in order.items()) + '.')
+    lines.append('Day by day on ' + CHANNEL_NAMES[channels[0]] + ': '
+                 + '; '.join(d[:3] + ' ' + ', '.join(v) for d, v in order.items()) + '.')
     lines.append('')
-    lines.append('Concepts. Your yes on this plan approves each ready idea and its mock files below, by its hash.'
-                 ' The engine then makes and posts every post from it on these four channels, only while the post'
-                 ' matches its mock and claim; one that departs is held. Delete a concept\'s line to leave it out;'
-                 ' your no stops them all. LinkedIn stays your click.')
+    lines.append('Concepts. Your yes approves each ready concept below at its hash: its idea, its claim, the channels'
+                 ' named and its mock files. A post made from it may then go out on those channels with no further'
+                 ' ask, only in its format above, with only its mock files and its claim word for word. Each post'
+                 ' still needs a passing review of its own exact words and room under ' + str(cap) + ' posts a day on'
+                 ' its channel, and must pass copy lint, the share rule, the channel lock and, on a route not yet'
+                 ' verified, the one capability check; a post that fails any of these is held, never posted. Delete'
+                 ' or change a concept\'s line and that concept and every post from it stop. Your no stops them all.'
+                 ' LinkedIn stays your click.')
     for c in mix['concepts']:
-        head = '- ' + c['concept_id'] + ' (' + LANE_NAMES.get(c['lane'], c['lane']) + '): ' + c['idea']
-        if c['ready']:
-            head += '. Claim: "' + c['claim'] + '". Mock: ' + str(len(c['mock_sha256'])) + ' files. Hash ' + c['concept_sha256']
-        else:
-            head += '. Not ready: ' + ('needs its claim and mock' if not c['claim'] else 'needs its mock')
-        lines.append(head)
+        lines.append(concept_line(c))
     if mix['shortfalls']:
         lines.append('Empty slots: ' + str(len(mix['shortfalls'])) + ' (missing ideas or open past pieces), never filled'
                      ' with unapproved creative.')
-    lines.append('Walls: spend 0; no comments, follows or messages; copy lint, the share rule and the channel lock'
-                 ' run on every post.')
+    lines.append('Walls: spend 0; no comments, follows or messages.')
     return '\n'.join(lines)
 
 
@@ -365,8 +413,9 @@ def plan_proposal(mix, cfg):
     ready_count = sum(c['ready'] for c in mix['concepts'])
     return proposal(proposal_id(mix['week_of']),
                     'Approve the week of ' + mix['week_of'] + ': ' + str(ready_count) + ' ideas and their mocks',
-                    'One press approves the ideas and mocks for the week; the engine then posts 3 to 4 a day on'
-                    ' Instagram, YouTube, TikTok and X from them, exactly to each mock.',
+                    'One press approves the ideas and mocks for the week; posts made exactly from them may then go'
+                    ' out on Instagram, YouTube, TikTok and X, each still reviewed and at most '
+                    + str(mix['targets'][cfg['channels'][0]]['target']) + ' a day per channel.',
                     'advice', 'strategy', 'plan_approved', exact_payload=text, reference='docs/MIX.md',
                     stage='plan')
 
@@ -383,16 +432,47 @@ def spec_concepts(mix):
     return out
 
 
+def _line(text):
+    return ' '.join(str(text).split())
+
+
 def approved_map(mix, approved_text=None):
     """{concept_id: concept_sha256} as decision.json carries it once Krish approves the plan.
 
     approved_text is the payload he approved, his amended version when he
-    changed it: a concept whose hash he deleted from it is not approved.
+    changed it: a concept is approved only while its line stands in it exactly
+    as the engine wrote it (spaces aside). A line he deleted or changed is not
+    approved; amended_out says which.
     """
     out = {c['concept_id']: c['concept_sha256'] for c in spec_concepts(mix)}
     if approved_text is None:
         return out
-    return {cid: sha for cid, sha in out.items() if ('Hash ' + sha) in approved_text}
+    kept = {_line(line) for line in str(approved_text).split('\n')}
+    lines = {c['concept_id']: _line(concept_line(c)) for c in mix['concepts'] if c.get('ready')}
+    return {cid: sha for cid, sha in out.items() if lines.get(cid) in kept}
+
+
+def amended_out(mix, approved_text):
+    """(deleted, changed): ready concepts whose line is gone from his version, and those whose line he edited.
+
+    Both stop: the engine never posts his edited words in place of the mock it
+    hashed. changed is told apart by its hash still standing in his text, so the
+    next plan can carry his words."""
+    kept = {_line(line) for line in str(approved_text).split('\n')}
+    text = str(approved_text)
+    deleted, changed = [], []
+    for c in mix['concepts']:
+        if not c.get('ready') or _line(concept_line(c)) in kept:
+            continue
+        (changed if c['concept_sha256'] in text else deleted).append(c['concept_id'])
+    return sorted(deleted), sorted(changed)
+
+
+def plan_lines_changed(mix, cfg, approved_text):
+    """How many of the plan's own lines (not concept lines) his version changed or dropped."""
+    kept = {_line(line) for line in str(approved_text).split('\n')}
+    ours = [line for line in payload_text(mix, cfg).split('\n') if line.strip() and not line.startswith('- ')]
+    return sum(1 for line in ours if _line(line) not in kept)
 
 
 # Learning -------------------------------------------------------------------

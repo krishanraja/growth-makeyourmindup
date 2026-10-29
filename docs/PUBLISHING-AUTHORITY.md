@@ -171,7 +171,7 @@ rulings above; everything above stands unless a line here says otherwise.
   exact payload lists every concept hash. That yes is to reach release as
   decision.json `concepts`, written only from the readback of his decision,
   bound by the spec signature's `concepts_digest` and `concept_proposal_id`
-  (the readback is not built yet; see "Not live yet" below).
+  (`engine/run/decision.py`, fields in `docs/CONCEPT-MANIFEST.md`).
 - **It authorises every post made from it.** On those four channels the
   engine makes, schedules and publishes each post derived from an approved
   concept with no per-post approval, through `growth.py run release`, the
@@ -184,17 +184,18 @@ rulings above; everything above stands unless a line here says otherwise.
   re-render is a new hash and a new approval) and carry its claim word for
   word. Release holds anything else as `departs_from_approved_mock`.
 - **His no stops it.** A decline of the mix plan approves nothing; a concept
-  he deletes from his amended payload is not approved; a concept he purges
+  he deletes or changes in his amended payload is stopped; a concept he purges
   later (`stopped_concepts`), or a stop on the mix plan in the loop's go-live
   ledger, holds every post made from it, including any signed one by one.
 - **Each post still clears the bar and the cap.** With no signature of his
   on each post, release holds one with no passing review at its own payload,
   one past its channel's four a day across every run, and every concept post
   while a decline is unmatched to its plan.
-- **Not live yet.** Nothing writes his mix plan decision into
-  `decision.json` from the readback, and release still needs the week's
-  approved go-live decision. Until that readback lands, no post releases on a
-  concept approval alone (`docs/MIX.md`, "Not live yet").
+- **The mix plan is the go-live for its concepts.** The loop's own run
+  writes his decision into `decision.json` (R104). With no go-live for the
+  week the decision is concept-only, and only posts made from an approved
+  concept can release; any other post still needs the week's go-live.
+  Built and wired, not yet activated: nothing has gone out this way.
 - **Volume.** Instagram, YouTube, TikTok and X take four scheduled posts a
   day with a floor of three. Every other channel keeps its bound.
 - **LinkedIn stays his click.** Unchanged: unscheduled drafts, and his final

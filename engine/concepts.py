@@ -176,6 +176,9 @@ def decision_errors(spec, decision):
     if not isinstance(approved, dict) or not all(isinstance(v, str) and SHA.match(v) for v in approved.values()):
         return 'decision.json concepts must map each concept_id to its 64-hex concept_sha256'
     signature = spec.get('signature') or {}
+    if decision.get('concept_proposal_id') is not None \
+            and decision['concept_proposal_id'] != signature.get('concept_proposal_id'):
+        return 'decision.json concept_proposal_id is not the mix plan the signature names'
     if not approved:
         return None
     if signature.get('concepts_digest') != concepts_digest(approved):

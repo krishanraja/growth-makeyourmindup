@@ -536,6 +536,16 @@ def decision_errors(spec, decision):
     """
     if decision.get('run_id') != spec['run_id']:
         return 'decision.json is for another run'
+    from .release import concept_only
+    if concept_only(spec, decision):
+        # The week's approved mix plan is the only authority (docs/CONCEPT-MANIFEST.md).
+        if decision.get('slots') != {} or decision.get('amended'):
+            return 'a concept-only decision.json signs no slot of its own'
+        if spec['signature'].get('decision_digest') != sha256_hex({}):
+            return 'decision.json slots do not match the signed decision_digest; a mismatch is never signed'
+        if not decision.get('concepts'):
+            return 'decision.json approves no go-live and no concept'
+        return concept_rules.decision_errors(spec, decision)
     if decision.get('decision') != 'approved':
         return 'decision.json is not an approved go-live decision'
     if not isinstance(decision.get('slots'), dict):

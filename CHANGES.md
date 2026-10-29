@@ -32,8 +32,18 @@
   - Review fixes, same day: a concept post also needs a passing review at its
     own payload and room under its channel's four a day across every run; an
     unmatched decline holds every concept post; the signature must name the
-    week's mix plan. Concept approval is not live until the readback of his
-    mix plan decision writes `decision.json` (`docs/MIX.md`, "Not live yet").
+    week's mix plan.
+  - The readback (R104), same day: in the loop's own run, right after it
+    reads his decisions, his yes on the week's mix plan (or his amended
+    version) writes `decision.json` `concepts`, `concept_manifest` and
+    `stopped_concepts` and the spec signature (`engine/run/decision.py`,
+    `growth.py run decide`; fields in `docs/CONCEPT-MANIFEST.md`). A line he
+    deletes or changes stops that concept; his no stops them all, for good.
+    With no go-live for the week the decision is concept-only: the approved
+    plan is the go-live for posts made from its concepts, and any other post
+    still needs the week's go-live. The release budget rises to 45 calls for
+    about 16 posts a day plus readbacks (`docs/RUN.md`). Built and wired, not
+    yet activated.
 
 - 2026-10-29: "At U3 to U5, engines and Control Center may raise volume caps
   up to each repo's existing policy bounds without a signed week spec. This

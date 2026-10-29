@@ -1069,6 +1069,11 @@ def cli(args, root, make_client, out=print, checks=None):
     matched = None
     if 'decisions' in outcome:
         matched = remember(root, outcome['report'], outcome['decisions'], now)
+        # His decision on the week's mix plan reaches decision.json here, in this run, before the next read
+        # replaces decisions.json (engine/run/decision.py, R101). Local writes only.
+        from .run.decision import after_readback
+        for line in after_readback(root, matched, now):
+            out(line)
     if outcome.get('attempt_journaled') and saved.exists():
         saved.unlink()
     for line in summary(outcome, matched=matched):

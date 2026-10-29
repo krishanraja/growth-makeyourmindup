@@ -1232,7 +1232,7 @@
     },
     {
       "id": "R101",
-      "statement": "On Instagram, YouTube, TikTok and X, Krish's approval of a concept (its idea, one claim and mock files, bound by concept_sha256 and listed in the week's mix plan proposal) authorises release of every post made from it with no per-post digest, through the same release gate and Buffer channel lock, only while the post is one of the concept's placements, carries only its mock files and carries its claim word for word; a post that departs is a lint error and is held at release, every other check still runs, his stop on a concept or on the mix plan holds every post from it, and so does any decline in the go-live ledger not yet matched to its plan; the signature must name the week's mix plan as concept_proposal_id; a post its concept authorises also needs a passing review at its own payload_sha256 and room under its channel's daily cap counted across every run's ledger; a text-only placement carries no mock file; and LinkedIn stays his click. Not live until the readback of his mix plan decision writes decision.json concepts.",
+      "statement": "On Instagram, YouTube, TikTok and X, Krish's approval of a concept (its idea, one claim and mock files, bound by concept_sha256 and listed in the week's mix plan proposal) authorises release of every post made from it with no per-post digest, through the same release gate and Buffer channel lock, only while the post is one of the concept's placements, carries only its mock files and carries its claim word for word; a post that departs is a lint error and is held at release, every other check still runs, his stop on a concept or on the mix plan holds every post from it, and so does any decline in the go-live ledger not yet matched to its plan; the signature must name the week's mix plan as concept_proposal_id; a post its concept authorises also needs a passing review at its own payload_sha256 and room under its channel's daily cap counted across every run's ledger; a text-only placement carries no mock file; and LinkedIn stays his click. The readback that writes decision.json concepts is R104.",
       "source_file": "CHANGES.md",
       "quote": "I just need to be in control of the idea and the mocks and then I'm happy to let you let that engine just go for gold.",
       "enforced_by": [
@@ -1332,6 +1332,44 @@
         "test_the_ratio_moves_one_step_inside_its_bounds_on_judged_posts_only",
         "test_the_next_plan_reads_what_was_learned",
         "test_a_narrowed_pack_carries_only_the_concepts_its_posts_are_made_from"
+      ]
+    },
+    {
+      "id": "R104",
+      "statement": "In the Control Center loop's own run, right after it matches decisions, Krish's decision on the week's mix plan becomes decision.json concepts, concept_manifest and stopped_concepts and the spec signature's concepts_digest and concept_proposal_id, only when the plan file recomputes to the payload reported and his yes is on its exact payload_sha256 (or his amended version recomputes to amended_sha256); a concept whose line he deleted or changed, and every concept on a declined or stopped plan, is stopped and a stop never lifts; a stale, undated or unrecomputable decision approves nothing; the week's go-live part is kept only while it matches its signature; with no go-live the decision is concept-only and releases only posts made from an approved concept; and the plan's words say only what release does.",
+      "source_file": "CHANGES.md",
+      "quote": "I just need to be in control of the idea and the mocks and then I'm happy to let you let that engine just go for gold.",
+      "enforced_by": [
+        "engine/run/decision.py:readback",
+        "engine/run/decision.py:sticky",
+        "engine/run/decision.py:apply",
+        "engine/run/decision.py:after_readback",
+        "engine/run/release.py:concept_only",
+        "engine/run/spec.py:decision_errors",
+        "engine/mix.py:approved_map",
+        "engine/mix.py:amended_out",
+        "engine/mix.py:payload_text",
+        "engine/control_center.py:match_decisions",
+        "engine/cc_loop.py:cli"
+      ],
+      "tests": [
+        "test_his_yes_approves_every_ready_concept_at_its_hash",
+        "test_his_amended_plan_stops_the_concepts_he_deleted_or_changed",
+        "test_a_decline_or_a_stopped_plan_stops_every_concept",
+        "test_a_stop_never_lifts",
+        "test_a_stale_yes_a_bad_amendment_or_no_decision_records_nothing",
+        "test_a_plan_file_changed_after_its_proposal_is_refused",
+        "test_match_decisions_keeps_his_amended_words_only_when_amended",
+        "test_concept_only_decision_and_signature",
+        "test_each_manifest_entry_recomputes_to_its_approved_hash_and_matches_the_schema",
+        "test_a_declined_week_applies_no_concept_and_releases_nothing",
+        "test_the_go_live_part_is_kept_and_must_match_its_signature",
+        "test_the_approved_mix_plan_is_the_go_live_for_its_concept_posts_only",
+        "test_a_concept_only_decision_that_signs_a_slot_is_refused",
+        "test_his_yes_reaches_decision_json_in_the_same_run_and_a_later_no_stops_it",
+        "test_the_loop_calls_the_hook_right_after_it_remembers_decisions",
+        "test_it_promises_no_post_beyond_what_release_allows",
+        "test_counts_say_which_slots_are_ready_waiting_or_empty"
       ]
     }
   ]

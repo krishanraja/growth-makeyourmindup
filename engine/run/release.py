@@ -73,7 +73,10 @@ stopped concept, or a stopped mix plan proposal, holds every post made from it,
 and so does any decline not yet matched to its plan. Such a post also needs a
 passing review at its payload_sha256 and room under its channel's daily cap,
 counted across every run's ledger. Every other check above still runs on each
-post.
+post. With no go-live for the week, decision.json is concept-only (proposal_id
+and decision null, slots {}; engine/run/decision.py writes it): the approved
+mix plan is then the go-live for posts made from its concepts and nothing else
+releases (docs/CONCEPT-MANIFEST.md).
 """
 import argparse
 import hashlib
@@ -611,7 +614,31 @@ def decision_digest(decision):
     return sha256_hex(decision.get('slots'))
 
 
+def concept_only(spec, decision):
+    """Whether this run's authority is the week's approved mix plan alone, with no go-live decision.
+
+    decision.json then has proposal_id and decision null and slots {}, and the
+    signature names no go-live (docs/CONCEPT-MANIFEST.md). Only posts made from
+    an approved concept can release; nothing else is signed."""
+    signature = spec.get('signature') or {}
+    return (isinstance(decision, dict) and decision.get('proposal_id') is None and decision.get('decision') is None
+            and 'go_live_proposal_id' in signature and signature['go_live_proposal_id'] is None)
+
+
 def _signed_digests(spec, decision):
+    if concept_only(spec, decision):
+        if decision.get('run_id') != spec.get('run_id'):
+            raise ValueError('decision belongs to another run')
+        if decision.get('slots') != {} or decision.get('amended'):
+            raise ValueError('a concept-only decision signs no slot of its own')
+        if (spec.get('signature') or {}).get('decision_digest') != decision_digest(decision):
+            raise ValueError('decision does not match the signed decision_digest')
+        if not decision.get('concepts'):
+            raise ValueError('no approved go-live decision and no approved concept: nothing releases')
+        concept_problem = concept_rules.decision_errors(spec, decision)
+        if concept_problem:
+            raise ValueError(concept_problem)
+        return {}
     if not isinstance(decision, dict) or decision.get('decision') != 'approved':
         raise ValueError('no approved go-live decision: nothing releases')
     if decision.get('run_id') != spec.get('run_id'):

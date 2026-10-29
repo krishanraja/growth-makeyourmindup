@@ -49,20 +49,25 @@ A concept is one idea, its one claim and its mock files, bound by
 proposal: stage `plan` behind `strategy`, its exact payload the mix and each
 ready concept with its hash. The Sunday report job carries it when
 `.scratch/mix/plan-<Monday>.json` exists (`engine/cc_loop.py`, `mix_proposal`).
-His yes approves each ready concept; deleting a concept's line in his amended
-version leaves it out (`mix.approved_map`); his no approves none.
+His yes approves each ready concept at its hash; deleting or changing a
+concept's line in his amended version stops that concept (`mix.approved_map`,
+`mix.amended_out`); his no approves none and stops them all.
 
 Then `growth.py run new --start <Monday> --mix <plan file>` puts the ready
-concepts in the week's spec. decision.json carries `concepts`
-{concept_id: concept_sha256} from his decision's readback, never by hand, and
-the signature records `concepts_digest` and `concept_proposal_id`, which must
-name the week's mix plan (`makeyourmindup:mix:<ISO week>`) or the run is
-refused, so his no on the plan can always stop its concepts. Each post made
-from a concept names it in `concept_id`. Release posts it with no digest of
-its own while it matches the concept: one of its placements, only its mock
-files, its claim word for word. A text-only placement (X text, no files) is
-made from the claim alone and carries no mock file. Anything else holds as
-`departs_from_approved_mock`.
+concepts in the week's spec. In the loop's own run, right after it reads his
+decisions, `engine/run/decision.py` writes decision.json `concepts`
+{concept_id: concept_sha256}, `concept_manifest`, `stopped_concepts` and the
+signature's `concepts_digest` and `concept_proposal_id`, which must name the
+week's mix plan (`makeyourmindup:mix:<ISO week>`) or the run is refused
+(`growth.py run decide SPEC` for a spec made later; never by hand). With no
+go-live for the week, decision.json is concept-only and the approved mix plan
+is the go-live for posts made from its concepts; any other post still needs
+the week's go-live. The exact fields are in `docs/CONCEPT-MANIFEST.md`. Each
+post made from a concept names it in `concept_id`. Release posts it with no
+digest of its own while it matches the concept: one of its placements, only
+its mock files, its claim word for word. A text-only placement (X text, no
+files) is made from the claim alone and carries no mock file. Anything else
+holds as `departs_from_approved_mock`.
 
 Because no signature of his covers each such post, release holds it unless:
 
@@ -88,21 +93,16 @@ or claim is `concept_mismatch`, one naming a concept not in the spec is
 `unknown_concept`, and signing the concept approves its mock files for the
 posts made from it (no separate `creative_approval_ref`).
 
-## Not live yet: the readback
+## Live: the readback
 
-Release reads concept approvals only from `decision.json` `concepts` and the
-signature's `concepts_digest` and `concept_proposal_id`. Nothing in this
-repository writes those yet from the readback of his decision on the mix plan
-(`mix.approved_map` is ready for it but nothing calls it), and release still
-needs the week's approved go-live decision (`docs/RUN.md`). A hand-edited
-`decision.json` is forbidden. So until that readback lands, in its own change
-with its tests, no post releases on a concept approval alone: concept posts
-hold, and every post still goes out only on his signed go-live as before.
-
-When it lands, a release session posts up to 16 a day on these channels plus
-their readbacks, above the provisional 25-call release budget in
-`docs/RUN.md`; that budget moves in the same change, after the Phase 0
-baseline.
+Concept approval is built, tested and wired into the loop's run (R104): his
+decision on the week's mix plan reaches decision.json in the run that reads
+it. It acts only once a week's plan has been reported, he has decided it, the
+week's spec carries its concepts and a release session runs `run release`;
+built and wired is not activated, and no post has gone out this way yet. A
+release session then plans up to 16 concept posts a day on these channels plus
+their readbacks (`docs/RUN.md`, Budgets). Scheduling stays with the one
+release executor; nothing here calls Buffer.
 
 ## Learning
 

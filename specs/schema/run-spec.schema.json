@@ -506,13 +506,18 @@
       ],
       "properties": {
         "go_live_proposal_id": {
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "The week's go-live proposal; null when the decision is concept-only and the approved mix plan is the only authority (docs/CONCEPT-MANIFEST.md)."
         },
         "decision_digest": {
           "type": "string",
           "minLength": 1,
-          "pattern": "^[0-9a-f]{64}$"
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The sha256 of decision.json's canonical slots map; the sha256 of {} when concept-only."
         },
         "signed_at": {
           "type": "string",
