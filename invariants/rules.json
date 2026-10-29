@@ -1513,7 +1513,7 @@
       "source_file": "CHANGES.md",
       "quote": "three or four a day per channel, no piece twice on a channel in a week",
       "enforced_by": [
-        "engine/run/autorelease.py:first_of_concept",
+        "engine/run/autorelease.py:other_drafts",
         "engine/run/handoff.py:check_mock_links"
       ],
       "tests": [

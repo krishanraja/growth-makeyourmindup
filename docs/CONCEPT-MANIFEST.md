@@ -152,22 +152,29 @@ part from Control Center readbacks, bound by digest, every run.
 - Mock links. Each mock view link in a part's evidence is downloaded by the
   handoff and must hash to one of its concept's `mock_sha256`, so the
   picture he opens is the file he approves (`mock_link_differs_from_mock`
-  refuses the plan).
+  refuses the plan). A link is therefore a direct download of the file
+  itself, never a viewer page (a Google Drive view link serves HTML), and a
+  concept with no mock files has no link.
 - The checks, in order: a `concept_hold` or an unresolved stop holds every
   derived slot loudly; his no on the week is read next, before every other
   gate, and once he has said no to a plan or a check-in, every post of a
   stopped week (this one and next) still to come is checked each run, so
-  one still scheduled is loud at once (`scheduled_after_decline`); a
-  concept's second Buffer draft on one channel that week holds
-  (`concept_once_per_channel_week`); then on the draft read fresh, release's own
+  one still scheduled, or sent after his no, is loud at once
+  (`scheduled_after_decline`, `sent_after_decline`), read from Buffer by its
+  draft id so no review is needed; a concept goes out once on a channel
+  that week: once one of its drafts is live in Buffer, any other holds
+  (`concept_once_per_channel_week`), and two live is loud
+  (`concept_twice_on_channel_week`), while a replacement for a draft that
+  never went out may; then on the draft read fresh, release's own
   `concepts.authority` (placement, mock files, the claim, not stopped),
   `concept_post_hold` (the review at the rebuilt digest, judged by
   `spec.review_reason`; the daily cap counted from every post scheduled on
   the channel that New York day in Buffer, plus each post he signed for it),
   copy lint, share asks, the route and the channel lock; then the draft
   digest, meta, format shape and the 5 to 90 minute window. A draft more
-  than 30 minutes past its time is no longer read: loud once, then quiet.
+  than 25 minutes past its time is no longer read: loud once, then quiet.
   A newer plan version he has not answered holds quietly, like a first one.
 - The local `run release plan` counts the day from a fresh Buffer
-  `list_posts` readback too (`--scheduled`); without one, a concept post
-  holds (`concept_daily_cap_unknown`).
+  `list_posts` readback too (`--scheduled`, a list of posts each with
+  `id`, `status` and `channelId`; anything else is refused); without one, a
+  concept post holds (`concept_daily_cap_unknown`).

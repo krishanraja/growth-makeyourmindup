@@ -206,6 +206,11 @@ class ReleaseByConcept(unittest.TestCase):
         self.assertEqual(self.holds(self.plan(buffer=elsewhere)), {}, 'another channel is not this cap')
         hold = self.holds(self.plan(buffer=None))['tiktok-photo-1']
         self.assertTrue(hold.startswith('concept_daily_cap_unknown'), hold)
+        # Review 4: a raw response object, or posts without ids, never pass for an empty day.
+        for bad in ({'posts': day}, [{'channelId': pinned, 'status': 'scheduled'}]):
+            with self.assertRaises(ValueError):
+                self.plan(buffer=None) if False else release.release_plan(
+                    self.spec, self.decision, None, {}, self.channels, NOW, self.targets, buffer_scheduled=bad)
         # A post in another run's ledger that Buffer already holds is not counted twice.
         ledger = [{'channel': 'tiktok', 'due_at': '2026-11-03T08:30:00-05:00', 'post_id': post['id']} for post in day[:3]]
         self.assertEqual(self.holds(self.plan(other=ledger, buffer=day[:3])), {})

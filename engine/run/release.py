@@ -1049,6 +1049,12 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
     # Buffer's own posts on the pinned channels, once each; what this repo's ledgers or his slots name and
     # Buffer already holds is not counted twice.
     pinned = {cid: channel for channel, cid in BUFFER_CHANNEL_ID.items()}
+    if buffer_scheduled is not None and (not isinstance(buffer_scheduled, list) or not all(
+            isinstance(post, dict) and all(isinstance(post.get(k), str) for k in ('id', 'status', 'channelId'))
+            for post in buffer_scheduled)):
+        # A raw response object, or posts with no id or channel, would count as an empty day.
+        raise ValueError('--scheduled must be a list_posts readback: a list of posts, each with id, status and'
+                         ' channelId')
     in_buffer = set()
     for post in buffer_scheduled or []:
         if isinstance(post, dict) and post.get('status') in ('scheduled', 'sending', 'sent') \

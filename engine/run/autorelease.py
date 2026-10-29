@@ -275,7 +275,9 @@ def draft_line(post, fields, fetch):
 
 
 def due_instant(value):
-    """The instant of a due_at, or None when it is not a real date (2026-02-30)."""
+    """The instant of a due_at, or None when it is not a real date (2026-02-30) or is missing (never now)."""
+    if value is None:
+        return None
     try:
         return instant(value)
     except (ValueError, TypeError, OverflowError):
@@ -523,6 +525,22 @@ class Run:
             return False
         return buffer_api.signed_meta(back, rebuilt['assets']) == rebuilt['meta']
 
+    def stopped(self, draft_id, state):
+        """A post of a week he said no to, read from Buffer by its draft id alone (no review needed): one still
+        scheduled, or sent after his no, is loud (never unscheduled); one that cannot be read is loud too."""
+        post, code = self._read(draft_id)
+        if code:
+            return self.hold(code, loud=True)
+        status = post.get('status')
+        if status in ('scheduled', 'sending'):
+            return self.hold('scheduled_after_decline', loud=True)
+        if status == 'sent':
+            went = due_instant(post.get('sentAt')) or due_instant(post.get('dueAt'))
+            at = state.get('stopped_at')
+            if went is None or at is None or went >= at:
+                return self.hold('sent_after_decline', loud=True)
+        return self.hold(concept_rules.STOPPED)
+
     def _read(self, post_id):
         try:
             return self.buffer.get_post(post_id), None
@@ -695,13 +713,8 @@ class Run:
         if state.get('hold'):
             return self.hold(state['hold'], loud=state.get('loud', False))
         if state.get('stopped'):
-            # His no on the mix plan, read before every other gate (S3): a post from it still scheduled, at
-            # any time of the week, is reported loudly, never unscheduled; one that cannot be read is loud too.
-            post, code = self._read(fields['buffer_draft_id'])
-            if code:
-                return self.hold(code, loud=True)
-            return self.hold('scheduled_after_decline', loud=True) if post.get('status') in ('scheduled', 'sending') \
-                else self.hold(concept_rules.STOPPED)
+            # His no on the mix plan, read before every other gate (S3).
+            return self.stopped(fields['buffer_draft_id'], state)
         due = due_instant(fields['due_at'])
         if due is None:
             return self.hold('bad_due_at')
@@ -1039,10 +1052,11 @@ def week_state(cc, monday, decisions, state_root, now, root, proposals=()):
     stubs += [{'proposal_id': i, 'stage': 'plan'} for i in dropped]
     ledger = record_stops(state_root, list(proposals) + stubs, decisions)
     stopped = tuple(sorted(ledger['stopped']))
+    ids = sorted(current) + dropped
     if any(i in ledger['stopped'] or any(
             isinstance(d, dict) and d.get('proposal_id') == i and d.get('decision') == 'declined'
-            for d in decisions) for i in sorted(current) + dropped):
-        return {'hold': None, 'stopped': True, 'why': 'declined'}
+            for d in decisions) for i in ids):
+        return {'hold': None, 'stopped': True, 'why': 'declined', 'stopped_at': _stopped_at(decisions, ledger, ids)}
     if ledger['unresolved']:
         return _held('concept_stop_unresolved', 'stop_unresolved')
     read = []
@@ -1065,7 +1079,7 @@ def week_state(cc, monday, decisions, state_root, now, root, proposals=()):
         pending = code in ('no_decision', 'not_approved', 'stale_approval')
         return _held('concept_not_approved' if pending else 'concept_hold', code, loud=not pending)
     if record['decision'] == 'declined':
-        return {'hold': None, 'stopped': True, 'why': 'declined'}
+        return {'hold': None, 'stopped': True, 'why': 'declined', 'stopped_at': _stopped_at(decisions, ledger, ids)}
     try:
         gone = amended_away(cc, monday, decisions)
     except ValueError as error:
@@ -1092,6 +1106,16 @@ def week_state(cc, monday, decisions, state_root, now, root, proposals=()):
         return _held('concept_hold', 'not_applied')
     return {'hold': None, 'stopped': False, 'why': None, 'decision': part, 'spec': spec,
             'stopped_proposals': stopped}
+
+
+def _stopped_at(decisions, ledger, ids):
+    """The earliest time he stopped any of these parts (a decline, or the ledger's stop), or None if none reads."""
+    times = [d.get('decided_at') for d in decisions if isinstance(d, dict) and d.get('proposal_id') in ids
+             and d.get('decision') == 'declined']
+    times += [(ledger['stopped'].get(i) or {}).get('decided_at') for i in ids if i in ledger['stopped']]
+    read = [due_instant(t) for t in times if isinstance(t, str)]
+    read = [t for t in read if t is not None]
+    return min(read) if read else None
 
 
 def amended_away(cc, monday, decisions):
@@ -1125,7 +1149,7 @@ def amended_away(cc, monday, decisions):
     return gone
 
 
-LATE = dt.timedelta(minutes=30)  # a draft this far past its time is no longer read: loud once, then quiet (S6)
+LATE = dt.timedelta(minutes=25)  # a draft this far past its time is no longer read: loud once, then quiet (S6)
 
 
 def index_days(cc, days, holds):
@@ -1142,7 +1166,8 @@ def index_days(cc, days, holds):
                 if due is None or not isinstance(entry.get('payload_sha256'), str) \
                         or not HEX64.match(entry['payload_sha256']) or ny_time(due).date().isoformat() != day \
                         or not isinstance(entry.get('concept_id'), str) or not isinstance(entry.get('channel'), str) \
-                        or not isinstance(entry.get('buffer_draft_id'), str):
+                        or not isinstance(entry.get('buffer_draft_id'), str) \
+                        or not BUFFER_ID.match(entry['buffer_draft_id']):
                     holds['derived_index_malformed'] = holds.get('derived_index_malformed', 0) + 1
                     continue
                 found.setdefault(entry['payload_sha256'], entry)
@@ -1170,14 +1195,14 @@ def week_entries(cc, monday, holds):
     return None if found is None else _due_order(found.values())
 
 
-def first_of_concept(week, entry):
-    """True when entry's Buffer draft is its concept's first on its channel that week (S2): a piece or idea
-    runs at most once per channel in a week (engine/mix.py), so a second draft from it on that channel holds.
-    A draft reviewed again at new words is the same post (its newest review is the one that must match)."""
-    for other in week:
-        if other['concept_id'] == entry['concept_id'] and other['channel'] == entry['channel']:
-            return other['buffer_draft_id'] == entry['buffer_draft_id']
-    return False
+LIVE = ('scheduled', 'sending', 'sent')
+
+
+def other_drafts(week, entry):
+    """The other Buffer drafts indexed that week for entry's concept on entry's channel (S2): a piece or idea
+    runs at most once per channel in a week (engine/mix.py). A draft reviewed again is the same post."""
+    return sorted({e['buffer_draft_id'] for e in week if e['concept_id'] == entry['concept_id']
+                   and e['channel'] == entry['channel']} - {entry['buffer_draft_id']})
 
 
 def review_of(cc, entry):
@@ -1212,7 +1237,7 @@ def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(
         run.loud.append('derived_too_many_reads')
         run.holds['derived_too_many_reads'] = len(entries) - MAX_DERIVED
         entries = entries[:MAX_DERIVED]
-    weeks, indexed = {}, {}
+    weeks, indexed, taken, statuses = {}, {}, {}, {}
 
     def state_of(monday):
         if monday not in weeks:
@@ -1230,7 +1255,17 @@ def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(
                 indexed[monday] = None
         return indexed[monday]
 
+    def status_of(draft_id):
+        if draft_id not in statuses:
+            post, code = run._read(draft_id)
+            statuses[draft_id] = (None, code) if code else (post.get('status'), None)
+        return statuses[draft_id]
+
     def one(entry, state):
+        if state.get('stopped'):
+            # His no is checked on the post itself, from its draft id: no review needs to read (S3).
+            run.stopped(entry['buffer_draft_id'], state)
+            return
         try:
             fields, review = review_of(cc, entry)
         except ValueError:
@@ -1238,15 +1273,35 @@ def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(
         if fields is None:
             run.hold(review, loud=review == 'review_unreadable')
             return
-        if not state.get('stopped') and not state.get('hold'):
-            week = week_of_entries(week_of(entry['due_at']))
+        key = (entry['concept_id'], entry['channel'], week_of(entry['due_at']))
+        if not state.get('hold'):
+            # S2: the concept's one post on this channel this week is whichever draft Buffer already holds
+            # live, or else the first this run schedules; any other holds. Two live is loud.
+            if taken.get(key, entry['buffer_draft_id']) != entry['buffer_draft_id']:
+                run.hold('concept_once_per_channel_week')
+                return
+            week = week_of_entries(key[2])
             if week is None:
                 run.hold('derived_index_unreadable', loud=True)
                 return
-            if not first_of_concept(week, entry):
-                run.hold('concept_once_per_channel_week')
+            live = []
+            for other in other_drafts(week, entry):
+                status, code = status_of(other)
+                if code:
+                    run.hold(code, loud=True)
+                    return
+                if status in LIVE:
+                    live.append(other)
+            if live:
+                status, code = status_of(entry['buffer_draft_id'])
+                if code or status in LIVE:
+                    run.hold(code or 'concept_twice_on_channel_week', loud=True)
+                else:
+                    run.hold('concept_once_per_channel_week')
                 return
-        run.derived(fields, review, state)
+        outcome = run.derived(fields, review, state)
+        if outcome in ('scheduled', 'would_schedule', 'already_scheduled', 'already_sent'):
+            taken[key] = entry['buffer_draft_id']
 
     done = set()
     for entry in entries:
@@ -1254,10 +1309,17 @@ def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(
         one(entry, state_of(week_of(entry['due_at'])))
     # S3: when he has said no to anything, this week's and next week's plans are read, and a stopped week's
     # every post still to come is checked now, not when it nears its time: one still scheduled is loud.
-    if any(isinstance(d, dict) and d.get('decision') == 'declined' and d.get('stage') in ('plan', 'check_in')
+    this = week_of(now)
+    near = (this, (calendar_date(this) + dt.timedelta(days=7)).isoformat())
+    recent = now - dt.timedelta(days=14)
+    # Only a no on this week's or next week's plan, or a check-in declined in the last fortnight (it may stop
+    # either), starts the scan, so an old no costs nothing.
+    if any(isinstance(d, dict) and d.get('decision') == 'declined'
+           and (any(mix_rules.week_part(d.get('proposal_id'), m) for m in near)
+                or (d.get('stage') == 'check_in' and (due_instant(d.get('decided_at')) or now) >= recent))
            for d in decisions):
-        this = week_of(now)
-        for monday in (this, (calendar_date(this) + dt.timedelta(days=7)).isoformat()):
+        scanned = 0
+        for monday in near:
             if monday in weeks:
                 state = weeks[monday]
             else:
@@ -1275,6 +1337,11 @@ def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(
                 continue
             for entry in week:
                 if entry['payload_sha256'] not in done and due_instant(entry['due_at']) >= now - LATE:
+                    if scanned >= MAX_DERIVED:
+                        run.loud.append('derived_too_many_reads')
+                        run.holds['derived_too_many_reads'] = run.holds.get('derived_too_many_reads', 0) + 1
+                        break
+                    scanned += 1
                     done.add(entry['payload_sha256'])
                     one(entry, state)
     summary['derived'] = {'read': len(done),

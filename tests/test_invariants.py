@@ -299,21 +299,22 @@ class FailureRegisterTests(unittest.TestCase):
     def test_register_records_review_three_of_the_concept_path(self):
         # Review 3 of PR #19, 29 Oct 2026: every way he says no holds on the L0 executor.
         failures = {f['id']: f for f in load_failures()}
-        new = FAILURE_IDS[119:130]
-        self.assertEqual((new[0], new[-1], FAILURE_IDS[130]), ('F120', 'F130', 'G1'))
+        new = FAILURE_IDS[119:131]
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[131]), ('F120', 'F131', 'G1'))
         self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
         for fid, guard, test in (
                 ('F120', 'autorelease.py:week_state', 'test_a_no_on_a_part_a_later_version_dropped_still_stops_the_week'),
                 ('F121', 'mix.py:lines_changed', 'test_a_line_he_adds_to_his_amended_yes_holds_every_concept'),
                 ('F122', 'autorelease.py:amended_away', 'test_a_concept_he_stopped_in_an_earlier_version_stays_stopped'),
-                ('F123', 'autorelease.py:first_of_concept', 'test_one_concept_posts_once_per_channel_a_week'),
+                ('F123', 'autorelease.py:other_drafts', 'test_one_concept_posts_once_per_channel_a_week'),
                 ('F124', 'autorelease.py:derived_lane', 'test_a_declined_week_with_a_post_scheduled_for_later_is_loud_now'),
                 ('F125', 'cc_records.py:claim_run_id', 'test_a_go_live_claimed_under_an_earlier_decision_never_acts_again'),
                 ('F126', 'release.py:release_plan', 'test_the_cap_counts_what_buffer_holds_so_l0_posts_count_here'),
                 ('F127', 'autorelease.py:derived_entries', 'test_a_past_due_draft_is_loud_once_then_quiet'),
                 ('F128', 'handoff.py:check_mock_links', 'test_a_mock_link_must_be_one_of_the_files_he_approves'),
                 ('F129', 'concepts.py:carries', 'test_a_claim_is_carried_as_whole_words'),
-                ('F130', 'test_run_measure_auto.py', 'test_dry_run_reads_fakes_reports_locally_and_logs_only_counts')):
+                ('F130', 'test_run_measure_auto.py', 'test_dry_run_reads_fakes_reports_locally_and_logs_only_counts'),
+                ('F131', 'autorelease.py:due_instant', 'test_a_post_sent_after_his_no_is_loud_and_one_sent_before_is_not')):
             self.assertIn(guard, failures[fid]['guard'], fid)
             self.assertIn(test, failures[fid]['tests'], fid)
 

@@ -604,9 +604,22 @@ def lines_changed(engine_text, approved_text):
     engine_lines = [line for line in str(engine_text).split('\n') if line.strip()]
     ours = {_line(line) for line in engine_lines}
     dropped = sum(1 for line in engine_lines if not line.startswith('- ') and _line(line) not in kept)
-    concept_ids = {line[2:].split(' (', 1)[0] for line in engine_lines if line.startswith('- ')}
-    added = sum(1 for line in str(approved_text).split('\n') if line.strip() and _line(line) not in ours
-                and not (line.startswith('- ') and line[2:].split(' (', 1)[0] in concept_ids))
+    # A concept line he edited replaces its own line: only a concept whose engine line is gone from his text
+    # excuses one added line naming it. A second line about a concept whose line still stands is his term.
+    gone = {}
+    for line in engine_lines:
+        if line.startswith('- ') and _line(line) not in kept:
+            cid = line[2:].split(' (', 1)[0]
+            gone[cid] = gone.get(cid, 0) + 1
+    added = 0
+    for line in str(approved_text).split('\n'):
+        if not line.strip() or _line(line) in ours:
+            continue
+        cid = line[2:].split(' (', 1)[0] if line.startswith('- ') else None
+        if cid is not None and gone.get(cid):
+            gone[cid] -= 1
+            continue
+        added += 1
     return max(dropped, added)
 
 

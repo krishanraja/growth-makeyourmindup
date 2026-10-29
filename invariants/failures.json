@@ -1376,7 +1376,7 @@
       "id": "F121",
       "title": "A line he added to his amended yes was ignored, so every concept was approved under the engine's terms, not his",
       "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
-      "guard": "engine/mix.py:lines_changed counts every line he added that is not his edit of a concept's own line, so his term holds the week (amended_plan_terms)",
+      "guard": "engine/mix.py:lines_changed counts every line he added that is not his edit of a concept's own line, so his term holds the week (amended_plan_terms); an added line naming a concept is excused only while that concept's own line is gone",
       "tests": [
         "test_a_line_he_adds_to_his_amended_yes_holds_every_concept"
       ],
@@ -1396,9 +1396,11 @@
       "id": "F123",
       "title": "One approved concept could go out several times on one channel the same day",
       "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
-      "guard": "engine/run/autorelease.py:first_of_concept: one Buffer draft per concept, channel and New York week; index entries carry concept_id and buffer_draft_id (engine/run/handoff.py:derived_reports)",
+      "guard": "engine/run/autorelease.py:other_drafts with derived_lane: one live Buffer draft per concept, channel and New York week (two live is loud); index entries carry concept_id and buffer_draft_id (engine/run/handoff.py:derived_reports)",
       "tests": [
-        "test_one_concept_posts_once_per_channel_a_week"
+        "test_one_concept_posts_once_per_channel_a_week",
+        "test_an_earlier_second_draft_never_joins_one_already_live",
+        "test_a_replacement_draft_goes_out_when_the_first_never_did"
       ],
       "status": "tested"
     },
@@ -1406,9 +1408,11 @@
       "id": "F124",
       "title": "A post scheduled for later in a declined week was alarmed only near its time, and a stale route hid the alarm",
       "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
-      "guard": "engine/run/autorelease.py:derived_lane reads a stopped week's every post still to come once he has declined a plan or check-in; engine/run/autorelease.py:derived reads the stop before every other gate",
+      "guard": "engine/run/autorelease.py:derived_lane reads a stopped week's every post still to come once he has declined a plan or check-in; engine/run/autorelease.py:derived reads the stop before every other gate; engine/run/autorelease.py:stopped reads the post by its draft id, so no review is needed, and a post sent after his no is loud too",
       "tests": [
-        "test_a_declined_week_with_a_post_scheduled_for_later_is_loud_now"
+        "test_a_declined_week_with_a_post_scheduled_for_later_is_loud_now",
+        "test_a_post_sent_after_his_no_is_loud_and_one_sent_before_is_not",
+        "test_a_stopped_week_is_checked_even_when_its_review_cannot_be_read"
       ],
       "status": "tested"
     },
@@ -1426,7 +1430,7 @@
       "id": "F126",
       "title": "The local run release cap could not see posts L0 autorelease scheduled in Buffer",
       "source": "Review 3 of PR #19, 29 Oct 2026: the concept posting path on the L0 executor",
-      "guard": "engine/run/release.py:release_plan counts the day from a fresh Buffer list_posts readback (--scheduled) and holds a concept post without one",
+      "guard": "engine/run/release.py:release_plan counts the day from a fresh Buffer list_posts readback (--scheduled) and holds a concept post without one; a readback that is not a list of posts with id, status and channelId is refused",
       "tests": [
         "test_the_cap_counts_what_buffer_holds_so_l0_posts_count_here"
       ],
@@ -1470,6 +1474,16 @@
       "guard": "tests/test_run_measure_auto.py matches the figure as a whole number; the digest covers the run's measured cost, so it changes every run",
       "tests": [
         "test_dry_run_reads_fakes_reports_locally_and_logs_only_counts"
+      ],
+      "status": "tested"
+    },
+    {
+      "id": "F131",
+      "title": "A missing Buffer time read as now, so a sent post with no sentAt looked sent at this moment",
+      "source": "Review 4 of PR #19, 29 Oct 2026: the fixes to review 3",
+      "guard": "engine/run/autorelease.py:due_instant returns None for a missing value (engine.core.instant(None) is now)",
+      "tests": [
+        "test_a_post_sent_after_his_no_is_loud_and_one_sent_before_is_not"
       ],
       "status": "tested"
     },

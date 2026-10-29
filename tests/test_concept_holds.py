@@ -112,6 +112,11 @@ class HisNoHolds(Base):
         line = mix.concept_line(self.stage.concept)
         self.assertEqual(mix.lines_changed(engine_words, engine_words.replace(line, line + ' Shorter, please.')), 0)
         self.assertEqual(mix.lines_changed(engine_words, engine_words + '\n- nothing on X'), 1)
+        # Review 4: a note naming a concept whose own line still stands is his term, not an edit of it.
+        cid = self.stage.concept['concept_id']
+        self.assertEqual(mix.lines_changed(engine_words, engine_words + '\n- ' + cid + ' (not on X, please)'), 1)
+        twice = engine_words.replace(line, line + ' Shorter.\n- ' + cid + ' (and not on X)')
+        self.assertEqual(mix.lines_changed(engine_words, twice), 1, 'one edit is excused, the second line is a term')
 
     def test_a_concept_he_stopped_in_an_earlier_version_stays_stopped(self):
         # S1: version 1 approved with the concept's line deleted; version 2 re-lists it and he approves it plainly.
@@ -148,10 +153,40 @@ class HisNoHolds(Base):
         self.assertNotIn('route_not_verified', summary['holds'])
 
 
+class AfterHisNo(Base):
+    def decline(self, at):
+        self.cc.decisions.append({'proposal_id': T.PID, 'decision': 'declined', 'decided_at': at,
+                                  'payload_sha256': self.cc.decisions[0]['payload_sha256'], 'stage': 'plan',
+                                  'amended': False})
+
+    def test_a_post_sent_after_his_no_is_loud_and_one_sent_before_is_not(self):
+        # Review 4: declined at 13:50; the post was due 14:00 and the run at 14:10 sees it sent.
+        self.approved_week()
+        self.buf.posts[T.P_DERIVED].update(status='sent', dueAt=T.DUE)
+        self.decline('2026-11-10T13:50:00Z')
+        summary, code = self.release(now='2026-11-10T14:10:00Z')
+        self.assertEqual(code, 1, summary)
+        self.assertIn('sent_after_decline', summary['loud'])
+        self.cc.decisions[-1]['decided_at'] = '2026-11-10T14:05:00Z'
+        summary, code = self.release(now='2026-11-10T14:10:00Z')
+        self.assertEqual((code, summary['holds']), (0, {concepts.STOPPED: 1}), summary)
+
+    def test_a_stopped_week_is_checked_even_when_its_review_cannot_be_read(self):
+        # Review 4: the stop reads the post by its draft id, so a missing review never hides it.
+        self.approved_week()
+        self.buf.posts[T.P_DERIVED].update(status='scheduled', dueAt=T.DUE)
+        for run_id in [r for r in self.cc.reports if ':review:' in r]:
+            del self.cc.reports[run_id]
+        self.decline('2026-11-09T12:00:00Z')
+        summary, code = self.release(now='2026-11-10T11:00:00Z')
+        self.assertEqual(code, 1, summary)
+        self.assertIn('scheduled_after_decline', summary['loud'])
+
+
 class OneConceptOnce(Base):
     def second_draft(self, post_id, due):
         post = copy.deepcopy(self.buf.posts[T.P_DERIVED])
-        post['id'] = post_id
+        post.update(id=post_id, status='draft', dueAt=None)
         self.buf.posts[post_id] = post
         slot = self.stage.derived_slot(slot_id='x-derived-2')
         fields = {'slot_id': 'x-derived-2', 'format': 'single-image', 'due_at': due, 'link_placement': None,
@@ -178,6 +213,36 @@ class OneConceptOnce(Base):
         self.assertEqual(summary['holds'], {'concept_once_per_channel_week': 1}, summary)
         self.assertEqual(self.buf.posts[T.P_DERIVED]['status'], 'scheduled')
         self.assertEqual(self.buf.posts[T.P_OTHER]['status'], 'draft')
+
+    def test_an_earlier_second_draft_never_joins_one_already_live(self):
+        # Review 4: the first is scheduled; a second draft due earlier is indexed after it. Buffer decides.
+        self.approved_week()
+        summary, _ = self.release(now='2026-11-10T12:35:00Z')
+        self.assertEqual(summary['slots'], {'scheduled': 1}, summary)
+        summary, code = self.stage.handoff(handoff.GO_LIVE, {'run_id': T.RUN_ID,
+                                                             'slots': [self.second_draft(T.P_OTHER,
+                                                                                         '2026-11-10T13:50:00Z')]})
+        self.assertEqual(code, 0, summary)
+        summary, code = self.release(now='2026-11-10T12:40:00Z')
+        self.assertEqual(self.buf.posts[T.P_OTHER]['status'], 'draft', summary)
+        self.assertEqual(summary['holds'], {'concept_once_per_channel_week': 1}, summary)
+        self.assertEqual((code, summary['slots'].get('already_scheduled')), (0, 1), 'the live one is still checked')
+        # Two live at once (another path scheduled the second) is loud.
+        self.buf.posts[T.P_OTHER].update(status='scheduled', dueAt='2026-11-10T13:50:00Z')
+        summary, code = self.release(now='2026-11-10T12:45:00Z')
+        self.assertEqual(code, 1, summary)
+        self.assertIn('concept_twice_on_channel_week', summary['loud'])
+
+    def test_a_replacement_draft_goes_out_when_the_first_never_did(self):
+        # Review 4: the first draft was deleted in Buffer; the maker's replacement is the concept's one post.
+        self.approved_week()
+        summary, code = self.stage.handoff(handoff.GO_LIVE, {'run_id': T.RUN_ID,
+                                                             'slots': [self.second_draft(T.P_OTHER,
+                                                                                         '2026-11-10T14:20:00Z')]})
+        self.assertEqual(code, 0, summary)
+        self.buf.posts[T.P_DERIVED]['status'] = 'error'
+        summary, _ = self.release()
+        self.assertEqual(self.buf.posts[T.P_OTHER]['status'], 'scheduled', summary)
 
 
 class AlarmsStayMeaningful(Base):
