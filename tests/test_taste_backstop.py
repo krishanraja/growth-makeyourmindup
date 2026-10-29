@@ -61,7 +61,7 @@ class Backstop(unittest.TestCase):
         self.assertEqual(backstop.main([], io.StringIO(hook), self.root, printed.append), 0)
         rows = [json.loads(l) for l in (self.root / backstop.OUTBOX).read_text(encoding='utf-8').splitlines()]
         self.assertEqual(len(rows), 3, 'a line is kept once')
-        self.assertEqual({r['venture'] for r in rows}, {'makeyourmindup'})
+        self.assertEqual({r['venture'] for r in rows}, {'publication'})
         self.assertTrue(all(r['posted'] is False for r in rows))
         self.assertIn('nothing sent', printed[0])
         for junk in ('', 'not json', json.dumps({'transcript_path': 7}), json.dumps({'transcript_path': '/missing'})):

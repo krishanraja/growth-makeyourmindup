@@ -13,7 +13,7 @@
   - W3.3 (R121): a SessionEnd hook (`.claude/settings.json`,
     `scripts/taste_backstop.py`) keeps only his typed lines a local filter
     flags as a correction or a rejection, scrubbed of anything shaped like a
-    key, token, address or number, tagged makeyourmindup, in the ignored
+    key, token, address or number, tagged with the venture slug publication, in the ignored
     `.scratch/taste/backstop.jsonl`, each once. Asked how the lines reach
     Control Center when no session holds the key, Krish chose "Local file,
     runner posts". The runner that posts them waits on Control Center naming
