@@ -84,10 +84,10 @@ class LaneDocTests(unittest.TestCase):
                     continue
                 flat = ' '.join(path.read_text(encoding='utf-8').split())
                 for match in stale.finditer(flat):
-                    # "no Claude routines", "zero Claude routines", "never a Claude routine" and "no L1" say the
-                    # ruling itself.
+                    # "no Claude routines", "zero Claude routines", "never a Claude routine", "not a Claude
+                    # routine" and "no L1" say the ruling itself.
                     before = flat[max(0, match.start() - 10):match.start()]
-                    if not re.search(r'\b(?:no|zero|never an?) $', before, re.I):
+                    if not re.search(r'\b(?:no|zero|never an?|not an?) $', before, re.I):
                         self.fail('%s still names a Claude routine: %s'
                                   % (rel, flat[max(0, match.start() - 60):match.end() + 60]))
 

@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 # A folder on Krish's own machine, in either slash style, case aside.
 HARD_PATH = re.compile(r'C:[\\/]+Users[\\/]+krish[\\/]+dev[\\/]', re.I)
 ALLOWED = ('config/studio.json', 'tests/test_studio.py')
+# Krish's saved briefs are kept verbatim; they describe the layout, they are not readers of it.
+ALLOWED_DIRS = ('docs/briefs/waves/',)
 NOW_CAP = 16384
 
 
@@ -22,7 +24,7 @@ def tracked(root=ROOT):
 def planted_paths(files, root=ROOT):
     hits = []
     for name in files:
-        if name in ALLOWED:
+        if name in ALLOWED or name.startswith(ALLOWED_DIRS):
             continue
         try:
             text = (Path(root) / name).read_text(encoding='utf-8')
