@@ -1,7 +1,7 @@
 name: maker
 # Lane L0. Every day at 04:30 UTC (just before or just after midnight in New
 # York) the maker reads the ideas and mocks Krish approved in the week's mix
-# plan from Control Center, makes the next New York day's posts from them as
+# plan from Control Center, makes the rest of today's and all of tomorrow's (New York) posts from them as
 # Buffer drafts (saved as drafts with no due time, never published), and hands
 # each one off with its review, so release.yml can schedule it later under
 # every gate. The words and their blind review come from the Anthropic API.
@@ -21,7 +21,7 @@ on:
         type: boolean
         default: false
       day:
-        description: 'The New York day to make, YYYY-MM-DD: today or tomorrow there only (empty: the next day)'
+        description: 'The New York day to make, YYYY-MM-DD: today or tomorrow there only (empty: the rest of today and all of tomorrow)'
         required: false
         type: string
         default: ''
