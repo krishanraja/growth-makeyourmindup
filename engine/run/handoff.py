@@ -72,7 +72,12 @@ Four event types, each with a closed client_payload (unknown keys refused):
   `mock_file_missing`, and the maker holds it. The same plan sent again is
   already reported, part by part and version by version: only a slots or mock
   record not yet there is written, so a plan dispatched before these records
-  existed gains them by being sent again, and his digests never move. With
+  existed gains them by being sent again, and his digests never move. A mock
+  manifest sent again with a different mock_files map (a file id corrected)
+  is written as the manifest's next version, after its last numbered record,
+  and the maker reads the highest; its keys must still be the plan's own mock
+  hashes, and every file's bytes are still hashed by the maker and by
+  release. With
   "records_only": true the runner writes those records and nothing else, and
   refuses (`records_only_plan_not_in_force`) unless every part and the version
   it rebuilds are already the plan in force in Control Center.
@@ -1018,9 +1023,11 @@ def mix_reports(mix, links, cfg, now, root):
     return reports, version
 
 
-def week_records(mix, version, files, now, root):
+def week_records(mix, version, files, now, root, first=1, manifest_version=1):
     """The week's slots and, with files, its mock manifest: record reports at the version's plan key, in
-    numbered chunks. They sit beside the plan parts and never change a part's words or digest."""
+    numbered chunks. They sit beside the plan parts and never change a part's words or digest. The mock
+    manifest's records are numbered from first, as version manifest_version (deliver_mocks numbers them
+    after the records already reported)."""
     parts, label = version['parts'], week_label(mix['week_of'])
     key, rev = cc_records.plan_key(parts), revision(root)
 
@@ -1030,8 +1037,8 @@ def week_records(mix, version, files, now, root):
                 'shortfalls': len(mix['shortfalls']), 'slots': group}
 
     def mocks(group, number, total):
-        return {'schema': cc_records.MOCKS, 'week_of': mix['week_of'], 'plan': parts, 'chunk': number,
-                'chunks': total, 'files': dict(group)}
+        return {'schema': cc_records.MOCKS, 'week_of': mix['week_of'], 'plan': parts, 'version': manifest_version,
+                'chunk': number, 'chunks': total, 'files': dict(group)}
 
     out = []
     for record in cc_records.chunked(cc_records.SLOTS, slots, mix['slots']):
@@ -1043,11 +1050,33 @@ def week_records(mix, version, files, now, root):
     if files:
         for record in cc_records.chunked(cc_records.MOCKS, mocks, sorted(files.items())):
             out.append((cc_records.MOCKS, cc_records.record_report(
-                cc_records.mocks_run_id(label, key, record['chunk']), cc_records.MOCKS, record,
-                ['Where the approved mock files of the week of ' + mix['week_of'] + ' are kept, chunk '
-                 + str(record['chunk']) + ' of ' + str(record['chunks']), 'Posted, sent, published and spent nothing'],
-                now, rev)))
+                cc_records.mocks_run_id(label, key, first + record['chunk'] - 1), cc_records.MOCKS, record,
+                ['Where the approved mock files of the week of ' + mix['week_of'] + ' are kept, version '
+                 + str(manifest_version) + ', chunk ' + str(record['chunk']) + ' of ' + str(record['chunks']),
+                 'Posted, sent, published and spent nothing'], now, rev)))
     return out
+
+
+def deliver_mocks(cc, mix, version, files, now, root, summary):
+    """The week's mock manifest: already reported when the version in force maps the same files; otherwise
+    the next version, numbered after the last record, so a corrected map is never a report conflict."""
+    label, key = week_label(mix['week_of']), cc_records.plan_key(version['parts'])
+    found = cc_records.probe(cc, lambda n: cc_records.mocks_run_id(label, key, n), cc_records.MOCKS,
+                             cc_records.MAX_MOCK_RECORDS)
+    if found is None:
+        summary['loud'].append('mock_manifest_full')
+        return
+    current = cc_records.latest_version(found)
+    if current is not None and {k: v for c in current for k, v in (c.get('files') or {}).items()} == files:
+        summary['reports']['already_reported'] += 1
+        return
+    reports = [report for schema, report in week_records(
+        mix, version, files, now, root, len(found) + 1, 1 if current is None else current[0]['version'] + 1)
+        if schema == cc_records.MOCKS]
+    if len(found) + len(reports) > cc_records.MAX_MOCK_RECORDS:
+        summary['loud'].append('mock_manifest_full')
+        return
+    deliver_records(cc, reports, cc_records.MOCKS, summary)
 
 
 def in_force(cc, week_of, version):
@@ -1124,7 +1153,10 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                     if version:
                         deliver_version(cc, mix['week_of'], version, now, root, summary)
                 for schema, report in records:
-                    deliver_records(cc, [report], schema, summary)
+                    if schema == cc_records.SLOTS:
+                        deliver_records(cc, [report], schema, summary)
+                if files and version:
+                    deliver_mocks(cc, mix, version, files, now, root, summary)
             return _finish(summary, slots)
         VALIDATORS[event](payload)
         if event == MAKE_PIECE:

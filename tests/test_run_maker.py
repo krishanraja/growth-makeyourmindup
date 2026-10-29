@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import sys
 import tempfile
 import threading
 import unittest
@@ -46,6 +47,11 @@ VIDEO = b'\x00\x00\x00\x18ftypmp42' + b'synthetic maker video\n'
 DRIVE = {'SyntheticDriveFile0001': FRAME1, 'SyntheticDriveFile0002': FRAME2, 'SyntheticDriveFile0003': VIDEO}
 ANSWER = {'would_send': True, 'receiver': 'my CFO', 'job': 'settles_it', 'dm_line': 'Synthetic line.',
           'why': 'Synthetic.'}
+
+
+def tra_created_post():
+    """The Buffer stand-in's own createPost, so a test can wrap what Buffer stores."""
+    return sys.modules[BufferStandIn.__module__].created_post
 
 
 def sha(data):
@@ -95,9 +101,11 @@ class Words:
 
     def json_message(self, system, user, schema, max_tokens=None):
         self.calls.append({'system': system, 'user': user, 'schema': schema})
+        share = {k: SHARE[k] for k in ('sender', 'receiver', 'job', 'dm_line', 'moment')}
         if schema is maker.WRITE_SCHEMA:
-            share = {k: SHARE[k] for k in ('sender', 'receiver', 'job', 'dm_line', 'moment')}
             return {'words': self.words, 'title': 'Synthetic fixture title', 'share': share}
+        if schema is getattr(maker, 'SHARE_SCHEMA', None):
+            return {'share': share}
         return dict(self.answer)
 
 
@@ -168,8 +176,8 @@ class MakerTests(unittest.TestCase):
         self.approved()
         summary, code = self.make()
         self.assertEqual(code, 0, summary)
-        self.assertEqual((summary['day'], summary['slots'].get('made'), summary['handoff']['recorded']),
-                         ('2026-11-09', 4, 4), summary)
+        self.assertEqual((summary['days'], summary['slots'].get('made'), summary['handoff']['recorded']),
+                         (['2026-11-09'], 4, 4), summary)
         self.assertEqual(summary['taste'], 'taste_unavailable')
         posts = [p for p in self.buf.posts.values()]
         self.assertEqual(sorted(p['channelService'] for p in posts), ['instagram', 'tiktok', 'twitter', 'youtube'])
@@ -215,14 +223,62 @@ class MakerTests(unittest.TestCase):
         self.assertEqual((code, outcomes(summary)), (0, {'already_made': 4}), summary)
         self.assertEqual((len(self.buf.posts), len(self.cc.reports)), before)
 
-    def test_a_draft_in_buffer_but_not_handed_off_is_never_made_twice(self):
+    def test_a_draft_saved_but_never_handed_off_is_adopted_on_the_next_run_never_made_twice(self):
+        # Review finding 2: a handoff that fails stops the run at once, and the next run adopts the draft it
+        # stranded (rebuilt from Buffer, its share declared, reviewed blind, handed off) and makes the rest.
         self.approved()
-        with mock.patch.object(handoff, 'handoff', return_value=({'slots': {}, 'holds': {}, 'error': 'synthetic'}, 1)):
+        failed = ({'slots': {}, 'holds': {}, 'error': 'synthetic'}, 1)
+        with mock.patch.object(handoff, 'handoff', return_value=failed):
             summary, code = self.make()
-        self.assertEqual((code, summary['loud']), (1, ['handoff_incomplete']), summary)
+        self.assertEqual((code, summary['loud'], len(self.creates())), (1, ['handoff_incomplete'], 1), summary)
+        self.assertEqual(autorelease.week_entries(self.cc.client(), WEEK, {}), [])
         summary, code = self.make()
-        self.assertEqual((outcomes(summary), summary['loud'], len(self.creates())),
-                         ({'already_made': 4}, ['made_not_handed_off'], 4), summary)
+        self.assertEqual((code, outcomes(summary), summary['loud'], len(self.creates())),
+                         (0, {'adopted': 1, 'made': 3, 'drafts_saved': 3}, [], 4), summary)
+        declared = [c for c in self.words.calls if c['schema'] is maker.SHARE_SCHEMA]
+        self.assertEqual(len(declared), 1, 'the adopted draft has its share declared, its words never rewritten')
+        self.assertEqual(len(autorelease.week_entries(self.cc.client(), WEEK, {})), 4)
+        summary, code = self.make()
+        self.assertEqual((code, outcomes(summary)), (0, {'already_made': 4}), summary)
+        summary, code = self.release()
+        self.assertEqual((code, summary['slots']), (0, {'scheduled': 4}), summary)
+
+    def test_each_draft_is_handed_off_as_soon_as_it_is_saved(self):
+        # Review finding 2: a refused key after the first draft never strands it.
+        self.approved()
+
+        class Refused(Words):
+            def json_message(self, system, user, schema, max_tokens=None):
+                if len(self.calls) >= 2:  # the first slot's words and review answer; then the key is refused
+                    raise anthropic_api.AnthropicAuthError(401)
+                return Words.json_message(self, system, user, schema, max_tokens)
+        summary, code = self.make(anthropic=Refused())
+        self.assertEqual((code, summary['error'], len(self.creates())), (1, 'anthropic_key_refused', 1), summary)
+        self.assertEqual(len(autorelease.week_entries(self.cc.client(), WEEK, {})), 1, 'handed off before the error')
+        summary, code = self.make()
+        self.assertEqual((code, outcomes(summary), summary['loud']),
+                         (0, {'already_made': 1, 'made': 3, 'drafts_saved': 3}, []), summary)
+
+    def test_one_run_never_makes_two_drafts_of_one_concept_on_one_channel(self):
+        # Review finding 2 (P2): the concept and channel are taken before the save, so a slot that holds after
+        # its draft is saved never lets a second slot of the same concept and channel make another.
+        self.approved()
+        real_slots, real_line, seen = maker.week_slots, autorelease.draft_line, []
+
+        def doubled(*args, **kwargs):
+            slots = real_slots(*args, **kwargs)
+            first = next(s for s in slots if s['channel'] == 'x' and s['concept_id'])
+            return slots + [dict(first, slot_id=first['slot_id'] + '-twin')]
+
+        def flaky(post, fields, fetch):
+            if post.get('channelService') == 'twitter' and not seen:
+                seen.append(1)
+                raise buffer_api.CarryHold('format_differs_from_draft')
+            return real_line(post, fields, fetch)
+        with mock.patch.object(maker, 'week_slots', doubled), mock.patch.object(autorelease, 'draft_line', flaky):
+            summary, code = self.make()
+        x = [c for c in self.creates() if c['variables']['input']['channelId'] == BUFFER_CHANNEL_ID['x']]
+        self.assertEqual((len(x), summary['holds']), (1, {'format_differs_from_draft': 1}), summary)
 
     def test_a_dry_run_mutates_nothing(self):
         self.approved()
@@ -234,6 +290,95 @@ class MakerTests(unittest.TestCase):
         self.assertEqual(self.buf.posts, {})
         self.assertEqual(self.cc.reports, reports)
         self.assertEqual([c for c in self.cc.calls if c['method'] == 'POST'], [], 'a dry run writes nothing to Control Center')
+
+    def test_a_draft_buffer_reads_back_as_queued_stops_the_whole_run_at_once(self):
+        # Review finding 1: saveToDraft ignored and the post queued. The readback stops the run loudly at the first
+        # one; no further draft is made.
+        self.approved()
+        real = tra_created_post()
+
+        def queued(stand, data):
+            post = real(stand, data)
+            post.update(status='scheduled', dueAt='2026-11-09T14:00:00.000Z')
+            return post
+        with mock.patch.object(sys.modules[BufferStandIn.__module__], 'created_post', queued):
+            summary, code = self.make()
+        self.assertEqual((code, len(self.creates()), summary['loud']), (1, 1, ['draft_not_a_draft']), summary)
+        self.assertEqual(summary['holds'], {'draft_not_a_draft': 1}, summary)
+        self.assertEqual(autorelease.week_entries(self.cc.client(), WEEK, {}), [], 'a queued post is never handed off')
+
+    def test_a_draft_read_back_with_a_due_time_also_stops_and_one_with_no_due_key_is_a_draft(self):
+        # Review findings 1 and 6: dueAt null or absent is a draft; a due time on a "draft" is not.
+        self.approved()
+        real = tra_created_post()
+
+        def keyless(stand, data):
+            post = real(stand, data)
+            del post['dueAt']
+            return post
+        with mock.patch.object(sys.modules[BufferStandIn.__module__], 'created_post', keyless):
+            summary, code = self.make()
+        self.assertEqual((code, summary['slots'].get('made')), (0, 4), summary)
+        self.assertFalse(maker.is_draft({'status': 'draft', 'dueAt': '2026-11-09T14:00:00.000Z'}))
+        self.assertFalse(maker.is_draft({'status': 'scheduled'}))
+        self.assertTrue(maker.is_draft({'status': 'draft', 'dueAt': None}) and maker.is_draft({'status': 'draft'}))
+
+    def test_instagram_says_not_ai_generated_and_drafts_are_listed_from_a_week_before_monday(self):
+        # Review finding 6.
+        self.approved()
+        self.make()
+        sent = {c['variables']['input']['channelId']: c['variables']['input'] for c in self.creates()}
+        self.assertEqual(sent[BUFFER_CHANNEL_ID['instagram']]['metadata'],
+                         {'instagram': {'type': 'post', 'shouldShareToFeed': True, 'isAiGenerated': False}})
+        listed = [c['variables']['input']['filter'] for c in self.buf.calls if c['op'] == 'ListPosts']
+        drafts = [f for f in listed if f.get('status') == ['draft']]
+        self.assertEqual(len(drafts), 4, 'one draft listing per channel')
+        self.assertEqual({f['createdAt']['start'] for f in drafts}, {'2026-11-02T00:00:00-05:00'}, drafts)
+        self.assertTrue(all('dueAt' not in f for f in drafts), 'a draft has no due time to filter on')
+
+    def test_an_anthropic_api_that_stays_busy_fails_the_run_loudly(self):
+        # Review finding 5: after its retries a busy API is loud (exit 1), never a quiet per-slot hold.
+        self.approved()
+
+        class Busy(Words):
+            def json_message(self, system, user, schema, max_tokens=None):
+                self.calls.append(schema)
+                raise anthropic_api.AnthropicError('anthropic_overloaded', 529)
+        busy = Busy()
+        summary, code = self.make(anthropic=busy)
+        self.assertEqual((code, summary['loud'], len(busy.calls), self.creates()),
+                         (1, ['anthropic_overloaded'], 1, []), summary)
+
+    def test_no_slot_is_started_after_the_run_deadline(self):
+        # Review finding 5: the run's deadline bounds it whatever the slot count; the rest waits, loudly.
+        self.approved()
+        clock = [0.0]
+
+        class Slow(Words):
+            def json_message(self, system, user, schema, max_tokens=None):
+                clock[0] = maker.RUN_BUDGET + 1.0  # the first slot's calls use up the run's time
+                return Words.json_message(self, system, user, schema, max_tokens)
+        summary, code = maker.maker(self.cc.client(), self.buffer(), Slow(), NOW, True, self.drive.fetch, ROOT,
+                                    str(Path(self.tmp.name) / 'maker-handoff.json'), None, lambda: clock[0])
+        self.assertEqual((code, summary['slots'].get('made'), summary['loud']), (1, 1, ['maker_out_of_time']),
+                         summary)
+        self.assertEqual(len(autorelease.week_entries(self.cc.client(), WEEK, {})), 1)
+
+    def test_the_worst_case_run_fits_the_job_limit(self):
+        # Review finding 5: the worst case, computed. One call: three attempts of TIMEOUT and at most MAX_WAIT of
+        # waiting. A run's Anthropic time is bounded by its deadline whatever the slot count, one slot's calls
+        # fit inside it, and what is left of the job's limit is the last slot's Buffer and Control Center work.
+        a = anthropic_api
+        self.assertEqual(a.CALL_WORST, a.MAX_ATTEMPTS * a.TIMEOUT + a.MAX_WAIT)
+        self.assertEqual((a.MAX_ATTEMPTS, a.CALL_WORST), (3, 240))
+        self.assertLess(a.MAX_WAIT, 90)
+        self.assertLessEqual(maker.CALLS_PER_SLOT * a.CALL_WORST, maker.RUN_BUDGET)
+        self.assertGreaterEqual(maker.JOB_LIMIT - maker.RUN_BUDGET, 600)
+        text = (ROOT / '.github' / 'workflows' / 'maker.yml').read_text(encoding='utf-8')
+        self.assertIn('timeout-minutes: ' + str(maker.JOB_LIMIT // 60), text)
+        cfg = json.loads((ROOT / 'mix.json').read_text(encoding='utf-8'))
+        per_day = len(cfg['slot_times']) * len(cfg['channels'])
+        self.assertLessEqual(per_day, handoff.MAX_INDEX_PARTS, 'one index record per draft fits the day index')
 
     # His authority -----------------------------------------------------------------------------------
 
@@ -304,6 +449,36 @@ class MakerTests(unittest.TestCase):
         payload = dispatch_of(self.plan)
         payload['mock_files'][sha(VIDEO)] = 'not a drive id!'
         self.assertEqual(self.handoff(payload)[0]['error'], 'payload_rejected_bad_mock_files')
+
+    def test_a_corrected_mock_manifest_is_the_next_version_and_the_maker_reads_the_highest(self):
+        # Review finding 3: a records_only re-send with a corrected mock_files map is written as the next numbered
+        # record; the keys must still be the plan's hashes and the bytes are still hash-checked.
+        wrong = dispatch_of(self.plan)
+        wrong['mock_files'][sha(FRAME2)] = 'SyntheticDriveFile0001'  # a slip: frame two mapped to frame one's file
+        summary, code = self.handoff(wrong)
+        self.assertEqual(code, 0, summary)
+        self.decide([r['proposals'][0] for r in self.cc.reports.values() if r['proposals']])
+        summary, _ = self.make()
+        self.assertEqual(summary['holds'], {'mock_hash_mismatch': 4}, summary)
+        parts = cc_records.read_record(self.cc.client(), cc_records.version_run_id('2026-W46', 1),
+                                       cc_records.VERSION)['parts']
+        mocks = lambda: sorted(k for k in self.cc.reports if ':mocks:2026-W46:' + cc_records.plan_key(parts) + ':' in k)
+        before = mocks()
+        summary, code = self.handoff(dict(dispatch_of(self.plan), records_only=True), now='2026-11-08T20:00:00Z')
+        self.assertEqual((code, summary['loud'], summary['reports']['posted']), (0, [], 1), summary)
+        after = mocks()
+        self.assertEqual(len(after), len(before) + 1, 'the next numbered record')
+        record = cc_records.record_of(self.cc.reports[after[-1]], cc_records.MOCKS)
+        self.assertEqual((record['version'], record['files'][sha(FRAME2)]), (2, 'SyntheticDriveFile0002'))
+        summary, code = self.handoff(dict(dispatch_of(self.plan), records_only=True), now='2026-11-08T21:00:00Z')
+        self.assertEqual((code, summary['reports']['posted'], mocks()), (0, 0, after), 'the same map: nothing new')
+        bad = dict(dispatch_of(self.plan), records_only=True)
+        bad['mock_files']['f' * 64] = 'SyntheticDriveFile0009'
+        self.assertEqual(self.handoff(bad)[0]['error'], 'payload_rejected_mock_file_not_in_plan')
+        summary, code = self.make()
+        self.assertEqual((code, summary['slots'].get('made')), (0, 4), summary)
+        self.assertIn('https://drive.usercontent.google.com/download?id=SyntheticDriveFile0002&export=download',
+                      self.drive.calls, 'the corrected file is downloaded and hashed before use')
 
     # The words and the review --------------------------------------------------------------------------
 
@@ -441,14 +616,28 @@ class MakerTests(unittest.TestCase):
 
     # Which day, which channels -------------------------------------------------------------------
 
-    def test_only_the_next_new_york_day_is_made(self):
+    def test_by_hand_only_today_or_tomorrow_is_made(self):
         self.approved()
-        summary, _ = self.make(now='2026-11-08T04:30:00Z')  # makes Sunday: nothing of the concept is due then
-        self.assertEqual((summary['day'], summary.get('slots', {}).get('made')), ('2026-11-08', None), summary)
+        summary, _ = self.make(now='2026-11-08T04:30:00Z')  # Saturday 23:30: makes Sunday, nothing of the concept
+        self.assertEqual((summary['days'], summary.get('slots', {}).get('made')), (['2026-11-08'], None), summary)
         self.assertEqual(self.creates(), [])
         self.assertEqual(self.make(day='2026-11-12')[0]['error'], 'day_out_of_range', 'by hand: today or tomorrow only')
         summary, code = self.make(now='2026-11-09T11:00:00Z', day='2026-11-09')  # Monday 06:00, by hand
-        self.assertEqual((code, summary['slots'].get('made')), (0, 4), summary)
+        self.assertEqual((code, summary['days'], summary['slots'].get('made')), (0, ['2026-11-09'], 4), summary)
+
+    def test_a_late_run_makes_the_rest_of_today_as_well_as_tomorrow(self):
+        # Review finding 4: the remaining slots of today (New York) plus all of tomorrow's, so a late scheduled
+        # run never skips a day; what an earlier run made is already_made.
+        self.assertEqual(maker.make_days(maker.instant('2026-11-09T04:30:00Z')), [maker.dt.date(2026, 11, 9)],
+                         'Sunday 23:30 in winter: nothing of Sunday can still be released')
+        self.assertEqual(maker.make_days(maker.instant('2026-07-15T04:30:00Z')),
+                         [maker.dt.date(2026, 7, 15), maker.dt.date(2026, 7, 16)], '00:30 in summer: today and tomorrow')
+        self.approved()
+        summary, code = self.make(now='2026-11-09T11:00:00Z')  # Monday 06:00 New York, a late run
+        self.assertEqual((code, summary['days'], summary['slots'].get('made')),
+                         (0, ['2026-11-09', '2026-11-10'], 4), summary)
+        summary, code = self.make(now='2026-11-09T11:05:00Z')
+        self.assertEqual((code, outcomes(summary), len(self.creates())), (0, {'already_made': 4}, 4), summary)
 
     def test_the_draft_save_refuses_linkedin_and_any_channel_not_pinned(self):
         buffer = self.buffer()
@@ -529,6 +718,78 @@ class AnthropicClientTests(unittest.TestCase):
             anthropic_api.Anthropic('synthetic-key', 'https://elsewhere.invalid/v1/messages')
 
 
+class AnthropicRetryTests(unittest.TestCase):
+    """Review finding 5: 429 and 5xx (529 included) are retried, retry-after honoured, then given up loudly."""
+
+    def setUp(self):
+        self.script, self.seen = [], []
+        test = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def do_POST(self):
+                self.rfile.read(int(self.headers.get('Content-Length', 0)))
+                status, headers = test.script.pop(0) if test.script else (200, {})
+                test.seen.append(status)
+                reply = ({'stop_reason': 'end_turn', 'content': [{'type': 'text', 'text': '{"ok": true}'}]}
+                         if status == 200 else {'type': 'error'})
+                data = json.dumps(reply).encode('utf-8')
+                self.send_response(status)
+                for key, value in headers.items():
+                    self.send_header(key, value)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
+        self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+        self.url = 'http://127.0.0.1:' + str(self.server.server_address[1]) + '/v1/messages'
+        self.slept, self.now = [], [0.0]
+
+    def client(self):
+        def sleep(seconds):
+            self.slept.append(seconds)
+            self.now[0] += seconds
+        return anthropic_api.Anthropic('synthetic-key', self.url, 5, loopback_for_tests=True, sleep=sleep,
+                                       clock=lambda: self.now[0])
+
+    def test_overloaded_and_rate_limited_are_retried_honouring_retry_after(self):
+        self.script = [(529, {'retry-after': '7'}), (429, {}), (200, {})]
+        self.assertEqual(self.client().json_message('s', 'u', {'type': 'object'}), {'ok': True})
+        self.assertEqual((self.seen, self.slept), ([529, 429, 200], [7, anthropic_api.BACKOFF[1]]))
+
+    def test_after_three_tries_it_gives_up_with_a_code_the_maker_fails_loudly_on(self):
+        self.script = [(500, {}), (503, {}), (529, {})]
+        with self.assertRaises(anthropic_api.AnthropicError) as caught:
+            self.client().json_message('s', 'u', {'type': 'object'})
+        self.assertEqual((caught.exception.code, len(self.seen)), ('anthropic_overloaded', 3))
+        self.assertIn(caught.exception.code, anthropic_api.GAVE_UP)
+        self.assertLess(sum(self.slept), 90)
+
+    def test_a_retry_after_past_the_wait_budget_is_not_waited_for(self):
+        self.script = [(429, {'retry-after': '120'})]
+        with self.assertRaises(anthropic_api.AnthropicError) as caught:
+            self.client().json_message('s', 'u', {'type': 'object'})
+        self.assertEqual((caught.exception.code, self.seen, self.slept), ('anthropic_rate_limited', [429], []))
+
+    def test_no_call_reaches_past_the_run_deadline(self):
+        client = self.client()
+        client.set_deadline(100.0)
+        self.now[0] = 95.0
+        with self.assertRaises(anthropic_api.AnthropicError) as caught:
+            client.json_message('s', 'u', {'type': 'object'})
+        self.assertEqual((caught.exception.code, self.seen), ('anthropic_out_of_time', []))
+        self.now[0], self.script = 60.0, [(529, {'retry-after': '35'})]
+        with self.assertRaises(anthropic_api.AnthropicError) as caught:
+            client.json_message('s', 'u', {'type': 'object'})
+        self.assertEqual((caught.exception.code, self.slept), ('anthropic_overloaded', []), 'no wait past it')
+
+
 class MakerWorkflowTests(unittest.TestCase):
     def test_the_workflow_runs_daily_with_deliver_and_by_hand_as_a_dry_run(self):
         text = (ROOT / '.github' / 'workflows' / 'maker.yml').read_text(encoding='utf-8')
@@ -546,6 +807,18 @@ class MakerWorkflowTests(unittest.TestCase):
         self.assertEqual((job['lane'], job['workflow']), ('L0_code', 'maker.yml'))
         self.assertIn('ANTHROPIC_API_KEY', job['secrets'])
         self.assertIn('docs/MAKER.md', (ROOT / 'docs' / 'LANES.md').read_text(encoding='utf-8'))
+
+
+    def test_the_maker_doc_says_what_it_trusts(self):
+        # Review finding 7.
+        text = (ROOT / 'docs' / 'MAKER.md').read_text(encoding='utf-8')
+        self.assertIn('## What it trusts', text)
+        section = ' '.join(text.split('## What it trusts', 1)[1].split('\n## ', 1)[0].split())
+        for needle in ('the idea, the channel and the week', 'planning, not approval', 'repository dispatch', 'write access',
+                       'hash', 'release', "Krish's own Drive"):
+            self.assertIn(needle, section)
+        self.assertNotIn('\u2014', text, 'no em dashes')
+        self.assertIn('first live run', text)
 
 
 if __name__ == '__main__':

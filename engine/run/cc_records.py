@@ -22,10 +22,13 @@ proposal unless it carries a plan part) whose run_id names what it holds:
   is the first 12 hex of the sha256 of the version's parts (plan_key), so the
   slots are bound to the exact part digests Krish decides on and never change
   a part's words or digest;
-- `makeyourmindup:mocks:<YYYY-Www>:<plan key>:<i>` the week's mock manifest
+- `makeyourmindup:mocks:<YYYY-Www>:<plan key>:<n>` the week's mock manifest
   (growth-mock-manifest/1): each approved mock file's sha256 to its Drive file
-  id, in numbered chunks. The maker downloads each file by its id and refuses
-  any whose bytes do not hash to its sha256.
+  id. Records are numbered from 1 in the order written; each names its
+  manifest version and its chunk of that version, so a corrected manifest is
+  the next version, written after the last record, and the highest version is
+  the manifest in force (latest_version). The maker downloads each file by its
+  id and refuses any whose bytes do not hash to its sha256.
 
 A report's activity line is clipped and its whitespace collapsed
 (control_center.clip), so a record rides as base64 of its canonical JSON in
@@ -48,6 +51,7 @@ REVIEW, INDEX, VERSION, PART, CLAIM = ('growth-derived-review/1', 'growth-derive
                                        'growth-mix-part/1', 'growth-golive-claim/1')
 SLOTS, MOCKS = 'growth-mix-slots/1', 'growth-mock-manifest/1'
 MAX_CHUNKS = 24  # numbered chunks of one record read before a reader holds loudly
+MAX_MOCK_RECORDS = 48  # numbered mock manifest records (every version's chunks) read before a lane holds loudly
 NO_SPEND = 'this engine has no spend authority, bought no boosts and does not read platform ad spend'
 
 
@@ -209,6 +213,26 @@ def read_chunked(cc, run_id_of, schema):
             raise ValueError('record_unreadable')
         out.append(record)
     return out
+
+
+def latest_version(records):
+    """The chunks of the highest manifest version among numbered records read in order (probe), or None
+    when there are none. Versions count up from 1 and never go back; each version's chunks are numbered
+    1..chunks, consecutive, and the highest is whole at the end. Anything else is ValueError('record_unreadable'):
+    a part of a version is never read as the whole."""
+    if not records:
+        return None
+    versions = [r.get('version') if isinstance(r, dict) else None for r in records]
+    if not all(type(v) is int and v >= 1 for v in versions) or versions[0] != 1 or any(
+            b not in (a, a + 1) for a, b in zip(versions, versions[1:])):
+        raise ValueError('record_unreadable')
+    top = versions[-1]
+    group = [r for r in records if r['version'] == top]
+    total = group[0].get('chunks')
+    if type(total) is not int or not 1 <= total <= MAX_CHUNKS or len(group) != total or any(
+            r.get('chunk') != number or r.get('chunks') != total for number, r in enumerate(group, 1)):
+        raise ValueError('record_unreadable')
+    return group
 
 
 # Writing -----------------------------------------------------------------------

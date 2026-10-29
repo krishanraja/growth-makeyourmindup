@@ -2,10 +2,13 @@
 
 The maker is a GitHub Actions job in lane L0 (`.github/workflows/maker.yml`,
 `engine/run/maker.py`, `growth.py run maker`). Every day at 04:30 UTC, just
-before or just after midnight in New York, it makes the next New York day's
-posts from the ideas and mocks Krish approved in the week's mix plan
+before or just after midnight in New York, it makes the posts of the rest of
+today in New York (the slots release can still schedule) and all of
+tomorrow from the ideas and mocks Krish approved in the week's mix plan
 (`docs/MIX.md`), saves each one in Buffer as a draft, and hands it off with
-its review. Release (`release.yml`) then schedules each post about an hour
+its review. Because it always covers today as well as tomorrow, a run that
+starts late, or a night that was missed, never skips a day; what an earlier
+run made is already made, so the overlap makes nothing twice. Release (`release.yml`) then schedules each post about an hour
 before it is due, only while every gate still passes
 (`docs/CONCEPT-MANIFEST.md`). Without the maker, nothing turned an approved
 idea into a post unless a session did it.
@@ -28,11 +31,18 @@ and no PC.
    plan lines he read (how many slots a day, which lanes, how many have a
    ready idea) must be the lines these slots make. Anything else holds the
    whole day loudly as `slots_differ_from_plan`.
-3. **Picks the next New York day's slots** on Instagram, YouTube, TikTok
-   and X. Never LinkedIn. An idea he did not approve, or stopped, holds. An
-   idea already made on that channel this week (in the week's index, or a
-   post in Buffer that carries its claim) is `already_made`, so a second run
-   makes nothing new.
+3. **Picks the slots of those days** on Instagram, YouTube, TikTok and X,
+   each day under its own week's plan. Never LinkedIn. An idea he did not
+   approve, or stopped, holds. An idea already made on that channel this
+   week (in the week's index) is `already_made`, so a second run makes
+   nothing new. The idea, channel and week are marked as taken before the
+   draft is saved, so one run can never make two. A draft in Buffer that
+   carries the idea's claim but was never handed off (a run that stopped
+   between the save and the handoff) is adopted: read back from Buffer, its
+   words checked, who would share it declared, reviewed blind and handed
+   off, with its words unchanged. It is never made again. A post carrying
+   the claim that is not a draft, or more than one, holds loudly as
+   `made_not_handed_off`.
 4. **Fetches the mock files.** Only the exact files he approved, found by
    their hash in the week's mock manifest and downloaded from Google Drive.
    A file whose bytes do not hash to its approved sha256 holds as
@@ -54,11 +64,26 @@ and no PC.
    `spec.review_reason`, the judge release uses. This review is
    maker-attested: the engine reviews its own words with a second, blind
    call. It is not an independent judge.
-7. **Saves the draft and hands it off.** The post is saved in Buffer as a
-   draft (`saveToDraft: true`, no due time), read back and rebuilt from
-   Buffer exactly as release rebuilds it, then recorded in Control Center by
-   the handoff's own code, in the same run: its review at the post's own
-   hash and the day's index that release reads.
+7. **Saves the draft and hands it off at once.** The post is saved in
+   Buffer as a draft (`saveToDraft: true`, no due time) and read back. If
+   Buffer reads it back as anything but a draft with no due time, the whole
+   run stops at once, loudly, as `draft_not_a_draft`, and no further draft
+   is made. Otherwise it is rebuilt from Buffer exactly as release rebuilds
+   it and recorded in Control Center by the handoff's own code straight
+   away, that draft alone: its review at the post's own hash and the day's
+   index that release reads. So a crash, a refused key, a Buffer error or the
+   job's time limit later in the run never strands a draft already made. A
+   handoff that does not record it stops the run as `handoff_incomplete`,
+   and the next run adopts the draft.
+
+Buffer's GraphQL input for a new post requires a mode, so the maker sends
+`addToQueue` with `saveToDraft: true`, the shape this repository's draft
+tools have always used, and never a mode that names a time or sends now.
+Whether `saveToDraft` wins over the mode is proved only by Buffer's answer:
+the first live run proves it, and if Buffer queued the post that run stops
+after that one post, loudly, so Krish can delete it before it goes out. The
+first live run also proves the draft listing's filter by creation time
+(drafts created since the week's Monday less seven days).
 
 Run by hand (`workflow_dispatch`), it is a dry run unless deliver is ticked:
 it reads, writes and reviews the words, and saves nothing and records
@@ -84,7 +109,8 @@ that morning.
 - **Control Center:** his decisions; the plan in force
   (`makeyourmindup:mixplan:<week>:<n>`) and each part's report; the week's
   slots record (`makeyourmindup:mixslots:<week>:<plan key>:<i>`); the week's
-  mock manifest (`makeyourmindup:mocks:<week>:<plan key>:<i>`); the week's
+  mock manifest (`makeyourmindup:mocks:<week>:<plan key>:<n>`, its highest
+  version); the week's
   derived index (`makeyourmindup:derived:<day>:<n>`). The plan key is the
   first 12 characters of the hash of the plan's part digests, so both
   records belong to exactly the plan he decided on (`engine/run/cc_records.py`).
@@ -93,8 +119,9 @@ that morning.
   The week's files sit in the shared `mocks/<ISO week>/` folder, each named
   `<sha256>.<ext>`. Buffer is given the same link, so release downloads and
   hashes the same bytes when it rebuilds the post.
-- **Buffer:** this engine's channels, to find what is already made, and each
-  new draft, read back.
+- **Buffer:** this engine's channels, to find what is already made (drafts
+  created since the week's Monday less seven days, and posts scheduled or
+  sent since the Monday), and each new draft, read back.
 - **The repository:** `mix.json`, the social records (formats, channels,
   copy lint, share rules) and nothing on Krish's PC.
 
@@ -117,6 +144,32 @@ can withdraw his yes and his digests never move. Run by hand as a dry run
 with `records_only`, it reads Control Center and says whether the plan is in
 force without writing anything.
 
+A mock manifest with a mistake in it (a file id that serves the wrong file)
+is corrected the same way: send the plan again with the right `mock_files`
+and `"records_only": true`. The runner writes the corrected map as the next
+version, in the next numbered record after the last one, and the maker reads
+the highest version. Its keys must still be the plan's own mock hashes, and
+every file's bytes are still hashed before use, so a correction can only
+point at a file he approved.
+
+## What it trusts
+
+- **His approval is the idea, the channel and the week.** He approves each
+  idea with its mocks and the channels it runs on, for that week. The day
+  and time a plan places a post on is planning, not approval: the maker
+  makes the post on the day its slot names, and the plan's own checks keep
+  each idea on exactly the channels he approved.
+- **The slots and the mock records are written only by repository
+  dispatch.** They come from the handoff runner, which only someone with
+  write access to this repository can start. Nothing else writes them.
+- **Every mock byte is hashed twice.** The maker downloads each file and
+  checks its hash before it saves a draft, and release downloads and checks
+  it again before it schedules the post. A file whose bytes differ from the
+  hash he approved is never used.
+- **The Drive files are in Krish's own Drive.** The links point at files in
+  his own Google Drive folder, so the bytes come from his account, and the
+  hash check holds whatever a link serves.
+
 ## Its secrets
 
 GitHub repository secrets, read only on the runner:
@@ -134,3 +187,20 @@ look (a slots record that does not match the plan, a missing mock manifest,
 a draft saved but not handed off, a draft whose files Buffer changed) fails
 the run, so GitHub emails Krish. A hold on one post (its words, its review,
 one mock file) leaves the rest of the day to be made.
+
+Some failures stop the whole run at once, loudly, and make nothing more:
+a draft Buffer did not keep as a draft (`draft_not_a_draft`), a handoff that
+did not record a draft (`handoff_incomplete`), and an Anthropic API that
+stays busy or down. A busy API (429, or a 5xx such as 529 overloaded) is
+tried three times, waiting as it asks and never more than 60 seconds in all
+for one call; after that the run fails with the API's code.
+
+## How long a run can take
+
+The job may run for 30 minutes. One Anthropic call takes at most 240
+seconds: three tries of at most 60 seconds each and 60 seconds of waiting.
+The run gives itself 20 minutes for that work: no Anthropic call reaches
+past it and no post is started after it (`maker_out_of_time`, loud), so the
+time spent on words is bounded whatever the number of slots. That leaves 10
+minutes for the last post's save and handoff. Posts left unmade are made by
+the next run while their slots can still be released.
