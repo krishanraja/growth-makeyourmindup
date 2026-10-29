@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "ruling": "Ruling (Krish, 2026-10-29): At U3 to U5, engines and Control Center may raise volume caps up to each repo's existing policy bounds without a signed week spec. This is volume only: walls unchanged.",
+  "applies_from_urgency": 3,
+  "daily_posts": {
+    "bound": 2,
+    "why": "The channel record schema allows at most two scheduled posts a day (social/schemas/channel.schema.json); Substack Notes is already at its ruled two. A human-only channel (LinkedIn, null) gets no automatic posts at any urgency."
+  },
+  "engagement_taps": {
+    "by_urgency": {"1": 5, "2": 5, "3": 10, "4": 15, "5": 20},
+    "why": "Five was the radar's daily ceiling. Control Center's copy_open task carries at most 25 taps (protocol 1.14.0); these stay under it. Every tap still clears the bar in docs/ENGAGEMENT-LOOP.md."
+  },
+  "unchanged": "Walls, spend (zero), Krish's 20 and 30 minute daily budget, the creative bar and every approval stay as they are at every urgency."
+}

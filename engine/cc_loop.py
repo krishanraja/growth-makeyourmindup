@@ -22,6 +22,7 @@ import tempfile
 
 from .control_center import (ENGINE_ID, SLUG, ProtocolError, action_key, build_report, golive_review, iso,
                              match_decisions, objective, proposal)
+from . import intensity
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
 from .operations import aggregate, daily_queue, validate_observation
 
@@ -375,7 +376,7 @@ def backlog_line(backlog):
 
 
 def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None,
-                  backlog=None):
+                  backlog=None, gap=None):
     """The runner's held report. sent is already_sent(): asks Krish has, answered or pending, are
     never sent again, and None (not read) proposes nothing. backlog is backlog.for_runner():
     (inventory, None) or (None, reason); None means it was not read."""
@@ -384,7 +385,8 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
     by_name = {c['name']: c for c in checks}
     failed = [c['name'] for c in checks if not c['ok']]
-    activity = []
+    # Every report leads with the gap (Ruling, Krish, 2026-10-29; engine/intensity.py).
+    activity = [{'line': intensity.gap_line(gap or intensity.state(root, now))}]
     if directive_pulled:
         activity.append({'line': "Pulled today's directive on the GitHub runner"})
     tests = by_name.get('self_test')
@@ -599,7 +601,7 @@ def completion_events(rows, now):
 
 
 def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=None, completions=None,
-                     mode='live', directive_pulled=False, rev=None, root='.'):
+                     mode='live', directive_pulled=False, rev=None, root='.', gap=None):
     if job not in KINDS:
         raise ValueError('unknown job ' + str(job))
     evidence = {e['evidence_id']: e for env in envelopes for e in env.get('evidence', [])}
@@ -628,7 +630,13 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     goal = new_subscribers(observations, now)
     objectives = [goal, objective('paid_boosts_usd', reason=NO_SPEND[0].upper() + NO_SPEND[1:])]
     events = completion_events(completions, now)
-    activity = []
+    gap = gap or intensity.state(root, now)
+    activity = [{'line': intensity.gap_line(gap)}]
+    if intensity.raised(gap['urgency']):
+        activity.append({'line': 'At U' + str(gap['urgency']) + ' the volume caps rise to their bounds in intensity.json: '
+                         + str(intensity.engagement_taps(gap['urgency'], root)) + ' engagement taps a day and up to '
+                         + str(intensity.bounds(root)['daily_posts']['bound'])
+                         + ' scheduled posts a channel a day; walls, spend and approvals unchanged'})
     if directive_pulled:
         activity.append({'line': "Pulled today's directive before reading any source"})
     activity.append({'line': 'Ran the ' + job + ' job and prepared ' + count(len(proposals), 'proposal') + ' for Krish, about '
@@ -873,7 +881,8 @@ def cli(args, root, make_client, out=print, checks=None):
         outcome = run(client, 'runner', run_id,
                       lambda d: runner_report(root, run_id, clock(), checks(root), args.mode, True,
                                               sent=already_sent(client, clock(), d, args.mode),
-                                              backlog=for_runner(root, clock())),
+                                              backlog=for_runner(root, clock()),
+                                              gap=intensity.state(root, clock(), d)),
                       now - dt.timedelta(days=7), clock)
         for line in summary(outcome, public=True):
             out(line)
@@ -891,7 +900,8 @@ def cli(args, root, make_client, out=print, checks=None):
                                 read_json(args.queue) if args.queue else None,
                                 [o for rows in _load_many(args.observations) for o in rows],
                                 read_json(args.completions) if args.completions else None,
-                                args.mode, directive is not None, root=root)
+                                args.mode, directive is not None, root=root,
+                                gap=intensity.state(root, clock(), directive))
 
     if not args.deliver:
         if args.cc_cmd == 'start':

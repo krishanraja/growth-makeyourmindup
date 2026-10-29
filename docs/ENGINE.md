@@ -150,6 +150,25 @@ journey there names the route its readers continue on (`ecosystem_route`).
 `ecosystem_cta` is outside the digest: an `in_post` URL is already in the
 signed words.
 
+## Intensity: the gap sets the volume
+
+Ruling (Krish, 2026-10-29): At U3 to U5, engines and Control Center may
+raise volume caps up to each repo's existing policy bounds without a signed
+week spec. This is volume only: walls unchanged.
+
+`engine/intensity.py` reads this week's gap from NOW.md's state line and the
+ladder in docs/NORTH_STAR.md, and takes Control Center's urgency instead
+when the directive's `north_star.intensity` is higher. A week nobody has
+measured is U4; a week with no ladder rung raises nothing. Every report,
+from the runner and from each workspace job, leads with the gap line
+"X of Y, U-n, short by Z" (an unmeasured week reads "not measured of Y, U4,
+short by unknown", never zero). At U3 and above the caps rise to the bounds
+in `intensity.json`: a channel's scheduled posts a day to the channel
+schema's maximum of 2 (`run lint` reads the urgency; a human-only channel
+stays manual), and the day's engagement taps from 5 to 10, 15 and 20 at U3,
+U4 and U5, under Control Center's 25. Walls, zero spend, approvals, the
+creative bar and Krish's 20 and 30 minute budget never move with it.
+
 ## Tracking and the work queue
 
 ```powershell

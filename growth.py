@@ -112,6 +112,8 @@ def doctor(offline=False):
             read_json(ROOT / name)
         journeys = read_json(ROOT / 'journeys.json')
         routes = {r['route_id'] for r in journeys['ecosystem']['routes']}
+        from engine.intensity import bounds
+        bounds(ROOT)
         if any(j.get('ecosystem_route') not in routes for j in journeys['journeys']):
             errors.append('every journey in journeys.json names a known ecosystem route')
     except (KeyError, ValueError, OSError) as error:

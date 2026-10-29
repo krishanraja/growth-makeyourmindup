@@ -182,6 +182,14 @@ Engine needs nothing to do with it, but Control Center certainly does."
 That historical separation is clarified by the 2026-10-26 ruling above:
 independent engines, with an explicit production-to-distribution handoff.
 
+## Intensity (Ruling, Krish, 2026-10-29)
+
+"At U3 to U5, engines and Control Center may raise volume caps up to each
+repo's existing policy bounds without a signed week spec. This is volume
+only: walls unchanged." Every report leads with the gap line ("X of Y, U-n,
+short by Z"), and `engine/intensity.py` raises the daily post and engagement
+caps to the bounds in `intensity.json` (docs/ENGINE.md, "Intensity").
+
 ## Outreach belongs to Control Center (Ruling, Krish, 2026-10-21)
 
 Control Center's People tab (Guests, weighted 70 to this show) and Visibility already find, draft and track outreach to shows and guests, drafted from Jonny's mailbox. So this engine proposes posts and measures. It proposes no pitch, swap or partner note: `growth.py cc finish` holds that work with the reason "Control Center's People and Visibility own outreach to shows and guests". The Tuesday, Wednesday and Thursday jobs below may still prepare lists and research for Krish's own use, but nothing from them reaches his list. His list also shows one of this engine's asks at a time, a go-live first, then a check-in, then a plan, so never add a second ask of a kind that already waits.

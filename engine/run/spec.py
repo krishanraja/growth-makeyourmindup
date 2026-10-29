@@ -13,6 +13,7 @@ from ..control_center import sha256_hex
 from urllib.parse import urlsplit
 
 from ..core import TIMEZONE, UTC, calendar_date, canonical, http_url, instant, ny_time, read_json, write_json
+from .. import intensity
 from ..packs import prose_errors
 from ..social import inventory, validate
 
@@ -155,13 +156,13 @@ def social_records(root=ROOT):
     return {'channel': found['channel'], 'format': found['format']}
 
 
-def daily_cap(record):
+def daily_cap(record, urgency=None, root=ROOT):
     """Scheduled posts a channel takes per New York day, from its record; None means no engine cap.
 
     A human-only channel (LinkedIn) records null: its slots are unscheduled drafts.
+    At U3 to U5 the cap rises to the bound in intensity.json (engine/intensity.py).
     """
-    cap = record.get('daily_posts_target') if isinstance(record, dict) else None
-    return cap if isinstance(cap, int) and not isinstance(cap, bool) else None
+    return intensity.daily_cap(record, urgency, root)
 
 
 def ecosystem(root=ROOT):
@@ -208,7 +209,7 @@ def ecosystem_errors(slot, at, routes):
     return []
 
 
-def _slot(slot, at, channels, formats, tests, manifest, window, routes=None):
+def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urgency=None):
     errors, warnings = [], []
     sid = slot['slot_id']
     channel, fmt = channels.get(slot['channel']), formats.get(slot['format'])
@@ -257,7 +258,7 @@ def _slot(slot, at, channels, formats, tests, manifest, window, routes=None):
     if slot['due_at'] is not None and not window[0] <= instant(slot['due_at']) < window[1]:
         warnings.append(finding('due_outside_window', at + '.due_at', 'due_at falls outside the run window', sid))
     if slot['publish_mode'] == 'engine' and slot['due_at'] is None:
-        cap = daily_cap(channel)
+        cap = daily_cap(channel, urgency)
         warnings.append(finding('engine_unscheduled', at + '.due_at',
                                 'an engine slot needs a due_at to release'
                                 + ('' if cap is None else ', and only scheduled slots count towards the '
@@ -265,8 +266,11 @@ def _slot(slot, at, channels, formats, tests, manifest, window, routes=None):
     return errors, warnings
 
 
-def lint(spec, records=None, root=ROOT):
-    """Errors block the run; warnings are soft guidance only."""
+def lint(spec, records=None, root=ROOT, urgency=None):
+    """Errors block the run; warnings are soft guidance only.
+
+    urgency is the North Star urgency (1 to 5) that sets the daily caps; None
+    keeps each channel record's own target. The command line reads it."""
     try:
         validate(spec, read_json(SCHEMA))
     except ValueError as exc:
@@ -315,25 +319,26 @@ def lint(spec, records=None, root=ROOT):
         if slot['slot_id'] in seen:
             errors.append(finding('duplicate_slot_id', at + '.slot_id', 'slot_id must be unique', slot['slot_id']))
         seen.add(slot['slot_id'])
-        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window, routes)
+        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window, routes, urgency)
         errors += more
         warnings += soft
         if slot['due_at'] is not None:
             key = (slot['channel'], ny_time(slot['due_at']).date().isoformat())
             per_day.setdefault(key, []).append(slot['slot_id'])
     for (channel, day), ids in sorted(per_day.items()):
-        cap = daily_cap(channels.get(channel))
+        cap = daily_cap(channels.get(channel), urgency)
         if cap is not None and len(ids) > cap:
             errors.append(finding('posts_per_day', '$.slots', str(len(ids)) + ' scheduled ' + channel + ' slots on '
-                                  + day + ' (New York); its record allows at most ' + str(cap) + ' a day'))
+                                  + day + ' (New York); ' + ('at U' + str(urgency) + ' it takes'
+                                  if intensity.raised(urgency) else 'its record allows') + ' at most ' + str(cap) + ' a day'))
     for channel, test in sorted(tests.items()):
         if not any(s['channel'] == channel and s['experiment_arm'] for s in spec['slots']):
             warnings.append(finding('experiment_unused', '$.experiments', 'experiment ' + test['id'] + ' has no slot on an arm'))
     return {'errors': errors, 'warnings': warnings}
 
 
-def lint_report(spec, records=None, root=ROOT):
-    result = lint(spec, records, root)
+def lint_report(spec, records=None, root=ROOT, urgency=None):
+    result = lint(spec, records, root, urgency)
     try:
         digest = lint_digest(spec)
     except (ValueError, AttributeError):
@@ -579,7 +584,7 @@ def main(argv=None):
         if args.action == 'status':
             print(json.dumps(status(spec, args.runs_dir), indent=2))
             return 0
-        report = lint_report(spec)
+        report = lint_report(spec, urgency=intensity.state(ROOT)['urgency'])
         if args.record:
             write_json(run_dir(spec, args.runs_dir) / 'lint.json',
                        dict(report, recorded_at=instant().isoformat()))

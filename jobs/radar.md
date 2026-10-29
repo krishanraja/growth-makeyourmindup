@@ -18,7 +18,9 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    time and any community rule. Cite the published piece as well when adding
    its facts. Never use follower estimates as evidence of quality. Rank by
    fit, usefulness, freshness and a genuine partner relationship.
-3. Draft at most five candidates, each at most 60 words. Prioritise three
+3. Draft up to the day's engagement cap, each at most 60 words: 5 at U1
+   and U2, raised at U3 to U5 to the bound in `intensity.json` (the `cc
+   finish` report says today's number). Prioritise three
    LinkedIn candidates in the proposed daily review pack. Default to one
    or two short sentences, with an optional question when genuinely useful.
    Do not force a content hook, published fact, product mention or sales
