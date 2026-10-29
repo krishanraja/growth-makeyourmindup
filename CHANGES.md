@@ -1,5 +1,26 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29 (late): the Mon/Wed/Fri cadence restarts on 2 November, and
+  Krish's answers to the Waves 2 and 3 questions. His words: "23rd and 26th
+  never went live, they were only finished yesterday and the growth repo needs
+  to move them to next week which is where we start publishing the
+  mon/wed/fri cadence again. Until then, we will focus on lighting up the
+  other formats (carousels, memes, hannah fry style explainers)." And: "move
+  what was recorded on 30th to 2nd (it is kind of a follow the money piece).
+  and then move 28th to 4th Nov".
+  - The schedule: Mon 2 Nov the 30 Oct recording, Wed 4 Nov the 28 Oct
+    recording, Fri 6 Nov the 23 Oct piece, Mon 9 Nov the 26 Oct piece (he
+    chose this order). Content-engine moves the publish board; Growth
+    releases each piece's posts on its new day. Until 2 Nov the series slots
+    stay empty and the mix carries the other formats.
+  - Other answers: the 24 Oct Muse/Grok video is the 21 Oct piece; the
+    6 Oct Launch is not added as a published record; produce-video stays on
+    Sonnet ("Sonnet produced the last character.ai one I believe, and it was
+    one of the better ones"); no ElevenLabs for the cut gates ("do not use
+    eleven labs for this"); the weekly credit budget is Control Center's and
+    ai-harness's to set ("this is now handled by ai-harness and
+    control-center"); inspirationhouse stays a shared repository ("it has a
+    ledger for every venture"); "merge them all" and "apply them all".
 - 2026-10-29 (Wave 2, W2.11 and W2.12; Wave 3, W3.3): one local layout, a
   shorter NOW.md and the chat backstop.
   - W2.11 (R120): `config/studio.json` `local_roots` names the repos,
