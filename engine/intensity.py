@@ -105,7 +105,8 @@ def daily_cap(record, urgency=None, root=ROOT):
     """Scheduled posts a channel takes per New York day at this urgency; None means no engine cap.
 
     At U3 and above the cap rises only to that channel's own policy bound
-    (engine/social.py: Substack Notes two, every other channel one), never to
+    (engine/social.py: Instagram, YouTube, TikTok and X four, Substack Notes two,
+    every other channel one), never to
     the schema's maximum. A null record (a human-only channel) stays null at
     every urgency."""
     cap = record.get('daily_posts_target') if isinstance(record, dict) else None

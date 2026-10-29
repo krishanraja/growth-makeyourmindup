@@ -1,21 +1,22 @@
 # Run sessions
 
-The standing doc a run session reads first; `growth.py run pack` puts it at
-the top of every pack. The plan behind it is
+Read first; `growth.py run pack` puts it on top of every pack. Plan:
 `docs/plans/2026-10-27-engine-architecture.md` (Krish, 27 Oct 2026).
 
 ## What a run session does
 
 A run carries one signed spec (`growth-run-spec/1`) from draft to verdict:
 a `week`, one published `piece` (days 0 to 7) or one `express` idea. Krish
-signs exact payloads; the engine releases exactly what he signed, reads it back
-and measures it. LinkedIn stays his own click. Nothing is spent.
+signs exact payloads, or a concept's idea and mock (R101); the engine releases
+exactly that, reads it back and measures it. LinkedIn stays his click.
+Nothing is spent.
 
 A session does one job, then ends at a gate packet:
 
-- **Release:** only through `growth.py run release`, and only for an approved
-  go-live decision the engine reads from Control Center in its own run
-  ("Approve each day Monday", 28 Oct). `decision.json` is written only from
+- **Release:** only through `growth.py run release`, for an approved go-live
+  decision the engine reads from Control Center in its own run ("Approve each
+  day Monday", 28 Oct), or the week's approved mix plan for posts made from its
+  concepts (docs/CONCEPT-MANIFEST.md). `decision.json` is written only from
   that readback, never by hand. It acts only on this engine's eight Buffer
   channels, pinned by channelId, holds a slot whose words fail the copy lint,
   and releases only an unverified route's first post, its check.
@@ -23,7 +24,7 @@ A session does one job, then ends at a gate packet:
   Scheduled is never live.
 - **Measure (daily):** read back "sent" and the native URL, capture metrics at
   their windows, write verdicts, check the express intake.
-- **Express:** build one approved idea into the waiting go-live, or its own.
+- **Express:** one approved idea into the waiting go-live, or its own.
 
 No mid-turn questions: every question becomes a gate packet and the session
 ends. A run session commits nothing to `engine/`.
@@ -42,10 +43,10 @@ spends.
 - `run pack SPEC [--day YYYY-MM-DD] [--channel ID]`: this pack. Over 36 KB,
   or a part over its budget (this doc 8 KB, the slice 10 KB, the cards 12 KB,
   findings and status 6 KB), is refused; narrow it. Crew cards load by the
-  registry flag for the run's week (such as `w45`), else by channel.
+  registry flag for the run's week, else by channel.
 - `run card lint FILE`: a Codex task card, before dispatch.
-- `run release plan|check SPEC ...`: exact Buffer call arguments, then
-  readback evidence.
+- `run release plan|check SPEC ...`: Buffer call arguments, then readback.
+- `run decide SPEC`: decision.json from the week's mix plan decision.
 - `run send-test SPEC SLOT`: the blind send test.
 - `run measure`, `northstar`, `verdict`, `cost`, `ga4`: see `--help`.
 
@@ -54,10 +55,9 @@ unpublished words. The run folder is the `run_id` with each `:` as `_`.
 
 ## What lint refuses
 
-Schema errors; a `week_target` that is not the ladder rung in
-`docs/NORTH_STAR.md` for the New York Monday of `window.start`; a
-`payload_sha256` that does not recompute; words that fail `prose_errors` (em
-dashes, stock phrases, house rules) or content-engine's copy lint
+Schema errors; a `week_target` that is not the `docs/NORTH_STAR.md` rung for
+the New York Monday of `window.start`; a `payload_sha256` that does not recompute; words that fail `prose_errors` (em
+dashes, house rules) or content-engine's copy lint
 (eyebrow labels, asterisks, AI notes, take labels); a snackable slot with no
 valid `share`, a stale `forward_line` or a share ask (`social/share.json`); an
 unknown channel or format, or a format the channel does not take
@@ -95,6 +95,7 @@ needs the previous one and its evidence under `.scratch/runs/<run>/`:
   canonical `slots` map. A slot's digest equals its `payload_sha256`, or
   recomputes from its amended payload; his version is what releases, so
   rewrite the slot with it before release. A mismatch is never signed.
+  Concept-only: `proposal_id` and `decision` null, `slots` {}.
 - `queued/<slot>.json`: `status` "scheduled" or "draft" (always "draft" for
   `krish_click`) and `payload_sha256` equal to the signed digest.
 - `live/<slot>.json`: `status` "sent" and an https `native_url` read back from
@@ -117,12 +118,12 @@ Draft counts are never outcomes.
 - **Check-ins:** Sunday (with the What-Works ledger) and Wednesday.
 
 Control Center shows one ask per engine at a time. Release checks each slot's
-bytes against its signed manifest line; a file in 4 Growth is never trusted
-for where it lives.
+bytes against its signed manifest line, never where a file lives.
 
 ## Budgets (provisional until the Phase 0 baseline)
 
-- Release: up to 25 calls, 0.6M tokens, 15 engine minutes.
+- Release: up to 45 calls, 1M tokens, 30 engine minutes (about 16 concept
+  posts a day plus readbacks) until Phase 0 replaces it.
 - Measure: up to 20 calls, 0.5M tokens.
 - Express: up to 15 calls, 0.5M tokens.
 - Krish: 20 minutes a weekday, 30 on Sunday; gates first.
@@ -133,24 +134,21 @@ for where it lives.
 1. Approved delivery assets and exact copy go to the Drive
    **4 Growth** library, one `YYYY-MM-DD - Topic - Channel` folder each, with
    a SHA-256 manifest. No other Growth root.
-2. Private evidence (readbacks, journals, inventories) stays in `.scratch/`;
-   never in 4 Growth, which anyone with its link can edit.
+2. Private evidence stays in `.scratch/`, never in 4 Growth (link-editable).
 3. Lessons go to `social/lessons/`; run `python growth.py social check`.
-4. Creative feedback goes to Content Engine through its handoff;
-   Growth records the distribution need, Content Engine owns the craft.
+4. Creative feedback goes to Content Engine, which owns the craft.
 5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:
    what is draft, approved, scheduled, published, held or unknown.
-6. Snapshot run evidence before workspace cleanup; a local archive is not an
-   off-device backup.
-7. If an automation changed, verify its owner and schedule; update existing
-   jobs, never duplicate them.
+6. Snapshot run evidence before cleanup; a local archive is no backup.
+7. A changed automation: verify its owner and schedule; update it, never
+   duplicate it.
 
 ## Rules a run session also reads
 
 - `invariants/rules.json`: each rule with its verbatim source quote.
 - `docs/PUBLISHING-AUTHORITY.md`: who may publish where.
 - `docs/ACCOUNT-VOICE.md`: X, TikTok, Threads and LinkedIn are Krish's
-  personal accounts in his own voice (sincere, warm, humble).
+  personal accounts, in his voice (sincere, warm, humble).
 - `AGENTS.md` ("The rules that never bend", "Autonomy"): outreach belongs to
   Control Center; this engine never delivers pitches, partners or swaps packs
   (`post --deliver` refuses them).

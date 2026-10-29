@@ -398,6 +398,15 @@
               "placement"
             ],
             "additionalProperties": false
+          },
+          "concept_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+            "description": "Optional; the approved concept this post is made from (engine/concepts.py). On Instagram, YouTube, TikTok and X an approved concept authorises the post without its own digest, only while the post matches the concept's mock and claim. Not part of payload_sha256."
           }
         },
         "required": [
@@ -497,17 +506,33 @@
       ],
       "properties": {
         "go_live_proposal_id": {
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "The week's go-live proposal; null when the decision is concept-only and the approved mix plan is the only authority (docs/CONCEPT-MANIFEST.md)."
         },
         "decision_digest": {
           "type": "string",
           "minLength": 1,
-          "pattern": "^[0-9a-f]{64}$"
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The sha256 of decision.json's canonical slots map; the sha256 of {} when concept-only."
         },
         "signed_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "concepts_digest": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Optional; the sha256 of decision.json's concepts map. Required when the decision approves concepts."
+        },
+        "concept_proposal_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional; the mix plan proposal that carried the concepts. A stop on it stops every concept."
         }
       },
       "required": [
@@ -516,6 +541,96 @@
         "signed_at"
       ],
       "additionalProperties": false
+    },
+    "concepts": {
+      "type": "array",
+      "description": "Optional; the week's concepts Krish approves once as idea plus mock (Ruling, Krish, 2026-10-29; engine/mix.py, engine/concepts.py). concept_sha256 is computed by run new --from.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "concept_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+          },
+          "lane": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9_]*$"
+          },
+          "idea": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "pattern": "^https://\\S+$"
+          },
+          "piece_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "mock_sha256": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "placements": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "channel": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[a-z0-9][a-z0-9-]*$"
+                },
+                "format": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[a-z0-9][a-z0-9-]*$"
+                }
+              },
+              "required": [
+                "channel",
+                "format"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "concept_sha256": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "concept_id",
+          "lane",
+          "idea",
+          "claim",
+          "source_url",
+          "piece_id",
+          "mock_sha256",
+          "placements",
+          "concept_sha256"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [

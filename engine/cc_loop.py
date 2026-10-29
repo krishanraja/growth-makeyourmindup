@@ -22,7 +22,7 @@ import tempfile
 
 from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, action_key, action_errors,
                              build_report, canonical_json, copy_open, engage_action, golive_review, iso,
-                             match_decisions, objective, proposal)
+                             match_decisions, objective, proposal, _stops)
 from . import intensity
 from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
@@ -227,6 +227,33 @@ def standing_plan(root):
     plan = read_json(path)
     return proposal(plan['proposal_id'], plan['title'], plan['why'], 'advice', 'strategy', 'plan_approved',
                     exact_payload=plan['exact_payload'], reference='docs/RUN.md, Gates', stage='plan')
+
+
+MIX_DIR = Path('.scratch') / 'mix'
+
+
+def next_monday(now):
+    local = ny_time(now).date()
+    return local + dt.timedelta(days=7 - local.weekday())
+
+
+def mix_proposal(root, now):
+    """(proposal, hold): next week's mix plan, Krish's one press on its ideas and mocks (R101, R103).
+
+    `growth.py mix plan --out .scratch/mix/plan-<Monday>.json` writes it in the
+    Sunday report's run; the report carries its plan proposal behind strategy.
+    No file means no ask; a file whose proposal could not be built is a hold."""
+    path = Path(root) / MIX_DIR / ('plan-' + next_monday(now).isoformat() + '.json')
+    if not path.exists():
+        return None, None
+    try:
+        mix = read_json(path)
+        item = mix.get('proposal')
+        if not isinstance(item, dict) or item.get('stage') != 'plan' or item.get('wall') != 'strategy':
+            return None, {'reason': "Next week's mix has no plan proposal", 'detail': str(mix.get('proposal_hold'))[:900]}
+        return item, None
+    except (ValueError, OSError, AttributeError) as exc:
+        return None, {'reason': "Next week's mix could not be read", 'detail': str(exc)[:900]}
 
 
 def experiment_proposals(root):
@@ -687,6 +714,10 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     selected, deferred, queue = _items(envelopes, queue, now, job)
     gap = gap or intensity.state(root, now)
     proposals, holds, minutes = [], [], 0
+    if job == 'report':
+        mixed, held = mix_proposal(root, now)
+        proposals += [mixed] if mixed else []
+        holds += [held] if held else []
     taps = [i for i in selected if (i.get('pack_kind') or job) in ENGAGE_JOBS]
     if taps:
         task, more, used = engagement_task(taps, now, evidence, intensity.engagement_taps(gap['urgency'], root), plain_taps)
@@ -722,8 +753,8 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     if intensity.raised(gap['urgency']):
         activity.append({'line': 'At U' + str(gap['urgency']) + ' the volume caps rise to their bounds in intensity.json: '
                          + str(intensity.engagement_taps(gap['urgency'], root)) + ' engagement taps a day; each channel'
-                         + "'s posts stay at its own policy bound (Substack Notes two a day, every other one);"
-                         + ' walls, spend and approvals unchanged'})
+                         + "'s posts stay at its own policy bound (Instagram, YouTube, TikTok and X four a day, Substack Notes two,"
+                         + ' every other one); walls, spend and approvals unchanged'})
     if directive_pulled:
         activity.append({'line': "Pulled today's directive before reading any source"})
     if taps and proposals and copy_open(proposals[0]) is not None:
@@ -826,6 +857,27 @@ def claim_golives(root, proposals, decisions, now=None):
                 'decided_at': action['decided_at'], 'claimed_at': at}
         write_json(path, {key: dict(sorted(ledger[key].items())) for key in ('acted', 'stopped', 'unresolved')})
     return review
+
+
+def record_stops(root, proposals, decisions):
+    """Record Krish's stops in the go-live ledger and return it: plans he stopped stay stopped,
+    and declined check-ins whose plan is not known yet are listed as unresolved.
+
+    The same rule claim_golives applies (control_center._stops), run in every loop
+    run, so release (engine/run/release.py stopped_plans, unresolved_stops) and the
+    mix plan readback read stops that were really written. Claims nothing and
+    acts on nothing."""
+    path = state_path(root, GOLIVE_LEDGER)
+    given = [p for p in proposals or [] if isinstance(p, dict)]
+    known = {p.get('proposal_id') for p in given}
+    merged = given + [p for p in remembered_proposals(root) if p['proposal_id'] not in known]
+    with locked(path):
+        ledger = golive_ledger(root)
+        stopped, unresolved = _stops(merged, decisions, ledger)
+        ledger['stopped'].update({pid: why for pid, why in stopped.items() if pid not in ledger['stopped']})
+        ledger['unresolved'] = dict(unresolved)
+        write_json(path, {key: dict(sorted(ledger[key].items())) for key in ('acted', 'stopped', 'unresolved')})
+    return ledger
 
 
 def decisions_since(root, now):
@@ -1122,6 +1174,11 @@ def cli(args, root, make_client, out=print, checks=None):
     matched = None
     if 'decisions' in outcome:
         matched = remember(root, outcome['report'], outcome['decisions'], now)
+        # His decision on the week's mix plan reaches decision.json here, in this run, before the next read
+        # replaces decisions.json (engine/run/decision.py, R101). Local writes only.
+        from .run.decision import after_readback
+        for line in after_readback(root, matched, now):
+            out(line)
     if outcome.get('attempt_journaled') and saved.exists():
         saved.unlink()
     for line in summary(outcome, matched=matched):

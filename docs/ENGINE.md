@@ -135,6 +135,16 @@ feed and the committed pilots only, and says that workspace editions are not
 visible to it. The day's pack takes the oldest unamplified piece worth a new
 edition alongside the day's new piece (`jobs/daily-pack.md`).
 
+## The weekly mix
+
+`python growth.py mix plan --week-of MONDAY` turns the backlog into carousel
+concepts and interleaves them with memes, positive news and level-up advice,
+three or four a day on Instagram, YouTube, TikTok and X, and writes the one
+plan proposal of the week's ideas and mocks. `python growth.py mix learn`
+joins each post's verdict to its concept and lane for next week's ratio.
+Concept approval, release and learning: `docs/MIX.md` (Ruling, Krish,
+2026-10-29; R101 to R103).
+
 ## Ecosystem routes
 
 Every run spec slot names a route into the wider ecosystem
@@ -173,10 +183,11 @@ from the runner and from each workspace job, leads with the gap line
 "X of Y, U-n, short by Z" (an unmeasured week reads "not measured of Y, U4,
 short by unknown", never zero). At U3 and above the caps rise to the bounds
 in `intensity.json`: a channel's scheduled posts a day only to its own
-policy bound in `engine/social.py` (Substack Notes two, every other channel
-one, the 27 Oct ruling; every channel already sits there, so `run lint`
-reads the urgency and no channel gains a post; a human-only channel stays
-manual), and the day's engagement taps from 5 to 10, 15 and 20 at U3, U4
+policy bound in `engine/social.py` (Instagram, YouTube, TikTok and X four
+with a floor of three, the 29 Oct ruling; Substack Notes two and every other
+channel one, the 27 Oct ruling; every channel already sits there, so `run
+lint` reads the urgency and no urgency caps those four below three; a
+human-only channel stays manual), and the day's engagement taps from 5 to 10, 15 and 20 at U3, U4
 and U5, under Control Center's 25. Raised volume comes from the taps. Walls, zero spend, approvals, the
 creative bar and Krish's 20 and 30 minute budget never move with it.
 

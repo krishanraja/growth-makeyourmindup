@@ -6,7 +6,7 @@ import importlib
 import sys
 
 ROUTES = {'new': 'spec', 'lint': 'spec', 'status': 'spec', 'send-test': 'spec', 'pack': 'pack', 'card': 'cards',
-          'release': 'release', 'measure': 'measure', 'northstar': 'measure', 'verdict': 'measure',
+          'release': 'release', 'decide': 'decision', 'measure': 'measure', 'northstar': 'measure', 'verdict': 'measure',
           'cost': 'cost', 'ga4': 'ga4'}
 
 

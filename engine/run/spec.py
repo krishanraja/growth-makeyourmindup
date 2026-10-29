@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 from urllib.parse import parse_qs, urlsplit
 
+from .. import concepts as concept_rules
 from ..control_center import sha256_hex
 from ..copy_lint import copy_lint_errors
 from ..core import TIMEZONE, UTC, calendar_date, canonical, http_url, instant, ny_time, read_json, write_json
@@ -100,6 +101,8 @@ def computed(spec, root=ROOT):
         derived = forward_line(slot)
         if derived is not None:
             slot['forward_line'] = derived
+    for concept in spec.get('concepts') or []:
+        concept['concept_sha256'] = concept_rules.concept_sha256(concept)
     return spec
 
 
@@ -135,6 +138,18 @@ def skeleton(start, kind='week', run_id=None, root=ROOT):
                      'window': window, 'north_star': {'week_target': 0}, 'secondary_targets': [],
                      'inputs': [], 'slots': [], 'experiments': [],
                      'budgets': {'krish_min': dict(KRISH_MIN), 'spend_usd': 0}, 'signature': None}, root)
+
+
+def with_mix(spec, mix):
+    """A week skeleton carrying the mix plan's ready concepts, which Krish signs once as idea plus mock (R101)."""
+    from ..mix import spec_concepts
+    if spec['kind'] != 'week' or spec['slots']:
+        raise ValueError('--mix starts an empty week: give it with --start')
+    if mix.get('schema') != 'growth-mix/1' or mix.get('week_of') != monday(spec['window']['start']).isoformat():
+        raise ValueError('the mix plan is for another week')
+    spec = json.loads(json.dumps(spec))
+    spec['concepts'] = spec_concepts(mix)
+    return computed(spec)
 
 
 # Lint -----------------------------------------------------------------------
@@ -338,6 +353,34 @@ def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urg
     return errors, warnings
 
 
+def concept_lint(spec, channels, errors, root=ROOT):
+    """Check the spec's concepts (R101) into errors; returns {concept_id: concept} for the slots."""
+    from ..mix import lanes as mix_lanes
+    try:
+        lanes = mix_lanes(root)
+    except (ValueError, KeyError, OSError) as exc:
+        lanes = None
+        if spec.get('concepts'):
+            errors.append(finding('concept', '$.concepts', 'mix.json could not be read: ' + str(exc)))
+    known = {}
+    for i, concept in enumerate(spec.get('concepts') or []):
+        at = '$.concepts[%d]' % i
+        cid = concept['concept_id']
+        if cid in known:
+            errors.append(finding('duplicate_concept_id', at + '.concept_id', 'concept_id must be unique'))
+            continue
+        known[cid] = concept
+        if lanes is not None and concept['lane'] not in lanes:
+            errors.append(finding('concept', at + '.lane', 'unknown lane ' + concept['lane'] + ' (mix.json)'))
+        errors += [finding('concept', at, e) for e in concept_rules.concept_errors(concept)]
+        for place in concept['placements']:
+            record = channels.get(place['channel'])
+            if record is not None and place['format'] not in record['formats']:
+                errors.append(finding('concept', at + '.placements', place['format'] + ' is not a format of '
+                                      + place['channel']))
+    return known
+
+
 def lint(spec, records=None, root=ROOT, urgency=None):
     """Errors block the run; warnings are soft guidance only.
 
@@ -384,6 +427,7 @@ def lint(spec, records=None, root=ROOT, urgency=None):
             listed.add(entry['sha256'])
             if item['creative_approval_ref'] is not None:
                 approved.add(entry['sha256'])
+    known = concept_lint(spec, channels, errors, root)
     seen, per_day = set(), {}
     routes = ecosystem(root)
     for i, slot in enumerate(spec['slots']):
@@ -391,7 +435,19 @@ def lint(spec, records=None, root=ROOT, urgency=None):
         if slot['slot_id'] in seen:
             errors.append(finding('duplicate_slot_id', at + '.slot_id', 'slot_id must be unique', slot['slot_id']))
         seen.add(slot['slot_id'])
-        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window, routes, urgency, root)
+        mocks = set()
+        if slot.get('concept_id'):
+            concept = known.get(slot['concept_id'])
+            if concept is None:
+                errors.append(finding('unknown_concept', at + '.concept_id', 'concept ' + slot['concept_id']
+                                      + ' is not in this spec', slot['slot_id']))
+            else:
+                # Signing the concept approves its mock files for the posts made from it (R101).
+                mocks = set(concept['mock_sha256'])
+                errors += [finding('concept_mismatch', at, 'departs from its approved concept: ' + e, slot['slot_id'])
+                           for e in concept_rules.match_errors(slot, concept, formats)]
+        more, soft = _slot(slot, at, channels, formats, tests, (listed | mocks, approved | mocks), window, routes,
+                           urgency, root)
         errors += more
         warnings += soft
         if slot['due_at'] is not None:
@@ -480,6 +536,16 @@ def decision_errors(spec, decision):
     """
     if decision.get('run_id') != spec['run_id']:
         return 'decision.json is for another run'
+    from .release import concept_only
+    if concept_only(spec, decision):
+        # The week's approved mix plan is the only authority (docs/CONCEPT-MANIFEST.md).
+        if decision.get('slots') != {} or decision.get('amended'):
+            return 'a concept-only decision.json signs no slot of its own'
+        if spec['signature'].get('decision_digest') != sha256_hex({}):
+            return 'decision.json slots do not match the signed decision_digest; a mismatch is never signed'
+        if not decision.get('concepts'):
+            return 'decision.json approves no go-live and no concept'
+        return concept_rules.decision_errors(spec, decision)
     if decision.get('decision') != 'approved':
         return 'decision.json is not an approved go-live decision'
     if not isinstance(decision.get('slots'), dict):
@@ -497,12 +563,21 @@ def decision_errors(spec, decision):
         return 'decision.json slots are not canonical JSON'
     if signature['decision_digest'] != digest:
         return 'decision.json slots do not match the signed decision_digest; a mismatch is never signed'
-    return None
+    return concept_rules.decision_errors(spec, decision)
 
 
-def signed_digest(slot, decision, window=None):
-    """(digest Krish signed for this slot, None) or (None, reason). The amended version wins."""
+def signed_digest(slot, decision, window=None, spec=None, stopped_proposals=()):
+    """(digest Krish signed for this slot, None) or (None, reason). The amended version wins.
+
+    With the spec, a slot made from a concept he stopped is never signed, and a
+    slot with no digest of its own is signed by its approved concept while it
+    matches the concept's mock and claim (engine/concepts.py, R101)."""
+    if spec is not None and slot.get('concept_id') and concept_rules.stopped(
+            decision, slot['concept_id'], stopped_proposals, spec.get('signature')):
+        return None, concept_rules.STOPPED + ': Krish stopped concept ' + slot['concept_id']
     digest = decision['slots'].get(slot['slot_id'])
+    if digest is None and spec is not None and slot.get('concept_id'):
+        return concept_rules.authority(spec, slot, decision, stopped_proposals)
     if digest is None:
         return None, 'decision.json has no entry for this slot'
     if not isinstance(digest, str) or not SHA.match(digest):
@@ -566,29 +641,42 @@ def send_test_reason(slot, review, label):
     return None
 
 
-def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None, snack=False):
+def review_reason(slot, review, label=None, snack=False):
+    """None when a review record passes this slot at its payload_sha256, else why not.
+
+    Run status reads it for every slot; release reads it for a post its concept
+    authorises (R101), the creative bar on a post with no digest of its own.
+    """
+    label = label or 'review/' + str(slot.get('slot_id')) + '.json'
+    if not isinstance(review, dict):
+        return 'no ' + label
+    if review.get('verdict') != 'pass' or not isinstance(review.get('lens'), str) or not LENS.match(review['lens']):
+        return label + ' needs verdict pass and a lens id'
+    if review.get('payload_sha256') != slot['payload_sha256']:
+        return label + " must carry this slot's payload_sha256; a review of another payload never counts"
+    if not _same(review, 'slot_id', slot['slot_id']):
+        return label + ' reviewed another slot'
+    if snack and review.get('lens') != 'send-test':
+        return label + ' of a snackable slot is the blind send test: lens send-test (run send-test)'
+    if review.get('lens') == 'send-test':
+        return send_test_reason(slot, review, label)
+    return None
+
+
+def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None, snack=False, spec=None):
     """snack: the slot's format is snackable, so its review is the blind send test (crew/send-test/)."""
     sid = slot['slot_id']
     if lint_reason:
         return row(slot, 'drafted', lint_reason)
     label = 'review/' + sid + '.json'
     review, reason = _evidence(folder / 'review' / (sid + '.json'), label)
-    if review is not None and (review.get('verdict') != 'pass' or not isinstance(review.get('lens'), str)
-                               or not LENS.match(review['lens'])):
-        reason = label + ' needs verdict pass and a lens id'
-    elif review is not None and review.get('payload_sha256') != slot['payload_sha256']:
-        reason = label + " must carry this slot's payload_sha256; a review of another payload never counts"
-    elif review is not None and not _same(review, 'slot_id', sid):
-        reason = label + ' reviewed another slot'
-    elif review is not None and snack and review.get('lens') != 'send-test':
-        reason = label + ' of a snackable slot is the blind send test: lens send-test (run send-test)'
-    elif review is not None and review.get('lens') == 'send-test':
-        reason = send_test_reason(slot, review, label)
+    if review is not None:
+        reason = review_reason(slot, review, label, snack)
     if reason:
         return row(slot, 'linted', reason)
     if decision_reason:
         return row(slot, 'reviewed', decision_reason)
-    digest, reason = signed_digest(slot, decision, window)
+    digest, reason = signed_digest(slot, decision, window, spec)
     if reason:
         return row(slot, 'reviewed', reason)
     label = 'queued/' + sid + '.json'
@@ -648,7 +736,7 @@ def status(spec, runs=None, root=ROOT, records=None):
         shown = folder.name
     return {'local_only': True, 'run_id': spec['run_id'], 'evidence': shown,
             'slots': [slot_status(slot, folder, lint_reason, decision, decision_reason, window,
-                                  snackable(formats.get(slot['format'])))
+                                  snackable(formats.get(slot['format'])), spec)
                       for slot in spec['slots']]}
 
 
@@ -694,6 +782,7 @@ def main(argv=None):
     p.add_argument('--run-id')
     p.add_argument('--from', dest='source',
                    help='a draft spec: fill week_target, every payload_sha256 and each forward_line with a share')
+    p.add_argument('--mix', help="with --start: carry the mix plan's ready concepts (growth.py mix plan) into the week")
     p.add_argument('--out')
     for name in ('lint', 'status'):
         p = sub.add_parser(name)
@@ -716,6 +805,8 @@ def main(argv=None):
             if bool(args.source) == bool(args.start):
                 raise ValueError('give --start for a skeleton or --from for a draft')
             spec = computed(read_json(args.source)) if args.source else skeleton(args.start, args.kind, args.run_id)
+            if args.mix:
+                spec = with_mix(spec, read_json(args.mix))
             if not args.out:
                 print(json.dumps(spec, indent=2))
                 return 0

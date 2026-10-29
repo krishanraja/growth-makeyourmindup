@@ -24,8 +24,13 @@ DELEGATED_PERSONAL = ('x', 'tiktok', 'threads', 'substack-notes')
 
 
 # The posting policy (27 Oct): Substack Notes up to two a day, every other
-# account at most one. engine/intensity.py raises a cap only up to this.
-MAX_DAILY_POSTS = {'substack-notes': 2}
+# account at most one. Ruling (Krish, 2026-10-29): three or four posts a day on
+# Instagram, YouTube, TikTok and X, so those four take up to four, with a floor
+# of three the weekly mix plans (engine/mix.py, R102). engine/intensity.py
+# raises a cap only up to this.
+FLOOD_CHANNELS = ('instagram', 'youtube', 'tiktok', 'x')
+FLOOD_TARGET, FLOOD_FLOOR = 4, 3
+MAX_DAILY_POSTS = dict({'substack-notes': 2}, **{c: FLOOD_TARGET for c in FLOOD_CHANNELS})
 DEFAULT_MAX_DAILY_POSTS = 1
 
 
@@ -136,9 +141,14 @@ def inventory(root=ROOT):
         if expected_mode == 'human_publish_only' and obj['daily_posts_target'] is not None:
             raise ValueError('human-only accounts have no automatic posting quota')
         # Notes post from Krish's own Substack profile at up to two a day as he
-        # signs (27 Oct); every other account stays at one a day.
+        # signs (27 Oct); Instagram, YouTube, TikTok and X up to four (29 Oct);
+        # every other account stays at one a day.
         if (obj['daily_posts_target'] or 0) > max_daily_posts(obj['id']):
-            raise ValueError('only Substack Notes has a two-a-day target')
+            raise ValueError('a daily target above its policy bound: Substack Notes two, Instagram, YouTube,'
+                             ' TikTok and X four, every other account one')
+        floor = obj.get('daily_posts_floor')
+        if floor is not None and (obj['daily_posts_target'] is None or floor > obj['daily_posts_target']):
+            raise ValueError('a daily floor needs a daily target at least as high')
         for name in obj['formats']:
             if name not in result['format'] or obj['id'] not in result['format'][name]['channels']:
                 raise ValueError('channel/format mismatch: ' + name)
