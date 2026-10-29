@@ -837,6 +837,7 @@ def decisions_since(root, now):
 
 
 VOICE_RULES_FILE = 'voice-rules.txt'
+INSPIRATION_FILE = 'inspiration.txt'
 WEB_ANALYTICS_FILE = 'web-analytics.json'
 
 
@@ -909,6 +910,76 @@ def voice_block(directive):
     return lines
 
 
+INSPIRATION_USE = ('These are Krish\'s own suggestions. Treat them as the baseline standard for every week, piece and '
+                   'express idea you plan: schedule a trial of each one he tagged, or say in the spec why it waits. '
+                   'Rebuild a source in the publication\'s own voice and look; never copy it. Quote his_words as his; '
+                   'agreed_reasons are guesses he tapped, never his words. Nothing that checks, scores, ranks or '
+                   'queues a draft reads this block.')
+
+
+def inspiration_suggestions(directive):
+    """Krish's suggestions from his inspiration board (protocol 1.15.0 `inspiration`).
+
+    Returns (state, rule, suggestions). state is 'absent' when the directive
+    carries no readable block (Control Center could not read the board today,
+    or speaks an older 1.x), 'none' when he has suggested nothing yet and
+    'suggestions' otherwise. Malformed entries are dropped, never repaired or
+    invented. Like the voice rules, they feed planning and drafting only."""
+    body = directive.get('directive', {}) if isinstance(directive, dict) else {}
+    block = body.get('inspiration') if isinstance(body, dict) else None
+    if not isinstance(block, dict) or not isinstance(block.get('suggestions'), list):
+        return 'absent', None, []
+    rule = block.get('rule') if isinstance(block.get('rule'), str) and block['rule'].strip() else None
+    text = lambda item, key: item[key].strip() if isinstance(item.get(key), str) and item[key].strip() else None
+    strings = lambda item, key: [w.strip() for w in item.get(key) or [] if isinstance(w, str) and w.strip()]
+    out = []
+    for item in block['suggestions']:
+        if not isinstance(item, dict) or not text(item, 'card_id'):
+            continue
+        trials = [{'trial': t['trial'], 'label': text(t, 'label') or t['trial'], 'means': text(t, 'means')}
+                  for t in item.get('trials') or [] if isinstance(t, dict) and isinstance(t.get('trial'), str)]
+        out.append({'card_id': text(item, 'card_id'), 'name': text(item, 'name'), 'kind': text(item, 'kind'),
+                    'lane': text(item, 'lane'), 'trials': trials, 'his_words': strings(item, 'his_words'),
+                    'agreed_reasons': strings(item, 'agreed_reasons'), 'note_for_claude': text(item, 'note_for_claude'),
+                    'read_as': text(item, 'read_as'), 'post_url': text(item, 'post_url'),
+                    'drive_url': text(item, 'drive_url'), 'saved_at': text(item, 'saved_at')})
+    return ('suggestions' if out else 'none'), rule, out
+
+
+def inspiration_block(directive):
+    """The labelled block a planning or drafting step reads. Local only, never a public log."""
+    state, rule, items = inspiration_suggestions(directive)
+    lines = ["KRISH'S INSPIRATION BOARD (the baseline for what you plan; from today's directive)"]
+    if state == 'absent':
+        lines += ['  Could not be read today. Do not invent his suggestions: plan from AGENTS.md and the playbook as before.']
+        return lines
+    lines.append('  ' + INSPIRATION_USE)
+    if rule:
+        lines.append("  Control Center's rule: " + ' '.join(rule.split()))
+    if state == 'none':
+        lines.append('  He has suggested nothing yet. Do not invent any.')
+        return lines
+    tried = [i for i in items if i['trials']]
+    lines.append('  ' + str(len(tried)) + ' with a trial he tagged, ' + str(len(items)) + ' in all, newest first.')
+    for number, item in enumerate(items, 1):
+        head = str(number) + '. ' + (item['name'] or item['card_id'])
+        head += ' (' + ', '.join(x for x in (item['kind'], item['lane'], item['saved_at']) if x) + ')'
+        lines.append('  ' + head)
+        if item['trials']:
+            lines.append('     try: ' + '; '.join(t['label'] + (' (' + t['means'] + ')' if t['means'] else '') for t in item['trials']))
+        for words in item['his_words']:
+            lines.append('     his words: "' + ' '.join(words.split()) + '"')
+        if item['agreed_reasons']:
+            lines.append('     reasons he agreed with: ' + '; '.join(item['agreed_reasons']))
+        if item['read_as'] or item['note_for_claude']:
+            lines.append('     how to read it: ' + ' '.join(x for x in (item['read_as'], item['note_for_claude']) if x))
+        for key, label in (('post_url', 'post'), ('drive_url', 'file')):
+            if item[key]:
+                lines.append('     ' + label + ': ' + item[key])
+    lines.append('END OF INSPIRATION BOARD')
+    return lines
+
+
 def describe(directive):
     """A short local summary of the directive. Never used on a public runner log."""
     body = directive.get('directive', {}) if isinstance(directive, dict) else {}
@@ -920,7 +991,15 @@ def describe(directive):
     for item in body.get('objectives', []):
         lines.append('objective ' + str(item.get('key')) + ': latest ' + str(item.get('latest')) + ' '
                      + str(item.get('unit')) + ', target ' + str(item.get('target')) + ', ' + str(item.get('availability')))
+    state, _, items = inspiration_suggestions(directive)
+    lines.append('inspiration board: ' + ('could not be read today' if state == 'absent' else
+                 str(sum(1 for i in items if i['trials'])) + ' tagged trials, ' + str(len(items)) + ' suggestions in '
+                 + state_label(INSPIRATION_FILE)))
     return lines + voice_block(directive)
+
+
+def state_label(name):
+    return str(Path(STATE_DIR) / name)
 
 
 def summary(outcome, public=False, matched=None):
@@ -1016,6 +1095,9 @@ def cli(args, root, make_client, out=print, checks=None):
         loop = Loop(client, job, run_id, clock)
         if voice_file.exists():
             voice_file.unlink()  # A fresh start pulls today's rules.
+        inspiration_file = state_path(root, INSPIRATION_FILE)
+        if inspiration_file.exists():
+            inspiration_file.unlink()  # And today's board.
         try:
             write_json(saved, loop.start())
         except ProtocolError as error:
@@ -1025,6 +1107,8 @@ def cli(args, root, make_client, out=print, checks=None):
         # The drafting steps read this local, ignored file; nothing that checks,
         # scores or queues a draft does.
         voice_file.write_text('\n'.join(voice_block(loop.directive)) + '\n', encoding='utf-8')
+        # His inspiration board (1.15.0), the baseline for what the plan schedules; local and ignored like the rules.
+        inspiration_file.write_text('\n'.join(inspiration_block(loop.directive)) + '\n', encoding='utf-8')
         keep_web_analytics(root, loop.directive)
         for line in describe(loop.directive):
             out(line)
