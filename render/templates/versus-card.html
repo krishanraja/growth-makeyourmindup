@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>versus card</title>
+<link rel="stylesheet" href="../kit.css">
+<style>
+  /* The share card: wordmark and two-tone headline on the left, the versus rows on the right. */
+  :root { --w: 1200px; --h: 675px; --margin: 72px; --top: 64px; --bottom: 64px; --wm: 40px; }
+  html, body { background: var(--ink-deep); }
+  .cols { flex: 1 1 auto; min-height: 0; display: flex; gap: 56px; align-items: stretch; }
+  .left { flex: 1.05 1 0; }
+  .left .wordmark { justify-content: flex-start; }
+  .left .eyebrow { color: var(--mint); margin: 30px 0 18px; }
+  .right { flex: 1 1 0; }
+  .versus .row .name { font-size: 1em; }
+  .versus .row .value { font-size: 1.1em; }
+</style></head>
+<body class="tone-{{tone}}"><div class="frame">
+  <div class="cols">
+    <div class="grow left" data-fit="wordmark and headline">
+      <div class="wordmark"><span class="mark"><i></i><i></i><i></i></span><span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div>
+      <p class="eyebrow" data-max="22" data-min="18" data-empty-hide>{{label}}</p>
+      <h1 class="headline" data-max="104" data-min="54"><span class="lead">{{headline}}</span><span class="accent" data-empty-hide>{{accent}}</span></h1>
+    </div>
+    <div class="grow right versus" data-fit="rows"><div class="rows" data-max="34" data-min="22">{{rows:rows}}</div></div>
+  </div>
+</div><script src="../fit.js"></script></body></html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>receipt card</title>
+<link rel="stylesheet" href="../kit.css">
+<style>
+  :root { --w: 1600px; --h: 900px; --margin: 96px; --top: 72px; --bottom: 72px; --wm: 44px; }
+  .masthead .label { font-size: 28px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .cols { flex: 1 1 auto; min-height: 0; display: flex; gap: 88px; margin: 48px 0 40px; }
+  .left { flex: 1.25 1 0; }
+  .right { flex: 1 1 0; border-left: 3px solid var(--green); padding-left: 64px; justify-content: center; }
+  .facts { white-space: pre-line; }
+  .rule { margin: 0 0 28px; }
+  .footer span { opacity: 0.66; }
+</style></head>
+<body class="tone-{{tone}}"><div class="frame">
+  <div class="masthead"><div class="wordmark"><span class="mark"><i></i><i></i><i></i></span><span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div><div class="label">{{label}}</div></div>
+  <div class="cols">
+    <div class="grow left" data-fit="headline"><h1 class="headline" data-max="112" data-min="56"><span class="lead">{{headline}}</span><span class="accent" data-empty-hide>{{accent}}</span></h1></div>
+    <div class="grow right" data-fit="facts"><div class="rule"></div><p class="body facts" data-max="44" data-min="28">{{facts}}</p><p class="small mint" data-max="28" data-min="22" data-empty-hide style="margin-top:28px">{{source}}</p></div>
+  </div>
+  <div class="footer"><span>makeyourmindup.ai</span></div>
+</div><script src="../fit.js"></script></body></html>

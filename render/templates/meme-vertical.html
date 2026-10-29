@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>meme vertical</title>
+<link rel="stylesheet" href="../kit.css">
+<style>
+  /* Same safe zones as a Story: the top 250px and bottom 340px stay clear. */
+  :root { --w: 1080px; --h: 1920px; --top: 250px; --bottom: 340px; --wm: 40px; }
+  .masthead .label { font-size: 24px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .grow { margin: 56px 0 56px; }
+  .rule { margin: 56px 0 48px; }
+  .footer span { opacity: 0.66; }
+  .beat-setup .punch { visibility: hidden; }
+</style></head>
+<body class="beat-{{beat}} tone-{{tone}}"><div class="frame">
+  <div class="masthead"><div class="wordmark"><span class="mark"><i></i><i></i><i></i></span><span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div><div class="label">{{label}}</div></div>
+  <div class="grow" data-fit="setup and punchline">
+    <p class="body" data-max="72" data-min="44">{{setup}}</p>
+    <div class="rule"></div>
+    <p class="headline punch" data-max="128" data-min="60"><span class="accent">{{punchline}}</span></p>
+  </div>
+  <div class="footer"><span>makeyourmindup.ai</span></div>
+</div><script src="../fit.js"></script></body></html>
