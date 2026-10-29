@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import unittest
 
+from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.social import DELEGATED_PERSONAL, ROOT, inventory, preflight, route
 
 MEME_CHANNELS = {'instagram', 'facebook', 'tiktok', 'youtube', 'x', 'threads'}
@@ -14,7 +15,8 @@ MEME_CHANNELS = {'instagram', 'facebook', 'tiktok', 'youtube', 'x', 'threads'}
 def package(channel, account_url, context, format_id, owner='content-engine', due=None):
     return {'schema_version': 1, 'kind': 'package', 'id': 'synthetic-package',
             'channel': channel, 'account_url': account_url, 'account_context': context,
-            'format': format_id, 'tool': 'buffer', 'source_url': 'https://example.com/verified-test',
+            'format': format_id, 'tool': 'buffer', 'buffer_channel_id': BUFFER_CHANNEL_ID[channel],
+            'source_url': 'https://example.com/verified-test',
             'caption': 'Synthetic test copy.', 'assets': [],
             'production': {'owner': owner, 'approved': True, 'evidence_ref': 'synthetic-only'},
             'voice_review_passed': True, 'proposed_due_at': due,

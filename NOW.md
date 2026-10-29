@@ -28,6 +28,26 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 Lifecycle: live. The detail is in `README.md`.
 
+28 October, Wave 1 of the plan Krish approved that day ("Make Your Mind Up:
+one weekly chain that runs on time"): release is pinned to this engine's
+eight Buffer channels by channelId as well as service and name, checked
+against a read-only list of all twelve channels in the shared organisation.
+The fulltime.fm, Heartside and both yourdoghasnotes channels are refused by
+id in every release step and in social preflight, which a Buffer draft
+package passes before the daily job saves it (`engine/buffer_channels.py`).
+Content-engine's copy lint (version 2026-10-29.1, which also refuses
+"Krish's read" and "illustrative" labels) is vendored and runs in run lint,
+social preflight, release, autonomous audit repairs and drafted pack
+replies. On a route not yet verified, release sends only the run's earliest
+approved post, as that route's capability check, and holds the rest. His 28
+October rulings are recorded: go-live is "Approve each day Monday", every
+route goes through Buffer with a first-post capability check, Growth makes
+derived carousels to content-engine's standard, owns the Tuesday, Thursday,
+Saturday and Sunday lane on Instagram, TikTok and Shorts, and prepares a
+daily 10-minute engage queue. Nothing new posts yet: the per-post go-live
+reads, the pull, the manifest, the lane and the queue are Wave 2. 340 local
+tests pass.
+
 28 October daily readback is partial: Buffer My organization now has 12
 connections, including other ventures; only this engine's explicit scope applies.
 Four unscheduled drafts include two labelled engine checks; no scheduled/error
@@ -110,13 +130,14 @@ publication, follower growth or financial ROI.
 
 ## What changed recently
 
-- 2026-10-27 **The engine is rebuilt on the bulletproof architecture, phases 0 to 2** (`docs/plans/2026-10-27-engine-architecture.md`). One signed run spec per week or piece (`growth.py run new|lint|status|pack`), computed readiness, a Release Gate pinned to this engine's nine Buffer channels, the autonomy loop (plan, go-live once, his amended words, a declined check-in stops its plan), 12 crew cards with the What-Works Analyst and the Measurement Specialist, a failure register F01 to F65 and G1 to G9 and quoted rules R1 to R91, each guarded by a test (323 tests). Rulings that day: Substack Notes (from his profile, @mindmakerlive) and Threads join; sign the week with an express lane for meme posts; a full Canva brand kit by Cowork (`docs/briefs/2026-10-27-canva-brand-kit-cowork.md`); secondary targets for followers and paid subscribers; the audit authority covers Facebook and Threads; GA4 comes through Control Center, which now sends per-post readings in this engine's directive (protocol 1.10.0, krishanraja/control-center#578, merged).
+- 2026-10-28 **Channel lock, copy lint and the plan's rulings** (Wave 1 of the plan Krish approved on 28 October). Release and social preflight pin each Buffer channel by channelId and deny the other ventures' channels by id; an unverified route releases only its first post as the capability check; content-engine's copy lint runs in run lint, preflight, release, audit repairs and pack drafts; `docs/PUBLISHING-AUTHORITY.md`, `docs/ENGINE-BOUNDARY.md` and `docs/CAROUSEL-STANDARD.md` record "Approve each day Monday", the Buffer routes, derived carousels, the off-day lane and the 10-minute engage queue. Rules R92 to R98.
+- 2026-10-27 **The engine is rebuilt on the bulletproof architecture, phases 0 to 2** (`docs/plans/2026-10-27-engine-architecture.md`). One signed run spec per week or piece (`growth.py run new|lint|status|pack`), computed readiness, a Release Gate pinned to this engine's eight Buffer channels, the autonomy loop (plan, go-live once, his amended words, a declined check-in stops its plan), 12 crew cards with the What-Works Analyst and the Measurement Specialist, a failure register F01 to F65 and G1 to G9 and quoted rules R1 to R91, each guarded by a test (323 tests). Rulings that day: Substack Notes (from his profile, @mindmakerlive) and Threads join; sign the week with an express lane for meme posts; a full Canva brand kit by Cowork (`docs/briefs/2026-10-27-canva-brand-kit-cowork.md`); secondary targets for followers and paid subscribers; the audit authority covers Facebook and Threads; GA4 comes through Control Center, which now sends per-post readings in this engine's directive (protocol 1.10.0, krishanraja/control-center#578, merged).
 - 2026-10-26 **Drafts follow Krish's approved voice rules from the daily directive.** Control Center protocol 1.5.0 adds `taste` to the directive; `cc start` prints the approved rules as one labelled block and keeps it in `.scratch/cc/voice-rules.txt` for the drafting steps: how a draft is written, never what it is about, never fed to a check, score or queue. None approved yet means none invented; absent means unknown.
 - 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets how hard it pushes. The number is in `docs/NORTH_STAR.md`; contract: ai-harness `contract/north-star-metric.md`.
 
 ## What is next and what is waiting on Krish
 
-- Next: read back the first `web_analytics` directive after Control Center's 05:30 UTC snapshot on 28 October, confirm the sign-up and paid event names in `invariants/ga4.json`, then prepare W45's first signed week (standing W45 to W52 plan plus the Notes and Threads go-live) for Sunday 1 November through a scheduled run. The pilot measurements and Content Engine native editions continue as before; LinkedIn stays his own click.
+- Next: for Monday 2 November, when the Monday 26 piece goes live (his transition ruling), prepare each Buffer route's first real post as a capability check for him to approve that morning, through `growth.py run release` (it holds the rest of an unverified route), and record each route that passes in `social/tools/buffer.json`; then build Wave 2 by Saturday 7 November (one go-live decision read per post, the manifest, route checks, metrics, the engage queue and the off-day lane, first posts Tuesday 10 November). The GA4 event-name readback (`invariants/ga4.json`) is still open; LinkedIn stays his own click.
 - Waiting on Krish: run the Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); one PowerShell command for the cost baseline (`python growth.py run cost baseline`); Buffer's Team plan by 31 October; new cloud scheduled tasks. The architecture branch is now merged into main.
 - North Star check (2026-10-28): holds.
 

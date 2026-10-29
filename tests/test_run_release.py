@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = ROOT / 'tests' / 'fixtures' / 'release'
@@ -65,7 +66,9 @@ class ReleaseTests(unittest.TestCase):
                                     self.targets if targets is None else targets)
 
     def channel(self, service):
-        return [c for c in self.channels if c['service'] == service][0]
+        """This engine's pinned channel; the fixture also holds other ventures' channels."""
+        return [c for c in self.channels if c['service'] == service
+                and c['id'] in release.BUFFER_CHANNEL_ID.values()][0]
 
     def ledger(self):
         """A ledger as it stands after plan and a queued check of threads-1."""
@@ -88,12 +91,12 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(release.argument_errors(call, self.slots[call['slot_id']]), [])
         notes = self.by_slot(result)['notes-1']
         self.assertEqual(notes['tool'], 'create_post')
-        self.assertEqual((notes['service'], notes['channel_id']), ('substack', 'cccccccccccccccccccccc01'))
+        self.assertEqual((notes['service'], notes['channel_id']), ('substack', '6ae09edc2f1f5ed648e9e48c'))
         self.assertEqual(notes['arguments'], {
-            'channelId': 'cccccccccccccccccccccc01', 'text': self.slots['notes-1']['words'], 'assets': [],
+            'channelId': '6ae09edc2f1f5ed648e9e48c', 'text': self.slots['notes-1']['words'], 'assets': [],
             'mode': 'customScheduled', 'schedulingType': 'automatic', 'saveToDraft': False,
             'dueAt': '2026-11-02T08:30:00-05:00'})
-        self.assertEqual(result['ledger']['released']['x-1']['channel_id'], 'cccccccccccccccccccccc06')
+        self.assertEqual(result['ledger']['released']['x-1']['channel_id'], '6adccbf5778b240e2fafc457')
 
     def test_draft_save_sets_saveToDraft_without_dueAt(self):
         slot = resign(copy.deepcopy(self.slots['threads-1']))
@@ -148,7 +151,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('TikTok photo posts never set the AI-generated flag', release.argument_errors(flagged, slot))
         drafted = copy.deepcopy(slot)
         drafted['buffer_draft_id'] = 'aaaaaaaaaaaaaaaaaaaaaa04'
-        target = {'id': drafted['buffer_draft_id'], 'channelId': 'cccccccccccccccccccccc04',
+        target = {'id': drafted['buffer_draft_id'], 'channelId': '6adccbdd778b240e2fafc32e',
                   'channelService': 'tiktok', 'status': 'draft', 'via': 'api', 'assets': [],
                   'metadata': {'isAiGenerated': True}}
         with self.assertRaisesRegex(ValueError, 'edit_would_drop_alt_text_or_ai_label'):
@@ -352,6 +355,53 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(third['calls'], [])
         self.assertIn({'slot_id': 'notes-1', 'hold': 'released_earlier_with_another_payload'}, third['holds'])
 
+    def test_unchecked_route_releases_only_its_capability_check(self):
+        # docs/PUBLISHING-AUTHORITY.md, 28 Oct 2026: "Each route's first real post is a capability
+        # check he approves on that Monday; until a route has passed it, the route holds."
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        for sid, due in (('notes-1', '2026-11-04T08:30:00-05:00'), ('threads-1', '2026-11-02T09:00:00-05:00'),
+                         ('tiktok-photo-1', '2026-11-05T19:00:00-05:00')):
+            twin = copy.deepcopy(self.slots[sid])
+            twin.update(slot_id=sid[:-1] + '2', due_at=due, words=twin['words'] + ' A second post.')
+            spec['slots'].append(twin)
+            resign(twin, decision, spec)
+        result = self.plan(spec, decision)
+        calls, holds = self.by_slot(result), self.holds(result)
+        # Notes and Threads are unverified routes: the earliest post by due_at goes, the rest hold.
+        self.assertTrue(calls['notes-1']['capability_check'])
+        self.assertTrue(result['ledger']['released']['notes-1']['capability_check'])
+        self.assertNotIn('notes-2', calls)
+        self.assertTrue(holds['notes-2'].startswith(
+            'route_not_verified: capability_not_verified_for_selected_channel_and_format'))
+        self.assertIn('its capability check is notes-1', holds['notes-2'])
+        self.assertTrue(calls['threads-2']['capability_check'])
+        self.assertNotIn('threads-1', calls)
+        self.assertIn('its capability check is threads-2', holds['threads-1'])
+        # A verified route releases every approved post and marks none as a check.
+        for sid in ('tiktok-photo-1', 'tiktok-photo-2'):
+            self.assertNotIn('capability_check', calls[sid])
+            self.assertNotIn('capability_check', result['ledger']['released'][sid])
+        # Once the check is released, the rest still wait for the route to be recorded as passed.
+        again = self.plan(spec, decision, result['ledger'])
+        self.assertEqual(again['calls'], [])
+        self.assertTrue(self.holds(again)['notes-2'].startswith('route_not_verified'))
+        self.assertEqual(self.holds(again)['notes-1'], 'already_released_once')
+        with patch.object(release, 'route', lambda *a, **k: {'holds': []}):
+            passed = self.plan(spec, decision, result['ledger'])
+        self.assertEqual(set(self.by_slot(passed)), {'notes-2', 'threads-1'})
+        # A stale observation is a recheck: only the route's earliest post goes.
+        stale = release.release_plan(spec, decision, None, self.paths(spec), self.channels,
+                                     '2026-11-03T12:00:00-05:00', self.targets)
+        self.assertTrue(self.by_slot(stale)['tiktok-photo-1']['capability_check'])
+        self.assertIn('capability_observation_requires_recheck', self.holds(stale)['tiktok-photo-2'])
+        # A format the channel does not carry is never a check: it always holds.
+        odd = copy.deepcopy(self.spec)
+        odd_decision = copy.deepcopy(self.decision)
+        notes = [s for s in odd['slots'] if s['slot_id'] == 'notes-1'][0]
+        notes['format'] = 'carousel'
+        resign(notes, odd_decision, odd)
+        self.assertTrue(self.holds(self.plan(odd, odd_decision))['notes-1'].startswith('route_unknown: '))
+
     def test_release_refuses_unsigned_or_mismatched_slot(self):
         spec = copy.deepcopy(self.spec)
         decision = copy.deepcopy(self.decision)
@@ -434,14 +484,14 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'live substack entry'):
             release.call_arguments(slot, self.channel('linkedin'), NOW)
         with self.assertRaisesRegex(ValueError, 'live substack entry'):
-            release.call_arguments(slot, 'cccccccccccccccccccccc05', NOW)
+            release.call_arguments(slot, '6adccba0778b240e2fafc06d', NOW)
         no_x = [c for c in self.channels if c['service'] != 'twitter']
         result = self.plan(channels=no_x)
         self.assertNotIn('x-1', self.by_slot(result))
         self.assertIn('never guess', self.holds(result)['x-1'])
         twice = self.channels + [dict(self.channel('threads'), id='cccccccccccccccccccccc07')]
         self.assertIn('more than one', self.holds(self.plan(channels=twice))['threads-1'])
-        self.assertIn('never guess', self.holds(self.plan(channels={'threads': 'cccccccccccccccccccccc02'}))['threads-1'])
+        self.assertIn('never guess', self.holds(self.plan(channels={'threads': '6adccb77778b240e2fafbe75'}))['threads-1'])
 
     def test_readback_requires_channel_service(self):
         slot = self.slots['threads-1']
@@ -476,11 +526,131 @@ class ReleaseTests(unittest.TestCase):
                   {'id': 'dddddddddddddddddddddd02', 'service': 'instagram', 'name': 'yourdoghasnotes',
                    'isDisconnected': False, 'isLocked': False}]
         slot = {'channel': 'tiktok'}
-        self.assertEqual(release.resolve_channel(slot, others + self.channels)['id'], 'cccccccccccccccccccccc04')
-        only_others = others + [c for c in self.channels if c['service'] != 'tiktok']
+        self.assertEqual(release.resolve_channel(slot, others + self.channels)['id'], '6adccbdd778b240e2fafc32e')
+        only_others = others + [c for c in self.channels if c['service'] != 'tiktok' or c['name'] != 'therealkrisho']
         with self.assertRaisesRegex(ValueError, 'therealkrisho.*never guess'):
             release.resolve_channel(slot, only_others)
         self.assertEqual(set(release.BUFFER_NAME), set(release.CHANNELS))
+
+    def test_channel_ids_are_pinned_and_other_ventures_denied(self):
+        # Read back with a read-only list_channels of "My organization" on 28 Oct 2026.
+        self.assertEqual(release.BUFFER_CHANNEL_ID, {
+            'substack-notes': '6ae09edc2f1f5ed648e9e48c', 'youtube': '6adccf83778b240e2fafe7af',
+            'instagram': '6adccb3a778b240e2fafbb63', 'x': '6adccbf5778b240e2fafc457',
+            'tiktok': '6adccbdd778b240e2fafc32e', 'linkedin': '6adccba0778b240e2fafc06d',
+            'threads': '6adccb77778b240e2fafbe75', 'facebook': '6adccc1e778b240e2fafc615'})
+        self.assertEqual(set(release.DENIED_CHANNELS), {'6ae09bba2f1f5ed648e9cbfc', '6ae096d32f1f5ed648e99e98',
+                                                        '6ae0973f2f1f5ed648e9a327', '6ae096872f1f5ed648e99b6d'})
+        self.assertFalse(set(release.DENIED_CHANNELS) & set(release.BUFFER_CHANNEL_ID.values()))
+        self.assertEqual(len(set(release.BUFFER_CHANNEL_ID.values())), len(release.CHANNELS))
+        for channel_id in list(release.DENIED_CHANNELS) + list(release.BUFFER_CHANNEL_ID.values()):
+            self.assertRegex(channel_id, release.BUFFER_ID)
+        # Every fixture channel this engine owns resolves to its pinned id, never a decoy beside it.
+        for sid, slot in self.slots.items():
+            self.assertEqual(release.resolve_channel(slot, self.channels)['id'],
+                             release.BUFFER_CHANNEL_ID[slot['channel']], sid)
+
+    def test_decoy_and_denylisted_channel_ids_are_refused(self):
+        slot = self.slots['tiktok-photo-1']
+        ours = self.channel('tiktok')
+        fulltime = dict(ours, id='6ae09bba2f1f5ed648e9cbfc')
+        reconnected = dict(ours, id='eeeeeeeeeeeeeeeeeeeeee01')
+        without_ours = [c for c in self.channels if c is not ours]
+        # Another venture's channel renamed to look like ours is refused by its id.
+        with self.assertRaisesRegex(ValueError, "fulltime.fm TikTok, another venture's"):
+            release.resolve_channel(slot, without_ours + [fulltime])
+        # So is an unknown id under our name, until a reviewed change pins it.
+        with self.assertRaisesRegex(ValueError, "not this engine's pinned tiktok channel"):
+            release.resolve_channel(slot, without_ours + [reconnected])
+        for decoy in (fulltime, reconnected):
+            result = self.plan(channels=without_ours + [decoy])
+            self.assertNotIn('tiktok-photo-1', self.by_slot(result))
+            self.assertIn('never guess', self.holds(result)['tiktok-photo-1'])
+            self.assertEqual(len(result['calls']), len(self.slots) - 1)
+        # A channel handed straight to call_arguments meets the same lock.
+        for channel_id, reason in (('6ae0973f2f1f5ed648e9a327', 'yourdoghasnotes TikTok'),
+                                   ('eeeeeeeeeeeeeeeeeeeeee01', 'not this engine')):
+            with self.assertRaisesRegex(ValueError, reason):
+                release.call_arguments(slot, dict(ours, id=channel_id), NOW)
+        ig = self.slots['ig-story-1']
+        with self.assertRaisesRegex(ValueError, 'yourdoghasnotes Instagram'):
+            release.call_arguments(ig, dict(self.channel('instagram'), id='6ae096872f1f5ed648e99b6d'), NOW,
+                                   self.targets['ig-story-1'])
+
+    def test_hand_built_calls_to_other_channels_are_refused(self):
+        call = self.by_slot(self.plan())['notes-1']
+        self.assertEqual(release.argument_errors(call, self.slots['notes-1']), [])
+        for denied, name in sorted(release.DENIED_CHANNELS.items()):
+            bad = copy.deepcopy(call)
+            bad['arguments']['channelId'] = denied
+            errors = release.argument_errors(bad, self.slots['notes-1'])
+            self.assertTrue(any(name in e and "another venture's" in e for e in errors), errors)
+        mixed = copy.deepcopy(call)
+        mixed['channel_id'] = release.BUFFER_CHANNEL_ID['x']
+        self.assertIn("Buffer channel 6adccbf5778b240e2fafc457 is not this engine's pinned substack-notes channel",
+                      release.argument_errors(mixed, self.slots['notes-1']))
+        bare = {'tool': 'create_post', 'arguments': {k: v for k, v in call['arguments'].items() if k != 'channelId'}}
+        errors = release.argument_errors(bare, self.slots['notes-1'])
+        self.assertIn('a create_post names its pinned Buffer channelId', errors)
+        self.assertIn('the call names no Buffer channel; release only acts on a pinned channel', errors)
+        odd = copy.deepcopy(call)
+        odd['arguments']['channelId'] = [release.BUFFER_CHANNEL_ID['substack-notes']]
+        self.assertIn('Buffer channelId must be text, not list', release.argument_errors(odd, self.slots['notes-1']))
+
+    def test_readback_and_publications_on_other_channels_never_count(self):
+        slot = self.slots['threads-1']
+        ledger = self.ledger()
+        post = load('readback-live')['threads-1']
+        self.assertEqual(release.check_readback(slot, post, 'live', ledger)['channel_id'],
+                         release.BUFFER_CHANNEL_ID['threads'])
+        # A ledger edited by hand to point at another venture's channel proves nothing.
+        tampered = copy.deepcopy(ledger)
+        tampered['released']['threads-1']['channel_id'] = '6ae096d32f1f5ed648e99e98'
+        moved = dict(post, channelId='6ae096d32f1f5ed648e99e98')
+        with self.assertRaisesRegex(ValueError, 'Heartside Facebook'):
+            release.check_readback(slot, moved, 'live', tampered)
+        self.assertEqual(len(release.engine_publications([post], ledger)), 1)
+        self.assertEqual(release.engine_publications([moved], tampered), [])
+
+    def test_copy_lint_holds_a_signed_slot_and_releases_the_rest(self):
+        # Krish, 28 Oct 2026: "don't add stupid eyebrow text and asterisks and "generated by AI" and
+        # "Krish's take" verbal diahorrea like you tend to."
+        for words, pattern in (("Krish's take: the money moved to the chips.", 'take_label'),
+                               ('The *real* cost is the lock-in.', 'asterisk'),
+                               ('BREAKING: Disney is hiring the team.', 'eyebrow_label'),
+                               ('Disney hires the team. Generated by AI.', 'ai_provenance_label'),
+                               ('Visuals by Midjourney. Disney hires the team.', 'ai_credit_line')):
+            spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+            slot = [s for s in spec['slots'] if s['slot_id'] == 'threads-1'][0]
+            slot['words'] = words
+            resign(slot, decision, spec)
+            result = self.plan(spec, decision)
+            self.assertNotIn('threads-1', self.by_slot(result), words)
+            self.assertIn('copy_lint_refused: copy lint ' + pattern, self.holds(result)['threads-1'])
+            self.assertNotIn('threads-1', result['ledger']['released'])
+            self.assertEqual(len(result['calls']), len(self.slots) - 1)
+            call = self.by_slot(self.plan())['threads-1']
+            call['arguments']['text'] = words
+            self.assertTrue(any(e.startswith('copy lint ' + pattern) for e in
+                                release.argument_errors(call, self.slots['threads-1'])))
+        # AI as the subject is the channel's beat, never refused.
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        slot = [s for s in spec['slots'] if s['slot_id'] == 'threads-1'][0]
+        slot['words'] = 'AI-generated music changes who gets paid. Who signs the cheque?'
+        resign(slot, decision, spec)
+        result = self.plan(spec, decision)
+        self.assertIn('threads-1', self.by_slot(result))
+        self.assertEqual(result['ledger']['released']['threads-1']['copy_lint_version'],
+                         release.copy_lint_version())
+
+    def test_unreadable_copy_lint_holds_everything(self):
+        def broken(text, applies_to='channel_copy', path=None):
+            raise ValueError('copy lint config unreadable: synthetic')
+        with patch.object(release, 'copy_lint_errors', broken):
+            result = self.plan()
+        self.assertEqual(result['calls'], [])
+        for sid in self.slots:
+            self.assertIn('copy lint could not run, so nothing releases', self.holds(result)[sid])
 
     def test_cli_writes_ledger_and_evidence_only_under_scratch(self):
         root = self.dir / 'repo'

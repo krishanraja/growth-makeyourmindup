@@ -8,6 +8,7 @@ import hashlib
 import json
 from urllib.parse import urlsplit
 
+from engine.copy_lint import copy_lint_errors
 from engine.core import canonical, http_url, identity, instant
 
 ACCOUNTS = {
@@ -35,6 +36,9 @@ AUTO = {'post': {'title', 'caption', 'description', 'link'},
 HOST_ALIASES = {'threads.net': 'threads.com'}
 PROTECTED = {'bio', 'positioning', 'pin', 'pinned_content', 'thumbnail',
              'overlay', 'video', 'image', 'audio', 'reupload', 'delete'}
+# Public words an autonomous repair writes, and the copy lint surface each is
+# read as (Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels).
+LINTED = {'title': 'titles', 'caption': 'channel_copy', 'description': 'channel_copy'}
 
 
 def require(condition, message):
@@ -134,6 +138,13 @@ def repair_plan(change, now=None):
     for key in ('owner_verified', 'meaning_preserved', 'voice_checked', 'claims_checked', 'field_editable'):
         if change.get(key) is not True:
             return {**result, 'disposition': 'held', 'reason': key + ' not verified'}
+    if field in LINTED:
+        try:
+            lint = copy_lint_errors(change['after'], LINTED[field])
+        except ValueError as exc:
+            lint = ['copy lint could not run: ' + str(exc)]
+        if lint:
+            return {**result, 'disposition': 'held', 'reason': 'new ' + field + ' fails the copy lint: ' + '; '.join(lint)}
     if field == 'link':
         destination = change.get('destination')
         evidence(destination, now)

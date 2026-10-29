@@ -6,6 +6,9 @@ import json
 from pathlib import Path
 import re
 
+from .buffer_channels import channel_id_errors
+from .copy_lint import copy_lint_errors
+
 
 ROOT = Path(__file__).resolve().parents[1]
 # Personal accounts Krish has scoped for delegated cadence of approved content:
@@ -196,10 +199,21 @@ def preflight(package, as_of=None, root=ROOT):
     profile = decision['channel']
     if package['account_url'] != profile['account_url'] or package['account_context'] != profile['account_context']:
         raise ValueError('wrong account identity or speaking context')
+    if package['tool'] == 'buffer':
+        # The Buffer organisation is shared with other ventures: a draft saved
+        # through the connector names this engine's pinned channelId, the same
+        # table release reads (engine/buffer_channels.py), or nothing is saved.
+        pinned = channel_id_errors(package['channel'], package['buffer_channel_id'])
+        if pinned:
+            raise ValueError(pinned[0])
     if profile['publication_mode'] == 'human_publish_only' and package['proposed_due_at'] is not None:
         raise ValueError('personal account packages must remain unscheduled for human publication')
     if re.search(r'(?:illustrations?|artwork|scenes?|scorecard)\s+(?:(?:was|were|are|is)\s+)?(?:generated\s+(?:with|by)\s+AI|AI[- ]generated)|AI[- ]generated\s+(?:editorial\s+)?illustrations?', package['caption'], re.I):
         raise ValueError('public illustration-disclaimer boilerplate is prohibited; retain private provenance and native metadata')
+    lint = copy_lint_errors(package['caption'], 'channel_copy')
+    if lint:
+        # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels.
+        raise ValueError('the caption fails the copy lint: ' + '; '.join(lint))
     if not package['voice_review_passed'] or not package['production']['approved']:
         raise ValueError('voice review and accepted production package are required')
     f = decision['format']

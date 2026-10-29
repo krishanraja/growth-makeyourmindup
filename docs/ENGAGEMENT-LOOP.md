@@ -15,6 +15,15 @@ Two distinct LinkedIn/X drafts were saved and independently reopened in
 Codex; no posts were scheduled or published. Private trial evidence and
 metrics remain in ignored .scratch/channel-audit/buffer-trial/.
 
+28 October 2026 (Krish, `CHANGES.md`): "10 min daily queue is fine, add
+Instagram and LinkedIn to this, and make sure everything is one click
+copiable and the click through goes precisely where i need to engage."
+The daily review pack becomes one 10-minute queue across X, TikTok,
+Instagram and LinkedIn: one-click copy on every drafted reply, and each
+link opens the exact post, reply box or profile. It stays prepared only;
+he submits. Where the routines below say otherwise, this wins
+(`docs/ENGINE-BOUNDARY.md`, "28 October 2026").
+
 ## Outcome
 
 Grow relevant followers and publication subscribers through useful work
