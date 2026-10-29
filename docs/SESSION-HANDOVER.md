@@ -4,7 +4,7 @@ Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
 27 October architecture upgrade: a run session reads `docs/RUN.md` and its pack (`python growth.py run pack SPEC`) instead of the standing docs; the plan is `docs/plans/2026-10-27-engine-architecture.md`. Every earlier instruction below still holds where the rulings recorded in `CHANGES.md` on 27 October do not supersede it.
 
-Lanes (27 October): `docs/LANES.md` says what runs alone (GitHub Actions and the cloud routines in `routines/`), what waits for one press in Control Center and what waits for Krish's hands; `docs/SETUP-ONCE.md` holds his one-time steps. No session holds the Control Center engine key: the GitHub runner holds it, Codex workspace runs on his PC use the `engine-token` file (`docs/KEY.md`), and a cloud session reads Control Center through the Control Center connector. Never set or read `CONTROL_CENTER_ENGINE_TOKEN` in a cloud session.
+Lanes (27 October): `docs/LANES.md` says what runs alone (GitHub Actions; there are no Claude routines, Krish, 29 Oct 2026), what waits for one press in Control Center and what waits for Krish's hands; `docs/SETUP-ONCE.md` holds his one-time steps. No session holds the Control Center engine key: the GitHub runner holds it, Codex workspace runs on his PC use the `engine-token` file (`docs/KEY.md`), and a cloud session reads Control Center through the Control Center connector. Never set or read `CONTROL_CENTER_ENGINE_TOKEN` in a cloud session.
 
 27 October closeout takes precedence: read `docs/ASSET-STORAGE.md` and
 `.scratch/session-closeout-20261027/CLOSEOUT.md` first. All session assets and

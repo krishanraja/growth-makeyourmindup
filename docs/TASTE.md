@@ -1,8 +1,11 @@
-# Taste: what the routines read from Inspiration House, and what they tell it
+# Taste: what a maker reads from Inspiration House, and what it tells it
 
-The `make`, `plan` and `watch` routines follow this file wherever their own
-file says "taste". The procedure itself lives in krishanraja/inspirationhouse
-(`README.md`, `docs/TWO_WAY.md`); this file says only how this engine uses it.
+Any session or PC automation that makes or writes for this engine (Canva
+assets, words, Buffer drafts) follows this file before it builds. There are
+no Claude routines (Krish, 29 Oct 2026); whoever makes, makes under the same
+walls (`docs/LANES.md`). The procedure itself lives in
+krishanraja/inspirationhouse (its README.md and docs/TWO_WAY.md); this file
+says only how this engine uses it.
 
 Krish, 27 Oct 2026: "Make sure you're wiring into the Inspiration House
 repository in a way that is incredibly robust because that's where I put in
@@ -33,23 +36,25 @@ detail on why I like something in there."
 ## Tell it back (`report_to_taste_engine`, exempt from the approval wall)
 
 Krish ruled on 26 Oct 2026 that reports to his taste ledger are exempt from the
-approval wall. This is the one Control Center write a routine may call.
+approval wall. Call no Control Center write tool but `report_to_taste_engine`:
+it is the one Control Center write a maker may call.
 
-- His exact words: anything Krish typed that this run reads (an amended
-  go-live, a decline reason, an idea in Buffer Ideas). Quote it character for
-  character with where and when he typed it (`kind` his words). Never a
-  paraphrase.
+- His exact words: anything Krish typed that you read (an amended go-live, a
+  decline reason, an idea in Buffer Ideas). Quote it character for character
+  with where and when he typed it (`kind` his words). Never a paraphrase.
 - Observations (never counted toward a rule): "card X shaped template Y" or
   "post Z", and each such post's verdict from the measure job (works,
-  neutral, fails or insufficient, with its denominator). The `watch` routine
-  sends these once a day; send each fact once.
+  neutral, fails or insufficient, with its denominator). Send each fact
+  once, whoever made the post.
 - Never report a guess as his words, and never answer a card or approve a
   rule.
 
-## The weekly template refresh (`plan` only)
+## The weekly template refresh (whoever plans the week)
 
-When three or more cards he routed to "study the style", each with his words,
-share a form pattern for a format the kit lacks or does badly, build one new
-Canva template from them (kit colours and fonts, plain English, no em
-dashes), and propose it as a new-format item for his eyes, with the card ids
-it rests on. At most one a week. Never publish a template.
+Whoever plans the week (the session or PC automation that builds the week's
+packet) may propose one new template. When three or more cards he routed to
+"study the style", each with his words, share a form pattern for a format
+the kit lacks or does badly, build one new Canva template from them (kit
+colours and fonts, plain English, no em dashes), and propose it as a
+new-format item for his eyes, with the card ids it rests on. At most one a
+week. Never publish a template.

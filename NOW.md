@@ -106,9 +106,10 @@ publication, follower growth or financial ROI.
 
 ## What is next and what is waiting on Krish
 
-- Next: create the three routines once this is on main, then run the first live loop: a routine drafts W45 Notes and Threads, the handoff proposes them, Krish approves, release schedules them. The Buffer value memo is due 30 October for his 31 October decision.
+- Next: once this is on main, run the first live loop: a session or PC automation drafts W45 Notes and Threads, the handoff proposes them, Krish approves, release schedules them. There are no Claude routines to create (Ruling, Krish, 2026-10-29). The Buffer value memo is due 30 October for his 31 October decision.
 - Waiting on Krish: the `BUFFER_API_KEY` GitHub secret (`docs/SETUP-ONCE.md`; release and measure do nothing with Buffer until it is set); optionally remove the wrong token variable from the Claude cloud environment; trash seven unused Canva drafts the template build left in the account root; the Buffer plan by 31 October; approving `invariants/sources.json` at G-A; whether "send" go-lives are held.
 - North Star check (2026-10-27): holds.
+- North Star check (2026-10-29): holds. Removing the Claude routines moves no number; it brings the architecture into line with Krish's 29 Oct ruling.
 
 ## Read next
 

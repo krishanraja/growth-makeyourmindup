@@ -286,12 +286,13 @@ HANDS = ('linkedin-posting', 'plan-purchase', 'credential-creation', 'account-co
 NEW_FORMATS = ('carousel', 'meme', 'opinion', 'reactive')
 ID = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 ISO_WEEK = re.compile(r'^(\d{4})-W(\d{2})$')
-LANES = ('L0_code', 'L1_judgement', 'L2_eyes', 'L3_hands')
+# No L1: there are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct 2026). A new
+# schedule is an L0 GitHub Actions job; making is done by sessions and the PC automations under the walls.
+LANES = ('L0_code', 'L2_eyes', 'L3_hands')
 LANE_JOB_FIELDS = ('id', 'lane', 'workflow', 'trigger', 'may_write', 'never', 'actions', 'secrets')
-AUTOMATION_FIELDS = ('name', 'source', 'jobs', 'lane', 'status', 'successor')
+AUTOMATION_FIELDS = ('name', 'source', 'jobs', 'status', 'successor')
 # The jobs Krish's lanes ruling names (CHANGES.md, 27 Oct evening); each is in lanes.json exactly once.
 LANE_JOBS = {'L0_code': ('control-center', 'release', 'measure', 'keys', 'handoff'),
-             'L1_judgement': ('make', 'plan', 'watch'),
              'L2_eyes': ('publish-board', 'preview-packet', 'new-format-item', 'week-sign-off'),
              'L3_hands': ('linkedin-posting', 'buffer-plan', 'one-time-setup')}
 ENGINE_KEYS = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN')
@@ -398,12 +399,15 @@ def class_of(authority, name):
 
 
 def posting_lane(authority, name, channel, format_id=None):
-    """The lane a post of this class lands in. An unknown or mismatched class needs his eyes."""
+    """The lane a post of this class lands in. An unknown or mismatched class needs his eyes.
+
+    A derivative of an approved piece is released by code (release.yml, L0) with no per-post press.
+    """
     if channel in hands_channels(authority):
         return 'L3_hands'
     kind, formats = class_of(authority, name)
     if kind == 'derivative' and (format_id is None or format_id in formats):
-        return 'L1_judgement'
+        return 'L0_code'
     return 'L2_eyes'
 
 
@@ -438,8 +442,9 @@ def load_lanes(root=ROOT):
         raise ValueError('lanes are ' + ', '.join(LANES) + ', in order')
     for name, lane in data['lanes'].items():
         _closed(lane, ('who', 'runs_on', 'model'), 'lanes.' + name)
-        if type(lane['model']) is not bool or lane['model'] != (name == 'L1_judgement'):
-            raise ValueError('lanes.' + name + ': only L1 runs a model')
+        if lane['model'] is not False:
+            raise ValueError('lanes.' + name + ': no lane runs a model; there are no Claude routines'
+                             ' (Krish, 29 Oct 2026)')
     if not isinstance(data['jobs'], list) or not isinstance(data['automations'], list):
         raise ValueError('jobs and automations are lists')
     for job in data['jobs']:
@@ -461,8 +466,8 @@ def load_lanes(root=ROOT):
     for entry in data['automations']:
         _closed(entry, AUTOMATION_FIELDS, 'automation ' + str(entry.get('name') if isinstance(entry, dict) else '?'))
         at = 'automation ' + str(entry['name'])
-        if entry['lane'] not in LANES or entry['status'] != 'kept-until-W46':
-            raise ValueError(at + ': a lane, and status kept-until-W46')
+        if entry['status'] != 'kept-until-W46':
+            raise ValueError(at + ': status kept-until-W46')
         _strings(entry['jobs'], 'jobs', at)
         if entry['source'] not in ('automations.json', 'heartbeat'):
             raise ValueError(at + ': source is automations.json or heartbeat')
@@ -470,13 +475,17 @@ def load_lanes(root=ROOT):
 
 
 def check_lanes(lanes, authority, root=ROOT):
-    """Every workflow, job and routine sits in exactly one lane; no L0 or L1 job holds his hands or his eyes.
+    """Every workflow and job sits in exactly one lane; no L0 job holds his hands or his eyes.
 
     A workflow lanes.json declares but that does not exist yet passes (another
     item may still be building it); a workflow file lanes.json does not name fails.
+    A routines/ folder fails: there are no Claude routines (Krish, 29 Oct 2026).
     """
     root = Path(root)
     errors = []
+    if (root / 'routines').exists():
+        errors.append('routines/ exists: there are no Claude routines (Krish, 29 Oct 2026); '
+                      'a schedule is a GitHub Actions job')
     ids = [job['id'] for job in lanes['jobs']]
     everything = ids + [entry['name'] for entry in lanes['automations']]
     errors += ['named more than once: ' + n for n in sorted({n for n in everything if everything.count(n) > 1})]
@@ -504,7 +513,7 @@ def check_lanes(lanes, authority, root=ROOT):
     hands = {entry['id'] for entry in authority['krish_hands']}
     eyes = {a for job in lanes['jobs'] if job['lane'] == 'L2_eyes' for a in job['actions']}
     for job in lanes['jobs']:
-        if job['lane'] in ('L0_code', 'L1_judgement'):
+        if job['lane'] == 'L0_code':
             errors += [job['id'] + ' (' + job['lane'] + ') holds his hands: ' + a for a in job['actions'] if a in hands]
             errors += [job['id'] + ' (' + job['lane'] + ') holds his eyes: ' + a for a in job['actions'] if a in eyes]
         if job['lane'] == 'L3_hands':
@@ -518,7 +527,7 @@ def check_lanes(lanes, authority, root=ROOT):
         errors.append('lanes.json automations must name every automations.json entry once')
     files_named = [f for entry in lanes['automations'] for f in entry['jobs']]
     on_disk = sorted('jobs/' + p.name for p in (root / 'jobs').glob('*.md'))
-    errors += ['job file in no lane: ' + f for f in on_disk if f not in files_named]
+    errors += ['job file in no automation: ' + f for f in on_disk if f not in files_named]
     errors += ['job file named more than once: ' + f for f in sorted(set(files_named)) if files_named.count(f) > 1]
     errors += ['job file missing: ' + f for f in sorted(set(files_named)) if f not in on_disk]
     errors += [entry['name'] + ': successor ' + str(entry['successor']) + ' is not a lanes.json job'

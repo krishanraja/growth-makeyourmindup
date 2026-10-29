@@ -1,7 +1,8 @@
 name: handoff
-# Lane L0. The Claude routines (L1) save Buffer drafts and then wake this
-# workflow with a repository_dispatch. They never hold the Control Center
-# token, so this runner turns their handoff into a Control Center proposal
+# Lane L0. A session or PC automation that saved the drafts wakes this
+# workflow with a repository_dispatch (or Krish runs it by hand as a
+# workflow_dispatch). A session never holds the Control Center token, so
+# this runner turns the handoff into a Control Center proposal
 # Krish approves with one press: it reads each Buffer draft, rebuilds its
 # digest and proposes the go-live (or the week's ask), with a readback. It
 # never schedules, publishes, sends or spends; release.yml acts only after he

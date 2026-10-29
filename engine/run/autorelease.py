@@ -55,7 +55,7 @@ buffer_draft_id, buffer_channel_id, words, assets: [sha256, ...], meta,
 payload_sha256}, where payload_sha256 is release.slot_digest of the line.
 Krish may amend a line's words or due_at, or drop a line, or turn a line to
 krish_click; any other amendment holds. A line whose due_at is not a real
-date holds alone (`bad_due_at`). engine.run.handoff is the builder: it turns a routine's
+date holds alone (`bad_due_at`). engine.run.handoff is the builder: it turns a maker's
 dispatch into such a go-live, rebuilding each line with draft_line below.
 """
 import argparse

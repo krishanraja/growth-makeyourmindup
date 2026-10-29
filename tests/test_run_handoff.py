@@ -1,7 +1,8 @@
 """Lane L0 handoff against local stand-ins for Control Center and Buffer only.
 
-A routine's dispatch becomes a go-live (or a week ask) Krish approves with one
-press, and the go-live it proposes is exactly the one autorelease releases.
+A maker's dispatch (from a session or PC automation that saved the drafts) becomes a
+go-live (or a week ask) Krish approves with one press, and the go-live it proposes is
+exactly the one autorelease releases.
 No test reaches controlcenter.krishraja.com, api.buffer.com or any media host.
 Every word, id, digest and byte here is synthetic.
 """
@@ -50,9 +51,9 @@ METADATA = {'threads': {'__typename': 'ThreadsPostMetadata', 'type': 'post', 'th
                           'geolocation': None}}
 
 
-def routine_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=DUE, fmt='text', review=False,
-                 meta=None, channel_id=CH):
-    """One slot as a routine dispatches it: ids, codes, a time and the spec's digest."""
+def maker_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=DUE, fmt='text', review=False,
+               meta=None, channel_id=CH):
+    """One slot as a maker dispatches it: ids, codes, a time and the spec's digest."""
     digest = line_digest({'channel': channel, 'format': fmt, 'words': words, 'link_placement': None,
                           'due_at': due, 'publish_mode': mode, 'assets': list(assets), 'meta': meta,
                           'buffer_channel_id': channel_id})
@@ -61,7 +62,7 @@ def routine_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=D
 
 
 class Fixture:
-    """One approved standing plan, Buffer drafts for three slots and the routine's manifest."""
+    """One approved standing plan, Buffer drafts for three slots and the maker's manifest."""
 
     def __init__(self, cc, buf):
         self.cc, self.buf = cc, buf
@@ -71,9 +72,9 @@ class Fixture:
         self.draft(P_THREADS, 'threads', [self.image])
         self.draft(P_X, 'x')
         self.draft(P_LINKEDIN, 'linkedin')
-        self.slots = [self.routine('threads-1', 'threads', P_THREADS, [sha(IMAGE)]),
-                      self.routine('x-1', 'x', P_X),
-                      self.routine('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None)]
+        self.slots = [self.maker('threads-1', 'threads', P_THREADS, [sha(IMAGE)]),
+                      self.maker('x-1', 'x', P_X),
+                      self.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None)]
         self.plan = proposal(PLAN, 'Synthetic standing plan', 'Synthetic why', 'advice', 'strategy', 'reviewed',
                              exact_payload='Synthetic standing plan words.', stage='plan')
         report = staged_report(self.plan)
@@ -88,11 +89,11 @@ class Fixture:
                                    'channelService': SERVICE[channel], 'assets': list(assets),
                                    'metadata': metadata if metadata is not None else METADATA[channel]}
 
-    def routine(self, slot_id, channel, post_id, assets=(), words=None, **extra):
-        """The routine's slot for a saved draft: its digest covers the draft's meta and channel."""
+    def maker(self, slot_id, channel, post_id, assets=(), words=None, **extra):
+        """The maker's slot for a saved draft: its digest covers the draft's meta and channel."""
         meta = buffer_api.signed_meta(self.buf.posts[post_id], list(assets))
-        return routine_slot(slot_id, channel, post_id, words or self.buf.posts[post_id]['text'], assets,
-                            meta=meta, **extra)
+        return maker_slot(slot_id, channel, post_id, words or self.buf.posts[post_id]['text'], assets,
+                          meta=meta, **extra)
 
     def payload(self, **extra):
         return dict({'run_id': RUN, 'slots': self.slots}, **extra)
@@ -195,7 +196,7 @@ class HandoffTests(unittest.TestCase):
         self.assertNotIn('x-1', parse_manifest(self.proposals()[0]['exact_payload']))
 
     def test_linkedin_always_goes_in_as_krish_click(self):
-        self.fix.slots[2] = self.fix.routine('linkedin-1', 'linkedin', P_LINKEDIN, mode='engine')
+        self.fix.slots[2] = self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='engine')
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['slots'], {'linkedin_to_krish_click': 1, 'proposed': 3})
@@ -209,7 +210,7 @@ class HandoffTests(unittest.TestCase):
         for index in range(30):
             post_id = 'ffffffffffffffffffffff' + '%02d' % index
             self.fix.draft(post_id, 'x', words=long_words)
-            slots.append(self.fix.routine('x-%02d' % index, 'x', post_id))
+            slots.append(self.fix.maker('x-%02d' % index, 'x', post_id))
         summary, code = self.run_handoff({'run_id': RUN, 'slots': slots})
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['slots'], {'proposed': 30})
@@ -227,7 +228,7 @@ class HandoffTests(unittest.TestCase):
 
     def test_a_new_kind_of_post_is_its_own_go_live(self):
         self.fix.draft(P_CAROUSEL, 'instagram', [self.fix.image])
-        self.fix.slots.append(self.fix.routine('ig-1', 'instagram', P_CAROUSEL, [sha(IMAGE)], fmt='carousel'))
+        self.fix.slots.append(self.fix.maker('ig-1', 'instagram', P_CAROUSEL, [sha(IMAGE)], fmt='carousel'))
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['proposals'], {'go_live': 2})
@@ -247,7 +248,7 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(summary['proposals'], {'go_live': 3})
         self.assertTrue(all('you see every batch' not in p['why'] for p in self.proposals()))
 
-    def test_routine_per_item_review_is_honoured(self):
+    def test_per_item_review_from_the_dispatch_is_honoured(self):
         self.fix.slots[1]['per_item_review'] = True
         summary, _ = self.run_handoff()
         self.assertEqual(summary['proposals'], {'go_live': 2})
@@ -345,7 +346,7 @@ class HandoffTests(unittest.TestCase):
                                             'userTags': tags or [{'handle': 'synthetic.someone', 'x': 0.5, 'y': 0.25}]})
         self.fix.draft(P_CAROUSEL, 'instagram', [image], metadata=dict(METADATA['instagram'], type='post',
                                                                         firstComment=first_comment))
-        self.fix.slots.append(self.fix.routine('ig-1', 'instagram', P_CAROUSEL, [sha(IMAGE)]))
+        self.fix.slots.append(self.fix.maker('ig-1', 'instagram', P_CAROUSEL, [sha(IMAGE)]))
 
     def test_the_why_names_what_goes_out_with_the_words(self):
         self.instagram_draft()
@@ -358,7 +359,7 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(line['meta']['metadata']['instagram']['firstComment'], 'Synthetic first comment for the post.')
         self.assertLessEqual(len(item['why']), handoff.WHY_CAP)
 
-    def test_a_metadata_change_after_the_routine_holds(self):
+    def test_a_metadata_change_after_the_dispatch_holds(self):
         self.instagram_draft()
         self.buf.posts[P_CAROUSEL]['metadata']['firstComment'] = 'Synthetic comment changed after lint.'
         summary, _ = self.run_handoff()
@@ -372,7 +373,7 @@ class HandoffTests(unittest.TestCase):
         self.assertTrue(all(len(p['why']) <= handoff.WHY_CAP for p in self.proposals()))
 
     def test_the_spec_digest_equals_the_handoff_digest(self):
-        # The routine fills meta and the channel id from its own readback (run drafts); the
+        # The maker fills meta and the channel id from its own readback (run drafts); the
         # runner rebuilds the same line from the draft and must reach the same digest.
         from engine.run import spec as specmod
         self.instagram_draft()
@@ -404,7 +405,7 @@ class HandoffTests(unittest.TestCase):
     # S5 and the run window -----------------------------------------------------------------
 
     def test_an_impossible_due_date_holds_that_slot_in_the_handoff(self):
-        self.fix.slots[1] = self.fix.routine('x-1', 'x', P_X, due='2026-02-30T14:00:00Z')
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, due='2026-02-30T14:00:00Z')
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['holds'], {'bad_due_at': 1})
@@ -412,7 +413,7 @@ class HandoffTests(unittest.TestCase):
 
     def test_a_due_outside_the_run_window_holds(self):
         # The run 2026-11-03:piece ends at New York midnight on 11 November.
-        self.fix.slots[1] = self.fix.routine('x-1', 'x', P_X, due='2026-11-20T14:00:00Z')
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, due='2026-11-20T14:00:00Z')
         summary, _ = self.run_handoff()
         self.assertEqual(summary['holds'], {'due_outside_run_window': 1})
 

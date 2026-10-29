@@ -52,17 +52,19 @@ class CalendarTests(unittest.TestCase):
             if r['class'] in ('carousel', 'meme', 'scorecard', 'poll'):
                 self.assertEqual(r['lane'], 'L2_eyes', r['id'])
         self.assertEqual({row(calendar, i)['lane'] for i in ('note-quote', 'receipt-x', 'short-tiktok',
-                                                             'story-hook-instagram')}, {'L1_judgement'})
+                                                             'story-hook-instagram')}, {'L0_code'})
         self.assertEqual(row(calendar, 'carousel-instagram')['format'], 'carousel')
         for channel in ('instagram', 'facebook'):
             self.assertEqual(row(calendar, 'carousel-' + channel)['days'], [0, 0])
 
     def test_a_wrong_lane_is_refused(self):
-        for row_id, lane, expected in (('linkedin-mo', 'L1_judgement', {'lane', 'linkedin_not_l3', 'draft_timing',
-                                                                        'new_format_not_eyes'}),
-                                       ('carousel-instagram', 'L1_judgement', {'lane', 'new_format_not_eyes'}),
-                                       ('meme-tiktok-tu', 'L1_judgement', {'lane', 'new_format_not_eyes'}),
-                                       ('receipt-x', 'L2_eyes', {'lane'})):
+        for row_id, lane, expected in (('linkedin-mo', 'L0_code', {'lane', 'linkedin_not_l3', 'draft_timing',
+                                                                   'new_format_not_eyes'}),
+                                       ('carousel-instagram', 'L0_code', {'lane', 'new_format_not_eyes'}),
+                                       ('meme-tiktok-tu', 'L0_code', {'lane', 'new_format_not_eyes'}),
+                                       ('receipt-x', 'L2_eyes', {'lane'}),
+                                       # No L1: there are no Claude routines (Krish, 29 Oct 2026).
+                                       ('receipt-x', 'L1_judgement', {'schema'})):
             calendar = v1()
             row(calendar, row_id)['lane'] = lane
             self.assertEqual(codes(calendar), expected, row_id)

@@ -1,7 +1,7 @@
 # Lanes: what runs alone, what needs Krish
 
-Every piece of work in this engine sits in one of four lanes. The lanes
-say who has to do something before it happens. The machine-checked list
+Every piece of work in this engine sits in one of three lanes: L0, L2
+and L3. The lanes say who has to do something before it happens. The machine-checked list
 is `lanes.json`; this page is the plain summary, and where the two differ,
 `lanes.json` wins.
 
@@ -21,7 +21,7 @@ Nobody has to be awake or online for these.
 | The key check (`keys.yml`): checks that both keys still work. A refused or missing key fails the run, so GitHub emails Krish | every day 06:50 | 06:50 |
 | Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). A post still scheduled after a No fails the run, so GitHub emails Krish. Never LinkedIn | every 30 minutes | every 30 minutes |
 | Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
-| The handoff (`handoff.yml`): turns a routine's Buffer drafts or week packet into one ask on Krish's list, after checking each draft against its hash | when a routine wakes it | when a routine wakes it |
+| The handoff (`handoff.yml`): turns the Buffer drafts or week packet a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash | when that maker wakes it | when that maker wakes it |
 | The test suite (`check.yml`) | on every push and pull request | on every push and pull request |
 
 Only this lane holds the Control Center engine key. It is a GitHub
@@ -32,30 +32,45 @@ automation on Krish's PC reads the Substack Growth sources page in his
 browser, and `growth.py run northstar` turns that capture into the line.
 GitHub Actions never reads Substack.
 
-## L1: runs alone, as Claude cloud routines
+## There are no Claude routines (Krish, 29 Oct 2026)
 
-Each routine opens a fresh session, follows one file in `routines/` and
-ends. It makes drafts and proposals only. It never publishes, schedules,
-sends, deletes or spends.
+Krish: "I want zero Claude routines. No Claude schedules of any kind in
+this architecture". There is no L1 lane. A new schedule is a GitHub
+Actions job in L0, never a Claude routine. The existing Codex automations on
+Krish's PC (below) are kept as they are.
 
-| Routine | What it does | When (UTC) | When (London, winter) |
-|---|---|---|---|
-| `make` | builds today's posts in Canva and saves them as Buffer drafts | every day 06:00 | 06:00 |
-| `plan` | builds next week's packet for Krish's Sunday sign-off | Sundays 05:30 | 05:30 |
-| `watch` | builds Krish's quick ideas from Buffer Ideas, starts `make` for newly approved pieces, reports what is held | every day 07:30, 12:30, 17:30 | 07:30, 12:30, 17:30 |
+## Who makes
 
-Jobs on Krish's PC also run on their own, but only while his PC is on:
-the nine automations in `automations.json` (their times are in `README.md`;
-the channel audit is Saturday 12:00 London) and the 09:00 London daily
-heartbeat. They are kept until W46; `lanes.json` names the routine or job
-that takes over each one, where there is one.
+Making is not a lane of its own. Canva assets, words, Buffer drafts and the
+week's packet are made by interactive sessions and by the existing jobs on
+Krish's PC, under the same walls:
+
+- Making leaves drafts and proposals only: it never publishes, schedules,
+  sends, deletes or spends. A Buffer post is saved with `saveToDraft: true`
+  and no due time; only `release.yml` schedules, and only what Krish
+  approved. The weekly audit's scoped repairs are in `AGENTS.md`.
+- No session holds the Control Center engine key. A maker reads Control
+  Center through its connector, and calls no Control Center write tool but
+  `report_to_taste_engine` (`docs/TASTE.md`). Every taste read follows
+  `docs/TASTE.md`.
+- No figures, words or ids in this public repository.
+- To propose what it saved, a maker wakes the handoff with a
+  `repository_dispatch` (`growth-go-live-manifest`, `growth-week-packet` or
+  `growth-make-piece`; the payloads are in `engine/run/handoff.py`). The
+  runner checks every draft against its hash before Krish sees it.
+
+The jobs on Krish's PC run only while his PC is on: the nine automations in
+`automations.json` (their times are in `README.md`; the channel audit is
+Saturday 12:00 London) and the 09:00 London daily heartbeat. They are kept
+until W46; `lanes.json` names the L0 job that takes over each one, where
+there is one.
 
 ## L2: waits for Krish's eyes (one press in Control Center)
 
 These wait on his one list in Control Center. Each is one press: yes, change
 it first, or no. They wait until he opens the list.
 
-- **The Sunday sign-off.** The week's packet from `plan`.
+- **The Sunday sign-off.** The week's packet, from whoever plans the week.
 - **A piece's publish board.** The article, its pictures and its video
   recordings. Once he approves the board, the smaller posts made from that
   piece (Substack Notes, Threads, X, Instagram, Facebook, YouTube, TikTok,
@@ -69,11 +84,11 @@ it first, or no. They wait until he opens the list.
 
 ## L3: waits for Krish's hands
 
-Only he can do these. Nothing in L0, L1 or L2 does them for him.
+Only he can do these. Nothing in L0 or L2, and no session, does them for him.
 
 - **LinkedIn.** The engine leaves LinkedIn posts as drafts in Buffer. He
   presses publish himself.
 - **The Buffer plan.** Buying, keeping or stopping a paid Buffer plan is
   spending, so it is his.
-- **One-time set-up.** Keys and routines, step by step in
+- **One-time set-up.** Keys, step by step in
   [SETUP-ONCE.md](SETUP-ONCE.md).

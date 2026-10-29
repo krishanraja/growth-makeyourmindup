@@ -1,6 +1,7 @@
 """Krish's 27 Oct 2026 rulings as data: invariants/authority.json and lanes.json (R92 to R94).
 
-Synthetic fixtures only. Every autonomous action must be provably inside his authority.
+Synthetic fixtures only. Every autonomous action must be provably inside his authority. The lanes are
+L0 code, L2 his eyes and L3 his hands: there are no Claude routines (Krish, 29 Oct 2026).
 """
 import copy
 import datetime
@@ -80,7 +81,7 @@ class AuthorityTests(unittest.TestCase):
 
     def test_derivatives_wait_for_board_and_preview_then_post_alone(self):
         data = load_authority()
-        self.assertEqual(posting_lane(data, 'receipt-card', 'x', 'receipt-card'), 'L1_judgement')
+        self.assertEqual(posting_lane(data, 'receipt-card', 'x', 'receipt-card'), 'L0_code')  # release.yml, alone
         self.assertTrue(needs_preview(data, '2026-11-29'))
         self.assertFalse(needs_preview(data, datetime.date(2026, 11, 30)))
         cases = [(dict(day='2026-11-10'), (False, 'publish_board_not_approved')),
@@ -138,7 +139,7 @@ class LanesTests(unittest.TestCase):
     def errors(self, lanes=None):
         return check_lanes(lanes or self.lanes, self.authority, self.root)
 
-    def test_every_workflow_job_and_routine_is_in_one_lane(self):
+    def test_every_workflow_and_job_is_in_one_lane(self):
         self.assertEqual(check_lanes(self.lanes, self.authority), [])
         self.assertEqual(self.errors(), [])
         by_id = {job['id']: job for job in self.lanes['jobs']}
@@ -154,7 +155,21 @@ class LanesTests(unittest.TestCase):
         for entry in config:
             self.assertEqual(mapped[entry['name']]['status'], 'kept-until-W46')
             self.assertIn(entry['job'], mapped[entry['name']]['jobs'])
-        self.assertEqual(by_id['watch']['trigger'], 'three times a day')
+        self.assertEqual(tuple(self.lanes['lanes']), ('L0_code', 'L2_eyes', 'L3_hands'))
+        self.assertTrue(all(lane['model'] is False for lane in self.lanes['lanes'].values()))
+
+    def test_there_are_no_claude_routines(self):
+        # Krish, 29 Oct 2026: "I want zero Claude routines. No Claude schedules of any kind in this architecture".
+        self.assertFalse((ROOT / 'routines').exists())
+        by_id = {job['id']: job for job in self.lanes['jobs']}
+        for name in ('make', 'plan', 'watch'):
+            self.assertNotIn(name, by_id)
+        self.assertEqual({job['workflow'] for job in self.lanes['jobs'] if job['lane'] == 'L0_code'},
+                         {p.name for p in (ROOT / '.github' / 'workflows').glob('*.yml')})
+        self.assertTrue(all(job['workflow'] is None for job in self.lanes['jobs'] if job['lane'] != 'L0_code'))
+        (self.root / 'routines').mkdir()
+        (self.root / 'routines' / 'make.md').write_text('# synthetic\n', encoding='utf-8')
+        self.assertTrue(any(e.startswith('routines/ exists') for e in self.errors()))
 
     def test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes(self):
         folder = self.root / '.github' / 'workflows'
@@ -169,7 +184,7 @@ class LanesTests(unittest.TestCase):
 
     def test_every_job_file_and_automation_is_named_exactly_once(self):
         (self.root / 'jobs' / 'brand-new.md').write_text('# synthetic\n', encoding='utf-8')
-        self.assertIn('job file in no lane: jobs/brand-new.md', self.errors())
+        self.assertIn('job file in no automation: jobs/brand-new.md', self.errors())
         lanes = copy.deepcopy(self.lanes)
         lanes['automations'][0]['jobs'].append('jobs/radar.md')
         self.assertIn('job file named more than once: jobs/radar.md', self.errors(lanes))
@@ -177,18 +192,18 @@ class LanesTests(unittest.TestCase):
         lanes['automations'] = lanes['automations'][1:]
         self.assertIn('lanes.json automations must name every automations.json entry once', self.errors(lanes))
         lanes = copy.deepcopy(self.lanes)
-        lanes['jobs'].append(dict(next(j for j in lanes['jobs'] if j['id'] == 'make')))
-        self.assertIn('named more than once: make', self.errors(lanes))
+        lanes['jobs'].append(dict(next(j for j in lanes['jobs'] if j['id'] == 'publish-board')))
+        self.assertIn('named more than once: publish-board', self.errors(lanes))
         lanes = copy.deepcopy(self.lanes)
-        lanes['jobs'] = [j for j in lanes['jobs'] if j['id'] != 'watch']
-        self.assertIn('missing job watch', self.errors(lanes))
+        lanes['jobs'] = [j for j in lanes['jobs'] if j['id'] != 'handoff']
+        self.assertIn('missing job handoff', self.errors(lanes))
 
-    def test_no_l0_or_l1_job_holds_his_hands_or_his_eyes(self):
-        for job_id, action, message in (('make', 'linkedin-posting', 'holds his hands'),
+    def test_no_l0_job_holds_his_hands_or_his_eyes(self):
+        for job_id, action, message in (('handoff', 'linkedin-posting', 'holds his hands'),
                                         ('release', 'plan-purchase', 'holds his hands'),
-                                        ('watch', 'account-connection', 'holds his hands'),
-                                        ('plan', 'sign-week', 'holds his eyes'),
-                                        ('make', 'approve-new-format-item', 'holds his eyes')):
+                                        ('measure', 'account-connection', 'holds his hands'),
+                                        ('control-center', 'sign-week', 'holds his eyes'),
+                                        ('handoff', 'approve-new-format-item', 'holds his eyes')):
             lanes = copy.deepcopy(self.lanes)
             next(j for j in lanes['jobs'] if j['id'] == job_id)['actions'].append(action)
             self.assertTrue(any(message in e and e.startswith(job_id) for e in self.errors(lanes)), action)
@@ -208,16 +223,20 @@ class LanesTests(unittest.TestCase):
                          encoding='utf-8')
         self.assertEqual(self.errors(), ['check.yml reads CONTROL_CENTER_ENGINE_TOKEN but job check does not declare it'])
         lanes = copy.deepcopy(self.lanes)
-        next(j for j in lanes['jobs'] if j['id'] == 'make')['secrets'] = ['CONTROL_CENTER_ENGINE_TOKEN']
-        self.assertIn('make: only L0 code on the GitHub runner holds a key', check_lanes(lanes, self.authority))
+        next(j for j in lanes['jobs'] if j['id'] == 'publish-board')['secrets'] = ['CONTROL_CENTER_ENGINE_TOKEN']
+        self.assertIn('publish-board: only L0 code on the GitHub runner holds a key',
+                      check_lanes(lanes, self.authority))
 
     def test_lanes_register_refuses_a_bad_shape(self):
         good = json.loads((ROOT / 'lanes.json').read_text(encoding='utf-8'))
         changes = ((lambda d: d['jobs'][0].update(workflow=None), 'names its workflow'),
-                   (lambda d: d['jobs'][6].update(workflow='make.yml'), 'names its workflow'),
+                   (lambda d: d['jobs'][6].update(workflow='publish-board.yml'), 'names its workflow'),
                    (lambda d: d['jobs'][0].update(never=[]), 'never do'),
                    (lambda d: d['jobs'][0].update(lane='L5_magic'), 'lane is one of'),
-                   (lambda d: d['lanes']['L0_code'].update(model=True), 'only L1 runs a model'),
+                   (lambda d: d['lanes']['L0_code'].update(model=True), 'no lane runs a model'),
+                   (lambda d: d['lanes'].update(L1_judgement={'who': 'Claude routines', 'runs_on': 'a schedule',
+                                                              'model': True}), 'lanes are'),
+                   (lambda d: d['automations'][0].update(lane='L1_judgement'), 'needs exactly'),
                    (lambda d: d['automations'][0].update(status='retired'), 'kept-until-W46'),
                    (lambda d: d.update(extra=1), 'needs exactly'))
         with tempfile.TemporaryDirectory() as folder:

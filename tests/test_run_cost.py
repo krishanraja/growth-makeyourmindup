@@ -116,7 +116,7 @@ class CostBaselineTests(unittest.TestCase):
         self.assertEqual(claude['models'], ['fixture-claude-model', 'fixture-subagent-model'])
         self.assertEqual((claude['engine_minutes'], claude['wait_for_human_minutes']), (3.0, 10.0))
         self.assertEqual(claude['tool_minutes'], 1.0)  # 30 seconds in the parent, 30 in the subagent
-        self.assertEqual(claude['unknown_lines'], 0)  # attachment lines are routine, not drift
+        self.assertEqual(claude['unknown_lines'], 0)  # attachment lines are ordinary, not drift
 
     def test_codex_repeats_and_aborted_turns_are_not_misread(self):
         self.place('codex-aborted.jsonl')
@@ -174,16 +174,16 @@ def claude_lines(prompt, start, cwd='/home/fixture/elsewhere', model='fixture-cl
 
 class JobKindTests(unittest.TestCase):
     def test_arbitrary_first_prompt_is_interactive_never_the_text(self):
+        # There are no Claude routines (Krish, 29 Oct 2026): their old standing text is just a prompt now.
         for text in ('FIXTURE-SECRET please look at my private notes', 'routines/make.md',
                      'Clone krishanraja/growth-makeyourmindup (main) and follow routines/../x.md',
                      'Clone krishanraja/growth-makeyourmindup (main) and follow routines/make.md, then post it',
+                     'Clone krishanraja/growth-makeyourmindup (main) and follow routines/make.md',
+                     ' Clone krishanraja/growth-makeyourmindup (main) and follow routines/watch.md.\n',
                      'run jobs/numbers.md', '', None):
             self.assertEqual(job_kind(text), 'interactive', text)
         self.assertEqual(job_kind('Run jobs/numbers.md as AGENTS.md says. FIXTURE-SECRET'), 'numbers')
-        self.assertEqual(job_kind('Clone krishanraja/growth-makeyourmindup (main) and follow routines/make.md'),
-                         'routine-make')
-        self.assertEqual(job_kind(' Clone krishanraja/growth-makeyourmindup (main) and follow routines/watch.md.\n'),
-                         'routine-watch')
+        self.assertEqual(job_kind('Run jobs/daily-pack.md'), 'daily-pack')
 
     def test_session_with_arbitrary_prompt_reports_interactive_in_baseline(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -207,15 +207,15 @@ class CostSelfTests(unittest.TestCase):
         self.claude = Path(self.tmp.name) / 'projects'
         project = self.claude / 'fixture-cloud-project'
         project.mkdir(parents=True)
-        routine = 'Clone krishanraja/growth-makeyourmindup (main) and follow routines/make.md'
+        job = 'Run jobs/daily-pack.md as AGENTS.md says.'
         (project / 'older.jsonl').write_text(claude_lines('FIXTURE-SECRET-OLDER', '2026-10-26T17:30'), encoding='utf-8')
-        (project / 'routine.jsonl').write_text(claude_lines(routine, '2026-10-27T06:00'), encoding='utf-8')
+        (project / 'job.jsonl').write_text(claude_lines(job, '2026-10-27T06:00'), encoding='utf-8')
         (project / 'earlier-today.jsonl').write_text(claude_lines('FIXTURE-SECRET-EARLIER', '2026-10-27T05:30'),
                                                      encoding='utf-8')
 
     def test_latest_session_only(self):
         row = self_meter(str(self.claude), '2026-10-27')
-        self.assertEqual(row['job_kind'], 'routine-make')
+        self.assertEqual(row['job_kind'], 'daily-pack')
         self.assertEqual(row['started_at'], '2026-10-27T06:00:00+00:00')  # a UTC date, so 06:00 UTC counts
         self.assertEqual(row['model_calls'], 1)
         self.assertEqual(row['tokens'], {'input': 10, 'cache_read_input': 200, 'output': 30, 'total': 240})
@@ -227,15 +227,15 @@ class CostSelfTests(unittest.TestCase):
         self.assertEqual(code, 0)
         line = out.getvalue()
         self.assertEqual(line.count('\n'), 1)
-        self.assertTrue(line.startswith('cost self: tool claude; job routine-make; started 2026-10-27T06:00:00+00:00;'))
+        self.assertTrue(line.startswith('cost self: tool claude; job daily-pack; started 2026-10-27T06:00:00+00:00;'))
         self.assertIn('calls 1', line)
         self.assertIn('total 240', line)
-        for leak in ('FIXTURE-SECRET', 'Clone', 'krishanraja', self.tmp.name, 'fixture-cloud-project', 'msg-',
-                     '/home/'):
+        for leak in ('FIXTURE-SECRET', 'AGENTS.md', 'jobs/', 'krishanraja', self.tmp.name, 'fixture-cloud-project',
+                     'msg-', '/home/'):
             self.assertNotIn(leak, line)
 
     def test_since_bounds_and_unknowns(self):
-        self.assertEqual(self_meter(str(self.claude), '2026-10-27T05:45:00Z')['job_kind'], 'routine-make')
+        self.assertEqual(self_meter(str(self.claude), '2026-10-27T05:45:00Z')['job_kind'], 'daily-pack')
         self.assertIsNone(self_meter(str(self.claude), '2026-10-28'))
         self.assertIn('unknown, not zero', self_line(None))
         self.assertIsNone(self_meter(str(self.claude / 'missing'), '2026-10-27'))
@@ -255,7 +255,7 @@ class CostSelfTests(unittest.TestCase):
         shutil.copyfile(FIXTURES / 'codex-numbers.jsonl', folder / 'rollout-2026-10-27-x.jsonl')
         self.assertEqual(self_meter(str(self.claude), '2026-10-20')['tool'], 'claude')
         newest = self_meter(str(self.claude), '2026-10-01', codex_dir=str(codex))
-        self.assertEqual(newest['job_kind'], 'routine-make')  # the codex fixture is older
+        self.assertEqual(newest['job_kind'], 'daily-pack')  # the codex fixture is older
         only = self_meter(str(self.claude / 'missing'), '2026-10-01', codex_dir=str(codex))
         self.assertEqual((only['tool'], only['job_kind']), ('codex', 'numbers'))
 

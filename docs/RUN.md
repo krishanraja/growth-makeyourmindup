@@ -1,6 +1,6 @@
 # Run sessions
 
-The standing doc a run session reads first. `growth.py run pack` puts it at the
+The standing doc a run session reads first. `growth.py run pack` puts it on
 top of every session pack. The plan behind it is
 `docs/plans/2026-10-27-engine-architecture.md` (Krish, 27 Oct 2026).
 
@@ -18,19 +18,20 @@ A session does one job, then ends at a gate packet:
   `decision.json` is written only from that readback, never by hand. Every
   30 minutes it schedules a signed draft only 5 to 90 minutes before its time,
   so a No before then stops it; one still scheduled after a No fails the run.
-  A session never schedules a Buffer post and never uses `--deliver`;
-  routines save drafts only. Scheduled is never live.
+  A session never schedules a Buffer post or uses `--deliver`; it saves
+  drafts. Scheduled is never live.
 - **Measure:** L0 `measure.yml` gives verdicts three times a day. A session
   reads back "sent" and the native URL and checks the express intake.
 - **Express:** one approved idea into the waiting go-live, or its own.
 
-No mid-turn questions: every question becomes a gate packet and the session
+No mid-turn questions: every question becomes a gate packet; the session
 ends. A run session commits nothing to `engine/`.
 
 ## Lanes
 
-L0 (GitHub Actions) and L1 (`routines/`) run alone; L2 is one press in
-Control Center; L3 is Krish's hands (`docs/LANES.md`, `lanes.json`).
+L0 (GitHub Actions) runs alone; L2 is one press in Control Center; L3 is
+Krish's hands (`docs/LANES.md`). No Claude routines (Krish, 29 Oct);
+makers follow `docs/TASTE.md`.
 
 ## Commands
 

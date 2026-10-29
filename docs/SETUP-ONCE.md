@@ -6,11 +6,11 @@ each key goes only where its step says.
 
 ## 1. Buffer API key, saved as a GitHub secret
 
-This lets the GitHub runner read the Buffer drafts the routines make, check
-them against what you approved, and put only those exact posts in Buffer's
-schedule. It never publishes at once, never deletes and never touches
-LinkedIn. A check at 06:50 UTC each day fails, and GitHub emails you, if
-Buffer refuses the key.
+This lets the GitHub runner read the Buffer drafts a session or PC
+automation makes, check them against what you approved, and put only those
+exact posts in Buffer's schedule. It never publishes at once, never deletes
+and never touches LinkedIn. A check at 06:50 UTC each day fails, and GitHub
+emails you, if Buffer refuses the key.
 
 1. Open Buffer (https://publish.buffer.com) and sign in.
 2. Click your profile picture (top right) to open the profile menu.
@@ -42,29 +42,14 @@ engine's `gen1_` key, `growth.py doctor` warns and never uses it. Remove it:
 
 Do not touch the GitHub secret of the same name: the runner needs it.
 
-## 3. If needed: create the three routines
+## 3. Nothing to create for making
 
-Skip this if the routines `make`, `plan` and `watch` already exist. Each one
-runs in a fresh cloud session and follows one file in `routines/`.
+There are no Claude routines to create (Krish, 29 Oct 2026: "I want zero
+Claude routines. No Claude schedules of any kind in this architecture").
+A new schedule is a GitHub Actions workflow; the ones this engine needs are
+already in this repository. Making is done by sessions and the existing
+automations on your PC.
 
-1. On claude.ai, open **Code**, then **Routines**, then **New routine**.
-2. Repository: `krishanraja/growth-makeyourmindup`, branch `main`.
-3. Connectors: turn on **Canva**, **Buffer** and **Control Center**. Leave
-   every other connector off.
-4. Text and schedule (times in UTC; if the page asks for a time zone, pick
-   UTC):
-
-| Name | Text (paste exactly) | Schedule | Cron |
-|---|---|---|---|
-| Growth: make | `Clone krishanraja/growth-makeyourmindup (main) and follow routines/make.md` | every day 06:00 UTC | `0 6 * * *` |
-| Growth: plan | `Clone krishanraja/growth-makeyourmindup (main) and follow routines/plan.md` | Sundays 05:30 UTC | `30 5 * * 0` |
-| Growth: watch | `Clone krishanraja/growth-makeyourmindup (main) and follow routines/watch.md` | every day 07:30, 12:30 and 17:30 UTC | `30 7,12,17 * * *` |
-
-5. Save each one. If a routine can take only one time a day, make three
-   `watch` routines, one per time, with the same text.
-6. Read back: the routines page lists all three (or five, with three
-   `watch`) with their next run. Each text must match the table exactly,
-   because the cost meter knows a routine only by that text.
-
-A routine never publishes, schedules, sends, deletes or spends. Its walls
-are written at the top of its file in `routines/`.
+If you created a "Growth: make", "Growth: plan" or "Growth: watch" routine
+on claude.ai before 29 October, delete it: open **Code**, then
+**Routines**, open each one and delete it.

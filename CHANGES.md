@@ -1,5 +1,10 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29: No Claude routines: the make, plan and watch routines are removed
+  under Krish's 29 Oct ruling ('I want zero Claude routines. No Claude
+  schedules of any kind in this architecture'); GitHub Actions jobs remain the
+  only schedules; making is done by sessions and the PC automations under the
+  same walls; the taste procedure moves to docs/TASTE.md.
 - 2026-10-27 (late): the engine reads Inspiration House, robustly, both ways.
   Krish: "Make sure you're wiring into the Inspiration House repository in a
   way that is incredibly robust because that's where I put in videos or

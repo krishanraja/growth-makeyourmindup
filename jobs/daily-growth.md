@@ -145,7 +145,7 @@ format; it is not responsible for finding Growth's opportunities for it.
    `python growth.py run cost baseline --since 2026-10-01 --out ..\growth-cost-DATE\lists\cost\baseline.json`
    It holds aggregates only: tokens, calls, minutes and job kinds, never
    prompt text or paths. Open it and confirm every `job_kind` is a job
-   name, a `routine-` name or `interactive`; anything else, stop and
+   name or `interactive`; anything else, stop and
    report. Then, in `..\growth-cost-DATE`: `git add lists/cost/baseline.json`,
    `git commit -m "Cost baseline since 2026-10-01 (aggregates only)"`,
    `git push -u origin cost-baseline-DATE` and

@@ -1,15 +1,16 @@
-"""Lane L0, handoff: turn a routine's dispatch into one press for Krish.
+"""Lane L0, handoff: turn a maker's dispatch into one press for Krish.
 
 `growth.py run handoff --event TYPE --payload FILE [--deliver]` runs in
-GitHub Actions (.github/workflows/handoff.yml). The Claude routines (L1) save
-Buffer drafts and then send a `repository_dispatch`; they never hold the
-Control Center token, so this runner turns their handoff into a Control
-Center proposal. It never schedules, publishes, sends or spends: release is
+GitHub Actions (.github/workflows/handoff.yml). A session or PC automation
+that saved the drafts sends a `repository_dispatch` (or Krish runs it by hand
+as a `workflow_dispatch`); a session never holds the Control Center token, so
+this runner turns the handoff into a Control Center proposal. There are no
+Claude routines (Krish, 29 Oct 2026). It never schedules, publishes, sends or spends: release is
 engine.run.autorelease's, and only after Krish approves.
 
 Three event types, each with a closed client_payload (unknown keys refused):
 
-- `growth-go-live-manifest` (routines/make.md step 8; routines/watch.md with
+- `growth-go-live-manifest` (a day's or a piece's drafts; an express idea with
   "express": true): {"run_id", "slots": [{"slot", "channel",
   "buffer_draft_id", "payload_sha256", "per_item_review", "format", "due_at",
   "link_placement", "publish_mode"}], "express"?}. Ids, codes, times and
@@ -18,7 +19,7 @@ Three event types, each with a closed client_payload (unknown keys refused):
   `wrong_account`) and the slot digest is rebuilt from it exactly as
   autorelease rebuilds it (autorelease.draft_line, which covers the draft's
   Buffer channel id and its meta: everything the edit sends besides the
-  words and the time). A slot whose rebuilt digest is not the routine's
+  words and the time). A slot whose rebuilt digest is not the dispatch's
   payload_sha256 is held (`handoff_digest_mismatch`), as is any slot
   autorelease could not carry, a due_at that is no real date (`bad_due_at`)
   and one outside the run window its run_id names (`due_outside_run_window`).
@@ -34,12 +35,12 @@ Three event types, each with a closed client_payload (unknown keys refused):
   format is a new kind (carousel, meme, opinion, reactive, or the list in
   invariants/authority.json), is its own go-live (`:item-1`, ...), so he
   sees it alone.
-- `growth-week-packet` (routines/plan.md step 6): {"run_id", "week",
+- `growth-week-packet` (whoever plans the week): {"run_id", "week",
   "spec_sha256", "slots": [{"slot", "channel", "payload_sha256"}]}. Proposed
   as a `check_in` on the open plan ("On track?"), or as a `plan` when no
   plan is open. One proposal per packet: one ask at a time.
-- `growth-make-piece` (routines/watch.md step 4): {"piece_id"}. Nothing to
-  propose: it is recorded and counted.
+- `growth-make-piece` (a publish board Krish approved): {"piece_id"}. Nothing
+  to propose: it is recorded and counted.
 
 Without --deliver it is a dry run: it reads Control Center and Buffer, sends
 no report, and writes the would-be reports to .scratch/cc/handoff-<type>.json.
@@ -227,7 +228,7 @@ class NotDerivative:
 
 
 def needs_own_review(slot, formats):
-    """per_item_review from the routine, or a format of a new kind: his eyes on this one alone."""
+    """per_item_review from the dispatch, or a format of a new kind: his eyes on this one alone."""
     fmt = slot['format']
     if isinstance(formats, NotDerivative):
         return bool(slot['per_item_review']) or fmt in formats
@@ -530,7 +531,7 @@ def packet_proposal(packet, plan):
         name = NAMES.get(slot['channel'], slot['channel'])
         tally[name] = tally.get(name, 0) + 1
     spread = ', '.join(name + ' ' + str(n) for name, n in tally.items())
-    lines = ['Week ' + week + ' (' + packet['run_id'] + '), the packet the plan routine built for next week.',
+    lines = ['Week ' + week + ' (' + packet['run_id'] + '), the packet built for next week.',
              _posts(len(slots)) + ' planned: ' + spread + '.',
              'Spec digest: ' + packet['spec_sha256'][:12] + '.',
              'Every post still comes to you as a go-live before anything goes out.']
@@ -620,7 +621,7 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             raise PayloadRejected('unknown_event')
         VALIDATORS[event](payload)
         if event == MAKE_PIECE:
-            # The routine itself starts make; the runner only records that it was asked.
+            # The maker that sent it does the making; the runner only records that it was asked.
             summary['recorded'] = 1
             write_json(path, {'event': event, 'deliver': bool(deliver), 'recorded': 1, 'reports': []})
             return _finish(summary, slots)
@@ -644,7 +645,7 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                     slots.hold(reason)
             items = golive_proposals(payload, lines, new_formats(root), plan and plan['proposal_id'], now, root,
                                      slots) if lines else []
-            activity = [{'line': 'Rebuilt ' + _posts(len(lines)) + " from their Buffer drafts; each matched the routine's digest"},
+            activity = [{'line': 'Rebuilt ' + _posts(len(lines)) + " from their Buffer drafts; each matched the dispatch's digest"},
                         {'line': 'Posted, sent, published and spent nothing'}]
             reports = reports_for(items, slots, now, root, activity) if items else \
                 [held_report(event, payload['run_id'], slots, now, root)]
@@ -656,7 +657,7 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                                        reason if reason == 'stop_unresolved' else 'packet_over_payload_cap')]
                 summary['holds'][reason if reason == 'stop_unresolved' else 'packet_over_payload_cap'] = 1
             else:
-                activity = [{'line': 'Turned the plan routine\'s week packet into one ask'},
+                activity = [{'line': 'Turned the week packet into one ask'},
                             {'line': 'Posted, sent, published and spent nothing'}]
                 reports = reports_for([item], slots, now, root, activity)
                 summary['proposals'] = {item['stage']: 1}

@@ -1089,7 +1089,7 @@
     },
     {
       "id": "R94",
-      "statement": "Every workflow, job and routine sits in exactly one lane of lanes.json: L0 code on GitHub Actions, L1 Claude routines (make, plan, watch), L2 his eyes (one press) and L3 his hands (LinkedIn, the Buffer plan, one-time set-up). No L0 or L1 job holds an action from his hands or his eyes, and every calendar row's lane is derived from invariants/authority.json.",
+      "statement": "Every workflow and job sits in exactly one lane of lanes.json: L0 code on GitHub Actions, L2 his eyes (one press) and L3 his hands (LinkedIn, the Buffer plan, one-time set-up). There is no L1: no Claude routines and no Claude schedules of any kind (Krish, 29 Oct 2026). No L0 job holds an action from his hands or his eyes, and every calendar row's lane is derived from invariants/authority.json.",
       "source_file": "CHANGES.md",
       "quote": "set yourself daily autonomous tasks that don't really rely on me. Separate your daily autonomous work ... from the things that you need my eyes on to just approve versus the things that you need me to push manually, like my personal LinkedIn posts that you've drafted.",
       "enforced_by": [
@@ -1097,9 +1097,9 @@
         "engine/run/calendar.py:lint"
       ],
       "tests": [
-        "test_every_workflow_job_and_routine_is_in_one_lane",
+        "test_every_workflow_and_job_is_in_one_lane",
         "test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes",
-        "test_no_l0_or_l1_job_holds_his_hands_or_his_eyes",
+        "test_no_l0_job_holds_his_hands_or_his_eyes",
         "test_every_row_is_in_the_lane_authority_gives_it",
         "test_a_wrong_lane_is_refused"
       ]

@@ -686,15 +686,16 @@
     },
     {
       "id": "F67",
-      "title": "A workflow, job or routine runs in no lane, or an L0 or L1 job holds an action from his hands or his eyes",
-      "source": "CHANGES.md 2026-10-27 (evening), lanes ruling (R94)",
+      "title": "A workflow or job runs in no lane, an L0 job holds an action from his hands or his eyes, or a Claude schedule comes back (there are no Claude routines)",
+      "source": "CHANGES.md 2026-10-27 (evening), lanes ruling (R94); 2026-10-29, no Claude routines and no Claude schedules of any kind",
       "guard": "engine/run/invariants.py:check_lanes and engine/run/invariants.py:load_lanes",
       "tests": [
-        "test_every_workflow_job_and_routine_is_in_one_lane",
+        "test_every_workflow_and_job_is_in_one_lane",
         "test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes",
         "test_every_job_file_and_automation_is_named_exactly_once",
-        "test_no_l0_or_l1_job_holds_his_hands_or_his_eyes",
-        "test_lanes_register_refuses_a_bad_shape"
+        "test_no_l0_job_holds_his_hands_or_his_eyes",
+        "test_lanes_register_refuses_a_bad_shape",
+        "test_there_are_no_claude_routines"
       ],
       "status": "tested"
     },
@@ -929,7 +930,7 @@
     },
     {
       "id": "F84",
-      "title": "A run or a routine reports no cost of its own",
+      "title": "A run or a session reports no cost of its own",
       "source": "V1 build, 27 Oct 2026: self-metering (R93: \"Same for the cost baseline\")",
       "guard": "engine/meter.py:install counts every urllib call once and engine/meter.py:cost_line prints seconds and calls only; engine/run/cost.py:self_meter reads the latest session for run cost self",
       "tests": [
@@ -944,7 +945,7 @@
     },
     {
       "id": "F85",
-      "title": "The handoff proposes a go-live from the routine's word instead of the live draft",
+      "title": "The handoff proposes a go-live from the dispatch's word instead of the live draft",
       "source": "V1 build, 27 Oct 2026: L0 handoff (engine/run/handoff.py, .github/workflows/handoff.yml)",
       "guard": "engine/run/handoff.py:rebuild reads each draft fresh and rebuilds its line with engine/run/autorelease.py:draft_line; a mismatch holds handoff_digest_mismatch",
       "tests": [
@@ -979,7 +980,7 @@
       "tests": [
         "test_a_new_kind_of_post_is_its_own_go_live",
         "test_authority_file_names_the_new_formats",
-        "test_routine_per_item_review_is_honoured",
+        "test_per_item_review_from_the_dispatch_is_honoured",
         "test_absent_file_defaults_and_stays_shut",
         "test_both_sides_of_the_date",
         "test_the_date_is_read_from_the_file"
@@ -998,7 +999,7 @@
     },
     {
       "id": "F89",
-      "title": "A routine's client_payload reaches a shell run line",
+      "title": "A dispatch's client_payload reaches a shell run line",
       "source": "V1 build, 27 Oct 2026: .github/workflows/handoff.yml",
       "guard": "The payload reaches the job only through the HANDOFF_PAYLOAD env var, written to a file by Python; engine/run/handoff.py:load_payload caps and parses it",
       "tests": [
@@ -1031,13 +1032,12 @@
     },
     {
       "id": "F92",
-      "title": "A routine grows past 6 KB or loses a wall",
-      "source": "V1 build, 27 Oct 2026: routines/make.md, plan.md and watch.md",
-      "guard": "tests/test_routines.py holds each routine at 6 KB or less with every wall; engine/run/cost.py:job_kind knows each standing line as its routine",
+      "title": "The taste procedure grows past 6 KB, loses a wall or gains a schedule of its own",
+      "source": "V1 build, 27 Oct 2026, the standing make, plan and watch files; retargeted on 29 Oct 2026 to docs/TASTE.md, when they were removed under Krish's ruling of no Claude routines",
+      "guard": "tests/test_taste_wiring.py holds docs/TASTE.md at 6 KB or less with every wall, no clock time and no routine path, and checks that docs/LANES.md and AGENTS.md point makers at it; engine/run/invariants.py:check_lanes fails a routines/ folder",
       "tests": [
-        "test_each_routine_is_standalone_small_and_walled",
-        "test_make_names_its_sources_and_handoff",
-        "test_standing_text_is_a_routine_to_the_cost_meter"
+        "test_taste_file_reads_both_tools_and_never_blocks",
+        "test_makers_are_pointed_at_the_taste_file"
       ],
       "status": "tested"
     },
@@ -1051,7 +1051,7 @@
         "test_the_probe_cases_change_the_digest",
         "test_the_signed_meta_is_exactly_what_the_edit_sends",
         "test_the_why_names_what_goes_out_with_the_words",
-        "test_a_metadata_change_after_the_routine_holds",
+        "test_a_metadata_change_after_the_dispatch_holds",
         "test_details_that_cannot_be_shown_whole_are_never_proposed",
         "test_the_spec_digest_equals_the_handoff_digest",
         "test_the_readback_checks_the_meta",

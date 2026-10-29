@@ -380,8 +380,10 @@ run, so say so in the job's final message. The engine key is
 `CONTROL_CENTER_ENGINE_TOKEN` or the `engine-token` file (`docs/KEY.md`).
 Only the GitHub runner (a repository secret) and Krish's PC (the file, for
 Codex workspace runs) hold it. A Claude session never sets or reads it: it
-reads Control Center through the Control Center connector, and a cloud
-routine's Control Center traffic goes through the runner (`docs/LANES.md`).
+reads Control Center through the Control Center connector, and its
+proposals reach Control Center only through the runner (`docs/LANES.md`).
+There are no Claude routines (Krish, 29 Oct 2026); whoever makes or writes
+for this engine follows `docs/TASTE.md`.
 Separately, Control Center wakes `.github/workflows/control-center.yml`
 every morning; that GitHub runner checks the engine offline and reports
 what a clean runner can see. Its numbers are always "measured only in the

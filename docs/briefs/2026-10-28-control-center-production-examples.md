@@ -50,8 +50,8 @@ It returns two lists.
 
 ## How growth-makeyourmindup uses it (already wired on its side, inert until the tool exists)
 
-- The daily `make` routine reads examples for each platform and format before filling a Canva template.
-- The Sunday `plan` routine proposes at most one new template a week, built from three or more of his `study_style` cards for a format. It goes to his list as a new-format item, with his words beside it.
+- Any session or PC automation that makes for the engine reads examples for each platform and format before filling a Canva template (this repository's `docs/TASTE.md`). There are no Claude routines (Krish, 29 Oct 2026).
+- Whoever plans the week proposes at most one new template a week, built from three or more of his `study_style` cards for a format. It goes to his list as a new-format item, with his words beside it.
 - Each asset records the card ids it drew on.
 - `report_to_taste_engine` gets an observation of which card shaped which template or post, and how that post did.
 - The engine's judging code never reads this tool; a test in growth-makeyourmindup checks that.

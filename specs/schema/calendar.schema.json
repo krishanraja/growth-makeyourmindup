@@ -118,7 +118,6 @@
             "type": "string",
             "enum": [
               "L0_code",
-              "L1_judgement",
               "L2_eyes",
               "L3_hands"
             ]
@@ -215,7 +214,6 @@
             "type": "string",
             "enum": [
               "L0_code",
-              "L1_judgement",
               "L2_eyes",
               "L3_hands"
             ]

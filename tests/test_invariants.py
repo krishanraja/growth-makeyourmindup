@@ -207,7 +207,8 @@ class FailureRegisterTests(unittest.TestCase):
                 ('F78', '_cc_client', 'test_the_cli_routes_and_refuses_without_a_key'),
                 ('F85', 'handoff.py:rebuild', 'test_a_mismatched_digest_holds_that_slot'),
                 ('F91', 'spec.py:lint', 'test_story_frames_do_not_count_against_the_feed_cap'),
-                ('F92', 'test_routines.py', 'test_each_routine_is_standalone_small_and_walled')):
+                # Retargeted on 29 Oct 2026: there are no Claude routines; the walls live in docs/TASTE.md.
+                ('F92', 'docs/TASTE.md', 'test_taste_file_reads_both_tools_and_never_blocks')):
             self.assertIn(guard, failures[fid]['guard'], fid)
             self.assertIn(test, failures[fid]['tests'], fid)
         rules = {r['id']: r for r in load_rules()}

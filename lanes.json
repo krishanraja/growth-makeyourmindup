@@ -1,18 +1,13 @@
 {
   "schema_version": 1,
   "kind": "lanes",
-  "note": "Every job in exactly one lane, under Krish's 27 Oct 2026 lanes ruling (CHANGES.md, rule R94). What a lane may post comes from invariants/authority.json. engine/run/invariants.py:check_lanes proves every workflow, job and routine is here once, and that no L0 or L1 job holds his hands or his eyes. The North Star line is not an L0 job: its capture is the Substack Growth sources page, read only in the browser on Krish's PC by the \"Growth: numbers\" automation.",
+  "note": "Every job in exactly one lane, under Krish's 27 Oct 2026 lanes ruling (CHANGES.md, rule R94). What a lane may post comes from invariants/authority.json. engine/run/invariants.py:check_lanes proves every workflow and job is here once, and that no L0 job holds his hands or his eyes. There are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct 2026): a new schedule is a GitHub Actions job in L0. Making (Canva assets, words, Buffer drafts) is done by interactive sessions and the PC automations below, under the same walls (docs/LANES.md, docs/TASTE.md); it is not a lane of its own. The North Star line is not an L0 job: its capture is the Substack Growth sources page, read only in the browser on Krish's PC by the \"Growth: numbers\" automation.",
   "authority": "invariants/authority.json",
   "lanes": {
     "L0_code": {
       "who": "code, no model",
       "runs_on": "GitHub Actions runner",
       "model": false
-    },
-    "L1_judgement": {
-      "who": "Claude routines",
-      "runs_on": "Claude scheduled routines",
-      "model": true
     },
     "L2_eyes": {
       "who": "Krish, one press",
@@ -118,13 +113,13 @@
       "id": "handoff",
       "lane": "L0_code",
       "workflow": "handoff.yml",
-      "trigger": "repository_dispatch from a routine (growth-go-live-manifest, growth-week-packet, growth-make-piece), and by hand (a dry run unless deliver is ticked)",
+      "trigger": "repository_dispatch from a session or PC automation that saved the drafts (growth-go-live-manifest, growth-week-packet, growth-make-piece), and by hand (a dry run unless deliver is ticked)",
       "may_write": [
-        "a go-live, plan or check-in proposal to Control Center, built from Buffer drafts whose digest matches the routine's, with its readback"
+        "a go-live, plan or check-in proposal to Control Center, built from Buffer drafts whose digest matches the dispatch's, with its readback"
       ],
       "never": [
         "schedule or post anything",
-        "propose a slot whose draft differs from the routine's digest",
+        "propose a slot whose draft differs from the dispatch's digest",
         "put LinkedIn in as anything but his click"
       ],
       "actions": [
@@ -150,73 +145,6 @@
       ],
       "actions": [
         "self-test"
-      ],
-      "secrets": []
-    },
-    {
-      "id": "make",
-      "lane": "L1_judgement",
-      "workflow": null,
-      "trigger": "daily",
-      "may_write": [
-        "drafts and Canva exports for the day's calendar rows",
-        "Buffer drafts with no due time",
-        "gate packets for Control Center"
-      ],
-      "never": [
-        "post a new format before Krish approves that item",
-        "post a derivative before its publish board is approved",
-        "post through 2026-11-29 before the batch preview is approved",
-        "post or schedule on LinkedIn",
-        "hold the engine key",
-        "spend, connect an account or create a key"
-      ],
-      "actions": [
-        "draft-derivatives",
-        "build-canva-assets",
-        "queue-buffer-drafts",
-        "prepare-gate-packet"
-      ],
-      "secrets": []
-    },
-    {
-      "id": "plan",
-      "lane": "L1_judgement",
-      "workflow": null,
-      "trigger": "Sundays",
-      "may_write": [
-        "the draft week from calendar/v1.json",
-        "the Sunday sign-off packet and the what-works ledger"
-      ],
-      "never": [
-        "sign the week for Krish",
-        "change invariants/authority.json",
-        "hold the engine key"
-      ],
-      "actions": [
-        "draft-week",
-        "prepare-gate-packet"
-      ],
-      "secrets": []
-    },
-    {
-      "id": "watch",
-      "lane": "L1_judgement",
-      "workflow": null,
-      "trigger": "three times a day",
-      "may_write": [
-        "express items built from his Buffer Ideas",
-        "publish-board status notes"
-      ],
-      "never": [
-        "treat an idea as approval",
-        "post anything",
-        "hold the engine key"
-      ],
-      "actions": [
-        "read-buffer-ideas",
-        "read-publish-boards",
-        "prepare-gate-packet"
       ],
       "secrets": []
     },
@@ -343,7 +271,6 @@
       "jobs": [
         "jobs/numbers.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
       "successor": "measure"
     },
@@ -353,9 +280,8 @@
       "jobs": [
         "jobs/radar.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
-      "successor": "plan"
+      "successor": null
     },
     {
       "name": "Growth: day pack",
@@ -363,9 +289,8 @@
       "jobs": [
         "jobs/daily-pack.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
-      "successor": "make"
+      "successor": null
     },
     {
       "name": "Growth: pitches",
@@ -373,7 +298,6 @@
       "jobs": [
         "jobs/pitches.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
       "successor": null
     },
@@ -383,7 +307,6 @@
       "jobs": [
         "jobs/partners.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
       "successor": null
     },
@@ -393,7 +316,6 @@
       "jobs": [
         "jobs/swaps.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
       "successor": null
     },
@@ -404,7 +326,6 @@
         "jobs/conversion.md",
         "jobs/channel-audit.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
       "successor": null
     },
@@ -414,9 +335,8 @@
       "jobs": [
         "jobs/answer.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
-      "successor": "make"
+      "successor": null
     },
     {
       "name": "Growth: report",
@@ -424,9 +344,8 @@
       "jobs": [
         "jobs/report.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
-      "successor": "plan"
+      "successor": null
     },
     {
       "name": "Growth: daily heartbeat",
@@ -434,9 +353,8 @@
       "jobs": [
         "jobs/daily-growth.md"
       ],
-      "lane": "L1_judgement",
       "status": "kept-until-W46",
-      "successor": "make"
+      "successor": null
     }
   ]
 }

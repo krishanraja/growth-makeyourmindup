@@ -51,12 +51,13 @@ other copy is the file on Krish's PC for Codex workspace runs:
   `.github/workflows/` read it: `control-center.yml` (the 05:10 UTC dispatch,
   with a 05:40 UTC backup that stops when the dispatch already ran),
   `keys.yml` (06:50 UTC), `measure.yml` (07:00, 13:00 and 19:00 UTC),
-  `release.yml` (every 30 minutes) and `handoff.yml` (when a routine wakes
-  it). All but the first also read the `BUFFER_API_KEY` secret. The key
-  check, measure (which checks first) and release fail the run on a refused
-  key with `cc_token_refused` or `buffer_key_refused`, so GitHub emails
-  Krish. All Control Center traffic from a cloud routine goes
-  through this runner (`docs/LANES.md`).
+  `release.yml` (every 30 minutes) and `handoff.yml` (when a session or PC
+  automation that saved drafts wakes it). All but the first also read the
+  `BUFFER_API_KEY` secret. The key check, measure (which checks first) and
+  release fail the run on a refused key with `cc_token_refused` or
+  `buffer_key_refused`, so GitHub emails Krish. A Claude session's
+  proposals reach Control Center only through this runner
+  (`docs/LANES.md`); there are no Claude routines (Krish, 29 Oct 2026).
 - **Krish's PC, for Codex workspace runs.** `growth.py cc ... --deliver`
   reads `CONTROL_CENTER_ENGINE_TOKEN` from the environment, or else the file
   `%USERPROFILE%\.config\growth-makeyourmindup\engine-token`, beside the
