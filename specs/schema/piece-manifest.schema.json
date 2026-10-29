@@ -82,16 +82,7 @@
       "type": "object",
       "minProperties": 1,
       "propertyNames": {
-        "enum": [
-          "substack-notes",
-          "threads",
-          "x",
-          "instagram",
-          "facebook",
-          "tiktok",
-          "youtube",
-          "linkedin"
-        ]
+        "pattern": "^(substack-notes|threads|x|instagram|facebook|tiktok|youtube|linkedin)(:[a-z0-9][a-z0-9_-]{0,47})?$"
       },
       "additionalProperties": {
         "type": "object",
@@ -126,7 +117,8 @@
             "description": "Asset names, in the order the post carries them."
           }
         }
-      }
+      },
+      "description": "Keyed by channel, or by \"channel:format\" when one channel carries two formats of the piece (youtube:long-video, youtube:short-video); a line reads its \"channel:format\" entry first."
     }
   }
 }

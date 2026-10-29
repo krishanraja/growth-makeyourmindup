@@ -15,7 +15,11 @@ The shape (`specs/schema/piece-manifest.schema.json`):
 {"schema": "content-engine-piece-manifest/1", "piece_id", "approval_sha256",
  "qa": {"state": "passed" | "held" | "failed", "checked_at"},
  "assets": [{"name", "drive_id", "sha256", "order"}],
- "channels": {channel: {"words", "alt_text": [text, ...] | null, "assets": [name, ...]}}}
+ "channels": {channel or "channel:format": {"words", "alt_text": [text, ...] | null, "assets": [name, ...]}}}
+
+A channel that carries two formats of one piece (YouTube's long video and its
+Short) keys each by "channel:format" (youtube:long-video, youtube:short-video);
+a line reads its "channel:format" entry first, then its plain channel entry.
 
 It never authorises anything: Krish's go-live does. It only refuses a draft
 that is not what content-engine checked and he approved on the board.
@@ -33,6 +37,7 @@ QA_STATES = ('passed', 'held', 'failed')
 ASSET_KEYS = frozenset({'name', 'drive_id', 'sha256', 'order'})
 CHANNEL_KEYS = frozenset({'words', 'alt_text', 'assets'})
 PIECE_ID = re.compile(r'^[A-Za-z0-9][A-Za-z0-9:._-]{0,119}$')
+FORMAT = re.compile(r'^[a-z0-9][a-z0-9_-]{0,47}$')
 NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$')
 DRIVE_ID = re.compile(r'^[A-Za-z0-9_-]{10,100}$')
 CHECKED_AT = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$')
@@ -92,8 +97,9 @@ def validate(value):
     channels = value['channels']
     if not isinstance(channels, dict) or not channels:
         raise ManifestRejected('manifest_malformed')
-    for channel, entry in channels.items():
-        if channel not in CHANNELS or not isinstance(entry, dict) or set(entry) != CHANNEL_KEYS \
+    for key, entry in channels.items():
+        channel, _, fmt = key.partition(':') if isinstance(key, str) else (None, '', '')
+        if channel not in CHANNELS or (':' in key and not FORMAT.match(fmt)) or not isinstance(entry, dict) or set(entry) != CHANNEL_KEYS \
                 or not (isinstance(entry['words'], str) and entry['words'].strip()) \
                 or not isinstance(entry['assets'], list) or any(n not in names for n in entry['assets']) \
                 or len(set(entry['assets'])) != len(entry['assets']):
@@ -105,9 +111,13 @@ def validate(value):
     return value
 
 
-def expected(manifest, channel):
-    """(words, [asset sha256 in the channel's order], alt texts or None) for one channel, or None."""
-    entry = manifest['channels'].get(channel)
+def expected(manifest, channel, fmt=None):
+    """(words, [asset sha256 in the channel's order], alt texts or None) for one channel and format, or None.
+
+    The "channel:format" entry wins over the plain channel entry."""
+    entries = manifest['channels']
+    entry = entries.get(str(channel) + ':' + str(fmt)) if fmt else None
+    entry = entry if entry is not None else entries.get(channel)
     if entry is None:
         return None
     by_name = {a['name']: a['sha256'] for a in manifest['assets']}
@@ -132,7 +142,7 @@ def line_hold(manifest, line):
     """None when the rebuilt go-live line is exactly the manifest's post for its channel,
     else the hold code: the manifest has no post for the channel, or the words, the
     assets (and their order) or the alt text differ."""
-    want = expected(manifest, line.get('channel'))
+    want = expected(manifest, line.get('channel'), line.get('format'))
     if want is None:
         return 'manifest_has_no_channel'
     words, assets, alt = want

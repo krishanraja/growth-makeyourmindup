@@ -64,6 +64,24 @@ class ParseTests(unittest.TestCase):
         with self.assertRaises(piece_manifest.ManifestRejected):
             piece_manifest.parse(*encoded(unknown_asset))
 
+    def test_youtube_long_video_and_short_are_told_apart_by_format(self):
+        value = manifest()
+        value['channels']['youtube:long-video'] = {'words': 'Synthetic long video words.', 'alt_text': None, 'assets': []}
+        value['channels']['youtube:short-video'] = {'words': 'Synthetic short words.', 'alt_text': None, 'assets': []}
+        piece_manifest.validate(value)
+        long_line = {'channel': 'youtube', 'format': 'long-video', 'words': 'Synthetic long video words.', 'assets': [],
+                     'meta': None}
+        self.assertIsNone(piece_manifest.line_hold(value, long_line))
+        self.assertEqual(piece_manifest.line_hold(value, dict(long_line, format='short-video')), 'manifest_differs')
+        self.assertIsNone(piece_manifest.line_hold(value, dict(long_line, format='short-video',
+                                                               words='Synthetic short words.')))
+        plain = {'channel': 'x', 'format': 'text', 'words': WORDS[P_X], 'assets': [], 'meta': None}
+        self.assertIsNone(piece_manifest.line_hold(value, plain), 'a plain channel entry still serves its channel')
+        bad = manifest()
+        bad['channels']['youtube:Long Video'] = bad['channels']['x']
+        with self.assertRaises(piece_manifest.ManifestRejected):
+            piece_manifest.validate(bad)
+
     def test_one_byte_changed_in_a_line_is_held(self):
         value = manifest()
         line = {'channel': 'x', 'words': WORDS[P_X], 'assets': [], 'meta': None}
