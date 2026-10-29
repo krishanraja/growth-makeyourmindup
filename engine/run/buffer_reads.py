@@ -46,8 +46,9 @@ def buffer_module():
         return None
 
 
-def buffer_client(environ=None):
-    """(client, None) or (None, why). Degrades instead of failing when Buffer is absent."""
+def buffer_client(environ=None, links=False):
+    """(client, None) or (None, why). Degrades instead of failing when Buffer is absent.
+    links=True lists sent posts with their native URL (the board tick)."""
     environ = os.environ if environ is None else environ
     key = (environ.get(KEY_ENV) or '').strip()
     if not key:
@@ -56,7 +57,7 @@ def buffer_client(environ=None):
     if buffer_api is None:
         return None, NOT_INSTALLED
     if callable(getattr(buffer_api, 'Buffer', None)):
-        return Reader(buffer_api.Buffer(key)), None
+        return Reader(buffer_api.Buffer(key), links), None
     if callable(getattr(buffer_api, 'Client', None)):  # a stand-in with the reader's shape
         return buffer_api.Client(key), None
     return None, 'buffer_api has no client constructor this engine knows'
@@ -69,8 +70,8 @@ class Reader:
     read from each, and channel pinning (release.BUFFER_NAME) happens later.
     """
 
-    def __init__(self, buffer):
-        self.buffer = buffer
+    def __init__(self, buffer, links=False):
+        self.buffer, self.links = buffer, links
         self._orgs = None
 
     def account_check(self):
@@ -83,7 +84,8 @@ class Reader:
             self.account_check()
         posts = []
         for org in self._orgs:
-            posts += self.buffer.list_posts(org, status=status, since=since)
+            posts += (self.buffer.list_posts(org, status=status, since=since, links=True) if self.links
+                      else self.buffer.list_posts(org, status=status, since=since))
         return posts
 
     def get_post(self, post_id):
@@ -175,7 +177,7 @@ def sent_posts(client, since, now=None):
             reads += 1
             metrics = detail.get('metrics') if isinstance(detail, dict) else None
         posts.append({'post_id': pid, 'channel': cid, 'service': CHANNELS[cid][0], 'sent_at': sent_at,
-                      'words': _words(post), 'metrics': metric_values(metrics) if metrics is not None else None})
+                      'due_at': post.get('dueAt'), 'external_link': post.get('externalLink'), 'words': _words(post), 'metrics': metric_values(metrics) if metrics is not None else None})
     return {'posts': posts, 'missing': missing, 'held': held, 'imported': imported, 'get_post_reads': reads,
             'listed': len(listed)}
 

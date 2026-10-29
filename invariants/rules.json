@@ -1634,6 +1634,20 @@
         "test_a_planted_secret_is_removed",
         "test_the_hook_keeps_lines_locally_once_and_never_fails"
       ]
+    },
+    {
+      "id": "R122",
+      "statement": "Growth ticks a publish board box only for a post Buffer shows sent, at that day's piece slot, with a native URL, and only through the board's own write route; replays are harmless and nothing else is written.",
+      "source_file": "CHANGES.md",
+      "quote": "we need the growth repo to keep the publish board check boxes update with what it has done and when.",
+      "enforced_by": [
+        "engine/run/board_tick.py:rows"
+      ],
+      "tests": [
+        "test_the_pieces_cut_at_its_series_slot_ticks_its_box_with_the_post_and_its_time",
+        "test_a_mix_post_at_another_time_that_day_is_never_ticked_as_the_piece",
+        "test_a_scheduled_post_is_not_ticked_until_buffer_shows_it_sent"
+      ]
     }
   ]
 }

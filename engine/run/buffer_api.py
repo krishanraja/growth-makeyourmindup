@@ -95,6 +95,18 @@ ACCOUNT_QUERY = 'query AccountCheck { account { id organizations { id } } }'
 POST_QUERY = 'query GetPost($input: PostInput!) { post(input: $input) { ' + POST_FIELDS + ' } }'
 POSTS_QUERY = ('query ListPosts($first: Int, $after: String, $input: PostsInput!) { posts(first: $first, after: $after, '
                'input: $input) { edges { node { ' + POST_FIELDS + ' } } pageInfo { hasNextPage endCursor } } }')
+# Sent posts are only read, never edited, so their listing also selects when each went out
+# (sentAt, read live on 29 October 2026); the board tick adds the native URL (externalLink,
+# release.py's schema notes; not yet read live, so only the tick's own listing asks for it).
+# The edit path never sees either.
+def _listing(name, extra):
+    return ('query ' + name + '($first: Int, $after: String, $input: PostsInput!) { posts(first: $first, '
+            'after: $after, input: $input) { edges { node { ' + POST_FIELDS + ' ' + extra + ' } } '
+            'pageInfo { hasNextPage endCursor } } }')
+
+
+SENT_QUERY = _listing('ListSentPosts', 'sentAt')
+LINKED_QUERY = _listing('ListSentPostsLinked', 'sentAt externalLink')
 SCHEDULE_MUTATION = ('mutation ScheduleDraft($input: EditPostInput!) { editPost(input: $input) { __typename '
                      '... on PostActionSuccess { post { ' + POST_FIELDS + ' } } ... on MutationError { message } } }')
 
@@ -248,8 +260,9 @@ class Buffer:
             raise BufferError('post_not_read_back')
         return post
 
-    def list_posts(self, organization_id, status=None, channel_ids=None, since=None):
-        """Posts in one organisation, filtered by status, channels and dueAt from since."""
+    def list_posts(self, organization_id, status=None, channel_ids=None, since=None, links=False):
+        """Posts in one organisation, filtered by status, channels and dueAt from since.
+        A sent listing also carries sentAt, and with links=True each post's externalLink."""
         flt = {}
         if status:
             flt['status'] = [status] if isinstance(status, str) else list(status)
@@ -260,7 +273,10 @@ class Buffer:
         variables = {'first': PAGE, 'after': None, 'input': {'organizationId': organization_id, 'filter': flt}}
         out = []
         for _ in range(MAX_PAGES):
-            posts = self._graphql('ListPosts', POSTS_QUERY, variables).get('posts') or {}
+            op, query = ('ListPosts', POSTS_QUERY)
+            if flt.get('status') == ['sent']:
+                op, query = ('ListSentPostsLinked', LINKED_QUERY) if links else ('ListSentPosts', SENT_QUERY)
+            posts = self._graphql(op, query, variables).get('posts') or {}
             out += [e['node'] for e in posts.get('edges') or [] if isinstance(e, dict) and isinstance(e.get('node'), dict)]
             page = posts.get('pageInfo') or {}
             if not page.get('hasNextPage') or not page.get('endCursor'):

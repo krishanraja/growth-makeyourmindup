@@ -99,7 +99,7 @@ class BufferStandIn:
                     if post is None:
                         return self.reply(200, {'errors': [{'message': 'not found', 'extensions': {'code': 'NOT_FOUND'}}]})
                     return self.reply(200, {'data': {'post': copy.deepcopy(post)}})
-                if op == 'ListPosts':
+                if op in ('ListPosts', 'ListSentPosts', 'ListSentPostsLinked'):
                     wanted = (variables['input'].get('filter') or {}).get('status')
                     nodes = [p for p in stand.posts.values() if not wanted or p['status'] in wanted]
                     return self.reply(200, {'data': {'posts': {'edges': [{'node': n} for n in nodes],
@@ -1127,7 +1127,11 @@ class SourceAndWorkflowTests(unittest.TestCase):
 
     def test_the_workflow_names_only_the_expected_secrets(self):
         text = (ROOT / '.github' / 'workflows' / 'release.yml').read_text(encoding='utf-8')
-        self.assertEqual(set(re.findall(r'secrets\.([A-Z_]+)', text)), {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY'})
+        # GROWTH_WRITEBACK_TOKEN only on the board tick step (R122), never on release's own.
+        self.assertEqual(set(re.findall(r'secrets\.([A-Z_]+)', text)),
+                         {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY', 'GROWTH_WRITEBACK_TOKEN'})
+        release_step = text[:text.index('Tick the publish board')]
+        self.assertNotIn('GROWTH_WRITEBACK_TOKEN', release_step)
         self.assertEqual(set(re.findall(r'vars\.([A-Z_]+)', text)), {'CONTROL_CENTER_URL'})
         for needle in ("cron: '*/30 * * * *'", 'workflow_dispatch', 'contents: read', 'group: release',
                        'cancel-in-progress: false', 'timeout-minutes: 10', "python-version: '3.12'",
