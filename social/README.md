@@ -51,7 +51,9 @@ publication.
 Every snackable package (its format profile says `"snackable": true`) carries a
 `share` block, and its copy never asks for the share (Krish, 28 October 2026;
 `guides/formats.md`, "Built to be sent"). Preflight holds it until a blind
-send-test answer is supplied with `--send-test ANSWER.json` and matches.
+send-test answer to this exact revision (its `request_sha256`) is supplied
+with `--send-test ANSWER.json` and matches; `social send-test PACKAGE.json
+--stage FOLDER` prepares the only things the reader is given.
 Preflight never authenticates approval or grants permission
 to publish. It has no network, write, schedule or publication capability.
 

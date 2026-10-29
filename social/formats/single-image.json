@@ -18,8 +18,8 @@
   "delivery_checks": [
     "Select an approved image that stands alone for a newcomer.",
     "Caption supplies necessary context without inventing experience; verify image and alt text.",
-    "Share mechanic: one quotable, sourced number or fact, or one complete level-up move, readable on the image alone so a person forwards it to a named colleague without the caption.",
-    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
+    "Share mechanic: Growth's distribution brief to content-engine carries the package's share block and proposes, as a hook, one quotable, sourced number or fact, or one complete piece of advice, readable on the image alone so a person forwards it to a named colleague. It stays a proposal in the brief until content-engine adopts it as a production standard through its own route.",
+    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test); a revise verdict on the artwork goes back to content-engine as creative feedback through the brief.",
     "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
     "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
   ],

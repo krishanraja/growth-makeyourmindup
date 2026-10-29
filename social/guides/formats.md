@@ -41,29 +41,42 @@ needs a `share` block in its package, checked by `social preflight` against
 
 | Field | What it holds |
 |---|---|
-| `sender`, `receiver` | Specific people by role or relationship: "a head of marketing" to "her CEO", never "your network", "friends" or "a colleague" |
+| `sender`, `receiver` | Specific people by role or relationship, named before any clause or place: "a head of marketing" to "her CEO", never "your network", "a colleague", "a friend at work" or "someone you know" |
 | `job` | One of `in_the_know`, `helps_them`, `so_us`, `settles_it`, `warns_them`, `laugh_or_awe` |
 | `dm_line` | The exact message the sender would type, in plain words, under 120 characters, never a generic call to action |
 | `moment` | The everyday situation that brings the post to mind |
 | `standalone` | True only if it works with no context; a snackable post must |
 
-Each snackable profile names its share mechanic in its delivery checks:
+Each snackable profile names its share mechanic in its delivery checks. For
+Growth's Canva lane (meme, Note) the mechanic is Growth's own to build. For
+content-engine's formats (carousel, single image, short video, Story) it is a
+proposed hook in Growth's distribution brief, beside the share block; it
+becomes a production standard only when content-engine adopts it through its
+own route (content-engine `docs/GROWTH-HANDOFF.md`).
 
-| Format | What makes it worth sending |
+| Format | What would make it worth sending |
 |---|---|
 | Meme | Recognition of one specific situation the receiver is in |
-| Uplifting AI news carousel | One quotable, sourced number or fact on its own card that a person will repeat |
-| Level-up advice | One move someone forwards to a named colleague, complete on its own |
-| Short or clip | One moment that lands with no context in the first seconds |
+| Note | One line a reader would quote or forward to a named person |
+| News carousel (proposed) | One quotable, sourced number or fact a person will repeat |
+| Advice (proposed) | One move someone forwards to a named colleague, complete on its own |
+| Short or clip (proposed) | One moment that lands with no context in the first seconds |
 
 Before Krish sees a snackable package: the copy carries no generic share call
 to action (the patterns in `../share.json`; preflight refuses "share this",
-"tag a friend", "send this to someone who" and the rest), and a blind reader
-(`crew/send-test/`) that sees only the media and copy names the declared
-receiver and job. `python growth.py social send-test PACKAGE.json` prints its
-request; `--answer ANSWER.json` compares the reply, and a mismatch goes back
-for revision with the reader's words. On a board or in a run spec's
-`forward_line`, `engine.share.share_line` renders the block as one line.
+"tag a friend", "send this to someone who" and the rest where they open a
+sentence, so a fact such as "banks tag them as high risk" stays), and a blind
+reader (`crew/send-test/`) names the declared receiver and job.
+`python growth.py social send-test PACKAGE.json --stage FOLDER` copies the
+assets under blind names into a new folder with `request.json`, the only
+things the reader is given; `--answer ANSWER.json` compares the reply, which
+must carry the request's `request_sha256`, so an answer to an earlier revision
+never counts. A mismatch goes back for revision with the reader's words; on
+content-engine's artwork it goes back as creative feedback through the brief.
+On a board or in a run spec's `forward_line`, `engine.share.share_line`
+renders the block as one line (a snackable run slot carries the same `share`
+block, `docs/RUN.md`). Whether share asks are refused beyond snackable posts
+is Krish's decision (`share_cta_scope` in `../share.json`).
 
 The jobs, mechanics and moments are house hypotheses until MYMU's own sends per
 reach and saves per reach confirm them (lesson `share-rate-measure`). They lean

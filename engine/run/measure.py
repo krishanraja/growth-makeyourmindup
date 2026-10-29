@@ -621,8 +621,10 @@ def share_rates(channel, metrics, rules=None):
         return count(metrics.get(fields[name]), fields[name])
 
     reach, sends, saves = value('reach'), value('sends'), value('saves')
+    # A repost is public amplification, never a one-to-one send: kept apart, never in sends_per_reach.
     out = {'channel': channel, 'status': rules['measure']['status'], 'fields': fields,
-           'reach': reach, 'sends': sends, 'saves': saves}
+           'reach': reach, 'sends': sends, 'saves': saves,
+           'public_reposts': value('public_reposts') if fields.get('public_reposts') else None}
     for key, numerator in (('sends_per_reach', sends), ('saves_per_reach', saves)):
         out[key] = None if numerator is None or not reach else numerator / reach
         out[key.replace('per_reach', 'per_1000_reached')] = (None if out[key] is None

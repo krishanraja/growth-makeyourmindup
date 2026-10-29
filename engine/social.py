@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 import re
 
-from .share import compare_send_test, cta_errors, load_rules as load_share_rules, send_test_request, share_errors
+from .share import (StaleSendTest, compare_send_test, cta_applies, cta_errors, load_rules as load_share_rules,
+                    send_test_request, share_errors, stage_send_test)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -217,7 +218,7 @@ def preflight(package, as_of=None, root=ROOT, send_test=None):
         raise ValueError('voice review and accepted production package are required')
     f = decision['format']
     share_rules = load_share_rules(root / 'social' / 'share.json')
-    asks = cta_errors(package['caption'], share_rules)
+    asks = cta_errors(package['caption'], share_rules) if cta_applies(f['snackable'], share_rules) else []
     if asks:
         raise ValueError('generic share call to action in the copy (' + asks[0] + '); the share must come from'
                          ' the content, not a request (social/share.json)')
@@ -243,18 +244,25 @@ def preflight(package, as_of=None, root=ROOT, send_test=None):
         holds.append('personal_account_human_final_publication_required')
     if not approval['approved'] and profile['publication_mode'] == 'human_publish_only':
         holds.append('exact_publication_approval_missing')
+    # The blind answer counts only for this exact revision: its request_sha256 must be this request's.
+    request = send_test_request(package, share_rules) if f['snackable'] or package['share'] is not None else None
     tested = None
-    if f['snackable'] and send_test is None:
+    if send_test is not None and package['share'] is not None:
+        try:
+            tested = compare_send_test(package['share'], send_test, request, share_rules)
+        except StaleSendTest as exc:
+            tested = {'local_only': True, 'verdict': 'stale', 'reasons': [str(exc)],
+                      'request_sha256': request['request_sha256']}
+    if f['snackable'] and (tested is None or tested['verdict'] == 'stale'):
         holds.append('blind_send_test_required_before_krish_sees_it')
-    elif package['share'] is not None and send_test is not None:
-        tested = compare_send_test(package['share'], send_test, share_rules)
-        if tested['verdict'] != 'pass':
-            holds.append('blind_send_test_revise')
+    elif tested is not None and tested['verdict'] == 'revise':
+        holds.append('blind_send_test_revise')
     # Even a matching stored approval is not authenticated go-live permission.
     holds.append('live_identity_schema_and_authority_readback_required_before_external_action')
     return {'local_only': True, 'structurally_valid': True, 'publication_authorized': False,
             'publication_mode': profile['publication_mode'],
             'package_id': package['id'], 'payload_sha256': digest, 'assets_checked': count,
+            'send_test_request_sha256': request['request_sha256'] if request else None,
             'send_test': tested, 'holds': holds}
 
 
@@ -267,8 +275,10 @@ def command(argv=None):
     p.add_argument('--as-of')
     p = sub.add_parser('preflight'); p.add_argument('file'); p.add_argument('--as-of')
     p.add_argument('--send-test', help="the blind reader's JSON answer for this package")
-    p = sub.add_parser('send-test', help='print the blind request for a fresh reader, or compare its answer')
+    p = sub.add_parser('send-test', help='print the blind request for a fresh reader, stage it, or compare its answer')
     p.add_argument('file'); p.add_argument('--answer', help="the reader's JSON answer to compare")
+    p.add_argument('--stage', help='a new or empty folder: the assets under blind names and request.json,'
+                                   ' the only things the reader is given')
     args = parser.parse_args(argv)
     try:
         if args.action == 'check':
@@ -279,10 +289,14 @@ def command(argv=None):
         elif args.action == 'send-test':
             package = read(args.file)
             validate(package, read(ROOT / 'social' / 'schemas' / 'package.schema.json'))
+            if args.answer and args.stage:
+                raise ValueError('stage the request or compare an answer, not both')
             if args.answer:
                 if package['share'] is None:
                     raise ValueError('this package declares no share block to compare against')
-                result = compare_send_test(package['share'], read(args.answer))
+                result = compare_send_test(package['share'], read(args.answer), send_test_request(package))
+            elif args.stage:
+                result = dict(stage_send_test(package, args.stage), staged=str(args.stage))
             else:
                 result = send_test_request(package)
         else:

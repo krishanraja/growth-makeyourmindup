@@ -17,8 +17,8 @@
     "Verify actual native presentation, one frame per post, sequence, account and continuation.",
     "No invented interactive controls, illustration boilerplate or unsupported sticker assumptions.",
     "Keep paired Meta outputs deduplicated; verify feed delivery before the continuation runs.",
-    "Share mechanic: one frame that works with no context, built so a person sends the Story to one specific person in a private message.",
-    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test)."
+    "Share mechanic: Growth's distribution brief to content-engine carries the package's share block and proposes, as a hook, one frame that works with no context, so a person sends the Story to one specific person in a private message. It stays a proposal in the brief until content-engine adopts it as a production standard through its own route.",
+    "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test); a revise verdict on the artwork goes back to content-engine as creative feedback through the brief."
   ],
   "measurements": [
     "Primary measure (Krish, 28 October 2026): sends, meaning native shares, per reach and saves per reach against the format's own channel median; a house hypothesis until MYMU's own dated data confirms it (lesson share-rate-measure).",

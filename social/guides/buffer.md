@@ -154,5 +154,7 @@ Instagram shows `shares`, `saves` and `reach`; Facebook and TikTok `shares` and
 `reach`; X `reposts` and `impressions` with no reach; YouTube no share, save or
 reach field; LinkedIn `reach` on some posts. `social/share.json`
 (`measure.buffer_fields`) is the one map from those names to sends, saves and
-reach, read by `engine/run/measure.py:share_rates`. A field a channel does not
+reach, read by `engine/run/measure.py:share_rates`. X's reposts are public
+amplification, not a one-to-one send, so they are kept as `public_reposts` and
+X shows no sends. A field a channel does not
 show is "not shown", never zero. Values stay in private evidence.
