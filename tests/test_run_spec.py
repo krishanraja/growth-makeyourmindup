@@ -85,7 +85,8 @@ class RunSpecLintTests(SyntheticLadder):
                          {'week_target', 'payload_sha256', 'prose', 'unknown_channel', 'unknown_format',
                           'format_not_allowed',
                           'publish_mode', 'krish_click_due_at', 'spend', 'experiment_per_channel',
-                          'experiment_arm', 'asset_sha256', 'posts_per_day', 'creative_not_approved'})
+                          'experiment_arm', 'asset_sha256', 'posts_per_day', 'creative_not_approved',
+                          'ecosystem_cta'})
         by_code = {}
         for e in result['errors']:
             by_code.setdefault(e['code'], []).append(e)
@@ -217,6 +218,42 @@ class RunSpecLintTests(SyntheticLadder):
         self.assertEqual(codes(computed(spec), records), set(), 'the cap is read from the record, not the code')
         records['channel']['threads']['daily_posts_target'] = None
         self.assertEqual(codes(computed(spec), records), set(), 'a null target sets no engine cap')
+
+    def test_every_slot_needs_a_route_into_the_wider_ecosystem(self):
+        def ecosystem_codes(change):
+            spec = fixture('w45-week')
+            change(slot(spec, 'w45-mon-threads-1'))
+            return [(e['code'], e['at'].rsplit('.', 1)[-1]) for e in lint(spec, RECORDS)['errors']]
+        self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=None)), [('ecosystem_cta', 'ecosystem_cta')],
+                         'no route is refused')
+        self.assertEqual(ecosystem_codes(lambda s: s.pop('ecosystem_cta')), [('ecosystem_cta', 'ecosystem_cta')],
+                         'an absent route is refused too')
+        newsletter = {'route': 'mindmake', 'url': 'https://home.makeyourmindup.ai/p/test-fixture', 'placement': 'in_post'}
+        self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=newsletter)), [('ecosystem_cta', 'url')],
+                         'the newsletter alone is not a route')
+        wrong = {'route': 'podcast', 'url': 'https://mindmake.co/', 'placement': 'profile'}
+        self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=wrong)), [('ecosystem_cta', 'url')])
+        unknown = {'route': 'hologram', 'url': 'https://mindmake.co/', 'placement': 'profile'}
+        self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=unknown)), [('ecosystem_cta', 'route')])
+        absent = {'route': 'mindmake', 'url': 'https://mindmake.co/', 'placement': 'in_post'}
+        self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=absent)), [('ecosystem_cta', 'placement')],
+                         'an in_post route has its URL in the words')
+        reply = {'route': 'mindmake', 'url': 'https://mindmake.co/', 'placement': 'first_reply'}
+        self.assertEqual(ecosystem_codes(lambda s: s.update(ecosystem_cta=reply)), [('ecosystem_cta', 'placement')],
+                         'a first_reply route needs a first_reply link placement')
+
+        def in_words(s):
+            s['words'] += ' More at https://mindmake.co/?utm_source=threads.'
+            s['payload_sha256'] = payload_sha256(s)
+            s['ecosystem_cta'] = absent
+        self.assertEqual(ecosystem_codes(in_words), [], 'the URL in the words, tracked or not, carries the route')
+
+    def test_every_journey_names_a_known_ecosystem_route(self):
+        journeys = json.loads((ROOT / 'journeys.json').read_text(encoding='utf-8'))
+        routes = {r['route_id'] for r in journeys['ecosystem']['routes']}
+        self.assertEqual({j['ecosystem_route'] for j in journeys['journeys']} - routes, set())
+        self.assertTrue(all('makeyourmindup' not in host for r in journeys['ecosystem']['routes'] for host in r['hosts']),
+                        'no route is the newsletter itself')
 
     def test_engine_slot_needs_approved_creative(self):
         spec = fixture('w45-week')

@@ -110,6 +110,10 @@ def doctor(offline=False):
             errors.append('automation job file missing')
         for name in ('channels.json', 'journeys.json', 'experiments.json', 'hooks.json'):
             read_json(ROOT / name)
+        journeys = read_json(ROOT / 'journeys.json')
+        routes = {r['route_id'] for r in journeys['ecosystem']['routes']}
+        if any(j.get('ecosystem_route') not in routes for j in journeys['journeys']):
+            errors.append('every journey in journeys.json names a known ecosystem route')
     except (KeyError, ValueError, OSError) as error:
         errors.append('configuration: ' + str(error))
     if not offline:

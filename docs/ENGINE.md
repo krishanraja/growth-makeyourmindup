@@ -131,6 +131,25 @@ feed and the committed pilots only, and says that workspace editions are not
 visible to it. The day's pack takes the oldest unamplified piece worth a new
 edition alongside the day's new piece (`jobs/daily-pack.md`).
 
+## Ecosystem routes
+
+Every run spec slot names a route into the wider ecosystem
+(`ecosystem_cta`, `engine/run/spec.py` lint). The
+publication is the front door to Mindmake (NOW.md), so a post that only
+points at the newsletter, an article or the subscribe page has no route
+beyond it. Each slot names one route from `journeys.json` (`ecosystem`):
+the long YouTube video or channel, the Spotify show once its URL is
+verified, or Mindmake at mindmake.co, with its URL and placement:
+`in_post` (the URL is in the words, tracked or not), `first_reply` (the
+slot's `link_placement` is `first_reply`) or `profile` (the account's
+profile link carries it, which the weekly channel audit verifies). Lint
+refuses no route, an unknown route, a newsletter URL, a URL off the route,
+an `in_post` URL missing from the words and a `first_reply` route without a
+first-reply placement. A new route is a row in `journeys.json`; each
+journey there names the route its readers continue on (`ecosystem_route`).
+`ecosystem_cta` is outside the digest: an `in_post` URL is already in the
+signed words.
+
 ## Tracking and the work queue
 
 ```powershell

@@ -66,8 +66,11 @@ is not 64 lowercase hex; more scheduled slots on a New York day than the
 channel's `daily_posts_target` (null: no cap); an engine slot asset in no
 manifest with a `creative_approval_ref` (release holds it too); a window
 that is not New York midnights 7 (week, from a Monday), 8 (piece) or 1
-(express) days long. Warnings include an engine slot with no `due_at`: it
+(express) days long; a slot with no `ecosystem_cta`. Warnings include an engine slot with no `due_at`: it
 cannot release, and the daily cap counts only scheduled slots.
+
+`ecosystem_cta` routes each slot beyond the newsletter (docs/ENGINE.md,
+"Ecosystem routes").
 
 A slot's `payload_sha256` covers exactly `channel`, `format`, `words`, the
 ordered asset hashes, `link_placement`, `due_at` and `publish_mode`, as

@@ -1,6 +1,52 @@
 {
   "schema_version": 2,
   "principle": "one useful next action matched to reader intent; loops are measured transitions, not links everywhere",
+  "ecosystem": {
+    "rule": "Every slot a run spec carries names one route into Krish's wider ecosystem beyond the newsletter (ecosystem_cta; engine/run/spec.py lint). The publication is the front door to Mindmake (NOW.md), so a newsletter link or subscribe ask alone is not a route. A new route is a row here.",
+    "routes": [
+      {
+        "route_id": "long-video",
+        "what": "the show's long YouTube video or channel",
+        "hosts": [
+          "youtube.com",
+          "www.youtube.com",
+          "youtu.be",
+          "m.youtube.com"
+        ],
+        "path_prefix": null
+      },
+      {
+        "route_id": "podcast",
+        "what": "the show Make Your Mind Up on Spotify, once its URL is verified",
+        "hosts": [
+          "open.spotify.com"
+        ],
+        "path_prefix": "/show/"
+      },
+      {
+        "route_id": "mindmake",
+        "what": "Mindmake, Krish's company, at mindmake.co",
+        "hosts": [
+          "mindmake.co",
+          "www.mindmake.co"
+        ],
+        "path_prefix": null
+      }
+    ],
+    "not_enough_alone": {
+      "hosts": [
+        "home.makeyourmindup.ai",
+        "makeyourmindup.ai",
+        "www.makeyourmindup.ai"
+      ],
+      "why": "the newsletter itself: its articles and subscribe page are the North Star conversion, not a route beyond it"
+    },
+    "placements": {
+      "in_post": "the route's URL is in the slot's words",
+      "first_reply": "the route's URL goes in the first reply; the slot's link_placement must be first_reply",
+      "profile": "the account's profile link carries the route; the weekly channel audit verifies it"
+    }
+  },
   "journeys": [
     {
       "journey_id": "youtube-short",
@@ -24,7 +70,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "long-video"
     },
     {
       "journey_id": "youtube-search",
@@ -48,7 +95,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "podcast"
     },
     {
       "journey_id": "instagram-discovery",
@@ -73,7 +121,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "long-video"
     },
     {
       "journey_id": "tiktok-discovery",
@@ -98,7 +147,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "long-video"
     },
     {
       "journey_id": "x-discussion",
@@ -121,7 +171,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "mindmake"
     },
     {
       "journey_id": "linkedin-authority",
@@ -144,7 +195,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "mindmake"
     },
     {
       "journey_id": "audio-habit",
@@ -168,7 +220,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "long-video"
     },
     {
       "journey_id": "search-topic",
@@ -192,7 +245,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "mindmake"
     },
     {
       "journey_id": "reader-loop",
@@ -216,7 +270,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "mindmake"
     },
     {
       "journey_id": "partner-loop",
@@ -241,7 +296,8 @@
         "welcome_delivery",
         "unsubscribe_path"
       ],
-      "status": "requires_surface_verification"
+      "status": "requires_surface_verification",
+      "ecosystem_route": "mindmake"
     }
   ]
 }

@@ -68,6 +68,11 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "ecosystem_cta": {
+        "route": "mindmake",
+        "url": "https://mindmake.co/",
+        "placement": "profile"
+      },
       "payload_sha256": "81d325f4864e23b36365927cf0abcd28fd470e9d679ea587c5862c5acca9fddd"
     },
     {
@@ -84,6 +89,11 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "ecosystem_cta": {
+        "route": "mindmake",
+        "url": "https://mindmake.co/",
+        "placement": "profile"
+      },
       "payload_sha256": "0ebf0424459d07b9c8501be92928b9e51bbee364d7623454e5f0e839d5b7f84b"
     },
     {
@@ -100,6 +110,11 @@
       "experiment_arm": null,
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "ecosystem_cta": {
+        "route": "mindmake",
+        "url": "https://mindmake.co/",
+        "placement": "profile"
+      },
       "payload_sha256": "3182bcc8e53ff790e7dd2abc505ecccdc7cd501ac3ee314c565fe38f62284732"
     },
     {
@@ -116,6 +131,11 @@
       "experiment_arm": "in_post",
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "ecosystem_cta": {
+        "route": "long-video",
+        "url": "https://www.youtube.com/@makeyourmind-up",
+        "placement": "profile"
+      },
       "payload_sha256": "2609d86d2ef38dfb6b7d4f448f7d8ce449edfca26b6708364803f4ebdf10e4f1"
     },
     {
@@ -132,6 +152,11 @@
       "experiment_arm": "first_reply",
       "publish_mode": "engine",
       "buffer_draft_id": null,
+      "ecosystem_cta": {
+        "route": "long-video",
+        "url": "https://www.youtube.com/@makeyourmind-up",
+        "placement": "first_reply"
+      },
       "payload_sha256": "ceb5a45d84c86d769353f0c7337cf0714d2dd47b41763dcc247818a76bbeb556"
     }
   ],

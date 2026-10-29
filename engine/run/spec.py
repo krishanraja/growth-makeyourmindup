@@ -10,7 +10,9 @@ from pathlib import Path
 import re
 
 from ..control_center import sha256_hex
-from ..core import TIMEZONE, UTC, calendar_date, http_url, instant, ny_time, read_json, write_json
+from urllib.parse import urlsplit
+
+from ..core import TIMEZONE, UTC, calendar_date, canonical, http_url, instant, ny_time, read_json, write_json
 from ..packs import prose_errors
 from ..social import inventory, validate
 
@@ -162,7 +164,51 @@ def daily_cap(record):
     return cap if isinstance(cap, int) and not isinstance(cap, bool) else None
 
 
-def _slot(slot, at, channels, formats, tests, manifest, window):
+def ecosystem(root=ROOT):
+    """The routes into Krish's wider ecosystem, from journeys.json (its one home)."""
+    path = Path(root) / 'journeys.json'
+    block = read_json(path if path.is_file() else ROOT / 'journeys.json')['ecosystem']
+    return {'routes': {r['route_id']: r for r in block['routes']},
+            'alone': set(block['not_enough_alone']['hosts']), 'placements': set(block['placements'])}
+
+
+URL_IN_TEXT = re.compile(r'https?://[^\s<>"]+')
+
+
+def ecosystem_errors(slot, at, routes):
+    """Why a slot has no route into the wider ecosystem, or []. A newsletter link alone is not one."""
+    sid = slot['slot_id']
+    cta = slot.get('ecosystem_cta')
+
+    def fail(message, where=''):
+        return [finding('ecosystem_cta', at + '.ecosystem_cta' + where, message, sid)]
+    if cta is None:
+        return fail('no route into the wider ecosystem: name the long video, the podcast or Mindmake '
+                    '(journeys.json, ecosystem); the newsletter alone is not enough')
+    route = routes['routes'].get(cta['route'])
+    if route is None:
+        return fail('unknown ecosystem route ' + cta['route'] + '; a new route is a row in journeys.json', '.route')
+    url = cta['url']
+    parts = urlsplit(url) if http_url(url) and url.startswith('https://') else None
+    host = parts.hostname.lower() if parts else None
+    if parts is None:
+        return fail('the route needs an https URL', '.url')
+    if host in routes['alone']:
+        return fail('a newsletter link is not a route beyond the newsletter', '.url')
+    if host not in route['hosts'] or (route['path_prefix'] and not parts.path.startswith(route['path_prefix'])):
+        return fail(url + ' is not on the ' + cta['route'] + ' route (' + route['what'] + ')', '.url')
+    if cta['placement'] not in routes['placements']:
+        return fail('unknown placement ' + cta['placement'], '.placement')
+    if cta['placement'] == 'in_post':
+        found = {canonical(u.rstrip('.,;:!?)')) for u in URL_IN_TEXT.findall(slot['words']) if http_url(u.rstrip('.,;:!?)'))}
+        if canonical(url) not in found:
+            return fail('an in_post route must have its URL in the words', '.placement')
+    if cta['placement'] == 'first_reply' and slot['link_placement'] != 'first_reply':
+        return fail('a first_reply route needs link_placement first_reply', '.placement')
+    return []
+
+
+def _slot(slot, at, channels, formats, tests, manifest, window, routes=None):
     errors, warnings = [], []
     sid = slot['slot_id']
     channel, fmt = channels.get(slot['channel']), formats.get(slot['format'])
@@ -182,6 +228,8 @@ def _slot(slot, at, channels, formats, tests, manifest, window):
         errors.append(finding('krish_click_due_at', at + '.due_at',
                               'a krish_click slot stays an unscheduled draft: due_at must be null', sid))
     errors += [finding('prose', at + '.words', 'words ' + e, sid) for e in prose_errors(slot['words'])]
+    if routes is not None:
+        errors += ecosystem_errors(slot, at, routes)
     warnings += [finding('forward_line_prose', at + '.forward_line', 'forward_line ' + e, sid)
                  for e in prose_errors(slot['forward_line'])]
     listed, approved = manifest
@@ -261,12 +309,13 @@ def lint(spec, records=None, root=ROOT):
             if item['creative_approval_ref'] is not None:
                 approved.add(entry['sha256'])
     seen, per_day = set(), {}
+    routes = ecosystem(root)
     for i, slot in enumerate(spec['slots']):
         at = '$.slots[%d]' % i
         if slot['slot_id'] in seen:
             errors.append(finding('duplicate_slot_id', at + '.slot_id', 'slot_id must be unique', slot['slot_id']))
         seen.add(slot['slot_id'])
-        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window)
+        more, soft = _slot(slot, at, channels, formats, tests, (listed, approved), window, routes)
         errors += more
         warnings += soft
         if slot['due_at'] is not None:
