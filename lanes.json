@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "kind": "lanes",
-  "note": "Every job in exactly one lane, under Krish's 27 Oct 2026 lanes ruling (CHANGES.md, rule R107). What a lane may post comes from invariants/authority.json. engine/run/invariants.py:check_lanes proves every workflow and job is here once, and that no L0 job holds his hands or his eyes. There are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct 2026): a new schedule is a GitHub Actions job in L0. Making (Canva assets, words, Buffer drafts) is done by interactive sessions and the PC automations below, under the same walls (docs/LANES.md, docs/TASTE.md); it is not a lane of its own. The North Star line is not an L0 job: its capture is the Substack Growth sources page, read only in the browser on Krish's PC by the \"Growth: numbers\" automation.",
+  "note": "Every job in exactly one lane, under Krish's 27 Oct 2026 lanes ruling (CHANGES.md, rule R107). What a lane may post comes from invariants/authority.json. engine/run/invariants.py:check_lanes proves every workflow and job is here once, and that no L0 job holds his hands or his eyes. There are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct 2026): a new schedule is a GitHub Actions job in L0. The one exception is claude_sessions below (Krish, 2026-10-29: \"make an exception for makeyourmindup\"). Making (Canva assets, words, Buffer drafts) is done by interactive sessions and the PC automations below, under the same walls (docs/LANES.md, docs/TASTE.md); it is not a lane of its own. The North Star line is not an L0 job: its capture is the Substack Growth sources page, read only in the browser on Krish's PC by the \"Growth: numbers\" automation.",
   "authority": "invariants/authority.json",
   "lanes": {
     "L0_code": {
@@ -405,6 +405,20 @@
       ],
       "status": "kept-until-W46",
       "successor": null
+    }
+  ],
+  "claude_sessions": [
+    {
+      "name": "Spend Make Your Mind Up's prepaid credit share",
+      "brief": "docs/CREDITS.md",
+      "ruling": "Krish, 2026-10-29: \"make an exception for makeyourmindup\"",
+      "may": "once a day, spend inside this engine's prepaid credit share, reserving and settling each spend through the Control Center connector",
+      "never": [
+        "publish, post or send anything",
+        "spend past remaining_for_you, top up, change a plan or spend new money",
+        "commit anything that names a person",
+        "change this repository"
+      ]
     }
   ]
 }
