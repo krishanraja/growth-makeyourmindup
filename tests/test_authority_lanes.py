@@ -132,7 +132,7 @@ class LanesTests(unittest.TestCase):
     def setUp(self):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
-        self.root = copy_root(temp.name, 'lanes.json', 'automations.json', 'jobs', '.github')
+        self.root = copy_root(temp.name, 'lanes.json', 'automations.json', 'jobs', '.github', 'docs/CREDITS.md')
         self.lanes = load_lanes()
         self.authority = load_authority()
 
@@ -170,6 +170,22 @@ class LanesTests(unittest.TestCase):
         (self.root / 'routines').mkdir()
         (self.root / 'routines' / 'make.md').write_text('# synthetic\n', encoding='utf-8')
         self.assertTrue(any(e.startswith('routines/ exists') for e in self.errors()))
+
+    def test_the_one_claude_session_is_the_credits_session(self):
+        # Krish, 2026-10-29: "make an exception for makeyourmindup". Exactly one session; any other still fails.
+        self.assertEqual([e['name'] for e in self.lanes['claude_sessions']], ["Spend Make Your Mind Up's prepaid credit share"])
+        self.assertEqual(self.errors(), [])
+        lanes = copy.deepcopy(self.lanes)
+        lanes['claude_sessions'].append(dict(lanes['claude_sessions'][0], name='Make the week'))
+        self.assertTrue(any(e.startswith('claude session Make the week: there are no Claude routines') for e in self.errors(lanes)))
+        lanes = copy.deepcopy(self.lanes)
+        lanes['claude_sessions'][0]['brief'] = 'docs/SOMETHING-ELSE.md'
+        self.assertTrue(any('there are no Claude routines' in e for e in self.errors(lanes)), 'the exception is tied to its brief')
+        lanes = copy.deepcopy(self.lanes)
+        lanes['claude_sessions'].append(dict(lanes['claude_sessions'][0]))
+        self.assertIn("claude session named more than once: Spend Make Your Mind Up's prepaid credit share", self.errors(lanes))
+        (self.root / 'docs' / 'CREDITS.md').unlink()
+        self.assertIn("claude session Spend Make Your Mind Up's prepaid credit share: brief missing: docs/CREDITS.md", self.errors())
 
     def test_an_unlisted_workflow_fails_but_a_declared_missing_one_passes(self):
         folder = self.root / '.github' / 'workflows'
