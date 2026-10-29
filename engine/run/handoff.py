@@ -61,7 +61,26 @@ Four event types, each with a closed client_payload (unknown keys refused):
   passes 8,000 characters, parts in order (`makeyourmindup:mix:<week>`, then
   `:p2`, ...), one ask at a time, each part's concepts in its own report.
   A version record (`makeyourmindup:mixplan:<week>:<n>`) names the parts in
-  force. Each mock's first view link rides as the ask's evidence.
+  force. Each mock's first view link rides as the ask's evidence. Beside the
+  parts, never inside them, the runner records the week's slots
+  (`makeyourmindup:mixslots:<week>:<plan key>:<i>`, which concept goes where
+  and when) and, when the dispatch carries the optional "mock_files"
+  {sha256: Drive file id}, the week's mock manifest
+  (`makeyourmindup:mocks:<week>:<plan key>:<i>`), both keyed by the version's
+  part digests (cc_records.plan_key), for the maker (engine/run/maker.py). A
+  ready concept whose mock files are not all in mock_files is counted as
+  `mock_file_missing`, and the maker holds it. The same plan sent again is
+  already reported, part by part and version by version: only a slots or mock
+  record not yet there is written, so a plan dispatched before these records
+  existed gains them by being sent again, and his digests never move. A mock
+  manifest sent again with a different mock_files map (a file id corrected)
+  is written as the manifest's next version, after its last numbered record,
+  and the maker reads the highest; its keys must still be the plan's own mock
+  hashes, and every file's bytes are still hashed by the maker and by
+  release. With
+  "records_only": true the runner writes those records and nothing else, and
+  refuses (`records_only_plan_not_in_force`) unless every part and the version
+  it rebuilds are already the plan in force in Control Center.
 - `growth-week-packet` (whoever plans the week): {"run_id", "week",
   "spec_sha256", "slots": [{"slot", "channel", "payload_sha256"}]}. Proposed
   as a `check_in` on the open plan ("On track?"), or as a `plan` when no
@@ -121,6 +140,11 @@ CONCEPT_ID = re.compile(r'^[a-z0-9][a-z0-9-]{0,63}$')
 LENS = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 # growth-mix-plan: the plan file's own fields (a client_payload holds at most ten top-level keys).
 MIX_KEYS = frozenset({'week_of', 'targets', 'weights', 'moved', 'slots', 'concepts', 'shortfalls'})
+# Optional: each approved mock file's Drive file id, for the maker's downloads (never part of what he approves).
+# records_only: write the week's slots and mock records and nothing else, for a plan already reported and in force.
+MIX_OPTIONAL = frozenset({'mock_files', 'records_only'})
+DRIVE_ID = re.compile(r'^[A-Za-z0-9_-]{10,128}$')
+MAX_MOCK_FILES = 400
 MIX_SLOT_KEYS = frozenset({'slot_id', 'channel', 'format', 'lane', 'day', 'due_at', 'concept_id'})
 MIX_CONCEPT_KEYS = frozenset(concept_rules.DIGESTED)
 MIX_CONCEPT_OPTIONAL = frozenset({'mock_links', 'ready', 'text_only', 'concept_sha256'})
@@ -260,7 +284,7 @@ def validate_mix_plan(value, root=None):
     """The mix plan's closed shape, checked against mix.json and the social records. Returns the
     plan as engine/mix.py builds it, with every concept's ready, text_only and concept_sha256
     recomputed (a value sent that differs is refused), and {concept_id: mock view links}."""
-    _closed(value, MIX_KEYS)
+    _closed(value, MIX_KEYS, MIX_OPTIONAL)
     try:
         cfg = mix_rules.load(root or ROOT)
         week = mix_rules.week_days(value['week_of'])
@@ -363,6 +387,24 @@ def validate_mix_plan(value, root=None):
     mix = {'week_of': week[0].isoformat(), 'targets': targets, 'weights': weights, 'moved': moved,
            'slots': slots, 'concepts': concepts, 'shortfalls': shortfalls}
     return mix, links, cfg
+
+
+def validate_mock_files(value, mix):
+    """(manifest, missing) for the optional mock_files {sha256: Drive file id}: None and 0 when it is absent.
+
+    Every key is one of the plan's own mock hashes (`mock_file_not_in_plan` otherwise); missing counts the
+    ready concepts with a mock file the manifest does not name (the maker holds each as mock_file_missing)."""
+    if value is None:
+        return None, 0
+    if not isinstance(value, dict) or not value or len(value) > MAX_MOCK_FILES or not all(
+            isinstance(k, str) and HEX64.match(k) and isinstance(v, str) and DRIVE_ID.match(v)
+            for k, v in value.items()):
+        raise PayloadRejected('bad_mock_files')
+    known = {h for c in mix['concepts'] for h in c['mock_sha256']}
+    if set(value) - known:
+        raise PayloadRejected('mock_file_not_in_plan')
+    missing = sum(1 for c in mix['concepts'] if c['ready'] and set(c['mock_sha256']) - set(value))
+    return {k: value[k] for k in sorted(value)}, missing
 
 
 VALIDATORS = {GO_LIVE: validate_manifest, WEEK_PACKET: validate_packet, MAKE_PIECE: validate_piece,
@@ -981,6 +1023,72 @@ def mix_reports(mix, links, cfg, now, root):
     return reports, version
 
 
+def week_records(mix, version, files, now, root, first=1, manifest_version=1):
+    """The week's slots and, with files, its mock manifest: record reports at the version's plan key, in
+    numbered chunks. They sit beside the plan parts and never change a part's words or digest. The mock
+    manifest's records are numbered from first, as version manifest_version (deliver_mocks numbers them
+    after the records already reported)."""
+    parts, label = version['parts'], week_label(mix['week_of'])
+    key, rev = cc_records.plan_key(parts), revision(root)
+
+    def slots(group, number, total):
+        return {'schema': cc_records.SLOTS, 'week_of': mix['week_of'], 'plan': parts, 'chunk': number,
+                'chunks': total, 'weights': mix['weights'], 'moved': mix['moved'],
+                'shortfalls': len(mix['shortfalls']), 'slots': group}
+
+    def mocks(group, number, total):
+        return {'schema': cc_records.MOCKS, 'week_of': mix['week_of'], 'plan': parts, 'version': manifest_version,
+                'chunk': number, 'chunks': total, 'files': dict(group)}
+
+    out = []
+    for record in cc_records.chunked(cc_records.SLOTS, slots, mix['slots']):
+        out.append((cc_records.SLOTS, cc_records.record_report(
+            cc_records.slots_run_id(label, key, record['chunk']), cc_records.SLOTS, record,
+            ['The slots of the mix plan for the week of ' + mix['week_of'] + ', chunk ' + str(record['chunk'])
+             + ' of ' + str(record['chunks']) + ', for the maker', 'Posted, sent, published and spent nothing'],
+            now, rev)))
+    if files:
+        for record in cc_records.chunked(cc_records.MOCKS, mocks, sorted(files.items())):
+            out.append((cc_records.MOCKS, cc_records.record_report(
+                cc_records.mocks_run_id(label, key, first + record['chunk'] - 1), cc_records.MOCKS, record,
+                ['Where the approved mock files of the week of ' + mix['week_of'] + ' are kept, version '
+                 + str(manifest_version) + ', chunk ' + str(record['chunk']) + ' of ' + str(record['chunks']),
+                 'Posted, sent, published and spent nothing'], now, rev)))
+    return out
+
+
+def deliver_mocks(cc, mix, version, files, now, root, summary):
+    """The week's mock manifest: already reported when the version in force maps the same files; otherwise
+    the next version, numbered after the last record, so a corrected map is never a report conflict."""
+    label, key = week_label(mix['week_of']), cc_records.plan_key(version['parts'])
+    found = cc_records.probe(cc, lambda n: cc_records.mocks_run_id(label, key, n), cc_records.MOCKS,
+                             cc_records.MAX_MOCK_RECORDS)
+    if found is None:
+        summary['loud'].append('mock_manifest_full')
+        return
+    current = cc_records.latest_version(found)
+    if current is not None and {k: v for c in current for k, v in (c.get('files') or {}).items()} == files:
+        summary['reports']['already_reported'] += 1
+        return
+    reports = [report for schema, report in week_records(
+        mix, version, files, now, root, len(found) + 1, 1 if current is None else current[0]['version'] + 1)
+        if schema == cc_records.MOCKS]
+    if len(found) + len(reports) > cc_records.MAX_MOCK_RECORDS:
+        summary['loud'].append('mock_manifest_full')
+        return
+    deliver_records(cc, reports, cc_records.MOCKS, summary)
+
+
+def in_force(cc, week_of, version):
+    """True when this version's parts are the plan in force (the highest numbered version) and each part's
+    own report is there, read back by the digest he decides on: nothing of his would move."""
+    label = week_label(week_of)
+    found = cc_records.probe(cc, lambda n: cc_records.version_run_id(label, n), cc_records.VERSION, MAX_INDEX_PARTS)
+    if not found or found[-1].get('parts') != version['parts']:
+        return False
+    return all(read_proposal(cc, p['proposal_id'], p['payload_sha256'])[0] is not None for p in version['parts'])
+
+
 def version_report(week_of, number, version, now, root):
     return cc_records.record_report(cc_records.version_run_id(week_label(week_of), number), cc_records.VERSION,
                                     version, ['The mix plan in force for the week of ' + week_of + ': '
@@ -1019,6 +1127,10 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             raise PayloadRejected('unknown_event')
         if event == MIX_PLAN:
             mix, links, cfg = validate_mix_plan(payload, root)
+            files, missing = validate_mock_files(payload.get('mock_files'), mix)
+            records_only = payload.get('records_only', False)
+            if not isinstance(records_only, bool):
+                raise PayloadRejected('bad_records_only')
             check_mock_links(mix, links, fetch or (lambda url: buffer_api.download_sha256(url)))
             try:
                 reports, version = mix_reports(mix, links, cfg, now, root)
@@ -1026,13 +1138,25 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                 reports, version = [held_report(event, mix_rules.proposal_id(mix['week_of']), slots, now, root,
                                                 'mix_plan_part_over_cap')], None
                 summary['holds']['mix_plan_part_over_cap'] = 1
+            records = week_records(mix, version, files, now, root) if version else []
+            if version and missing:
+                summary['holds']['mock_file_missing'] = missing
             summary['proposals'] = {'plan': len(reports)} if version else {}
-            summary['reports']['built'] = len(reports) + (1 if version else 0)
-            write_json(path, {'event': event, 'deliver': bool(deliver), 'reports': reports, 'version': version})
+            summary['reports']['built'] = len(reports) + (1 if version else 0) + len(records)
+            write_json(path, {'event': event, 'deliver': bool(deliver), 'reports': reports, 'version': version,
+                              'records': [report for _, report in records]})
+            if records_only and (version is None or (cc is not None and not in_force(cc, mix['week_of'], version))):
+                raise PayloadRejected('records_only_plan_not_in_force')
             if deliver:
-                deliver_reports(cc, reports, summary)
-                if version:
-                    deliver_version(cc, mix['week_of'], version, now, root, summary)
+                if not records_only:
+                    deliver_reports(cc, reports, summary)
+                    if version:
+                        deliver_version(cc, mix['week_of'], version, now, root, summary)
+                for schema, report in records:
+                    if schema == cc_records.SLOTS:
+                        deliver_records(cc, [report], schema, summary)
+                if files and version:
+                    deliver_mocks(cc, mix, version, files, now, root, summary)
             return _finish(summary, slots)
         VALIDATORS[event](payload)
         if event == MAKE_PIECE:
@@ -1142,7 +1266,8 @@ def main(argv=None, make_cc=None, make_buffer=None, fetch=None, out=print, root=
         out(json.dumps(summary, sort_keys=True))
         return 1
     cc = buffer = None
-    if args.event in (GO_LIVE, WEEK_PACKET) or (args.event == MIX_PLAN and args.deliver):
+    records_only = args.event == MIX_PLAN and isinstance(payload, dict) and payload.get('records_only') is True
+    if args.event in (GO_LIVE, WEEK_PACKET) or (args.event == MIX_PLAN and (args.deliver or records_only)):
         try:
             if args.event == GO_LIVE:
                 buffer = (make_buffer or autorelease._buffer_client)()

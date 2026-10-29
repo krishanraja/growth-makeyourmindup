@@ -22,10 +22,18 @@ Nobody has to be awake or online for these.
 | Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). That is each day's go-live he approved (a go-live naming more than one New York day holds), and each post made from an idea and mock he approved in the week's mix plan, read back from Control Center (below). A post still scheduled after a No fails the run, so GitHub emails Krish. It holds a post whose words fail the copy lint or ask for the share, and every post on a Buffer route not yet recorded as passed: that route's one capability check goes through `run release` first. Never LinkedIn | every 30 minutes | every 30 minutes |
 | Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
 | The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea | when that maker wakes it | when that maker wakes it |
+| The maker (`maker.yml`, [MAKER.md](MAKER.md)): makes the next New York day's posts from the ideas and mocks Krish approved in the week's mix plan, as Buffer drafts with no due time, writes their words and a blind review of them with the Anthropic API, and hands each off with its review, so release can schedule it. Only the approved mock files, checked by hash; one draft per idea, channel and week; never LinkedIn; it never schedules, publishes or deletes | every day 04:30; by hand a dry run unless deliver is ticked | 04:30 |
 | The test suite (`check.yml`) | on every push and pull request | on every push and pull request |
+| Art direction (`artdirect.yml`): Codex invents one visual idea for each piece of the coming week and builds it as a piece kit (`render/KIT.md`, "Piece kits"), with no network, only in that piece's own folder, and on at most three pieces a run. The renderer's checks are the gate: a kit that fails is removed and that piece uses the house kit. The kits that pass come to Krish as one pull request, "Piece kits for week W", which the workflow never merges. Its log carries counts and codes only | Saturdays 07:00 | 07:00 |
 
 Only this lane holds the Control Center engine key. It is a GitHub
 repository secret. No chat session holds it.
+
+Art direction is the one L0 job that runs a model. Codex makes there under
+the same walls as every maker: it writes only a piece kit, which reaches the
+repository only through a pull request Krish merges, and it never posts,
+sends, schedules or spends beyond its capped run. Its key is the repository
+secret `OPEN_AI_API_KEY`, given to that one step and to no other job.
 
 ### How release reads what Krish approved
 
@@ -74,7 +82,15 @@ Krish's PC (below) are kept as they are.
 
 Making is not a lane of its own. Canva assets, words, Buffer drafts and the
 week's packet are made by interactive sessions and by the existing jobs on
-Krish's PC, under the same walls:
+Krish's PC, and each piece's visual idea by Codex in the art direction job
+(L0, above), under the same walls. The one other exception is the maker
+(`maker.yml`, `docs/MAKER.md`): an L0 job that drafts each day's posts made
+from ideas and mocks he already approved, and hands them off in the same
+run. With art direction, it is one of the two L0 jobs that call a model (the
+Anthropic API, for the words and their blind review; Krish kept model jobs in
+L0, 29 October). It keeps the walls below, except that, as L0
+code, it reads Control Center with the engine key and records its drafts
+through the handoff's own code instead of a dispatch:
 
 - Making leaves drafts and proposals only: it never publishes, schedules,
   sends, deletes or spends. A Buffer post is saved with `saveToDraft: true`

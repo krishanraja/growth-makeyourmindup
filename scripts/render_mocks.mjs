@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 // Render mock PNGs from the kit templates in render/, with headless Chromium through Playwright.
 //
-//   node scripts/render_mocks.mjs JOBS.json [--out-dir DIR] [--manifest FILE] [--verify]
+//   node scripts/render_mocks.mjs JOBS.json [--out-dir DIR] [--manifest FILE] [--verify] [--pieces DIR]
 //
 // JOBS.json is a list of {template, fields, out}: template is an id in render/templates.json,
 // fields fills its placeholders, out is the PNG path (relative paths resolve against --out-dir,
-// or the folder JOBS.json is in). A job may instead be {video: [png, ...], seconds, out}, seconds one
+// or the folder JOBS.json is in). A template may instead be "piece:<piece_id>/<template>": a
+// template from that piece's own kit, render/pieces/<piece_id>/templates.json (render/KIT.md,
+// "Piece kits"; --pieces points at another folder of kits, for tests). A piece kit uses the house
+// kit.css, fit.js and fonts, served from render/ as for every other page.
+// A job may instead be {video: [png, ...], seconds, out}, seconds one
 // number or one per frame: a
 // slideshow of already rendered PNGs, padded onto a 1080x1920 ink frame, encoded with ffmpeg
 // bit-exactly (YouTube takes video, never a still). Video jobs run after every PNG job.
@@ -17,6 +21,8 @@
 // Deterministic: every request the page makes is served from render/ or refused, so nothing
 // reaches the network; fonts are vendored; text is fitted by fixed steps (render/fit.js); and
 // any text or time chunk is stripped from each PNG, so the same input gives the same bytes.
+// A page that asks for anything the renderer refuses (a remote URL, a file outside render/, a
+// missing file) is refused itself, so a remote font or a missing image cannot pass quietly.
 // --verify renders every job twice and fails unless both sha256 values agree.
 // A job whose words do not fit its box at the smallest size, whose fonts did not load, or
 // whose fields carry an em dash, is refused; nothing is clipped silently. Each result names the colours
@@ -35,6 +41,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RENDER = path.join(ROOT, 'render');
 const ORIGIN = 'http://mocks.invalid';
 const EM_DASH = /\u2014/;
+const PIECE = /^piece:([a-z0-9][a-z0-9-]{1,63})\/([a-z0-9][a-z0-9-]{0,63})$/;
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.ttf': 'font/ttf' };
 
 function loadPlaywright() {
@@ -83,8 +90,25 @@ function strings(value) {
   return Array.isArray(value) ? value.flat(Infinity).map(String) : [String(value)];
 }
 
-export function fill(manifest, job) {
-  const spec = manifest.templates[job.template];
+// Which manifest and folder a job's template comes from: the house kit, or one piece's own kit.
+export function resolveTemplate(manifest, template, piecesDir = path.join(RENDER, 'pieces')) {
+  const m = PIECE.exec(String(template));
+  if (!m) {
+    if (String(template).startsWith('piece:')) throw new Error('a piece template is piece:<piece_id>/<template>, not '
+      + JSON.stringify(template));
+    return { spec: manifest.templates[template], dir: RENDER, page: null };
+  }
+  const dir = path.join(piecesDir, m[1]);
+  const file = path.join(dir, 'templates.json');
+  if (!fs.existsSync(file)) throw new Error('no piece kit ' + m[1]);
+  const kit = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (kit.piece_id !== m[1]) throw new Error('piece kit ' + m[1] + ' names another piece_id');
+  const spec = (kit.templates || {})[m[2]];
+  return { spec, dir, page: spec ? '/pieces/' + m[1] + '/' + spec.file : null };
+}
+
+export function fill(manifest, job, piecesDir) {
+  const { spec, dir, page } = resolveTemplate(manifest, job.template, piecesDir);
   if (!spec) throw new Error('unknown template ' + JSON.stringify(job.template));
   const fields = job.fields || {};
   const unknown = Object.keys(fields).filter((k) => !(k in spec.fields));
@@ -99,7 +123,9 @@ export function fill(manifest, job) {
       throw new Error(job.template + ': ' + k + ' is one of ' + allowed.join(', ') + ', not ' + JSON.stringify(fields[k]));
     }
   }
-  let html = fs.readFileSync(path.join(RENDER, spec.file), 'utf8');
+  const source = path.normalize(path.join(dir, spec.file));
+  if (!source.startsWith(dir + path.sep)) throw new Error(job.template + ': its file is outside its kit');
+  let html = fs.readFileSync(source, 'utf8');
   html = html.replace(/\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}/g, (_, kind, name) => {
     const declared = spec.fields[name];
     if (!declared) throw new Error(spec.file + ' names a field the manifest does not: ' + name);
@@ -110,7 +136,7 @@ export function fill(manifest, job) {
     if (declared === 'options') return optionsHtml(value);
     return textHtml(value);
   });
-  return { spec, html };
+  return { spec, html, page: page || '/' + spec.file };
 }
 
 // Keep only the chunks that carry the picture; a text or time chunk would make bytes differ.
@@ -130,20 +156,35 @@ export function stripPng(buf) {
 
 function sha256(buf) { return createHash('sha256').update(buf).digest('hex'); }
 
-async function renderOne(browser, manifest, job) {
-  const { spec, html } = fill(manifest, job);
+// Where a request is served from: /pieces/<id>/... from the folder of piece kits, the rest from render/.
+function servedFile(pathname, piecesDir) {
+  const name = decodeURIComponent(pathname);
+  const piece = /^\/pieces\/([a-z0-9][a-z0-9-]{1,63})\/(.+)$/.exec(name);
+  const base = piece ? path.join(piecesDir, piece[1]) : RENDER;
+  const file = path.normalize(path.join(base, piece ? piece[2] : name));
+  if (!file.startsWith(base + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return null;
+  if (!piece && file.startsWith(path.join(RENDER, 'pieces') + path.sep)) return null;
+  return file;
+}
+
+async function renderOne(browser, manifest, job, piecesDir) {
+  const { spec, html, page: pagePath } = fill(manifest, job, piecesDir);
   const page = await browser.newPage({ viewport: { width: spec.width, height: spec.height }, deviceScaleFactor: 1 });
+  const refused = [];
   try {
     await page.route('**/*', async (route) => {
       const url = new URL(route.request().url());
-      if (url.origin !== ORIGIN) return route.abort();
-      if (url.pathname === '/' + spec.file) return route.fulfill({ status: 200, contentType: TYPES['.html'], body: html });
-      const file = path.normalize(path.join(RENDER, decodeURIComponent(url.pathname)));
-      if (!file.startsWith(RENDER + path.sep) || !fs.existsSync(file)) return route.abort();
+      if (url.origin !== ORIGIN) { refused.push('a remote URL'); return route.abort(); }
+      if (url.pathname === pagePath) return route.fulfill({ status: 200, contentType: TYPES['.html'], body: html });
+      const file = servedFile(url.pathname, piecesDir);
+      if (!file) {
+        if (url.pathname !== '/favicon.ico') refused.push(url.pathname);
+        return route.abort();
+      }
       return route.fulfill({ status: 200, contentType: TYPES[path.extname(file)] || 'application/octet-stream',
         body: fs.readFileSync(file) });
     });
-    await page.goto(ORIGIN + '/' + spec.file, { waitUntil: 'load' });
+    await page.goto(ORIGIN + pagePath, { waitUntil: 'load' });
     const report = await page.evaluate(async () => {
       const faces = Array.from(document.fonts);
       await Promise.all(faces.map((f) => f.load().catch(() => null)));
@@ -167,6 +208,10 @@ async function renderOne(browser, manifest, job) {
           const st = getComputedStyle(el, pseudo);
           if (st.display === 'none' || (pseudo && st.content === 'none')) continue;
           [st.color, st.backgroundColor, st.webkitTextStrokeColor].forEach((c) => { const h = hex(c); if (h) colours.add(h); });
+          for (const shadow of [st.boxShadow, st.textShadow]) {
+            for (const m of String(shadow).matchAll(/rgba?\([^)]*\)/g)) { const h = hex(m[0]); if (h) colours.add(h); }
+          }
+          if (parseFloat(st.outlineWidth) > 0 && st.outlineStyle !== 'none') { const h = hex(st.outlineColor); if (h) colours.add(h); }
           for (const side of ['Top', 'Right', 'Bottom', 'Left']) {
             if (parseFloat(st['border' + side + 'Width']) > 0 && st['border' + side + 'Style'] !== 'none') {
               const h = hex(st['border' + side + 'Color']); if (h) colours.add(h);
@@ -180,6 +225,7 @@ async function renderOne(browser, manifest, job) {
       }
       return { unloaded, errors, faces: faces.length, colours: [...colours].sort(), fonts: [...fonts].sort() };
     });
+    if (refused.length) throw new Error(job.out + ': the page asked for what the renderer refuses: ' + refused.join(', '));
     if (!report.faces || report.unloaded.length) throw new Error(job.out + ': fonts did not load: ' + report.unloaded.join(', '));
     if (report.errors.length) throw new Error(job.out + ': ' + report.errors.join('; '));
     const png = await page.screenshot({ type: 'png', animations: 'disabled', caret: 'hide', scale: 'css',
@@ -219,16 +265,18 @@ async function main(argv) {
     if (argv[i] === '--verify') args.verify = true;
     else if (argv[i] === '--out-dir') args.outDir = argv[++i];
     else if (argv[i] === '--manifest') args.manifest = argv[++i];
+    else if (argv[i] === '--pieces') args.pieces = argv[++i];
     else rest.push(argv[i]);
   }
   if (rest.length !== 1) {
-    console.error('usage: node scripts/render_mocks.mjs JOBS.json [--out-dir DIR] [--manifest FILE] [--verify]');
+    console.error('usage: node scripts/render_mocks.mjs JOBS.json [--out-dir DIR] [--manifest FILE] [--verify] [--pieces DIR]');
     return 2;
   }
   const jobs = JSON.parse(fs.readFileSync(rest[0], 'utf8'));
   if (!Array.isArray(jobs)) throw new Error('the jobs file is a JSON list of {template, fields, out}');
   const base = path.resolve(args.outDir || path.dirname(rest[0]));
   const manifest = JSON.parse(fs.readFileSync(path.join(RENDER, 'templates.json'), 'utf8'));
+  const piecesDir = path.resolve(args.pieces || path.join(RENDER, 'pieces'));
   const seen = new Set();
   for (const job of jobs) {
     if (!job || typeof job.out !== 'string' || !job.out) throw new Error('every job needs an out path');
@@ -241,17 +289,18 @@ async function main(argv) {
   const results = [];
   try {
     for (const job of jobs.filter((j) => !j.video)) {
-      const { png, colours, fonts } = await renderOne(browser, manifest, job);
+      const { spec } = resolveTemplate(manifest, job.template, piecesDir);
+      const { png, colours, fonts } = await renderOne(browser, manifest, job, piecesDir);
       const digest = sha256(png);
       if (args.verify) {
-        const again = sha256((await renderOne(browser, manifest, job)).png);
+        const again = sha256((await renderOne(browser, manifest, job, piecesDir)).png);
         if (again !== digest) throw new Error(job.out + ': two renders differ (' + digest + ' and ' + again + ')');
       }
       const out = path.resolve(base, job.out);
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.writeFileSync(out, png);
-      results.push({ out: job.out, template: job.template, width: manifest.templates[job.template].width,
-        height: manifest.templates[job.template].height, bytes: png.length, sha256: digest, colours, fonts });
+      results.push({ out: job.out, template: job.template, width: spec.width,
+        height: spec.height, bytes: png.length, sha256: digest, colours, fonts });
     }
   } finally {
     await browser.close();
