@@ -1,4 +1,4 @@
-"""The plain-English lint for carousels and captions (Krish, 27 Oct 2026, rule R101).
+"""The plain-English lint for carousels and captions (Krish, 27 Oct 2026, rule R105).
 
 His words on the last Make Your Mind Up carousel: "It wasn't plain English and
 human and humble enough." Offline only; returns error codes, never rewrites.

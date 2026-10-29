@@ -40,8 +40,10 @@ class CalendarTests(unittest.TestCase):
             self.assertGreaterEqual(counts['threads'], 1, day)
             self.assertGreaterEqual(counts['x'], 1, day)
         self.assertEqual(sum(c.get('linkedin', 0) for c in result['week'].values()), 4)
-        # Threads and X take 1 a day under their records; the calendar's "up to 2" is held for Krish.
-        self.assertEqual(len(result['held']), 2)
+        # Threads takes 1 a day under its record, so the calendar's "up to 2" is held for Krish. X takes
+        # four a day since main's 29 Oct ruling (R102), so its "up to 2" fits and is not held.
+        self.assertEqual(len(result['held']), 1)
+        self.assertIn('threads', result['held'][0])
         self.assertTrue(all('waits for Krish' in h for h in result['held']))
 
     def test_every_row_is_in_the_lane_authority_gives_it(self):
@@ -102,9 +104,10 @@ class CalendarTests(unittest.TestCase):
         calendar['weekly'].append(extra)
         self.assertIn('cap', codes(calendar))
         calendar = v1()
-        calendar['weekly'].append(dict(row(calendar, 'meme-instagram-tu'), id='meme-x-mo', channel='x',
+        calendar['weekly'].append(dict(row(calendar, 'meme-instagram-tu'), id='meme-threads-mo', channel='threads',
                                        weekday='MO', template='meme-square', priority=1))
-        self.assertIn('day0_bumped', codes(calendar))  # X takes one a day; a day-0 receipt must never be cut
+        # Threads takes one a day; a day-0 receipt must never be cut (X takes four since R102).
+        self.assertIn('day0_bumped', codes(calendar))
         calendar = v1()
         calendar['memes']['max'] = 2
         self.assertIn('memes', codes(calendar))
@@ -120,8 +123,11 @@ class CalendarTests(unittest.TestCase):
         sources = {c['channel']: c['source_file'] for c in calendar['caps']}
         self.assertEqual(sources['linkedin'], 'docs/plans/2026-10-27-engine-architecture.md')
         records = inventory()['channel']
-        for name in ('x', 'threads', 'instagram', 'facebook', 'tiktok', 'youtube'):
+        for name in ('threads', 'facebook'):
             self.assertEqual(records[name]['daily_posts_target'], 1, name)
+        for name in ('x', 'instagram', 'tiktok', 'youtube'):
+            # Main's 29 Oct ruling (R102): four a day with a floor of three on the concept channels.
+            self.assertEqual((records[name]['daily_posts_target'], records[name]['daily_posts_floor']), (4, 3), name)
         calendar['caps'][0]['quote'] = 'LinkedIn at most nine a week'
         self.assertIn('cap_quote', codes(calendar))
         calendar = v1()
@@ -143,15 +149,20 @@ class CalendarTests(unittest.TestCase):
         self.assertIn('daily_cap_restated', codes(calendar))
         # A floor's max above the cap holds for Krish; it never raises or lowers the cap.
         calendar = v1()
-        calendar['floors'][2]['max'] = 4
+        calendar['floors'][1]['max'] = 4
         result = lint(calendar)
         self.assertTrue(result['valid'], result['errors'])
-        self.assertIn('x: the calendar allows 4 a day, but the cap is 1', ' '.join(result['held']))
+        self.assertIn('threads: the calendar allows 4 a day, but the cap is 1', ' '.join(result['held']))
         calendar['floors'][0]['max'] = 1
         self.assertEqual(daily_caps(calendar, records)['substack-notes'], 2)
 
     def test_a_result_card_runs_only_after_its_poll(self):
-        kept, bumped = resolve(v1(), inventory()['channel'])
+        # On a channel taking one a day a poll can be bumped and its result card must drop with it. X took one
+        # a day until main's 29 Oct ruling (R102: four); the rule is proved on a record kept at one.
+        records = copy.deepcopy(inventory()['channel'])
+        records['x']['daily_posts_target'] = 1
+        records['x']['daily_posts_floor'] = None
+        kept, bumped = resolve(v1(), records)
         ran = {(k['piece'], k['row']['id']) for k in kept}
         for item in kept:
             if item['row']['requires']:

@@ -23,7 +23,7 @@ import tempfile
 from . import meter
 from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, _decided_at, action_key, action_errors,
                              build_report, canonical_json, copy_open, engage_action, golive_review, iso,
-                             match_decisions, objective, proposal)
+                             match_decisions, objective, proposal, _stops)
 from . import intensity
 from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
@@ -228,6 +228,33 @@ def standing_plan(root):
     plan = read_json(path)
     return proposal(plan['proposal_id'], plan['title'], plan['why'], 'advice', 'strategy', 'plan_approved',
                     exact_payload=plan['exact_payload'], reference='docs/RUN.md, Gates', stage='plan')
+
+
+MIX_DIR = Path('.scratch') / 'mix'
+
+
+def next_monday(now):
+    local = ny_time(now).date()
+    return local + dt.timedelta(days=7 - local.weekday())
+
+
+def mix_proposal(root, now):
+    """(proposal, hold): next week's mix plan, Krish's one press on its ideas and mocks (R101, R103).
+
+    `growth.py mix plan --out .scratch/mix/plan-<Monday>.json` writes it in the
+    Sunday report's run; the report carries its plan proposal behind strategy.
+    No file means no ask; a file whose proposal could not be built is a hold."""
+    path = Path(root) / MIX_DIR / ('plan-' + next_monday(now).isoformat() + '.json')
+    if not path.exists():
+        return None, None
+    try:
+        mix = read_json(path)
+        item = mix.get('proposal')
+        if not isinstance(item, dict) or item.get('stage') != 'plan' or item.get('wall') != 'strategy':
+            return None, {'reason': "Next week's mix has no plan proposal", 'detail': str(mix.get('proposal_hold'))[:900]}
+        return item, None
+    except (ValueError, OSError, AttributeError) as exc:
+        return None, {'reason': "Next week's mix could not be read", 'detail': str(exc)[:900]}
 
 
 def experiment_proposals(root):
@@ -716,6 +743,10 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     selected, deferred, queue = _items(envelopes, queue, now, job)
     gap = gap or intensity.state(root, now)
     proposals, holds, minutes = [], [], 0
+    if job == 'report':
+        mixed, held = mix_proposal(root, now)
+        proposals += [mixed] if mixed else []
+        holds += [held] if held else []
     taps = [i for i in selected if (i.get('pack_kind') or job) in ENGAGE_JOBS]
     if taps:
         task, more, used = engagement_task(taps, now, evidence, intensity.engagement_taps(gap['urgency'], root), plain_taps)
@@ -751,8 +782,8 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     if intensity.raised(gap['urgency']):
         activity.append({'line': 'At U' + str(gap['urgency']) + ' the volume caps rise to their bounds in intensity.json: '
                          + str(intensity.engagement_taps(gap['urgency'], root)) + ' engagement taps a day; each channel'
-                         + "'s posts stay at its own policy bound (Substack Notes two a day, every other one);"
-                         + ' walls, spend and approvals unchanged'})
+                         + "'s posts stay at its own policy bound (Instagram, YouTube, TikTok and X four a day, Substack Notes two,"
+                         + ' every other one); walls, spend and approvals unchanged'})
     if directive_pulled:
         activity.append({'line': "Pulled today's directive before reading any source"})
     if taps and proposals and copy_open(proposals[0]) is not None:
@@ -857,6 +888,27 @@ def claim_golives(root, proposals, decisions, now=None):
     return review
 
 
+def record_stops(root, proposals, decisions):
+    """Record Krish's stops in the go-live ledger and return it: plans he stopped stay stopped,
+    and declined check-ins whose plan is not known yet are listed as unresolved.
+
+    The same rule claim_golives applies (control_center._stops), run in every loop
+    run, so release (engine/run/release.py stopped_plans, unresolved_stops) and the
+    mix plan readback read stops that were really written. Claims nothing and
+    acts on nothing."""
+    path = state_path(root, GOLIVE_LEDGER)
+    given = [p for p in proposals or [] if isinstance(p, dict)]
+    known = {p.get('proposal_id') for p in given}
+    merged = given + [p for p in remembered_proposals(root) if p['proposal_id'] not in known]
+    with locked(path):
+        ledger = golive_ledger(root)
+        stopped, unresolved = _stops(merged, decisions, ledger)
+        ledger['stopped'].update({pid: why for pid, why in stopped.items() if pid not in ledger['stopped']})
+        ledger['unresolved'] = dict(unresolved)
+        write_json(path, {key: dict(sorted(ledger[key].items())) for key in ('acted', 'stopped', 'unresolved')})
+    return ledger
+
+
 def decisions_since(root, now):
     path = state_path(root, 'decisions.json')
     try:
@@ -866,6 +918,7 @@ def decisions_since(root, now):
 
 
 VOICE_RULES_FILE = 'voice-rules.txt'
+INSPIRATION_FILE = 'inspiration.txt'
 WEB_ANALYTICS_FILE = 'web-analytics.json'
 
 
@@ -1011,6 +1064,76 @@ def voice_block(directive):
     return lines
 
 
+INSPIRATION_USE = ('These are Krish\'s own suggestions. Treat them as the baseline standard for every week, piece and '
+                   'express idea you plan: schedule a trial of each one he tagged, or say in the spec why it waits. '
+                   'Rebuild a source in the publication\'s own voice and look; never copy it. Quote his_words as his; '
+                   'agreed_reasons are guesses he tapped, never his words. Nothing that checks, scores, ranks or '
+                   'queues a draft reads this block.')
+
+
+def inspiration_suggestions(directive):
+    """Krish's suggestions from his inspiration board (protocol 1.15.0 `inspiration`).
+
+    Returns (state, rule, suggestions). state is 'absent' when the directive
+    carries no readable block (Control Center could not read the board today,
+    or speaks an older 1.x), 'none' when he has suggested nothing yet and
+    'suggestions' otherwise. Malformed entries are dropped, never repaired or
+    invented. Like the voice rules, they feed planning and drafting only."""
+    body = directive.get('directive', {}) if isinstance(directive, dict) else {}
+    block = body.get('inspiration') if isinstance(body, dict) else None
+    if not isinstance(block, dict) or not isinstance(block.get('suggestions'), list):
+        return 'absent', None, []
+    rule = block.get('rule') if isinstance(block.get('rule'), str) and block['rule'].strip() else None
+    text = lambda item, key: item[key].strip() if isinstance(item.get(key), str) and item[key].strip() else None
+    strings = lambda item, key: [w.strip() for w in item.get(key) or [] if isinstance(w, str) and w.strip()]
+    out = []
+    for item in block['suggestions']:
+        if not isinstance(item, dict) or not text(item, 'card_id'):
+            continue
+        trials = [{'trial': t['trial'], 'label': text(t, 'label') or t['trial'], 'means': text(t, 'means')}
+                  for t in item.get('trials') or [] if isinstance(t, dict) and isinstance(t.get('trial'), str)]
+        out.append({'card_id': text(item, 'card_id'), 'name': text(item, 'name'), 'kind': text(item, 'kind'),
+                    'lane': text(item, 'lane'), 'trials': trials, 'his_words': strings(item, 'his_words'),
+                    'agreed_reasons': strings(item, 'agreed_reasons'), 'note_for_claude': text(item, 'note_for_claude'),
+                    'read_as': text(item, 'read_as'), 'post_url': text(item, 'post_url'),
+                    'drive_url': text(item, 'drive_url'), 'saved_at': text(item, 'saved_at')})
+    return ('suggestions' if out else 'none'), rule, out
+
+
+def inspiration_block(directive):
+    """The labelled block a planning or drafting step reads. Local only, never a public log."""
+    state, rule, items = inspiration_suggestions(directive)
+    lines = ["KRISH'S INSPIRATION BOARD (the baseline for what you plan; from today's directive)"]
+    if state == 'absent':
+        lines += ['  Could not be read today. Do not invent his suggestions: plan from AGENTS.md and the playbook as before.']
+        return lines
+    lines.append('  ' + INSPIRATION_USE)
+    if rule:
+        lines.append("  Control Center's rule: " + ' '.join(rule.split()))
+    if state == 'none':
+        lines.append('  He has suggested nothing yet. Do not invent any.')
+        return lines
+    tried = [i for i in items if i['trials']]
+    lines.append('  ' + str(len(tried)) + ' with a trial he tagged, ' + str(len(items)) + ' in all, newest first.')
+    for number, item in enumerate(items, 1):
+        head = str(number) + '. ' + (item['name'] or item['card_id'])
+        head += ' (' + ', '.join(x for x in (item['kind'], item['lane'], item['saved_at']) if x) + ')'
+        lines.append('  ' + head)
+        if item['trials']:
+            lines.append('     try: ' + '; '.join(t['label'] + (' (' + t['means'] + ')' if t['means'] else '') for t in item['trials']))
+        for words in item['his_words']:
+            lines.append('     his words: "' + ' '.join(words.split()) + '"')
+        if item['agreed_reasons']:
+            lines.append('     reasons he agreed with: ' + '; '.join(item['agreed_reasons']))
+        if item['read_as'] or item['note_for_claude']:
+            lines.append('     how to read it: ' + ' '.join(x for x in (item['read_as'], item['note_for_claude']) if x))
+        for key, label in (('post_url', 'post'), ('drive_url', 'file')):
+            if item[key]:
+                lines.append('     ' + label + ': ' + item[key])
+    lines.append('END OF INSPIRATION BOARD')
+    return lines
+
+
 def describe(directive):
     """A short local summary of the directive. Never used on a public runner log."""
     body = directive.get('directive', {}) if isinstance(directive, dict) else {}
@@ -1022,7 +1145,15 @@ def describe(directive):
     for item in body.get('objectives', []):
         lines.append('objective ' + str(item.get('key')) + ': latest ' + str(item.get('latest')) + ' '
                      + str(item.get('unit')) + ', target ' + str(item.get('target')) + ', ' + str(item.get('availability')))
+    state, _, items = inspiration_suggestions(directive)
+    lines.append('inspiration board: ' + ('could not be read today' if state == 'absent' else
+                 str(sum(1 for i in items if i['trials'])) + ' tagged trials, ' + str(len(items)) + ' suggestions in '
+                 + state_label(INSPIRATION_FILE)))
     return lines + voice_block(directive)
+
+
+def state_label(name):
+    return str(Path(STATE_DIR) / name)
 
 
 def summary(outcome, public=False, matched=None):
@@ -1129,6 +1260,9 @@ def cli(args, root, make_client, out=print, checks=None):
         loop = Loop(client, job, run_id, clock)
         if voice_file.exists():
             voice_file.unlink()  # A fresh start pulls today's rules.
+        inspiration_file = state_path(root, INSPIRATION_FILE)
+        if inspiration_file.exists():
+            inspiration_file.unlink()  # And today's board.
         try:
             write_json(saved, loop.start())
         except ProtocolError as error:
@@ -1138,6 +1272,8 @@ def cli(args, root, make_client, out=print, checks=None):
         # The drafting steps read this local, ignored file; nothing that checks,
         # scores or queues a draft does.
         voice_file.write_text('\n'.join(voice_block(loop.directive)) + '\n', encoding='utf-8')
+        # His inspiration board (1.15.0), the baseline for what the plan schedules; local and ignored like the rules.
+        inspiration_file.write_text('\n'.join(inspiration_block(loop.directive)) + '\n', encoding='utf-8')
         keep_web_analytics(root, loop.directive)
         for line in describe(loop.directive):
             out(line)
@@ -1151,6 +1287,11 @@ def cli(args, root, make_client, out=print, checks=None):
     matched = None
     if 'decisions' in outcome:
         matched = remember(root, outcome['report'], outcome['decisions'], now)
+        # His decision on the week's mix plan reaches decision.json here, in this run, before the next read
+        # replaces decisions.json (engine/run/decision.py, R101). Local writes only.
+        from .run.decision import after_readback
+        for line in after_readback(root, matched, now):
+            out(line)
     if outcome.get('attempt_journaled') and saved.exists():
         saved.unlink()
     for line in summary(outcome, matched=matched):

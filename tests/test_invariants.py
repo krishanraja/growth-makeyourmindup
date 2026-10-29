@@ -128,17 +128,17 @@ class RuleTests(unittest.TestCase):
 
     def test_27_october_evening_rulings_are_quoted_and_guarded(self):
         rules = {r['id']: r for r in load_rules()}
-        anchors = {'R101': ('Derivatives of approved pieces.', 'show me before you post',
+        anchors = {'R105': ('Derivatives of approved pieces.', 'show me before you post',
                            "It wasn't plain English and human and humble enough."),
-                   'R102': ('less fragile way of doing this than a session engine token',
+                   'R106': ('less fragile way of doing this than a session engine token',
                            'Same for the cost baseline.'),
-                   'R103': ('set yourself daily autonomous tasks', 'like my personal LinkedIn posts')}
+                   'R107': ('set yourself daily autonomous tasks', 'like my personal LinkedIn posts')}
         for rule_id, phrases in anchors.items():
             self.assertEqual(rules[rule_id]['source_file'], 'CHANGES.md')
             for phrase in phrases:
                 self.assertIn(phrase, collapse(rules[rule_id]['quote']), rule_id)
             self.assertTrue(rules[rule_id]['tests'], rule_id)
-        self.assertIn('engine/run/invariants.py:check_lanes', rules['R102']['enforced_by'])
+        self.assertIn('engine/run/invariants.py:check_lanes', rules['R106']['enforced_by'])
         failures = {f['id']: f for f in load_failures()}
         self.assertEqual(FAILURE_IDS[65:71], ('F66', 'F67', 'F68', 'F69', 'F70', 'F71'))
         for fid, guard in (('F66', 'may_post_alone'), ('F67', 'check_lanes'), ('F68', 'check_lanes'),
@@ -232,8 +232,8 @@ class FailureRegisterTests(unittest.TestCase):
             self.assertIn(guard, failures[fid]['guard'], fid)
             self.assertIn(test, failures[fid]['tests'], fid)
         rules = {r['id']: r for r in load_rules()}
-        for rule_id, phrase in (('R104', 'queue and post autonomously'), ('R105', 'LinkedIn stays his own final click'),
-                                ('R106', 'show me before you post')):
+        for rule_id, phrase in (('R108', 'queue and post autonomously'), ('R109', 'LinkedIn stays his own final click'),
+                                ('R110', 'show me before you post')):
             self.assertIn(phrase, rules[rule_id]['quote'], rule_id)
 
     def test_register_records_the_posting_path_review(self):

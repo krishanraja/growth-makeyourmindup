@@ -156,3 +156,57 @@ line here says otherwise.
 
 No spending, new connection, automation or account-setting change follows
 from these rulings. The Buffer plan (due 31 October) is his decision.
+
+## 29 October 2026: approve the idea and the mock
+
+Ruling (Krish, 2026-10-29): approval moves to the idea and the mock on
+Instagram, YouTube, TikTok and X, three or four posts a day each (`CHANGES.md`;
+`docs/MIX.md`). "I just need to be in control of the idea and the mocks and
+then I'm happy to let you let that engine just go for gold." It adds to the
+rulings above; everything above stands unless a line here says otherwise.
+
+- **The concept is what he approves.** A concept is one idea, its one claim
+  and its mock files, bound by `concept_sha256`. He approves each concept
+  once, in the week's mix plan proposal (stage plan, behind strategy), whose
+  exact payload lists every concept hash. That yes is to reach release as
+  decision.json `concepts`, written only from the readback of his decision,
+  bound by the spec signature's `concepts_digest` and `concept_proposal_id`
+  (`engine/run/decision.py`, fields in `docs/CONCEPT-MANIFEST.md`).
+- **It authorises every post made from it.** On those four channels the
+  engine makes, schedules and publishes each post derived from an approved
+  concept with no per-post approval, through `growth.py run release`, the
+  Buffer channel lock and every check above (copy lint, share asks, the
+  ecosystem route, route capability checks, the creative bar). For these
+  posts this supersedes "Approve each day Monday" and "New creative ...
+  require approval" above: the approved mock is the creative.
+- **A post that departs from its mock is held, never published.** It must be
+  one of the concept's approved placements, carry only its mock files (a
+  re-render is a new hash and a new approval) and carry its claim word for
+  word. Release holds anything else as `departs_from_approved_mock`.
+- **His no stops it.** A decline of the mix plan, on any digest, approves
+  nothing and is read before anything else about the plan; a concept he
+  deletes or changes in his amended payload is stopped; any other line he
+  changes approves nothing until a plan carrying his change is approved; a concept he purges
+  later (`stopped_concepts`), or a stop on the mix plan in the loop's go-live
+  ledger, holds every post made from it, including any signed one by one.
+- **Each post still clears the bar and the cap.** With no signature of his
+  on each post, release holds one with no passing review at its own payload,
+  one past the lower of its channel's live cap and the cap the plan states
+  (four a day) across every run, and every concept post while a decline is
+  unmatched to its plan; the loop records stops and unmatched declines in
+  the go-live ledger each run.
+- **The mix plan is the go-live for its concepts.** The loop's own run
+  writes his decision into `decision.json` (R104). With no go-live for the
+  week the decision is concept-only, and only posts made from an approved
+  concept can release; any other post still needs the week's go-live.
+  Every loop run checks the approval again and fails closed: a plan file
+  that no longer rebuilds, a yes on another plan digest or an unmatched
+  decline leaves no concept approved (`concept_hold`).
+  Built and wired, not yet activated: nothing has gone out this way.
+- **Volume.** Instagram, YouTube, TikTok and X take four scheduled posts a
+  day with a floor of three. Every other channel keeps its bound.
+- **LinkedIn stays his click.** Unchanged: unscheduled drafts, and his final
+  click. Threads, Substack Notes and Facebook still sign post by post.
+
+No spending, new connection, automation or account-setting change follows
+from this ruling. Engagement stays prepared only.

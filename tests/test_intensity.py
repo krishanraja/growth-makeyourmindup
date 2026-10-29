@@ -75,9 +75,13 @@ class Intensity(unittest.TestCase):
     def test_u3_and_above_raise_caps_to_the_policy_bounds_only(self):
         root = synthetic(self.folder)
         for level, taps in ((3, 10), (4, 15), (5, 20)):
-            for name in ('instagram', 'facebook', 'x', 'threads', 'tiktok', 'youtube'):
+            for name in ('facebook', 'threads'):
                 self.assertEqual(intensity.daily_cap({'id': name, 'daily_posts_target': 1}, level, root), 1,
                                  name + ' stays at its policy bound of one a day')
+            for name in ('instagram', 'x', 'tiktok', 'youtube'):
+                # Ruling (Krish, 2026-10-29): three or four a day on these four (R102).
+                self.assertEqual(intensity.daily_cap({'id': name, 'daily_posts_target': 4}, level, root), 4,
+                                 name + ' stays at its policy bound of four a day')
             self.assertEqual(intensity.daily_cap({'id': 'substack-notes', 'daily_posts_target': 1}, level, root), 2,
                              'Substack Notes rises to its ruled two')
             self.assertEqual(intensity.daily_cap({'id': 'substack-notes', 'daily_posts_target': 2}, level, root), 2, 'never above the bound')

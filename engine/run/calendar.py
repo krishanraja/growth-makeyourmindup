@@ -1,8 +1,8 @@
 """The posting calendar (calendar/v1.json): schema, a resolved steady-state week, and its lint.
 
 Offline only. Nothing here posts, schedules, sends or spends. Every row's lane
-is derived from invariants/authority.json (Krish, 27 Oct 2026, rules R101 to
-R103); the lint proves it, and proves the floors and caps hold on the week the
+is derived from invariants/authority.json (Krish, 27 Oct 2026, rules R105 to
+R107); the lint proves it, and proves the floors and caps hold on the week the
 rows resolve to.
 """
 import argparse

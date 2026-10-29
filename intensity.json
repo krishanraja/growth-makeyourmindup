@@ -4,7 +4,7 @@
   "applies_from_urgency": 3,
   "daily_posts": {
     "bound": "social_policy",
-    "why": "A channel's posting cap rises only to its own policy bound in engine/social.py (27 Oct): Substack Notes two a day, every other channel one, and every channel already sits at that bound, so raised posting volume comes from engagement taps. A human-only channel (LinkedIn, null) gets no automatic posts at any urgency."
+    "why": "A channel's posting cap rises only to its own policy bound in engine/social.py: Instagram, YouTube, TikTok and X four a day with a floor of three (Ruling, Krish, 2026-10-29), Substack Notes two (27 Oct), every other channel one. Every channel already sits at its bound, so no urgency caps those four below three. A human-only channel (LinkedIn, null) gets no automatic posts at any urgency."
   },
   "engagement_taps": {
     "by_urgency": {

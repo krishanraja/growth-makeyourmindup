@@ -7,18 +7,21 @@ Read first in every run session (`run pack` puts it atop each pack). Plan:
 
 A run carries one signed spec (`growth-run-spec/1`) from draft to verdict:
 a `week`, one published `piece` (days 0 to 7) or one `express` idea. Krish
-signs exact payloads; the engine releases exactly what he signed, reads it back
-and measures it. LinkedIn stays his own click. Nothing is spent.
+signs exact payloads, or a concept's idea and mock (R101); the engine releases
+exactly that, reads it back and measures it. LinkedIn stays his click.
+Nothing is spent.
 
 A session does one job, then ends at a gate packet:
 
 - **Release, two paths.** L0 `run autorelease` schedules the go-lives he
   approved in Control Center (`release.yml`, never by hand), one go-live per
-  New York day ("Approve each day Monday", 28 Oct). `run release` is only
-  each route's capability check. Only this engine's eight Buffer channels;
-  copy lint, a share ask or a format unlike its draft holds. A draft is
-  scheduled 5 to 90 minutes before its time, so a No first stops it;
-  scheduled after a No, or while a stop cannot be read, fails the run.
+  New York day ("Approve each day Monday", 28 Oct), and posts made from a
+  concept he approved in the week's mix plan (docs/CONCEPT-MANIFEST.md).
+  `run release` is only each route's capability check; `decision.json` is
+  written only from his decision, never by hand. Only this engine's eight
+  Buffer channels; copy lint, a share ask or a format unlike its draft holds.
+  A draft is scheduled 5 to 90 minutes before its time, so a No first stops
+  it; scheduled after a No, or while a stop cannot be read, fails the run.
   Sessions save drafts, never `--deliver`. Scheduled is never live.
 - **Measure:** L0 `measure.yml` gives verdicts thrice daily; a session reads
   back "sent" and native URLs, metrics at their windows and the express
@@ -38,8 +41,7 @@ hands (`docs/LANES.md`). No Claude routines; makers follow `docs/TASTE.md`.
 All offline (`python growth.py run ...`); none posts, sends, schedules or
 spends.
 
-- `run new --start YYYY-MM-DD [--kind week|piece|express]`: a skeleton,
-  computed fields filled.
+- `run new --start YYYY-MM-DD [--kind week|piece|express]`: a skeleton.
 - `run new --from DRAFT --out SPEC`: fill `week_target`, every
   `payload_sha256` and each `share`'s `forward_line`. Never by hand.
 - `run drafts SPEC --posts DIR`: Buffer ids and `meta` from `get_post`
@@ -53,9 +55,9 @@ spends.
 - `run card lint FILE`: a Codex task card, before dispatch.
 - `run release plan|check SPEC ...`: exact Buffer calls, then readback
   evidence.
+- `run decide SPEC`: decision.json from the week's mix plan decision.
 - `run send-test SPEC SLOT`: the blind send test.
-- `run calendar|plain|canva lint`: the V1 calendar, plain English, the
-  brand kit.
+- `run calendar|plain|canva lint`: calendar, plain English, brand kit.
 - `run measure`, `northstar`, `verdict`, `cost`, `ga4`: see `--help`.
 
 Keep a real spec at `.scratch/runs/<run>/spec.json`, never in git: it holds
@@ -63,23 +65,21 @@ unpublished words. The run folder is the `run_id` with each `:` as `_`.
 
 ## What lint refuses
 
-Schema errors; a `week_target` off the `docs/NORTH_STAR.md` ladder rung for
-the New York Monday of `window.start`; a `payload_sha256` that does not
-recompute; words failing `prose_errors` (em dashes, stock phrases, house
-rules) or content-engine's copy lint (eyebrow labels, asterisks, AI notes,
-take labels); a snackable slot with no valid `share`, a stale `forward_line`
-or a share ask (`social/share.json`); an unknown channel or format, or one the
-channel does not take (`social/channels`, `social/formats`); `publish_mode`
-not `krish_click` on a human-publish-only channel (LinkedIn) or not `engine`
-elsewhere; a `krish_click` slot with a `due_at`; `spend_usd` above 0; two
-experiments on one channel; an unregistered arm; an asset hash not 64
-lowercase hex; more scheduled slots on a New York day than the channel's
-`daily_posts_target` (null: no cap; U3+ lifts it to its policy bound; Story
-frames do not count); an engine slot asset in no manifest with a
-`creative_approval_ref` (release holds it too); a window not New York
-midnights 7 (week, from a Monday), 8 (piece) or 1 (express) days long; a slot
-with no `ecosystem_cta` (docs/ENGINE.md). Warning: an engine slot with no
-`due_at` cannot release, and the daily cap counts only scheduled slots.
+Schema errors; a `week_target` off the `docs/NORTH_STAR.md` rung for the
+New York Monday of `window.start`; a `payload_sha256` that does not
+recompute; words failing `prose_errors` or content-engine's copy lint
+(eyebrows, asterisks, AI notes, take labels); a snackable slot with no valid
+`share`, a stale `forward_line` or a share ask (`social/share.json`); a
+channel or format unknown or not taken (`social/channels`, `social/formats`);
+`publish_mode` not `krish_click` on LinkedIn or not `engine` elsewhere; a
+`krish_click` slot with a `due_at`; `spend_usd` above 0; two experiments on
+one channel; an unregistered arm; an asset hash not 64 lowercase hex; more
+scheduled slots on a New York day than the channel's `daily_posts_target`
+(null: no cap; U3+ lifts it to its policy bound; Story frames do not count);
+an engine slot asset in no manifest with a `creative_approval_ref`; a window
+not New York midnights 7 (week, from a Monday), 8 (piece) or 1 (express)
+days long; a slot with no `ecosystem_cta` (docs/ENGINE.md). Warning: an
+engine slot with no `due_at` cannot release.
 
 A slot's `payload_sha256` digests (`canonical_json`) exactly `channel`,
 `format`, `words`, ordered asset hashes, `link_placement`, `due_at`,
@@ -103,7 +103,8 @@ needs the previous one and its evidence under `.scratch/runs/<run>/`:
   `proposal_id` and holds `decision_digest`, the sha256 of the canonical
   `slots` map. Each digest equals the slot's `payload_sha256` or recomputes
   from his amended payload, which is what releases: rewrite the slot with it
-  first. A mismatch is never signed.
+  first. A mismatch is never signed. Concept-only: `proposal_id` and
+  `decision` null, `slots` {}.
 - `queued/<slot>.json`: `status` "scheduled" or "draft" (always "draft" for
   `krish_click`) and the signed digest as `payload_sha256`.
 - `live/<slot>.json`: `status` "sent" and an https `native_url` read back from
@@ -137,16 +138,14 @@ bytes against its signed manifest line; a file in 4 Growth is never trusted.
 
 1. Approved delivery assets and exact copy go to the Drive
    **4 Growth** library, one `YYYY-MM-DD - Topic - Channel` folder each with
-   a SHA-256 manifest; no other Growth root.
-2. Private evidence stays in `.scratch/`; never in 4 Growth, which anyone
-   with its link can edit.
+   a SHA-256 manifest.
+2. Private evidence stays in `.scratch/`, never in 4 Growth (link-editable).
 3. Lessons go to `social/lessons/`; run `python growth.py social check`.
-4. Creative feedback goes to Content Engine through its handoff; it owns
-   the craft.
+4. Creative feedback goes to Content Engine, which owns the craft.
 5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:
    what is draft, approved, scheduled, published, held or unknown.
 6. Snapshot run evidence before cleanup.
-7. A changed automation: verify its owner and schedule; never duplicate it.
+7. A changed automation: verify owner and schedule; never duplicate it.
 
 ## Rules a run session also reads
 

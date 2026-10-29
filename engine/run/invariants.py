@@ -278,7 +278,7 @@ def load_boundary(root=ROOT):
     return data
 
 
-# Authority and lanes (Krish, 27 Oct 2026: rules R101 to R103) -----------------
+# Authority and lanes (Krish, 27 Oct 2026: rules R105 to R107) -----------------
 
 AUTHORITY_FIELDS = ('schema_version', 'kind', 'note', 'source_file', 'first_signed_week', 'show_before_post_until',
                     'publish_board', 'derivative_formats', 'new_formats_need_eyes', 'any_other_class', 'krish_hands')

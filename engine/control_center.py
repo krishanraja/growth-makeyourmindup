@@ -630,8 +630,14 @@ def match_decisions(decisions, proposals):
         sound = amendment_ok(item) if amended else True
         out.append({'proposal_id': pid, 'decision': item.get('decision'), 'decided_at': item.get('decided_at'),
                     'payload_sha256': item.get('payload_sha256'), 'known': pid in current,
+                    # Kept so a declined check-in whose proposal is not at hand still counts as unresolved.
+                    'stage': item.get('stage') if isinstance(item.get('stage'), str) else None,
                     'matches_payload': exact, 'amended': amended, 'amendment_matches': sound if amended else None,
-                    'usable_approval': exact and sound and item.get('decision') == 'approved'})
+                    'usable_approval': exact and sound and item.get('decision') == 'approved',
+                    # His version, kept so a later step acts on his words, never the engine's.
+                    'exact_payload': item.get('exact_payload') if amended else None,
+                    'amount_usd': item.get('amount_usd') if amended else None,
+                    'amended_sha256': item.get('amended_sha256') if amended else None})
     return out
 
 

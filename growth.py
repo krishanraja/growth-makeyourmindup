@@ -181,12 +181,16 @@ def main(argv=None):
     if social_args and social_args[0] == 'backlog':
         from engine.backlog import command as backlog
         return backlog(social_args[1:], ROOT)
+    if social_args and social_args[0] == 'mix':
+        from engine.mix import command as mix
+        return mix(social_args[1:], ROOT)
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--self-test', action='store_true')
     sub = parser.add_subparsers(dest='cmd')
     sub.add_parser('social', help='offline channel, format and tool operating contracts')
     sub.add_parser('run', help='offline run specs, packs and task cards (see docs/RUN.md)')
     sub.add_parser('backlog', help='every published piece against channel and format, oldest unamplified first')
+    sub.add_parser('mix', help="the week's mix of repurposed carousels and filler lanes, and Krish's one idea and mock press")
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     p.add_argument('--feed-file'); p.add_argument('--now'); p.add_argument('--json', action='store_true')
     c = sub.add_parser('check'); c.add_argument('file'); c.add_argument('--now')

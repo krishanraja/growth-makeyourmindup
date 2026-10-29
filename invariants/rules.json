@@ -1242,6 +1242,148 @@
     },
     {
       "id": "R101",
+      "statement": "On Instagram, YouTube, TikTok and X, Krish's approval of a concept (its idea, one claim and mock files, bound by concept_sha256 and listed in the week's mix plan proposal) authorises release of every post made from it with no per-post digest, through the same release gate and Buffer channel lock, only while the post is one of the concept's placements, carries only its mock files and carries its claim word for word; a post that departs is a lint error and is held at release, every other check still runs, his stop on a concept or on the mix plan holds every post from it, and so does any decline in the go-live ledger not yet matched to its plan; the signature must name the week's mix plan as concept_proposal_id; a post its concept authorises also needs a passing review at its own payload_sha256 and room under its channel's daily cap counted across every run's ledger; a text-only placement carries no mock file; and LinkedIn stays his click. The readback that writes decision.json concepts is R104.",
+      "source_file": "CHANGES.md",
+      "quote": "I just need to be in control of the idea and the mocks and then I'm happy to let you let that engine just go for gold.",
+      "enforced_by": [
+        "engine/concepts.py:authority",
+        "engine/concepts.py:match_errors",
+        "engine/concepts.py:stopped",
+        "engine/concepts.py:decision_errors",
+        "engine/run/release.py:authorised_digests",
+        "engine/run/release.py:release_plan",
+        "engine/run/release.py:stopped_plans",
+        "engine/run/spec.py:concept_lint",
+        "engine/run/spec.py:signed_digest",
+        "engine/concepts.py:text_only",
+        "engine/concepts.py:plan_proposal_id",
+        "engine/run/release.py:unresolved_stops",
+        "engine/run/release.py:other_scheduled",
+        "engine/run/release.py:concept_caps",
+        "engine/run/release.py:run_reviews",
+        "engine/run/spec.py:review_reason"
+      ],
+      "tests": [
+        "test_an_approved_concept_releases_its_post_without_a_digest_of_its_own",
+        "test_a_post_whose_words_drop_the_claim_is_held",
+        "test_a_post_with_a_file_that_is_not_the_mock_is_held",
+        "test_a_post_on_a_placement_he_did_not_approve_is_held",
+        "test_a_concept_approved_at_another_hash_covers_nothing",
+        "test_a_concepts_map_that_does_not_match_the_signature_refuses_the_run",
+        "test_his_purge_on_a_concept_stops_every_post_from_it_even_one_signed_alone",
+        "test_a_stop_on_the_mix_plan_stops_every_concept_it_carried",
+        "test_the_release_command_reads_stopped_plans_from_the_loop_ledger",
+        "test_linkedin_and_other_channels_are_never_covered_by_a_concept",
+        "test_copy_lint_still_holds_a_concept_post",
+        "test_a_concept_slot_that_matches_lints_clean_and_its_hash_is_computed",
+        "test_a_slot_that_departs_from_its_concept_is_a_lint_error",
+        "test_signing_the_concept_approves_its_mock_for_the_posts_made_from_it",
+        "test_status_counts_a_concept_post_as_signed_and_a_stopped_one_as_not",
+        "test_one_concept_never_posts_past_the_channel_daily_cap",
+        "test_the_cap_counts_other_runs_and_this_runs_ledger",
+        "test_a_concept_post_with_no_passing_review_is_held",
+        "test_an_unresolved_decline_holds_every_concept_post",
+        "test_concepts_without_the_mix_plan_in_the_signature_refuse_the_run",
+        "test_a_text_post_on_x_from_a_concept_with_mocks_is_not_held_for_carrying_none",
+        "test_the_release_command_counts_other_runs_ledgers_for_the_cap"
+      ]
+    },
+    {
+      "id": "R102",
+      "statement": "Instagram, YouTube, TikTok and X take up to four scheduled posts a day with a floor of three the weekly mix plans; their channel records, the social policy bound, run lint's daily cap and the urgency caps agree, no urgency caps them below three, and every other channel keeps its own bound.",
+      "source_file": "CHANGES.md",
+      "quote": "When it comes to Instagram, YouTube, and TikTok, I am more than happy to pump out three or four posts a day on all three of those platforms. Same with X and Twitter.",
+      "enforced_by": [
+        "engine/social.py:max_daily_posts",
+        "engine/social.py:inventory",
+        "engine/intensity.py:daily_cap",
+        "engine/run/spec.py:lint",
+        "engine/mix.py:day_times"
+      ],
+      "tests": [
+        "test_four_channels_take_four_a_day_with_a_floor_of_three",
+        "test_a_floor_above_its_target_is_refused",
+        "test_run_lint_takes_four_scheduled_x_posts_a_day_and_refuses_a_fifth",
+        "test_every_channel_gets_three_or_four_a_day_and_never_under_the_floor",
+        "test_u3_and_above_raise_caps_to_the_policy_bounds_only"
+      ]
+    },
+    {
+      "id": "R103",
+      "statement": "The weekly mix planner turns every past piece in the backlog inventory into carousel concepts, oldest unamplified first, and interleaves them with memes, positive news (a primary source dated within 7 days) and level-up advice at mix.json's weights, deterministically, with no piece or idea twice on one channel in a week and no empty slot filled; its concepts go to Krish as one plan proposal behind strategy listing every concept hash, the Sunday report carries it, and each post's What-Works verdict joined to its concept and lane moves a lane one step inside its bounds next week.",
+      "source_file": "CHANGES.md",
+      "quote": "For Make Your Mind Up I think the engine needs to strategize how to repurpose all the previous posts into carousels and intertwine them with the memes, positive news pieces, and the other filler pieces that we decided on.",
+      "enforced_by": [
+        "engine/mix.py:plan",
+        "engine/mix.py:quotas",
+        "engine/mix.py:interleave",
+        "engine/mix.py:idea_pool",
+        "engine/mix.py:plan_proposal",
+        "engine/mix.py:approved_map",
+        "engine/mix.py:learn",
+        "engine/mix.py:weights",
+        "engine/cc_loop.py:mix_proposal",
+        "engine/run/spec.py:with_mix"
+      ],
+      "tests": [
+        "test_the_default_ratio_is_half_repurposed_carousels",
+        "test_lanes_are_interleaved_through_the_week_not_bunched",
+        "test_oldest_unamplified_first_and_no_repeat_on_a_channel",
+        "test_a_format_already_made_on_a_channel_is_not_made_again",
+        "test_empty_slots_are_shortfalls_never_filled",
+        "test_positive_news_needs_a_fresh_primary_source",
+        "test_the_plan_is_deterministic",
+        "test_one_plan_proposal_behind_strategy_lists_every_ready_concept_hash",
+        "test_a_concept_without_its_mock_is_not_ready_and_carries_no_hash",
+        "test_his_amended_payload_leaves_out_the_concepts_he_deleted",
+        "test_run_new_mix_carries_the_ready_concepts_into_the_week",
+        "test_the_sunday_report_carries_next_weeks_mix_as_its_plan",
+        "test_verdicts_are_joined_to_concept_and_lane",
+        "test_the_ratio_moves_one_step_inside_its_bounds_on_judged_posts_only",
+        "test_the_next_plan_reads_what_was_learned",
+        "test_a_narrowed_pack_carries_only_the_concepts_its_posts_are_made_from"
+      ]
+    },
+    {
+      "id": "R104",
+      "statement": "In the Control Center loop's own run, right after it matches decisions, Krish's decision on the week's mix plan becomes decision.json concepts, concept_manifest and stopped_concepts and the spec signature's concepts_digest and concept_proposal_id, only when the plan file recomputes to the payload reported and his yes is on its exact payload_sha256 (or his amended version recomputes to amended_sha256); a concept whose line he deleted or changed, and every concept on a declined or stopped plan, is stopped and a stop never lifts; a stale, undated or unrecomputable decision approves nothing; the week's go-live part is kept only while it matches its signature; with no go-live the decision is concept-only and releases only posts made from an approved concept; and the plan's words say only what release does.",
+      "source_file": "CHANGES.md",
+      "quote": "I just need to be in control of the idea and the mocks and then I'm happy to let you let that engine just go for gold.",
+      "enforced_by": [
+        "engine/run/decision.py:readback",
+        "engine/run/decision.py:sticky",
+        "engine/run/decision.py:apply",
+        "engine/run/decision.py:after_readback",
+        "engine/run/release.py:concept_only",
+        "engine/run/spec.py:decision_errors",
+        "engine/mix.py:approved_map",
+        "engine/mix.py:amended_out",
+        "engine/mix.py:payload_text",
+        "engine/control_center.py:match_decisions",
+        "engine/cc_loop.py:cli"
+      ],
+      "tests": [
+        "test_his_yes_approves_every_ready_concept_at_its_hash",
+        "test_his_amended_plan_stops_the_concepts_he_deleted_or_changed",
+        "test_a_decline_or_a_stopped_plan_stops_every_concept",
+        "test_a_stop_never_lifts",
+        "test_a_stale_yes_a_bad_amendment_or_no_decision_records_nothing",
+        "test_a_plan_file_changed_after_its_proposal_is_refused",
+        "test_match_decisions_keeps_his_amended_words_only_when_amended",
+        "test_concept_only_decision_and_signature",
+        "test_each_manifest_entry_recomputes_to_its_approved_hash_and_matches_the_schema",
+        "test_a_declined_week_applies_no_concept_and_releases_nothing",
+        "test_the_go_live_part_is_kept_and_must_match_its_signature",
+        "test_the_approved_mix_plan_is_the_go_live_for_its_concept_posts_only",
+        "test_a_concept_only_decision_that_signs_a_slot_is_refused",
+        "test_his_yes_reaches_decision_json_in_the_same_run_and_a_later_no_stops_it",
+        "test_the_loop_calls_the_hook_right_after_it_remembers_decisions",
+        "test_it_promises_no_post_beyond_what_release_allows",
+        "test_counts_say_which_slots_are_ready_waiting_or_empty"
+      ]
+    },
+    {
+      "id": "R105",
       "statement": "Derivatives of a piece whose publish board (article, assets, video recordings) Krish approved post on every channel but LinkedIn without per-post sign-off. On or before 2026-11-29 (W45 to W48) each batch is shown to him first. Carousels, memes, opinion and reactive posts, and any class not on the derivatives list, need his approval item by item, and carousel copy must be plain English, human and humble (invariants/authority.json, engine/run/plain.py).",
       "source_file": "CHANGES.md",
       "quote": "Derivatives of approved pieces. That actually includes Instagram as well as YouTube and TikTok. Once I'm happy with the publish board (article, the assets and video recordings), you should be able to just go for gold everywhere else. I would say that for the first 4 weeks you need to show me before you post. However I think you're going to be creating new formats like carousels. The last one that went up on Make Your Mind Up Instagram was good but could have been better. It wasn't plain English and human and humble enough.",
@@ -1261,7 +1403,7 @@
       ]
     },
     {
-      "id": "R102",
+      "id": "R106",
       "statement": "No session holds the Control Center engine key. Only L0 jobs on the GitHub Actions runner may read it (lanes.json), a CI job never does, and the measure job meters each run's own cost.",
       "source_file": "CHANGES.md",
       "quote": "Surely we can have a less fragile way of doing this than a session engine token ... Give me the bulletproof version of this. Same for the cost baseline.",
@@ -1273,7 +1415,7 @@
       ]
     },
     {
-      "id": "R103",
+      "id": "R107",
       "statement": "Every workflow and job sits in exactly one lane of lanes.json: L0 code on GitHub Actions, L2 his eyes (one press) and L3 his hands (LinkedIn, the Buffer plan, one-time set-up). There is no L1: no Claude routines and no Claude schedules of any kind (Krish, 29 Oct 2026). No L0 job holds an action from his hands or his eyes, and every calendar row's lane is derived from invariants/authority.json.",
       "source_file": "CHANGES.md",
       "quote": "set yourself daily autonomous tasks that don't really rely on me. Separate your daily autonomous work ... from the things that you need my eyes on to just approve versus the things that you need me to push manually, like my personal LinkedIn posts that you've drafted.",
@@ -1290,7 +1432,7 @@
       ]
     },
     {
-      "id": "R104",
+      "id": "R108",
       "statement": "Release (L0) queues and posts only what Krish approved: a go-live he signed, read back from its own report by the digest he decided on, and each Buffer draft rebuilt to that exact digest. Anything else holds.",
       "source_file": "CHANGES.md",
       "quote": "then the engine will build, show me for approval, and then queue and post autonomously.",
@@ -1307,7 +1449,7 @@
       ]
     },
     {
-      "id": "R105",
+      "id": "R109",
       "statement": "In the L0 handoff and release LinkedIn stays his own final click: every LinkedIn line goes into a go-live as krish_click, and release never reads or schedules it.",
       "source_file": "CHANGES.md",
       "quote": "pasting or manual asking\". LinkedIn stays his own final click.",
@@ -1321,7 +1463,7 @@
       ]
     },
     {
-      "id": "R106",
+      "id": "R110",
       "statement": "Through 2026-11-29 nothing posts on the standing derivative approval: release needs a go-live he approved. After it only a derivative format of a piece whose board he approved may, and a new kind of post is always its own go-live.",
       "source_file": "CHANGES.md",
       "quote": "I would say that for the first 4 weeks you need to show me before you post.",

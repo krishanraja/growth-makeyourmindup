@@ -30,6 +30,7 @@
   ],
   "publication_mode": "approved_content_cadence",
   "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
-  "daily_posts_target": 1,
+  "daily_posts_target": 4,
+  "daily_posts_floor": 3,
   "daily_drafts_max": null
 }

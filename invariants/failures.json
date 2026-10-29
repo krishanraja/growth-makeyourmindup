@@ -677,7 +677,7 @@
     {
       "id": "F66",
       "title": "A derivative posts before its publish board or the four-week preview, or a new format posts without its own approval",
-      "source": "CHANGES.md 2026-10-27 (evening), standing approval for derivatives (R101)",
+      "source": "CHANGES.md 2026-10-27 (evening), standing approval for derivatives (R105)",
       "guard": "engine/run/invariants.py:load_authority and engine/run/invariants.py:may_post_alone",
       "tests": [
         "test_authority_encodes_the_27_october_standing_approval",
@@ -692,7 +692,7 @@
     {
       "id": "F67",
       "title": "A workflow or job runs in no lane, an L0 job holds an action from his hands or his eyes, or a Claude schedule comes back (there are no Claude routines)",
-      "source": "CHANGES.md 2026-10-27 (evening), lanes ruling (R103); 2026-10-29, no Claude routines and no Claude schedules of any kind",
+      "source": "CHANGES.md 2026-10-27 (evening), lanes ruling (R107); 2026-10-29, no Claude routines and no Claude schedules of any kind",
       "guard": "engine/run/invariants.py:check_lanes and engine/run/invariants.py:load_lanes",
       "tests": [
         "test_every_workflow_and_job_is_in_one_lane",
@@ -707,7 +707,7 @@
     {
       "id": "F68",
       "title": "A session or a CI job holds the Control Center engine key",
-      "source": "CHANGES.md 2026-10-27 (evening), keys ruling (R102)",
+      "source": "CHANGES.md 2026-10-27 (evening), keys ruling (R106)",
       "guard": "engine/run/invariants.py:check_lanes (engine key per workflow)",
       "tests": [
         "test_the_engine_key_lives_only_on_the_github_runner"
@@ -717,7 +717,7 @@
     {
       "id": "F69",
       "title": "A posting calendar row lands in the wrong lane or format, or the resolved week misses a floor or passes a cap (a daily cap read from its channel record and intensity.json, a weekly cap quoted)",
-      "source": "calendar/v1.json, the V1 posting calendar (R101, R103)",
+      "source": "calendar/v1.json, the V1 posting calendar (R105, R107)",
       "guard": "engine/run/calendar.py:lint and engine/run/calendar.py:resolve",
       "tests": [
         "test_v1_calendar_lints_clean_and_meets_its_floors",
@@ -736,7 +736,7 @@
     {
       "id": "F70",
       "title": "A carousel or caption is not plain English, human and humble",
-      "source": "CHANGES.md 2026-10-27 (evening) (R101); social/lessons/carousel-plain-english.json",
+      "source": "CHANGES.md 2026-10-27 (evening) (R105); social/lessons/carousel-plain-english.json",
       "guard": "engine/run/plain.py:lint_carousel and engine/run/plain.py:lint_text",
       "tests": [
         "test_good_synthetic_carousel_passes",
@@ -924,7 +924,7 @@
     {
       "id": "F83",
       "title": "doctor calls a session with no engine token not ready, or prints or uses a foreign token",
-      "source": "V1 build, 27 Oct 2026: runner hardening; no session holds the engine key (R102)",
+      "source": "V1 build, 27 Oct 2026: runner hardening; no session holds the engine key (R106)",
       "guard": "growth.py:engine_token_mode and growth.py:doctor (session mode is OK, a foreign token is a warning); growth.py:engine_client refuses a token that is not gen1_. Outside engine/, so the register cannot check these paths",
       "tests": [
         "test_no_engine_token_is_session_mode_and_ready",
@@ -937,7 +937,7 @@
     {
       "id": "F84",
       "title": "A run or a session reports no cost of its own",
-      "source": "V1 build, 27 Oct 2026: self-metering (R102: \"Same for the cost baseline\")",
+      "source": "V1 build, 27 Oct 2026: self-metering (R106: \"Same for the cost baseline\")",
       "guard": "engine/meter.py:install counts every urllib call once and engine/meter.py:cost_line prints seconds and calls only; engine/run/cost.py:self_meter reads the latest session for run cost self",
       "tests": [
         "test_one_counter_sees_every_urllib_call",
@@ -970,7 +970,7 @@
     {
       "id": "F86",
       "title": "A LinkedIn slot reaches a go-live as an engine post, or release reads or schedules a LinkedIn draft",
-      "source": "V1 build, 27 Oct 2026: L0 handoff and release; LinkedIn stays his own final click (R62, R105)",
+      "source": "V1 build, 27 Oct 2026: L0 handoff and release; LinkedIn stays his own final click (R62, R109)",
       "guard": "engine/run/handoff.py:rebuild turns every LinkedIn line to krish_click with its own digest; engine/run/autorelease.py:slot makes no call for a krish_click slot",
       "tests": [
         "test_linkedin_always_goes_in_as_krish_click",
@@ -981,7 +981,7 @@
     {
       "id": "F87",
       "title": "A new kind of post rides in a batch go-live, or derivatives are read from a key authority.json does not use",
-      "source": "V1 build, 27 Oct 2026: merge e28626f: release and handoff read derivative formats one way (R101, R106)",
+      "source": "V1 build, 27 Oct 2026: merge e28626f: release and handoff read derivative formats one way (R105, R110)",
       "guard": "engine/run/autorelease.py:derivative_formats reads the derivative classes of invariants/authority.json for both; engine/run/handoff.py:needs_own_review and engine/run/handoff.py:new_formats give every other format a go-live of its own",
       "tests": [
         "test_a_new_kind_of_post_is_its_own_go_live",

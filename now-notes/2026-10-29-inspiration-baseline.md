@@ -1,0 +1,4 @@
+Status: The engine reads Krish's inspiration board from Control Center's directive (protocol 1.15.0 `inspiration`) and writes it to `.scratch/cc/inspiration.txt` at every start, so every week, piece and express spec plans from his suggestions and the trials he tagged (record like this, reskin the news, reskin the meme, borrow the format) as the baseline: a slot that trials each, or a line saying why it waits. Nothing that checks, scores, ranks or reports a draft reads it.
+Next: on the next run with `inspiration` in the directive, plan one off-day slot from a "Record like this" trial and say in the spec which card it came from.
+Changed: docs/ENGINE.md "His inspiration board is the baseline", jobs/daily-pack.md step 3, engine/cc_loop.py (inspiration_suggestions, inspiration_block). docs/RUN.md is at its 8 KB pack budget, so the rule lives in ENGINE.md.
+North Star check (2026-10-29): holds.

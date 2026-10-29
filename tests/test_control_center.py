@@ -19,7 +19,8 @@ from urllib.parse import parse_qs, unquote, urlsplit
 import growth
 from engine import cc_loop
 from engine.cc_loop import (Loop, completion_events, describe, new_subscribers, run, runner_report,
-                            voice_block, voice_rules, week_start, workspace_report)
+                            inspiration_block, inspiration_suggestions, voice_block, voice_rules,
+                            week_start, workspace_report)
 from engine.control_center import (ENGINE_ID, Client, ProtocolError, build_report, canonical_json,
                                    load_schema, match_decisions, objective, payload_digest, proposal,
                                    report_digest, schema_errors, validate_report, whole)
@@ -618,6 +619,54 @@ def directive_with(**extra):
             'decisions_since': [], 'constraints': {'walls': 'fixture', 'spend_cap_usd': 0, 'max_actions': 5}}
     body.update(extra)
     return {'ok': True, 'chosen_by': 'rule', 'directive': body}
+
+
+SYNTHETIC_CARD = {
+    'card_id': 'synthetic-card-1', 'saved_at': '2026-10-28T09:00:00Z', 'kind': 'video', 'lane': 'production',
+    'name': 'synthetic-reel.mp4',
+    'trials': [{'trial': 'record_like_this', 'label': 'Record like this', 'means': 'Synthetic meaning for the fixture'}],
+    'trialed_at': '2026-10-29T08:00:00Z', 'his_words': ['synthetic words about the light'],
+    'agreed_reasons': ['a synthetic guess'], 'routes': ['study_style'], 'read_as': 'watch', 'note_for_claude': None,
+    'post_url': 'https://www.instagram.com/reel/Synthetic/', 'platform': 'instagram', 'author': None,
+    'drive_url': 'https://drive.google.com/file/d/synthetic/view', 'answered': False}
+
+
+class InspirationBoardTests(unittest.TestCase):
+    """Protocol 1.15.0: his suggestions reach planning as the baseline (Krish, 2026-10-29)."""
+
+    def test_suggestions_reach_planning_as_a_labelled_block(self):
+        directive = directive_with(inspiration={'rule': 'Synthetic rule', 'suggestions': [SYNTHETIC_CARD]})
+        state, rule, items = inspiration_suggestions(directive)
+        self.assertEqual((state, rule, len(items)), ('suggestions', 'Synthetic rule', 1))
+        text = '\n'.join(inspiration_block(directive))
+        self.assertIn("KRISH'S INSPIRATION BOARD", text)
+        self.assertIn('baseline standard', text)
+        self.assertIn('schedule a trial of each one he tagged', text)
+        self.assertIn('try: Record like this (Synthetic meaning for the fixture)', text)
+        self.assertIn('his words: "synthetic words about the light"', text)
+        self.assertIn('reasons he agreed with: a synthetic guess', text)
+        self.assertIn('1 with a trial he tagged, 1 in all', text)
+        self.assertIn('inspiration board: 1 tagged trials, 1 suggestions', '\n'.join(describe(directive)))
+
+    def test_empty_means_none_and_absent_means_unknown(self):
+        none = directive_with(inspiration={'rule': 'Synthetic rule', 'suggestions': []})
+        self.assertEqual(inspiration_suggestions(none)[0], 'none')
+        self.assertIn('He has suggested nothing yet. Do not invent any.', '\n'.join(inspiration_block(none)))
+        for directive in (directive_with(), directive_with(inspiration=None), directive_with(inspiration={'rule': 'x'}),
+                          directive_with(inspiration='cards'), {}, None):
+            self.assertEqual(inspiration_suggestions(directive)[0], 'absent')
+            self.assertIn('Could not be read today', '\n'.join(inspiration_block(directive)))
+        partial = directive_with(inspiration={'suggestions': [{'card_id': ''}, 'x', SYNTHETIC_CARD]})
+        self.assertEqual(len(inspiration_suggestions(partial)[2]), 1)
+
+    def test_the_board_never_feeds_a_judge_scorer_ranker_or_gate(self):
+        for name in ('engine/packs.py', 'engine/operations.py', 'engine/control_center.py', 'engine/core.py'):
+            self.assertNotIn('inspiration', (ROOT / name).read_text(encoding='utf-8'), name)
+        source = (ROOT / 'engine/cc_loop.py').read_text(encoding='utf-8')
+        for name in ('def workspace_report', 'def runner_report', 'def item_proposal', 'def _items'):
+            start = source.index(name)
+            end = source.index('\ndef ', start + 1)
+            self.assertNotIn('inspiration', source[start:end], name)
 
 
 class VoiceRuleTests(unittest.TestCase):

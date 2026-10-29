@@ -1,4 +1,4 @@
-"""Krish's 27 Oct 2026 rulings as data: invariants/authority.json and lanes.json (R101 to R103).
+"""Krish's 27 Oct 2026 rulings as data: invariants/authority.json and lanes.json (R105 to R107).
 
 Synthetic fixtures only. Every autonomous action must be provably inside his authority. The lanes are
 L0 code, L2 his eyes and L3 his hands: there are no Claude routines (Krish, 29 Oct 2026).
