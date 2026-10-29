@@ -605,6 +605,18 @@ class Client:
         return {'accepted': True, 'conflict': False, 'replayed': bool(result.get('replayed')),
                 'stored_payload_sha256': ours, 'readback_matches': True}
 
+    def post_flagged_lines(self, route, feature, rows):
+        """File the chat backstop's flagged lines (engine/backstop.py names the route and its feature flag).
+
+        Idempotent on each row's line_sha256: a repost answers duplicate."""
+        self.confirm_version(SCHEMA_VERSION, feature)
+        if not isinstance(rows, list) or not 1 <= len(rows) <= 50:
+            raise ProtocolError('bad_backstop_batch')
+        result = self._request('POST', route, {'schema': 'growth-' + route + '-backstop/1', 'rows': rows})
+        if result.get('ok') is not True or not isinstance(result.get('results'), list):
+            raise ProtocolError('backstop_not_confirmed')
+        return result
+
     def decisions(self, since):
         result = self._request('GET', 'decisions?since=' + quote(iso(since), safe=''))
         if not isinstance(result.get('decisions'), list):

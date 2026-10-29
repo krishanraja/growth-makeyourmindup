@@ -1251,6 +1251,13 @@ def cli(args, root, make_client, out=print, checks=None):
     now_value = getattr(args, 'now', None)
     clock = (lambda: instant(now_value)) if now_value else (lambda: instant())
     now = clock()
+    if args.cc_cmd == 'backstop':
+        from . import backstop
+        counts = backstop.post(make_client() if args.deliver else None, root, args.deliver)
+        out('backstop: ' + ' '.join(k + '=' + str(counts[k]) for k in ('waiting', 'filed', 'duplicate', 'refused'))
+            + ('' if args.deliver else ' (dry run: no Control Center call)')
+            + (' error=' + counts['error'] if counts['error'] else ''))
+        return int(bool(counts['error']))
     if args.cc_cmd == 'runner':
         dispatched = os.environ.get('CC_DISPATCH_ENGINE_ID', '').strip()
         if dispatched and dispatched != ENGINE_ID:
