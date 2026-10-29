@@ -1520,6 +1520,23 @@
         "test_one_concept_posts_once_per_channel_a_week",
         "test_a_mock_link_must_be_one_of_the_files_he_approves"
       ]
+    },
+    {
+      "id": "R114",
+      "statement": "The code renderer draws every post; Codex only art-directs a piece kit, which the renderer checks (house colours and fonts painted, byte-identical renders, no pictures of people, nothing remote) before any mock of it reaches his approval.",
+      "source_file": "CHANGES.md",
+      "quote": "we need to find a way of combining strengths",
+      "enforced_by": [
+        "engine/run/artdirect.py:kit_errors",
+        "engine/run/artdirect.py:painted_errors",
+        "engine/run/artdirect.py:gate"
+      ],
+      "tests": [
+        "test_an_off_kit_colour",
+        "test_a_remote_font",
+        "test_an_img",
+        "test_the_wordmark_a_person_a_secret_and_a_stray_file"
+      ]
     }
   ]
 }
