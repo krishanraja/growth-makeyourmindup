@@ -2,6 +2,8 @@
 
 Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
+29 October measurement checkpoint: read `.scratch/channel-audit/daily-20261029/REVIEW.md`. Codex native access recovered; Substack source report remains empty for seven days, Instagram pilot has no non-follower views, and the LinkedIn manual post remains unconfirmed. Buffer drafts untouched. Preserve provider metric timestamps; this is a roughly 60-63h sample. Next real route checks follow the newer Monday 2 November transition plan.
+
 28 October operational checkpoint: read
 `.scratch/channel-audit/daily-20261028/REVIEW.md` before acting. Buffer reconciled;
 native metrics/engagement remain blocked by browser timeouts, not proven sign-out.
