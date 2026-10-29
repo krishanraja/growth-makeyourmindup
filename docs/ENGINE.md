@@ -327,11 +327,31 @@ attempt `failed` with `report_conflict`.
 
 | Pack kind | Wall | Closes on |
 |---|---|---|
-| daily, radar | `post`, with the exact words | `published` |
+| daily | `post`, with the exact words | `published` |
+| radar | `post`: one engagement task for the day (below) | `tapped` |
 | conversion | `post`, the exact copy | `applied` |
 | pitches, swaps, partners | `send`, with the exact words | `sent` |
 | report | `strategy` | `reviewed` |
 | numbers | `none` | `verified` |
+
+**The engagement task (protocol 1.14.0).** The radar's selected replies and
+comments go as one ask, `makeyourmindup:engage:<New York date>`, never one
+proposal each: Control Center's version 2 action of kind `copy_open` on the
+`engage` channel, behind `post`, with no stage. Its `exact_payload` is the
+canonical JSON `{version: 2, channel: "engage", kind: "copy_open", body,
+taps: [{label, text, url}]}`: each tap the exact words to copy and the public
+https page to open. Krish pastes and posts each one himself and marks the
+task carried out (`tapped`); nothing in this engine or Control Center posts.
+The task carries as many as cleared the bar, up to today's cap
+(`intensity.json`: 5, then 10, 15 and 20 at U3, U4 and U5); a tap past the
+cap, or one with no public https page or with an address or a phone number
+in its words, is held by name. The report goes at 1.14.0 only where
+capabilities list it and `features.copy_open` is true. If Control Center
+cannot take the task (`schema_version_unsupported`,
+`schema_version_unconfirmed`, `copy_open_unsupported` or a 400), the loop
+rebuilds the report once with the same taps as one plain `advice` proposal
+behind `post`, at the old version, and says so; nothing else is resent.
+The wire shape is in `docs/control-center/ENGINE-PROTOCOL.md`.
 
 `proposal_id` is `makeyourmindup:<item_id>`, so it survives a copy edit
 while `payload_sha256` (SHA-256 of the canonical `{channel, exact_payload,

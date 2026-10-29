@@ -1,15 +1,16 @@
 # Job: conversation radar
 
 Kind `radar`. Read the shared instructions and `docs/ENGINE.md`. The radar
-shares the global daily budget; there is no comment-volume target.
+shares the global daily budget. Find as many as clear the bar, up to the
+day's cap; the bar never drops to fill it.
 
 First, before reading any source: `python growth.py cc start --job radar --deliver`.
 Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
 
 1. Read docs/ENGAGEMENT-LOOP.md, published pieces from the last 21 days and
    the partner lists. Use
-   the signed-in browser read-only when available. Find a few live threads
-   less than 12 hours old where Krish can contribute naturally to the
+   the signed-in browser read-only when available. Find as many live threads
+   less than 12 hours old as clear the bar, where Krish can contribute naturally to the
    actual conversation. A sourced finding is useful when relevant; a
    specific observation or question can stand on its own. Check LinkedIn,
    X, relevant YouTube/Substack discussions
@@ -20,8 +21,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    fit, usefulness, freshness and a genuine partner relationship.
 3. Draft up to the day's engagement cap, each at most 60 words: 5 at U1
    and U2, raised at U3 to U5 to the bound in `intensity.json` (the `cc
-   finish` report says today's number). Prioritise three
-   LinkedIn candidates in the proposed daily review pack. Default to one
+   finish` report says today's number). LinkedIn first, then the other
+   channels. Default to one
    or two short sentences, with an optional question when genuinely useful.
    Do not force a content hook, published fact, product mention or sales
    angle. Use the thread as evidence for contextual reactions and questions;
@@ -38,7 +39,10 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    no later than 12 hours after the thread's creation, with thread evidence,
    source evidence and a success check. If already expired, do not queue it.
    A fresh replacement requires rereading the conversation for context.
-5. Prepare, merge all today's work and select within 20 minutes. A drafted
+5. Prepare, merge all today's work and select within 20 minutes. Give each
+   candidate the thread's public https URL as `target_url`: `cc finish`
+   batches the day's candidates into one copy and open ask (words to copy,
+   page to open), and holds any without a public page. A drafted
    reply does not advance a partner relationship; a later real action needs
    Krish confirmation and evidence. Follow the delivery rule in `AGENTS.md`.
 6. Last, report to Control Center with this run's actual file names:

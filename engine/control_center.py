@@ -31,6 +31,14 @@ SCHEMA_VERSION = '1.0.0'
 # only when a proposal uses one of them ("Raise yours only for a field you use").
 AUTONOMY_VERSION = '1.1.0'
 AUTONOMY_FIELDS = ('stage', 'parent_proposal_id')
+# 1.14.0 adds the engagement task: a version 2 action of kind copy_open on the
+# engage channel, behind post, that Krish carries out himself (docs/control-center).
+ENGAGE_VERSION = '1.14.0'
+ENGAGE_CHANNEL = 'engage'
+ENGAGE_KIND = 'copy_open'
+MAX_TAPS = 25
+EMAIL = re.compile(r'[^\s@<>()]+@[^\s@<>()]+\.[A-Za-z]{2,}')
+PHONE = re.compile(r'(?:\+\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b')
 STAGES = ('plan', 'go_live', 'check_in')
 GO_LIVE_WALLS = ('send', 'post', 'spend')
 TIMEZONE = 'America/New_York'
@@ -269,9 +277,70 @@ def stage_errors(item):
     return errors
 
 
+def engage_action(body, taps):
+    """The engagement task's exact action: {version 2, engage, copy_open, body, taps}. Refuses a bad tap."""
+    action = {'version': 2, 'channel': ENGAGE_CHANNEL, 'kind': ENGAGE_KIND, 'body': clip(body, 1000),
+              'taps': [{'label': clip(t['label'], 80), 'text': t['text'], 'url': t['url']} for t in taps]}
+    errors = action_errors(action)
+    if errors:
+        raise ValueError('; '.join(errors))
+    return action
+
+
+def action_errors(action):
+    errors = []
+    taps = action.get('taps') if isinstance(action, dict) else None
+    if not isinstance(taps, list) or not 1 <= len(taps) <= MAX_TAPS:
+        return ['an engagement task carries 1 to ' + str(MAX_TAPS) + ' taps']
+    if not isinstance(action.get('body'), str) or not action['body'].strip() or len(action['body']) > 1000:
+        errors.append('an engagement task needs a body of up to 1000 characters')
+    for i, tap in enumerate(taps):
+        at = 'tap ' + str(i + 1)
+        if not isinstance(tap, dict) or set(tap) != {'label', 'text', 'url'}:
+            errors.append(at + ' carries exactly label, text and url')
+            continue
+        if not isinstance(tap['label'], str) or not tap['label'].strip() or len(tap['label']) > 80 or '\n' in tap['label']:
+            errors.append(at + ' needs a one-line label of up to 80 characters')
+        if not isinstance(tap['text'], str) or not tap['text'].strip() or len(tap['text']) > 2200:
+            errors.append(at + ' needs its exact words, up to 2200 characters')
+        elif EMAIL.search(tap['text']) or PHONE.search(tap['text']):
+            errors.append(at + ' words carry an email address or a phone number')
+        url = tap['url']
+        if not (isinstance(url, str) and re.match(r'^https://[^\s/@]+(/\S*)?$', url)):
+            errors.append(at + ' needs a public https page with no login in it')
+    return errors
+
+
+def copy_open(item):
+    """The engagement task's action when this proposal carries one, else None."""
+    if not isinstance(item, dict) or item.get('channel') != ENGAGE_CHANNEL or not isinstance(item.get('exact_payload'), str):
+        return None
+    try:
+        action = json.loads(item['exact_payload'])
+    except ValueError:
+        return None
+    return action if isinstance(action, dict) and action.get('kind') == ENGAGE_KIND else None
+
+
+def copy_open_errors(item):
+    action = copy_open(item)
+    if action is None:
+        return []
+    pid = str(item.get('proposal_id'))
+    errors = ['engagement task ' + pid + ': ' + e for e in action_errors(action)]
+    if action.get('version') != 2 or set(action) != {'version', 'channel', 'kind', 'body', 'taps'}:
+        errors.append('engagement task ' + pid + ' is a version 2 action of version, channel, kind, body and taps')
+    if item.get('wall') != 'post' or item.get('stage') is not None:
+        errors.append('engagement task ' + pid + ' sits behind post with no stage')
+    return errors
+
+
 def report_version(proposals):
-    """1.1.0 only when a proposal uses a 1.1.0 field, else 1.0.0."""
-    used = any(key in item for item in proposals or [] if isinstance(item, dict) for key in AUTONOMY_FIELDS)
+    """1.14.0 when a proposal is an engagement task, 1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
+    proposals = [item for item in proposals or [] if isinstance(item, dict)]
+    if any(copy_open(item) for item in proposals):
+        return ENGAGE_VERSION
+    used = any(key in item for item in proposals for key in AUTONOMY_FIELDS)
     return AUTONOMY_VERSION if used else SCHEMA_VERSION
 
 
@@ -328,6 +397,7 @@ def validate_report(report):
         if 'subject_ref' in item:
             errors.append('proposal ' + str(item.get('proposal_id')) + ' carries subject_ref, a 1.2.0 field this engine does not speak')
         errors += stage_errors(item)
+        errors += copy_open_errors(item)
     if report.get('payload_sha256') != report_digest(report):
         errors.append('payload_sha256 does not match the canonical report')
     if errors:
@@ -419,15 +489,20 @@ class Client:
     def capabilities(self):
         return self._request('GET', 'capabilities')
 
-    def confirm_version(self, version):
-        """A report above 1.0.0 goes only where capabilities list its version.
-        Fails closed, never downgrades: the report is not sent."""
+    def confirm_version(self, version, feature=None):
+        """A report above 1.0.0 goes only where capabilities list its version
+        (and, for a feature it uses, where that flag is true). Fails closed,
+        never downgrades by itself: the report is not sent."""
         try:
-            offered = self.capabilities().get('schema_versions')
+            served = self.capabilities()
         except ProtocolError as error:
             raise ProtocolError('schema_version_unconfirmed', error.status) from None
+        offered = served.get('schema_versions')
         if not isinstance(offered, list) or version not in offered:
             raise ProtocolError('schema_version_unsupported')
+        features = served.get('features') if isinstance(served.get('features'), dict) else {}
+        if feature and features.get(feature) is not True:
+            raise ProtocolError(feature + '_unsupported')
         return version
 
     def attempt(self, record):
@@ -456,7 +531,8 @@ class Client:
         """Report once, then read it back. A 409 is read back, never retried."""
         validate_report(report)
         if report['schema_version'] != SCHEMA_VERSION:
-            self.confirm_version(report['schema_version'])
+            self.confirm_version(report['schema_version'],
+                                 ENGAGE_KIND if report['schema_version'] == ENGAGE_VERSION else None)
         ours = report['payload_sha256']
         try:
             result = self._request('POST', 'reports', report, idempotency_key=report['run_id'])

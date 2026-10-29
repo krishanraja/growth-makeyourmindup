@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-29: "At U3 to U5, engines and Control Center may raise volume caps
+  up to each repo's existing policy bounds without a signed week spec. This
+  is volume only: walls unchanged." The engagement doctrine moves from
+  "fewer good candidates beat quota fillers" to as many as clear the bar,
+  batched as one copy and open ask on his list (docs/ENGAGEMENT-LOOP.md,
+  jobs/radar.md). The backlog (`growth.py backlog`) and the ecosystem route
+  on every run spec slot (`ecosystem_cta`) come from the same day's plan.
+
 - 2026-10-27 (later still): "apply the Control Center change yourself". For
   this one change only, rule 7 (stay in this repository) is lifted: the
   session implements the GA4 brief in krishanraja/control-center on branch
