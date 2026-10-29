@@ -239,7 +239,13 @@ class ShareBlockTests(unittest.TestCase):
                 'Share if you have been there', 'Drop this in the group chat', 'Please share', 'Restack this',
                 'One number decides it. Tag a friend who needs it.', 'If you agree, repost this.',
                 'If this helped, pass it on.', 'Read it.\n\U0001f449 Share this with your CFO', 'So share it with your team.',
-                '\u267b\ufe0f Repost to help others']
+                '\u267b\ufe0f Repost to help others', 'Hit share if this is your company.',
+                'Tap the share button and send it to your CFO.', 'Save this and share it with your team.',
+                'If this landed, like and share.', 'DM this to your boss.', 'Send to a friend who runs pilots.',
+                'Every boss needs to see this.',
+                # Odd spaces and line ends are read as content-engine's copy lint reads them.
+                'Share\u00a0this with your team.', 'Tag a\u00a0friend who needs it.',
+                'One number decides it.\u2028Tag a friend who needs it.', 'Read it.\u2029Share this with your CFO']
         for text in asks:
             self.assertTrue(cta_errors(text), text)
         self.assertEqual(cta_errors('One number decides it. Tag a friend who needs it.')[0], 'tag-a-friend: "Tag a"')
@@ -253,7 +259,18 @@ class ShareBlockTests(unittest.TestCase):
                  'Annotators tag a million images a day', 'Insurers tag her as a risk',
                  'Subscribe and we send it to your inbox every Monday.',
                  'Firms that repost it to their own feeds lose reach.', 'The court will forward it on to the regulator.',
-                 'Most people know someone who lost a job to a model.', 'If this helped, the full piece is free to read.']
+                 'Most people know someone who lost a job to a model.', 'If this helped, the full piece is free to read.',
+                 # True reporting that uses an ask's words mid-sentence (the 29 Oct review's collisions).
+                 'Samsung told engineers never to share it with anyone outside the company.',
+                 'Google trained the model but refused to share it with others.',
+                 'TikTok users like and share AI clips twice as often as edited ones.',
+                 'Gemini can now draft an email and send to your contacts without asking.',
+                 'People share if it makes them look ahead of the news.',
+                 'X quietly removed the share button from AI replies.',
+                 'Viewers hit share three times more on the cloned-voice clip.',
+                 "Hollywood's unions spread the word through group chats.",
+                 'Engineers post it in the group chat before legal sees it.',
+                 'Readers share and save carousels more than they share videos.']
         for text in clean:
             self.assertEqual(cta_errors(text), [], text)
         with tempfile.TemporaryDirectory() as tmp:

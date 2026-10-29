@@ -12,7 +12,10 @@
     that brings it to mind and a standalone check
     (`social/schemas/package.schema.json`, `social/share.json`).
   - Generic share calls to action in snackable post copy are refused where
-    they open a sentence; the share comes from the content, never a request.
+    they open a sentence; three that a true sentence about other people does
+    not contain ("share it with your team", "please share", "someone needs to
+    see this") are refused anywhere. The share comes from the content, never
+    a request.
     Whether text posts, articles and daily and radar drafts are refused too is
     Krish's decision (`share_cta_scope` in `social/share.json`).
   - Each snackable format names its share mechanic in its delivery checks; for

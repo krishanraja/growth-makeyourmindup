@@ -425,7 +425,7 @@
   ],
   "share_cta_scope_about": "Krish's ruling covers snackable posts, so a share call to action is refused in snackable post copy. Whether it is also refused in text posts, articles and the daily and radar drafts is his decision; all_post_copy would refuse it everywhere a post's words are checked.",
   "share_cta_scope": "snackable",
-  "imperative_anchor_about": "Where an anchored ask can begin: the start of the copy, a new sentence or line, or straight after an opening if-clause, with an optional emoji or bullet and a softener such as please or so. A fact sentence that uses the same verb mid-clause (banks tag them as high risk; firms that repost it) is never matched.",
+  "imperative_anchor_about": "Where an anchored ask can begin: the start of the copy, a new sentence or line, or straight after an opening if-clause, with an optional emoji or bullet and a softener such as please or so. A fact sentence that uses the same verb mid-clause (banks tag them as high risk; firms that repost it; X removed the share button) is never matched. Every ask is anchored except three that a true sentence about other people does not contain, which are refused anywhere: share it with your team, a friend or someone (share-with), please share (please-share) and someone needs to see this (needs-to-see-this).",
   "imperative_anchor": "(?:^|(?<=[.!?:;])\\s|\\n|\\bif\\b[^.!?\\n]{0,80},)\\s*(?:[^\\w\\s]+\\s*)?(?:(?:please|pls|so|then|now|just|and|also|go on,?)\\s+)?",
   "share_cta": [
     {
@@ -435,27 +435,36 @@
     },
     {
       "id": "share-with",
-      "pattern": "\\bshare (?:it |this )?(?:with|to) (?:your|a friend|a colleague|someone|somebody|anyone|everyone|friends|people|others)\\b"
+      "pattern": "\\bshare (?:it |this )?(?:with|to) (?:your|a friend|a colleague|someone|somebody)\\b"
     },
     {
       "id": "please-share",
-      "pattern": "\\b(?:please|pls|go|hit|smash) share\\b"
+      "pattern": "\\b(?:please|pls|smash) share\\b"
+    },
+    {
+      "id": "hit-share",
+      "pattern": "\\b(?:hit|go) share\\b",
+      "anchored": true
     },
     {
       "id": "share-button",
-      "pattern": "\\bshare button\\b"
+      "pattern": "\\b(?:hit|tap|press|click|smash|use) (?:the |that )?share button\\b",
+      "anchored": true
     },
     {
       "id": "share-if",
-      "pattern": "\\bshare if\\b"
+      "pattern": "\\bshare if\\b",
+      "anchored": true
     },
     {
       "id": "like-and-share",
-      "pattern": "\\b(?:like|save|comment|follow|subscribe),? (?:and|&|\\+) share\\b"
+      "pattern": "\\b(?:like|save|comment|follow|subscribe),? (?:and|&|\\+) share\\b",
+      "anchored": true
     },
     {
       "id": "share-and",
-      "pattern": "\\bshare,? (?:and|&|\\+) (?:like|save|follow|subscribe|comment)\\b"
+      "pattern": "\\bshare,? (?:and|&|\\+) (?:like|save|follow|subscribe|comment)\\b",
+      "anchored": true
     },
     {
       "id": "tag-a-friend",
@@ -469,7 +478,8 @@
     },
     {
       "id": "send-to-someone",
-      "pattern": "\\bsend to (?:a friend|a colleague|someone|somebody|your)\\b"
+      "pattern": "\\bsend to (?:a friend|a colleague|someone|somebody|your)\\b",
+      "anchored": true
     },
     {
       "id": "forward-this",
@@ -493,7 +503,8 @@
     },
     {
       "id": "spread-the-word",
-      "pattern": "\\bspread the word\\b"
+      "pattern": "\\bspread the word\\b",
+      "anchored": true
     },
     {
       "id": "know-someone-who",
@@ -506,11 +517,13 @@
     },
     {
       "id": "drop-in-chat",
-      "pattern": "\\b(?:drop|post|send|share) (?:this|it) in (?:the|your) (?:group )?chat\\b"
+      "pattern": "\\b(?:drop|post|send|share) (?:this|it) in (?:the|your) (?:group )?chat\\b",
+      "anchored": true
     },
     {
       "id": "dm-this",
-      "pattern": "\\bdm (?:this|it) to\\b"
+      "pattern": "\\bdm (?:this|it) to\\b",
+      "anchored": true
     }
   ],
   "send_test": {

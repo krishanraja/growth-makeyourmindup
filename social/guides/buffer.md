@@ -9,18 +9,27 @@ only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie expor
 
 ## Prepare and save an unscheduled draft
 
-1. Run the selected `social route`. Check actual `get_account`, organization,
-   `list_channels` and native account ownership; derive current IDs there.
-2. Read the queue, draft list and native source post identities. Reuse an
-   intended existing draft only after recording its current exact contents.
-   Identify the revision by text and ordered asset hashes, not draft ID alone.
+1. Run the selected `social route`. Check actual `get_account`, organization
+   and native account ownership. The organisation is shared with other
+   ventures: the channel is the package's pinned `buffer_channel_id`
+   (`engine/buffer_channels.py`). `list_channels` only confirms that id is
+   present, connected and named as expected; it never supplies an id.
+2. Read the queue, draft list and native source post identities, with
+   `list_posts` filtered by that channelId. Reuse an intended existing draft
+   only after recording its current exact contents. Identify the revision by
+   text and ordered asset hashes, not draft ID alone.
 3. Obtain the accepted package from content-engine or, for `growth-canva`
    formats, from the Canva lane (`canva.md`). Record its approval
    evidence, immutable hashes, order and alt text. Apply the account voice rule.
    Keep the exact caption and proposed time in the private posting package.
 4. Inspect the current domain tool schema. Journal operation, target, payload,
    before-state and attempt count *before* saving. Use `edit_post` for a known
-   intended draft; use create only when no intended draft exists. Set
+   intended draft, and only after reading it with `get_post` and passing that
+   readback to `python growth.py social preflight PACKAGE.json --target
+   GET_POST.json`: `edit_post` names no channelId, so preflight refuses a
+   draft on any channel but the package's pinned one (never another
+   venture's), one that is not a draft and one imported from the network.
+   Use create only when no intended draft exists, on the pinned id. Set
    `saveToDraft: true`; do not supply a due time. Never rely on default queue mode.
 5. The verified image asset shape was
    `{image: {url: uploadedUrl, metadata: {altText: acceptedAltText}}}`.

@@ -26,6 +26,10 @@ URL = re.compile(r'https?://[^\s<>\]\["\']+', re.I)
 ACTING = {'send', 'post', 'publish', 'schedule', 'send_at', 'post_at', 'publish_at', 'scheduled_at', 'auto_post'}
 ITEM_WIRE = ('platform', 'target_url', 'target_name', 'why', 'text', 'status')
 NUMBER_WIRE = ('platform', 'followers', 'new_this_week', 'reach', 'visits', 'new_free', 'new_paid', 'unsubscribes', 'top_source', 'note')
+# Pack kinds whose items are readings and recommendations for Krish, never pasted anywhere public
+# (cc_loop.WALLS puts them behind strategy and none, not post or send), so a report can quote the
+# copy the lint held. Every other kind, and a draft checked with no kind, is public copy.
+INTERNAL_KINDS = ('report', 'numbers')
 
 
 def x_weight(text):
@@ -68,10 +72,11 @@ def problems(item, kind=None):
     errors += prose_errors(text)
     # The draft is public once he pastes it (Krish, 28 Oct 2026: no eyebrows,
     # asterisks, AI notes or take labels); an unreadable lint refuses the pack.
-    try:
-        errors += copy_lint_errors(text, 'channel_copy')
-    except ValueError as exc:
-        errors.append('copy lint could not run: ' + str(exc))
+    if kind not in INTERNAL_KINDS:
+        try:
+            errors += copy_lint_errors(text, 'channel_copy')
+        except ValueError as exc:
+            errors.append('copy lint could not run: ' + str(exc))
     if len(text.encode('utf-16-le')) // 2 > 4000:
         errors.append('exceeds the API limit of 4000 UTF-16 units')
     if item.get('platform') == 'x':

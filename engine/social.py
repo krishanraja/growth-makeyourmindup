@@ -205,8 +205,35 @@ def package_digest(package):
                                      separators=(',', ':'), allow_nan=False).encode('utf-8')).hexdigest()
 
 
-def preflight(package, as_of=None, root=ROOT, send_test=None):
-    """Structural package checks. send_test is the blind reader's answer, when one has run."""
+def draft_target_errors(package, target):
+    """Why a get_post readback is not a Buffer draft this package may overwrite with edit_post.
+
+    edit_post names only a postId, never a channelId, and the Buffer organisation
+    is shared with other ventures, so a reused draft is read with get_post first:
+    it must sit on the package's pinned channel (never another venture's), be a
+    draft and not be a post imported from the network. The same checks release
+    runs on its own edit targets (engine/run/release.py:target_errors).
+    """
+    from .run.release import BUFFER_ID, CHANNELS, _post, target_errors  # local: release imports route from here
+    if package.get('tool') != 'buffer':
+        return ['a get_post edit target applies only to a Buffer package']
+    if package.get('channel') not in CHANNELS:
+        return ['Buffer has no route for ' + str(package.get('channel')) + ' in this engine']
+    post = _post(target)
+    if not isinstance(post, dict) or not (isinstance(post.get('id'), str) and BUFFER_ID.match(post['id'])):
+        return ['edit target was not read back with get_post']
+    errors = channel_id_errors(package['channel'], post.get('channelId'))
+    errors += [e for e in target_errors({'buffer_draft_id': post['id'], 'channel': package['channel']}, post,
+                                        package['buffer_channel_id']) if e not in errors]
+    return errors
+
+
+def preflight(package, as_of=None, root=ROOT, send_test=None, target=None):
+    """Structural package checks. send_test is the blind reader's answer, when one has run.
+
+    target is a get_post readback of an existing draft the package would be
+    saved over with edit_post; it must pass draft_target_errors first.
+    """
     validate(package, read(root / 'social' / 'schemas' / 'package.schema.json'))
     decision = route(package['channel'], package['format'], package['tool'], as_of, root)
     profile = decision['channel']
@@ -219,6 +246,10 @@ def preflight(package, as_of=None, root=ROOT, send_test=None):
         pinned = channel_id_errors(package['channel'], package['buffer_channel_id'])
         if pinned:
             raise ValueError(pinned[0])
+    if target is not None:
+        wrong = draft_target_errors(package, target)
+        if wrong:
+            raise ValueError('edit_post target refused: ' + '; '.join(wrong))
     if profile['publication_mode'] == 'human_publish_only' and package['proposed_due_at'] is not None:
         raise ValueError('personal account packages must remain unscheduled for human publication')
     if re.search(r'(?:illustrations?|artwork|scenes?|scorecard)\s+(?:(?:was|were|are|is)\s+)?(?:generated\s+(?:with|by)\s+AI|AI[- ]generated)|AI[- ]generated\s+(?:editorial\s+)?illustrations?', package['caption'], re.I):
@@ -276,7 +307,7 @@ def preflight(package, as_of=None, root=ROOT, send_test=None):
             'publication_mode': profile['publication_mode'],
             'package_id': package['id'], 'payload_sha256': digest, 'assets_checked': count,
             'send_test_request_sha256': request['request_sha256'] if request else None,
-            'send_test': tested, 'holds': holds}
+            'send_test': tested, 'edit_target_checked': target is not None, 'holds': holds}
 
 
 def command(argv=None):
@@ -288,6 +319,8 @@ def command(argv=None):
     p.add_argument('--as-of')
     p = sub.add_parser('preflight'); p.add_argument('file'); p.add_argument('--as-of')
     p.add_argument('--send-test', help="the blind reader's JSON answer for this package")
+    p.add_argument('--target', help='a get_post readback of the draft edit_post would overwrite; required before'
+                                    ' any edit_post of a reused draft')
     p = sub.add_parser('send-test', help='print the blind request for a fresh reader, stage it, or compare its answer')
     p.add_argument('file'); p.add_argument('--answer', help="the reader's JSON answer to compare")
     p.add_argument('--stage', help='a new or empty folder: the assets under blind names and request.json,'
@@ -313,7 +346,8 @@ def command(argv=None):
             else:
                 result = send_test_request(package)
         else:
-            result = preflight(read(args.file), args.as_of, send_test=read(args.send_test) if args.send_test else None)
+            result = preflight(read(args.file), args.as_of, send_test=read(args.send_test) if args.send_test else None,
+                               target=read(args.target) if args.target else None)
     except (ValueError, KeyError, OSError) as exc:
         print(json.dumps({'valid': False, 'error': str(exc)}))
         return 1

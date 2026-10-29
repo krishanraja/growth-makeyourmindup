@@ -23,6 +23,9 @@ CONFIG = ROOT / 'vendor' / 'content-engine' / 'copy-lint' / 'copy-lint.json'
 SURFACES = ('channel_copy', 'carousel_text', 'video_onscreen', 'titles', 'article_metadata')
 _FLAGS = {'i': re.IGNORECASE, 'm': re.MULTILINE}
 _SPACES = re.compile('[\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]')
+# content-engine's reader at the pinned commit turns U+2028, U+2029 and U+0085 into line ends
+# too (its _LINE_ENDS), so an eyebrow after one of them is refused here as it is there.
+_LINE_ENDS = re.compile('[\u2028\u2029\u0085]')
 _cache = {}
 
 
@@ -65,7 +68,7 @@ def version(path=CONFIG):
 
 def normalise(text):
     """Line ends as \\n and every odd space as a plain one, as content-engine reads them."""
-    return _SPACES.sub(' ', text.replace('\r\n', '\n').replace('\r', '\n'))
+    return _SPACES.sub(' ', _LINE_ENDS.sub('\n', text.replace('\r\n', '\n').replace('\r', '\n')))
 
 
 def copy_lint(text, applies_to, path=CONFIG):

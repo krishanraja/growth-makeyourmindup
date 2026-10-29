@@ -14,7 +14,7 @@ from ..copy_lint import copy_lint_errors
 from ..core import TIMEZONE, UTC, calendar_date, http_url, instant, ny_time, read_json, write_json
 from ..packs import prose_errors
 from ..share import (compare_send_test, cta_applies, cta_errors, share_errors, share_line,
-                     slot_send_test_request)
+                     slot_send_test_request, stage_slot_send_test)
 from ..social import inventory, validate
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -460,6 +460,30 @@ def row(slot, stage, reason=None):
             'next': STAGES[index + 1] if index + 1 < len(STAGES) else None, 'reason': reason}
 
 
+def send_test_reason(slot, review, label):
+    """None while the recorded blind answer still passes against this slot's share block, else why not.
+
+    payload_sha256 does not cover the share block, so a stored pass is never
+    trusted: the reader's answer is compared again with the share block and the
+    request as they stand now (R99). A changed receiver or job, or a request the
+    answer was not given for, sends the slot back to linted for a fresh reader.
+    """
+    tested = review.get('send_test')
+    answer = tested.get('reader_answer') if isinstance(tested, dict) else None
+    if not isinstance(answer, dict):
+        return label + ' carries no reader_answer to compare again; record the send test with run send-test --answer'
+    if slot.get('share') is None:
+        return label + ' is a send test, but the slot declares no share block for it to match'
+    try:
+        result = compare_send_test(slot['share'], answer, slot_send_test_request(slot))
+    except (ValueError, KeyError, TypeError) as exc:
+        return label + ' no longer counts: ' + str(exc)
+    if result['verdict'] != 'pass':
+        return (label + ' no longer passes against this share block (' + '; '.join(result['reasons'])
+                + '); run a fresh blind reader with run send-test')
+    return None
+
+
 def slot_status(slot, folder, lint_reason, decision, decision_reason, window=None, snack=False):
     """snack: the slot's format is snackable, so its review is the blind send test (crew/send-test/)."""
     sid = slot['slot_id']
@@ -476,6 +500,8 @@ def slot_status(slot, folder, lint_reason, decision, decision_reason, window=Non
         reason = label + ' reviewed another slot'
     elif review is not None and snack and review.get('lens') != 'send-test':
         reason = label + ' of a snackable slot is the blind send test: lens send-test (run send-test)'
+    elif review is not None and review.get('lens') == 'send-test':
+        reason = send_test_reason(slot, review, label)
     if reason:
         return row(slot, 'linted', reason)
     if decision_reason:
@@ -546,16 +572,23 @@ def status(spec, runs=None, root=ROOT, records=None):
 
 # The blind send test for a slot -------------------------------------------
 
-def send_test_review(spec, slot_id, answer=None):
+def send_test_review(spec, slot_id, answer=None, stage=None, assets=None):
     """A slot's blind request, or with the reader's answer the review record run status reads.
 
     The record's lens is send-test and it carries the slot's payload_sha256, so a
     later edit to the words, assets or format leaves it reviewing another payload.
+    With stage and assets, the slot's assets are found by name in the assets
+    folder, checked against their sha256 and copied under blind names, with
+    request.json, into the new stage folder: the only thing the reader is given.
     """
     validate(spec, read_json(SCHEMA))
     slot = next((s for s in spec['slots'] if s['slot_id'] == slot_id), None)
     if slot is None:
         raise ValueError('no slot ' + str(slot_id) + ' in this spec')
+    if stage is not None:
+        if answer is not None or assets is None:
+            raise ValueError('--stage needs --assets and no --answer: stage the request, then compare the answer')
+        return dict(stage_slot_send_test(slot, stage, assets), staged=str(stage))
     request = slot_send_test_request(slot)
     if answer is None:
         return request
@@ -591,6 +624,9 @@ def main(argv=None):
     p.add_argument('slot')
     p.add_argument('--answer', help="the fresh reader's JSON answer to this slot's request")
     p.add_argument('--record', action='store_true', help='write the review record to review/<slot>.json')
+    p.add_argument('--stage', help='a new or empty folder: the assets under blind names and request.json,'
+                                   ' the only things the reader is given')
+    p.add_argument('--assets', help="with --stage: a folder holding the slot's assets by their slot names")
     p.add_argument('--runs-dir', help='evidence root (default .scratch/runs)')
     args = parser.parse_args(argv)
     try:
@@ -610,7 +646,12 @@ def main(argv=None):
         if args.action == 'send-test':
             if args.record and not args.answer:
                 raise ValueError('--record needs --answer: only a compared answer is review evidence')
-            result = send_test_review(spec, args.slot, read_json(args.answer) if args.answer else None)
+            if args.assets and not args.stage:
+                raise ValueError('--assets is read only with --stage')
+            if args.record and args.stage:
+                raise ValueError('--record needs a compared answer, not a staged request')
+            result = send_test_review(spec, args.slot, read_json(args.answer) if args.answer else None,
+                                      args.stage, args.assets)
             if args.record:
                 write_json(run_dir(spec, args.runs_dir) / 'review' / (args.slot + '.json'),
                            dict(result, recorded_at=instant().isoformat()))

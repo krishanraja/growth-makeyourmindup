@@ -461,6 +461,65 @@ class RunStatusTests(SyntheticLadder):
         with contextlib.redirect_stdout(io.StringIO()) as out:
             self.assertEqual(main(['send-test', str(FIXTURES / 'w45-week.json'), sid, '--record']), 1)
         self.assertIn('--record needs --answer', out.getvalue())
+        # The share block changes but the payload does not: the recorded pass is compared again, so a
+        # receiver and job no blind reader named never reach Krish as reviewed (R99).
+        reshared = copy.deepcopy(self.spec)
+        slot(reshared, sid)['share'].update(receiver='her head of engineering', job='laugh_or_awe')
+        reshared = computed(reshared)
+        self.assertEqual(slot(reshared, sid)['payload_sha256'], note['payload_sha256'])
+        draft = Path(self.runs) / 'reshared.json'
+        write_json(draft, reshared)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(main(['lint', str(draft), '--record', '--runs-dir', self.runs]), 0)
+        self.spec = reshared
+        stage, reason = self.stage(sid)
+        self.assertEqual(stage, 'linted')
+        self.assertIn('no longer passes against this share block', reason)
+        self.assertIn('laugh or awe', reason)
+        # A review whose stored answer is missing never counts either.
+        review = json.loads((self.folder / 'review' / (sid + '.json')).read_text(encoding='utf-8'))
+        del review['send_test']['reader_answer']
+        self.put('review/' + sid + '.json', review)
+        self.assertIn('carries no reader_answer', self.stage(sid)[1])
+
+    def test_snackable_slot_send_test_is_staged_under_blind_names(self):
+        # A run slot's reader gets only the staged folder, as a package's does: never a path or a
+        # file name that could hint at the receiver.
+        sid = 'w45-mon-note-1'
+        assets = Path(self.runs) / 'downloads'
+        assets.mkdir()
+        data = b'synthetic note image bytes, not a real post'
+        spec = copy.deepcopy(self.spec)
+        named = slot(spec, sid)
+        named['assets'] = [dict(named['assets'][0], name='her-cfo-budget-review.png',
+                                sha256=hashlib.sha256(data).hexdigest(), bytes=len(data))]
+        spec = computed(spec)
+        (assets / 'her-cfo-budget-review.png').write_bytes(data)
+        path = Path(self.runs) / 'staged-spec.json'
+        write_json(path, spec)
+        stage = Path(self.runs) / 'reader'
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(main(['send-test', str(path), sid, '--stage', str(stage), '--assets', str(assets)]), 0)
+        request = json.loads(out.getvalue())
+        self.assertEqual(request['staged'], str(stage))
+        self.assertEqual(sorted(p.name for p in stage.iterdir()), ['asset-1.png', 'request.json'])
+        self.assertEqual((stage / 'asset-1.png').read_bytes(), data)
+        staged = (stage / 'request.json').read_text(encoding='utf-8')
+        for hint in ('her-cfo', named['share']['receiver'], named['share']['dm_line'], str(assets)):
+            self.assertNotIn(hint, staged)
+        self.assertEqual(json.loads(staged)['request_sha256'],
+                         spec_module.slot_send_test_request(slot(spec, sid))['request_sha256'])
+        # Changed bytes, a folder in use and a half-given command are refused.
+        (assets / 'her-cfo-budget-review.png').write_bytes(data + b' edited')
+        for argv, error in ((['--stage', str(Path(self.runs) / 'reader-2'), '--assets', str(assets)],
+                             'do not match their sha256'),
+                            (['--stage', str(stage), '--assets', str(assets)], 'must be new or empty'),
+                            (['--stage', str(Path(self.runs) / 'reader-3')], '--stage needs --assets'),
+                            (['--assets', str(assets)], '--assets is read only with --stage')):
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(main(['send-test', str(path), sid] + argv), 1, argv)
+            self.assertIn(error, out.getvalue(), argv)
+        self.assertFalse((Path(self.runs) / 'reader-2').exists())
 
     def test_lint_record_survives_signing_and_queueing_only(self):
         before = lint_digest(self.spec)

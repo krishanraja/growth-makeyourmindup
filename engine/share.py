@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import re
 
+from .copy_lint import normalise
 from .packs import prose_errors
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -119,7 +120,9 @@ def cta_errors(text, rules=None):
     rules = rules_or_default(rules)
     if not isinstance(text, str):
         return []
-    text = text.replace('’', "'")
+    # Odd spaces and line ends read as content-engine's copy lint reads them, so a no-break space
+    # or a U+2028 line end never hides an ask.
+    text = normalise(text).replace('’', "'")
     found = []
     for name, pattern in rules['_cta']:
         match = pattern.search(text)
@@ -329,22 +332,17 @@ def slot_send_test_request(slot, rules=None):
     return _request(slot['format'], slot['words'], [(a['name'], a['sha256']) for a in slot['assets']], rules)
 
 
-def stage_send_test(package, folder, root=ROOT, rules=None):
-    """Copy the package's assets under their blind names, with request.json, into a new or empty folder.
-
-    The reader is handed only that folder, so no path leads it back to the
-    package or its share block. Refuses changed bytes and a folder in use.
-    """
-    rules = rules_or_default(rules)
-    request = send_test_request(package, rules)
+def _stage(request, sources, folder):
+    """Copy each (path, sha256) under its blind name, with request.json, into a new or empty folder."""
     folder = Path(folder)
     if folder.exists() and (not folder.is_dir() or any(folder.iterdir())):
         raise ValueError('the send-test folder must be new or empty: ' + str(folder))
     files = []
-    for asset, entry in zip(package['assets'], request['post']['assets']):
-        path = Path(asset['path'])
-        data = (path if path.is_absolute() else Path(root) / path).read_bytes()
-        if hashlib.sha256(data).hexdigest() != asset['sha256']:
+    for (path, sha), entry in zip(sources, request['post']['assets']):
+        if not Path(path).is_file():
+            raise ValueError('asset file not found for ' + entry['name'] + ': ' + Path(path).name)
+        data = Path(path).read_bytes()
+        if hashlib.sha256(data).hexdigest() != sha:
             raise ValueError('asset bytes do not match their sha256: ' + entry['name'])
         files.append((entry['name'], data))
     folder.mkdir(parents=True, exist_ok=True)
@@ -352,6 +350,42 @@ def stage_send_test(package, folder, root=ROOT, rules=None):
         (folder / name).write_bytes(data)
     (folder / 'request.json').write_text(json.dumps(request, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     return request
+
+
+def stage_send_test(package, folder, root=ROOT, rules=None):
+    """Copy the package's assets under their blind names, with request.json, into a new or empty folder.
+
+    The reader is handed only that folder, so no path leads it back to the
+    package or its share block. Refuses changed bytes and a folder in use.
+    """
+    rules = rules_or_default(rules)
+    sources = []
+    for asset in package['assets']:
+        path = Path(asset['path'])
+        sources.append((path if path.is_absolute() else Path(root) / path, asset['sha256']))
+    return _stage(send_test_request(package, rules), sources, folder)
+
+
+def stage_slot_send_test(slot, folder, assets, rules=None):
+    """The same staging for a run slot: each asset is found by its slot name in the assets folder.
+
+    The folder holds fresh copies of the slot's assets (their names are the
+    slot's, which can hint at the receiver), so they are checked against their
+    sha256 and copied under blind names; the reader is handed only the new folder.
+    """
+    rules = rules_or_default(rules)
+    assets = Path(assets)
+    if not assets.is_dir():
+        raise ValueError('the assets folder does not exist: ' + str(assets))
+    sources = []
+    for asset in slot['assets']:
+        name = asset['name']
+        if not isinstance(name, str) or Path(name).name != name or name in ('', '.', '..'):
+            raise ValueError('a slot asset name must be a plain file name: ' + repr(name))
+        sources.append((assets / name, asset['sha256']))
+    if Path(folder).resolve() == assets.resolve():
+        raise ValueError('stage into a new folder, never the assets folder')
+    return _stage(slot_send_test_request(slot, rules), sources, folder)
 
 
 def compare_send_test(declared, answer, request, rules=None):

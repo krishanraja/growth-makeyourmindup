@@ -57,7 +57,11 @@ content-engine's copy lint (engine/copy_lint.py) is held and never emitted.
 Capability checks (28 October 2026): on a channel and format that
 social.route does not show as verified and fresh, only the run's earliest
 signed post releases, as the route's capability check; the rest hold until
-the route is recorded as passed in social/tools/buffer.json.
+the route is recorded as passed in social/tools/buffer.json. A check already
+released, in this run's ledger or any other run's under .scratch/runs, is the
+route's one check: nothing else on the route releases, in any run, until the
+route is recorded as passed. Share asks (Krish, 28 October 2026, R99): a
+snackable slot whose words ask for the share is held, as the copy lint holds.
 """
 import argparse
 import hashlib
@@ -71,7 +75,8 @@ from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, channel_i
 from engine.control_center import sha256_hex
 from engine.copy_lint import copy_lint_errors, version as copy_lint_version
 from engine.core import instant, locked, read_json, write_json
-from engine.social import route
+from engine.share import cta_applies, cta_errors
+from engine.social import inventory, route
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_CHECKED = '2026-10-27'
@@ -390,7 +395,7 @@ def _metadata(slot, ai=False):
     return None
 
 
-def call_arguments(slot, channel, now=None, target=None):
+def call_arguments(slot, channel, now=None, target=None, formats=None):
     """The one exact Buffer call for a checked slot, or a ValueError hold.
 
     channel is this slot's entry from a live list_channels readback; target
@@ -444,7 +449,7 @@ def call_arguments(slot, channel, now=None, target=None):
                      'saveToDraft': False, 'dueAt': slot['due_at']})
     call = {'server': SERVER, 'tool': tool, 'slot_id': sid, 'payload_sha256': slot['payload_sha256'],
             'service': service, 'channel_id': channel['id'], 'arguments': args}
-    errors = argument_errors(call, slot)
+    errors = argument_errors(call, slot, formats)
     if errors:
         raise ValueError('; '.join(errors))
     return call
@@ -468,8 +473,34 @@ def copy_errors(text):
         return ['copy lint could not run, so nothing releases: ' + str(exc)]
 
 
-def argument_errors(call, slot):
-    """Guards on any Buffer call, however it was built."""
+def snackable_formats():
+    """format id -> snackable, from the social records; None when they cannot be read."""
+    try:
+        return {fid: record.get('snackable') is True for fid, record in inventory()['format'].items()}
+    except (ValueError, KeyError, OSError, TypeError):
+        return None
+
+
+def share_ask_errors(slot, text, formats=None):
+    """Share asks in a snackable slot's words, as refusals (R99); a check that cannot run refuses too.
+
+    Run lint and social preflight refuse them first; release checks the signed
+    words again, as it does the copy lint, because it never reads lint.json.
+    """
+    formats = snackable_formats() if formats is None else formats
+    if formats is None or slot['format'] not in formats:
+        return ['share asks could not be checked, so nothing releases: no social format record for '
+                + str(slot['format'])]
+    try:
+        if not cta_applies(formats[slot['format']]):
+            return []
+        return ['share call to action ' + e for e in cta_errors(text)]
+    except ValueError as exc:
+        return ['share asks could not be checked, so nothing releases: ' + str(exc)]
+
+
+def argument_errors(call, slot, formats=None):
+    """Guards on any Buffer call, however it was built. formats: snackable_formats(), read once by a plan."""
     args = call.get('arguments', {})
     meta = args.get('metadata') or {}
     service = call.get('service', CHANNELS[slot['channel']][0])
@@ -486,6 +517,7 @@ def argument_errors(call, slot):
             out += channel_id_errors(slot['channel'], channel_id)
     if 'text' in args:
         out += copy_errors(args['text'])
+        out += share_ask_errors(slot, args['text'], formats)
     if service != CHANNELS[slot['channel']][0]:
         out.append('the call is for another service than the slot')
     if args.get('mode') not in (None, 'customScheduled'):
@@ -570,38 +602,100 @@ def approved_creative(spec):
 
 
 def route_holds(slot, as_of):
-    """(holds, known): social.route's capability holds for the slot's channel and format.
+    """(holds, known, since): social.route's capability holds for the slot's channel and format.
 
     known is False when the route cannot be read at all (a format the channel
     does not carry, or a broken social/ record); such a slot always holds.
+    since is the date its capability record was last verified, or None.
     """
     try:
-        return route(CHANNEL_PROFILE[slot['channel']], slot['format'], as_of=as_of)['holds'], True
+        decision = route(CHANNEL_PROFILE[slot['channel']], slot['format'], as_of=as_of)
     except (ValueError, KeyError) as exc:
-        return ['route_unknown: ' + str(exc)], False
+        return ['route_unknown: ' + str(exc)], False, None
+    record = decision.get('known_capability') or {}
+    return decision['holds'], True, record.get('verified_at')
 
 
-def capability_checks(spec, signed):
-    """(channel, format) -> slot_id of the earliest signed, scheduled slot on it.
+def capability_checks(spec, signed, ledger=None):
+    """(channel, format) -> slot_id of the route's capability check in this run.
 
     On a route not yet verified in social/tools/buffer.json, that one post is
-    the route's capability check (docs/PUBLISHING-AUTHORITY.md, 28 October).
+    the route's capability check (docs/PUBLISHING-AUTHORITY.md, 28 October):
+    the check this run's ledger already released, else the earliest signed,
+    scheduled slot on the route, so a slot signed later never becomes a second check.
     """
     scheduled = [s for s in spec['slots'] if not is_draft(s) and signed.get(s['slot_id']) == s['payload_sha256']]
     first = {}
+    slots = {s['slot_id']: s for s in spec['slots']}
+    for sid, entry in sorted(((ledger or {}).get('released') or {}).items()):
+        if isinstance(entry, dict) and entry.get('capability_check') is True:
+            slot = slots.get(sid) or entry
+            if isinstance(slot.get('channel'), str) and isinstance(slot.get('format'), str):
+                first.setdefault((slot['channel'], slot['format']), sid)
     for slot in sorted(scheduled, key=lambda s: instant(s['due_at'])):
         first.setdefault((slot['channel'], slot['format']), slot['slot_id'])
     return first
 
 
-def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None):
+def other_capability_checks(root, run_id):
+    """Capability checks released in other runs' ledgers under .scratch/runs, as dicts.
+
+    A ledger that cannot be read refuses the plan: without it no route can say
+    whether its check is still waiting to be recorded as passed.
+    """
+    base = Path(root) / '.scratch' / 'runs'
+    own = safe_name(run_id)
+    found = []
+    for path in sorted(base.glob('*/ledger.json')) if base.is_dir() else []:
+        if path.parent.name == own:
+            continue
+        try:
+            ledger = read_json(path)
+            released = ledger['released']
+            if not isinstance(released, dict):
+                raise TypeError('released is not a map')
+        except (ValueError, KeyError, TypeError, OSError) as exc:
+            raise ValueError('another run\'s release ledger cannot be read, so no route can tell whether its'
+                             ' capability check is pending: ' + path.parent.name + ' (' + str(exc) + ')') from None
+        if ledger.get('run_id') == run_id:
+            continue  # this run's own ledger, which release_plan reads as its ledger
+        for sid, entry in sorted(released.items()):
+            if isinstance(entry, dict) and entry.get('capability_check') is True:
+                found.append({'run_id': ledger.get('run_id'), 'slot_id': sid, 'channel': entry.get('channel'),
+                              'format': entry.get('format'), 'planned_at': entry.get('planned_at')})
+    return found
+
+
+def pending_check(key, other_checks, since):
+    """Another run's capability check on this route that the route's record has not caught up with.
+
+    A check planned on or before the record's last verified date is what that
+    record already settled. A check whose format or date was not recorded
+    counts as pending: unknown never releases.
+    """
+    for check in other_checks or []:
+        if check.get('channel') != key[0] or check.get('format') not in (key[1], None):
+            continue
+        try:
+            planned = instant(check['planned_at']).date().isoformat()
+        except (KeyError, TypeError, ValueError):
+            planned = None
+        if since and planned and planned <= since:
+            continue
+        return check
+    return None
+
+
+def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None,
+                 other_checks=None):
     """Arguments for signed, unreleased slots only, once per slot.
 
     asset_paths maps slot_id to its ordered local files; without them a slot
     with assets is held, because its bytes cannot be checked. channels is the
     live list_channels readback; targets maps slot_id to a fresh get_post of
-    its buffer_draft_id. Returns calls, holds and the updated ledger; the
-    caller saves the ledger.
+    its buffer_draft_id. other_checks lists the capability checks other runs
+    released (other_capability_checks). Returns calls, holds and the updated
+    ledger; the caller saves the ledger.
     """
     if not isinstance(spec, dict) or not isinstance(spec.get('slots'), list):
         raise ValueError('run spec needs a slots list')
@@ -619,7 +713,8 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
             raise ValueError('duplicate slot_id: ' + slot['slot_id'])
         seen.add(slot['slot_id'])
     as_of = instant(now).date().isoformat()
-    first_post, routes = capability_checks(spec, signed), {}
+    first_post, routes = capability_checks(spec, signed, ledger), {}
+    formats = snackable_formats()
     calls, holds = [], []
     for slot in spec['slots']:
         sid = slot['slot_id']
@@ -640,14 +735,26 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
             # Krish, 28 Oct 2026: no eyebrows, asterisks, AI notes or take labels.
             hold('copy_lint_refused: ' + '; '.join(lint))
             continue
+        asks = share_ask_errors(slot, slot['words'], formats)
+        if asks:
+            # Krish, 28 Oct 2026: a snackable post is shared for a reason, never asked for the share.
+            hold('share_cta_refused: ' + '; '.join(asks))
+            continue
         capability_check = False
         if not is_draft(slot):
             key = (slot['channel'], slot['format'])
             if key not in routes:
                 routes[key] = route_holds(slot, as_of)
-            unchecked, known = routes[key]
+            unchecked, known, since = routes[key]
             if not known:
                 hold(unchecked[0])
+                continue
+            pending = pending_check(key, other_checks, since) if unchecked else None
+            if pending:
+                # "until a route has passed it, the route holds": across runs, not only within one.
+                hold('route_capability_check_pending: ' + str(pending.get('run_id')) + ' released '
+                     + str(pending.get('slot_id')) + " as this route's capability check; nothing else on the route"
+                     ' releases until social/tools/buffer.json records the route as passed')
                 continue
             if unchecked and first_post.get(key) != sid:
                 # Krish, 28 Oct 2026: each route's first real post is its capability
@@ -679,13 +786,13 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
                 else:
                     hold('edit_would_drop_link_preview')
                 continue
-            call = call_arguments(slot, channel, now, target)
+            call = call_arguments(slot, channel, now, target, formats)
         except ValueError as exc:
             hold(str(exc))
             continue
         calls.append(call)
         entry = {'payload_sha256': slot['payload_sha256'], 'tool': call['tool'], 'channel': slot['channel'],
-                 'service': call['service'], 'channel_id': call['channel_id'],
+                 'format': slot['format'], 'service': call['service'], 'channel_id': call['channel_id'],
                  'post_id': slot['buffer_draft_id'], 'planned_at': instant(now).isoformat(),
                  'copy_lint_version': copy_lint_version()}
         if capability_check:
@@ -926,7 +1033,8 @@ def main(argv=None, root=None):
             if args.action == 'plan':
                 result = release_plan(spec, read_json(args.decision), ledger, _ordered_assets(spec, args.assets),
                                       read_json(args.channels) if args.channels else None, args.now,
-                                      read_json(args.targets) if args.targets else None)
+                                      read_json(args.targets) if args.targets else None,
+                                      other_capability_checks(root, spec['run_id']))
                 if result['calls']:
                     write_json(ledger_path, result['ledger'])
                 if result['holds']:

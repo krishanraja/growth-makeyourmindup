@@ -402,6 +402,120 @@ class ReleaseTests(unittest.TestCase):
         resign(notes, odd_decision, odd)
         self.assertTrue(self.holds(self.plan(odd, odd_decision))['notes-1'].startswith('route_unknown: '))
 
+    def test_capability_check_holds_its_route_across_runs(self):
+        # "until a route has passed it, the route holds": a check another run released, and not yet
+        # recorded as passed, holds this run's route too, instead of becoming a second check.
+        other = [{'run_id': 'synthetic:2026-W44:week', 'slot_id': 'notes-9', 'channel': 'substack-notes',
+                  'format': 'note', 'planned_at': '2026-10-30T09:00:00-05:00'}]
+        result = release.release_plan(self.spec, self.decision, None, self.paths(), self.channels, NOW,
+                                      self.targets, other)
+        self.assertNotIn('notes-1', self.by_slot(result))
+        self.assertEqual(self.holds(result)['notes-1'],
+                         "route_capability_check_pending: synthetic:2026-W44:week released notes-9 as this route's"
+                         ' capability check; nothing else on the route releases until social/tools/buffer.json'
+                         ' records the route as passed')
+        self.assertNotIn('notes-1', result['ledger']['released'])
+        self.assertTrue(self.by_slot(result)['threads-1']['capability_check'], 'another route keeps its own check')
+        # A check whose format was never recorded is unknown, so it holds the channel's routes too.
+        unknown = [dict(other[0], format=None)]
+        self.assertIn('notes-1', self.holds(release.release_plan(self.spec, self.decision, None, self.paths(),
+                                                                 self.channels, NOW, self.targets, unknown)))
+        # Once the route is recorded as passed, nothing is pending.
+        with patch.object(release, 'route', lambda *a, **k: {'holds': []}):
+            passed = release.release_plan(self.spec, self.decision, None, self.paths(), self.channels, NOW,
+                                          self.targets, other)
+        self.assertIn('notes-1', self.by_slot(passed))
+        # A stale verified route: a check planned before its record's date is settled, a later one waits.
+        stale_now = '2026-11-03T12:00:00-05:00'
+        tiktok = {'run_id': 'synthetic:2026-W44:week', 'slot_id': 'tiktok-9', 'channel': 'tiktok',
+                  'format': 'carousel', 'planned_at': '2026-10-20T09:00:00-05:00'}
+        settled = release.release_plan(self.spec, self.decision, None, self.paths(), self.channels, stale_now,
+                                       self.targets, [tiktok])
+        self.assertTrue(self.by_slot(settled)['tiktok-photo-1']['capability_check'])
+        waiting = release.release_plan(self.spec, self.decision, None, self.paths(), self.channels, stale_now,
+                                       self.targets, [dict(tiktok, planned_at='2026-11-02T19:00:00-05:00')])
+        self.assertTrue(self.holds(waiting)['tiktok-photo-1'].startswith('route_capability_check_pending'))
+        # The command line reads the other runs' ledgers, and refuses one it cannot read.
+        root = self.dir / 'repo'
+        ledger = root / '.scratch' / 'runs' / 'synthetic_2026-W44_week' / 'ledger.json'
+        ledger.parent.mkdir(parents=True)
+        ledger.write_text(json.dumps({'run_id': 'synthetic:2026-W44:week', 'released': {
+            'notes-9': {'channel': 'substack-notes', 'format': 'note', 'capability_check': True,
+                        'planned_at': '2026-10-30T09:00:00-05:00', 'payload_sha256': 'a' * 64}}}), encoding='utf-8')
+        argv = ['release', 'plan', str(FIX / 'spec.json'), '--decision', str(FIX / 'decision.json'),
+                '--assets', str(self.dir), '--channels', str(FIX / 'channels.json'),
+                '--targets', str(FIX / 'targets.json'), '--now', NOW]
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            self.assertEqual(release.main(argv, root), 0)
+        self.assertNotIn('notes-1', {c['slot_id'] for c in json.loads(out.getvalue())})
+        self.assertIn('route_capability_check_pending', err.getvalue())
+        # Each run reads only the others' checks: W45's plan above released threads-1 as its check.
+        self.assertEqual([(c['run_id'], c['slot_id']) for c in release.other_capability_checks(root, self.spec['run_id'])],
+                         [('synthetic:2026-W44:week', 'notes-9')])
+        self.assertEqual([(c['run_id'], c['slot_id'])
+                          for c in release.other_capability_checks(root, 'synthetic:2026-W44:week')],
+                         [(self.spec['run_id'], 'threads-1')])
+        # A ledger of this same run, wherever its folder sits, is never another run's check.
+        moved = root / '.scratch' / 'runs' / 'copied-by-hand' / 'ledger.json'
+        moved.parent.mkdir()
+        own = root / '.scratch' / 'runs' / release.safe_name(self.spec['run_id']) / 'ledger.json'
+        moved.write_text(own.read_text(encoding='utf-8'), encoding='utf-8')
+        self.assertEqual([(c['run_id'], c['slot_id']) for c in release.other_capability_checks(root, self.spec['run_id'])],
+                         [('synthetic:2026-W44:week', 'notes-9')])
+        moved.unlink()
+        ledger.write_text('not json', encoding='utf-8')
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(release.main(argv, root), 1)
+        self.assertIn("another run's release ledger cannot be read", out.getvalue())
+
+    def test_a_slot_signed_later_never_becomes_a_second_check(self):
+        result = self.plan()
+        self.assertTrue(result['ledger']['released']['notes-1']['capability_check'])
+        self.assertEqual(result['ledger']['released']['notes-1']['format'], 'note')
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        earlier = copy.deepcopy(self.slots['notes-1'])
+        earlier.update(slot_id='notes-0', due_at='2026-11-01T18:00:00-05:00', words=earlier['words'] + ' Earlier.')
+        spec['slots'].append(earlier)
+        resign(earlier, decision, spec)
+        again = self.plan(spec, decision, result['ledger'])
+        self.assertNotIn('notes-0', self.by_slot(again))
+        self.assertTrue(self.holds(again)['notes-0'].startswith('route_not_verified'))
+        self.assertIn('its capability check is notes-1', self.holds(again)['notes-0'])
+
+    def test_share_ask_holds_a_signed_snackable_slot(self):
+        # Krish, 28 Oct 2026: "I am not talking about just saying "share this with your friends" in the
+        # comments". Run lint refuses it first; release checks the signed words again, as for the copy lint.
+        words = 'One number decides the pilot. Tag a friend who needs it.'
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        for sid in ('notes-1', 'threads-1'):
+            slot = [s for s in spec['slots'] if s['slot_id'] == sid][0]
+            slot['words'] = words
+            resign(slot, decision, spec)
+        result = self.plan(spec, decision)
+        self.assertNotIn('notes-1', self.by_slot(result))
+        self.assertEqual(self.holds(result)['notes-1'],
+                         'share_cta_refused: share call to action tag-a-friend: "Tag a"; share call to action'
+                         ' know-someone-who: "Tag a friend who"')
+        self.assertNotIn('notes-1', result['ledger']['released'])
+        # A text post is outside the scope Krish set (share_cta_scope), so it still releases.
+        self.assertIn('threads-1', self.by_slot(result))
+        call = self.by_slot(self.plan())['notes-1']
+        call['arguments']['text'] = words
+        self.assertTrue(any(e.startswith('share call to action tag-a-friend')
+                            for e in release.argument_errors(call, self.slots['notes-1'])))
+        # A fact that uses the same verb mid-clause is never held.
+        slot = [s for s in spec['slots'] if s['slot_id'] == 'notes-1'][0]
+        slot['words'] = 'Banks tag them as high risk. One number decides the pilot.'
+        resign(slot, decision, spec)
+        self.assertIn('notes-1', self.by_slot(self.plan(spec, decision)))
+        # Format records that cannot be read hold everything.
+        with patch.object(release, 'snackable_formats', lambda: None):
+            unread = self.plan()
+        self.assertEqual(unread['calls'], [])
+        for sid in self.slots:
+            self.assertIn('share asks could not be checked, so nothing releases', self.holds(unread)[sid])
+
     def test_release_refuses_unsigned_or_mismatched_slot(self):
         spec = copy.deepcopy(self.spec)
         decision = copy.deepcopy(self.decision)

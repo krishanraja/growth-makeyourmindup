@@ -65,8 +65,10 @@ own route (content-engine `docs/GROWTH-HANDOFF.md`).
 Before Krish sees a snackable package: the copy carries no generic share call
 to action (the patterns in `../share.json`; preflight refuses "share this",
 "tag a friend", "send this to someone who" and the rest where they open a
-sentence, so a fact such as "banks tag them as high risk" stays), and a blind
-reader (`crew/send-test/`) names the declared receiver and job.
+sentence, so a fact such as "banks tag them as high risk" stays; "share it
+with your team", "please share" and "someone needs to see this" are refused
+anywhere, because a true sentence about other people never says them), and
+a blind reader (`crew/send-test/`) names the declared receiver and job.
 `python growth.py social send-test PACKAGE.json --stage FOLDER` copies the
 assets under blind names into a new folder with `request.json`, the only
 things the reader is given; `--answer ANSWER.json` compares the reply, which

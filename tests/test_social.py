@@ -1,13 +1,16 @@
 """Offline regression gates for reusable social procedures and exact packages."""
+import contextlib
 import copy
 import hashlib
+import io
 import json
 from pathlib import Path
 import tempfile
 import unittest
 
 from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS
-from engine.social import ROOT, inventory, package_digest, preflight, route, validate
+from engine.social import (ROOT, command, draft_target_errors, inventory, package_digest, preflight, route,
+                           validate)
 
 # A realistic share block (Krish, 2026-10-28: every snackable package says why one person sends it to another).
 SHARE = {'sender': 'a head of marketing at a mid-size retailer',
@@ -186,6 +189,41 @@ class SocialContractsTests(unittest.TestCase):
                      format='article', assets=[], buffer_channel_id=BUFFER_CHANNEL_ID['substack-notes'])
             with self.assertRaisesRegex(ValueError, 'not this engine\'s pinned substack channel'):
                 preflight(p, '2026-10-26')
+
+    def test_reused_draft_is_edited_only_on_the_pinned_channel(self):
+        # edit_post names a postId and no channelId, and the organisation is shared: the daily job reads
+        # the draft with get_post and preflight refuses any target that is not this package's own draft.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self.fixture(Path(tmp) / 'asset.bin')
+            p.update(channel='instagram', account_url='https://www.instagram.com/makeyourmind.up',
+                     account_context='publication', buffer_channel_id=BUFFER_CHANNEL_ID['instagram'])
+            draft = {'id': 'cccccccccccccccccccccc01', 'channelId': BUFFER_CHANNEL_ID['instagram'],
+                     'channelService': 'instagram', 'status': 'draft', 'via': 'api'}
+            self.assertEqual(draft_target_errors(p, draft), [])
+            self.assertEqual(draft_target_errors(p, {'post': draft}), [], 'the get_post envelope is read too')
+            result = preflight(p, '2026-10-26', target=draft)
+            self.assertTrue(result['edit_target_checked'])
+            self.assertFalse(preflight(p, '2026-10-26')['edit_target_checked'])
+            for change, why in [({'channelId': '6ae096d32f1f5ed648e99e98', 'channelService': 'facebook'},
+                                 'Heartside Facebook'),
+                                ({'channelId': '6ae096872f1f5ed648e99b6d'}, 'yourdoghasnotes Instagram'),
+                                ({'channelId': BUFFER_CHANNEL_ID['facebook'], 'channelService': 'facebook'},
+                                 "not this engine's pinned instagram"),
+                                ({'status': 'scheduled'}, 'not a draft'),
+                                ({'via': 'network'}, 'imported from the network'),
+                                ({'id': None}, 'not read back with get_post')]:
+                target = dict(draft, **change)
+                self.assertTrue(any(why in e for e in draft_target_errors(p, target)), change)
+                with self.assertRaisesRegex(ValueError, 'edit_post target refused: .*' + why):
+                    preflight(p, '2026-10-26', target=target)
+            # The command line takes the readback with --target.
+            path = Path(tmp) / 'package.json'
+            path.write_text(json.dumps(p), encoding='utf-8')
+            bad = Path(tmp) / 'target.json'
+            bad.write_text(json.dumps(dict(draft, channelId='6ae09bba2f1f5ed648e9cbfc')), encoding='utf-8')
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(command(['preflight', str(path), '--as-of', '2026-10-26', '--target', str(bad)]), 1)
+            self.assertIn('fulltime.fm TikTok', out.getvalue())
 
     def test_exact_approval_cannot_survive_caption_time_order_or_metadata_change(self):
         with tempfile.TemporaryDirectory() as tmp:

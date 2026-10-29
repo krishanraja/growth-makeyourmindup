@@ -122,7 +122,10 @@ line here says otherwise.
   it, the route holds. Release enforces this: on a route that
   `social/tools/buffer.json` does not show as verified and fresh, it
   schedules only the run's earliest approved post, marked
-  `capability_check`, and holds the rest as `route_not_verified`. When that
+  `capability_check`, and holds the rest as `route_not_verified`. A check
+  already released in any run's ledger is the route's one check, so a later
+  run holds that route as `route_capability_check_pending` rather than
+  sending a second one. When that
   post's live readback passes, a reviewed change records the route there as
   verified, with the date and the tested operation, and the rest release.
   If Buffer's Substack channel carries only Notes (it

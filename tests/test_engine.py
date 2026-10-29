@@ -209,6 +209,15 @@ class PackTests(unittest.TestCase):
         with patch('engine.packs.copy_lint_errors', side_effect=ValueError('copy lint config unreadable')):
             self.assertIn('copy lint could not run: copy lint config unreadable',
                           problems({'platform': 'x', 'text': 'The delivery arrived.'}))
+        # A report or numbers item is a recommendation to Krish, never pasted: it may quote held copy.
+        held = {'platform': 'x', 'text': 'Held: the Tuesday caption opened with "Krish\'s take:", so it was rewritten.'}
+        for kind in ('report', 'numbers'):
+            self.assertFalse(any(e.startswith('copy lint') for e in problems(held, kind)), kind)
+        for kind in ('daily', 'radar', 'conversion', None):
+            self.assertTrue(any(e.startswith('copy lint take_label') for e in problems(held, kind)), kind)
+        report, _, _ = draft()
+        report.update(kind='report', items=[held])
+        self.assertFalse(any('copy lint' in e for e in check_pack(report)))
 
     def test_stock_phrase_matching_does_not_hit_unrelated_word(self):
         self.assertEqual(problems({'platform': 'x', 'text': 'I used a spade to delve.'})[0], 'uses stock phrase "delve"')

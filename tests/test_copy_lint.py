@@ -68,6 +68,21 @@ class CopyLintTests(unittest.TestCase):
         self.assertEqual([h['id'] for h in copy_lint.copy_lint('Hot take: no', 'channel_copy')], ['take_label'])
         hit = copy_lint.copy_lint('First line.\r\nMy take: second', 'channel_copy')[0]
         self.assertEqual((hit['id'], hit['line']), ('take_label', 2))
+        # content-engine's reader turns U+2028, U+2029 and U+0085 into line ends too (_LINE_ENDS at the
+        # pinned commit), so an eyebrow that opens the second line is refused here as it is there.
+        for end in ('\u2028', '\u2029', '\u0085'):
+            hits = copy_lint.copy_lint('Intro line' + end + 'BREAKING: OpenAI ships', 'channel_copy')
+            self.assertEqual([(h['id'], h['line']) for h in hits], [('eyebrow_label', 2)], repr(end))
+        self.assertEqual([h['id'] for h in copy_lint.copy_lint('My\u00a0take: second', 'channel_copy')], ['take_label'])
+
+    def test_known_upstream_refusals_are_listed_as_they_stand(self):
+        # SOURCE.md lists true third-party reporting this version refuses, for content-engine to fix.
+        # When a re-vendored version stops refusing one, this fails and the row comes out.
+        source = (VENDOR / 'SOURCE.md').read_text(encoding='utf-8').split('## Known refusals to send upstream', 1)[1]
+        rows = re.findall(r'^\| (.+?) \| `([a-z_]+)` \|$', source, re.M)
+        self.assertEqual(len(rows), 5)
+        for sentence, pattern in rows:
+            self.assertIn(pattern, [h['id'] for h in copy_lint.copy_lint(sentence, 'channel_copy')], sentence)
 
     def test_unknown_surface_and_broken_config_refuse(self):
         with self.assertRaisesRegex(ValueError, 'applies_to must be one of'):
