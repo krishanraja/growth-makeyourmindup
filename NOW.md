@@ -24,9 +24,11 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 ## Where it is right now (as of 2026-10-29)
 
-<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-29", "current_source": "Substack Growth sources, new subscribers, 7 days (2026-10-22 to 2026-10-29), read 2026-10-29: all sources 0, organic not classified", "urgency": 4, "urgency_reason": "0 of 25; under two fifths"} --> **North Star number: U4, far behind.** 0 of 25 new publication subscribers this week from organic posts and shares, read on 29 October 2026.
+<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-30", "current_source": "Substack Growth sources, new subscribers, 7 days (2026-10-23 to 2026-10-30), read 2026-10-30: all sources 0, organic not classified", "urgency": 4, "urgency_reason": "0 of 25; under two fifths"} --> **North Star number: U4, far behind.** 0 of 25 new publication subscribers this week from organic posts and shares, read on 30 October 2026.
 
 Lifecycle: live. The detail is in `README.md`.
+
+30 October measurement and continuation: `.scratch/channel-audit/daily-20261030/REVIEW.md`; public-safe checkpoint in `now-notes/2026-10-30-daily-measurement.md`. Buffer stays per the 29 October ruling; purchase remains Krish's click.
 
 28 October, Wave 1 of the plan Krish approved that day ("Make Your Mind Up:
 one weekly chain that runs on time"): release is pinned to this engine's

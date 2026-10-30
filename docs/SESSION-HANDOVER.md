@@ -2,6 +2,8 @@
 
 Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
+30 October measurement checkpoint: read `.scratch/channel-audit/daily-20261030/REVIEW.md`. Seven-day new subscribers remains zero; native Instagram pilot still has no non-follower views or profile activity at about 86.6 hours. Provider feed metrics still predate 72h. Workspace has 13 channels; use only eight pinned engine IDs. Both LinkedIn drafts and engine-check drafts remain unscheduled and untouched. The daily heartbeat now reflects Krish's 29 October decision to keep Buffer: 31 October progress review, 5 November evidence/current-quote pack, 6 November access/purchase-readiness check before 7 November expiry. Purchase is still his click. This supersedes older keep/downgrade/stop wording below. Private evidence remains local; no new distribution assets were made.
+
 29 October measurement checkpoint: read `.scratch/channel-audit/daily-20261029/REVIEW.md`. Codex native access recovered; Substack source report remains empty for seven days, Instagram pilot has no non-follower views, and the LinkedIn manual post remains unconfirmed. Buffer drafts untouched. Preserve provider metric timestamps; this is a roughly 60-63h sample. Next real route checks follow the newer Monday 2 November transition plan.
 
 28 October operational checkpoint: read
