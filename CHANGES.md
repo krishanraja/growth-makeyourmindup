@@ -1,5 +1,9 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-30: Channel work runs as the seven channel tasks. Krish asked for each of seven saved Instagram
+  growth prompts to be its own task for every specialist, and for a process to the North Star. They are
+  defined once in ai-harness `contract/channel-tasks.md`; docs/CHANNEL-TASKS.md maps them here, and
+  `crew/registry.json` carries each specialist's `tasks`. Every output names the signal it serves.
 - 2026-10-30: Krish approves the week's mix once on the board, and Growth fills it (R124). His words:
   "approve the week's mix once, let Growth fill it".
   - Content-engine's Sunday board (content-engine PR #287) shows "This week's mix", the formats Growth

@@ -21,6 +21,9 @@ FAILURE_IDS = (tuple('F{:02d}'.format(n) for n in range(1, LAST_F + 1))
                + tuple('G{}'.format(n) for n in range(1, 10)))
 CREW_FIELDS = ('id', 'name', 'owns', 'channels', 'formats', 'lint', 'check', 'card', 'lens', 'w45')
 W45 = {'substack', 'threads', 'attribution-ladder', 'what-works', 'release-gate'}
+# The seven channel tasks, defined once in krishanraja/ai-harness contract/channel-tasks.md (Krish, 2026-10-30).
+CHANNEL_TASKS = ('platform-truth', 'profile-audit', 'idea-bank', 'reel-script', 'caption-set', 'trend-scan',
+                 'channel-plan')
 CARD_BYTES, LENS_BYTES = 3072, 1024
 MIN_QUOTE = 40
 SOURCE_CLASSES = ('organic', 'unattributed', 'paid')
@@ -203,6 +206,15 @@ def load_registry(root=ROOT):
             raise ValueError(at + ': card and lens live in crew/<id>/')
         if type(entry['w45']) is not bool:
             raise ValueError(at + ': w45 must be true or false')
+        if 'tasks' in entry:
+            # Each task says what it accomplishes for this specialist, never the generic definition.
+            tasks = entry['tasks']
+            if not isinstance(tasks, dict) or not tasks or any(t not in CHANNEL_TASKS for t in tasks):
+                raise ValueError(at + ': tasks maps ids from the channel tasks contract to what each accomplishes here')
+            if any(not isinstance(v, str) or len(v.split()) < 8 for v in tasks.values()):
+                raise ValueError(at + ': each task says in a sentence what it accomplishes for this specialist')
+            if ('reel-script' in entry['tasks']) != ('short-video' in entry['formats']):
+                raise ValueError(at + ': reel-script belongs to exactly the specialists that make short video')
         if 'row' in entry and entry['row'] is not None and (type(entry['row']) is not int or entry['row'] < 1):
             raise ValueError(at + ': row is the plan section 3 row number, or null for the Release Gate')
     return crew

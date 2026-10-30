@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from engine.run.invariants import (CARD_BYTES, LENS_BYTES, ROOT, W45, check_cards, collapse, house_errors,
+from engine.run.invariants import (CARD_BYTES, CHANNEL_TASKS, LENS_BYTES, ROOT, W45, check_cards, collapse, house_errors,
                                    load_failures, load_registry, load_rules)
 
 CARD = ('# Card: Synthetic\n\n| If | Then | Cite |\n|---|---|---|\n'
@@ -139,6 +139,41 @@ class CrewTests(unittest.TestCase):
             (root / 'crew' / 'registry.json').write_text(json.dumps(data), encoding='utf-8')
             with self.assertRaisesRegex(ValueError, 'row'):
                 load_registry(root)
+
+    def test_channel_tasks_cover_every_audited_channel(self):
+        # The seven channel tasks (ai-harness contract/channel-tasks.md, Krish, 2026-10-30), each said for this channel.
+        runs = {t: [e for e in self.crew if t in e.get('tasks', {})] for t in CHANNEL_TASKS}
+        self.assertEqual([t for t in CHANNEL_TASKS if not runs[t]], [])
+        self.assertEqual([e['id'] for e in runs['profile-audit']], ['channel-auditor'])
+        audited = set(next(e for e in self.crew if e['id'] == 'channel-auditor')['channels'])
+        for task in ('platform-truth', 'idea-bank', 'caption-set', 'channel-plan'):
+            covered = {c for e in runs[task] for c in e['channels']}
+            self.assertLessEqual(audited, covered, task)
+        video = {c for e in runs['reel-script'] for c in e['channels']}
+        self.assertEqual(video, {'instagram', 'facebook', 'youtube', 'tiktok'})
+
+    def test_no_two_specialists_share_a_task_outcome(self):
+        # Krish, 2026-10-30: each channel knows what it has to accomplish, not a box-standard template.
+        for task in CHANNEL_TASKS:
+            said = [e['tasks'][task] for e in self.crew if task in e.get('tasks', {})]
+            self.assertEqual(len(said), len(set(said)), task)
+        for entry in self.crew:
+            self.assertEqual(house_errors(' '.join(entry.get('tasks', {}).values())), [], entry['id'])
+
+    def test_unknown_task_vague_outcome_and_misplaced_reel_script_are_refused(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = crew_root(folder)
+            path = root / 'crew' / 'registry.json'
+            data = json.loads(path.read_text(encoding='utf-8'))
+            for tasks, error in (({'viral-hacks': 'a sentence long enough to say what it does here'}, 'channel tasks contract'),
+                                 (['caption-set'], 'channel tasks contract'),
+                                 ({'caption-set': 'write captions'}, 'accomplishes for this specialist'),
+                                 ({'reel-script': 'five hooks for a short video that the format here never makes'},
+                                  'short video')):
+                data['crew'][0]['tasks'] = tasks
+                path.write_text(json.dumps(data), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, error):
+                    load_registry(root)
 
     def test_every_experiment_needs_at_least_six_observations(self):
         # The What-Works card promises the floor; engine.operations.experiment_decision takes any positive one.
