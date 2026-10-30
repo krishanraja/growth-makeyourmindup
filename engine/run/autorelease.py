@@ -61,16 +61,23 @@ Center and Buffer and prints the plan as counts, and sends no mutation.
    only checks that go-live's posts, never schedules one again. A go-live he
    approved that names lines on more than one New York day holds as
    `golive_spans_days` (R94, F111).
-7. Posts made from a concept he approved in the week's mix plan (Ruling,
-   Krish, 2026-10-29; docs/CONCEPT-MANIFEST.md, On GitHub Actions). Each one
-   the handoff indexed for today or the window is read back by its exact
-   payload_sha256 (its review record), and its week's authority by digest
-   from Control Center (week_state: the plan in force, his decisions, each
-   part's concepts, through engine/run/decision.py cc_readback and
-   concept_part). Then Run.derived calls release's own checks and schedules
-   it like a go-live line. A concept_hold or an unresolved stop holds every
-   such post loudly; a post from a plan he declined that is still scheduled
-   is loud as scheduled_after_decline.
+7. Posts made from the week's mix (Ruling, Krish, 2026-10-30: "approve the
+   week's mix once, let Growth fill it"; docs/CONCEPT-MANIFEST.md, On GitHub
+   Actions). Each one the handoff indexed for today or the window is read
+   back by its exact payload_sha256 (its review record), and its week's
+   authority from Control Center and the board (week_state: the plan in
+   force read by digest, his stops through engine/run/decision.py
+   cc_readback, and mix_binding: his one press on content-engine's board,
+   approved on the hash of the mix Growth proposes from that same plan).
+   A post outside that mix (its day, its concept among that day's options,
+   its channel:format in the option's format line) holds as
+   outside_approved_mix, loud as scheduled_outside_mix when already live.
+   Then Run.derived calls release's own checks and schedules it like a
+   go-live line. No press holds quietly (mix_not_approved); a press on
+   another hash holds loudly (mix_hash_mismatch) and the summary carries
+   the mix to propose again. A concept_hold or an unresolved stop holds
+   every such post loudly; a post from a plan he declined that is still
+   scheduled is loud as scheduled_after_decline.
 
 Output is one JSON summary of counts and reason codes: never words, URLs,
 ids or keys.
@@ -739,6 +746,9 @@ class Run:
         if not live and status != 'draft':
             return self.hold({'error': 'buffer_post_error', 'needs_approval': 'needs_approval'}.get(status,
                                                                                                   'unknown_status'))
+        if outside_mix(state, fields['concept_id'], fields['channel'], fields['format'], due):
+            # Nothing outside the mix he approved on the board goes out (Ruling, Krish, 2026-10-30).
+            return self.hold('scheduled_outside_mix' if live else 'outside_approved_mix', loud=live)
         line_fields = {key: fields[key] for key in ('slot_id', 'format', 'due_at', 'link_placement', 'publish_mode',
                                                     'buffer_draft_id')}
         try:
@@ -1023,13 +1033,16 @@ def _why_code(why):
     return 'not_applied'
 
 
-def week_state(cc, monday, decisions, state_root, now, root, proposals=()):
-    """What the week's mix plan, read back from Control Center, authorises: the concept part of a decision
-    (decision.concept_part on decision.cc_readback, engine/run/decision.py's own rules), a synthetic spec
-    carrying the approved concepts for release's checks, and the stops; or a hold. Never a local file.
+def week_state(cc, monday, decisions, state_root, now, root, proposals=(), board=None):
+    """What the week's mix authorises: the concept part of a decision (decision.concept_part, engine/run/
+    decision.py's own rules), a synthetic spec carrying the approved concepts for release's checks, the
+    stops and the mix binding; or a hold. Never a local file.
 
-    The plan in force is its highest numbered version record. Every decision, stop and decline is
-    read first: his no on any part stops the week before any part is trusted."""
+    The plan in force is its highest numbered version record. Every decision, stop and decline is read
+    first: his no on any part stops the week before any part is trusted, and decision.cc_readback still
+    reads his stops, amended-away concepts and changed terms. Since 30 October the approval itself is his
+    one press on the board's mix (mix_binding), bound to the hash of the mix Growth proposes from this
+    same plan; a Control Center yes on the plan approves nothing on its own."""
     pid = mix_rules.proposal_id(monday)
     label = _week_label(monday)
     versions = cc_records.probe(cc, lambda n: cc_records.version_run_id(label, n), cc_records.VERSION, MAX_NUMBERED)
@@ -1073,25 +1086,34 @@ def week_state(cc, monday, decisions, state_root, now, root, proposals=()):
         record, why = decide.cc_readback(monday, read, cfg, decisions, ledger, now)
     except (ValueError, KeyError, TypeError):
         return _held('concept_hold', 'plan_untrusted')
+    # Since 30 October his yes on the plan in Control Center no longer approves anything (the board's mix
+    # press does, below); his no, a stop, an amended-away concept or his changed terms still stop or hold.
     if record is None:
         code = _why_code(why)
-        # A newer version he has not answered yet (stale_approval) waits for him like a first one: quiet.
-        pending = code in ('no_decision', 'not_approved', 'stale_approval')
-        return _held('concept_not_approved' if pending else 'concept_hold', code, loud=not pending)
-    if record['decision'] == 'declined':
+        if code not in ('no_decision', 'not_approved', 'stale_approval'):
+            return _held('concept_hold', code)
+    elif record['decision'] == 'declined':
         return {'hold': None, 'stopped': True, 'why': 'declined', 'stopped_at': _stopped_at(decisions, ledger, ids)}
+    elif record['decision'] == 'held':
+        return _held('concept_hold', str(record.get('hold') or decide.HOLD_TERMS).split(':')[0])
     try:
         gone = amended_away(cc, monday, decisions)
     except ValueError as error:
         return _held('concept_hold', str(error))
-    if gone:
-        # A concept he deleted or edited in any amended yes, on any version, stays stopped (local decision.sticky).
-        record = dict(record, stopped_concepts=sorted(set(record['stopped_concepts']) | gone),
-                      approved={cid: sha for cid, sha in record['approved'].items() if cid not in gone})
+    binding, held = mix_binding(cc, board, monday, parts, read, cfg, root)
+    if held:
+        return held
     known = {c['concept_id']: c for _, part in read for c in part['concepts'] if c['ready']}
+    stops = set((record or {}).get('stopped_concepts') or []) | gone
+    approved = {cid: known[cid]['concept_sha256'] for cid in sorted(binding['concepts'])
+                if cid in known and cid not in stops}
+    plan_sha = read[0][0]['payload_sha256']
+    pressed = {'decision': 'approved', 'decided_at': binding['at'], 'plan_payload_sha256': plan_sha,
+               'amended': False, 'amended_sha256': None, 'read_at': instant(now).isoformat(), 'approved': approved,
+               'stopped_concepts': sorted(stops), 'changed_concepts': (record or {}).get('changed_concepts') or []}
     ceilings = {c: mix_rules.ceiling({'targets': read[0][1]['targets']}, c) for c in cfg['channels']}
     try:
-        part = decide.concept_part(pid, known, record, (), ceilings, read[0][0]['payload_sha256'], None)
+        part = decide.concept_part(pid, known, pressed, (), ceilings, plan_sha, None)
     except ValueError:
         return _held('concept_hold', 'not_applied')
     if part['concept_hold']:
@@ -1105,7 +1127,70 @@ def week_state(cc, monday, decisions, state_root, now, root, proposals=()):
     if problem:
         return _held('concept_hold', 'not_applied')
     return {'hold': None, 'stopped': False, 'why': None, 'decision': part, 'spec': spec,
-            'stopped_proposals': stopped}
+            'stopped_proposals': stopped, 'mix': binding}
+
+
+# The week's mix, approved once on the board (Ruling, Krish, 2026-10-30) ----------------------
+
+MIX_PENDING = ('mix_board_not_configured', 'mix_not_approved', 'mix_not_proposed')
+
+
+def mix_binding(cc, board, monday, parts, read, cfg, root):
+    """(binding, None) when Krish's one press on the board approves the mix Growth itself proposes for the
+    week, else (None, a hold). Ruling (Krish, 2026-10-30): "approve the week's mix once, let Growth fill it".
+
+    Growth's proposal is rebuilt from its own kept plan, read back from Control Center by digest: the plan in
+    force (its parts, each concept recomputed to its concept_sha256) and its slots record (engine/run/maker.py
+    week_slots, checked against the words of part 1). From them engine/offday.py options lays out the board's
+    Off days and proposed_mix computes the days and the hash exactly as content-engine's week_mix does. The
+    press must say approved on that hash and those days. The binding then names, per day key, each option's
+    concept and its format line: a derived post goes out only as one of them (outside_mix). No press, or a
+    press not yet approved, holds quietly; a press on another hash holds loudly and the proposal is re-sent
+    in the summary (repropose)."""
+    from engine import offday
+    from engine.run import board_tick, maker
+    try:
+        slots = maker.week_slots(cc, monday, parts, read, cfg, root or ROOT)
+    except maker.Held as hold:
+        return None, _held('concept_hold', hold.code)
+    doc = {'week_of': monday, 'slots': slots, 'concepts': [c for _, record in read for c in record['concepts']]}
+    try:
+        offdays = offday.options(doc, (), root or ROOT)
+        days, sha = offday.proposed_mix(offdays, monday)
+        kept = offday.board_options(offdays, monday)
+    except (ValueError, KeyError, TypeError):
+        return None, _held('concept_hold', 'mix_unproposable')
+    if not days:
+        return None, _held('mix_not_proposed', 'mix_not_proposed', loud=False)
+    if board is None:
+        return None, _held('mix_board_not_configured', 'mix_board_not_configured', loud=False)
+    try:
+        pressed = board.mix(monday)
+    except board_tick.BoardError as error:
+        return None, _held('mix_board_unreadable', error.code if error.code == 'board_token_refused'
+                           else 'mix_board_unreadable')
+    if pressed is None or pressed['approved'] is not True:
+        return None, _held('mix_not_approved', 'mix_not_approved', loud=False)
+    if pressed['mix_sha256'] != sha or pressed['days'] != days or offday.mix_sha256(pressed['days']) != sha:
+        return None, dict(_held('mix_hash_mismatch', 'mix_hash_mismatch'), repropose={'mix_sha256': sha, 'days': days})
+    options = {key: {o['concept_id']: offday.option_format(o) for o in opts if o.get('kind') != 'recorded'}
+               for key, opts in kept.items()}
+    return {'mix_sha256': sha, 'days': days, 'at': pressed.get('at'), 'options': options,
+            'concepts': sorted({cid for row in options.values() for cid in row})}, None
+
+
+def outside_mix(state, concept_id, channel, fmt, due):
+    """True unless this post is inside the mix he approved: its New York day is a day of the mix, its concept
+    is one of that day's options, and channel:format is in that option's format line. Pure; fails closed."""
+    binding = state.get('mix') if isinstance(state, dict) else None
+    when = due_instant(due) if isinstance(due, str) else due
+    if not isinstance(binding, dict) or when is None:
+        return True
+    from engine.offday import DAY_KEYS
+    key = DAY_KEYS[ny_time(when).weekday()]
+    line = (binding['options'].get(key) or {}).get(concept_id)
+    return line is None or line not in binding['days'].get(key, []) \
+        or str(channel) + ':' + str(fmt) not in line.split(', ')
 
 
 def _stopped_at(decisions, ledger, ids):
@@ -1223,7 +1308,7 @@ def review_of(cc, entry):
     return dict(slot, payload_sha256=sha), review
 
 
-def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=()):
+def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(), board=None):
     """Every post made from an approved concept, indexed for today or the release window, through Run.derived.
     The week's authority is read once per week (week_state); reads are capped at MAX_DERIVED, past it loud."""
     try:
@@ -1242,7 +1327,7 @@ def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(
     def state_of(monday):
         if monday not in weeks:
             try:
-                weeks[monday] = week_state(cc, monday, decisions, state_root, now, root, proposals)
+                weeks[monday] = week_state(cc, monday, decisions, state_root, now, root, proposals, board)
             except ValueError:
                 weeks[monday] = _held('concept_hold', 'record_unreadable')
         return weeks[monday]
@@ -1324,7 +1409,7 @@ def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(
                 state = weeks[monday]
             else:
                 try:
-                    state = week_state(cc, monday, decisions, state_root, now, root, proposals)
+                    state = week_state(cc, monday, decisions, state_root, now, root, proposals, board)
                 except ValueError:
                     state = _held('concept_hold', 'record_unreadable')
                 if state.get('stopped'):
@@ -1346,6 +1431,10 @@ def derived_lane(cc, run, decisions, state_root, now, root, summary, proposals=(
                     one(entry, state)
     summary['derived'] = {'read': len(done),
                           'weeks': {_week_label(m): (w.get('why') or 'approved') for m, w in sorted(weeks.items())}}
+    # A press on another hash: the mix Growth proposes now, for the board to show again (codes and formats only).
+    again = {_week_label(m): w['repropose'] for m, w in sorted(weeks.items()) if w.get('repropose')}
+    if again:
+        summary['derived']['repropose'] = again
 
 
 # The run ----------------------------------------------------------------------------
@@ -1354,7 +1443,8 @@ class Unpaged(Exception):
     """Krish's decisions did not page out within the cap: nothing is read as complete."""
 
 
-def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None, root=None, clock=None):
+def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None, root=None, clock=None,
+                board=None):
     """Returns (summary, exit_code). summary holds counts and codes only.
 
     now fixes the clock (tests, --now); without it the clock is read again
@@ -1405,7 +1495,7 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
                     tally[outcome] = tally.get(outcome, 0) + 1
                 summary['golives']['claimed'] += int(record_claim(cc, action, now, root, tally))
         # Posts made from a concept he approved in the week's mix plan, read back from Control Center.
-        derived_lane(cc, run, decisions, state_root, now, root, summary, proposals)
+        derived_lane(cc, run, decisions, state_root, now, root, summary, proposals, board)
         stopped = [(item['proposal_id'], latest[item['proposal_id']], by_id[item['proposal_id']])
                    for item in review['holds'] if item['reason'] == 'plan_stopped'
                    and item['proposal_id'] in by_id and item['proposal_id'] in latest]
@@ -1457,7 +1547,7 @@ def _buffer_client():
     return Buffer(os.environ.get(BUFFER_KEY_ENV, '').strip())
 
 
-def main(argv=None, make_cc=None, make_buffer=None, fetch=None, out=print):
+def main(argv=None, make_cc=None, make_buffer=None, fetch=None, out=print, make_board=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv[:1] == ['autorelease']:
         argv = argv[1:]
@@ -1480,7 +1570,11 @@ def main(argv=None, make_cc=None, make_buffer=None, fetch=None, out=print):
         summary.update(error='control_center_' + error.code, exit=1)
         out(json.dumps(summary, sort_keys=True))
         return 1
-    result, code = autorelease(cc, buffer, args.now, args.deliver, fetch, args.state)
+    # The board's mix press (GROWTH_WRITEBACK_TOKEN, the secret board tick already uses); without it no
+    # derived post is approved (mix_board_not_configured) and every other lane runs as before.
+    from engine.run.board_tick import board_from_env
+    board = (make_board or board_from_env)()
+    result, code = autorelease(cc, buffer, args.now, args.deliver, fetch, args.state, board=board)
     out(json.dumps(result, sort_keys=True))
     return code
 

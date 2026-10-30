@@ -1,5 +1,26 @@
 # Changes Krish made to the growth engine
 
+- 2026-10-30: Krish approves the week's mix once on the board, and Growth fills it (R124). His words:
+  "approve the week's mix once, let Growth fill it".
+  - Content-engine's Sunday board (content-engine PR #287) shows "This week's mix", the formats Growth
+    proposes for each day from its Off-days file (`growth.py mix offdays`), with one press, "Approve
+    this week's mix". Growth reads that press from `GET /api/board/<Monday>/pieces` (`mix`), with the
+    GROWTH_WRITEBACK_TOKEN secret board tick already uses; release and the maker only read it.
+  - That press is now the approval for the derived (filler) lane, in place of his Control Center yes
+    on the mix plan. A derived post is made and released only when the press says approved, its
+    hash equals the hash of the mix Growth itself proposes for that week (rebuilt from Growth's own
+    plan in Control Center: the plan in force, its parts and its slots record), and the post's day,
+    concept and channel:format are one of that day's options. Anything outside the mix never goes
+    out. No press holds quietly; a press on another hash holds loudly and the summary carries the
+    mix to propose again.
+  - Every other gate on a derived post still applies: his no on the plan, a stop, a concept he
+    amended away, the concept ready and sourced, its mock and claim, the review at its payload,
+    copy lint, the channel lock, caps, the reserved series slot, the Pull and route checks.
+  - Series (Monday, Wednesday, Friday) go-lives are unchanged: still his per-post Control Center
+    go-live.
+  - A past piece's repurposed carousel is not in the board's mix (the Off-days file carries the
+    filler lanes only), so it is not made or released through the derived lane until Krish says
+    whether the mix should carry it.
 - 2026-10-29 (late night): Growth speaks Control Center protocol 1.17.0 (R123). Control Center now
   approves a go-live of posts only after a live report says which Buffer channel id is this engine's
   for each channel (control-center #626).

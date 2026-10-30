@@ -22,11 +22,13 @@ try:
     from test_run_autorelease import BKEY, BufferStandIn
     from test_concepts import SHARE
     from test_mix import WEEK, inventory_of
+    from test_concept_release import BoardStandIn
 except ImportError:  # run as tests.test_run_maker
     from tests.test_autonomy import CapableStandIn as StandIn
     from tests.test_run_autorelease import BKEY, BufferStandIn
     from tests.test_concepts import SHARE
     from tests.test_mix import WEEK, inventory_of
+    from tests.test_concept_release import BoardStandIn
 
 from engine import concepts, mix
 from engine.buffer_channels import BUFFER_CHANNEL_ID
@@ -37,8 +39,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PID = 'makeyourmindup:mix:2026-W46'
 PLANNED = '2026-11-07T12:00:00Z'
 DECIDED = '2026-11-08T17:00:00Z'
-NOW = '2026-11-09T04:30:00Z'  # Sunday 23:30 in New York: the maker makes Monday
-RELEASE_AT = '2026-11-09T12:30:00Z'  # an hour before Monday 08:30 New York
+NOW = '2026-11-10T04:30:00Z'  # Monday 23:30 in New York: the maker makes Tuesday
+RELEASE_AT = '2026-11-10T12:30:00Z'  # an hour before Tuesday 08:30 New York
 CLAIM = 'A pilot earns its budget line when one number is agreed on day one.'
 WORDS = CLAIM + ' Synthetic fixture words after the claim, about the pilot budget.'
 FRAME1 = b'\x89PNG\r\n\x1a\n' + b'synthetic maker frame one\n'
@@ -63,11 +65,32 @@ def outcomes(summary):
     return {k: v for k, v in summary['slots'].items() if k != 'empty_slot'}
 
 
+IDEAS = ([{'idea_id': 'news-0', 'lane': 'positive_news', 'idea': 'TEST FIXTURE good news 0', 'claim': None,
+           'source_url': 'https://example.org/news-0', 'source_date': '2026-11-05'}]
+         + [{'idea_id': 'meme-%d' % n, 'lane': 'meme', 'idea': 'TEST FIXTURE meme %d' % n, 'claim': None,
+             'source_url': None, 'source_date': None} for n in range(2)])
+NEWS = 'positive-news-news-0'
+
+
+def without_memes(summary):
+    """The summary without the two not-ready memes' slots: Tuesday's second board option, which hold as
+    concept_not_approved on every run (no claim, no mock), so each test reads only the news concept."""
+    holds = dict(summary.get('holds') or {})
+    memes = holds.pop('concept_not_approved', 0)
+    if memes:
+        slots = dict(summary['slots'])
+        slots['held'] -= memes
+        if not slots['held']:
+            del slots['held']
+        summary = dict(summary, holds=holds, slots=slots)
+    return summary
+
+
 def maker_plan():
-    """One past piece as a carousel concept on all four channels, ready with its claim and three mock files."""
-    first = mix.plan(inventory_of(1), WEEK, (), None, urgency=4)
-    cid = first['concepts'][0]['concept_id']
-    return mix.plan(inventory_of(1), WEEK, (), {cid: {'claim': CLAIM, 'mock_sha256': [sha(d) for d in DRIVE.values()]}},
+    """One positive-news concept (carousels, a Short, one image on X: the same placements as a past piece's) on
+    all four channels on Tuesday, ready with its claim and three mock files; two memes not ready yet, so
+    Tuesday's Off days hold two options and the week's mix has a Tuesday (Ruling, Krish, 2026-10-30)."""
+    return mix.plan(inventory_of(0), WEEK, IDEAS, {NEWS: {'claim': CLAIM, 'mock_sha256': [sha(d) for d in DRIVE.values()]}},
                     urgency=4)
 
 
@@ -129,6 +152,7 @@ class MakerTests(unittest.TestCase):
         self.words = Words()
         self.plan = maker_plan()
         self.concept = next(c for c in self.plan['concepts'] if c['ready'])
+        self.board = BoardStandIn()
         patcher = mock.patch.object(autorelease, 'route_holds', lambda slot, as_of: ([], True, '2026-11-02'))
         patcher.start()
         self.addCleanup(patcher.stop)
@@ -146,6 +170,10 @@ class MakerTests(unittest.TestCase):
                 and r['proposals'][0]['proposal_id'].startswith(PID)]
 
     def decide(self, items, verdict='approved'):
+        """His answer: since 30 October a yes is his one press on the board's mix; a no is still his decline."""
+        if verdict == 'approved':
+            self.board.press(self.plan)
+            return
         for item in items:
             self.cc.decisions.append({'proposal_id': item['proposal_id'], 'decision': verdict, 'decided_at': DECIDED,
                                       'payload_sha256': item['payload_sha256'], 'stage': 'plan', 'amended': False})
@@ -160,15 +188,16 @@ class MakerTests(unittest.TestCase):
 
     def make(self, deliver=True, anthropic=None, now=NOW, day=None):
         anthropic = self.words if anthropic is None else anthropic
-        return maker.maker(self.cc.client(), self.buffer(), anthropic, now, deliver, self.drive.fetch, ROOT,
-                           str(Path(self.tmp.name) / 'maker-handoff.json'), day)
+        summary, code = maker.maker(self.cc.client(), self.buffer(), anthropic, now, deliver, self.drive.fetch, ROOT,
+                                    str(Path(self.tmp.name) / 'maker-handoff.json'), day, board=self.board)
+        return without_memes(summary), code
 
     def creates(self):
         return [c for c in self.buf.calls if c['op'] == 'CreateDraft']
 
     def release(self):
         return autorelease.autorelease(self.cc.client(), self.buf.client(), RELEASE_AT, True,
-                                       lambda url: self.drive.fetch(url)[:2])
+                                       lambda url: self.drive.fetch(url)[:2], board=self.board)
 
     # End to end ---------------------------------------------------------------------------------
 
@@ -177,7 +206,7 @@ class MakerTests(unittest.TestCase):
         summary, code = self.make()
         self.assertEqual(code, 0, summary)
         self.assertEqual((summary['days'], summary['slots'].get('made'), summary['handoff']['recorded']),
-                         (['2026-11-09'], 4, 4), summary)
+                         (['2026-11-10'], 4, 4), summary)
         self.assertEqual(summary['taste'], 'taste_unavailable')
         posts = [p for p in self.buf.posts.values()]
         self.assertEqual(sorted(p['channelService'] for p in posts), ['instagram', 'tiktok', 'twitter', 'youtube'])
@@ -299,7 +328,7 @@ class MakerTests(unittest.TestCase):
 
         def queued(stand, data):
             post = real(stand, data)
-            post.update(status='scheduled', dueAt='2026-11-09T14:00:00.000Z')
+            post.update(status='scheduled', dueAt='2026-11-10T14:00:00.000Z')
             return post
         with mock.patch.object(sys.modules[BufferStandIn.__module__], 'created_post', queued):
             summary, code = self.make()
@@ -319,7 +348,7 @@ class MakerTests(unittest.TestCase):
         with mock.patch.object(sys.modules[BufferStandIn.__module__], 'created_post', keyless):
             summary, code = self.make()
         self.assertEqual((code, summary['slots'].get('made')), (0, 4), summary)
-        self.assertFalse(maker.is_draft({'status': 'draft', 'dueAt': '2026-11-09T14:00:00.000Z'}))
+        self.assertFalse(maker.is_draft({'status': 'draft', 'dueAt': '2026-11-10T14:00:00.000Z'}))
         self.assertFalse(maker.is_draft({'status': 'scheduled'}))
         self.assertTrue(maker.is_draft({'status': 'draft', 'dueAt': None}) and maker.is_draft({'status': 'draft'}))
 
@@ -359,7 +388,8 @@ class MakerTests(unittest.TestCase):
                 clock[0] = maker.RUN_BUDGET + 1.0  # the first slot's calls use up the run's time
                 return Words.json_message(self, system, user, schema, max_tokens)
         summary, code = maker.maker(self.cc.client(), self.buffer(), Slow(), NOW, True, self.drive.fetch, ROOT,
-                                    str(Path(self.tmp.name) / 'maker-handoff.json'), None, lambda: clock[0])
+                                    str(Path(self.tmp.name) / 'maker-handoff.json'), None, lambda: clock[0],
+                                    board=self.board)
         self.assertEqual((code, summary['slots'].get('made'), summary['loud']), (1, 1, ['maker_out_of_time']),
                          summary)
         self.assertEqual(len(autorelease.week_entries(self.cc.client(), WEEK, {})), 1)
@@ -385,7 +415,7 @@ class MakerTests(unittest.TestCase):
     def test_an_unapproved_concept_makes_no_draft(self):
         self.propose()
         summary, code = self.make()
-        self.assertEqual((code, summary['holds']), (0, {'concept_not_approved': 1}), summary)
+        self.assertEqual((code, summary['holds']), (0, {'mix_not_approved': 1}), summary)
         self.assertEqual((self.creates(), self.words.calls), ([], []))
 
     def test_a_stopped_week_makes_nothing(self):
@@ -402,6 +432,7 @@ class MakerTests(unittest.TestCase):
         self.cc.decisions.append({'proposal_id': items[0]['proposal_id'], 'decision': 'approved', 'decided_at': DECIDED,
                                   'payload_sha256': items[0]['payload_sha256'], 'stage': 'plan', 'amended': True,
                                   'exact_payload': text, 'amount_usd': None, 'amended_sha256': amended_digest(None, text)})
+        self.board.press(self.plan)
         summary, _ = self.make()
         self.assertEqual(summary['holds'], {concepts.STOPPED: 4}, summary)
         self.assertEqual(self.creates(), [])
@@ -574,7 +605,8 @@ class MakerTests(unittest.TestCase):
         again = [r['proposals'][0] for r in self.cc.reports.values() if r['proposals']]
         self.assertEqual([(i['proposal_id'], i['payload_sha256']) for i in again],
                          [(i['proposal_id'], i['payload_sha256']) for i in items])
-        state = autorelease.week_state(self.cc.client(), WEEK, self.cc.decisions, self.tmp.name, NOW, ROOT)
+        state = autorelease.week_state(self.cc.client(), WEEK, self.cc.decisions, self.tmp.name, NOW, ROOT,
+                                       board=self.board)
         self.assertEqual((state['hold'], state['stopped']), (None, False), state)
         summary, code = self.make()
         self.assertEqual((code, summary['slots'].get('made')), (0, 4), summary)
@@ -622,8 +654,8 @@ class MakerTests(unittest.TestCase):
         self.assertEqual((summary['days'], summary.get('slots', {}).get('made')), (['2026-11-08'], None), summary)
         self.assertEqual(self.creates(), [])
         self.assertEqual(self.make(day='2026-11-12')[0]['error'], 'day_out_of_range', 'by hand: today or tomorrow only')
-        summary, code = self.make(now='2026-11-09T11:00:00Z', day='2026-11-09')  # Monday 06:00, by hand
-        self.assertEqual((code, summary['days'], summary['slots'].get('made')), (0, ['2026-11-09'], 4), summary)
+        summary, code = self.make(now='2026-11-10T11:00:00Z', day='2026-11-10')  # Tuesday 06:00, by hand
+        self.assertEqual((code, summary['days'], summary['slots'].get('made')), (0, ['2026-11-10'], 4), summary)
 
     def test_a_late_run_makes_the_rest_of_today_as_well_as_tomorrow(self):
         # Review finding 4: the remaining slots of today (New York) plus all of tomorrow's, so a late scheduled
@@ -793,8 +825,11 @@ class AnthropicRetryTests(unittest.TestCase):
 class MakerWorkflowTests(unittest.TestCase):
     def test_the_workflow_runs_daily_with_deliver_and_by_hand_as_a_dry_run(self):
         text = (ROOT / '.github' / 'workflows' / 'maker.yml').read_text(encoding='utf-8')
+        # GROWTH_WRITEBACK_TOKEN reads the board's mix press only (Ruling, Krish, 2026-10-30); the maker never
+        # writes to the board.
         self.assertEqual(set(re.findall(r'secrets\.([A-Z_]+)', text)),
-                         {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY', 'ANTHROPIC_API_KEY'})
+                         {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY', 'ANTHROPIC_API_KEY', 'GROWTH_WRITEBACK_TOKEN'})
+        self.assertNotIn('.posted(', (ROOT / 'engine' / 'run' / 'maker.py').read_text(encoding='utf-8'))
         for needle in ("cron: '30 4 * * *'", 'workflow_dispatch', 'contents: read', 'group: maker',
                        'cancel-in-progress: false', 'timeout-minutes:', "python-version: '3.12'",
                        'persist-credentials: false', 'set -- run maker', 'set -- "$@" --deliver', 'python growth.py "$@"',

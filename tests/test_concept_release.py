@@ -1,5 +1,6 @@
-"""The concept path on GitHub Actions: a mix plan dispatched, proposed, approved; a derived post drafted, its
-review reported; L0 autorelease schedules it, read back only from Control Center (Krish, 29 Oct 2026).
+"""The concept path on GitHub Actions: a mix plan dispatched and proposed, its mix approved with Krish's one
+press on the board; a derived post drafted, its review reported; L0 autorelease schedules it, the plan read back
+from Control Center and the press from the board (Krish, 29 and 30 Oct 2026).
 
 Everything runs against the local stand-ins for Control Center and Buffer; every word, id, digest and
 byte is synthetic. Nothing here reaches controlcenter.krishraja.com, api.buffer.com or a media host.
@@ -23,7 +24,7 @@ except ImportError:  # run as tests.test_concept_release
     from tests.test_concepts import SHARE, send_test_pass
     from tests.test_mix import WEEK, full_plan, inventory_of
 
-from engine import concepts, mix
+from engine import concepts, mix, offday
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.control_center import ProtocolError, amended_digest, proposal
 from engine.run import autorelease, cc_records, decision as decide, handoff, release
@@ -47,12 +48,41 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
+CONCEPT = 'meme-meme-1'  # Tuesday's meme option, placed on X as a meme
+IDEAS = ([{'idea_id': 'meme-%d' % n, 'lane': 'meme', 'idea': 'TEST FIXTURE meme %d' % n, 'claim': None,
+           'source_url': None, 'source_date': None} for n in range(7)]
+         + [{'idea_id': 'move-%d' % n, 'lane': 'level_up', 'idea': 'TEST FIXTURE one move %d' % n, 'claim': None,
+             'source_url': None, 'source_date': None} for n in range(7)])
+
+
 def small_plan():
-    """One past piece as a carousel concept, ready with its claim and two mock files."""
-    first = mix.plan(inventory_of(1), WEEK, (), None, urgency=4)
-    cid = first['concepts'][0]['concept_id']
-    return mix.plan(inventory_of(1), WEEK, (), {cid: {'claim': CLAIM, 'mock_sha256': [sha(MOCK), sha(MOCK2)]}},
-                    urgency=4)
+    """One past piece and filler ideas; every filler concept ready with its claim and two mock files, so
+    Tuesday's Off days hold two options and the week's mix has a Tuesday."""
+    first = mix.plan(inventory_of(1), WEEK, IDEAS, None, urgency=4)
+    mocks = {c['concept_id']: {'claim': CLAIM, 'mock_sha256': [sha(MOCK), sha(MOCK2)]}
+             for c in first['concepts'] if c['lane'] != 'repurposed_carousel'}
+    return mix.plan(inventory_of(1), WEEK, IDEAS, mocks, urgency=4)
+
+
+class BoardStandIn:
+    """content-engine's pieces route, its `mix` only: None until he presses (synthetic)."""
+
+    def __init__(self):
+        self.pressed, self.reads, self.error = None, 0, None
+
+    def mix(self, monday):
+        self.reads += 1
+        if self.error:
+            from engine.run.board_tick import BoardError
+            raise BoardError(self.error)
+        return copy.deepcopy(self.pressed)
+
+    def press(self, plan, approved=True, days=None, digest=None):
+        """His one press on the mix the board shows from Growth's own Off-days file (growth.py mix offdays)."""
+        shown, shown_sha = offday.proposed_mix(offday.options(plan), plan['week_of'])
+        self.pressed = {'approved': approved, 'days': shown if days is None else days,
+                        'mix_sha256': digest or shown_sha, 'at': DECIDED}
+        return shown, shown_sha
 
 
 def stage_fetch(url):
@@ -79,7 +109,8 @@ class Stage:
     def __init__(self, cc, buf, plan=None):
         self.cc, self.buf = cc, buf
         self.plan = plan or small_plan()
-        self.concept = next(c for c in self.plan['concepts'] if c['ready'])
+        self.concept = next(c for c in self.plan['concepts'] if c['concept_id'] == CONCEPT)
+        self.board = BoardStandIn()
         buf.media['mock1.png'] = MOCK
         buf.media['other.png'] = NOT_MOCK
         self.post = {'id': P_DERIVED, 'status': 'draft', 'dueAt': None, 'schedulingType': 'automatic', 'via': 'api',
@@ -107,18 +138,18 @@ class Stage:
                                        'payload_sha256': item['payload_sha256'], 'stage': 'plan', 'amended': False},
                                       **extra))
 
-    def derived_slot(self, review_sha=None, slot_id='x-derived-1'):
+    def derived_slot(self, review_sha=None, slot_id='x-derived-1', fmt='meme', due=DUE):
         """The manifest slot for the drafted post: its digest rebuilt from the draft, its blind review."""
-        fields = {'slot_id': slot_id, 'format': 'single-image', 'due_at': DUE, 'link_placement': None,
+        fields = {'slot_id': slot_id, 'format': fmt, 'due_at': due, 'link_placement': None,
                   'publish_mode': 'engine', 'buffer_draft_id': P_DERIVED}
         line = draft_line(copy.deepcopy(self.buf.posts[P_DERIVED]), fields, fetch)
         digest = spec_digest(line)
-        reviewed = {'slot_id': slot_id, 'format': 'single-image', 'words': line['words'],
+        reviewed = {'slot_id': slot_id, 'format': fmt, 'words': line['words'],
                     'assets': [{'name': 'mock1.png', 'sha256': h} for h in line['assets']],
                     'payload_sha256': review_sha or digest, 'share': dict(SHARE)}
         record = send_test_pass(reviewed)
         return {'slot': slot_id, 'channel': 'x', 'buffer_draft_id': P_DERIVED, 'payload_sha256': digest,
-                'per_item_review': False, 'format': 'single-image', 'due_at': DUE, 'link_placement': None,
+                'per_item_review': False, 'format': fmt, 'due_at': due, 'link_placement': None,
                 'publish_mode': 'engine', 'concept_id': self.concept['concept_id'],
                 'review': {'slot_id': slot_id, 'verdict': record['verdict'], 'lens': record['lens'],
                            'payload_sha256': record['payload_sha256'],
@@ -131,7 +162,9 @@ class Stage:
         return summary
 
 
-class ConceptReleaseTests(unittest.TestCase):
+class ReleaseBase(unittest.TestCase):
+    """The stand-ins and a fresh Stage for each test; no tests of its own (test_board_mix builds on it)."""
+
     @classmethod
     def setUpClass(cls):
         cls.cc = StandIn().__enter__()
@@ -156,15 +189,17 @@ class ConceptReleaseTests(unittest.TestCase):
         self.addCleanup(patcher.stop)
 
     def release(self, now=NOW, deliver=True):
-        return autorelease.autorelease(self.cc.client(), self.buf.client(), now, deliver, fetch)
+        return autorelease.autorelease(self.cc.client(), self.buf.client(), now, deliver, fetch,
+                                       board=self.stage.board)
 
     def approved_week(self):
         items = self.stage.propose()
-        for item in items:
-            self.stage.decide(item)
+        self.stage.board.press(self.stage.plan)
         self.stage.hand_derived()
         return items
 
+
+class ConceptReleaseTests(ReleaseBase):
     # End to end -------------------------------------------------------------------------
 
     def test_end_to_end_a_dispatched_plan_he_approves_schedules_its_derived_post_in_the_window(self):
@@ -175,7 +210,7 @@ class ConceptReleaseTests(unittest.TestCase):
         self.assertEqual(items[0]['evidence'][0]['url'],
                          'https://drive.google.com/synthetic-view/' + self.stage.concept['mock_sha256'][0])
         self.assertIn(cc_records.version_run_id('2026-W46', 1), self.cc.reports)
-        self.stage.decide(items[0])
+        self.stage.board.press(self.stage.plan)
         self.stage.hand_derived()
         digest = self.stage.derived_slot()['payload_sha256']
         self.assertIn(cc_records.review_run_id(digest), self.cc.reports, 'keyed by the first 12 hex of its sha')
@@ -219,6 +254,7 @@ class ConceptReleaseTests(unittest.TestCase):
         self.assertNotEqual(text, items[0]['exact_payload'])
         self.stage.decide(items[0], amended=True, exact_payload=text, amount_usd=None,
                           amended_sha256=amended_digest(None, text))
+        self.stage.board.press(self.stage.plan)
         self.stage.hand_derived()
         summary, code = self.release()
         self.assertEqual((code, summary['holds']), (0, {concepts.STOPPED: 1}), summary)
@@ -264,8 +300,8 @@ class ConceptReleaseTests(unittest.TestCase):
         summary, code = self.stage.handoff(handoff.GO_LIVE, {'run_id': RUN_ID, 'slots': [other]})
         self.assertEqual(summary['holds'], {'review_for_another_payload': 1}, summary)
         # A record at the sha's address whose body names another sha never counts.
-        items = self.stage.propose()
-        self.stage.decide(items[0])
+        self.stage.propose()
+        self.stage.board.press(self.stage.plan)
         self.stage.hand_derived()
         digest = self.stage.derived_slot()['payload_sha256']
         run_id = cc_records.review_run_id(digest)
@@ -328,25 +364,36 @@ class ConceptReleaseTests(unittest.TestCase):
         self.assertEqual(self.buf.mutations(), [])
 
     def test_a_plan_he_has_not_answered_holds_quietly(self):
-        self.stage.propose()
+        items = self.stage.propose()
         self.stage.hand_derived()
         summary, code = self.release()
-        self.assertEqual((code, summary['holds']), (0, {'concept_not_approved': 1}), summary)
+        self.assertEqual((code, summary['holds']), (0, {'mix_not_approved': 1}), summary)
+        # Since 30 October his yes on the plan in Control Center approves nothing on its own: the press does.
+        self.stage.decide(items[0])
+        summary, code = self.release()
+        self.assertEqual((code, summary['holds']), (0, {'mix_not_approved': 1}), summary)
+        self.assertEqual(self.buf.mutations(), [])
 
     def test_a_newer_plan_version_withdraws_his_earlier_yes(self):
-        items = self.stage.propose()
-        self.stage.decide(items[0])
+        self.stage.propose()
+        self.stage.board.press(self.stage.plan)
         self.stage.hand_derived()
         changed = copy.deepcopy(self.stage.plan)
-        changed['weights'] = dict(changed['weights'], meme=changed['weights']['meme'] + 5,
-                                  repurposed_carousel=changed['weights']['repurposed_carousel'] - 5)
+        # The concept that was Tuesday's second option leaves the plan: Tuesday's mix changes under his press.
+        gone = 'level-up-move-0'
+        changed['concepts'] = [c for c in changed['concepts'] if c['concept_id'] != gone]
+        changed['slots'] = [dict(s, concept_id=None) if s['concept_id'] == gone else s for s in changed['slots']]
+        self.assertNotEqual(offday.proposed_mix(offday.options(changed), WEEK),
+                            offday.proposed_mix(offday.options(self.stage.plan), WEEK))
         summary, code = self.stage.handoff(handoff.MIX_PLAN, dispatch_of(changed))
         self.assertEqual(code, 0, summary)
         self.assertIn(cc_records.version_run_id('2026-W46', 2), self.cc.reports)
         summary, code = self.release()
-        # A newer version waits for his answer like a first one: held, quietly (review 3, S6).
-        self.assertEqual((code, summary['derived']['weeks']), (0, {'2026-W46': 'stale_approval'}), summary)
-        self.assertEqual(summary['holds'], {'concept_not_approved': 1}, summary)
+        # His press was on another hash: held loudly, and the mix Growth now proposes is sent back to show.
+        self.assertEqual((code, summary['derived']['weeks']), (1, {'2026-W46': 'mix_hash_mismatch'}), summary)
+        self.assertEqual(summary['holds'], {'mix_hash_mismatch': 1}, summary)
+        days, digest = offday.proposed_mix(offday.options(changed), WEEK)
+        self.assertEqual(summary['derived']['repropose'], {'2026-W46': {'mix_sha256': digest, 'days': days}})
         self.assertEqual(self.buf.mutations(), [])
         # The same plan sent again is the same version: nothing new is reported.
         before = len(self.cc.reports)

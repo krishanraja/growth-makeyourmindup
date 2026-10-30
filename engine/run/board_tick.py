@@ -124,6 +124,37 @@ class Board:
     def posted(self, monday, row):
         return self._request('POST', '/api/board/' + monday + '/posted', row)
 
+    def mix(self, monday):
+        """His one press on the week's mix (picks/mix), or None until he presses. Raises BoardError."""
+        return board_mix(self.pieces(monday))
+
+
+HEX64 = re.compile(r'^[0-9a-f]{64}$')
+
+
+def board_mix(listed):
+    """The pieces route's `mix`: None until Krish presses, else {approved, days, mix_sha256, at}. Pure.
+
+    Ruling (Krish, 2026-10-30): "approve the week's mix once, let Growth fill it" (content-engine
+    docs/GROWTH-HANDOFF.md). Anything not in that shape is BoardError('board_mix_malformed'), never guessed."""
+    mix = listed.get('mix') if isinstance(listed, dict) else None
+    if mix is None:
+        return None
+    days = mix.get('days') if isinstance(mix, dict) else None
+    if not isinstance(mix, dict) or not isinstance(mix.get('approved'), bool) \
+            or not isinstance(mix.get('mix_sha256'), str) or not HEX64.match(mix['mix_sha256']) \
+            or not isinstance(days, dict) or any(
+                key not in DAY_KEYS or not isinstance(kinds, list) or not all(isinstance(k, str) for k in kinds)
+                for key, kinds in days.items()) or not isinstance(mix.get('at'), (str, type(None))):
+        raise BoardError('board_mix_malformed')
+    return {'approved': mix['approved'], 'days': days, 'mix_sha256': mix['mix_sha256'], 'at': mix.get('at')}
+
+
+def board_from_env():
+    """The board client from GROWTH_WRITEBACK_TOKEN (the one secret board tick already uses), or None."""
+    token = (os.environ.get(TOKEN_ENV) or '').strip()
+    return Board(token) if token else None
+
 
 def monday_of(day):
     return day - dt.timedelta(days=day.weekday())

@@ -55,13 +55,14 @@ class Base(unittest.TestCase):
         return stage
 
     def release(self, now=T.NOW):
-        return autorelease.autorelease(self.cc.client(), self.buf.client(), now, True, T.fetch)
+        return autorelease.autorelease(self.cc.client(), self.buf.client(), now, True, T.fetch,
+                                       board=self.stage.board)
 
     def approved_week(self):
         items = self.stage.propose()
-        for item in items:
-            self.stage.decide(item)
+        self.stage.board.press(self.stage.plan)
         self.stage.hand_derived()
+        self.items = items
         return items
 
     def amend(self, item, text, decided_at=T.DECIDED):
@@ -121,6 +122,7 @@ class HisNoHolds(Base):
     def test_a_concept_he_stopped_in_an_earlier_version_stays_stopped(self):
         # S1: version 1 approved with the concept's line deleted; version 2 re-lists it and he approves it plainly.
         items = self.stage.propose()
+        self.stage.board.press(self.stage.plan)
         line = mix.concept_line(self.stage.concept)
         self.amend(items[0], items[0]['exact_payload'].replace(line + '\n', ''))
         self.stage.hand_derived()
@@ -140,7 +142,7 @@ class HisNoHolds(Base):
         self.approved_week()
         self.buf.posts[T.P_DERIVED].update(status='scheduled', dueAt=T.DUE)
         self.cc.decisions.append({'proposal_id': T.PID, 'decision': 'declined', 'decided_at': '2026-11-09T12:00:00Z',
-                                  'payload_sha256': self.cc.decisions[0]['payload_sha256'], 'stage': 'plan',
+                                  'payload_sha256': self.items[0]['payload_sha256'], 'stage': 'plan',
                                   'amended': False})
         summary, code = self.release(now='2026-11-10T11:00:00Z')
         self.assertEqual(code, 1, summary)
@@ -156,7 +158,7 @@ class HisNoHolds(Base):
 class AfterHisNo(Base):
     def decline(self, at):
         self.cc.decisions.append({'proposal_id': T.PID, 'decision': 'declined', 'decided_at': at,
-                                  'payload_sha256': self.cc.decisions[0]['payload_sha256'], 'stage': 'plan',
+                                  'payload_sha256': self.items[0]['payload_sha256'], 'stage': 'plan',
                                   'amended': False})
 
     def test_a_post_sent_after_his_no_is_loud_and_one_sent_before_is_not(self):
@@ -189,11 +191,11 @@ class OneConceptOnce(Base):
         post.update(id=post_id, status='draft', dueAt=None)
         self.buf.posts[post_id] = post
         slot = self.stage.derived_slot(slot_id='x-derived-2')
-        fields = {'slot_id': 'x-derived-2', 'format': 'single-image', 'due_at': due, 'link_placement': None,
+        fields = {'slot_id': 'x-derived-2', 'format': 'meme', 'due_at': due, 'link_placement': None,
                   'publish_mode': 'engine', 'buffer_draft_id': post_id}
         line = draft_line(copy.deepcopy(post), fields, T.fetch)
         digest = spec_digest(line)
-        reviewed = {'slot_id': 'x-derived-2', 'format': 'single-image', 'words': line['words'],
+        reviewed = {'slot_id': 'x-derived-2', 'format': 'meme', 'words': line['words'],
                     'assets': [{'name': 'mock1.png', 'sha256': h} for h in line['assets']],
                     'payload_sha256': digest, 'share': dict(SHARE)}
         record = send_test_pass(reviewed)
