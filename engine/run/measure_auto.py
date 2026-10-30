@@ -29,7 +29,7 @@ import sys
 from .. import meter
 from ..cc_loop import (STATE_DIR, count, WEB_ANALYTICS_FILE, keep_web_analytics, revision, run, summary,
                        web_analytics_activity, web_analytics_block, web_analytics_summary)
-from ..control_center import SLUG, build_report, objective
+from ..control_center import SLUG, build_report, iso, objective
 from ..core import instant, read_json, today, write_json
 from . import buffer_reads
 from .ga4 import directive_rows, join_directive, load_config
@@ -112,6 +112,29 @@ def tally(results):
     for item in results:
         counts[item['verdict']] += 1
     return counts
+
+
+def post_metrics(posts, now):
+    """Each post's numbers as Buffer shows them, for Control Center (protocol 1.17.0 post_metrics), at most 60,
+    newest first. A number the post does not show is null, never zero. A sent post is not matched back to its
+    go-live here, so proposal_id is null and slot_id is its Buffer id; url waits on the board tick's listing."""
+    rows = []
+    for post in sorted(posts, key=lambda p: p['sent_at'], reverse=True)[:60]:
+        metrics = post.get('metrics') or {}
+        try:
+            rates = share_rates(post['channel'], metrics)
+        except ValueError:
+            rates = {}
+
+        def whole(value):
+            return int(value) if isinstance(value, (int, float)) and not isinstance(value, bool) \
+                and float(value).is_integer() and 0 <= value <= 10 ** 10 else None
+        rows.append({'proposal_id': None, 'slot_id': 'buffer:' + post['post_id'], 'channel': post['channel'],
+                     'posted_at': iso(post['sent_at']), 'url': None, 'measured_at': iso(now),
+                     'reach': whole(rates.get('reach')), 'sends': whole(rates.get('sends')),
+                     'saves': whole(rates.get('saves')), 'likes': whole(metrics.get('likes')),
+                     'comments': whole(metrics.get('comments'))})
+    return rows
 
 
 def share_part(posts):
@@ -238,7 +261,8 @@ def build(posts_read, block, now, root, mode, config, directive_pulled):
     status = 'degraded' if work_error or hold else ('ready' if posts or joined else 'held')
     if status == 'held' and not holds:
         holds.append({'reason': 'Nothing to measure this run', 'detail': None})
-    report = build_report(run_id(now), mode, now, revision(root), now, status, objectives, activity, [], [], holds)
+    report = build_report(run_id(now), mode, now, revision(root), now, status, objectives, activity, [], [], holds,
+                          post_metrics=post_metrics(posts, now) or None)
     return report, work_error, counts
 
 

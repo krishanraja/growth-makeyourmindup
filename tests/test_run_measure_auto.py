@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 from engine import cc_loop
 from engine.core import instant, read_json, write_json
-from engine.control_center import validate_report
+from engine.control_center import CHANNELS_VERSION, validate_report
 from engine.run import measure, measure_auto
 from engine.run.measure_auto import NEW_CHANNEL, verdicts
 from engine.buffer_channels import BUFFER_CHANNEL_ID
@@ -241,6 +241,8 @@ class MeasureJobTests(unittest.TestCase):
         with StandIn() as stand, tempfile.TemporaryDirectory() as folder:
             self.workspace(folder, block=False)
             stand.directive_extra = {'web_analytics': read_json(FIX / 'directive-block.json')}
+            # The report carries post_metrics (1.17.0), confirmed in capabilities before it is sent.
+            stand.capabilities = {'schema_versions': ['1.0.0', CHANNELS_VERSION]}
             code, text = self.run_main(['--now', NOW, '--deliver', '--mode', 'synthetic'], folder,
                                        (FakeBuffer(self.posts()), None), make_client=lambda: stand.client())
             self.assertEqual(code, 0, text)
@@ -251,6 +253,14 @@ class MeasureJobTests(unittest.TestCase):
             self.assertEqual({a['command'] for a in attempts}, {'measure'})
             report = stand.posts('reports')[0]['body']
             self.assertIn('sign-ups 3', ' '.join(a['line'] for a in report['activity']))
+            self.assertEqual(report['schema_version'], CHANNELS_VERSION)
+            rows = report['post_metrics']
+            self.assertTrue(rows and len(rows) <= 60)
+            for row in rows:
+                self.assertTrue(row['slot_id'].startswith('buffer:'))
+                self.assertIsNone(row['proposal_id'])
+                for key in ('reach', 'sends', 'saves', 'likes', 'comments'):
+                    self.assertTrue(row[key] is None or (isinstance(row[key], int) and row[key] >= 0), row)
             # The directive's block is kept for the next local step too.
             self.assertTrue((Path(folder) / '.scratch/cc/web-analytics.json').is_file())
 

@@ -25,7 +25,7 @@ except ImportError:  # run as tests.test_run_handoff
 from engine.control_center import proposal
 from engine.run import autorelease, buffer_api, handoff
 from engine.run.autorelease import line_digest, parse_manifest, staged_report_run_id
-from engine.run.handoff import GO_LIVE, MAKE_PIECE, PAYLOAD_CAP, WEEK_PACKET
+from engine.run.handoff import GO_LIVE, MAKE_PIECE, OFFDAY_TOPUP, PAYLOAD_CAP, WEEK_PACKET
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.run.release import BUFFER_NAME, CHANNELS
 
@@ -325,6 +325,16 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(handoff.handoff(MAKE_PIECE, {'piece_id': 'x', 'more': 1}, None, None, NOW, True,
                                          out_path=self.out)[1], 1)
 
+    def test_an_offday_topup_press_is_recorded_and_proposes_nothing(self):
+        press = {'engine_id': 'growth-makeyourmindup', 'report_run_id': 'makeyourmindup:2026-11-08:daily',
+                 'week_of': '2026-11-09', 'request_id': 'makeyourmindup:2026-11-08:daily@2026-11-09T14:02:11Z'}
+        summary, code = handoff.handoff(OFFDAY_TOPUP, press, None, None, NOW, True, out_path=self.out)
+        self.assertEqual((code, summary['recorded']), (0, 1))
+        self.assertEqual(self.cc.calls, [])
+        for bad in (dict(press, more=1), dict(press, week_of='9 Nov'), dict(press, request_id='other@2026'),
+                    {k: v for k, v in press.items() if k != 'request_id'}):
+            self.assertEqual(handoff.handoff(OFFDAY_TOPUP, bad, None, None, NOW, True, out_path=self.out)[1], 1)
+
     def test_the_log_carries_counts_and_codes_only(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'payload.json'
@@ -567,7 +577,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(set(re.findall(r'secrets\.([A-Za-z0-9_]+)', self.text)),
                          {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY'})
         self.assertEqual(set(re.findall(r'vars\.([A-Za-z0-9_]+)', self.text)), {'CONTROL_CENTER_URL'})
-        for needle in ('repository_dispatch', 'types: [growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan]',
+        for needle in ('repository_dispatch', 'types: [growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan, growth-offday-topup]',
                        'workflow_dispatch', 'contents: read', 'group: handoff', 'cancel-in-progress: false',
                        'timeout-minutes: 10', "python-version: '3.12'", 'actions/checkout@v7.0.1',
                        'actions/setup-python@v7.0.0', 'persist-credentials: false',

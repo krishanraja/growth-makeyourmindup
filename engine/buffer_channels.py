@@ -35,3 +35,9 @@ def channel_id_errors(channel, channel_id):
     if channel_id != BUFFER_CHANNEL_ID.get(channel):
         return ['Buffer channel ' + str(channel_id) + ' is not this engine\'s pinned ' + str(channel) + ' channel']
     return []
+
+
+def report_field():
+    """This engine's channels for Control Center (protocol 1.17.0 buffer_channels): a go-live of posts is
+    approved only when each post names exactly the id listed here for its channel."""
+    return {'allowed': dict(sorted(BUFFER_CHANNEL_ID.items())), 'denied': sorted(DENIED_CHANNELS)}

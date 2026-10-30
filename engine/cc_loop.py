@@ -296,6 +296,26 @@ def clock_lines(root, now, taps=0):
     return lines
 
 
+def offdays_field(root, now):
+    """This week's off-day options for Control Center (protocol 1.17.0 offdays, growth-offdays/1), from the
+    mix plan file of the week that holds today, else next week's; None when neither is kept. His list counts
+    the ready ones from today on. Only the three keys Control Center reads go out per option."""
+    from . import offday
+    monday = next_monday(now) - dt.timedelta(days=7)
+    for day in (monday, monday + dt.timedelta(days=7)):
+        path = Path(root) / MIX_DIR / ('plan-' + day.isoformat() + '.json')
+        if not path.is_file():
+            continue
+        try:
+            value = offday.options(read_json(path), root=root)
+        except (ValueError, OSError, KeyError, TypeError, AttributeError):
+            return None
+        days = {date: [{'concept_id': o['concept_id'], 'lane': o['lane'], 'ready': bool(o['ready'])}
+                       for o in options[:6]] for date, options in sorted(value['days'].items())[:7]}
+        return {'schema': value['schema'], 'week_of': value['week_of'], 'days': days}
+    return None
+
+
 def plan_proposals(mix):
     """([proposal], hold) for one week's mix doc: its plan proposal, then any later parts in order.
 
@@ -867,8 +887,10 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
         status = 'held'
         if not holds:
             holds.append({'reason': 'Nothing was prepared this run', 'detail': None})
+    # 1.17.0, only when a mix plan is kept: the week's off-day options his list counts. The channels a
+    # go-live may name ride on each go-live's own report (engine/run/handoff.py reports_for).
     report = build_report(run_id, mode, now, rev or revision(root), now, status, objectives,
-                          activity, proposals, events, holds)
+                          activity, proposals, events, holds, offdays=offdays_field(root, now))
     return report, None
 
 

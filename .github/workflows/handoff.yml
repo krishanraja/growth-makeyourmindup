@@ -14,14 +14,14 @@ name: handoff
 # prints env values in the log header) and never in a shell line.
 on:
   repository_dispatch:
-    types: [growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan]
+    types: [growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan, growth-offday-topup]
   workflow_dispatch:
     inputs:
       event:
         description: 'The handoff type to test'
         required: true
         type: choice
-        options: [growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan]
+        options: [growth-go-live-manifest, growth-week-packet, growth-make-piece, growth-mix-plan, growth-offday-topup]
       payload:
         description: 'The client_payload as JSON (synthetic for a test)'
         required: true
