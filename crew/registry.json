@@ -20,6 +20,13 @@
         "note",
         "article"
       ],
+      "tasks": [
+        "platform-truth",
+        "idea-bank",
+        "caption-set",
+        "trend-scan",
+        "channel-plan"
+      ],
       "lint": "engine/run/spec.py:lint_substack",
       "check": "engine/run/measure.py:check_substack",
       "card": "crew/substack/card.md",
@@ -48,6 +55,14 @@
         "story",
         "meme"
       ],
+      "tasks": [
+        "platform-truth",
+        "idea-bank",
+        "reel-script",
+        "caption-set",
+        "trend-scan",
+        "channel-plan"
+      ],
       "lint": "engine/social.py:preflight",
       "check": "engine/run/measure.py:check_meta",
       "card": "crew/meta/card.md",
@@ -68,6 +83,14 @@
       "formats": [
         "short-video",
         "meme"
+      ],
+      "tasks": [
+        "platform-truth",
+        "idea-bank",
+        "reel-script",
+        "caption-set",
+        "trend-scan",
+        "channel-plan"
       ],
       "lint": "engine/run/spec.py:lint_youtube",
       "check": "engine/run/measure.py:check_youtube",
@@ -92,6 +115,14 @@
         "short-video",
         "meme"
       ],
+      "tasks": [
+        "platform-truth",
+        "idea-bank",
+        "reel-script",
+        "caption-set",
+        "trend-scan",
+        "channel-plan"
+      ],
       "lint": "engine/run/spec.py:lint_tiktok",
       "check": "engine/run/measure.py:check_tiktok",
       "card": "crew/tiktok/card.md",
@@ -111,6 +142,13 @@
       "formats": [
         "single-image",
         "text"
+      ],
+      "tasks": [
+        "platform-truth",
+        "idea-bank",
+        "caption-set",
+        "trend-scan",
+        "channel-plan"
       ],
       "lint": "engine/run/spec.py:lint_x",
       "check": "engine/run/measure.py:check_x",
@@ -132,6 +170,13 @@
         "text",
         "single-image"
       ],
+      "tasks": [
+        "platform-truth",
+        "idea-bank",
+        "caption-set",
+        "trend-scan",
+        "channel-plan"
+      ],
       "lint": "engine/run/spec.py:lint_threads",
       "check": "engine/run/measure.py:check_threads",
       "card": "crew/threads/card.md",
@@ -152,6 +197,13 @@
         "single-image",
         "carousel",
         "text"
+      ],
+      "tasks": [
+        "platform-truth",
+        "idea-bank",
+        "caption-set",
+        "trend-scan",
+        "channel-plan"
       ],
       "lint": "engine/run/spec.py:lint_linkedin",
       "check": "engine/run/measure.py:check_linkedin",
@@ -293,6 +345,9 @@
       "formats": [
         "profile",
         "post"
+      ],
+      "tasks": [
+        "profile-audit"
       ],
       "lint": "engine/channel_audit.py:repair_plan",
       "check": "engine/channel_audit.py:reconcile",

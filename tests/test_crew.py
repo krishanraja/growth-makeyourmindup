@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from engine.run.invariants import (CARD_BYTES, LENS_BYTES, ROOT, W45, check_cards, collapse, house_errors,
+from engine.run.invariants import (CARD_BYTES, CHANNEL_TASKS, LENS_BYTES, ROOT, W45, check_cards, collapse, house_errors,
                                    load_failures, load_registry, load_rules)
 
 CARD = ('# Card: Synthetic\n\n| If | Then | Cite |\n|---|---|---|\n'
@@ -138,6 +138,32 @@ class CrewTests(unittest.TestCase):
             data['crew'][0]['row'] = 'one'
             (root / 'crew' / 'registry.json').write_text(json.dumps(data), encoding='utf-8')
             with self.assertRaisesRegex(ValueError, 'row'):
+                load_registry(root)
+
+    def test_channel_tasks_cover_every_audited_channel(self):
+        # The seven channel tasks (ai-harness contract/channel-tasks.md, Krish, 2026-10-30).
+        runs = {t: [e for e in self.crew if t in e.get('tasks', [])] for t in CHANNEL_TASKS}
+        self.assertEqual([t for t in CHANNEL_TASKS if not runs[t]], [])
+        self.assertEqual([e['id'] for e in runs['profile-audit']], ['channel-auditor'])
+        audited = set(next(e for e in self.crew if e['id'] == 'channel-auditor')['channels'])
+        for task in ('platform-truth', 'idea-bank', 'caption-set', 'trend-scan', 'channel-plan'):
+            covered = {c for e in runs[task] for c in e['channels']}
+            self.assertLessEqual(audited, covered, task)
+        video = {c for e in runs['reel-script'] for c in e['channels']}
+        self.assertEqual(video, {'instagram', 'facebook', 'youtube', 'tiktok'})
+
+    def test_unknown_task_and_misplaced_reel_script_are_refused(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = crew_root(folder)
+            path = root / 'crew' / 'registry.json'
+            data = json.loads(path.read_text(encoding='utf-8'))
+            data['crew'][0]['tasks'] = ['viral-hacks']
+            path.write_text(json.dumps(data), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'channel tasks contract'):
+                load_registry(root)
+            data['crew'][0]['tasks'] = ['reel-script']
+            path.write_text(json.dumps(data), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'short video'):
                 load_registry(root)
 
     def test_every_experiment_needs_at_least_six_observations(self):

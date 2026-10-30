@@ -40,6 +40,11 @@ today Substack Notes and memes; Content Engine owns every other format.
    through the appropriate approval/production route. Update narrow channel,
    format and tool lessons with evidence, status and recheck trigger.
 
+Channel work runs as the seven channel tasks (ai-harness `contract/channel-tasks.md`,
+Krish, 2026-10-30). docs/CHANNEL-TASKS.md maps each specialist to its tasks and
+leading signal, and holds this engine's weekly loop from gap to North Star; steps 7
+and 8 above are its review step.
+
 No paid boosts or subscriptions, purchased/fake followers, mass engagement,
 unsolicited messages, fabricated results, or live paid-offer changes. A daily
 wakeup is a request to execute, not proof that host/browser access was available.
