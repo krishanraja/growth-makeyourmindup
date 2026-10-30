@@ -1127,11 +1127,13 @@ class SourceAndWorkflowTests(unittest.TestCase):
 
     def test_the_workflow_names_only_the_expected_secrets(self):
         text = (ROOT / '.github' / 'workflows' / 'release.yml').read_text(encoding='utf-8')
-        # GROWTH_WRITEBACK_TOKEN only on the board tick step (R122), never on release's own.
+        # GROWTH_WRITEBACK_TOKEN ticks the board (R122) and, on release's own step, only reads his one press on the
+        # week's mix (Ruling, Krish, 2026-10-30): release never writes to the board.
         self.assertEqual(set(re.findall(r'secrets\.([A-Z_]+)', text)),
                          {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY', 'GROWTH_WRITEBACK_TOKEN'})
         release_step = text[:text.index('Tick the publish board')]
-        self.assertNotIn('GROWTH_WRITEBACK_TOKEN', release_step)
+        self.assertIn('GROWTH_WRITEBACK_TOKEN', release_step)
+        self.assertNotIn('.posted(', (ROOT / 'engine' / 'run' / 'autorelease.py').read_text(encoding='utf-8'))
         self.assertEqual(set(re.findall(r'vars\.([A-Z_]+)', text)), {'CONTROL_CENTER_URL'})
         for needle in ("cron: '*/30 * * * *'", 'workflow_dispatch', 'contents: read', 'group: release',
                        'cancel-in-progress: false', 'timeout-minutes: 10', "python-version: '3.12'",

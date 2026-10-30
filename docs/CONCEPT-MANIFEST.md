@@ -141,6 +141,29 @@ part from Control Center readbacks, bound by digest, every run.
   part are. `concept_part` then gives `concepts`, `concept_manifest`,
   `stopped_concepts`, `concept_hold` and `concept_daily_caps`, as `apply`
   writes them.
+- The approval, since 30 October (Ruling, Krish, 2026-10-30: "approve the
+  week's mix once, let Growth fill it"; R124). His yes on a part above no
+  longer approves anything on its own; his no, a stop, an amended-away
+  concept or his changed terms still stop or hold. The approval is his one
+  press on content-engine's board, "Approve this week's mix", read from
+  `GET https://content.krishraja.com/api/board/<Monday>/pieces` (`mix`:
+  `{approved, days, mix_sha256, at}`, null until he presses) with
+  GROWTH_WRITEBACK_TOKEN. autorelease rebuilds the mix Growth proposes from
+  this same plan (the parts in force and the slots record at the plan key,
+  `engine/run/maker.py` `week_slots`), lays out the Off days
+  (`engine/offday.py` `options`) and hashes them exactly as the board does
+  (`proposed_mix`, mirroring content-engine `week_board.py`
+  `read_growth_offdays` and `week_mix`). The press must say approved on that
+  hash and those days (`mix_binding`); then each ready concept that is one
+  of a kept day's options is approved at its `concept_sha256`, and a post
+  goes out only as one of them: its New York day a day of the mix, its
+  concept that day's option, its `channel:format` in the option's format
+  line (`outside_mix`; else `outside_approved_mix`, loud as
+  `scheduled_outside_mix` when already live). No press holds quietly
+  (`mix_not_approved`, `mix_board_not_configured`); a press on another hash
+  holds loudly (`mix_hash_mismatch`) and the summary's
+  `derived.repropose` carries the mix to show again. A past piece's
+  repurposed carousel is not in the Off days, so it is not approved here.
 - A derived slot. The go-live manifest dispatch carries it with its
   `concept_id` and `review`; the handoff rebuilds it from its Buffer draft
   and reports the review at `makeyourmindup:review:<payload_sha256[:12]>`

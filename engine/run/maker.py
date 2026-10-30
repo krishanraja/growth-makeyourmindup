@@ -11,9 +11,11 @@ what an earlier run made is already_made, so the overlap makes nothing twice. By
 names today or tomorrow in New York and nothing else. Each day is made under its own week's
 plan. For each week, in order:
 
-1. His authority, read back from Control Center by digest, never a file:
-   engine/run/autorelease.py week_state (decision.cc_readback and concept_part, the same
-   rules release applies). A no on the week makes nothing; a hold makes nothing.
+1. His authority: engine/run/autorelease.py week_state, the same rules release applies
+   (the plan read back from Control Center by digest, his stops through decision.cc_readback,
+   and his one press on the board's mix, bound to the hash of the mix Growth proposes:
+   Ruling, Krish, 2026-10-30, "approve the week's mix once, let Growth fill it"). A no on the
+   week makes nothing; a hold makes nothing; a slot outside the approved mix is never made.
 2. The week's slots, from the slots record the handoff wrote beside the plan
    (cc_records.SLOTS, keyed by the plan's part digests). They are checked twice before
    use: rebuilt with the handoff's own validate_mix_plan against the concepts each part
@@ -421,6 +423,7 @@ class Maker:
         self.organizations, self.listed, self.downloads = [], {}, {}
         self.since = self.created_since = None
         self.handed = {'recorded': 0, 'holds': {}, 'error': None}
+        self.board = None  # the board client whose mix press approves the week (autorelease.mix_binding)
 
     def out_of_time(self):
         return self.deadline is not None and self.clock() >= self.deadline
@@ -573,7 +576,7 @@ class Maker:
 def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
     """Make the slots of days (all in the week starting monday) under that week's plan."""
     tally = work.tally
-    state = autorelease.week_state(work.cc, monday, decisions, folder, work.now, work.root, proposals)
+    state = autorelease.week_state(work.cc, monday, decisions, folder, work.now, work.root, proposals, work.board)
     if state.get('stopped'):
         tally.count('week_stopped')
         return
@@ -607,6 +610,8 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
                 raise Held('concept_not_approved')
             if {'channel': channel, 'format': slot['format']} not in concept['placements']:
                 raise Held(concept_rules.DEPARTS)
+            if autorelease.outside_mix(state, cid, channel, slot['format'], slot['due_at']):
+                raise Held('outside_approved_mix')
             if voices.get(channel) not in VOICE:
                 raise Held('account_voice_unknown')
             if (cid, channel) in done:
@@ -637,7 +642,7 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
 
 
 def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None, out_path=None, day=None,
-          clock=time.monotonic):
+          clock=time.monotonic, board=None):
     """Returns (summary, exit_code). summary holds counts and codes only.
 
     day (YYYY-MM-DD) names the New York day to make by hand; only today or tomorrow there is accepted,
@@ -665,6 +670,7 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
                'handoff': None, 'taste': 'taste_unavailable', 'loud': [], 'error': None}
     work = Maker(cc, buffer, anthropic, now, deliver, fetch or buffer_api.download_facts, root, out_path,
                  started + RUN_BUDGET, clock)
+    work.board = board
     tally = work.tally
     if anthropic is None:
         # No words without the key: nothing is read, nothing is made, and the run fails so GitHub emails him.
@@ -730,7 +736,7 @@ def _anthropic_client():
     return Anthropic(key) if key else None
 
 
-def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=None, out=print):
+def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=None, out=print, make_board=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv[:1] == ['maker']:
         argv = argv[1:]
@@ -764,7 +770,9 @@ def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=N
         summary.update(error='control_center_' + error.code, exit=1)
         out(json.dumps(summary, sort_keys=True))
         return 1
-    result, code = maker(cc, buffer, anthropic, args.now, args.deliver, fetch, day=args.day)
+    from engine.run.board_tick import board_from_env
+    result, code = maker(cc, buffer, anthropic, args.now, args.deliver, fetch, day=args.day,
+                         board=(make_board or board_from_env)())
     out(json.dumps(result, sort_keys=True))
     return code
 

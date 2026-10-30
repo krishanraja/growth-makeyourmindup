@@ -1663,6 +1663,26 @@
         "test_an_id_both_allowed_and_denied_is_refused_locally",
         "test_post_metrics_take_null_never_zero_and_refuse_fractions"
       ]
+    },
+    {
+      "id": "R124",
+      "statement": "A derived (filler) post is made or released only when Krish's one press on the board's mix is approved on the hash of the mix Growth itself proposes for that week, and only inside it (its day, its concept among that day's options, its channel:format in the option's line); no press holds quietly, a press on another hash holds loudly and is proposed again, every other gate still applies, and series go-lives stay his per-post go-live.",
+      "source_file": "CHANGES.md",
+      "quote": "approve the week's mix once, let Growth fill it",
+      "enforced_by": [
+        "engine/offday.py:proposed_mix",
+        "engine/run/autorelease.py:mix_binding",
+        "engine/run/autorelease.py:outside_mix",
+        "engine/run/board_tick.py:board_mix"
+      ],
+      "tests": [
+        "test_proposed_mix_reproduces_the_hash_the_board_computes",
+        "test_approved_on_the_hash_growth_proposed_releases",
+        "test_not_approved_holds_quietly",
+        "test_a_hash_mismatch_holds_loudly_and_proposes_again",
+        "test_a_format_or_a_day_outside_the_mix_never_releases",
+        "test_series_go_lives_are_unaffected_by_the_mix"
+      ]
     }
   ]
 }

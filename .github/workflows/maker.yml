@@ -53,6 +53,7 @@ jobs:
           CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROWTH_WRITEBACK_TOKEN: ${{ secrets.GROWTH_WRITEBACK_TOKEN }}
         run: |
           if [ -z "$CONTROL_CENTER_ENGINE_TOKEN" ]; then
             echo "::error::The CONTROL_CENTER_ENGINE_TOKEN secret is not set for this repository. Nothing was made."

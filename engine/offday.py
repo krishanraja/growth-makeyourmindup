@@ -21,11 +21,17 @@ over its channel's cap.
    slot of the week has a ready concept by the Sunday before it, 20:00 New
    York) and offday_slots_filled (filler slots filled against available).
 
+4. The week's mix (`proposed_mix`): the formats Growth proposes for each day,
+   and the sha256 Krish's one press on the board is bound to (Ruling, Krish,
+   2026-10-30: "approve the week's mix once, let Growth fill it"), computed
+   exactly as content-engine's week_board.py does.
+
 Deterministic and offline. Nothing here posts, schedules or writes outside
 where --out points.
 """
 import argparse
 import datetime as dt
+import hashlib
 import json
 from pathlib import Path
 
@@ -93,6 +99,62 @@ def options(mix, ideas=(), root=ROOT):
             short.append({'day': day.isoformat(), 'options': len(out), 'needs': MIN_OPTIONS - len(out)})
     return {'schema': 'growth-offdays/1', 'week_of': mix['week_of'], 'days': days, 'short': short,
             'local_only': True, 'external_writes': 0}
+
+
+DAY_KEYS = ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
+OFFDAYS_SCHEMA = 'growth-offdays/1'
+
+
+def option_format(option):
+    """The one format line the board shows for an option: its formats joined, or its lane (week_board.py)."""
+    fmt = ', '.join(option.get('formats') or []) or option.get('lane')
+    fmt = str(fmt or '').strip()
+    if not fmt:
+        raise ValueError('an off-day option has no format and no lane, so the board cannot show it')
+    return fmt
+
+
+def board_options(offdays_doc, monday):
+    """{day key: [option, ...]} as the board keeps them from a growth-offdays/1 file. Pure; raises ValueError.
+
+    Mirrors content-engine scripts/post-pack/week_board.py read_growth_offdays: each date maps to its
+    day key of the week, the first three options are kept, and a date with fewer than two is left off."""
+    monday = calendar_date(monday)
+    if not isinstance(offdays_doc, dict) or offdays_doc.get('schema') != OFFDAYS_SCHEMA \
+            or not isinstance(offdays_doc.get('days'), dict):
+        raise ValueError('not a ' + OFFDAYS_SCHEMA + ' file')
+    if str(offdays_doc.get('week_of')) != monday.isoformat():
+        raise ValueError('the off-days file is for another week')
+    out = {}
+    for day, opts in sorted(offdays_doc['days'].items()):
+        try:
+            offset = (dt.date.fromisoformat(day) - monday).days
+        except (TypeError, ValueError):
+            offset = None
+        if offset not in range(7):
+            raise ValueError('an off-days date is not a day of the week of ' + monday.isoformat())
+        opts = [o for o in opts or [] if isinstance(o, dict)][:MAX_OPTIONS]
+        if len(opts) >= MIN_OPTIONS:
+            out[DAY_KEYS[offset]] = opts
+    return out
+
+
+def proposed_mix(offdays_doc, monday):
+    """(days, mix_sha256): the week's mix Growth proposes, exactly as the board computes the hash Krish presses.
+
+    Ruling (Krish, 2026-10-30): "approve the week's mix once, let Growth fill it". Mirrors week_board.py
+    week_mix on read_growth_offdays: days[key] is the sorted set of each kept option's format line, a
+    recorded option left out, and the hash is sha256 of the compact sorted JSON of days."""
+    days = {}
+    for key, opts in board_options(offdays_doc, monday).items():
+        kinds = sorted({option_format(o) for o in opts if o.get('kind') != 'recorded'})
+        if kinds:
+            days[key] = kinds
+    return days, mix_sha256(days)
+
+
+def mix_sha256(days):
+    return hashlib.sha256(json.dumps(days, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
 def counts(scheduled):

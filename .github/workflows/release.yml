@@ -35,6 +35,7 @@ jobs:
           CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
           CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          GROWTH_WRITEBACK_TOKEN: ${{ secrets.GROWTH_WRITEBACK_TOKEN }}
         run: |
           if [ -z "$BUFFER_API_KEY" ]; then
             echo "::notice::The BUFFER_API_KEY secret is not set yet, so release is not configured. Nothing was read or scheduled."
