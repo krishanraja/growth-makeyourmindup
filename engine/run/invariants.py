@@ -207,10 +207,12 @@ def load_registry(root=ROOT):
         if type(entry['w45']) is not bool:
             raise ValueError(at + ': w45 must be true or false')
         if 'tasks' in entry:
-            _strings(entry['tasks'], 'tasks', at)
-            unknown = [t for t in entry['tasks'] if t not in CHANNEL_TASKS]
-            if unknown or len(set(entry['tasks'])) != len(entry['tasks']):
-                raise ValueError(at + ': tasks must be distinct ids from the channel tasks contract')
+            # Each task says what it accomplishes for this specialist, never the generic definition.
+            tasks = entry['tasks']
+            if not isinstance(tasks, dict) or not tasks or any(t not in CHANNEL_TASKS for t in tasks):
+                raise ValueError(at + ': tasks maps ids from the channel tasks contract to what each accomplishes here')
+            if any(not isinstance(v, str) or len(v.split()) < 8 for v in tasks.values()):
+                raise ValueError(at + ': each task says in a sentence what it accomplishes for this specialist')
             if ('reel-script' in entry['tasks']) != ('short-video' in entry['formats']):
                 raise ValueError(at + ': reel-script belongs to exactly the specialists that make short video')
         if 'row' in entry and entry['row'] is not None and (type(entry['row']) is not int or entry['row'] < 1):

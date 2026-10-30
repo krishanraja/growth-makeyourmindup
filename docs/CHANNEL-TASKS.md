@@ -3,8 +3,9 @@
 Owner: Growth. The seven tasks are defined once in krishanraja/ai-harness
 `contract/channel-tasks.md` (Krish, 2026-10-30); this file keeps only the
 mapping and this engine's loop. `crew/registry.json` carries each specialist's
-`tasks`, and `engine/run/invariants.py` (`load_registry`) refuses an unknown task
-or a reel script on a specialist that makes no short video.
+`tasks` with what each accomplishes here, and `engine/run/invariants.py`
+(`load_registry`) refuses an unknown task, an outcome under a sentence, or a reel
+script on a specialist that makes no short video.
 
 The tasks serve the publication North Star (new subscribers a week from organic
 posts and shares, zero paid), never follower counts. Every idea, hook, caption,
@@ -12,22 +13,37 @@ test and plan names the leading signal it moves.
 
 ## Who runs which
 
-| Specialist | Channels | Tasks | Leading signal |
+The seven are a starting set, not a template. `crew/registry.json` says, for
+each specialist and each task it runs, what that task accomplishes on that
+channel for this publication; `tests/test_crew.py` refuses a vague outcome or the
+same words on two specialists. Read the registry for the full sentences; this
+table is the summary.
+
+| Specialist | Channels | Runs | Leading signal |
 |---|---|---|---|
-| meta | Instagram, Facebook | platform-truth, idea-bank, reel-script, caption-set, trend-scan, channel-plan | Sends per reach, then profile visits to the subscribe link |
-| youtube | YouTube Shorts | platform-truth, idea-bank, reel-script, caption-set, trend-scan, channel-plan | Viewed versus swiped away, then description link clicks |
-| tiktok | TikTok | platform-truth, idea-bank, reel-script, caption-set, trend-scan, channel-plan | Shares and saves per view, then profile visits |
-| x | X | platform-truth, idea-bank, caption-set, trend-scan, channel-plan | Reposts and bookmarks from the right leaders, then link clicks |
-| threads | Threads | platform-truth, idea-bank, caption-set, trend-scan, channel-plan | Reposts and replies from the right leaders |
-| linkedin | LinkedIn (his click) | platform-truth, idea-bank, caption-set, trend-scan, channel-plan | Reposts and comments from senior leaders, then subscribe clicks |
-| substack | Substack Home and Notes | platform-truth, idea-bank, caption-set, trend-scan, channel-plan | Subscribes attributed to a Note or post |
-| channel-auditor | all eight accounts | profile-audit | Profile visit to subscribe, once readable |
+| meta | Instagram, Facebook | all but profile-audit | Sends per reach, then profile visits to the subscribe link |
+| youtube | YouTube Shorts | all but trend-scan and profile-audit | Short-to-long clicks, then subscribers |
+| tiktok | TikTok (personal) | all but profile-audit | Watch time, then profile visits |
+| x | X (personal) | platform-truth, idea-bank (receipts), caption-set, trend-scan, channel-plan | Profile and link clicks at 48 hours |
+| threads | Threads (personal) | platform-truth, idea-bank, caption-set, channel-plan | Replies and follows, baseline for two weeks |
+| linkedin | LinkedIn (his click) | platform-truth, idea-bank, caption-set, channel-plan | Featured clicks and comments from target titles |
+| substack | Substack Notes | platform-truth, idea-bank, caption-set, channel-plan | Subscribes attributed to a Note |
+| channel-auditor | all eight accounts | profile-audit | Every account points to the subscribe path |
+
+Dropped on purpose:
+- trend-scan on YouTube, because Shorts are cut from the week's full videos;
+- trend-scan on Threads, because its first two weeks are a baseline;
+- trend-scan on LinkedIn, because those posts are his own click with no quota;
+- trend-scan on Substack, because Notes name published work.
+
+Ideas here come from published pieces, because every claim must come from one.
+They never come from trends alone.
 
 The channel auditor already owns every profile pass (docs/CHANNEL-AUDIT.md), so
-profile-audit stays with it, one owner for all eight accounts. The canva-studio
-lane, the engagement lane, the What-Works Analyst and the Send-Test Reader keep
-their jobs: Canva makes what a task drafts, the Send-Test Reader judges the
-picked hook and caption blind, and What-Works reads the results.
+profile-audit stays with it. The canva-studio lane, the engagement lane, the
+What-Works Analyst and the Send-Test Reader keep their jobs: Canva makes what a
+task drafts, the Send-Test Reader judges the picked hook and caption blind, and
+What-Works reads the results.
 
 Where they run:
 

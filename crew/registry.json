@@ -20,13 +20,12 @@
         "note",
         "article"
       ],
-      "tasks": [
-        "platform-truth",
-        "idea-bank",
-        "caption-set",
-        "trend-scan",
-        "channel-plan"
-      ],
+      "tasks": {
+        "platform-truth": "Substack's own guidance on Notes, recommendations and the subscribe path",
+        "idea-bank": "Notes from published pieces that name the work in words, with promotional Notes between one in ten and one in two",
+        "caption-set": "Five Note drafts from @mindmakerlive in Krish's personal voice, no outside link, any question last",
+        "channel-plan": "Notes per day as signed, at most two, judged at 24 hours and on subscribers at seven days"
+      },
       "lint": "engine/run/spec.py:lint_substack",
       "check": "engine/run/measure.py:check_substack",
       "card": "crew/substack/card.md",
@@ -55,14 +54,14 @@
         "story",
         "meme"
       ],
-      "tasks": [
-        "platform-truth",
-        "idea-bank",
-        "reel-script",
-        "caption-set",
-        "trend-scan",
-        "channel-plan"
-      ],
+      "tasks": {
+        "platform-truth": "Official Instagram and Facebook guidance on Reels, carousels, Stories and sends, read against makeyourmind.up's own 72-hour medians; tests go to the What-Works Analyst, never imposed",
+        "idea-bank": "Unused angles from published pieces that a senior leader would send to a colleague, each a receipt open or a your.call poll, with its claim sourced in the piece",
+        "reel-script": "Five opening frames tested receipt open against face open, judged on sends and watch time, with the piece's finding as the payoff",
+        "caption-set": "Five captions in the publication's editorial voice, never Krish's personal wrapper, paired for Instagram and Facebook, five hashtags at most",
+        "trend-scan": "Formats and features senior leaders share on Instagram now, each adapted to a finding from a published piece, never a meme for its own sake",
+        "channel-plan": "Thirty days of paired Instagram and Facebook posts with Stories after feed readback, worked back from subscribers through the profile link"
+      },
       "lint": "engine/social.py:preflight",
       "check": "engine/run/measure.py:check_meta",
       "card": "crew/meta/card.md",
@@ -84,14 +83,13 @@
         "short-video",
         "meme"
       ],
-      "tasks": [
-        "platform-truth",
-        "idea-bank",
-        "reel-script",
-        "caption-set",
-        "trend-scan",
-        "channel-plan"
-      ],
+      "tasks": {
+        "platform-truth": "Official YouTube guidance on Shorts, Related video links and the path from a Short to the full video",
+        "idea-bank": "Moments from the full videos that make a Short whose Related video delivers within its first ten seconds",
+        "reel-script": "Five hooks for a Short, the call to action said aloud in the last five seconds, the payoff completed by the long video",
+        "caption-set": "Five titles and description openers, each first line opening Read it free with the tagged link",
+        "channel-plan": "Shorts tied to each week's full videos, judged on Short-to-long clicks and subscribers at 72 hours"
+      },
       "lint": "engine/run/spec.py:lint_youtube",
       "check": "engine/run/measure.py:check_youtube",
       "card": "crew/youtube/card.md",
@@ -115,14 +113,14 @@
         "short-video",
         "meme"
       ],
-      "tasks": [
-        "platform-truth",
-        "idea-bank",
-        "reel-script",
-        "caption-set",
-        "trend-scan",
-        "channel-plan"
-      ],
+      "tasks": {
+        "platform-truth": "Official TikTok guidance on search, watch time and AI labels for a personal account",
+        "idea-bank": "Things Krish found useful this week, told personally on @therealkrisho, each tied to a published piece",
+        "reel-script": "Five hooks in Krish's sincere personal voice with the searchable phrase on screen, judged on watch time and profile visits",
+        "caption-set": "Five personal wrappers that lead with the searchable phrase, never the publication caption",
+        "trend-scan": "TikTok search terms and formats where leaders look for AI's business impact, adapted without copying",
+        "channel-plan": "Thirty days for a personal account, with the eight-week watch-time check and the brand-account question left to Krish"
+      },
       "lint": "engine/run/spec.py:lint_tiktok",
       "check": "engine/run/measure.py:check_tiktok",
       "card": "crew/tiktok/card.md",
@@ -143,13 +141,13 @@
         "single-image",
         "text"
       ],
-      "tasks": [
-        "platform-truth",
-        "idea-bank",
-        "caption-set",
-        "trend-scan",
-        "channel-plan"
-      ],
+      "tasks": {
+        "platform-truth": "Official X guidance on links, images and replies, tested only as registered link-in-post against first-reply arms",
+        "idea-bank": "Receipts: one claim and its number from a published piece per post, legible in one native image",
+        "caption-set": "Five versions of the receipt line inside the weighted length limit, in Krish's personal voice",
+        "trend-scan": "Live conversations on X about AI's commercial impact where a published receipt answers the question being asked",
+        "channel-plan": "Receipts per week and the link arm test, judged on profile clicks, link clicks and follows at 48 hours"
+      },
       "lint": "engine/run/spec.py:lint_x",
       "check": "engine/run/measure.py:check_x",
       "card": "crew/x/card.md",
@@ -170,13 +168,12 @@
         "text",
         "single-image"
       ],
-      "tasks": [
-        "platform-truth",
-        "idea-bank",
-        "caption-set",
-        "trend-scan",
-        "channel-plan"
-      ],
+      "tasks": {
+        "platform-truth": "Official Threads guidance, recorded as baseline only for the first two weeks",
+        "idea-bank": "Short personal posts from published pieces that stand alone without the link",
+        "caption-set": "Five versions in Krish's personal voice with the link last and any question at the end",
+        "channel-plan": "One post a day, baseline only for two weeks, then verdicts from the What-Works Analyst"
+      },
       "lint": "engine/run/spec.py:lint_threads",
       "check": "engine/run/measure.py:check_threads",
       "card": "crew/threads/card.md",
@@ -198,13 +195,12 @@
         "carousel",
         "text"
       ],
-      "tasks": [
-        "platform-truth",
-        "idea-bank",
-        "caption-set",
-        "trend-scan",
-        "channel-plan"
-      ],
+      "tasks": {
+        "platform-truth": "Official LinkedIn guidance on body links, documents and comments, recommended to Krish and never edited live",
+        "idea-bank": "Posts for Krish's own click that leaders with target titles would comment on, the subscribe link left to Featured",
+        "caption-set": "Five unscheduled drafts in Krish's personal voice with no link in the body, document carousels at ten slides at most",
+        "channel-plan": "Two to four posts a week proposed, never a quota, judged on Featured clicks and comments from target titles"
+      },
       "lint": "engine/run/spec.py:lint_linkedin",
       "check": "engine/run/measure.py:check_linkedin",
       "card": "crew/linkedin/card.md",
@@ -346,9 +342,9 @@
         "profile",
         "post"
       ],
-      "tasks": [
-        "profile-audit"
-      ],
+      "tasks": {
+        "profile-audit": "Every one of the eight accounts points to the subscribe path and the current positioning, repaired within the allowlist, with bios and LinkedIn recommended only"
+      },
       "lint": "engine/channel_audit.py:repair_plan",
       "check": "engine/channel_audit.py:reconcile",
       "card": "crew/channel-auditor/card.md",
