@@ -1,0 +1,4 @@
+Status: Midpoint review saved in `.scratch/channel-audit/daily-20261031/MIDPOINT.md`. Buffer's main pilot metrics now extend beyond 72 hours with unchanged counts and no demonstrated sharing/click-through. Native measurement unavailable: Codex in-app browser absent, external fallback prohibited. Last measured North Star remains 0 of 25 as of 30 October; today's value is unverified.
+Next: Restore the permitted native measurement route, refresh source attribution and complete the due subscribe-path audit before the Sunday mix review.
+Changed: PR 43's eight CI checks all passed. Four unscheduled drafts preserved. Keep decision, 5–6 November follow-ups, manual purchase and LinkedIn boundaries retained. Current R124 board-mix approval governs derived editions; no approval was assumed here.
+North Star check (2026-10-31): holds.

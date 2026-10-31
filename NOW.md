@@ -28,6 +28,8 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 Lifecycle: live. The detail is in `README.md`.
 
+31 October midpoint packet: `.scratch/channel-audit/daily-20261031/MIDPOINT.md`. Native source measurement could not refresh because the permitted in-app browser is unavailable; the North Star state above retains its actual 30 October date. See `now-notes/2026-10-31-midpoint-review.md`.
+
 30 October measurement and continuation: `.scratch/channel-audit/daily-20261030/REVIEW.md`; public-safe checkpoint in `now-notes/2026-10-30-daily-measurement.md`. Buffer stays per the 29 October ruling; purchase remains Krish's click.
 
 28 October, Wave 1 of the plan Krish approved that day ("Make Your Mind Up:
