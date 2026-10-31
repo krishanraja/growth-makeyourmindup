@@ -1,0 +1,1 @@
+An office repair log turns software bugs into notes about working together. The cover shows the bound log and its title. Each inside page records what was expected, what happened, and what to change. The closing page keeps one lesson on a mint repair slip inside the same log. Coral margin lines and metal rings carry the object through every page.

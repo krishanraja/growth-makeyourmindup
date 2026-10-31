@@ -1,0 +1,31 @@
+.frame { padding: 80px 80px 62px; background: var(--ink-deep); }
+.log { position: relative; flex: 1; min-height: 0; background: var(--cream); color: var(--ink); border-right: 16px solid var(--green); padding: 50px 44px 44px 104px; display: flex; flex-direction: column; }
+.log::before { content: ''; position: absolute; top: 0; bottom: 0; left: 76px; width: 3px; background: var(--coral); }
+.rings { position: absolute; left: -24px; top: 78px; bottom: 78px; width: 64px; display: flex; flex-direction: column; justify-content: space-between; }
+.rings i { display: block; width: 64px; height: 26px; border: 7px solid var(--green); background: var(--ink-deep); border-radius: 20px; }
+.log-head { height: 88px; flex: none; display: flex; align-items: flex-start; gap: 24px; border-bottom: 3px solid var(--ink); }
+.slot { min-width: 0; flex: 1; height: 64px; }
+.slot p { font-family: var(--mono); line-height: 1.2; }
+.tab { flex: none; width: 148px; height: 62px; background: var(--butter); padding: 10px; transform: rotate(3deg); }
+.tab p { font-family: var(--mono); line-height: 1.15; text-align: center; }
+.title-box { height: 508px; margin: 42px 0 28px; flex: none; }
+h1, h2 { font-family: var(--heading); font-weight: 400; line-height: 1.04; }
+.subtitle { flex: 1; min-height: 0; border-top: 3px solid var(--ink); padding-top: 28px; }
+.subtitle p { font-family: var(--sub); line-height: 1.22; }
+.log-foot { flex: none; height: 62px; margin-top: 26px; border-top: 2px solid var(--green); padding-top: 12px; }
+.log-foot p { font-family: var(--mono); line-height: 1.2; }
+.footer { margin-top: 30px; height: 38px; font-size: 23px; }
+.footer .page { min-width: 0; width: 240px; height: 38px; text-align: right; }
+.footer p { font-family: var(--mono); line-height: 1.2; }
+.entry-title { height: 180px; margin: 30px 0 24px; flex: none; }
+.record { display: flex; flex-direction: column; flex: 1; min-height: 0; border-top: 2px solid var(--green); padding: 20px 0; }
+.record-label { font-family: var(--mono); font-size: 22px; text-transform: uppercase; margin-bottom: 12px; }
+.record-copy { flex: 1; min-height: 0; }
+.record-copy p { font-family: var(--body); font-weight: 600; line-height: 1.2; }
+.record:last-of-type { border-bottom: 2px solid var(--green); }
+.repair { background: var(--mint); border: 3px solid var(--ink); padding: 28px; margin-top: 26px; flex: 1; min-height: 0; display: flex; flex-direction: column; box-shadow: 12px 12px 0 var(--green); }
+.repair-copy { flex: 1; min-height: 0; }
+.repair-copy p { font-family: var(--body); font-weight: 600; line-height: 1.22; }
+.close .title-box { height: 365px; }
+.next { height: 110px; flex: none; margin-top: 38px; }
+.next p { font-family: var(--sub); line-height: 1.22; }

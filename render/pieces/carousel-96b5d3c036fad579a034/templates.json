@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "carousel-96b5d3c036fad579a034",
+  "about": "A worn keyboard and the impressions kept beneath its keys.",
+  "templates": {
+    "keyboard-cover": {
+      "file": "templates/keyboard-cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "page": "text",
+        "headline": "text",
+        "key_note": "text",
+        "body": "text",
+        "source": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "key_note",
+        "body"
+      ],
+      "example": {
+        "label": "series.label",
+        "page": "Slide label",
+        "headline": "The opening thought",
+        "key_note": "A short note about the key",
+        "body": "One plain sentence that explains this card.",
+        "source": "Source label"
+      },
+      "note": "Keep the headline to a few short lines and the key note to a short phrase."
+    },
+    "keyboard-detail": {
+      "file": "templates/keyboard-detail.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "page": "text",
+        "headline": "text",
+        "key_note": "text",
+        "body": "text",
+        "source": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "key_note",
+        "body"
+      ],
+      "example": {
+        "label": "series.label",
+        "page": "Slide label",
+        "headline": "The pattern beneath the key",
+        "key_note": "A short note about the key",
+        "body": "One plain sentence that explains this card.",
+        "source": "Source label"
+      },
+      "note": "Keep the headline to a few short lines and the key note to a short phrase."
+    },
+    "keyboard-close": {
+      "file": "templates/keyboard-close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "page": "text",
+        "headline": "text",
+        "key_note": "text",
+        "body": "text",
+        "source": "text",
+        "control": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "key_note",
+        "body",
+        "control"
+      ],
+      "example": {
+        "label": "series.label",
+        "page": "Slide label",
+        "headline": "The closing question",
+        "key_note": "A short note about the key",
+        "body": "One plain sentence that explains this card.",
+        "source": "Source label",
+        "control": "Control label"
+      },
+      "note": "Keep the headline to a few short lines and the key note to a short phrase."
+    }
+  }
+}
