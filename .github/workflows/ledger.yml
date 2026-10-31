@@ -1,0 +1,46 @@
+name: ledger
+# Lane L0. Every day at 04:05 UTC (before the maker at 04:30), and by hand,
+# the ledger is rebuilt: one row per day per slot for the next 14 days, with
+# its stage, next action, owner and what has gone out (docs/OPERATING_MODEL.md
+# section 4; Ruling, Krish, 2026-10-31). It reads content-engine's board and
+# Buffer, read-only; a missing secret leaves the rows with what was readable
+# and names the secret. No workflow here commits records back, so the two
+# files are kept as this run's artifact for 14 days. The log carries counts
+# and codes only. Nothing is posted, scheduled, ticked or committed.
+on:
+  schedule:
+    - cron: '5 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ledger
+  cancel-in-progress: false
+
+jobs:
+  ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Rebuild the ledger (read-only)
+        env:
+          GROWTH_WRITEBACK_TOKEN: ${{ secrets.GROWTH_WRITEBACK_TOKEN }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+        run: python growth.py ledger --write
+      - name: Keep the ledger as this run's artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: ledger
+          path: |
+            calendar/ledger.json
+            calendar/LEDGER.md
+          retention-days: 14
+          if-no-files-found: error

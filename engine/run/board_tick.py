@@ -121,6 +121,10 @@ class Board:
     def pieces(self, monday):
         return self._request('GET', '/api/board/' + monday + '/pieces')
 
+    def week(self, monday):
+        """The week's published build {manifest, revision, build_id} (the ledger's read; may need the operator key)."""
+        return self._request('GET', '/api/board/' + monday)
+
     def posted(self, monday, row):
         return self._request('POST', '/api/board/' + monday + '/posted', row)
 

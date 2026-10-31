@@ -242,9 +242,8 @@ everything is, and what needs to be done every day.
 
 ## 4. The ledger: one place for what's what
 
-`calendar/ledger.json` in this repository has one row per day per slot. It is
-rebuilt every morning by a workflow from the engine API, Buffer and
-`inspiration_items`. Each row holds:
+`calendar/ledger.json` in this repository has one row per day per slot. Each
+row holds:
 
 - date, slot (hero or off-day), series and format;
 - piece id and **title of record**;
@@ -253,11 +252,30 @@ rebuilt every morning by a workflow from the engine API, Buffer and
 - the next action, who owns it, and when it is due;
 - whether it is posted, with its URLs.
 
+**Built (31 October 2026).** `python growth.py ledger [--week MONDAY] [--days 14]
+[--write] [--json]` (`engine/ledger.py`) builds it for 14 days from today (UTC):
+hero rows on Monday, Wednesday and Friday, off-day rows on the other four. It
+reads, read-only, content-engine's board (`/api/board/<Monday>/pieces` for the
+day's piece and his mix press, `/api/board/<Monday>` for the build's manifest)
+with `GROWTH_WRITEBACK_TOKEN` through the board tick's client, and this engine's
+sent and scheduled Buffer posts with `BUFFER_API_KEY` through the measure job's
+reader. A missing secret never fails the build: the row keeps what was readable
+and its next action names the secret. `--write` also renders `calendar/LEDGER.md`,
+a short table (date, slot, title, stage, next action, owner).
+`.github/workflows/ledger.yml` runs it at 04:05 UTC daily (before the maker) and
+by hand. No workflow here commits records back, so it keeps the two files as the
+run's artifact for 14 days; nothing is committed, posted or ticked.
+
+Not yet read: `inspiration_items` (stage 1), the title of record (the pieces read
+carries no title until content-engine adds it, section 6 item 1; the ledger reads
+it the day it does), the Drive folder, and the manifest, whose route takes the
+engine operator key rather than `GROWTH_WRITEBACK_TOKEN`.
+
 The board's Today view reads the ledger. Checklists come off Krish's view (the
 records stay underneath). In their place he sees one status per day and only the
 asks that need him.
 
-### Snapshot, 31 October 2026 (hand-read; the daily rebuild is not built yet)
+### Snapshot, 31 October 2026 (hand-read, before the daily rebuild was built)
 
 | Date | Slot | Piece | Title of record | Stage | Next action (owner) |
 |---|---|---|---|---|---|
@@ -423,7 +441,8 @@ is finishing Mon 2 and Wed 4.
    - make an article with zero figures fail the publish check;
    - restore the planned figures.
 4. **Growth (this repository), the ledger:**
-   - `calendar/ledger.json` and a daily workflow that rebuilds it;
+   - `calendar/ledger.json` and a daily workflow that rebuilds it (built 31 Oct,
+     section 4);
    - the board's Today view reads it;
    - the `/posted` tick accepts off days.
 
