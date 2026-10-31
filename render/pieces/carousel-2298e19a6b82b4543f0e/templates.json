@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "carousel-2298e19a6b82b4543f0e",
+  "about": "A shared office repair log, with each breakdown recorded beside a lesson for next time.",
+  "templates": {
+    "log-cover": {
+      "file": "templates/log-cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "entry": "text",
+        "headline": "text",
+        "subhead": "text",
+        "note": "text",
+        "page": "text"
+      },
+      "required": [
+        "label",
+        "entry",
+        "headline",
+        "subhead",
+        "note",
+        "page"
+      ],
+      "example": {
+        "label": "series.label",
+        "entry": "Log label",
+        "headline": "The cover title goes here",
+        "subhead": "A short line explaining what the reader gets",
+        "note": "A short note about the source",
+        "page": "Page label"
+      }
+    },
+    "log-entry": {
+      "file": "templates/log-entry.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "entry": "text",
+        "headline": "text",
+        "expected": "text",
+        "happened": "text",
+        "change": "text",
+        "page": "text"
+      },
+      "required": [
+        "label",
+        "entry",
+        "headline",
+        "expected",
+        "happened",
+        "change",
+        "page"
+      ],
+      "example": {
+        "label": "series.label",
+        "entry": "Entry label",
+        "headline": "The lesson title goes here",
+        "expected": "The intended result goes here",
+        "happened": "The observed result goes here",
+        "change": "The change to try next goes here",
+        "page": "Page label"
+      }
+    },
+    "log-close": {
+      "file": "templates/log-close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "entry": "text",
+        "headline": "text",
+        "lesson": "text",
+        "next": "text",
+        "page": "text"
+      },
+      "required": [
+        "label",
+        "entry",
+        "headline",
+        "lesson",
+        "next",
+        "page"
+      ],
+      "example": {
+        "label": "series.label",
+        "entry": "End label",
+        "headline": "The closing thought goes here",
+        "lesson": "One useful lesson to keep goes here",
+        "next": "The next step for the reader goes here",
+        "page": "Page label"
+      }
+    }
+  }
+}
