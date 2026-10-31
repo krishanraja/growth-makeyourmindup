@@ -82,7 +82,7 @@ from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.cc_loop import decisions_paged
 from engine.control_center import SLUG, ProtocolError
 from engine.core import instant, ny_time
-from engine.run import autorelease, buffer_api, cc_records, handoff, release
+from engine.run import autorelease, buffer_api, cc_records, handoff, release, voice_profile
 from engine.run.anthropic_api import CALL_WORST, GAVE_UP, KEY_ENV, Anthropic, AnthropicAuthError, AnthropicError
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
 from engine.run.buffer_drafts import DraftBuffer
@@ -311,12 +311,14 @@ def placement_files(mocks, fmt, channel):
 
 # The words and their review ------------------------------------------------------------------
 
-def brief_of(slot, concept, voice, files):
+def brief_of(slot, concept, voice, files, profile=None):
+    """profile: voice_profile.read() for the run, or None; it adds his measured style to the account's voice."""
     channel, fmt = slot['channel'], slot['format']
     media = ('text only, no picture' if not files else
              str(len(files)) + (' pictures' if len(files) > 1 else ' picture' if release.MEDIA.get(
                  '.' + files[0][1]) == 'image' else ' video'))
-    return ('Channel: ' + NAMES[channel] + ', ' + VOICE[voice] + '\nFormat: ' + fmt + ', ' + media
+    style = ('\n' + profile[voice]) if profile and profile.get(voice) else ''
+    return ('Channel: ' + NAMES[channel] + ', ' + VOICE[voice] + style + '\nFormat: ' + fmt + ', ' + media
             + '.\nAt most ' + str(WORDS_MAX[channel]) + ' characters of words, the claim included.'
             + '\nIdea: ' + concept['idea'] + '\nClaim: ' + concept['claim'])
 
@@ -341,9 +343,9 @@ def share_block(share):
     return dict({k: share.get(k) for k in ('sender', 'receiver', 'job', 'dm_line', 'moment')}, standalone=True)
 
 
-def write_words(anthropic, slot, concept, voice, files):
+def write_words(anthropic, slot, concept, voice, files, profile=None):
     """(words, title, share) that carry the claim and pass every check, or Held. One rewrite with the reasons."""
-    brief = brief_of(slot, concept, voice, files)
+    brief = brief_of(slot, concept, voice, files, profile)
     reasons, code = [], None
     for _ in range(MAX_WRITES):
         user = brief + ('\nYour last draft was held. Write it again so none of these applies: ' + '; '.join(reasons)
@@ -369,9 +371,9 @@ def write_words(anthropic, slot, concept, voice, files):
     raise Held(code)
 
 
-def declare_share(anthropic, slot, concept, voice, files, words):
+def declare_share(anthropic, slot, concept, voice, files, words, profile=None):
     """The share block of words already saved (an adopted draft), or Held. The words are never rewritten."""
-    user = (brief_of(slot, concept, voice, files) + '\nThe words, exactly as saved: '
+    user = (brief_of(slot, concept, voice, files, profile) + '\nThe words, exactly as saved: '
             + json.dumps(words, ensure_ascii=False))
     got = anthropic.json_message(DECLARE_SYSTEM, user, SHARE_SCHEMA)
     share = got.get('share') if isinstance(got, dict) else None
@@ -423,6 +425,7 @@ class Maker:
         self.organizations, self.listed, self.downloads = [], {}, {}
         self.since = self.created_since = None
         self.handed = {'recorded': 0, 'holds': {}, 'error': None}
+        self.profile = None  # voice_profile.read() for the run; None drafts from the account rules alone
         self.board = None  # the board client whose mix press approves the week (autorelease.mix_binding)
 
     def out_of_time(self):
@@ -473,7 +476,7 @@ class Maker:
     def make(self, slot, concept, voice, manifest, monday):
         """The handoff slot for one draft made and handed off (or None in a dry run), Held, or Stop."""
         files, assets = self.prepare(slot, concept, manifest)
-        words, title, share = write_words(self.anthropic, slot, concept, voice, files)
+        words, title, share = write_words(self.anthropic, slot, concept, voice, files, self.profile)
         answer = review_words(self.anthropic, slot, words, share, assets)
         if not self.deliver:
             return None
@@ -522,7 +525,7 @@ class Maker:
             failed = word_checks(slot, concept, words, title)
             if failed:
                 raise Held(failed[0][0])
-            share = declare_share(self.anthropic, slot, concept, voice, files, words)
+            share = declare_share(self.anthropic, slot, concept, voice, files, words, self.profile)
             answer = review_words(self.anthropic, slot, words, share, assets)
             if not self.deliver:
                 return None
@@ -642,12 +645,13 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
 
 
 def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None, out_path=None, day=None,
-          clock=time.monotonic, board=None):
+          clock=time.monotonic, board=None, profile=None):
     """Returns (summary, exit_code). summary holds counts and codes only.
 
     day (YYYY-MM-DD) names the New York day to make by hand; only today or tomorrow there is accepted,
     so a yes given after the night's run can still be made that morning (day_out_of_range otherwise).
-    Without it, the days are make_days(now)."""
+    Without it, the days are make_days(now).
+    profile is voice_profile.read() (main reads it live); None makes the drafts from the account rules alone."""
     started = clock()
     now = instant(now)
     root = Path(root or ROOT)
@@ -667,10 +671,12 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
     mondays = sorted({(d - dt.timedelta(days=d.weekday())).isoformat() for d in days})
     summary = {'lane': 'L0', 'command': 'maker', 'deliver': bool(deliver), 'days': [d.isoformat() for d in days],
                'weeks': [autorelease._week_label(m) for m in mondays], 'slots': {}, 'holds': {}, 'mutations': 0,
-               'handoff': None, 'taste': 'taste_unavailable', 'loud': [], 'error': None}
+               'handoff': None, 'taste': 'taste_unavailable', 'loud': [], 'error': None,
+               'voice_profile': 'read' if profile else 'voice_profile_unavailable'}
     work = Maker(cc, buffer, anthropic, now, deliver, fetch or buffer_api.download_facts, root, out_path,
                  started + RUN_BUDGET, clock)
     work.board = board
+    work.profile = profile
     tally = work.tally
     if anthropic is None:
         # No words without the key: nothing is read, nothing is made, and the run fails so GitHub emails him.
@@ -736,7 +742,8 @@ def _anthropic_client():
     return Anthropic(key) if key else None
 
 
-def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=None, out=print, make_board=None):
+def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=None, out=print, make_board=None,
+         read_profile=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv[:1] == ['maker']:
         argv = argv[1:]
@@ -772,7 +779,7 @@ def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=N
         return 1
     from engine.run.board_tick import board_from_env
     result, code = maker(cc, buffer, anthropic, args.now, args.deliver, fetch, day=args.day,
-                         board=(make_board or board_from_env)())
+                         board=(make_board or board_from_env)(), profile=(read_profile or voice_profile.read)())
     out(json.dumps(result, sort_keys=True))
     return code
 
