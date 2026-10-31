@@ -1,12 +1,66 @@
 # Make Your Mind Up: one pipeline, one owner, one ledger
 
-Status: Proposed for Krish's yes, 31 October 2026. Written after his message of
+Status: Decided by Krish, 31 October 2026 (his answers are in section 0). First drafted on 31 October 2026. Written after his message of
 31 October asking that the sprawl be brought into one standard process, with
 this repository in charge of the schedule and of posting.
 
 North Star part this moves: "posts people share because they are useful". The
 ideas are the product. A week of homework-style pitches gets no shares. A week of
 stories people forward does, and the process below is built to produce them.
+
+
+## 0. What Krish decided (31 October 2026)
+
+- **The channel is smart entertainment.** It covers the weird, funny and
+  quietly huge AI stories of the week, explained in one listen and ending
+  on our opinion, never a to-do list.
+- **The reaction it aims for** is the one people leave on Hannah Fry's
+  shorts, which he shared on 31 Oct:
+  - "Imagine if this was your school teacher. You couldn't wait to get to
+    class"
+  - "Her curiosity and passion for learning new things is infectious"
+  - "You get hooked and can't scroll away"
+- **The week has 3 heroes and 4 off days.**
+  - Mon, Wed and Fri: video plus article.
+  - Tue, Thu, Sat and Sun: one lighter post each, made by Growth.
+- **Ideas come half and half.** Each day gets at least one option from his
+  Inspiration asks and one from engine research. Every ask is used,
+  combined or declined with a reason.
+- **Every idea on the board is a full story pitch**:
+  - headline;
+  - hook;
+  - real examples;
+  - what's going on;
+  - where we land;
+  - date and format;
+  - source card.
+
+  Carousels show every card.
+- **The publish board is his one daily surface.** It shows one status per
+  day and no checklists. Growth keeps the ledger behind it.
+- **He approves five things:**
+  1. the Sunday ideas;
+  2. the creative mocks;
+  3. the scripts;
+  4. the finished cuts;
+  5. each post's mock, once.
+
+  Growth then schedules and posts it automatically, and holds anything that
+  drifts from the mock.
+- **Frequent audits of recent posts.** They check for anything technically
+  wrong. Where nothing is wrong, they give a short, objective reflection on
+  what could be better next time. A rule change it suggests waits for his
+  yes.
+- **Fixes run in this order:**
+  1. ideas quality and his asks;
+  2. the board clean-up;
+  3. the ledger and posting;
+  4. Substack pictures.
+- **Done on 31 Oct:**
+  - The 9 Nov board was re-pitched and republished (build `c0e8568c`).
+  - The 2 Nov off-day options were written to content-engine
+    `docs/plans/2026-11-02-week/offdays-growth.json`, for that board's next
+    build.
 
 ---
 
