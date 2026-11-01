@@ -1,0 +1,3 @@
+Status: The vendored copy lint is content-engine's 2026-11-01.1 (commit d347ee2): a Markdown heading, a [text](url) link, a ">" quote line or a backtick in any slot, caption, title or alt text is now refused before Buffer (Krish, 1 Nov: "Growth engine will start auto posting this through Buffer and we cannot risk crappy formatting"). List lines stay allowed. Release holds such a slot as copy_lint_refused (tests/test_run_release.py); 928 tests pass.
+Next: when content-engine's branch claude/awesome-goldberg-0q1o79 merges, check the sha256 in vendor/content-engine/copy-lint/SOURCE.md still matches main's config/copy-lint.json.
+North Star check (2026-11-01): holds.

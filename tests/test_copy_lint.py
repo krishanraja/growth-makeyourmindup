@@ -79,6 +79,13 @@ class CopyLintTests(unittest.TestCase):
             for surface in copy_lint.SURFACES:
                 self.assertNotIn('no_name', [h['id'] for h in copy_lint.copy_lint(text, surface)], (text, surface))
 
+    def test_markdown_that_prints_raw_on_a_social_post_is_refused(self):
+        # Krish, 2026-11-01: "we cannot risk crappy formatting". A list line stays allowed.
+        for text, pattern in (('## THE BIT\nWords.', 'markdown_heading'), ('Read [this](https://x.ai)', 'markdown_link'),
+                              ('> A quote\nWords.', 'markdown_quote'), ('Run `this` weekly.', 'backtick')):
+            self.assertIn(pattern, [h['id'] for h in copy_lint.copy_lint(text, 'channel_copy')], text)
+        self.assertEqual(copy_lint.copy_lint('Three things:\n- Name your seniors.\n- Check your hires.', 'channel_copy'), [])
+
     def test_only_the_name_rule_reads_the_article_body(self):
         # The body's markdown emphasis and headings are the markdown itself, so no other pattern reads it.
         body = '## BREAKING: the money\n\nThe *real* cost is the lock-in. My take: watch the lawyers.'
