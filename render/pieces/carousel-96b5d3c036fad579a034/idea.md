@@ -1,0 +1,1 @@
+A worn keyboard makes repeated choices visible as marks that software keeps. The cover shows one key worn through. The detail lifts that key above a stack of saved impressions. The closing card turns the space bar into a clear control. Each card keeps the same keyboard, mint marks, and cream keycaps.
