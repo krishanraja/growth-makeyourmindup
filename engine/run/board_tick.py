@@ -122,8 +122,9 @@ class Board:
         return self._request('GET', '/api/board/' + monday + '/pieces')
 
     def week(self, monday):
-        """The week's published build {manifest, revision, build_id} (the ledger's read; may need the operator key)."""
-        return self._request('GET', '/api/board/' + monday)
+        """The week's published build {build_id, revision, manifest}: the ledger's read, on Growth's own key
+        (content-engine's /api/board/<Monday>/build; the bare week route answers only the operator)."""
+        return self._request('GET', '/api/board/' + monday + '/build')
 
     def posted(self, monday, row):
         return self._request('POST', '/api/board/' + monday + '/posted', row)
