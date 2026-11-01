@@ -28,6 +28,8 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 Lifecycle: live. The detail is in `README.md`.
 
+1 November Sunday review is in `.scratch/channel-audit/daily-20261101/SUNDAY-REVIEW.md`. The latest 07:16 UTC ledger read the board manifest. Reconcile the 2 November hero against the existing cut review before assigning work from its stage-four row. The lighter-post mix for the 2 November week showed no approval press at capture. Use the publish board under `docs/OPERATING_MODEL.md`. Last native subscriber reading is dated 30 October.
+
 31 October midpoint packet: `.scratch/channel-audit/daily-20261031/MIDPOINT.md`. Native source measurement could not refresh because the permitted in-app browser is unavailable; the North Star state above retains its actual 30 October date. See `now-notes/2026-10-31-midpoint-review.md`.
 
 30 October measurement and continuation: `.scratch/channel-audit/daily-20261030/REVIEW.md`; public-safe checkpoint in `now-notes/2026-10-30-daily-measurement.md`. Buffer stays per the 29 October ruling; purchase remains Krish's click.
