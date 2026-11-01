@@ -1,0 +1,26 @@
+[
+  {
+    "id": "sent-mon-yt",
+    "status": "sent",
+    "channelId": "6adccf83778b240e2fafe7af",
+    "dueAt": "2026-11-02T17:30:00Z",
+    "sentAt": "2026-11-02T17:30:05Z",
+    "externalLink": "https://www.youtube.com/shorts/synthetic"
+  },
+  {
+    "id": "sent-mon-mix",
+    "status": "sent",
+    "channelId": "6adccbf5778b240e2fafc457",
+    "dueAt": "2026-11-02T13:30:00Z",
+    "sentAt": "2026-11-02T13:30:04Z",
+    "externalLink": "https://x.com/TheRealKrisho/status/1"
+  },
+  {
+    "id": "sent-other-venture",
+    "status": "sent",
+    "channelId": "6ae09bba2f1f5ed648e9cbfc",
+    "dueAt": "2026-11-02T17:30:00Z",
+    "sentAt": "2026-11-02T17:30:02Z",
+    "externalLink": "https://www.tiktok.com/@other/video/1"
+  }
+]

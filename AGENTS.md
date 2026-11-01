@@ -14,6 +14,8 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 
 ## Asset continuity (Krish, 27 October 2026)
 
+**One pipeline (proposed 31 October 2026).** `docs/OPERATING_MODEL.md` sets the seven stages from Inspiration to posting, who owns each, the ledger this repository keeps of every day's slot, and the pitch format every idea is written in. Krish ruled on 31 October that this repository schedules and posts everything and keeps track of what's what every day.
+
 Read `docs/ASSET-STORAGE.md` and `docs/SESSION-HANDOVER.md` at the start of
 every session. Use the existing Drive **4 Growth** folder for structured,
 versioned distribution assets and clean delivery copy. Content Engine keeps

@@ -312,6 +312,27 @@
         "BUFFER_API_KEY",
         "ANTHROPIC_API_KEY"
       ]
+    },
+    {
+      "id": "ledger",
+      "lane": "L0_code",
+      "workflow": "ledger.yml",
+      "trigger": "04:05 UTC daily, before the maker, and by hand",
+      "may_write": [
+        "calendar/ledger.json and calendar/LEDGER.md as the run's artifact, kept 14 days"
+      ],
+      "never": [
+        "post, schedule, tick the board or write to Buffer, the board or Control Center",
+        "commit to the repository",
+        "log a title, a URL or a key: counts and codes only"
+      ],
+      "actions": [
+        "build-ledger"
+      ],
+      "secrets": [
+        "GROWTH_WRITEBACK_TOKEN",
+        "BUFFER_API_KEY"
+      ]
     }
   ],
   "automations": [
