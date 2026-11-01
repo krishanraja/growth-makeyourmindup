@@ -1165,10 +1165,25 @@ def mix_binding(cc, board, monday, parts, read, cfg, root):
     if board is None:
         return None, _held('mix_board_not_configured', 'mix_board_not_configured', loud=False)
     try:
-        pressed = board.mix(monday)
+        pressed, approved = board.approvals(monday) if hasattr(board, 'approvals') else (board.mix(monday), [])
     except board_tick.BoardError as error:
         return None, _held('mix_board_unreadable', error.code if error.code == 'board_token_refused'
                            else 'mix_board_unreadable')
+    if approved:
+        # Ruling (Krish, 2026-11-01): each off-day option is approved on its own, idea and direction. The binding is
+        # exactly the options he approved that Growth itself proposed, each with its own format line; anything else
+        # stays outside the mix (outside_mix fails closed).
+        picked = {(row['day'], row['option_id']) for row in approved}
+        options = {key: {o['concept_id']: offday.option_format(o) for o in opts
+                         if o.get('kind') != 'recorded' and (key, o['concept_id']) in picked}
+                   for key, opts in kept.items()}
+        options = {key: row for key, row in options.items() if row}
+        if not options:
+            return None, _held('mix_not_approved', 'mix_not_approved', loud=False)
+        chosen = {key: sorted(set(row.values())) for key, row in options.items()}
+        return {'mix_sha256': offday.mix_sha256(chosen), 'days': chosen, 'at': max(str(r.get('approved_at') or '') for r in approved) or None,
+                'options': options, 'concepts': sorted({cid for row in options.values() for cid in row}),
+                'by': 'option'}, None
     if pressed is None or pressed['approved'] is not True:
         return None, _held('mix_not_approved', 'mix_not_approved', loud=False)
     if pressed['mix_sha256'] != sha or pressed['days'] != days or offday.mix_sha256(pressed['days']) != sha:

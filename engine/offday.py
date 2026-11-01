@@ -44,7 +44,7 @@ from .social import inventory as social_inventory
 ROOT = Path(__file__).resolve().parents[1]
 STOCKED_BY = dt.time(20, 0)  # Sunday 20:00 New York, before the week
 LEAD = dt.timedelta(minutes=90)  # release schedules a post 5 to 90 minutes before it is due
-MIN_OPTIONS, MAX_OPTIONS = 2, 3
+MIN_OPTIONS, MAX_OPTIONS = 2, 6  # Ruling (Krish, 2026-11-01): up to six options a day, each judged on its own
 LIVE = ('scheduled', 'sending', 'sent')
 CHANNEL_OF_ID = {cid: channel for channel, cid in BUFFER_CHANNEL_ID.items()}
 
@@ -118,7 +118,7 @@ def board_options(offdays_doc, monday):
     """{day key: [option, ...]} as the board keeps them from a growth-offdays/1 file. Pure; raises ValueError.
 
     Mirrors content-engine scripts/post-pack/week_board.py read_growth_offdays: each date maps to its
-    day key of the week, the first three options are kept, and a date with fewer than two is left off."""
+    day key of the week, the first six options are kept, and a date with fewer than two is left off."""
     monday = calendar_date(monday)
     if not isinstance(offdays_doc, dict) or offdays_doc.get('schema') != OFFDAYS_SCHEMA \
             or not isinstance(offdays_doc.get('days'), dict):

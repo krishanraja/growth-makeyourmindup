@@ -1,0 +1,3 @@
+Status: Growth reads off-day approvals per option (Ruling, Krish, 2026-11-01: "Mock looks right, lock it and build it"). board_tick reads the pieces route's `offdays`, the options whose idea and direction he approved. autorelease binds the derived lane to exactly those options, failing closed. A week pressed on the old mix still reads `mix`. Off-day options go up to six a day.
+Next: merge with content-engine's matching change (krishanraja/content-engine PR 322), then make the brand-kit mock for each option he approves from its approved direction, returned on the board as `mock`.
+North Star check (2026-11-01): holds.
