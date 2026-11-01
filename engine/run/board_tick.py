@@ -133,6 +133,11 @@ class Board:
         """His one press on the week's mix (picks/mix), or None until he presses. Raises BoardError."""
         return board_mix(self.pieces(monday))
 
+    def approvals(self, monday):
+        """(mix, offdays) from one read: his old one press, and each off-day option he approved. Raises BoardError."""
+        listed = self.pieces(monday)
+        return board_mix(listed), board_offdays(listed)
+
 
 HEX64 = re.compile(r'^[0-9a-f]{64}$')
 
@@ -153,6 +158,34 @@ def board_mix(listed):
                 for key, kinds in days.items()) or not isinstance(mix.get('at'), (str, type(None))):
         raise BoardError('board_mix_malformed')
     return {'approved': mix['approved'], 'days': days, 'mix_sha256': mix['mix_sha256'], 'at': mix.get('at')}
+
+
+OFF_OPTION = re.compile(r'^off-(mon|tue|wed|thu|fri|sat|sun)-([A-Za-z0-9][A-Za-z0-9_.:-]{0,59})$')
+
+
+def board_offdays(listed):
+    """The pieces route's `offdays`: each off-day option Krish approved, idea and direction, as
+    [{'day', 'option_id', 'format', 'idea', 'direction', 'mock'}]. Pure; [] on a board that has none.
+
+    Ruling (Krish, 2026-11-01), locking the off-day mock: each option is approved, improved or rejected on its own,
+    idea and direction, in place of the one press on the week's mix. Anything not in that shape is
+    BoardError('board_offdays_malformed'), never guessed."""
+    rows = listed.get('offdays') if isinstance(listed, dict) else None
+    if rows is None:
+        return []
+    if not isinstance(rows, list):
+        raise BoardError('board_offdays_malformed')
+    out = []
+    for row in rows:
+        match = OFF_OPTION.match(str(row.get('id') or '')) if isinstance(row, dict) else None
+        if not match or row.get('day') != match.group(1) or row.get('option_id') != match.group(2) \
+                or not isinstance(row.get('format'), (str, type(None))) \
+                or not isinstance(row.get('idea'), (dict, type(None))) or not isinstance(row.get('direction'), (dict, type(None))):
+            raise BoardError('board_offdays_malformed')
+        out.append({'day': row['day'], 'option_id': row['option_id'], 'format': row.get('format'),
+                    'idea': row.get('idea'), 'direction': row.get('direction'), 'mock': row.get('mock'),
+                    'approved_at': row.get('approved_at')})
+    return out
 
 
 def board_from_env():

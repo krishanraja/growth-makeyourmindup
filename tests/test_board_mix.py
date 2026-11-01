@@ -42,8 +42,9 @@ OFFDAYS = {'schema': 'growth-offdays/1', 'week_of': WEEK, 'short': [], 'days': {
     '2026-11-12': [{'concept_id': 'meme-g', 'lane': 'meme', 'formats': ['x:meme'], 'source_url': None,
                     'draft': 'Synthetic line g.', 'share_line': None, 'needs': [], 'ready': True}],
     '2026-11-15': []}}
-KNOWN_DAYS = {'mon': ['instagram:meme, x:meme', 'x:single-image'], 'tue': ['level_up', 'tiktok:meme']}
-KNOWN_SHA = '7b1cdce92248cff9607f44f1236f6cc633d15c9be6675eaa33c0786e61893269'
+# Up to six options a day are kept (Ruling, Krish, 2026-11-01), so Tuesday's fourth option is in the mix.
+KNOWN_DAYS = {'mon': ['instagram:meme, x:meme', 'x:single-image'], 'tue': ['level_up', 'tiktok:meme', 'youtube:meme']}
+KNOWN_SHA = '85b0eee8028c60626ce7a559f056c53c77c7065026fcc2d091ebbae0ed0c57e1'
 
 
 class ProposedMix(unittest.TestCase):
@@ -161,6 +162,41 @@ class TheOnePress(T.ReleaseBase):
         summary, code = self.release()
         self.assertEqual((code, summary['derived']['weeks']), (0, {'2026-W46': 'declined'}), summary)
         self.assertEqual(self.buf.mutations(), [])
+
+
+class EachOptionApproved(T.ReleaseBase):
+    """Ruling (Krish, 2026-11-01), locking the off-day mock: each option is approved on its own, idea and direction,
+    in place of the one press on the mix. Only an option he approved that Growth itself proposed is inside."""
+
+    def test_an_approved_option_releases_without_any_mix_press(self):
+        self.stage.propose()
+        approved = self.stage.board.approve(self.stage.plan)
+        self.assertTrue(approved)
+        self.stage.hand_derived()
+        summary, code = self.release()
+        self.assertEqual((code, summary['slots']), (0, {'scheduled': 1}), summary)
+        self.assertEqual(self.buf.posts[T.P_DERIVED]['status'], 'scheduled')
+
+    def test_an_option_he_did_not_approve_stays_outside(self):
+        self.stage.propose()
+        others = [o['concept_id'] for opts in offday.board_options(offday.options(self.stage.plan), WEEK).values()
+                  for o in opts if o['concept_id'] != self.stage.concept['concept_id']]
+        self.stage.board.approve(self.stage.plan, only=others)
+        self.stage.hand_derived()
+        summary, code = self.release()
+        self.assertEqual(summary['holds'], {'mix_not_approved': 1} if not others else {'outside_approved_mix': 1}, summary)
+        self.assertEqual(self.buf.mutations(), [])
+
+    def test_board_offdays_is_read_as_listed_and_anything_else_is_malformed(self):
+        from engine.run.board_tick import BoardError, board_offdays
+        row = {'id': 'off-tue-meme-c', 'day': 'tue', 'option_id': 'meme-c', 'format': 'tiktok:meme', 'idea': {'hook': 'x'},
+               'direction': None, 'mock': None, 'approved_at': None}
+        self.assertEqual(board_offdays({'offdays': [row]})[0]['option_id'], 'meme-c')
+        self.assertEqual(board_offdays({}), [])
+        for bad in ({'offdays': 'x'}, {'offdays': [dict(row, day='wed')]}, {'offdays': [dict(row, id='tue-1')]},
+                    {'offdays': [dict(row, idea='x')]}):
+            with self.assertRaises(BoardError):
+                board_offdays(bad)
 
 
 class SeriesGoLivesUnaffected(unittest.TestCase):

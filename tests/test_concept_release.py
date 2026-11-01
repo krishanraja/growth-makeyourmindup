@@ -68,7 +68,7 @@ class BoardStandIn:
     """content-engine's pieces route, its `mix` only: None until he presses (synthetic)."""
 
     def __init__(self):
-        self.pressed, self.reads, self.error = None, 0, None
+        self.pressed, self.reads, self.error, self.approved = None, 0, None, []
 
     def mix(self, monday):
         self.reads += 1
@@ -76,6 +76,19 @@ class BoardStandIn:
             from engine.run.board_tick import BoardError
             raise BoardError(self.error)
         return copy.deepcopy(self.pressed)
+
+    def approvals(self, monday):
+        """The pieces route's `mix` and `offdays` from one read (Ruling, Krish, 2026-11-01)."""
+        return self.mix(monday), copy.deepcopy(self.approved)
+
+    def approve(self, plan, only=None):
+        """His Approve on each option's idea and direction, per option, as the board's `offdays` lists them."""
+        kept = offday.board_options(offday.options(plan), plan['week_of'])
+        self.approved = [{'id': 'off-' + key + '-' + o['concept_id'], 'day': key, 'option_id': o['concept_id'],
+                          'format': offday.option_format(o), 'idea': {'hook': o['draft']}, 'direction': {'look': 'Synthetic.'},
+                          'mock': None, 'approved_at': DECIDED}
+                         for key, opts in kept.items() for o in opts if only is None or o['concept_id'] in only]
+        return self.approved
 
     def press(self, plan, approved=True, days=None, digest=None):
         """His one press on the mix the board shows from Growth's own Off-days file (growth.py mix offdays)."""
