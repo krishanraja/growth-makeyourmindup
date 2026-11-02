@@ -9,7 +9,6 @@ html, body { background: var(--ink); }
 .cover .big { width: 936px; height: 420px; display: flex; align-items: center; justify-content: center; }
 .tag { width: 936px; height: 42px; font-family: var(--mono); line-height: 1.2; color: var(--mint); }
 .item .photo { height: 840px; object-position: center 30%; }
-.clipping-tab { position: absolute; z-index: 1; top: 32px; left: 40px; width: 88px; height: 70px; padding: 12px; background: var(--mint); color: var(--ink); font-family: var(--mono); line-height: 1.2; }
 .story-words { height: 510px; padding: 34px 72px 40px; display: flex; flex-direction: column; align-items: center; gap: 20px; justify-content: center; }
 .item .big { width: 936px; height: 282px; display: flex; align-items: center; justify-content: center; }
 .item .big > div { max-height: 3.06em; }
@@ -18,3 +17,10 @@ html, body { background: var(--ink); }
 .close { padding: 108px; align-items: center; justify-content: center; gap: 44px; }
 .close .big { width: 864px; height: 440px; display: flex; align-items: center; justify-content: center; }
 .note { width: 864px; height: 180px; font-family: var(--body); line-height: 1.2; color: var(--mint); }
+.wordmark { --wm: 28px; position: absolute; left: 0; right: 0; }
+.cover-words .wordmark { top: -56px; }
+.story-words { position: relative; }
+.story-words::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--mint); }
+.story-words .wordmark { top: 8px; }
+.close .wordmark { top: 220px; }
+.close::before { content: ''; position: absolute; top: 272px; left: 108px; right: 108px; height: 2px; background: var(--mint); }

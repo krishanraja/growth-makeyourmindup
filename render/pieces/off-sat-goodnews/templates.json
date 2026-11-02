@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "piece_kit",
   "piece_id": "off-sat-goodnews",
-  "about": "Five photo-led good news clippings. A full-bleed cover photograph carries a centred headline and small date over an ink gradient. Numbered stories lead with large edge-to-edge photographs, then a centred headline and one short line. The close is centred. Sources and photo credits belong in the post description.",
+  "about": "Five photo-led good news clippings. A full-bleed cover photograph carries a centred headline and small date over an ink gradient. Stories lead with large edge-to-edge photographs, then a centred headline and one short line. The close is centred. Sources and photo credits belong in the post description. Small house wordmarks and thin mint hairlines add a light branded skin.",
   "templates": {
     "cover": {
       "file": "templates/cover.html",
@@ -30,33 +30,21 @@
       "width": 1080,
       "height": 1350,
       "fields": {
-        "number": "text",
         "photo": "photo",
         "headline": "text",
         "line": "text"
       },
       "required": [
-        "number",
         "photo",
         "headline",
         "line"
       ],
       "example": {
-        "number": "1",
         "photo": "The local story photograph",
         "headline": "The short story headline",
         "line": "One short line on why it helps"
       },
-      "note": "Repeat for five stories, numbered 1 to 5. The photograph fills the top 840 pixels. The centred headline takes at most three lines, the short line at most two. Supply visual photographs, never screenshots of text. Sources, dates and photo credits go in the post description, never in card fields.",
-      "choices": {
-        "number": [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5"
-        ]
-      }
+      "note": "Repeat for five stories. The photograph fills the top 840 pixels. The centred headline takes at most three lines, the short line at most two. Supply visual photographs, never screenshots of text. Sources, dates and photo credits go in the post description, never in card fields."
     },
     "close": {
       "file": "templates/close.html",
