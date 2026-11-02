@@ -53,6 +53,14 @@ class CanvaLintTests(unittest.TestCase):
             self.assertIn((entry['width'], entry['height']), {(v['width'], v['height']) for v in kit['dimensions'].values()}, key)
         self.assertTrue(guard_exists('engine/run/canva.py:lint'))  # crew/registry.json canva-studio lint
 
+    def test_his_quotes_must_be_on_the_design_exactly(self):
+        kit = kit_with_template()
+        texts = ['WHEN YOUR AI MEETS', 'YOUR CUSTOMER\u2019S AI', 'Read it free']
+        ok = design(texts=texts, required_texts=["WHEN YOUR AI MEETS\nYOUR CUSTOMER'S AI"])
+        self.assertEqual(lint_design(ok, None, kit), [], 'a line break the layout set is fine')
+        changed = design(texts=['WHEN YOUR AI MEETS THEIR AI'], required_texts=["WHEN YOUR AI MEETS\nYOUR CUSTOMER'S AI"])
+        self.assertEqual([f['code'] for f in lint_design(changed, None, kit)], ['required_text_missing'])
+
     def test_an_on_kit_design_passes(self):
         kit = kit_with_template()
         self.assertEqual(lint_design(design(), PIECE, kit), [])

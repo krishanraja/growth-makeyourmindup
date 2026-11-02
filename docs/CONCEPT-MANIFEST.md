@@ -97,6 +97,11 @@ whole run.
 
 ## A derived slot
 
+His quotes on an off-day option go on its media exactly as written and his
+other words are direction, never printed (Ruling, Krish, 2026-11-02; see
+`docs/MAKER.md` step 5). `python growth.py mix briefs --approved <pieces.json>`
+lists them per approved option as `required_texts` for the Canva lane.
+
 A run spec slot made from a concept names it in `concept_id` (outside
 `payload_sha256`). It needs no digest of its own in `slots`. Its mock is its
 `assets`: each `assets[].sha256` must be one of the concept's `mock_sha256`

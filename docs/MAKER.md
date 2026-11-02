@@ -57,6 +57,14 @@ and no PC.
    pass content-engine's copy lint (no names of Krish, no em dashes), never
    ask for the share, and declare who would send the post to whom and why.
    A draft that fails is rewritten once with the reasons, then held.
+   **His words on the option** (the board's `note`; Ruling, Krish,
+   2026-11-02: "only where i specifically give a quote to use - i dont
+   want requests put verbatim in the posts"): text he put in quotation
+   marks is on the picture or video exactly as written and is shown to the
+   writer only as context; everything else he typed is direction the
+   writer follows and never prints (`offday.note_parts`). A quote that
+   reads as what not to say (after "don't", "never", "instead of"...)
+   holds the slot as `note_needs_krish`, loud, for him to answer.
 6. **Reviews the words blind.** A separate Anthropic call sees only the
    post's format, its words and its files' blind names, under the blind send
    test lens (`social/share.json`). Its answer must name the receiver and the
