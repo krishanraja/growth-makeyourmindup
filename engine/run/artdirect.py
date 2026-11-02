@@ -52,10 +52,13 @@ COLOUR_TOKENS = ('--ink', '--ink-deep', '--cream', '--green', '--mint', '--butte
 FONT_TOKENS = ('--heading', '--sub', '--body', '--mono')
 PIECE_ID = re.compile(r'^[a-z0-9][a-z0-9-]{1,63}$')
 TEMPLATE_ID = re.compile(r'^[a-z0-9][a-z0-9-]{0,63}$')
-PLACEHOLDER = re.compile(r'\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}')
+PLACEHOLDER = re.compile(r'\{\{(?:(rows|options|photo):)?([a-z0-9_]+)\}\}')
 SPEC_REQUIRED = ('file', 'width', 'height', 'fields', 'required', 'example')
 SPEC_OPTIONAL = ('choices', 'note', 'safe')
-FIELD_TYPES = ('text', 'rows', 'options')
+# A photo is a real picture of the story (a press photo or a screenshot of the source), filled only at render time from a
+# local file; the kit itself still holds no picture. Krish, 2026-11-02: "build out the carousel with real life imagery or
+# screenshots". A template with a photo must also require a `credit` text field, so every picture says whose it is.
+FIELD_TYPES = ('text', 'rows', 'options', 'photo')
 SAFE_VERTICAL = {'top': 250, 'bottom': 340}
 MAX_TEMPLATES = 8
 MAX_FILE_BYTES = 64 * 1024
@@ -240,7 +243,9 @@ def spec_errors(tid, spec, sizes):
         errors.append(at + ': a 1080x1920 template keeps the safe zones (top 250, bottom 340)')
     fields = spec['fields']
     if not isinstance(fields, dict) or not fields or any(v not in FIELD_TYPES for v in fields.values()):
-        return errors + [at + ': fields map names to text, rows or options']
+        return errors + [at + ': fields map names to text, rows, options or photo']
+    if 'photo' in fields.values() and (fields.get('credit') != 'text' or 'credit' not in (spec['required'] or [])):
+        errors.append(at + ': a template with a photo requires a credit text field')
     required, example = spec['required'], spec['example']
     if not isinstance(required, list) or not set(required) <= set(fields):
         errors.append(at + ': required names declared fields')
@@ -248,7 +253,7 @@ def spec_errors(tid, spec, sizes):
         return errors + [at + ': the example fills every required field and names only declared ones']
     for name, value in example.items():
         kind = fields[name]
-        ok = (isinstance(value, str) if kind == 'text' else
+        ok = (isinstance(value, str) if kind in ('text', 'photo') else
               isinstance(value, list) and 0 < len(value) and all(
                   isinstance(r, list) and len(r) in (2, 3) and all(isinstance(x, str) for x in r) for r in value)
               if kind == 'rows' else

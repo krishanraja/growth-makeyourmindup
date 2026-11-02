@@ -49,8 +49,8 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
 - `templates.json` is `{"schema_version": 1, "kind": "piece_kit", "piece_id": "{{piece_id}}",
   "about": "...", "templates": {...}}`. Each template entry has `file`, `width`, `height`, `fields`,
   `required` and `example`, and may have `choices`, `note` and `safe`, exactly as in the house file.
-  A field is `text`, `rows` or `options`, and each one appears in the template as `{{name}}`,
-  `{{rows:name}}` or `{{options:name}}`.
+  A field is `text`, `rows`, `options` or `photo`, and each one appears in the template as `{{name}}`,
+  `{{rows:name}}`, `{{options:name}}` or `{{photo:name}}`.
 - Sizes: only the house sizes: 1080 by 1350, 1080 by 1080, 1080 by 1920, 1200 by 675, 1314 by 1080,
   1600 by 900, 1920 by 1080 or 1280 by 820. A 1080 by 1920 template has
   `"safe": {"top": 250, "bottom": 340}` and sets `--top: 250px; --bottom: 340px;`.
@@ -68,6 +68,10 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
   at-rules of any kind.
 - No pictures: no `<img>`, `<svg>`, `<canvas>`, `<picture>`, `<video>` or `<iframe>`, and no
   `url()`. Draw the idea with HTML boxes, borders, gradients and `clip-path`.
+  The one exception is a `photo` field (`{{photo:name}}`): an empty slot the renderer fills at render time with a
+  real picture of the story from a local file, a press photo or a screenshot of the source. The kit never holds
+  the picture itself, and a template with a photo also requires a `credit` text field that says whose picture
+  it is.
 - No person: never draw, describe or name a real person. Never name the publication's founder.
   Write company and product names in type, never as a logo.
 - No remote anything: no `http`, `https`, `data:` or `//` address anywhere, and no other script.
