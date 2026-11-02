@@ -13,11 +13,8 @@ standards; this lane applies those standards by reference and never competes.
 - Start from an approved template. A new template needs Krish's approval first.
 - Every quote is a literal match to the published piece. Paraphrase is copy,
   not a quote, and is never set in quote marks.
-- Krish's own quotes on an off-day option (`python growth.py mix briefs`,
-  `required_texts`; Ruling, Krish, 2026-11-02) go on the design exactly as
-  he wrote them; only where a line breaks may differ. Pass them to the lint
-  as `required_texts`, which fails `required_text_missing` otherwise. His
-  other words on the option are direction for the design, never text on it.
+- Krish's quotes on an off-day option (`growth.py mix briefs`) go on the
+  design exactly; lint them as `required_texts`. His other words are direction.
 - Where realistic synthetic media is present, apply the destination's native
   AI label where it is supported. Never add illustration boilerplate to public
   copy (`docs/PUBLISHING-AUTHORITY.md`).
