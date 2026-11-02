@@ -1,29 +1,20 @@
-html, body { background: var(--ink-deep); }
-.frame { gap: 26px; }
+html, body { background: var(--ink); }
+.frame { padding: 0; text-align: center; overflow: hidden; }
 .fit { flex: none; overflow: hidden; }
-.copy { font-family: var(--body); line-height: 1.18; height: 150px; }
-.big { font-family: var(--heading); text-transform: uppercase; line-height: 1.02; height: 290px; }
-.tag { font-family: var(--mono); line-height: 1.2; height: 62px; color: var(--mint); }
-.note { font-family: var(--sub); line-height: 1.2; height: 130px; }
-.tray { border: 8px solid var(--green); border-top: none; padding: 30px; background: var(--ink); margin-top: auto; }
-.clipping { background: var(--cream); color: var(--ink); padding: 8px; border-top: 18px solid var(--mint); position: relative; display: flex; flex-direction: column; gap: 14px; }
-.clipping::after { content: ''; position: absolute; top: 0; right: 0; width: 52px; height: 52px; background: var(--green); clip-path: polygon(0 0, 100% 100%, 100% 0); }
-.item { padding: 32px; }
-.item .tray { padding: 12px; width: 1016px; }
-.clipping-tab { position: absolute; z-index: 1; top: -18px; left: 24px; width: 80px; height: 48px; padding: 4px 12px; background: var(--mint); color: var(--ink); font-family: var(--mono); text-align: center; line-height: 1.2; }
-.photo-mount { width: 960px; height: 640px; flex: none; background: var(--ink); border-bottom: 6px solid var(--green); }
-.photo { display: block; width: 960px; height: 640px; object-fit: cover; object-position: center top; }
-.clipping .big { height: 176px; }
-.clipping .copy { height: 140px; }
-.source { font-family: var(--mono); line-height: 1.2; height: 139px; flex: none; border-top: 3px solid var(--green); padding-top: 12px; }
-.source-name { height: 50px; }
-.source-date { height: 30px; }
-.source-credit { height: 44px; }
-.slip { position: relative; height: 54px; margin-top: 22px; background: var(--cream); border-left: 22px solid var(--mint); transform: rotate(-3deg); }
-.slip::after { content: ''; position: absolute; top: 0; right: 0; width: 30px; height: 30px; background: var(--green); clip-path: polygon(0 0, 100% 100%, 100% 0); }
-.slip:nth-child(2) { transform: rotate(3deg); border-left-color: var(--butter); }
-.slip:nth-child(3) { transform: rotate(-1deg); border-left-color: var(--lilac); }
-.slip:nth-child(4) { transform: rotate(2deg); border-left-color: var(--coral); }
-.slip:nth-child(5) { transform: rotate(-2deg); }
-.cover .tray, .close .tray { height: 460px; }
-.close .slip { height: 50px; margin-top: 24px; transform: none; }
+.photo { display: block; width: 1080px; object-fit: cover; }
+.big { font-family: var(--heading); text-transform: uppercase; line-height: 1.02; }
+.cover .photo { position: absolute; inset: 0; height: 1350px; object-position: center; }
+.cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--ink) 0px, var(--ink) 180px, transparent 1150px); }
+.cover-words { position: absolute; z-index: 1; left: 72px; right: 72px; bottom: 84px; display: flex; flex-direction: column; gap: 28px; align-items: center; }
+.cover .big { width: 936px; height: 420px; display: flex; align-items: center; justify-content: center; }
+.tag { width: 936px; height: 42px; font-family: var(--mono); line-height: 1.2; color: var(--mint); }
+.item .photo { height: 840px; object-position: center 30%; }
+.clipping-tab { position: absolute; z-index: 1; top: 32px; left: 40px; width: 88px; height: 70px; padding: 12px; background: var(--mint); color: var(--ink); font-family: var(--mono); line-height: 1.2; }
+.story-words { height: 510px; padding: 34px 72px 40px; display: flex; flex-direction: column; align-items: center; gap: 20px; justify-content: center; }
+.item .big { width: 936px; height: 282px; display: flex; align-items: center; justify-content: center; }
+.item .big > div { max-height: 3.06em; }
+.copy { width: 936px; height: 112px; font-family: var(--body); line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+.copy > div { max-height: 2.4em; }
+.close { padding: 108px; align-items: center; justify-content: center; gap: 44px; }
+.close .big { width: 864px; height: 440px; display: flex; align-items: center; justify-content: center; }
+.note { width: 864px; height: 180px; font-family: var(--body); line-height: 1.2; color: var(--mint); }
