@@ -48,7 +48,7 @@
         "credit"
       ],
       "example": {
-        "number": "The clipping number",
+        "number": "1",
         "photo": "The local story photo or source screenshot",
         "headline": "The verified news headline",
         "why_good": "Why this news helps",
@@ -56,7 +56,16 @@
         "date": "The source publication date",
         "credit": "The picture owner or source screenshot credit"
       },
-      "note": "Repeat for exactly five verified stories of people helped by AI. Number each tab 1 to 5. Supply a real photo or source screenshot at render time, never in the kit. The 960 by 640 photo slot crops from the top. Source, date and picture credit are required."
+      "note": "Repeat for exactly five verified stories of people helped by AI. Number each tab 1 to 5. Supply a real photo or source screenshot at render time, never in the kit. The 960 by 640 photo slot crops from the top. Source, date and picture credit are required.",
+      "choices": {
+        "number": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ]
+      }
     },
     "close": {
       "file": "templates/close.html",
