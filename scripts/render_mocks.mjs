@@ -143,6 +143,9 @@ export function fill(manifest, job, piecesDir) {
       if (/^[a-z]+:|^\/\//i.test(String(value)) || !PHOTO_TYPES[ext] || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
         throw new Error(job.template + ': ' + name + ' is a local .png, .jpg or .webp file, not ' + JSON.stringify(value));
       }
+      // Whose picture it is: carried on the job, never drawn on the card, and reported for the post's description.
+      const credit = (job.credits || {})[name];
+      if (typeof credit !== 'string' || !credit.trim()) throw new Error(job.template + ': ' + name + ' needs credits.' + name + ', whose picture it is');
       const served = '/photos/' + name + ext;
       photos[served] = file;
       return '<img class="photo" src="' + served + '" alt="">';
@@ -315,7 +318,8 @@ async function main(argv) {
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.writeFileSync(out, png);
       results.push({ out: job.out, template: job.template, width: spec.width,
-        height: spec.height, bytes: png.length, sha256: digest, colours, fonts });
+        height: spec.height, bytes: png.length, sha256: digest, colours, fonts,
+        ...(job.credits ? { credits: job.credits } : {}) });
     }
   } finally {
     await browser.close();

@@ -55,9 +55,11 @@ TEMPLATE_ID = re.compile(r'^[a-z0-9][a-z0-9-]{0,63}$')
 PLACEHOLDER = re.compile(r'\{\{(?:(rows|options|photo):)?([a-z0-9_]+)\}\}')
 SPEC_REQUIRED = ('file', 'width', 'height', 'fields', 'required', 'example')
 SPEC_OPTIONAL = ('choices', 'note', 'safe')
-# A photo is a real picture of the story (a press photo or a screenshot of the source), filled only at render time from a
+# A photo is a real picture of the story (a photograph, never a screenshot of text), filled only at render time from a
 # local file; the kit itself still holds no picture. Krish, 2026-11-02: "build out the carousel with real life imagery or
-# screenshots". A template with a photo must also require a `credit` text field, so every picture says whose it is.
+# screenshots". Every photo says whose it is, but off the card: the render job carries a `credits` entry for each photo
+# field, and the credits go in the post's description (Krish, 2026-11-02: "all sources should go in the carousel post
+# description").
 FIELD_TYPES = ('text', 'rows', 'options', 'photo')
 SAFE_VERTICAL = {'top': 250, 'bottom': 340}
 MAX_TEMPLATES = 8
@@ -244,8 +246,6 @@ def spec_errors(tid, spec, sizes):
     fields = spec['fields']
     if not isinstance(fields, dict) or not fields or any(v not in FIELD_TYPES for v in fields.values()):
         return errors + [at + ': fields map names to text, rows, options or photo']
-    if 'photo' in fields.values() and (fields.get('credit') != 'text' or 'credit' not in (spec['required'] or [])):
-        errors.append(at + ': a template with a photo requires a credit text field')
     required, example = spec['required'], spec['example']
     if not isinstance(required, list) or not set(required) <= set(fields):
         errors.append(at + ': required names declared fields')
@@ -425,7 +425,10 @@ def render_jobs(kit_dir):
     pid = Path(kit_dir).name
     def fields(spec):
         return {k: (str(PHOTO_EXAMPLE) if spec['fields'].get(k) == 'photo' else v) for k, v in spec['example'].items()}
-    return [{'template': 'piece:' + pid + '/' + tid, 'fields': fields(spec), 'out': tid + '.png'}
+    def credits(spec):
+        return {k: 'The example stand-in' for k, v in spec['fields'].items() if v == 'photo'}
+    return [dict({'template': 'piece:' + pid + '/' + tid, 'fields': fields(spec), 'out': tid + '.png'},
+                 **({'credits': credits(spec)} if credits(spec) else {}))
             for tid, spec in manifest['templates'].items()]
 
 

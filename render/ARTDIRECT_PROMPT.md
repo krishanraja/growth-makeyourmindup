@@ -69,9 +69,9 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
 - No pictures: no `<img>`, `<svg>`, `<canvas>`, `<picture>`, `<video>` or `<iframe>`, and no
   `url()`. Draw the idea with HTML boxes, borders, gradients and `clip-path`.
   The one exception is a `photo` field (`{{photo:name}}`): an empty slot the renderer fills at render time with a
-  real picture of the story from a local file, a press photo or a screenshot of the source. The kit never holds
-  the picture itself, and a template with a photo also requires a `credit` text field that says whose picture
-  it is.
+  real picture of the story from a local file: a photograph, never a screenshot of text. The kit never holds
+  the picture itself. Whose picture it is travels with the render job and goes in the post's description, never
+  on the card.
 - No person: never draw, describe or name a real person. Never name the publication's founder.
   Write company and product names in type, never as a logo.
 - No remote anything: no `http`, `https`, `data:` or `//` address anywhere, and no other script.
