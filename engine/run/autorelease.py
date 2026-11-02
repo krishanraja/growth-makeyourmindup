@@ -1181,9 +1181,14 @@ def mix_binding(cc, board, monday, parts, read, cfg, root):
         if not options:
             return None, _held('mix_not_approved', 'mix_not_approved', loud=False)
         chosen = {key: sorted(set(row.values())) for key, row in options.items()}
+        # His words on each approved option, read once (Ruling, Krish, 2026-11-02): quotes go on the media exactly,
+        # the rest is direction, a quote that reads as what not to say holds (offday.note_parts).
+        notes = {key: {cid: offday.note_parts(next((r.get('note') for r in approved
+                                                     if r['day'] == key and r['option_id'] == cid), None))
+                       for cid in row} for key, row in options.items()}
         return {'mix_sha256': offday.mix_sha256(chosen), 'days': chosen, 'at': max(str(r.get('approved_at') or '') for r in approved) or None,
                 'options': options, 'concepts': sorted({cid for row in options.values() for cid in row}),
-                'by': 'option'}, None
+                'notes': notes, 'by': 'option'}, None
     if pressed is None or pressed['approved'] is not True:
         return None, _held('mix_not_approved', 'mix_not_approved', loud=False)
     if pressed['mix_sha256'] != sha or pressed['days'] != days or offday.mix_sha256(pressed['days']) != sha:
@@ -1192,6 +1197,17 @@ def mix_binding(cc, board, monday, parts, read, cfg, root):
                for key, opts in kept.items()}
     return {'mix_sha256': sha, 'days': days, 'at': pressed.get('at'), 'options': options,
             'concepts': sorted({cid for row in options.values() for cid in row})}, None
+
+
+def note_for(state, concept_id, due):
+    """His words on the approved option this post belongs to, as offday.note_parts reads them, or empty parts. Pure."""
+    from engine.offday import DAY_KEYS, note_parts
+    binding = state.get('mix') if isinstance(state, dict) else None
+    when = due_instant(due) if isinstance(due, str) else due
+    if not isinstance(binding, dict) or when is None:
+        return note_parts(None)
+    parts = ((binding.get('notes') or {}).get(DAY_KEYS[ny_time(when).weekday()]) or {}).get(concept_id)
+    return parts if isinstance(parts, dict) else note_parts(None)
 
 
 def outside_mix(state, concept_id, channel, fmt, due):

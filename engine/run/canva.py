@@ -6,7 +6,8 @@ read back after an export, and returns error codes. It does not call Canva.
 
 A summary: {"channel": "x", "width": 1600, "height": 900, "size": "x-card" (optional),
 "template": "<kit template key>" (optional), "colours": ["#0C1512"], "fonts": ["Anton"],
-"texts": ["..."], "quotes": ["..."] (optional; any double-quoted text also counts)}.
+"texts": ["..."], "quotes": ["..."] (optional; any double-quoted text also counts),
+"required_texts": ["..."] (optional; Krish's quotes from growth.py mix briefs, each on the design exactly)}.
 """
 import argparse
 import json
@@ -104,6 +105,14 @@ def lint_design(dataset, piece_text=None, kit=None, root=ROOT, require_template=
     template = dataset.get('template')
     if require_template and (not isinstance(template, str) or template not in kit['templates']):
         out.append(finding('template_not_approved', '$.template', str(template) + ' is not an approved kit template'))
+    # Krish's quotes on the option (offday.mock_briefs required_texts; Ruling, Krish, 2026-11-02): each must be on the
+    # design exactly as he wrote it. Only where a line breaks may differ, since the layout sets the breaks.
+    flat = lambda t: ' '.join(normalise(t).split())
+    on_design = [flat(t) for t in dataset.get('texts') or [] if isinstance(t, str)]
+    joined = ' '.join(on_design)
+    for i, want in enumerate(dataset.get('required_texts') or []):
+        if not isinstance(want, str) or not want.strip() or flat(want) not in joined:
+            out.append(finding('required_text_missing', '$.required_texts[%d]' % i, str(want)[:60]))
     quotes = quotes_of(dataset)
     if quotes and not isinstance(piece_text, str):
         out.append(finding('no_piece_text', '$.quotes', 'a quote needs the published piece text to check against'))

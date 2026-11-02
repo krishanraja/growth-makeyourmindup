@@ -124,3 +124,24 @@ class ClockLines(unittest.TestCase):
         self.assertIn('Clock offday for the week of ' + WEEK + ': offday_stocked', joined)
         self.assertIn('Chat backstop: 1 flagged line', joined)
         self.assertIn('none sent', joined)
+
+
+class HisWords(unittest.TestCase):
+    """Ruling (Krish, 2026-11-02): "only where i specifically give a quote to use - i dont want requests put verbatim
+    in the posts". Quotes go on the media exactly; the rest is direction; a quote that reads as what not to say holds."""
+
+    def test_the_shared_cases(self):
+        for note, want in offday.NOTE_CASES:
+            self.assertEqual(offday.note_parts(note), want, note)
+
+    def test_briefs_carry_quotes_as_required_text_and_hold_a_counterexample(self):
+        rows = [{'day': 'tue', 'option_id': 'translator', 'format': 'Meme', 'idea': {'hook': 'x'}, 'direction': None,
+                 'note': 'faster please "WHEN YOUR AI MEETS\nYOUR CUSTOMER\'S AI"'},
+                {'day': 'thu', 'option_id': 'acts', 'format': 'Carousel', 'idea': None, 'direction': None,
+                 'note': 'never "game changer"'},
+                {'day': 'sat', 'option_id': 'plain', 'format': 'Meme', 'idea': None, 'direction': None, 'note': None}]
+        got = offday.mock_briefs(rows)['briefs']
+        self.assertEqual(got[0]['required_texts'], ["WHEN YOUR AI MEETS\nYOUR CUSTOMER'S AI"])
+        self.assertEqual(got[0]['his_direction'], 'faster please')
+        self.assertEqual((got[1]['held'], got[1]['required_texts']), ('quote_reads_as_counterexample', []))
+        self.assertEqual((got[2]['required_texts'], got[2]['his_direction']), ([], None))

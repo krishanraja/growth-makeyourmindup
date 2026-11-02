@@ -117,6 +117,8 @@ WRITER_SYSTEM = '\n'.join([
     ' given, character for character, as one whole sentence. Never change, split, shorten or reword it.',
     'Write only from the idea and the claim. Add no fact, number, name, quote, result or source that is not in'
     ' them. If you are unsure, leave it out.',
+    'When the editor gave direction, follow it in how you write; it is an instruction, never words to copy into'
+    ' the post. Text already on the picture or video is shown for context; the words need not repeat it.',
     'Plain English a busy senior leader reads in five seconds. Human and humble: no hype, no lecture, no showing'
     ' off, no launch language.',
     'Never name the person behind the accounts, his handle or his initials. No em dashes. No hashtags, no emojis,'
@@ -311,8 +313,10 @@ def placement_files(mocks, fmt, channel):
 
 # The words and their review ------------------------------------------------------------------
 
-def brief_of(slot, concept, voice, files, profile=None):
-    """profile: voice_profile.read() for the run, or None; it adds his measured style to the account's voice."""
+def brief_of(slot, concept, voice, files, profile=None, note=None):
+    """profile: voice_profile.read() for the run, or None; it adds his measured style to the account's voice.
+    note: his words on the option as offday.note_parts read them (Ruling, Krish, 2026-11-02): his direction is
+    followed and never printed; his quotes are on the media, shown here only so the words fit them."""
     channel, fmt = slot['channel'], slot['format']
     media = ('text only, no picture' if not files else
              str(len(files)) + (' pictures' if len(files) > 1 else ' picture' if release.MEDIA.get(
@@ -320,7 +324,18 @@ def brief_of(slot, concept, voice, files, profile=None):
     style = ('\n' + profile[voice]) if profile and profile.get(voice) else ''
     return ('Channel: ' + NAMES[channel] + ', ' + VOICE[voice] + style + '\nFormat: ' + fmt + ', ' + media
             + '.\nAt most ' + str(WORDS_MAX[channel]) + ' characters of words, the claim included.'
-            + '\nIdea: ' + concept['idea'] + '\nClaim: ' + concept['claim'])
+            + '\nIdea: ' + concept['idea'] + '\nClaim: ' + concept['claim'] + note_brief(note))
+
+
+def note_brief(note):
+    if not isinstance(note, dict):
+        return ''
+    out = ''
+    if note.get('direction'):
+        out += '\nEditor\'s direction (follow it, never quote it): ' + note['direction']
+    for text in note.get('on_media') or []:
+        out += '\nAlready on the picture or video, exactly: ' + json.dumps(text, ensure_ascii=False)
+    return out
 
 
 def word_checks(slot, concept, words, title):
@@ -343,9 +358,9 @@ def share_block(share):
     return dict({k: share.get(k) for k in ('sender', 'receiver', 'job', 'dm_line', 'moment')}, standalone=True)
 
 
-def write_words(anthropic, slot, concept, voice, files, profile=None):
+def write_words(anthropic, slot, concept, voice, files, profile=None, note=None):
     """(words, title, share) that carry the claim and pass every check, or Held. One rewrite with the reasons."""
-    brief = brief_of(slot, concept, voice, files, profile)
+    brief = brief_of(slot, concept, voice, files, profile, note)
     reasons, code = [], None
     for _ in range(MAX_WRITES):
         user = brief + ('\nYour last draft was held. Write it again so none of these applies: ' + '; '.join(reasons)
@@ -371,9 +386,9 @@ def write_words(anthropic, slot, concept, voice, files, profile=None):
     raise Held(code)
 
 
-def declare_share(anthropic, slot, concept, voice, files, words, profile=None):
+def declare_share(anthropic, slot, concept, voice, files, words, profile=None, note=None):
     """The share block of words already saved (an adopted draft), or Held. The words are never rewritten."""
-    user = (brief_of(slot, concept, voice, files, profile) + '\nThe words, exactly as saved: '
+    user = (brief_of(slot, concept, voice, files, profile, note) + '\nThe words, exactly as saved: '
             + json.dumps(words, ensure_ascii=False))
     got = anthropic.json_message(DECLARE_SYSTEM, user, SHARE_SCHEMA)
     share = got.get('share') if isinstance(got, dict) else None
@@ -473,10 +488,10 @@ class Maker:
         assets = [{'name': 'mock-' + str(n) + '.' + ext, 'sha256': sha} for n, (sha, ext) in enumerate(files, 1)]
         return files, assets
 
-    def make(self, slot, concept, voice, manifest, monday):
+    def make(self, slot, concept, voice, manifest, monday, note=None):
         """The handoff slot for one draft made and handed off (or None in a dry run), Held, or Stop."""
         files, assets = self.prepare(slot, concept, manifest)
-        words, title, share = write_words(self.anthropic, slot, concept, voice, files, self.profile)
+        words, title, share = write_words(self.anthropic, slot, concept, voice, files, self.profile, note)
         answer = review_words(self.anthropic, slot, words, share, assets)
         if not self.deliver:
             return None
@@ -504,7 +519,7 @@ class Maker:
             raise Held('draft_readback_differs', loud=True)
         return self.hand(slot, concept, post, files, assets, share, answer, monday)
 
-    def adopt(self, slot, concept, voice, manifest, monday, found):
+    def adopt(self, slot, concept, voice, manifest, monday, found, note=None):
         """A draft saved by an earlier run but never handed off, made good: read back, its words checked, its share
         declared and reviewed blind, and handed off. Its words are never changed. Every hold is loud: a draft
         exists that release cannot read."""
@@ -525,7 +540,7 @@ class Maker:
             failed = word_checks(slot, concept, words, title)
             if failed:
                 raise Held(failed[0][0])
-            share = declare_share(self.anthropic, slot, concept, voice, files, words, self.profile)
+            share = declare_share(self.anthropic, slot, concept, voice, files, words, self.profile, note)
             answer = review_words(self.anthropic, slot, words, share, assets)
             if not self.deliver:
                 return None
@@ -617,6 +632,11 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
                 raise Held('outside_approved_mix')
             if voices.get(channel) not in VOICE:
                 raise Held('account_voice_unknown')
+            # His words on the approved option (Ruling, Krish, 2026-11-02): a quote that reads as what not to say
+            # holds for him to answer; his direction and his on-media quotes reach the brief.
+            note = autorelease.note_for(state, cid, slot['due_at'])
+            if note.get('hold'):
+                raise Held('note_needs_krish', loud=True)
             if (cid, channel) in done:
                 tally.count('already_made')
                 continue
@@ -629,10 +649,10 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
                     tally.count('already_made')
                     tally.loud.append('made_not_handed_off')
                     continue
-                one = work.adopt(slot, concept, voices[channel], manifest, monday, found[0])
+                one = work.adopt(slot, concept, voices[channel], manifest, monday, found[0], note)
                 tally.count('would_adopt' if one is None else 'adopted')
                 continue
-            one = work.make(slot, concept, voices[channel], manifest, monday)
+            one = work.make(slot, concept, voices[channel], manifest, monday, note)
             tally.count('would_make' if one is None else 'made')
         except Held as hold:
             tally.hold(hold.code, hold.loud)

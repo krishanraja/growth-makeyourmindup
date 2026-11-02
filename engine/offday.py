@@ -33,6 +33,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import re
 from pathlib import Path
 
 from . import intensity, mix as mix_rules
@@ -47,6 +48,44 @@ LEAD = dt.timedelta(minutes=90)  # release schedules a post 5 to 90 minutes befo
 MIN_OPTIONS, MAX_OPTIONS = 2, 6  # Ruling (Krish, 2026-11-01): up to six options a day, each judged on its own
 LIVE = ('scheduled', 'sending', 'sent')
 CHANNEL_OF_ID = {cid: channel for channel, cid in BUFFER_CHANNEL_ID.items()}
+
+
+# His words on an off-day option (the board's `note`, exactly as he typed it). Ruling (Krish, 2026-11-02): "only where
+# i specifically give a quote to use - i dont want requests put verbatim in the posts". Text he puts in quotation marks
+# goes on the image or video exactly as written; everything else is direction the maker follows and never prints; a
+# quote that reads like an example of what not to say holds and asks him. content-engine's board reads his words back
+# with the same rule (scripts/post-pack/week_board/week.js, offdayNoteParts); NOTE_CASES below are shared fixtures.
+NOTE_QUOTE = re.compile('["\u201c\u201d\u201e\u201f]([^"\u201c\u201d\u201e\u201f]{2,600})["\u201c\u201d\u201e\u201f]')
+NOTE_NOT = re.compile(r"\b(not|don'?t|do not|never|avoid|instead of|rather than|no more)\b(\W+\w+){0,4}\W*$", re.I)
+
+
+def note_parts(note):
+    """{'on_media': [each quote, byte for byte], 'direction': his other words, 'hold': None or a reason}. Pure."""
+    if not isinstance(note, str) or not note.strip():
+        return {'on_media': [], 'direction': '', 'hold': None}
+    on_media, hold, rest, last = [], None, [], 0
+    for m in NOTE_QUOTE.finditer(note):
+        if not m.group(1).strip():
+            continue
+        if NOTE_NOT.search(note[max(0, m.start() - 60):m.start()]):
+            hold = 'quote_reads_as_counterexample'
+        on_media.append(m.group(1))
+        rest.append(note[last:m.start()])
+        last = m.end()
+    rest.append(note[last:])
+    direction = ' '.join(' '.join(rest).split()).strip(' :')
+    return {'on_media': on_media, 'direction': direction, 'hold': hold}
+
+
+NOTE_CASES = (
+    ('Make it faster. Caption:\n"WHEN YOUR AI MEETS\nYOUR CUSTOMER\'S AI"',
+     {'on_media': ["WHEN YOUR AI MEETS\nYOUR CUSTOMER'S AI"], 'direction': 'Make it faster. Caption', 'hold': None}),
+    ('\u201cWho said yes?\u201d on the last card', {'on_media': ['Who said yes?'], 'direction': 'on the last card', 'hold': None}),
+    ('warmer, and a real puppy', {'on_media': [], 'direction': 'warmer, and a real puppy', 'hold': None}),
+    ("don't say \"game changer\", keep it dry", {'on_media': ['game changer'], 'direction': "don't say , keep it dry",
+                                                  'hold': 'quote_reads_as_counterexample'}),
+    ('', {'on_media': [], 'direction': '', 'hold': None}),
+)
 
 
 def filler_lanes(cfg):
@@ -224,6 +263,22 @@ def clock(mix, now, filled_slot_ids=(), root=ROOT):
             'offday_slots_filled': sum(1 for s in slots if s['slot_id'] in ids), 'offday_slots_available': len(slots)}
 
 
+def mock_briefs(approved):
+    """What the Canva lane makes for each off-day option Krish approved (the pieces route's `offdays`, as
+    board_tick.board_offdays reads it): the idea and the direction exactly as he approved them, his direction, and his
+    quotes as the text that goes on the picture or video exactly as written (Ruling, Krish, 2026-11-02). An option
+    whose quote reads as what not to say is listed as held. Pure."""
+    out = []
+    for row in approved or ():
+        parts = note_parts(row.get('note'))
+        out.append({'option': 'off-' + str(row.get('day')) + '-' + str(row.get('option_id')), 'day': row.get('day'),
+                    'format': row.get('format'), 'idea': row.get('idea'), 'direction': row.get('direction'),
+                    'his_direction': parts['direction'] or None, 'on_media_exactly': parts['on_media'],
+                    'held': parts['hold'],
+                    'required_texts': [] if parts['hold'] else parts['on_media']})
+    return {'schema': 'growth-mock-briefs/1', 'briefs': out, 'local_only': True}
+
+
 def command(argv, root=ROOT):
     parser = argparse.ArgumentParser(prog='growth.py mix', description='The off-day lane on top of the mix. Offline.')
     sub = parser.add_subparsers(dest='action', required=True)
@@ -239,12 +294,24 @@ def command(argv, root=ROOT):
     t.add_argument('--taken', help='JSON list of slot_ids already given a post')
     t.add_argument('--now')
     t.add_argument('--out')
+    b = sub.add_parser('briefs', help="the Canva lane's brief for each approved off-day option, his quotes as exact text")
+    b.add_argument('--approved', required=True, help="the pieces route's `offdays` (GET /api/board/<Monday>/pieces), saved")
+    b.add_argument('--out')
     c = sub.add_parser('clock', help='offday_stocked and offday_slots_filled for Control Center')
     c.add_argument('--plan', required=True)
     c.add_argument('--filled', help='JSON list of filled slot_ids')
     c.add_argument('--now')
     c.add_argument('--out')
     args = parser.parse_args(argv)
+    if args.action == 'briefs':
+        listed = read_json(args.approved)
+        value = mock_briefs(listed.get('offdays') if isinstance(listed, dict) else listed)
+        if args.out:
+            write_json(args.out, value)
+            print('written locally to ' + args.out + '; no external write')
+        else:
+            print(json.dumps(value, indent=2, ensure_ascii=False))
+        return 0
     mix = read_json(args.plan)
     now = args.now or instant().isoformat()
     if args.action == 'offdays':

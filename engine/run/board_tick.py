@@ -184,6 +184,9 @@ def board_offdays(listed):
             raise BoardError('board_offdays_malformed')
         out.append({'day': row['day'], 'option_id': row['option_id'], 'format': row.get('format'),
                     'idea': row.get('idea'), 'direction': row.get('direction'), 'mock': row.get('mock'),
+                    # His open words on the option, exactly as typed (Krish, 2026-11-02: "it would contain the exact
+                    # meme text to put above the meme video"): used word for word, never paraphrased.
+                    'note': row.get('note') if isinstance(row.get('note'), str) else None,
                     'approved_at': row.get('approved_at')})
     return out
 

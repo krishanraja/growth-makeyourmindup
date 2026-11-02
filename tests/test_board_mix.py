@@ -192,6 +192,8 @@ class EachOptionApproved(T.ReleaseBase):
         row = {'id': 'off-tue-meme-c', 'day': 'tue', 'option_id': 'meme-c', 'format': 'tiktok:meme', 'idea': {'hook': 'x'},
                'direction': None, 'mock': None, 'approved_at': None}
         self.assertEqual(board_offdays({'offdays': [row]})[0]['option_id'], 'meme-c')
+        text = 'WHEN YOUR AI MEETS\nYOUR CUSTOMER\'S AI'
+        self.assertEqual(board_offdays({'offdays': [dict(row, note=text)]})[0]['note'], text, 'his words, exactly as typed')
         self.assertEqual(board_offdays({}), [])
         for bad in ({'offdays': 'x'}, {'offdays': [dict(row, day='wed')]}, {'offdays': [dict(row, id='tue-1')]},
                     {'offdays': [dict(row, idea='x')]}):

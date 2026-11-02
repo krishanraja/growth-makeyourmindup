@@ -665,7 +665,7 @@ def learn(specs, runs_dir=None, root=ROOT):
 # Command line ---------------------------------------------------------------
 
 def command(argv, root=ROOT):
-    if argv and argv[0] in ('offdays', 'topup', 'clock'):
+    if argv and argv[0] in ('offdays', 'topup', 'clock', 'briefs'):
         from .offday import command as offday
         return offday(argv, root)
     parser = argparse.ArgumentParser(prog='growth.py mix', description='The weekly mix and its learning. Offline.')

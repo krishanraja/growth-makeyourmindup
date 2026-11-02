@@ -698,6 +698,44 @@ class MakerTests(unittest.TestCase):
             maker.placement_files(mocks[:1], 'carousel', 'tiktok')
 
 
+    # His words on the option (Ruling, Krish, 2026-11-02) --------------------------------------------
+
+    def noted(self, note):
+        """The plan approved per option on the board, every option carrying his words."""
+        self.propose()
+        for row in self.board.approve(self.plan):
+            row['note'] = note
+        return self.board.approved
+
+    def test_his_direction_and_quotes_reach_the_brief_and_never_become_the_words(self):
+        self.noted('Make it drier. Caption:\n"WHEN YOUR AI MEETS\nYOUR CUSTOMER\'S AI"')
+        summary, code = self.make()
+        self.assertEqual(code, 0, summary)
+        briefs = [c['user'] for c in self.words.calls if c['schema'] is maker.WRITE_SCHEMA]
+        self.assertTrue(briefs)
+        for brief in briefs:
+            self.assertIn("Editor's direction (follow it, never quote it): Make it drier. Caption", brief)
+            self.assertIn('Already on the picture or video, exactly: ' + json.dumps("WHEN YOUR AI MEETS\nYOUR CUSTOMER'S AI"), brief)
+        # The words are still the writer's, and still carry the claim.
+        for post in self.buf.posts.values():
+            self.assertEqual(post['text'], WORDS)
+
+    def test_a_quote_that_reads_as_what_not_to_say_holds_for_him(self):
+        self.noted('don\'t say "game changer"')
+        summary, code = self.make()
+        self.assertEqual(self.creates(), [])
+        self.assertEqual((summary['holds'], summary['loud'], code), ({'note_needs_krish': 4}, ['note_needs_krish'], 1), summary)
+
+    def test_without_his_words_the_brief_is_unchanged(self):
+        self.noted(None)
+        summary, code = self.make()
+        self.assertEqual(code, 0, summary)
+        for c in self.words.calls:
+            if c['schema'] is maker.WRITE_SCHEMA:
+                self.assertNotIn("Editor's direction", c['user'])
+                self.assertNotIn('Already on the picture', c['user'])
+
+
 class AnthropicClientTests(unittest.TestCase):
     """The stdlib client against a local stand-in: its headers, its body, codes and never the key."""
 
