@@ -1,1 +1,1 @@
-A desk tray holds dated news clippings. The cover stacks three folded slips. Each item opens one clipping with its source. The close files the stack. A mint corner tab links every page.
+A desk tray holds five dated news clippings. The cover stacks five folded slips. Each item pins a real photo or source screenshot above its headline and benefit. A numbered tab marks each clipping. Source, date and picture credit sit below in mono type. The close files all five slips. A mint corner links every page.

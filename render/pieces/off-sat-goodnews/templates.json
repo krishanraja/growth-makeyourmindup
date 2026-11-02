@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "piece_kit",
   "piece_id": "off-sat-goodnews",
-  "about": "A desk tray holds dated news clippings. The cover stacks three folded slips. Each item opens one clipping with its source. The close files the stack. A mint corner tab links every page.",
+  "about": "A desk tray holds five dated news clippings. The cover stacks five folded slips. Each item pins a real photo or source screenshot above its headline and benefit. A numbered tab marks each clipping. Source, date and picture credit sit below in mono type. The close files all five slips. A mint corner links every page.",
   "templates": {
     "cover": {
       "file": "templates/cover.html",
@@ -23,31 +23,40 @@
         "date": "The week date",
         "intro": "The short introduction"
       },
-      "note": "Three paper slips signal the three items. Real news is filled later."
+      "note": "Five folded paper slips signal the five stories. Real news is filled later."
     },
     "item": {
       "file": "templates/item.html",
       "width": 1080,
       "height": 1350,
       "fields": {
+        "number": "text",
+        "photo": "photo",
         "headline": "text",
         "why_good": "text",
         "source": "text",
-        "date": "text"
+        "date": "text",
+        "credit": "text"
       },
       "required": [
+        "number",
+        "photo",
         "headline",
         "why_good",
         "source",
-        "date"
+        "date",
+        "credit"
       ],
       "example": {
+        "number": "The clipping number",
+        "photo": "The local story photo or source screenshot",
         "headline": "The verified news headline",
         "why_good": "Why this news helps",
         "source": "The source publication and article name",
-        "date": "The source publication date"
+        "date": "The source publication date",
+        "credit": "The picture owner or source screenshot credit"
       },
-      "note": "Repeat once per verified news item. Source and date are required. No real news is supplied in examples."
+      "note": "Repeat for exactly five verified stories of people helped by AI. Number each tab 1 to 5. Supply a real photo or source screenshot at render time, never in the kit. The 960 by 640 photo slot crops from the top. Source, date and picture credit are required."
     },
     "close": {
       "file": "templates/close.html",
@@ -68,7 +77,7 @@
         "takeaway": "The final thought",
         "date": "The week date"
       },
-      "note": "The three clippings return to the desk tray."
+      "note": "The five clippings return to the desk tray."
     }
   }
 }
