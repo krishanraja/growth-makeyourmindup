@@ -415,11 +415,17 @@ def words_errors(kit_dir, piece):
     return out
 
 
+# The stand-in picture an example render puts in a photo slot: a flat grey block, since a kit holds no real picture.
+PHOTO_EXAMPLE = ROOT / 'render' / 'photo-example.png'
+
+
 def render_jobs(kit_dir):
-    """The renderer's jobs for a kit: each template from its own example."""
+    """The renderer's jobs for a kit: each template from its own example (a photo slot gets the grey stand-in)."""
     manifest = read_json(Path(kit_dir) / 'templates.json')
     pid = Path(kit_dir).name
-    return [{'template': 'piece:' + pid + '/' + tid, 'fields': spec['example'], 'out': tid + '.png'}
+    def fields(spec):
+        return {k: (str(PHOTO_EXAMPLE) if spec['fields'].get(k) == 'photo' else v) for k, v in spec['example'].items()}
+    return [{'template': 'piece:' + pid + '/' + tid, 'fields': fields(spec), 'out': tid + '.png'}
             for tid, spec in manifest['templates'].items()]
 
 
