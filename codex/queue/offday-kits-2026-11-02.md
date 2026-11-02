@@ -5,7 +5,7 @@ model: gpt-6.1-sol
 effort: medium
 max_minutes: 90
 max_calls: 120
-spend_id: ad5ecb69-73f6-411a-a2ce-ca4c76fe3498
+spend_id: f2bfdae8-1fcd-4698-9bdc-47d50afc3fa4
 write_allow: [render/pieces/off-tue-translator/**, render/pieces/off-tue-claudejobs/**, render/pieces/off-thu-nospend/**, render/pieces/off-sat-sovereign/**, render/pieces/off-sat-goodnews/**]
 read: render/ARTDIRECT_PROMPT.md, render/KIT.md, render/kit.css, render/templates.json, render/templates/**, render/fit.js, render/pieces/synthetic-receipt-tape/**
 never: NOW.md, docs/**, calendar/**, engine/**, git commands, network, MCP tools, publishing, new dependencies, edits outside write_allow, any existing piece kit, the passports idea
