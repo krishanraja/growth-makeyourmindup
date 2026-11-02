@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "off-tue-claudejobs",
+  "about": "A workshop ladder has solid upper rungs and chalk outlines below. Every card keeps that gap visible. The cover towers beside it. Body notes hang from a rung. The close leaves the first step open.",
+  "templates": {
+    "cover": {
+      "file": "templates/cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "subhead": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "subhead"
+      ],
+      "example": {
+        "label": "The series label",
+        "headline": "The huge cover headline",
+        "subhead": "The short cover line"
+      },
+      "note": "Headline sits beside the broken ladder."
+    },
+    "body": {
+      "file": "templates/body.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "body": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "body"
+      ],
+      "example": {
+        "label": "The card label",
+        "headline": "The body headline",
+        "body": "The point explained on this card"
+      },
+      "note": "Keep body under forty words."
+    },
+    "close": {
+      "file": "templates/close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "takeaway": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "takeaway"
+      ],
+      "example": {
+        "label": "The close label",
+        "headline": "The closing question",
+        "takeaway": "The final thought"
+      },
+      "note": "The empty lower rungs remain in view."
+    }
+  }
+}

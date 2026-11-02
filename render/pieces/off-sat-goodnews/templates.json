@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "off-sat-goodnews",
+  "about": "A desk tray holds dated news clippings. The cover stacks three folded slips. Each item opens one clipping with its source. The close files the stack. A mint corner tab links every page.",
+  "templates": {
+    "cover": {
+      "file": "templates/cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "headline": "text",
+        "date": "text",
+        "intro": "text"
+      },
+      "required": [
+        "headline",
+        "date",
+        "intro"
+      ],
+      "example": {
+        "headline": "The weekly good news headline",
+        "date": "The week date",
+        "intro": "The short introduction"
+      },
+      "note": "Three paper slips signal the three items. Real news is filled later."
+    },
+    "item": {
+      "file": "templates/item.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "headline": "text",
+        "why_good": "text",
+        "source": "text",
+        "date": "text"
+      },
+      "required": [
+        "headline",
+        "why_good",
+        "source",
+        "date"
+      ],
+      "example": {
+        "headline": "The verified news headline",
+        "why_good": "Why this news helps",
+        "source": "The source publication and article name",
+        "date": "The source publication date"
+      },
+      "note": "Repeat once per verified news item. Source and date are required. No real news is supplied in examples."
+    },
+    "close": {
+      "file": "templates/close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "headline": "text",
+        "takeaway": "text",
+        "date": "text"
+      },
+      "required": [
+        "headline",
+        "takeaway",
+        "date"
+      ],
+      "example": {
+        "headline": "The closing headline",
+        "takeaway": "The final thought",
+        "date": "The week date"
+      },
+      "note": "The three clippings return to the desk tray."
+    }
+  }
+}

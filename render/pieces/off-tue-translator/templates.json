@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "off-tue-translator",
+  "about": "A service table traps two matching machines in a loop. An empty waiting chair marks the cost. Each still keeps the same table. The cover sets the scene; beat captions change above it.",
+  "templates": {
+    "storyboard": {
+      "file": "templates/storyboard.html",
+      "width": 1080,
+      "height": 1920,
+      "fields": {
+        "caption": "text",
+        "beat": "text",
+        "left": "text",
+        "right": "text",
+        "table_label": "text",
+        "waiting": "text",
+        "subtitle": "text"
+      },
+      "required": [
+        "caption",
+        "beat",
+        "left",
+        "right",
+        "table_label",
+        "waiting",
+        "subtitle"
+      ],
+      "example": {
+        "caption": "One quoted beat line, at most eighty characters",
+        "beat": "The beat label",
+        "left": "The first machine label",
+        "right": "The second machine label",
+        "table_label": "The task under discussion",
+        "waiting": "The waiting place label",
+        "subtitle": "The subtitle for this still beat"
+      },
+      "note": "Use this still template for four to six beats. Caption is one line, at most eighty characters, fixed above the scene. Keep labels short.",
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      }
+    },
+    "cover": {
+      "file": "templates/cover.html",
+      "width": 1080,
+      "height": 1920,
+      "fields": {
+        "headline": "text",
+        "left": "text",
+        "right": "text",
+        "table_label": "text",
+        "waiting": "text"
+      },
+      "required": [
+        "headline",
+        "left",
+        "right",
+        "table_label",
+        "waiting"
+      ],
+      "example": {
+        "headline": "The cover headline",
+        "left": "The first machine label",
+        "right": "The second machine label",
+        "table_label": "The task label",
+        "waiting": "The waiting place label"
+      },
+      "note": "Same service table as the beats. No people are drawn.",
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      }
+    }
+  }
+}

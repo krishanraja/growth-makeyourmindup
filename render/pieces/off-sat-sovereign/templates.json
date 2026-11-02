@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "off-sat-sovereign",
+  "about": "A duty-free shelf sells boxed rule sets. Each box wears a plain shelf label. The cover opens the aisle. Shelf cards inspect one box. The close leaves a gap where a purchase could go.",
+  "templates": {
+    "cover": {
+      "file": "templates/cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "headline": "text",
+        "subhead": "text",
+        "label": "text"
+      },
+      "required": [
+        "headline",
+        "subhead",
+        "label"
+      ],
+      "example": {
+        "headline": "The shopping guide headline",
+        "subhead": "The aisle introduction",
+        "label": "The box label"
+      },
+      "note": "Joke at buying logic and rules, never at people."
+    },
+    "shelf-card": {
+      "file": "templates/shelf-card.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "headline": "text",
+        "body": "text",
+        "label": "text"
+      },
+      "required": [
+        "headline",
+        "body",
+        "label"
+      ],
+      "example": {
+        "headline": "The shelf headline",
+        "body": "The shopping logic for this box",
+        "label": "The product box label"
+      },
+      "note": "One product box per card. Label is required."
+    },
+    "close": {
+      "file": "templates/close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "headline": "text",
+        "label": "text"
+      },
+      "required": [
+        "headline",
+        "label"
+      ],
+      "example": {
+        "headline": "The closing shopping question",
+        "label": "The empty shelf label"
+      },
+      "note": "One empty shelf space stays visible."
+    }
+  }
+}

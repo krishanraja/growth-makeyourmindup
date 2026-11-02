@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "off-thu-nospend",
+  "about": "A toy switchboard gates every action. Two chunky switches sit above each made-up screen. The title names the rule. Chat, order and email plates share the panel. A stamp marks each blocked action.",
+  "templates": {
+    "title": {
+      "file": "templates/title.html",
+      "width": 1080,
+      "height": 1920,
+      "fields": {
+        "line_one": "text",
+        "line_two": "text",
+        "label": "text"
+      },
+      "required": [
+        "line_one",
+        "line_two",
+        "label"
+      ],
+      "example": {
+        "line_one": "The first title line",
+        "line_two": "The second title line",
+        "label": "The made-up scene label"
+      },
+      "note": "Two title lines. The switches introduce the same gate seen on every plate.",
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      }
+    },
+    "chat": {
+      "file": "templates/chat.html",
+      "width": 1080,
+      "height": 1920,
+      "fields": {
+        "name": "text",
+        "message": "text",
+        "reply": "text",
+        "options": "options"
+      },
+      "required": [
+        "name",
+        "message",
+        "reply",
+        "options"
+      ],
+      "example": {
+        "name": "The made-up chat name",
+        "message": "The made-up incoming message",
+        "reply": "The made-up reply",
+        "options": [
+          "The fail state label"
+        ]
+      },
+      "note": "Fictional chat only. Names must be made up. Set options to [\"BLOCKED\"] for the fail state, or [] for a clear screen.",
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      }
+    },
+    "order": {
+      "file": "templates/order.html",
+      "width": 1080,
+      "height": 1920,
+      "fields": {
+        "company": "text",
+        "headline": "text",
+        "item": "text",
+        "detail": "text",
+        "options": "options"
+      },
+      "required": [
+        "company",
+        "headline",
+        "item",
+        "detail",
+        "options"
+      ],
+      "example": {
+        "company": "The made-up shop name",
+        "headline": "The order status",
+        "item": "The made-up purchase",
+        "detail": "The made-up order detail",
+        "options": [
+          "The fail state label"
+        ]
+      },
+      "note": "Fictional order only. Company names in type. Set options to [\"BLOCKED\"] for the fail state, or [].",
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      }
+    },
+    "email": {
+      "file": "templates/email.html",
+      "width": 1080,
+      "height": 1920,
+      "fields": {
+        "company": "text",
+        "banner": "text",
+        "recipients": "text",
+        "message": "text",
+        "options": "options"
+      },
+      "required": [
+        "company",
+        "banner",
+        "recipients",
+        "message",
+        "options"
+      ],
+      "example": {
+        "company": "The made-up mail service",
+        "banner": "The reply all banner",
+        "recipients": "The made-up recipient group",
+        "message": "The made-up email preview",
+        "options": [
+          "The fail state label"
+        ]
+      },
+      "note": "Fictional email only. Set options to [\"BLOCKED\"] for the fail state, or [].",
+      "safe": {
+        "top": 250,
+        "bottom": 340
+      }
+    }
+  }
+}
