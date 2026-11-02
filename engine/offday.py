@@ -115,6 +115,8 @@ def options(mix, ideas=(), root=ROOT):
             by_idea[cid] = idea
     days, short = {}, []
     for day in mix_rules.week_days(mix['week_of']):
+        if mix_rules.DAYS[day.weekday()] in mix_rules.rest_days(cfg):
+            continue  # Ruling (Krish, 2026-11-02): no publishing on Sunday, permanently
         name = mix_rules.DAYS[day.weekday()]
         seen, out = [], []
         for slot in sorted(mix['slots'], key=lambda s: (fillers.index(s['lane']) if s['lane'] in fillers else 99,

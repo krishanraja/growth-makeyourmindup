@@ -1,0 +1,58 @@
+{
+ "schema": "growth-mock-briefs/1",
+ "briefs": [
+  {
+   "option": "off-thu-puppy",
+   "day": "thu",
+   "format": "Said to camera, 1-2-3",
+   "idea": {
+    "copy": "Thu 5 Nov, the day after Wednesday's 'AI now acts first' piece. Your idea (28 Oct): a clean, well-lit to-camera 1-2-3 with fast subtitle builds and a strong thumbnail. About 40 seconds. Your AI is a puppy. One: it wants to please you. Two: so it tells you what you want to hear. Three: so ask it for the best case against your idea. Made to the visual quality and feeling of the short you saved on 31 Oct.",
+    "hook": null,
+    "cards": null,
+    "pitch": null
+   },
+   "direction": null,
+   "his_direction": "Good, but let's do a piece on the proactive agents and literally give instructions as I gave my friend on how to have our AI tool set its own spending and sending limits, given proactive personal assistants are coming",
+   "on_media_exactly": [],
+   "held": null,
+   "required_texts": []
+  },
+  {
+   "option": "off-tue-claudejobs",
+   "day": "tue",
+   "format": "Meme carousel, made fresh in the brand kit",
+   "idea": {
+    "copy": "Tue 3 Nov, the day after Monday's piece. Four cards, 4:5. Card 1: CLAUDE IS EATING THE JOBS OF ITS OWN HUMANS (huge yellow type, a cartoon robot holding a tiny office ladder). Card 2: The rungs juniors used to learn on are the ones AI does first (the ladder with its bottom rungs missing). Card 3: So who trains the seniors of 2030? (an empty chair at the top). Card 4: The full story is on Monday's video (Monday's cover).",
+    "hook": null,
+    "cards": null,
+    "pitch": null
+   },
+   "direction": null,
+   "his_direction": "Go for it, visual quality but not dip beneath the video production quality",
+   "on_media_exactly": [],
+   "held": null,
+   "required_texts": []
+  },
+  {
+   "option": "off-tue-translator",
+   "day": "tue",
+   "format": "Meme video, made fresh in the brand kit",
+   "idea": {
+    "copy": "Tue 3 Nov. Your idea (28 Oct): the translator scene you saved, reskinned for when your AI talks to your customer's AI. Two identical robots across a table, each insisting the other is the translator, forty minutes to agree a refund nobody asked for, one human in the corner checking his watch. Subtitles at the fast pace you saved. Format credited to the original clip; none of its footage is used.",
+    "hook": null,
+    "cards": null,
+    "pitch": null
+   },
+   "direction": null,
+   "his_direction": "above the video",
+   "on_media_exactly": [
+    "POV: your AI agent trying to communicate with your customer's AI agent"
+   ],
+   "held": null,
+   "required_texts": [
+    "POV: your AI agent trying to communicate with your customer's AI agent"
+   ]
+  }
+ ],
+ "local_only": true
+}

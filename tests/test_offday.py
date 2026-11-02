@@ -23,9 +23,11 @@ class OffDays(unittest.TestCase):
 
     def test_every_day_carries_two_or_three_filler_options_with_their_parts(self):
         board = offday.options(self.plan, ideas())
-        self.assertEqual(len(board['days']), 7, 'every day, Monday to Sunday (Mix wins)')
+        # Every day but Sunday (Mix wins; Ruling, Krish, 2026-11-02: no publishing on Sunday, permanently).
+        self.assertEqual(len(board['days']), 6, 'Monday to Saturday')
+        self.assertNotIn('Sunday', {mix.DAYS[dt.date.fromisoformat(d).weekday()] for d in board['days']})
         for day, opts in board['days'].items():
-            self.assertLessEqual(len(opts), 3, day)
+            self.assertLessEqual(len(opts), offday.MAX_OPTIONS, day)
             for o in opts:
                 self.assertIn(o['lane'], ('meme', 'positive_news', 'level_up'))
                 self.assertTrue(o['formats'] and o['draft'])
@@ -124,6 +126,17 @@ class ClockLines(unittest.TestCase):
         self.assertIn('Clock offday for the week of ' + WEEK + ': offday_stocked', joined)
         self.assertIn('Chat backstop: 1 flagged line', joined)
         self.assertIn('none sent', joined)
+
+
+class RestDay(unittest.TestCase):
+    """Ruling (Krish, 2026-11-02): "Let's eliminate Sunday from Publishing anythign permanently. Sunday is rest and
+    planning and ideation day." The maker and release hold any Sunday post; a bad time fails closed."""
+
+    def test_sunday_new_york_time_is_rest_and_a_bad_time_fails_closed(self):
+        self.assertTrue(mix.is_rest_day('2026-11-08T17:30:00Z'))   # Sun 12:30 New York
+        self.assertFalse(mix.is_rest_day('2026-11-07T17:30:00Z'))  # Sat
+        self.assertTrue(mix.is_rest_day('2026-11-09T03:00:00Z'))   # still Sunday 22:00 in New York
+        self.assertTrue(mix.is_rest_day('not a time'))
 
 
 class HisWords(unittest.TestCase):
