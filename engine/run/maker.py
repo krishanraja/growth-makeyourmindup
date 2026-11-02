@@ -628,6 +628,8 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
                 raise Held('concept_not_approved')
             if {'channel': channel, 'format': slot['format']} not in concept['placements']:
                 raise Held(concept_rules.DEPARTS)
+            if mix_rules.is_rest_day(slot['due_at']):
+                raise Held('rest_day')  # Ruling (Krish, 2026-11-02): no publishing on Sunday, permanently
             if autorelease.outside_mix(state, cid, channel, slot['format'], slot['due_at']):
                 raise Held('outside_approved_mix')
             if voices.get(channel) not in VOICE:

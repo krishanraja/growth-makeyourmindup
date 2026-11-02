@@ -115,6 +115,20 @@ def targets(root=ROOT, urgency=None):
 
 # Layout ---------------------------------------------------------------------
 
+def rest_days(cfg):
+    """The days nothing publishes (mix.json rest_days; Ruling, Krish, 2026-11-02: "Let's eliminate Sunday from
+    Publishing anythign permanently. Sunday is rest and planning and ideation day.")."""
+    return set((cfg.get('rest_days') or {}).get('days') or ())
+
+
+def is_rest_day(when, root=ROOT):
+    """True when this instant falls, New York time, on a day nothing publishes. Fails closed on a bad time."""
+    try:
+        return DAYS[ny_time(when).weekday()] in rest_days(load(root))
+    except (ValueError, TypeError, AttributeError):
+        return True
+
+
 def week_days(week_of):
     day = calendar_date(week_of)
     if day.weekday() != 0:

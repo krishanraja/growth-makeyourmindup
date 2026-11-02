@@ -136,3 +136,13 @@ lane by 5 when it has at least 3 judged posts and works minus fails is at least
 a third of them (down by 5 at minus a third), inside its bounds. Insufficient
 verdicts never count, and a lane with too few judged posts keeps its weight.
 Association, not cause.
+
+## Sunday is a rest day
+
+Ruling (Krish, 2026-11-02): "Let's eliminate Sunday from Publishing anythign
+permanently. Sunday is rest and planning and ideation day." `mix.json`
+`rest_days` names Sunday. The Off-days section offers nothing on Sunday,
+the maker holds a Sunday slot as `rest_day`, and release holds any post due on
+a Sunday (New York time) as `rest_day`, loud as `scheduled_on_rest_day` if it
+is already scheduled. A time that cannot be read counts as a rest day. The
+weekly plan still lays out Sunday slots; they are never drafted or released.

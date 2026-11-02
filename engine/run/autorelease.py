@@ -746,6 +746,9 @@ class Run:
         if not live and status != 'draft':
             return self.hold({'error': 'buffer_post_error', 'needs_approval': 'needs_approval'}.get(status,
                                                                                                   'unknown_status'))
+        if mix_rules.is_rest_day(due):
+            # Ruling (Krish, 2026-11-02): no publishing on Sunday, permanently. Loud when already scheduled.
+            return self.hold('scheduled_on_rest_day' if live else 'rest_day', loud=live)
         if outside_mix(state, fields['concept_id'], fields['channel'], fields['format'], due):
             # Nothing outside the mix he approved on the board goes out (Ruling, Krish, 2026-10-30).
             return self.hold('scheduled_outside_mix' if live else 'outside_approved_mix', loud=live)
