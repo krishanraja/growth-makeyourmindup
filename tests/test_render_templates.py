@@ -39,7 +39,7 @@ FROM_THE_ARTWORK = {'versus-card': (1200, 675), 'versus-card-tall': (1080, 1350)
                     'chapter-card-vertical': (1080, 1920), 'evidence-card': (1280, 820)}
 TEMPLATES = {**TEN, **FROM_THE_ARTWORK}
 # Every page that carries the wordmark, and the pages that keep the old label, rule and footer.
-WORDMARK = {'carousel-cover', 'story-frame', 'quote-card', 'receipt-card', 'meme-square', 'meme-vertical',
+WORDMARK = {'carousel-cover', 'carousel-body', 'carousel-close', 'story-frame', 'quote-card', 'receipt-card', 'meme-square', 'meme-vertical',
             'versus-card', 'versus-card-tall', 'evidence-card'}
 WITH_RULE = {'quote-card', 'receipt-card', 'carousel-body', 'carousel-close', 'meme-square', 'meme-vertical', 'profile-art'}
 TONES = ['butter', 'mint', 'coral']
@@ -109,13 +109,24 @@ class TemplatesExist(unittest.TestCase):
             if tid in WITH_RULE:
                 self.assertIn('class="rule"', text, tid)
 
-    def test_the_wordmark_is_built_from_the_kit_on_every_cover(self):
+    def test_the_brand_mark_is_the_official_file_never_type(self):
+        # Ruling (Krish, 2026-11-03): "You've fabricated my brand logo."
         for tid, spec in manifest()['templates'].items():
             text = template_text(spec)
-            has = '<span class="words">MAKE YOUR MIND/</span><span class="up">UP</span>' in text
-            self.assertEqual(has, tid in WORDMARK, tid)
-            if has:
-                self.assertIn('<span class="mark"><i></i><i></i><i></i></span>', text, tid)
+            self.assertNotIn('MAKE YOUR MIND/', text, tid)
+            self.assertNotIn('class="wordmark"', text, tid)
+            self.assertEqual('<div class="brandmark' in text, tid in WORDMARK, tid)
+        kit = (RENDER / 'kit.css').read_text(encoding='utf-8')
+        self.assertIn('url(brand/makeyourmindup-horizontal.png)', kit)
+        self.assertTrue((RENDER / 'brand' / 'makeyourmindup-horizontal.png').is_file())
+
+    def test_carousels_carry_the_mark_in_a_bottom_corner_never_the_top(self):
+        # Ruling (Krish, 2026-11-03): "They need to go in the bottom corner, subtly, on all carousels of this nature."
+        for tid in ('carousel-cover', 'carousel-body', 'carousel-close'):
+            text = template_text(manifest()['templates'][tid])
+            footer = text[text.index('<div class="footer">'):]
+            self.assertIn('<div class="brandmark"></div>', footer, tid)
+            self.assertEqual(text.count('brandmark'), 1, tid)
 
     def test_a_two_tone_headline_has_one_accent_line(self):
         for tid, spec in manifest()['templates'].items():
@@ -151,7 +162,8 @@ class NoPersonNoPassports(unittest.TestCase):
         for path, text in style_sources().items():
             self.assertIsNone(re.search(r'<img\b|<picture\b|<image\b|<svg\b', text, re.I), str(path))
             for url in re.findall(r'url\(([^)]*)\)', text):
-                self.assertRegex(url.strip("'\""), r'^fonts/[A-Za-z-]+\.ttf$', str(path))
+                # Fonts, and the one official brand file (the ruling of 2026-11-03), never a picture of anyone.
+                self.assertRegex(url.strip("'\""), r'^(?:fonts/[A-Za-z-]+\.ttf|brand/makeyourmindup-horizontal\.png)$', str(path))
 
     def test_no_passport_and_no_name_of_his(self):
         for path in list(style_sources()) + [MANIFEST]:

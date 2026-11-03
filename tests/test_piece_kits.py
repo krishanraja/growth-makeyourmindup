@@ -162,8 +162,14 @@ class StaticChecksCanFail(unittest.TestCase):
     def test_the_wordmark_a_person_a_secret_and_a_stray_file(self):
         kit = copy_kit(self.tmp.name, 'synthetic-wordmark')
         css = kit / 'piece.css'
-        css.write_text(css.read_text(encoding='utf-8') + '\n.wordmark .up { color: var(--coral); }\n', encoding='utf-8')
-        self.assertTrue(any('restyles the wordmark' in e for e in artdirect.kit_errors(kit)))
+        css.write_text(css.read_text(encoding='utf-8') + '\n.brandmark { opacity: 0.5; }\n', encoding='utf-8')
+        self.assertTrue(any('restyles the brand mark' in e for e in artdirect.kit_errors(kit)))
+        # Ruling (Krish, 2026-11-03): "You've fabricated my brand logo." A wordmark set as type is refused.
+        kit = copy_kit(self.tmp.name, 'synthetic-drawn')
+        page = next((kit / 'templates').glob('*.html'))
+        page.write_text(page.read_text(encoding='utf-8').replace('<div class="frame', '<div class="wordmark">MAKE YOUR MIND/</div><div class="frame', 1),
+                        encoding='utf-8')
+        self.assertTrue(any('a wordmark set as type' in e for e in artdirect.kit_errors(kit)))
         kit = copy_kit(self.tmp.name, 'synthetic-named')
         (kit / 'idea.md').write_text('A picture of Krish holding a passport, drawn on a till receipt.\n',
                                      encoding='utf-8')

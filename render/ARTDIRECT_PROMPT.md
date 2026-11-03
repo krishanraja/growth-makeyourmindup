@@ -75,8 +75,9 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
 - No person: never draw, describe or name a real person. Never name the publication's founder.
   Write company and product names in type, never as a logo.
 - No remote anything: no `http`, `https`, `data:` or `//` address anywhere, and no other script.
-- The wordmark, if you use it, is the house markup exactly, and you may only size or place it:
-  `<div class="wordmark"><span class="mark"><i></i><i></i><i></i></span><span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div>`.
+- The brand mark is the official logo file, never type (ruling of 2026-11-03: a logo set as type is a fabricated logo).
+  Use exactly `<div class="brandmark"></div>` and only size or place it. On a carousel it is
+  `<div class="brandmark corner"></div>`, small in the bottom corner of every card, never at the top.
 - Words: plain English that a 12 year old can follow. No em dashes. No percentages. No hype.
 - The `example` values are placeholders that describe their slot, such as "The first payee" or
   "series.label". Never put the piece's title, its claims or any real figure in the kit: the real

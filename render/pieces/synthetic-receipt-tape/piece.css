@@ -1,5 +1,5 @@
 /* The receipt tape: one cream paper tape fed out of a dark till slot, with a torn foot.
-   Kit tokens only: the eight kit colours as var(--...), the kit fonts as var(--...), the house wordmark. */
+   Kit tokens only: the eight kit colours as var(--...), the kit fonts as var(--...), the house brand mark. */
 
 html, body { background: var(--ink-deep); }
 

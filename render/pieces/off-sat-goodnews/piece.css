@@ -17,10 +17,7 @@ html, body { background: var(--ink); }
 .close { padding: 108px; align-items: center; justify-content: center; gap: 44px; }
 .close .big { width: 864px; height: 440px; display: flex; align-items: center; justify-content: center; }
 .note { width: 864px; height: 180px; font-family: var(--body); line-height: 1.2; color: var(--mint); }
-.wordmark { --wm: 28px; position: absolute; left: 0; right: 0; }
-.cover-words .wordmark { top: -56px; }
 .story-words { position: relative; }
 .story-words::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--mint); }
-.story-words .wordmark { top: 8px; }
-.close .wordmark { top: 220px; }
-.close::before { content: ''; position: absolute; top: 272px; left: 108px; right: 108px; height: 2px; background: var(--mint); }
+/* The house brand mark, small in the bottom corner of every card, clear of the words (the 2026-11-03 ruling). */
+.brandmark.corner { right: 40px; bottom: 28px; }

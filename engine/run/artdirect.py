@@ -67,8 +67,10 @@ MAX_FILE_BYTES = 64 * 1024
 KIT_CSS_LINK = '<link rel="stylesheet" href="../../../kit.css">'
 PIECE_CSS_LINK = '<link rel="stylesheet" href="../piece.css">'
 FIT_SCRIPT = '<script src="../../../fit.js"></script>'
-WORDMARK = ('<div class="wordmark"><span class="mark"><i></i><i></i><i></i></span>'
-            '<span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div>')
+# The brand mark is the official logo file, painted by kit.css from render/brand/ (Ruling, Krish, 2026-11-03: "You've
+# fabricated my brand logo"). A kit places it with exactly this markup; the drawn wordmark it replaces is refused.
+BRANDMARKS = ('<div class="brandmark"></div>', '<div class="brandmark corner"></div>')
+DRAWN_WORDMARK = re.compile(r'class="(?:wordmark|mark|words|up)"|MAKE YOUR MIND/')
 EM_DASH = '—'
 # Anything that could reach past render/: a scheme, a protocol-relative address, url() or @import.
 REMOTE = re.compile(r'\b(?:https?|ftp|wss?):|\b(?:data|blob|javascript|file|about|chrome):(?!\s|$)|'
@@ -98,7 +100,7 @@ NAMED_COLOURS = frozenset((
     'highlight highlighttext selecteditem selecteditemtext mark marktext graytext accentcolor accentcolortext').split())
 FORBIDDEN_PROPERTIES = ('filter', 'backdrop-filter', 'mix-blend-mode', 'background-blend-mode', 'animation',
                         'animation-name', 'transition')
-WORDMARK_PROPERTIES = re.compile(r'^(?:--wm|margin(?:-[a-z]+)?|align-self|justify-self|justify-content|order|'
+WORDMARK_PROPERTIES = re.compile(r'^(?:--bm|width|margin(?:-[a-z]+)?|align-self|justify-self|justify-content|order|'
                                  r'flex(?:-[a-z]+)?|position|top|right|bottom|left|z-index)$')
 SECRET = re.compile(r'\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bgen1_[A-Za-z0-9_-]{8,}')
 NEVER_WORDS = ('passport', 'krish')
@@ -173,12 +175,10 @@ def css_errors(css, at):
     if re.search(r'@[a-z-]+', re.sub(r'(["\']).*?\1', ' ', css), re.I):
         errors.append(at + ': an at-rule (@font-face, @import, @media and the rest are not allowed)')
     for selector, decls in _rules(css):
-        touches_wordmark = re.search(r'\.(?:mark|words|up)(?![\w-])', selector)
         for name, value in decls:
             errors += _declaration_errors(name, value, at)
-            if touches_wordmark or (re.search(r'\.wordmark(?![\w-])', selector)
-                                    and not WORDMARK_PROPERTIES.match(name)):
-                errors.append(at + ': restyles the wordmark (' + selector + ' ' + name + '); only size and place it')
+            if re.search(r'\.brandmark(?![\w-])', selector) and not WORDMARK_PROPERTIES.match(name):
+                errors.append(at + ': restyles the brand mark (' + selector + ' ' + name + '); only size and place it')
     return errors
 
 
@@ -220,8 +220,10 @@ def template_errors(kit_dir, tid, spec, sizes):
         used[name] = kind or 'text'
     if used != spec['fields']:
         errors.append(at + ': its placeholders are not exactly the declared fields')
-    if 'class="wordmark"' in html and html.count('class="wordmark"') != html.count(WORDMARK):
-        errors.append(at + ': the wordmark is not the house markup')
+    if DRAWN_WORDMARK.search(html):
+        errors.append(at + ': a wordmark set as type; the brand mark is the official file, <div class="brandmark"></div>')
+    if html.count('class="brandmark') != sum(html.count(b) for b in BRANDMARKS):
+        errors.append(at + ': the brand mark is not the house markup')
     for block in (re.findall(r'<style\b[^>]*>(.*?)</style\s*>', html, re.I | re.S)):
         errors += css_errors(block, at + ' <style>')
     for block in _attributes_css(html):

@@ -43,7 +43,7 @@ const ORIGIN = 'http://mocks.invalid';
 const EM_DASH = /\u2014/;
 const PIECE = /^piece:([a-z0-9][a-z0-9-]{1,63})\/([a-z0-9][a-z0-9-]{0,63})$/;
 const PHOTO_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.ttf': 'font/ttf' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.ttf': 'font/ttf', '.png': 'image/png' };
 
 function loadPlaywright() {
   try { return require('playwright'); } catch (e) { /* fall through */ }
