@@ -140,7 +140,7 @@ export function fill(manifest, job, piecesDir) {
       // Only a local picture file, read at render time and served from the page's own origin; never an address.
       const file = path.resolve(String(value));
       const ext = path.extname(file).toLowerCase();
-      if (/^[a-z]+:|^\/\//i.test(String(value)) || !PHOTO_TYPES[ext] || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+      if (/^[a-z][a-z0-9+.-]+:|^\/\//i.test(String(value)) || !PHOTO_TYPES[ext] || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
         throw new Error(job.template + ': ' + name + ' is a local .png, .jpg or .webp file, not ' + JSON.stringify(value));
       }
       // Whose picture it is: carried on the job, never drawn on the card, and reported for the post's description.
