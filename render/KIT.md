@@ -28,15 +28,13 @@ The reference images are private. They are never copied into this repository.
 | Headlines in Anton, labels in IBM Plex Mono, names and body lines in Archivo, Fraunces kept for subheads. | Observed for Anton, Plex Mono and Archivo on both boards. Fraunces is the kit's own and does not appear on either board. |
 | No em dashes anywhere. | House rule. The renderer refuses a field that holds one. |
 
-## The wordmark
+## The brand mark
 
 | Rule | Source |
 | --- | --- |
-| "MAKE YOUR MIND/" in cream condensed capitals, then "UP" in mint, with a small mark of three green bars on the left. | Observed on the 26 October vertical cover, share card and square post, and on the 19 October evidence cards. |
-| The middle bar is tallest and has cut corners; the bars fade from mint at the top to green at the bottom. | Observed on the 26 October vertical cover, close up. |
-| "UP" is wider and heavier than the rest, with a speech-bubble tail under it. | Observed. The templates build it from Archivo at full weight and full width, with a green tail drawn in CSS. The artwork's own letters are rounder; see "What does not match yet". |
-| On covers the wordmark sits right above the headline, centred. On evidence cards it sits top left, with the series name in mono on the right and a green hairline under both. | Observed: centred on the 26 October vertical cover and square post; top left on the 19 October evidence cards. |
-| Quote, receipt and meme cards use the evidence-card band (wordmark left, series right, hairline). | Interpreted. These pages were not on either board. |
+| The brand mark is the official logo file, `render/brand/makeyourmindup-horizontal.png` (with `-mark` and `-stacked` beside it), copied from the Control Center repository with the sha256 content-engine's `config/studio.json` records. It is never set as type or redrawn. Templates place it with `<div class="brandmark"></div>`; `kit.css` paints it. | The 2026-11-03 ruling on the Saturday carousel: a wordmark set as type is a fabricated logo. |
+| On every carousel card it sits small and subtle in a bottom corner, never at the top: in the footer's right corner on the house carousel pages, `<div class="brandmark corner"></div>` on a piece kit's cards. | The same ruling, for all carousels of this nature. |
+| Elsewhere (quote, receipt, meme, versus, story and evidence cards) it takes the place the drawn wordmark had. | Carried over; only the drawing was replaced. |
 
 ## Headlines
 
@@ -134,7 +132,7 @@ A render job names a piece template as `piece:<piece_id>/<template>`. The synthe
 ### What Codex may do
 
 - Invent one idea for one piece, true to that story and no other, and use it on every template.
-- Arrange the eight kit colours, the four kit fonts and the wordmark however the idea needs, with
+- Arrange the eight kit colours, the four kit fonts and the brand mark however the idea needs, with
   boxes, borders, gradients, shapes and opacity.
 - Write in the piece's own folder only, with no network. `render/ARTDIRECT_PROMPT.md` is its brief.
 
@@ -145,7 +143,7 @@ A render job names a piece template as `piece:<piece_id>/<template>`. The synthe
   name a person.
 - Reach anything outside `render/`: no web address and no `url()`. Fonts come only from
   `render/fonts`, through `kit.css`.
-- Restyle the wordmark. It may only size and place it.
+- Restyle the brand mark. It may only size and place it.
 - Reuse an idea. The passports idea belongs to its one piece, so no kit may use it, and no kit may
   copy a house template or another piece's kit.
 - Put the piece's title, its claims or a real figure in the kit. Examples are placeholders, as in

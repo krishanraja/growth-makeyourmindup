@@ -49,8 +49,8 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
 - `templates.json` is `{"schema_version": 1, "kind": "piece_kit", "piece_id": "{{piece_id}}",
   "about": "...", "templates": {...}}`. Each template entry has `file`, `width`, `height`, `fields`,
   `required` and `example`, and may have `choices`, `note` and `safe`, exactly as in the house file.
-  A field is `text`, `rows` or `options`, and each one appears in the template as `{{name}}`,
-  `{{rows:name}}` or `{{options:name}}`.
+  A field is `text`, `rows`, `options` or `photo`, and each one appears in the template as `{{name}}`,
+  `{{rows:name}}`, `{{options:name}}` or `{{photo:name}}`.
 - Sizes: only the house sizes: 1080 by 1350, 1080 by 1080, 1080 by 1920, 1200 by 675, 1314 by 1080,
   1600 by 900, 1920 by 1080 or 1280 by 820. A 1080 by 1920 template has
   `"safe": {"top": 250, "bottom": 340}` and sets `--top: 250px; --bottom: 340px;`.
@@ -68,11 +68,16 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
   at-rules of any kind.
 - No pictures: no `<img>`, `<svg>`, `<canvas>`, `<picture>`, `<video>` or `<iframe>`, and no
   `url()`. Draw the idea with HTML boxes, borders, gradients and `clip-path`.
+  The one exception is a `photo` field (`{{photo:name}}`): an empty slot the renderer fills at render time with a
+  real picture of the story from a local file: a photograph, never a screenshot of text. The kit never holds
+  the picture itself. Whose picture it is travels with the render job and goes in the post's description, never
+  on the card.
 - No person: never draw, describe or name a real person. Never name the publication's founder.
   Write company and product names in type, never as a logo.
 - No remote anything: no `http`, `https`, `data:` or `//` address anywhere, and no other script.
-- The wordmark, if you use it, is the house markup exactly, and you may only size or place it:
-  `<div class="wordmark"><span class="mark"><i></i><i></i><i></i></span><span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div>`.
+- The brand mark is the official logo file, never type (ruling of 2026-11-03: a logo set as type is a fabricated logo).
+  Use exactly `<div class="brandmark"></div>` and only size or place it. On a carousel it is
+  `<div class="brandmark corner"></div>`, small in the bottom corner of every card, never at the top.
 - Words: plain English that a 12 year old can follow. No em dashes. No percentages. No hype.
 - The `example` values are placeholders that describe their slot, such as "The first payee" or
   "series.label". Never put the piece's title, its claims or any real figure in the kit: the real

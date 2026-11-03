@@ -42,7 +42,8 @@ const RENDER = path.join(ROOT, 'render');
 const ORIGIN = 'http://mocks.invalid';
 const EM_DASH = /\u2014/;
 const PIECE = /^piece:([a-z0-9][a-z0-9-]{1,63})\/([a-z0-9][a-z0-9-]{0,63})$/;
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.ttf': 'font/ttf' };
+const PHOTO_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.ttf': 'font/ttf', '.png': 'image/png' };
 
 function loadPlaywright() {
   try { return require('playwright'); } catch (e) { /* fall through */ }
@@ -126,7 +127,8 @@ export function fill(manifest, job, piecesDir) {
   const source = path.normalize(path.join(dir, spec.file));
   if (!source.startsWith(dir + path.sep)) throw new Error(job.template + ': its file is outside its kit');
   let html = fs.readFileSync(source, 'utf8');
-  html = html.replace(/\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}/g, (_, kind, name) => {
+  const photos = {};
+  html = html.replace(/\{\{(?:(rows|options|photo):)?([a-z0-9_]+)\}\}/g, (_, kind, name) => {
     const declared = spec.fields[name];
     if (!declared) throw new Error(spec.file + ' names a field the manifest does not: ' + name);
     const value = fields[name];
@@ -134,9 +136,23 @@ export function fill(manifest, job, piecesDir) {
     if ((kind || 'text') !== declared) throw new Error(spec.file + ': ' + name + ' is ' + declared + ', not ' + (kind || 'text'));
     if (declared === 'rows') return rowsHtml(value);
     if (declared === 'options') return optionsHtml(value);
+    if (declared === 'photo') {
+      // Only a local picture file, read at render time and served from the page's own origin; never an address.
+      const file = path.resolve(String(value));
+      const ext = path.extname(file).toLowerCase();
+      if (/^[a-z][a-z0-9+.-]+:|^\/\//i.test(String(value)) || !PHOTO_TYPES[ext] || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+        throw new Error(job.template + ': ' + name + ' is a local .png, .jpg or .webp file, not ' + JSON.stringify(value));
+      }
+      // Whose picture it is: carried on the job, never drawn on the card, and reported for the post's description.
+      const credit = (job.credits || {})[name];
+      if (typeof credit !== 'string' || !credit.trim()) throw new Error(job.template + ': ' + name + ' needs credits.' + name + ', whose picture it is');
+      const served = '/photos/' + name + ext;
+      photos[served] = file;
+      return '<img class="photo" src="' + served + '" alt="">';
+    }
     return textHtml(value);
   });
-  return { spec, html, page: page || '/' + spec.file };
+  return { spec, html, page: page || '/' + spec.file, photos };
 }
 
 // Keep only the chunks that carry the picture; a text or time chunk would make bytes differ.
@@ -168,7 +184,7 @@ function servedFile(pathname, piecesDir) {
 }
 
 async function renderOne(browser, manifest, job, piecesDir) {
-  const { spec, html, page: pagePath } = fill(manifest, job, piecesDir);
+  const { spec, html, page: pagePath, photos } = fill(manifest, job, piecesDir);
   const page = await browser.newPage({ viewport: { width: spec.width, height: spec.height }, deviceScaleFactor: 1 });
   const refused = [];
   try {
@@ -176,6 +192,8 @@ async function renderOne(browser, manifest, job, piecesDir) {
       const url = new URL(route.request().url());
       if (url.origin !== ORIGIN) { refused.push('a remote URL'); return route.abort(); }
       if (url.pathname === pagePath) return route.fulfill({ status: 200, contentType: TYPES['.html'], body: html });
+      if (photos[url.pathname]) return route.fulfill({ status: 200, contentType: PHOTO_TYPES[path.extname(photos[url.pathname])],
+        body: fs.readFileSync(photos[url.pathname]) });
       const file = servedFile(url.pathname, piecesDir);
       if (!file) {
         if (url.pathname !== '/favicon.ico') refused.push(url.pathname);
@@ -300,7 +318,8 @@ async function main(argv) {
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.writeFileSync(out, png);
       results.push({ out: job.out, template: job.template, width: spec.width,
-        height: spec.height, bytes: png.length, sha256: digest, colours, fonts });
+        height: spec.height, bytes: png.length, sha256: digest, colours, fonts,
+        ...(job.credits ? { credits: job.credits } : {}) });
     }
   } finally {
     await browser.close();

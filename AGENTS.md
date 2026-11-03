@@ -17,9 +17,10 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 **One pipeline (proposed 31 October 2026).** `docs/OPERATING_MODEL.md` sets the seven stages from Inspiration to posting, who owns each, the ledger this repository keeps of every day's slot, and the pitch format every idea is written in. Krish ruled on 31 October that this repository schedules and posts everything and keeps track of what's what every day.
 
 Read `docs/ASSET-STORAGE.md` and `docs/SESSION-HANDOVER.md` at the start of
-every session. Use the existing Drive **4 Growth** folder for structured,
-versioned distribution assets and clean delivery copy. Content Engine keeps
-its separate production home. Preserve private evidence and rejected versions
+every session. File every finished post, the off days included, into the
+library's **3 Posts** with content-engine's `send.py`, named like the series
+days (`YYYY-MM-DD Tue off.day - Subject`): one Posts folder for the whole week
+(Ruling, Krish, 2026-11-03). Do not file new posts in 4 Growth. Preserve private evidence and rejected versions
 locally with a dated hash inventory before closing or cleaning a workspace.
 The supplied Drive folder is link-editable: never upload private run backups
 there. Update the handover, NOW.md and owning structured lessons at closeout.

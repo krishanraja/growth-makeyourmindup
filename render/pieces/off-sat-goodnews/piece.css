@@ -1,0 +1,23 @@
+html, body { background: var(--ink); }
+.frame { padding: 0; text-align: center; overflow: hidden; }
+.fit { flex: none; overflow: hidden; }
+.photo { display: block; width: 1080px; object-fit: cover; }
+.big { font-family: var(--heading); text-transform: uppercase; line-height: 1.02; }
+.cover .photo { position: absolute; inset: 0; height: 1350px; object-position: center; }
+.cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--ink) 0px, var(--ink) 180px, transparent 1150px); }
+.cover-words { position: absolute; z-index: 1; left: 72px; right: 72px; bottom: 84px; display: flex; flex-direction: column; gap: 28px; align-items: center; }
+.cover .big { width: 936px; height: 420px; display: flex; align-items: center; justify-content: center; }
+.tag { width: 936px; height: 42px; font-family: var(--mono); line-height: 1.2; color: var(--mint); }
+.item .photo { height: 840px; object-position: center 30%; }
+.story-words { height: 510px; padding: 34px 72px 40px; display: flex; flex-direction: column; align-items: center; gap: 20px; justify-content: center; }
+.item .big { width: 936px; height: 282px; display: flex; align-items: center; justify-content: center; }
+.item .big > div { max-height: 3.06em; }
+.copy { width: 936px; height: 112px; font-family: var(--body); line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+.copy > div { max-height: 2.4em; }
+.close { padding: 108px; align-items: center; justify-content: center; gap: 44px; }
+.close .big { width: 864px; height: 440px; display: flex; align-items: center; justify-content: center; }
+.note { width: 864px; height: 180px; font-family: var(--body); line-height: 1.2; color: var(--mint); }
+.story-words { position: relative; }
+.story-words::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--mint); }
+/* The house brand mark, small in the bottom corner of every card, clear of the words (the 2026-11-03 ruling). */
+.brandmark.corner { right: 40px; bottom: 28px; }

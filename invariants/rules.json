@@ -540,9 +540,9 @@
     },
     {
       "id": "R46",
-      "statement": "Reuse the 4 Growth folder; no other Growth root.",
+      "statement": "File every finished post, the off days included, into 3 Posts; do not file new posts in 4 Growth.",
       "source_file": "docs/ASSET-STORAGE.md",
-      "quote": "Reuse this existing folder. Do not create another Growth root.",
+      "quote": "holds earlier distribution copies. Do not file new posts there.",
       "enforced_by": [
         "process"
       ],

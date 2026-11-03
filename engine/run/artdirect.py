@@ -52,18 +52,25 @@ COLOUR_TOKENS = ('--ink', '--ink-deep', '--cream', '--green', '--mint', '--butte
 FONT_TOKENS = ('--heading', '--sub', '--body', '--mono')
 PIECE_ID = re.compile(r'^[a-z0-9][a-z0-9-]{1,63}$')
 TEMPLATE_ID = re.compile(r'^[a-z0-9][a-z0-9-]{0,63}$')
-PLACEHOLDER = re.compile(r'\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}')
+PLACEHOLDER = re.compile(r'\{\{(?:(rows|options|photo):)?([a-z0-9_]+)\}\}')
 SPEC_REQUIRED = ('file', 'width', 'height', 'fields', 'required', 'example')
 SPEC_OPTIONAL = ('choices', 'note', 'safe')
-FIELD_TYPES = ('text', 'rows', 'options')
+# A photo is a real picture of the story (a photograph, never a screenshot of text), filled only at render time from a
+# local file; the kit itself still holds no picture. Krish, 2026-11-02: "build out the carousel with real life imagery or
+# screenshots". Every photo says whose it is, but off the card: the render job carries a `credits` entry for each photo
+# field, and the credits go in the post's description (Krish, 2026-11-02: "all sources should go in the carousel post
+# description").
+FIELD_TYPES = ('text', 'rows', 'options', 'photo')
 SAFE_VERTICAL = {'top': 250, 'bottom': 340}
 MAX_TEMPLATES = 8
 MAX_FILE_BYTES = 64 * 1024
 KIT_CSS_LINK = '<link rel="stylesheet" href="../../../kit.css">'
 PIECE_CSS_LINK = '<link rel="stylesheet" href="../piece.css">'
 FIT_SCRIPT = '<script src="../../../fit.js"></script>'
-WORDMARK = ('<div class="wordmark"><span class="mark"><i></i><i></i><i></i></span>'
-            '<span class="words">MAKE YOUR MIND/</span><span class="up">UP</span></div>')
+# The brand mark is the official logo file, painted by kit.css from render/brand/ (Ruling, Krish, 2026-11-03: "You've
+# fabricated my brand logo"). A kit places it with exactly this markup; the drawn wordmark it replaces is refused.
+BRANDMARKS = ('<div class="brandmark"></div>', '<div class="brandmark corner"></div>')
+DRAWN_WORDMARK = re.compile(r'class="(?:wordmark|mark|words|up)"|MAKE YOUR MIND/')
 EM_DASH = '—'
 # Anything that could reach past render/: a scheme, a protocol-relative address, url() or @import.
 REMOTE = re.compile(r'\b(?:https?|ftp|wss?):|\b(?:data|blob|javascript|file|about|chrome):(?!\s|$)|'
@@ -93,7 +100,7 @@ NAMED_COLOURS = frozenset((
     'highlight highlighttext selecteditem selecteditemtext mark marktext graytext accentcolor accentcolortext').split())
 FORBIDDEN_PROPERTIES = ('filter', 'backdrop-filter', 'mix-blend-mode', 'background-blend-mode', 'animation',
                         'animation-name', 'transition')
-WORDMARK_PROPERTIES = re.compile(r'^(?:--wm|margin(?:-[a-z]+)?|align-self|justify-self|justify-content|order|'
+WORDMARK_PROPERTIES = re.compile(r'^(?:--bm|width|margin(?:-[a-z]+)?|align-self|justify-self|justify-content|order|'
                                  r'flex(?:-[a-z]+)?|position|top|right|bottom|left|z-index)$')
 SECRET = re.compile(r'\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bgen1_[A-Za-z0-9_-]{8,}')
 NEVER_WORDS = ('passport', 'krish')
@@ -168,12 +175,10 @@ def css_errors(css, at):
     if re.search(r'@[a-z-]+', re.sub(r'(["\']).*?\1', ' ', css), re.I):
         errors.append(at + ': an at-rule (@font-face, @import, @media and the rest are not allowed)')
     for selector, decls in _rules(css):
-        touches_wordmark = re.search(r'\.(?:mark|words|up)(?![\w-])', selector)
         for name, value in decls:
             errors += _declaration_errors(name, value, at)
-            if touches_wordmark or (re.search(r'\.wordmark(?![\w-])', selector)
-                                    and not WORDMARK_PROPERTIES.match(name)):
-                errors.append(at + ': restyles the wordmark (' + selector + ' ' + name + '); only size and place it')
+            if re.search(r'\.brandmark(?![\w-])', selector) and not WORDMARK_PROPERTIES.match(name):
+                errors.append(at + ': restyles the brand mark (' + selector + ' ' + name + '); only size and place it')
     return errors
 
 
@@ -215,8 +220,10 @@ def template_errors(kit_dir, tid, spec, sizes):
         used[name] = kind or 'text'
     if used != spec['fields']:
         errors.append(at + ': its placeholders are not exactly the declared fields')
-    if 'class="wordmark"' in html and html.count('class="wordmark"') != html.count(WORDMARK):
-        errors.append(at + ': the wordmark is not the house markup')
+    if DRAWN_WORDMARK.search(html):
+        errors.append(at + ': a wordmark set as type; the brand mark is the official file, <div class="brandmark"></div>')
+    if html.count('class="brandmark') != sum(html.count(b) for b in BRANDMARKS):
+        errors.append(at + ': the brand mark is not the house markup')
     for block in (re.findall(r'<style\b[^>]*>(.*?)</style\s*>', html, re.I | re.S)):
         errors += css_errors(block, at + ' <style>')
     for block in _attributes_css(html):
@@ -240,7 +247,7 @@ def spec_errors(tid, spec, sizes):
         errors.append(at + ': a 1080x1920 template keeps the safe zones (top 250, bottom 340)')
     fields = spec['fields']
     if not isinstance(fields, dict) or not fields or any(v not in FIELD_TYPES for v in fields.values()):
-        return errors + [at + ': fields map names to text, rows or options']
+        return errors + [at + ': fields map names to text, rows, options or photo']
     required, example = spec['required'], spec['example']
     if not isinstance(required, list) or not set(required) <= set(fields):
         errors.append(at + ': required names declared fields')
@@ -248,7 +255,7 @@ def spec_errors(tid, spec, sizes):
         return errors + [at + ': the example fills every required field and names only declared ones']
     for name, value in example.items():
         kind = fields[name]
-        ok = (isinstance(value, str) if kind == 'text' else
+        ok = (isinstance(value, str) if kind in ('text', 'photo') else
               isinstance(value, list) and 0 < len(value) and all(
                   isinstance(r, list) and len(r) in (2, 3) and all(isinstance(x, str) for x in r) for r in value)
               if kind == 'rows' else
@@ -410,11 +417,20 @@ def words_errors(kit_dir, piece):
     return out
 
 
+# The stand-in picture an example render puts in a photo slot: a flat grey block, since a kit holds no real picture.
+PHOTO_EXAMPLE = ROOT / 'render' / 'photo-example.png'
+
+
 def render_jobs(kit_dir):
-    """The renderer's jobs for a kit: each template from its own example."""
+    """The renderer's jobs for a kit: each template from its own example (a photo slot gets the grey stand-in)."""
     manifest = read_json(Path(kit_dir) / 'templates.json')
     pid = Path(kit_dir).name
-    return [{'template': 'piece:' + pid + '/' + tid, 'fields': spec['example'], 'out': tid + '.png'}
+    def fields(spec):
+        return {k: (str(PHOTO_EXAMPLE) if spec['fields'].get(k) == 'photo' else v) for k, v in spec['example'].items()}
+    def credits(spec):
+        return {k: 'The example stand-in' for k, v in spec['fields'].items() if v == 'photo'}
+    return [dict({'template': 'piece:' + pid + '/' + tid, 'fields': fields(spec), 'out': tid + '.png'},
+                 **({'credits': credits(spec)} if credits(spec) else {}))
             for tid, spec in manifest['templates'].items()]
 
 

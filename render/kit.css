@@ -94,21 +94,16 @@ html, body {
 /* Muted text: a kit colour turned down, never a new colour. */
 .quiet { opacity: 0.66; }
 
-/* The wordmark: a small bars mark, MAKE YOUR MIND/ in cream and a mint UP with a speech tail. Size it with --wm. */
-.wordmark { display: flex; align-items: center; justify-content: center; font-size: var(--wm, 56px); line-height: 1; flex: none; white-space: nowrap; }
-.wordmark .mark { display: flex; align-items: flex-end; gap: 0.03em; height: 0.74em; margin-right: 0.14em; flex: none; }
-.wordmark .mark i { display: block; width: 0.29em; background: linear-gradient(165deg, var(--mint) 20%, var(--green)); }
-.wordmark .mark i:nth-child(1) { height: 56%; }
-.wordmark .mark i:nth-child(2) { height: 100%; clip-path: polygon(26% 0, 74% 0, 100% 30%, 100% 100%, 0 100%, 0 30%); }
-.wordmark .mark i:nth-child(3) { height: 74%; }
-.wordmark .words { font-family: var(--heading); color: var(--cream); }
-.wordmark .up { position: relative; z-index: 0; margin-left: 0.04em; font-family: var(--body); font-weight: 900; font-stretch: 125%;
-  font-size: 0.94em; color: var(--mint); -webkit-text-stroke: 0.03em var(--mint); }
-.wordmark .up::after { content: ''; position: absolute; z-index: -1; left: 0.08em; right: -0.12em; bottom: -0.26em; height: 0.44em;
-  background: var(--green);
-  clip-path: polygon(0 0, 100% 0, 100% 52%, 92% 52%, 100% 100%, 70% 52%, 0 52%); }
+/* The brand mark: the official logo file (render/brand/, copied from the Control Center repository
+   src/assets/brand/makeyourmindup/, its sha256 in content-engine config/studio.json), never set as type or redrawn.
+   The 2026-11-03 ruling on the Saturday carousel. Size it with --bm. */
+.brandmark { display: block; flex: none; width: var(--bm, 360px); aspect-ratio: 1200 / 141;
+  background: url(brand/makeyourmindup-horizontal.png) left center / contain no-repeat; }
+/* On carousels: small and subtle in a bottom corner, never at the top (the same ruling). */
+.brandmark.corner { position: absolute; z-index: 3; right: 56px; bottom: 52px; width: var(--bm, 220px); }
+.footer .brandmark { width: var(--bm, 220px); align-self: center; }
 
-/* A header band: the wordmark on the left, the series in mono on the right, a green hairline under both. */
+/* A header band: the brand mark on the left, the series in mono on the right, a green hairline under both. */
 .masthead { display: flex; justify-content: space-between; align-items: center; gap: 32px; flex: none;
   padding-bottom: 24px; border-bottom: 2px solid var(--green); }
 .masthead .label { color: var(--mint); text-align: right; }
