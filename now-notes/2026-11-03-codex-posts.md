@@ -1,0 +1,3 @@
+Status: Ruling (Krish, 2026-11-03): "yes, Codex takes over posting". Codex now schedules approved posts in Buffer and publishes approved Substack articles and YouTube uploads from his Codex workspace, in the daily heartbeat's new Posting step (jobs/daily-growth.md), only on his yes (the board's yes anywhere, read from content.krishraja.com in the Codex browser, or a Control Center go-live), never twice, every post read back. Written into docs/PUBLISHING-AUTHORITY.md, BROWSER.md and CHANGES.md. LinkedIn stays his click.
+Next: the next Codex heartbeat runs the Posting step on the 2 Nov week's approved Wednesday, Friday and Saturday posts; read its readback records after it.
+North Star check (2026-11-03): holds.

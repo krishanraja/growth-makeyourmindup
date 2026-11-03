@@ -1,5 +1,12 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-03: Codex takes over posting. Asked whether Codex, his social media engagement manager,
+  should take over Buffer scheduling and Substack and YouTube posting, Krish answered: "yes, Codex takes
+  over posting". Codex schedules approved posts in Buffer and publishes approved Substack articles and
+  YouTube uploads from his Codex workspace, in the daily heartbeat's Posting step, only on his yes (the
+  board's yes anywhere or a Control Center go-live), never twice, and reads every post back
+  (`docs/PUBLISHING-AUTHORITY.md`, "3 November 2026: Codex posts"; `jobs/daily-growth.md`, "Posting";
+  `BROWSER.md`). LinkedIn stays his click; no spending, connections, deletion or engagement follows.
 - 2026-10-30: Channel work runs as the seven channel tasks. Krish asked for each of seven saved Instagram
   growth prompts to be its own task for every specialist, and for a process to the North Star. They are
   defined once in ai-harness `contract/channel-tasks.md`; docs/CHANNEL-TASKS.md maps them here, and

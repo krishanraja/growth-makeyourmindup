@@ -216,3 +216,38 @@ rulings above; everything above stands unless a line here says otherwise.
 
 No spending, new connection, automation or account-setting change follows
 from this ruling. Engagement stays prepared only.
+
+## 3 November 2026: Codex posts
+
+Ruling (Krish, 2026-11-03): "yes, Codex takes over posting". It answers the
+question put to him that day: should Codex, his social media engagement
+manager, take over Buffer scheduling and Substack and YouTube posting. This
+adds to the rulings above, which stand unless a line here says otherwise.
+
+- **Codex is the poster.** In Krish's Codex workspace (the Buffer connector
+  and the Codex in-app browser, signed in as he left it), Codex schedules the
+  approved posts in Buffer and publishes the approved Substack articles and
+  YouTube uploads. It is the daily heartbeat's posting step
+  (`jobs/daily-growth.md`, "Posting"). The lines above that leave the article
+  as "a saved draft with a deep link, and he clicks publish", and YouTube
+  long-form to wait, are superseded for Codex: Codex makes those posts.
+- **Only what he said yes to.** A post goes out only when Krish approved that
+  exact content for that day: his yes on the publish board (one yes anywhere:
+  the board press, the Today view, or his typed words recorded on the board,
+  read from `content.krishraja.com` in the signed-in Codex browser), or his
+  Control Center go-live. No yes, no post; an unclear yes holds and is asked.
+  New creative, a changed claim or a meaning-changing edit still needs a new
+  yes.
+- **One post, never two.** Before scheduling, Codex reads the channel's Buffer
+  queue and sent posts by its pinned `buffer_channel_id` and by the package's
+  sha256. If `release.yml` or an earlier run already queued it, Codex only
+  reads it back. A timeout is reconciled before any retry.
+- **Every post is read back.** Scheduling proves only a scheduled post. After
+  the slot, Codex opens the live post and records the native URL, account,
+  exact text and time, and ticks the board's posted record through the
+  existing writeback (`GROWTH_WRITEBACK_TOKEN`), as release does.
+- **Unchanged walls.** LinkedIn stays unscheduled drafts and his final click.
+  Only this engine's pinned Buffer channels. No spending, new connection,
+  deletion, account-setting or paid-offer change, and no submitted
+  engagement. YouTube uploads keep the title, description and category he
+  approved. Sunday publishes nothing (Ruling, Krish, 2026-11-02).

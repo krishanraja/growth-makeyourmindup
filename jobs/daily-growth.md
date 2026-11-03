@@ -66,7 +66,7 @@ format; it is not responsible for finding Growth's opportunities for it.
    network. Prefer the connector for Buffer reads and
    explicit draft-only operations; browser work still stays inside Codex.
    Never use a tool's default add-to-queue mode: saveToDraft must be true,
-   with no due time or publication. Journal before any create/save, then
+   with no due time or publication, except in the Posting step below. Journal before any create/save, then
    read back status, account, exact text, asset order and scheduling fields.
    On a timeout reconcile before any retry; unknown completion stays held.
    Imported sent posts marked via network are historical native posts,
@@ -163,3 +163,27 @@ Deliver one concise actionable review pack after completed work, not a list
 of intentions. Report real results, exact approvals needed and changed access
 holds. Do not repeat unchanged login alerts or notify merely because the
 heartbeat ran. No Control Center writes from this interactive chat.
+
+## Posting (Ruling, Krish, 2026-11-03: "yes, Codex takes over posting")
+
+Codex posts. Read `docs/PUBLISHING-AUTHORITY.md`, "3 November 2026: Codex
+posts", and run this step in every heartbeat after the drafts:
+
+1. Read the week's yes from the publish board at `content.krishraja.com` in
+   the signed-in Codex browser (Today view: the days marked approved), and
+   any Control Center go-lives. Only that day's approved posts are in scope.
+2. For each approved post: run `python growth.py social preflight` on its
+   exact package; confirm the pinned `buffer_channel_id`; look in that
+   channel's Buffer queue and sent posts for the same package sha256. If it
+   is already there, read it back and move on.
+3. Schedule it in Buffer at its slot (`create_post` or `edit_post` with its
+   due time; never the default add-to-queue). For a Substack article or a
+   YouTube upload Buffer cannot carry, publish it in its own editor in the
+   Codex browser at its slot, with the approved title and text, nothing else.
+4. Read back: Buffer status, account, exact text, asset order and due time
+   now; the live native URL after the slot. Record the native ID and URL,
+   and tick the board's posted record through the existing writeback.
+5. Hold and say why, never guess: no yes, a yes on other content, a failed
+   preflight, LinkedIn (his click), Sunday, or an outcome you cannot read
+   back.
+
