@@ -5,8 +5,14 @@ places every session. This applies to interactive work and scheduled jobs.
 
 ## One home per responsibility
 
-- **Growth distribution library:** [makeyourmindup / 4 Growth](https://drive.google.com/drive/folders/1Ck0Eulgcs5pFIpS_Ds1vJ6mEAW__Xjwy).
-  Reuse this existing folder. Do not create another Growth root.
+- **One Posts folder for the whole week** (Ruling, Krish, 2026-11-03: "Ultimately, the entire week's schedule should
+  just be in one Posts folder, well named. We don't need to pretend that this is two different engines. ... From now
+  on, we should just have Tuesday, Thursday, and Saturday also going into the posts folder with a similar naming
+  convention and contents."). Every finished off-day asset is filed with content-engine's
+  `scripts/post-pack/send.py` into the library's `3 Posts`, as `YYYY-MM-DD Tue off.day - Subject` (Thu and Sat
+  likewise), with the series days' sections (`3 Video`, `4 Social`). The board links that folder.
+- **Older Growth library:** [makeyourmindup / 4 Growth](https://drive.google.com/drive/folders/1Ck0Eulgcs5pFIpS_Ds1vJ6mEAW__Xjwy)
+  holds earlier distribution copies. Do not file new posts there.
 - **Production source:** Content Engine retains its existing production folders,
   manifests, editable sources and standards. Growth references them and stores
   immutable distribution exports only when needed for delivery. Never move or
@@ -25,7 +31,7 @@ raw browser evidence, credentials or operational journals in this library.
 
 ## Every campaign
 
-Use `YYYY-MM-DD - Topic - Channel` beneath 4 Growth. Put the exact approved
+Use `YYYY-MM-DD Day off.day - Topic` beneath `3 Posts` (above). Put the exact approved
 delivery PDF/images/video, exact post copy and separate comment copy there.
 Use explicit revision names such as `approved v3`, never ambiguous `final-final`.
 Keep a concise README explaining asset order, primary continuation and source
