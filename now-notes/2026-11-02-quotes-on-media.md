@@ -1,3 +1,0 @@
-Status: Krish's words on an approved off-day option are read by one rule (offday.note_parts; Ruling, Krish, 2026-11-02: "only where i specifically give a quote to use - i dont want requests put verbatim in the posts"). Text in quotation marks goes on the picture or video exactly as written: growth.py mix briefs lists it as required_texts for the Canva lane, and canva.lint_design fails required_text_missing without it. His other words are direction the maker's writer follows and never prints. A quote that reads as what not to say holds the slot as note_needs_krish.
-Next: the Canva lane runs growth.py mix briefs on the approved options and passes required_texts to the lint for each mock.
-North Star check (2026-11-02): holds.
