@@ -10,8 +10,9 @@ point to.
   Facebook and Instagram they're slightly differently coloured based on the colour theme of each day. The off
   days are neutral colours or the colours we have planned, but not under the Monday, Wednesday, or Friday panels
   or colours. Just subtle brand recognition would be nice as a hard rule across Monday to Saturday assets."
-  Monday wears butter (follow.the.money), Wednesday lilac (under.the.hood), Friday coral (mind.the.gap), and
-  Tuesday, Thursday and Saturday the house mint with no subchannel colour. Art direction briefs the day to Codex
+  Monday wears butter (follow.the.money), Wednesday lilac (under.the.hood), Friday coral (mind.the.gap);
+  Tuesday, Thursday and Saturday are neutral (ink, cream, green, the house mint at most as the accent) with no
+  subchannel colour or name. Art direction briefs the day to Codex
   and its gate refuses a kit that paints another day's colour; a dated render job takes its day's tone; a dated
   Canva design is linted the same way. The same table is content-engine's `docs/CAROUSEL-STANDARD.md`.
 - 2026-10-30: Channel work runs as the seven channel tasks. Krish asked for each of seven saved Instagram

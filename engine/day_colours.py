@@ -5,8 +5,8 @@ When they go on Facebook and Instagram they're slightly differently coloured bas
 The off days are neutral colours or the colours we have planned, but not under the Monday, Wednesday, or Friday
 panels or colours. Just subtle brand recognition would be nice as a hard rule across Monday to Saturday assets."
 
-A series day wears its subchannel's colour; every other day wears the house mint and no subchannel's colour. The
-same table is content-engine's docs/CAROUSEL-STANDARD.md and its scripts/pages/brand.py `day_look`; the hex values
+A series day wears its subchannel's colour; every other day is neutral (ink, cream or green) or the house mint, with
+no subchannel's colour or name. The same table is content-engine's docs/CAROUSEL-STANDARD.md and its scripts/pages/brand.py `day_look`; the hex values
 are the kit's own (render/templates.json "kit" "colours").
 """
 import datetime as dt
@@ -34,8 +34,8 @@ def day_rule(date):
     if look['series_day']:
         return (look['day'] + ': ' + look['owner'] + "'s day. Its colour, " + look['tone'] + ' (' + look['colour']
                 + '), is the accent; no other subchannel colour (butter, lilac or coral) appears.')
-    return (look['day'] + ': an off day. The accent is the house mint (' + look['colour'] + ') on neutral ink, '
-            'cream or green; no subchannel colour (butter, lilac or coral) appears anywhere.')
+    return (look['day'] + ': an off day. Neutral: ink, cream or green, or the house mint (' + look['colour'] + ') as the '
+            'one accent; no subchannel colour (butter, lilac or coral) and no subchannel name appear anywhere.')
 
 
 def colour_errors(painted, date):

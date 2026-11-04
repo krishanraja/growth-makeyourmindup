@@ -65,9 +65,10 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
   `color-mix()`. Turn a colour down with `opacity`, never with a new colour. No `filter` and no blend
   modes. Never redefine a kit token.
 - The day decides the accent (R125; the piece's day is above): Monday `var(--butter)`, Wednesday
-  `var(--lilac)`, Friday `var(--coral)`, and `var(--mint)` on Tuesday, Thursday and Saturday. Use no
-  other day's colour, and on an off day none of butter, lilac or coral anywhere. The gate refuses a kit
-  whose renders paint one.
+  `var(--lilac)`, Friday `var(--coral)`. Tuesday, Thursday and Saturday are neutral (`var(--ink)`,
+  `var(--cream)`, `var(--green)`) with `var(--mint)` at most as the one accent, and name no subchannel.
+  Use no other day's colour, and on an off day none of butter, lilac or coral anywhere. The gate refuses
+  a kit whose renders paint one.
 - Fonts: only `var(--heading)` (Anton), `var(--sub)` (Fraunces), `var(--body)` (Archivo) and
   `var(--mono)` (IBM Plex Mono). They load from the house kit. No `@font-face`, no `@import`, no
   at-rules of any kind.

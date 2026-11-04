@@ -39,7 +39,7 @@ Lifecycle: live. The detail is in `README.md`, `docs/ENGINE.md` and `docs/OPERAT
 
 ## What changed recently
 
-- 2026-11-04 Krish: "subtle brand recognition would be nice as a hard rule across Monday to Saturday assets" (R125). Monday wears butter, Wednesday lilac (new to the kit), Friday coral, and the off days the house mint; art direction briefs the day to Codex and its gate refuses another day's colour; a dated render job or Canva design is held the same way.
+- 2026-11-04 Krish: "subtle brand recognition would be nice as a hard rule across Monday to Saturday assets" (R125). Monday wears butter, Wednesday lilac (new to the kit), Friday coral; the off days are neutral, with mint at most as the accent and no subchannel colour or name. Art direction briefs the day to Codex and its gate refuses another day's colour; a dated render job or Canva design is held the same way. It waits on his yes to the revised covers.
 - 2026-11-04 Docs pass across the three repositories (Krish: "every single word ... 100% clear and up to date before you merge"): the docs now describe per-option approval, the Sunday rest day, 3 Posts filing and nine workflows.
 - 2026-11-03 Finished posts, the off days included, file into 3 Posts (R46), the one folder for the week.
 - 2026-11-03 The drawn wordmark is gone: carousels carry the official logo file, small in a bottom corner.

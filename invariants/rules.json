@@ -1686,7 +1686,7 @@
     },
     {
       "id": "R125",
-      "statement": "The publishing day decides an asset's colour, Monday to Saturday: Monday wears butter (follow.the.money), Wednesday lilac (under.the.hood), Friday coral (mind.the.gap), and Tuesday, Thursday and Saturday the house mint with no subchannel colour anywhere. Art direction briefs the day to Codex and its gate refuses a kit whose renders paint another day's colour; a render job that gives its date takes its day's tone and is refused for painting another (scripts/render_mocks.mjs dayLook); a dated Canva design is linted the same way.",
+      "statement": "The publishing day decides an asset's colour, Monday to Saturday: Monday wears butter (follow.the.money), Wednesday lilac (under.the.hood), Friday coral (mind.the.gap), and Tuesday, Thursday and Saturday are neutral (ink, cream, green, the house mint at most as the accent) with no subchannel colour or name anywhere. Art direction briefs the day to Codex and its gate refuses a kit whose renders paint another day's colour; a render job that gives its date takes its day's tone and is refused for painting another (scripts/render_mocks.mjs dayLook); a dated Canva design is linted the same way.",
       "source_file": "CHANGES.md",
       "quote": "Just subtle brand recognition would be nice as a hard rule across Monday to Saturday assets",
       "enforced_by": [
