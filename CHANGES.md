@@ -1,5 +1,19 @@
 # Changes Krish made to the growth engine
 
+This is history: a dated log of Krish's changes, kept as written. It runs
+newest first, apart from the 15 and 17 October entries at the end. An entry is true of the day it is dated, and a later entry or ruling
+can replace it. What runs today is in `AGENTS.md`, `NOW.md` and the docs they
+point to.
+
+- 2026-11-04: Each day's assets wear the day's colour, Monday to Saturday (R125). His words: "lightly
+  colour-code the thumbnail and cover asset templates for Monday, Wednesday, and Friday? When they go on
+  Facebook and Instagram they're slightly differently coloured based on the colour theme of each day. The off
+  days are neutral colours or the colours we have planned, but not under the Monday, Wednesday, or Friday panels
+  or colours. Just subtle brand recognition would be nice as a hard rule across Monday to Saturday assets."
+  Monday wears butter (follow.the.money), Wednesday lilac (under.the.hood), Friday coral (mind.the.gap), and
+  Tuesday, Thursday and Saturday the house mint with no subchannel colour. Art direction briefs the day to Codex
+  and its gate refuses a kit that paints another day's colour; a dated render job takes its day's tone; a dated
+  Canva design is linted the same way. The same table is content-engine's `docs/CAROUSEL-STANDARD.md`.
 - 2026-10-30: Channel work runs as the seven channel tasks. Krish asked for each of seven saved Instagram
   growth prompts to be its own task for every specialist, and for a process to the North Star. They are
   defined once in ai-harness `contract/channel-tasks.md`; docs/CHANNEL-TASKS.md maps them here, and

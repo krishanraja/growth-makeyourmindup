@@ -1683,6 +1683,24 @@
         "test_a_format_or_a_day_outside_the_mix_never_releases",
         "test_series_go_lives_are_unaffected_by_the_mix"
       ]
+    },
+    {
+      "id": "R125",
+      "statement": "The publishing day decides an asset's colour, Monday to Saturday: Monday wears butter (follow.the.money), Wednesday lilac (under.the.hood), Friday coral (mind.the.gap), and Tuesday, Thursday and Saturday the house mint with no subchannel colour anywhere. Art direction briefs the day to Codex and its gate refuses a kit whose renders paint another day's colour; a render job that gives its date takes its day's tone and is refused for painting another (scripts/render_mocks.mjs dayLook); a dated Canva design is linted the same way.",
+      "source_file": "CHANGES.md",
+      "quote": "Just subtle brand recognition would be nice as a hard rule across Monday to Saturday assets",
+      "enforced_by": [
+        "engine/day_colours.py:colour_errors",
+        "engine/run/artdirect.py:day_errors",
+        "engine/run/canva.py:lint_design"
+      ],
+      "tests": [
+        "test_each_series_day_wears_its_subchannel_and_every_other_day_the_house_mint",
+        "test_an_off_day_paints_no_subchannel_colour",
+        "test_a_series_day_paints_its_own_colour_only",
+        "test_art_direction_briefs_the_day_and_gates_the_render",
+        "test_a_dated_canva_design_is_held_to_its_day"
+      ]
     }
   ]
 }

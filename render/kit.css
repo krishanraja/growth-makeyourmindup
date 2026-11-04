@@ -111,12 +111,14 @@ html, body {
 /* The eyebrow: small mono capitals, spaced out. */
 .eyebrow { font-family: var(--mono); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; line-height: 1.25; flex: none; }
 
-/* The two-tone headline: cream lines, then one accent line in the piece's tone (butter unless it says mint or coral). */
+/* The two-tone headline: cream lines, then one accent line in the piece's tone, which is its day's colour (R125: butter Monday,
+   lilac Wednesday, coral Friday, mint on an off day; butter when a job names no tone and no date). */
 .headline { font-family: var(--heading); font-weight: 400; text-transform: uppercase; line-height: 1; color: var(--cream); }
 .headline .lead, .headline .accent { display: block; }
 .accent, .tone-butter .accent { color: var(--butter); }
 .tone-mint .accent { color: var(--mint); }
 .tone-coral .accent { color: var(--coral); }
+.tone-lilac .accent { color: var(--lilac); }
 
 /* An arrow between two values ("$2 -> $4"), drawn so every font shows it the same way. */
 .arrow { display: inline-block; position: relative; width: 0.62em; height: 0.045em; min-height: 3px; margin: 0 0.22em;
@@ -147,3 +149,4 @@ html, body {
 .numbers .row .value { font-family: var(--heading); line-height: 1.12; color: var(--butter); }
 .tone-mint .numbers .row .value { color: var(--mint); }
 .tone-coral .numbers .row .value { color: var(--coral); }
+.tone-lilac .numbers .row .value { color: var(--lilac); }

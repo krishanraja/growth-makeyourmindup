@@ -42,7 +42,7 @@ TEMPLATES = {**TEN, **FROM_THE_ARTWORK}
 WORDMARK = {'carousel-cover', 'carousel-body', 'carousel-close', 'story-frame', 'quote-card', 'receipt-card', 'meme-square', 'meme-vertical',
             'versus-card', 'versus-card-tall', 'evidence-card'}
 WITH_RULE = {'quote-card', 'receipt-card', 'carousel-body', 'carousel-close', 'meme-square', 'meme-vertical', 'profile-art'}
-TONES = ['butter', 'mint', 'coral']
+TONES = ['butter', 'mint', 'coral', 'lilac']   # lilac is under.the.hood's, for Wednesday (R125)
 PLACEHOLDER = re.compile(r'\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}')
 HEX = re.compile(r'#[0-9A-Fa-f]{3,8}\b')
 

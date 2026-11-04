@@ -27,6 +27,9 @@
 // A job whose words do not fit its box at the smallest size, whose fonts did not load, or
 // whose fields carry an em dash, is refused; nothing is clipped silently. Each result names the colours
 // and fonts the page really painted with, so a test can hold them to the kit.
+// A job may carry its publishing "date" (YYYY-MM-DD): its day decides the accent (R125, engine/day_colours.py).
+// The job takes the day's tone when it gives none, a different tone is refused, and a page that paints another
+// day's colour (or any subchannel colour on an off day) is refused.
 
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -37,6 +40,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
+// The same table as engine/day_colours.py: Monday butter, Wednesday lilac, Friday coral, every other day mint.
+const SERIES_DAYS = { 1: ['butter', '#FFD84D'], 3: ['lilac', '#B7A6FF'], 5: ['coral', '#FF6A4D'] };
+const OFF_DAY = ['mint', '#7EF0C0'];
+const SERIES_COLOURS = Object.values(SERIES_DAYS).map(([, h]) => h);
+function dayLook(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) throw new Error('a job\'s date is YYYY-MM-DD, not ' + JSON.stringify(date));
+  const weekday = new Date(String(date) + 'T12:00:00Z').getUTCDay();
+  const [tone, colour] = SERIES_DAYS[weekday] || OFF_DAY;
+  return { tone, colour, series: weekday in SERIES_DAYS };
+}
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RENDER = path.join(ROOT, 'render');
 const ORIGIN = 'http://mocks.invalid';
@@ -118,6 +131,11 @@ export function fill(manifest, job, piecesDir) {
   if (missing.length) throw new Error(job.template + ': missing field(s) ' + missing.join(', '));
   for (const [k, v] of Object.entries(fields)) {
     if (strings(v).some((s) => EM_DASH.test(s))) throw new Error(job.template + ': field ' + k + ' has an em dash');
+  }
+  if (job.date !== undefined && 'tone' in (spec.choices || {})) {
+    const look = dayLook(job.date);
+    if (fields.tone === undefined || fields.tone === '') fields.tone = look.tone;
+    else if (fields.tone !== look.tone) throw new Error(job.template + ': tone on ' + job.date + ' is ' + look.tone + ' (R125), not ' + JSON.stringify(fields.tone));
   }
   for (const [k, allowed] of Object.entries(spec.choices || {})) {
     if (fields[k] !== undefined && fields[k] !== '' && !allowed.includes(fields[k])) {
@@ -246,6 +264,11 @@ async function renderOne(browser, manifest, job, piecesDir) {
     if (refused.length) throw new Error(job.out + ': the page asked for what the renderer refuses: ' + refused.join(', '));
     if (!report.faces || report.unloaded.length) throw new Error(job.out + ': fonts did not load: ' + report.unloaded.join(', '));
     if (report.errors.length) throw new Error(job.out + ': ' + report.errors.join('; '));
+    if (job.date !== undefined) {
+      const look = dayLook(job.date);
+      const wrong = report.colours.map((c) => c.toUpperCase()).filter((c) => SERIES_COLOURS.includes(c) && !(look.series && c === look.colour));
+      if (wrong.length) throw new Error(job.out + ': ' + job.date + (look.series ? ' wears its own subchannel colour only' : ' is an off day and wears no subchannel colour') + ' (R125); it paints ' + wrong.join(', '));
+    }
     const png = await page.screenshot({ type: 'png', animations: 'disabled', caret: 'hide', scale: 'css',
       clip: { x: 0, y: 0, width: spec.width, height: spec.height } });
     return { png: stripPng(Buffer.from(png)), colours: report.colours, fonts: report.fonts };

@@ -462,8 +462,9 @@ class TheWeekAndTheCommand(unittest.TestCase):
         inventory = {'pieces': [{'piece_id': 'piece_b', 'title': 'A synthetic title'}]}
         self.assertEqual(artdirect.pieces_from_mix(mix, inventory),
                          [{'piece_id': 'carousel-b', 'title': 'A synthetic title', 'claims': [],
-                           'lane': 'repurposed_carousel'},
-                          {'piece_id': 'meme-a', 'title': 'A synthetic meme idea', 'claims': ['X'], 'lane': 'meme'}])
+                           'lane': 'repurposed_carousel', 'date': '2026-11-02'},
+                          {'piece_id': 'meme-a', 'title': 'A synthetic meme idea', 'claims': ['X'], 'lane': 'meme',
+                           'date': '2026-11-03'}])
 
     def test_the_coming_week_from_the_backlog_fixture(self):
         inventory = json.loads((ROOT / 'backlog' / 'fixture.json').read_text(encoding='utf-8'))

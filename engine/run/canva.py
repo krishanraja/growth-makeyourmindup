@@ -7,7 +7,8 @@ read back after an export, and returns error codes. It does not call Canva.
 A summary: {"channel": "x", "width": 1600, "height": 900, "size": "x-card" (optional),
 "template": "<kit template key>" (optional), "colours": ["#0C1512"], "fonts": ["Anton"],
 "texts": ["..."], "quotes": ["..."] (optional; any double-quoted text also counts),
-"required_texts": ["..."] (optional; Krish's quotes from growth.py mix briefs, each on the design exactly)}.
+"required_texts": ["..."] (optional; Krish's quotes from growth.py mix briefs, each on the design exactly),
+"date": "YYYY-MM-DD" (optional; the publishing day, which decides the accent: R125, engine/day_colours.py)}.
 """
 import argparse
 import json
@@ -16,6 +17,7 @@ import re
 
 from ..core import read_json
 from ..social import has_boilerplate
+from .. import day_colours
 
 ROOT = Path(__file__).resolve().parents[2]
 KIT = ROOT / 'social' / 'brand' / 'kit.json'
@@ -89,6 +91,13 @@ def lint_design(dataset, piece_text=None, kit=None, root=ROOT, require_template=
     for i, value in enumerate(dataset['colours']):
         if colour(value) not in palette:
             out.append(finding('off_kit_colour', '$.colours[%d]' % i, str(value)))
+    if dataset.get('date'):
+        # The day decides the accent (R125): a series day wears only its own subchannel colour, an off day none.
+        try:
+            for problem in day_colours.colour_errors([colour(v) for v in dataset['colours']], dataset['date']):
+                out.append(finding('wrong_day_colour', '$.colours', problem))
+        except ValueError:
+            out.append(finding('bad_dataset', '$.date', 'date is YYYY-MM-DD'))
     families = [' '.join(f.lower().split()) for f in kit['fonts'].values()]
     for i, name in enumerate(dataset['fonts']):
         if not font_ok(name, families):

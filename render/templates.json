@@ -71,10 +71,11 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
+      "note": "headline is the cream lines, accent the one line in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac)."
     },
     "scorecard": {
       "file": "templates/scorecard.html",
@@ -193,10 +194,11 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
+      "note": "headline is the cream lines, accent the one line in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac)."
     },
     "carousel-body": {
       "file": "templates/carousel-body.html",
@@ -271,10 +273,11 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
+      "note": "headline is the cream lines, accent the one line in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac)."
     },
     "meme-square": {
       "file": "templates/meme-square.html",
@@ -300,10 +303,11 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
-      "note": "the punchline is the accent line, in the tone colour (butter unless tone says mint or coral)."
+      "note": "the punchline is the accent line, in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac)."
     },
     "meme-vertical": {
       "file": "templates/meme-vertical.html",
@@ -330,12 +334,13 @@
         "setup": "The everyday moment everyone at work knows.",
         "punchline": "The kind twist at the end."
       },
-      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly. The punchline is the accent line, in the tone colour (butter unless tone says mint or coral).",
+      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly. The punchline is the accent line, in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac).",
       "choices": {
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       }
     },
@@ -374,7 +379,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -416,7 +422,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -461,7 +468,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -507,7 +515,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -550,7 +559,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -559,7 +569,7 @@
         "accent": "and its second line",
         "entity": "the company name"
       },
-      "note": "A video chapter card. The accent line is mint unless tone says butter or coral; entity is the name the chapter is about."
+      "note": "A video chapter card. The accent line is mint unless tone says butter, coral or lilac (a dated job takes its day's tone); entity is the name the chapter is about."
     },
     "chapter-card-vertical": {
       "file": "templates/chapter-card-vertical.html",
@@ -584,7 +594,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -593,7 +604,7 @@
         "accent": "and its second line",
         "entity": "the company name"
       },
-      "note": "A video chapter card. The accent line is mint unless tone says butter or coral; entity is the name the chapter is about."
+      "note": "A video chapter card. The accent line is mint unless tone says butter, coral or lilac (a dated job takes its day's tone); entity is the name the chapter is about."
     },
     "evidence-card": {
       "file": "templates/evidence-card.html",

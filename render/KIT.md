@@ -42,7 +42,7 @@ The reference images are private. They are never copied into this repository.
 | --- | --- |
 | Heavy condensed capitals, tightly leaded. | Observed on the 26 October vertical cover, share card and chapter cards. |
 | Two tones: cream lines first, then one accent line. The accent line may wrap. | Observed: cream then butter on the 26 October cover and share card; cream then mint on every 26 October chapter card. |
-| The accent is butter, mint or coral, set per piece with the `tone` field. Covers default to butter, chapter cards to mint. | Butter and mint observed. Coral is interpreted: it is a kit colour that neither board used for a headline. |
+| The accent is butter, mint, coral or lilac, set with the `tone` field, and the day decides it (R125, Ruling, Krish, 2026-11-04): butter on Monday, lilac on Wednesday, coral on Friday, mint on Tuesday, Thursday and Saturday, never another day's colour. A job that gives its `date` takes its day's tone; without one, covers default to butter and chapter cards to mint. | Butter and mint observed. Coral is interpreted: it is a kit colour that neither board used for a headline. Lilac is under.the.hood's, added 4 Nov for Wednesday. |
 | A quote card keeps one colour. | Interpreted. A quote is word for word, so colouring part of it would edit it. |
 
 ## Versus rows (versus-card, versus-card-tall)
@@ -159,8 +159,9 @@ A render job names a piece template as `piece:<piece_id>/<template>`. The synthe
 - A kit that fails any check is removed, and that piece goes out in the house kit (code
   `piece_kit_refused`). `tests/test_piece_kits.py` runs the same checks on every kit here, and shows
   each one failing on a planted colour outside the kit, a remote font and an image.
-- Codex works on three pieces a week at most unless a run is given another cap, and the run's
-  summary counts the tokens it used. Its log holds counts and codes only.
+- Codex works on three pieces a run at most (the scheduled run is on Saturdays) unless a run by
+  hand is given another cap, and the run's summary counts the tokens it used. Its log holds counts
+  and codes only.
 
 ### What his approval binds
 
