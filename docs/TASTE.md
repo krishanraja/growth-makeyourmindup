@@ -15,7 +15,8 @@ detail on why I like something in there."
 
 ## Read, before you build or write (Control Center connector)
 
-1. `get_approved_taste` with lane `production`, then lane `voice`. Follow every
+1. `get_approved_taste` with repository `krishanraja/growth-makeyourmindup`
+   and lane `production`, then lane `voice`. Follow every
    rule it returns when you fill a Canva template or write words. Empty means
    none is approved yet: never invent one.
 2. `get_production_examples` for the slot's platform and format: the cards
@@ -41,8 +42,8 @@ it is the one Control Center write a maker may call.
 
 - His exact words: anything Krish typed that you read (an amended go-live, a
   decline reason, an idea in Buffer Ideas). Quote it character for character
-  with where and when he typed it (`kind` his words). Never a paraphrase.
-- Observations (never counted toward a rule): "card X shaped template Y" or
+  with where and when he typed it (`kind` `krish_words`). Never a paraphrase.
+- Observations (`kind` `observation`, never counted toward a rule): "card X shaped template Y" or
   "post Z", and each such post's verdict from the measure job (works,
   neutral, fails or insufficient, with its denominator). Send each fact
   once, whoever made the post.

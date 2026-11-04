@@ -1,8 +1,8 @@
 # Channel audit and implementation brief
 
 Prepared 17 October 2026. This is a source-backed action plan and operating
-checklist, not a claim that the external surfaces have been changed. Krish
-acts on platforms; website and Control Centre changes go to their owners.
+checklist. It does not claim that the external surfaces have been changed. Krish
+acts on platforms; website and Control Center changes go to their owners.
 A suggested improvement is a hypothesis until measured. Keep published
 facts, promise and series consistent across all entries.
 
@@ -394,8 +394,9 @@ both hosts: sitemap submitted, canonical URLs indexed, no coverage errors.
 
 - **AEO-Engine** (separate repository, fortnightly, read in Control
   Center) is the citation measure: which buyer questions cite
-  makeyourmindup in ChatGPT, Claude, Perplexity and Grok. Ask Krish to add
-  each answer piece's question to its question set; never run it from here.
+  makeyourmindup in ChatGPT, Claude, Perplexity and Grok. Each answer
+  piece's question goes to its question set through the `answer` job's
+  `AEO question:` line (AGENTS.md, "Open setup"); never run it from here.
 - **Referral visits.** In Substack and website analytics, record `visits`
   from `chatgpt.com`, `perplexity.ai`, `claude.ai`, `copilot.microsoft.com`
   and `gemini.google.com` as observations with the referrer in `scope`,

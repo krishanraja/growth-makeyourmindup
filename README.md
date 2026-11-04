@@ -21,11 +21,12 @@ lane"). Content-engine keeps every other format and all production standards.
 [docs/LANES.md](docs/LANES.md) says, in plain words, what runs on its own
 (L0 GitHub Actions), what waits for one press in Control Center (L2) and
 what waits for Krish's hands (L3: LinkedIn, the Buffer plan, one-time set-up
-in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs seven
+in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs nine
 workflows: control-center, release, measure, keys, handoff, artdirect, maker
-([docs/MAKER.md](docs/MAKER.md)) and check. There
+([docs/MAKER.md](docs/MAKER.md)), ledger and check. There
 are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct
-2026): a new schedule is a GitHub Actions job. Making (Canva assets, words,
+2026): a new schedule is a GitHub Actions job. The one exception he allowed
+the same day is the daily credits session ([docs/CREDITS.md](docs/CREDITS.md)). Making (Canva assets, words,
 Buffer drafts) is done by sessions and the nine automations on Krish's PC
 (below, kept until W46) under the same walls, and follows
 [docs/TASTE.md](docs/TASTE.md). Only the GitHub
@@ -43,7 +44,7 @@ journals browser intent/readback; it does not itself drive a browser.
 The weekly slot is Saturday 12:00 Europe/London, following this Codex chat.
 It needs the host online and account access in its available browser.
 
-The growth-repository upgrade is complete. Control Center's brief for this
+The 17 October 2026 upgrade of this repository is complete. Control Center's brief for this
 engine is [docs/CONTROL-CENTER-BRIEF.md](docs/CONTROL-CENTER-BRIEF.md), which
 supersedes [docs/CONTROL_CENTER_HANDOFF.md](docs/CONTROL_CENTER_HANDOFF.md).
 The channel audit and exact next actions are in
@@ -94,9 +95,9 @@ python growth.py post .scratch/envelope.json
 
 The last command is a dry run. No Control Centre write happens without
 `--deliver`, which is reserved for a separately authorised scheduled run.
-This implementation session does not deliver packs or change Control Centre.
-The supported legacy API drops rich metadata, so full records stay local
-until the handoff is implemented. No database fallback exists.
+An interactive session never delivers packs or changes Control Centre.
+The supported legacy API drops rich metadata, so full records stay local.
+No database fallback exists.
 
 ## Reporting to Control Center
 

@@ -19,11 +19,15 @@ and no PC.
 
 ## What it does, in order
 
-1. **Reads his authority from Control Center.** His decisions, the plan in
-   force and each part's ideas, read back by digest with the same code
-   release uses (`autorelease.week_state`). His no on the week makes
-   nothing. A plan he has not answered, or one that cannot be trusted, makes
-   nothing.
+1. **Reads his authority from Control Center and the board.** His
+   decisions, the plan in force and each part's ideas, read back by digest
+   with the same code release uses (`autorelease.week_state`), and his
+   approvals on content-engine's board (`autorelease.mix_binding`): each
+   off-day option he approved since 1 November, or before that his one
+   press on the week's mix (`docs/CONCEPT-MANIFEST.md`, On GitHub Actions).
+   His no on the week makes nothing. A plan he has not answered, or one that
+   cannot be trusted, makes nothing, and a slot outside what he approved on
+   the board is never made (`outside_mix`).
 2. **Reads the week's slots.** Which idea goes on which channel at which
    time, from the slots record the handoff keeps beside the plan (below).
    They are checked against what he approved before they are used: every
@@ -32,8 +36,9 @@ and no PC.
    ready idea) must be the lines these slots make. Anything else holds the
    whole day loudly as `slots_differ_from_plan`.
 3. **Picks the slots of those days** on Instagram, YouTube, TikTok and X,
-   each day under its own week's plan. Never LinkedIn. An idea he did not
-   approve, or stopped, holds. An idea already made on that channel this
+   each day under its own week's plan. Never LinkedIn, and never a slot due
+   on a Sunday (`rest_day`; Ruling, Krish, 2026-11-02, `docs/MIX.md`). An
+   idea he did not approve, or stopped, holds. An idea already made on that channel this
    week (in the week's index) is `already_made`, so a second run makes
    nothing new. The idea, channel and week are marked as taken before the
    draft is saved, so one run can never make two. A draft in Buffer that
@@ -122,6 +127,9 @@ that morning.
   derived index (`makeyourmindup:derived:<day>:<n>`). The plan key is the
   first 12 characters of the hash of the plan's part digests, so both
   records belong to exactly the plan he decided on (`engine/run/cc_records.py`).
+- **Content-engine's board:** his approvals for the week, from
+  `GET https://content.krishraja.com/api/board/<Monday>/pieces`, with the
+  `GROWTH_WRITEBACK_TOKEN` secret.
 - **Google Drive:** each approved mock file, by its file id, from
   `https://drive.usercontent.google.com/download?id=<FILE_ID>&export=download`.
   The week's files sit in the shared `mocks/<ISO week>/` folder, each named
@@ -187,6 +195,9 @@ GitHub repository secrets, read only on the runner:
 - `BUFFER_API_KEY`: reads this engine's channels and saves each draft.
 - `ANTHROPIC_API_KEY`: writes the words and runs the blind review. Without
   it the job holds loudly as `anthropic_key_missing` and makes nothing.
+- `GROWTH_WRITEBACK_TOKEN`: reads his approvals on content-engine's board.
+  Without it nothing is approved (`mix_board_not_configured`, quiet) and
+  nothing is made.
 
 ## When it holds
 

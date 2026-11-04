@@ -3,7 +3,7 @@
 Owner: Growth. Evidence baseline: 26 October 2026. Capability status and review
 interval live in `../tools/buffer.json`; do not duplicate a status table here.
 Publication authority comes from docs/PUBLISHING-AUTHORITY.md. Approved branded
-content has delegated cadence; LinkedIn remains an unscheduled draft; scoped X, TikTok and Threads have delegated cadence.
+content has delegated cadence; LinkedIn remains an unscheduled draft; scoped X, TikTok, Threads and Substack Notes have delegated cadence.
 Browser operations use
 only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie export.
 
@@ -109,7 +109,7 @@ No delete/re-upload workaround, approval bypass or checkpoint advancement.
 ## Scheduling approved branded content
 
 For approved branded content, the current standing permission delegates timing;
-record it separately from creative approval. LinkedIn never enters this scheduling/publication procedure: Krish makes its final publication manually. X, TikTok and Threads are explicitly delegated for approved content.
+record it separately from creative approval. LinkedIn never enters this scheduling/publication procedure: Krish makes its final publication manually. X, TikTok, Threads and Substack Notes are explicitly delegated for approved content.
 
 Use the authorised delivery route with the exact account, text, media,
 metadata and time. Do not infer permission from this guide or a boolean in a

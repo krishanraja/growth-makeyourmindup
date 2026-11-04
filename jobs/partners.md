@@ -1,5 +1,11 @@
 # Job: partners
 
+Held (AGENTS.md, "Outreach belongs to Control Center"; Ruling, Krish, 2026-10-21):
+Control Center's People and Visibility own outreach to shows and guests.
+`cc finish` holds this job's drafts with that reason, and `post --deliver`
+refuses this kind, so nothing from it reaches Krish's list. The job may
+still keep its list and research for his own use.
+
 Kind `partners`. Read the shared instructions and `docs/ENGINE.md`. Map
 quality matters more than a quota. This work shares the day's budget.
 

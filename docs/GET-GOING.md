@@ -15,9 +15,9 @@ What runs alone and what waits for Krish is in `docs/LANES.md`; his one-time ste
 
 ## The brief
 
-Read AGENTS.md first and follow it (it records Krish's rulings of 2026-10-19), then docs/NORTH_STAR.md, docs/CONTROL-CENTER-BRIEF.md and docs/control-center/ENGINE-PROTOCOL.md (protocol 1.1.0). Before you start, say which part of the North Star this work moves.
+Read AGENTS.md first and follow it (it records Krish's rulings of 2026-10-19), then docs/NORTH_STAR.md, docs/CONTROL-CENTER-BRIEF.md and docs/control-center/ENGINE-PROTOCOL.md (protocol 1.17.0 today; this brief was written at 1.1.0). Before you start, say which part of the North Star this work moves.
 
-Where things stand (2026-10-19): this engine runs the Control Center loop live. Every day at 05:10 UTC Control Center writes this engine a directive and wakes `.github/workflows/control-center.yml` (`python growth.py cc runner --deliver`) with a `cc-growth-directive` repository_dispatch. The first live run on 2026-10-19 succeeded: it journaled its attempt, read the directive, sent a report, read it back by digest and read Krish's decisions. Control Center now speaks protocol 1.1.0: send `schema_version: "1.1.0"`, and read `stage`, `amended`, `exact_payload`, `amount_usd` and `amended_sha256` from decisions.
+Where things stand (2026-10-19): this engine runs the Control Center loop live. Every day at 05:10 UTC Control Center writes this engine a directive and wakes `.github/workflows/control-center.yml` (`python growth.py cc runner --deliver`) with a `cc-growth-directive` repository_dispatch. The first live run on 2026-10-19 succeeded: it journaled its attempt, read the directive, sent a report, read it back by digest and read Krish's decisions. Control Center now speaks protocol 1.1.0: send `schema_version: "1.1.0"`, and read `stage`, `amended`, `exact_payload`, `amount_usd` and `amended_sha256` from decisions. Since then the protocol has reached 1.17.0, and `report_version` in `engine/control_center.py` raises each report only to the version its fields need (`docs/ENGINE.md`, "Autonomy loop").
 
 The job now is to make the daily report worth Krish's morning. Every run should leave Control Center with:
 
@@ -78,8 +78,10 @@ task. The original technical backlog below remains open, not silently done.
 
 Krish adopted the bulletproof-engine reference for this repository. The plan,
 its phases and acceptance tests are in
-`docs/plans/2026-10-27-engine-architecture.md`. Until its Phase 6 cutover the
-build below and the current route keep running unchanged.
+`docs/plans/2026-10-27-engine-architecture.md`, a dated plan: where a later
+ruling in `CHANGES.md` differs, the ruling wins. Its GitHub Actions jobs
+already run beside the build above, and the nine PC automations are kept
+until W46 (`lanes.json`), the week its Phase 6 measures the 20x target.
 
 ## Checks
 

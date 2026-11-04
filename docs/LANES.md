@@ -19,18 +19,20 @@ Nobody has to be awake or online for these.
 |---|---|---|
 | The Control Center runner (`control-center.yml`): reads the day's instructions, checks the engine, sends the report, reads Krish's answers | every day 05:10, when Control Center wakes it; a backup at 05:40 runs only if that run has not worked today | 05:10, backup 05:40 |
 | The key check (`keys.yml`): checks that both keys still work. A refused or missing key fails the run, so GitHub emails Krish | every day 06:50 | 06:50 |
-| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). That is each day's go-live he approved (a go-live naming more than one New York day holds), and each post made from an idea and mock he approved in the week's mix plan, read back from Control Center (below). A post still scheduled after a No fails the run, so GitHub emails Krish. It holds a post whose words fail the copy lint or ask for the share, and every post on a Buffer route not yet recorded as passed: that route's one capability check goes through `run release` first. Never LinkedIn | every 30 minutes | every 30 minutes |
+| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). That is each day's go-live he approved (a go-live naming more than one New York day holds), and each post made from an idea and mock in the week's mix plan that he approved on content-engine's board, read back from Control Center and the board (below). A post still scheduled after a No fails the run, so GitHub emails Krish. It holds a post whose words fail the copy lint or ask for the share, any post due on a Sunday, and every post on a Buffer route not yet recorded as passed: that route's one capability check goes through `run release` first. Never LinkedIn. Then it ticks the publish board for each post Buffer shows sent (`run board tick`) | every 30 minutes | every 30 minutes |
 | Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
-| The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea | when that maker wakes it | when that maker wakes it |
-| The maker (`maker.yml`, [MAKER.md](MAKER.md)): makes the next New York day's posts from the ideas and mocks Krish approved in the week's mix plan, as Buffer drafts with no due time, writes their words and a blind review of them with the Anthropic API, and hands each off with its review, so release can schedule it. Only the approved mock files, checked by hash; one draft per idea, channel and week; never LinkedIn; it never schedules, publishes or deletes | every day 04:30; by hand a dry run unless deliver is ticked | 04:30 |
+| The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea. It also records Krish's Clear on "Off-day posts: N ready" in Control Center (`growth-offday-topup`), which owes nothing back | when that maker, or that Clear, wakes it | when that maker, or that Clear, wakes it |
+| The maker (`maker.yml`, [MAKER.md](MAKER.md)): makes the rest of today's and all of tomorrow's New York posts from the ideas and mocks Krish approved, as Buffer drafts with no due time, writes their words and a blind review of them with the Anthropic API, and hands each off with its review, so release can schedule it. Only the approved mock files, checked by hash; one draft per idea, channel and week; never LinkedIn; it never schedules, publishes or deletes | every day 04:30; by hand a dry run unless deliver is ticked | 04:30 |
+| The ledger (`ledger.yml`): rebuilds the day-by-day ledger of slots for the next 14 days (stage, next action, owner and what has gone out) from content-engine's board and Buffer, read-only, and keeps it as the run's artifact for 14 days. It posts, schedules, ticks and commits nothing | every day 04:05, before the maker | 04:05 |
 | The test suite (`check.yml`) | on every push and pull request | on every push and pull request |
 | Art direction (`artdirect.yml`): Codex invents one visual idea for each piece of the coming week and builds it as a piece kit (`render/KIT.md`, "Piece kits"), with no network, only in that piece's own folder, and on at most three pieces a run. The renderer's checks are the gate: a kit that fails is removed and that piece uses the house kit. The kits that pass come to Krish as one pull request, "Piece kits for week W", which the workflow never merges. Its log carries counts and codes only | Saturdays 07:00 | 07:00 |
 
 Only this lane holds the Control Center engine key. It is a GitHub
 repository secret. No chat session holds it.
 
-Art direction is the one L0 job that runs a model. Codex makes there under
-the same walls as every maker: it writes only a piece kit, which reaches the
+Art direction and the maker are the two L0 jobs that run a model (the maker
+is under "Who makes", below). In art direction Codex makes under the same
+walls as every maker: it writes only a piece kit, which reaches the
 repository only through a pull request Krish merges, and it never posts,
 sends, schedules or spends beyond its capped run. Its key is the repository
 secret `OPEN_AI_API_KEY`, given to that one step and to no other job.
@@ -50,7 +52,11 @@ the runner, a dispatch payload or anything on Krish's PC.
   back, rebuilds every idea's hash, and applies his yes, his changed version
   or his No with the same code the Control Center runner uses. His No on any
   part stops the week; a newer plan he has not answered withdraws an older
-  yes.
+  yes. Since 30 October his yes in Control Center no longer approves on its
+  own: the approval is read from content-engine's board, where since
+  1 November he approves each off-day option on its own
+  (`docs/CONCEPT-MANIFEST.md`, On GitHub Actions). A post outside what he
+  approved there never goes out.
 - **A post made from an approved idea.** The handoff records its review
   under the post's own hash. Release reads that record back by the exact
   hash, rebuilds the post from its Buffer draft, and schedules it only when
@@ -136,8 +142,9 @@ it first, or no. They wait until he opens the list.
   those posts is still shown to him first.
 - **New kinds of post.** Carousels, memes and any kind he has not approved
   before. He sees each one. Their words are plain English, human and humble.
-- **A quick idea.** Each idea he drops in Buffer Ideas comes back as a
-  preview for one press.
+- **A quick idea.** An express idea comes back to him as a go-live for one
+  press (the handoff's `growth-go-live-manifest` with `express`). Reading
+  the ideas he drops in Buffer Ideas is planned and not built yet.
 
 ## L3: waits for Krish's hands
 

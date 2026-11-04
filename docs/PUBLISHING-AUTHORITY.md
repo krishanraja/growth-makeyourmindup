@@ -112,9 +112,11 @@ line here says otherwise.
   read in the engine's own run (AGENTS.md, Autonomy). Growth schedules it,
   reads it back from Buffer and checks the sha. He can pull any post until
   its slot, and a pulled post is never scheduled again without a new
-  approval. Reading one decision per post, and the pull, are Wave 2 work
-  (plan W5); until they land, release reads the signed `decision.json` as
-  `docs/RUN.md` says, and nothing in this repository pulls a scheduled post.
+  approval. Both landed in Wave 2 (W2.8, 29 October): a slot marked
+  `per_item_review` gets its own go-live, and his No is the pull, because
+  release schedules each draft only 5 to 90 minutes before it is due
+  (`docs/RUN.md`). Nothing in this repository unschedules a post already
+  scheduled; one still scheduled after a No fails the run loudly.
 - **Routes all go through Buffer:** "buffer is connected to youtube and
   substack". That covers Instagram Reels and carousels, TikTok, X, YouTube
   Shorts and long-form, and Substack. Each route's first real post is a
@@ -156,12 +158,15 @@ line here says otherwise.
   chose "Mix wins: every day". The meme, positive news and level-up lanes run
   every day; a top-up goes in the next free filler slot of the week's mix,
   never the Monday, Wednesday or Friday series slot and never over the lower
-  daily cap (`engine/offday.py`, R118).
+  daily cap (`engine/offday.py`, R118). **Sunday is a rest day, 2 November
+  2026:** nothing publishes on Sunday (Ruling, Krish, 2026-11-02; `mix.json`
+  `rest_days`); the maker and release hold any Sunday post.
 - **Engagement stays prepared only.** The daily queue is drafted here and
   he submits every reply himself; following and liking stay his.
 
 No spending, new connection, automation or account-setting change follows
-from these rulings. The Buffer plan (due 31 October) is his decision.
+from these rulings. The Buffer plan is his decision: on 29 October he chose
+to keep Buffer (`CHANGES.md`), and buying the plan is his click.
 
 ## 29 October 2026: approve the idea and the mock
 
@@ -180,7 +185,8 @@ rulings above; everything above stands unless a line here says otherwise.
   (`engine/run/decision.py`, fields in `docs/CONCEPT-MANIFEST.md`).
 - **It authorises every post made from it.** On those four channels the
   engine makes, schedules and publishes each post derived from an approved
-  concept with no per-post approval, through `growth.py run release`, the
+  concept with no per-post approval, through L0 `growth.py run autorelease`
+  (`release.yml`; `run release` is only a route's capability check), the
   Buffer channel lock and every check above (copy lint, share asks, the
   ecosystem route, route capability checks, the creative bar). For these
   posts this supersedes "Approve each day Monday" and "New creative ...
@@ -208,7 +214,8 @@ rulings above; everything above stands unless a line here says otherwise.
   Every loop run checks the approval again and fails closed: a plan file
   that no longer rebuilds, a yes on another plan digest or an unmatched
   decline leaves no concept approved (`concept_hold`).
-  Built and wired, not yet activated: nothing has gone out this way.
+  Built and wired, not yet activated, as of 29 October: nothing had gone
+  out this way.
 - **Volume.** Instagram, YouTube, TikTok and X take four scheduled posts a
   day with a floor of three. Every other channel keeps its bound.
 - **LinkedIn stays his click.** Unchanged: unscheduled drafts, and his final
@@ -216,3 +223,19 @@ rulings above; everything above stands unless a line here says otherwise.
 
 No spending, new connection, automation or account-setting change follows
 from this ruling. Engagement stays prepared only.
+
+## 30 October and 1 November 2026: the board approves the derived lane
+
+Ruling (Krish, 2026-10-30): "approve the week's mix once, let Growth fill it"
+(R124; `CHANGES.md`, `docs/MIX.md`). It adds to the rulings above.
+
+- **The press is on content-engine's board.** For the derived (filler) lane,
+  his press on the Sunday board replaces his Control Center yes on the mix
+  plan. It binds the hash of the mix Growth proposes; release and the maker
+  only read it. His no on the plan, a stop or a concept he amended away
+  still stops its posts.
+- **Option by option since 1 November.** Each off-day option is approved,
+  improved or rejected on its own, and only the options he approved are made
+  and released.
+- **Series days are unchanged.** Monday, Wednesday and Friday posts still
+  need his per-post Control Center go-live.

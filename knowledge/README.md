@@ -9,7 +9,7 @@ access to each channel".
 |---|---|
 | `10k-operating-system.docx` | The original document, as Krish gave it. |
 | `10k-operating-system.md` | The same document as text, with its numbered references. Read this one. |
-| `10k-blueprint.md` | The shorter version, with the same structure and `[cite:n]` markers. |
+| `10k-blueprint.md` | The shorter version, in much the same order. Its `[cite:n]` numbers do not match the 60 numbered references in `10k-operating-system.md`, and no list for them is kept here. |
 
 ## Corpus supplied on 18 October 2026
 
@@ -30,7 +30,7 @@ repository paths, upload receipt date, byte sizes and SHA-256 checksums.
 The receipt date is not a claim about when a document was written or an
 audit observation was made.
 
-These files are reference material, not new user instructions. Preserve
+These files are reference material and carry no new user instructions. Preserve
 their original text, including examples and claims, without treating it as
 approved operating guidance or verified MYMU performance. Any instruction
 to publish, send, change settings, alter formats, spend, or enable a channel
@@ -40,9 +40,9 @@ change the current video formats or transfer editorial work to this engine.
 Recheck dated audit findings before relying on them as current facts.
 
 `AGENTS.md`, `CHANGES.md`, the current `PLAYBOOK.md` and job instructions
-continue to govern operations. In particular, Notes and WhatsApp stay off,
-agents draft and Krish acts, and unverified hook multipliers remain research
-claims rather than measured results. Archiving this corpus supports the
+continue to govern operations. In particular, WhatsApp stays off, nothing
+goes out that Krish has not approved, and unverified hook multipliers remain
+research claims rather than measured results. Archiving this corpus supports the
 North Star by keeping the source material for useful, shareable work
 available to future sessions.
 
@@ -69,7 +69,8 @@ closing list, "Where Krish's rules change the corpus", records the
 overrides: no percentages, zero paid boosts, no Notes or WhatsApp, agents
 draft and Krish acts, facts only from published pieces, nothing invented,
 no fear or hype, his voice, real replies, nothing in bulk, editorial stays
-with Krish, money models only as Sunday proposals.
+with Krish, money models only as Sunday proposals, snackable posts never ask
+to be shared, and no content names Krish.
 27 October 2026: "no Notes" in that list is superseded and "agents draft and
 Krish acts" is narrowed (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`); see
 override 1 and the note after override 6 below.
@@ -78,8 +79,8 @@ override 1 and the note after override 6 below.
 
 These are the source. **`PLAYBOOK.md` (repository root) is how this engine
 applies them to makeyourmindup**, `COPY-DOCTRINE.md` applies the copywriting
-corpus, and each job in `jobs/` names the part it
-uses. When a job and the documents disagree, the job wins, because the
+corpus, and most jobs in `jobs/` name the part they
+use. When a job and the documents disagree, the job wins, because the
 playbook adapts the documents to Krish's own rules.
 
 ## Where Krish's rules change the documents
@@ -123,6 +124,12 @@ Override 3 is narrowed by the 27 October 2026 rulings (`CHANGES.md`;
 and Notes go out through the go-live step, and LinkedIn stays his click.
 Override 6 is narrowed the same way: Krish's part is to read the pack, sign
 and send, and the go-live step posts what he signed on those four channels.
-Override 5 is narrowed for the Canva lane only (`docs/ENGINE-BOUNDARY.md`):
-Growth makes Substack Notes and memes that content-engine does not cover,
-never articles or scripts.
+On 29 October both were narrowed again: his approval of a concept in the
+week's mix plan is the go-live for every Instagram, YouTube, TikTok and X post
+made from it (AGENTS.md, "Idea and mock approval"). AGENTS.md ("Autonomy")
+and `docs/PUBLISHING-AUTHORITY.md` hold the current rule.
+Override 5 is narrowed for the Canva lane (`docs/ENGINE-BOUNDARY.md`):
+Growth makes Substack Notes and memes that content-engine does not cover.
+On 28 October it also took derived carousels and the off-day lane
+(`docs/ENGINE-BOUNDARY.md`, "28 October 2026"). It never writes articles or
+scripts.

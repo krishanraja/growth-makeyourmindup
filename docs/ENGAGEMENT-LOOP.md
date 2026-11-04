@@ -6,11 +6,16 @@ A daily 09:00 London heartbeat was created on 2026-10-24 under Krish's
 instruction to work every day. jobs/daily-growth.md owns that routine.
 Buffer is connected by Krish and in a Team trial ending 7 November.
 Publication follows the later docs/PUBLISHING-AUTHORITY.md ruling: delegated
-cadence for approved branded content and scoped X/TikTok; LinkedIn is unscheduled
+cadence for approved branded content and scoped X, TikTok, Threads and
+Substack Notes (the last two since 27 October); LinkedIn is unscheduled
 drafts for Krish's manual publication. No paid subscription is authorised.
+On 29 October Krish kept Buffer (`CHANGES.md`); buying the plan is his click.
 The earlier free three-channel pilot is superseded by this live trial.
-Seven channels are connected, with the publication YouTube channel in place
-of the mind/make LinkedIn Page. Krish's personal LinkedIn remains connected.
+Seven channels were connected on 24 October, with the publication YouTube
+channel in place of the mind/make LinkedIn Page. Since 27 October this
+engine has eight, Krish's Substack profile for Notes included, pinned by
+channel id in `engine/buffer_channels.py` inside an organisation shared with
+other ventures. Krish's personal LinkedIn remains connected.
 Two distinct LinkedIn/X drafts were saved and independently reopened in
 Codex; no posts were scheduled or published. Private trial evidence and
 metrics remain in ignored .scratch/channel-audit/buffer-trial/.
@@ -149,8 +154,10 @@ checkpoints live in the ignored private trial ledger. Historical pricing
 assumptions are not current quotes. Recheck the actual provider quote before
 any paid decision; no plan selection or cancellation is authorised here.
 
-Review on 31 October, prepare the decision on 5 November and make the final
-keep/downgrade/stop recommendation on 6 November. Judge native-format
+The plan was to review on 31 October, prepare the decision on 5 November and
+make the final keep/downgrade/stop recommendation on 6 November. Krish
+decided earlier, on 29 October: Buffer stays, and the plan purchase is his
+click (`CHANGES.md`). Judge native-format
 reliability, correctly published approved work, relevant audience growth,
 publication conversions and measured human review time. A UTM identifies
 placement; it does not prove a subscriber or incremental revenue. Drafts,
@@ -194,9 +201,9 @@ Sources, retrieved 2026-10-24:
 
 Read docs/ENGAGEMENT-LOOP.md, BROWSER.md, docs/ENGINE.md and the existing
 radar/queue implementation. Extend the existing growth-makeyourmindup engine,
-not a second queue or orchestrator. Prepare a three-card daily engagement
-view containing source evidence, exact comment, optional question, expiry,
-estimated time and explicit states. Keep total human time in the shared
+not a second queue or orchestrator. Prepare the daily engagement cards, each
+with source evidence, exact comment, optional question, expiry, estimated
+time and explicit states. Keep total human time in the shared
 budget. Support a browser handoff that never submits or overwrites a human
 draft. Since 2026-10-29 the day's cards go as Control Center's one copy and
 open task, each with its exact words and public link. No Skyvern and no Stripe. Do not make Control Center writes from an
@@ -206,7 +213,8 @@ Keep proposed follower targets separate from measured observations. Persist
 experiment identity, platform, story, format, hook, voice, CTA, live URL and
 dated metric snapshots. Confirm account and window before comparing. An
 unknown or blocked metric must not become zero or a complete checkpoint.
-For any future Buffer API integration, verify its live schema and
+For any change to the Buffer API integration (`engine/run/buffer_api.py`
+for release, `engine/run/buffer_drafts.py` for the maker), verify its live schema and
 least-privilege connection, use explicit draft-only payloads first, and preserve native
 post identity/idempotency through every retry. Publication requires its own
 exact-payload approval. Prove one bounded end-to-end path before expansion.

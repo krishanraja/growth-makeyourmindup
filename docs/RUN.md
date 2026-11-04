@@ -137,10 +137,9 @@ bytes against its signed manifest line; a file in 4 Growth is never trusted.
 
 ## Closeout (docs/ASSET-STORAGE.md)
 
-1. Approved delivery assets and exact copy go to the Drive
-   **4 Growth** library, one `YYYY-MM-DD - Topic - Channel` folder each with
-   a SHA-256 manifest.
-2. Private evidence stays in `.scratch/`, never in 4 Growth (link-editable).
+1. Finished posts and exact copy go to **3 Posts** by content-engine's
+   `send.py`, with a SHA-256 manifest; never 4 Growth (Krish, 3 Nov).
+2. Private evidence stays in `.scratch/`, never in a shared Drive folder.
 3. Lessons go to `social/lessons/`; run `python growth.py social check`.
 4. Creative feedback goes to Content Engine, which owns the craft.
 5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:

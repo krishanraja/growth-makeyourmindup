@@ -14,7 +14,7 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 
 ## Asset continuity (Krish, 27 October 2026)
 
-**One pipeline (proposed 31 October 2026).** `docs/OPERATING_MODEL.md` sets the seven stages from Inspiration to posting, who owns each, the ledger this repository keeps of every day's slot, and the pitch format every idea is written in. Krish ruled on 31 October that this repository schedules and posts everything and keeps track of what's what every day.
+**One pipeline (decided by Krish, 31 October 2026).** `docs/OPERATING_MODEL.md` sets the seven stages from Inspiration to posting, who owns each, the ledger this repository keeps of every day's slot, and the pitch format every idea is written in. Krish ruled on 31 October that this repository schedules and posts everything and keeps track of what's what every day.
 
 Read `docs/ASSET-STORAGE.md` and `docs/SESSION-HANDOVER.md` at the start of
 every session. File every finished post, the off days included, into the
@@ -91,7 +91,7 @@ receipts, incomplete coverage and approval boundaries.
 
 ## Autonomy (Ruling, Krish, 2026-10-19)
 
-Krish: "the engine shows me what it is going to do, I approve, it gets up to go-live and asks me to review." This engine runs autonomously under Control Center protocol 1.1.0 (`docs/control-center/ENGINE-PROTOCOL.md`, "Autonomy" and "Amend"), in steps Krish answers on his one list in Control Center:
+Krish: "the engine shows me what it is going to do, I approve, it gets up to go-live and asks me to review." This engine runs autonomously under the Control Center growth engine protocol, whose version 1.1.0 added this loop (`docs/control-center/ENGINE-PROTOCOL.md`, "Autonomy" and "Amend"; this engine now speaks up to 1.17.0), in steps Krish answers on his one list in Control Center:
 
 1. **Plan.** Propose what the engine is going to do as `stage: "plan"`, behind a wall (usually `strategy`), with the plan itself in `exact_payload` so he can change it. Wait for his yes.
 2. **Go-live.** Once the plan is approved, build everything up to go-live: the assets, the exact words, the amount. Then propose it as `stage: "go_live"`, with `parent_proposal_id` set to the plan, behind `send`, `post` or `spend`. Nothing goes out yet.
@@ -416,15 +416,19 @@ Only the GitHub runner (a repository secret) and Krish's PC (the file, for
 Codex workspace runs) hold it. A Claude session never sets or reads it: it
 reads Control Center through the Control Center connector, and its
 proposals reach Control Center only through the runner (`docs/LANES.md`).
-There are no Claude routines (Krish, 29 Oct 2026); whoever makes or writes
-for this engine follows `docs/TASTE.md`.
+There are no Claude routines (Krish, 29 Oct 2026), apart from the one daily
+credits session he allowed the same day (`docs/CREDITS.md`, `lanes.json`
+`claude_sessions`); whoever makes or writes for this engine follows
+`docs/TASTE.md`.
 Separately, Control Center wakes `.github/workflows/control-center.yml`
 every morning; that GitHub runner checks the engine offline and reports
 what a clean runner can see. Its numbers are always "measured only in the
-publication workspace". GitHub Actions runs seven workflows, all lane L0
+publication workspace". GitHub Actions runs nine workflows, all lane L0
 (`docs/LANES.md`): control-center, release, measure, keys, handoff,
-artdirect, maker and check. The maker (`docs/MAKER.md`) drafts each next day's posts from
-the ideas and mocks Krish approved and hands them off; it never schedules. The nine automations below run on Krish's PC and are kept until W46.
+artdirect, maker, ledger and check. The maker (`docs/MAKER.md`) drafts the rest of
+today's and all of tomorrow's posts from the ideas and mocks Krish approved and
+hands them off; it never schedules. The ledger rebuilds the day-by-day record
+(`docs/OPERATING_MODEL.md`, section 4). The nine automations below run on Krish's PC and are kept until W46.
 
 ## The schedule (New York time)
 
@@ -544,7 +548,7 @@ click. No percentages still holds.
 
 Krish keeps or kills a job from the Sunday report. Record his words with the
 date in `CHANGES.md`, then change the job file. The schedule itself lives in
-Codex (`README.md`, "Setting it up").
+Codex, built from `automations.json` (`README.md`, "Existing runtime").
 
 <!-- krish-canon:start release=v2026.10.31.5 sha=6fdbb8c16bbd rendered=2026-11-01 -->
 ## Krish canon

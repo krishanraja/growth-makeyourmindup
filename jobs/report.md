@@ -44,16 +44,16 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    on odd ISO Sundays from 25 October 2026. Quote its actual questions and
    cited sources, with run date/freshness. Missing or stale is explicit.
    Never run the paid AEO engine. Monthly, revisit deferred channels only
-   against evidence and Krish's instructions; Notes/WhatsApp/paid stay off.
+   against evidence and Krish's instructions; WhatsApp and paid stay off.
    27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
    Notes are back, from Krish's Substack profile, and Threads joins; report both as channels, each with its
-   two-week baseline before any verdict. WhatsApp and paid stay off. The
+   two-week baseline before any verdict. The
    What-Works Analyst's ledger (`crew/what-works/`) goes into the Sunday
    check-in.
-7. Prepare/check the v2 report. Current Control Centre cannot show all rich
+7. Prepare/check the v2 report. Current Control Center cannot show all rich
    fields; include essential context in card prose and retain full local
-   records. Apply the `AGENTS.md` delivery rule. UI requirements are a brief,
-   not permission to modify Control Centre.
+   records. Apply the `AGENTS.md` delivery rule. UI requirements are a brief
+   for Control Center's owner; they never permit a change to Control Center.
 8. Last, report to Control Center with this run's actual file names:
    `python growth.py cc finish --job report --envelope .scratch/report.json --queue .scratch/queue.json --deliver`.
    It must print "readback digest matches" and "attempt succeeded". If it

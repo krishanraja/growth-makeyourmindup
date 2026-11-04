@@ -23,7 +23,7 @@ GitHub Actions secret is only available inside a workflow explicitly
 configured to consume it; it does not automatically appear in a local
 Codex session. Never create a workflow to expose a secret. The check
 workflow deliberately uses no secrets and makes no Control Centre writes;
-only the other L0 workflows below read secrets.
+only the other L0 workflows read secrets.
 
 For an already configured production runner, `python growth.py doctor`
 performs read-only checks. Missing key, HTTP 401, endpoint failure or absent
@@ -51,9 +51,9 @@ other copy is the file on Krish's PC for Codex workspace runs:
   `.github/workflows/` read it: `control-center.yml` (the 05:10 UTC dispatch,
   with a 05:40 UTC backup that stops when the dispatch already ran),
   `keys.yml` (06:50 UTC), `measure.yml` (07:00, 13:00 and 19:00 UTC),
-  `release.yml` (every 30 minutes) and `handoff.yml` (when a session or PC
-  automation that saved drafts wakes it). All but the first also read the
-  `BUFFER_API_KEY` secret. The key check, measure (which checks first) and
+  `release.yml` (every 30 minutes), `maker.yml` (04:30 UTC) and
+  `handoff.yml` (when a session or PC automation that saved drafts wakes
+  it). All but the first also read the `BUFFER_API_KEY` secret. The key check, measure (which checks first) and
   release fail the run on a refused key with `cc_token_refused` or
   `buffer_key_refused`, so GitHub emails Krish. A Claude session's
   proposals reach Control Center only through this runner

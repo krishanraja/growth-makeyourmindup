@@ -1,7 +1,7 @@
 # Job: numbers
 
-Kind `numbers`. Read `BROWSER.md` and `docs/ENGINE.md`. This is observation,
-not an invitation to change integrations or fabricate missing analytics.
+Kind `numbers`. Read `BROWSER.md` and `docs/ENGINE.md`. This job only
+observes: never change an integration or fabricate missing analytics.
 
 First, before reading any source: `python growth.py cc start --job numbers --deliver`.
 Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
@@ -75,10 +75,9 @@ source, medium, campaign and `utm_content`, joined per post on `utm_content`
 3. `python growth.py run ga4 join CAPTURE SPEC` joins that reading per post.
 
 Network happens only with `--live`, and only to Google's token and Data API
-origins; without it the command prints what it would request. If this
-checkout does not list `ga4` among the `growth.py run` commands yet, record
-those rows as missing with reason `not_connected`; if the GA4 credentials are
-not set, with reason `missing_credentials`. Never estimate them. GA4 numbers stay local and in the
+origins; without it the command prints what it would request. If the GA4
+credentials are not set, record those rows as missing with reason
+`missing_credentials`. Never estimate them. GA4 numbers stay local and in the
 Control Center report, never in the repository. Substack Growth sources stay
 the North Star source: a weekly reconciliation keeps the more conservative
 reading and logs the gap. `python growth.py run northstar --capture FILE`

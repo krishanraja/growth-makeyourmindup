@@ -9,8 +9,9 @@ in its briefs and apply it to Growth's posting copy and engagement drafts.
 
 Anything posted or prepared under Krish Raja's personal identity must sound
 sincere, warm, humble and pleased to share something useful. LinkedIn always
-uses this stance. The same requirement applies to his personal X and TikTok,
-and any other explicitly scoped personal account. Identify the actual owner
+uses this stance. The same requirement applies to his personal X, TikTok and
+Threads, to Substack Notes from his own profile (27 October 2026,
+PUBLISHING-AUTHORITY.md), and to any other explicitly scoped personal account. Identify the actual owner
 and byline before selecting a voice; connection to Buffer is not permission
 to add an account to scope.
 
@@ -22,7 +23,7 @@ experience, result, relationship or confession to manufacture warmth.
 
 No arrogance, superiority, scolding, victory laps, vendor sneering, lecture
 voice or status signalling. Avoid hype and launch-announcement language.
-Humility must be real calibration, not theatrical self-deprecation, excessive
+Humility means real calibration. Avoid theatrical self-deprecation, excessive
 apology or a formulaic claim to know nothing. Wit stays kind and subordinate
 to a useful finding. Do not copy the publication caption onto a personal post.
 
@@ -37,8 +38,8 @@ wording and absence of I/me/my remain governed by content-engine's standard.
 
 ## Publication Instagram
 
-The makeyourmind.up Instagram account speaks as makeyourmindup, rather than
-Krish's personal account. The personal-sharing requirement above does not
+The makeyourmind.up Instagram account is the publication's own and speaks as
+makeyourmindup. The personal-sharing requirement above does not
 apply there. Use its accepted publication voice: clear, useful, visually
 specific and dryly humorous where earned. Do not impersonate Krish or force
 a humble first-person introduction onto this publication account. Truth,
@@ -48,7 +49,7 @@ publication surface, it speaks as "we" and never names Krish.
 ## Required review before any save or go-live
 
 Record the exact account and classify who is speaking. Then inspect the
-actual words, not just the brief. For personal copy ask: could Krish share
+actual words as well as the brief. For personal copy ask: could Krish share
 this warmly with someone he respects, without sounding as though he is
 showing off or teaching them a lesson? Does it offer help without claiming
 more than the test establishes? Would it still sound human without emojis,
@@ -56,7 +57,7 @@ hashtags or a compulsory engagement question? A failed answer holds the
 copy for revision. Review any cross-post separately in its account context.
 
 Publication authority is separate and governed by PUBLISHING-AUTHORITY.md:
-approved branded content plus scoped X and TikTok have delegated cadence;
-LinkedIn remains unscheduled drafts for Krish's manual publication. Personal LinkedIn has no
+approved branded content plus scoped X, TikTok, Threads and Substack Notes
+have delegated cadence; LinkedIn remains unscheduled drafts for Krish's manual publication. Personal LinkedIn has no
 volume quota or assumed publication-subscriber North Star. Comment and
 account-setting authority remains separate.

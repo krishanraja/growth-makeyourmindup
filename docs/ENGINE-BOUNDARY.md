@@ -122,8 +122,9 @@ Substack Notes and memes, whose `production_owner` is `growth-canva` in
 Growth does not run a competing renderer or creative-standard register.
 Content-engine keeps its formats and standards, and the lane applies them by
 reference. Brand kit and approved templates only; every quote matches the
-published piece; Canva never publishes. Approved exports and manifests go to
-the Drive 4 Growth library per `docs/ASSET-STORAGE.md`. Creative acceptance
+published piece; Canva never publishes. Finished posts go to the library's
+`3 Posts` with content-engine's `send.py`, never to 4 Growth (Ruling, Krish,
+2026-11-03; `docs/ASSET-STORAGE.md`). Creative acceptance
 stays with Krish. Guide: `social/guides/canva.md`.
 
 ## 27 October 2026: Notes and Threads in scope
@@ -159,10 +160,12 @@ valuable advice on how to level up with AI ... the growth repo should be
 accountable for this and this should show me quickly for approval, and when
 I one click green light it puts it in the next available slot".
 
-- Days and channels: Tuesday, Thursday, Saturday and Sunday on the
+- Days and channels: Tuesday, Thursday and Saturday on the
   makeyourmindup Instagram, TikTok (`therealkrisho`) and YouTube Shorts
-  channels in the release allowlist. Shorts takes video only, so a carousel
-  goes there as a short slideshow.
+  channels in the release allowlist. Sunday was an off day until Krish made
+  it a rest day with no publishing (Ruling, Krish, 2026-11-02; `mix.json`
+  `rest_days`). Shorts takes video only, so a carousel goes there as a short
+  slideshow.
 - Formats: memes made fresh in the brand kit (a borrowed format is
   credited; someone else's image or clip is never reposted); uplifting AI
   news carousels, where every claim names its primary source, is dated
@@ -172,10 +175,11 @@ I one click green light it puts it in the next available slot".
   approved master.
 - Planned on Sunday: "I'm happy to plan the Tuesday, Thursday, Saturday,
   and Sunday content within the Sunday ideas session if you give me a few
-  options to approve as you do the Mon/wed/fri". Growth feeds 2 to 3
-  options a day to the Sunday ideas board through content-engine's
-  `week_board.py` inputs, never a board of its own. Each shows its format,
-  source and draft copy, and he approves or skips it with one press.
+  options to approve as you do the Mon/wed/fri". Growth feeds up to six
+  options a day (since 1 November; first 2 to 3) to the Sunday ideas board
+  through content-engine's `week_board.py` inputs, never a board of its own.
+  Each shows its format, source and draft copy, and he approves, improves
+  or rejects each option on its own (Ruling, Krish, 2026-11-01).
 - Mid-week, a green press puts an approved post in the next free off-day
   slot per channel (`docs/PUBLISHING-AUTHORITY.md`).
 - Accountable: Growth reports slots filled against slots available, and
@@ -189,6 +193,8 @@ drafted with a one-click copy button, each link opening the exact post,
 reply box or profile. Control Center shows it. It stays prepared only: he
 submits every reply, and following and liking stay his.
 
-Built so far (28 October): the release channel lock and the copy lint. The
-lane, the engage queue, derived carousels and the Monday go-live reads are
-Wave 2 of the plan, with the first off-day posts due Tuesday 10 November.
+Built on 28 October: the release channel lock and the copy lint. Built in
+Wave 2 (merged 29 October): the off-day lane on the every-day mix, exact
+engage targets and one go-live per post. Since then: the board's mix press
+(R124, 30 October) and per-option off-day approvals (1 November). Off-day
+options started with the 2 November week (`CHANGES.md`, `NOW.md`).

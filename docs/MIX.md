@@ -45,11 +45,15 @@ with nothing approvable is a shortfall, never filled with unapproved creative.
 ## One press: the idea and the mock
 
 Since 30 October (Ruling, Krish, 2026-10-30: "approve the week's mix once,
-let Growth fill it"; R124) the press that approves the filler lane is his
-"Approve this week's mix" on content-engine's Sunday board, bound to the
-hash of the mix Growth proposes from this plan (`docs/CONCEPT-MANIFEST.md`,
-On GitHub Actions). His yes on the plan below no longer approves on its own;
-his no and his amendments still stop.
+let Growth fill it"; R124) the press that approves the filler lane is on
+content-engine's Sunday board, bound to the mix Growth proposes from this
+plan (`docs/CONCEPT-MANIFEST.md`, On GitHub Actions). Until 1 November it was
+one "Approve this week's mix" press; since then the board asks about each
+off-day option on its own, and only the options he approved can be made and
+released. On GitHub Actions (release and the maker) his yes on the plan below
+no longer approves on its own; his no and his amendments still stop. The
+local `run release` path still reads his yes on the plan from decision.json
+(below).
 
 A concept is one idea, its one claim and its mock files, bound by
 `concept_sha256` (`engine/concepts.py`). The planner's output carries one
@@ -115,8 +119,8 @@ it, and every later run checks it again and withdraws what no longer holds.
 It acts only once a week's plan has been reported, he has decided it, the
 week's spec carries its concepts and a release session runs `run release`;
 built and wired is not activated, and no post has gone out this way yet. A
-release session then plans up to 16 concept posts a day on these channels plus
-their readbacks (`docs/RUN.md`, Budgets). Scheduling stays with the one
+release session then plans up to 16 concept posts a day on these channels
+(four on each of the four) plus their readbacks. Scheduling stays with the one
 release executor; nothing here calls Buffer.
 
 On GitHub Actions (L0) the plan goes to Control Center through the handoff

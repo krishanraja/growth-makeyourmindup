@@ -45,9 +45,10 @@ What-Works Analyst and the Send-Test Reader keep their jobs: Canva makes what a
 task drafts, the Send-Test Reader judges the picked hook and caption blind, and
 What-Works reads the results.
 
-Where they run:
+Where they run (the job files below do not name the tasks yet; this list is
+the mapping they follow):
 
-- trend-scan and idea-bank: jobs/radar.md, weekly.
+- trend-scan and idea-bank: weekly, inside jobs/radar.md (a daily job).
 - reel-script and caption-set: inside daily-pack production. The 5 hooks and 5
   captions are the alternatives the creative review records before a go-live.
 - platform-truth and channel-plan: jobs/report.md, weekly. Any card rule change

@@ -4,7 +4,7 @@ Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
 
 1 November Sunday review is in `.scratch/channel-audit/daily-20261101/SUNDAY-REVIEW.md`. The latest 07:16 UTC ledger read the board manifest. Reconcile the 2 November hero against the existing cut review before assigning work from its stage-four row. The lighter-post mix for the 2 November week showed no approval press at capture. Use the publish board under `docs/OPERATING_MODEL.md`. Last native subscriber reading is dated 30 October.
 
-31 October midpoint: read `.scratch/channel-audit/daily-20261031/MIDPOINT.md`. Buffer feed metrics now extend beyond 72h, with unchanged pilot counts and no demonstrated sharing/click-through. Codex in-app browser is absent (inventory exposes only Chrome); do not use an external fallback or infer sign-out. Last native North Star reading is still 30 October, not a fresh zero today. PR 43's eight checks passed. Four unscheduled drafts remain untouched. Next: native source/subscribe-path audit, then the existing Sunday mix review under the 30 October R124 board-approval ruling; do not assume approval or treat the old-piece carousel as part of the derived mix. Keep/purchase and 5–6 November follow-up boundaries remain.
+31 October midpoint: read `.scratch/channel-audit/daily-20261031/MIDPOINT.md`. Buffer feed metrics now extend beyond 72h, with unchanged pilot counts and no demonstrated sharing/click-through. Codex in-app browser is absent (inventory exposes only Chrome); do not use an external fallback or infer sign-out. Last native North Star reading is still 30 October, not a fresh zero today. PR 43's eight checks passed. Four unscheduled drafts remain untouched. Next: native source/subscribe-path audit, then the existing Sunday mix review under the 30 October R124 board-approval ruling; do not assume approval or treat the old-piece carousel as part of the derived mix. Keep/purchase and 5 to 6 November follow-up boundaries remain.
 
 30 October measurement checkpoint: read `.scratch/channel-audit/daily-20261030/REVIEW.md`. Seven-day new subscribers remains zero; native Instagram pilot still has no non-follower views or profile activity at about 86.6 hours. Provider feed metrics still predate 72h. Workspace has 13 channels; use only eight pinned engine IDs. Both LinkedIn drafts and engine-check drafts remain unscheduled and untouched. The daily heartbeat now reflects Krish's 29 October decision to keep Buffer: 31 October progress review, 5 November evidence/current-quote pack, 6 November access/purchase-readiness check before 7 November expiry. Purchase is still his click. This supersedes older keep/downgrade/stop wording below. Private evidence remains local; no new distribution assets were made.
 
@@ -58,7 +58,9 @@ for missing editions. Do not take over Friday video production: its existing
 chat owns shipping those videos. Inspirationhouse and the canonical Instagram
 inspiration corpus inform new ideas; do not merely replicate references.
 
-LATEST AUTHORITY: after Krish sees and approves content, you may faithfully
+AUTHORITY OF 26 OCTOBER (later rulings add to it: three or four posts a day
+on Instagram, YouTube, TikTok and X from 29 October, in AGENTS.md, and no
+publishing on Sunday from 2 November, in mix.json rest_days): after Krish sees and approves content, you may faithfully
 package it and choose cadence/publish on branded Instagram, Facebook, YouTube,
 and scoped personal X/TikTok. Aim for one useful daily post per available channel
 with approved native content. X/TikTok retain sincere personal voice. LinkedIn

@@ -47,8 +47,8 @@ Preflight verifies identity/context, format, publication mode, production asset
 bytes and any stored exact-payload digest. A Buffer package names its
 `buffer_channel_id`, which must be this engine's pinned channel in
 `engine/buffer_channels.py`; another venture's id is refused. Read docs/PUBLISHING-AUTHORITY.md:
-approved brand content and scoped X, TikTok and Threads have delegated
-cadence. LinkedIn remains an unscheduled draft for Krish's manual final
+approved brand content and scoped X, TikTok, Threads and Substack Notes have
+delegated cadence. LinkedIn remains an unscheduled draft for Krish's manual final
 publication.
 Every snackable package (its format profile says `"snackable": true`) carries a
 `share` block, and its copy never asks for the share (Krish, 28 October 2026;

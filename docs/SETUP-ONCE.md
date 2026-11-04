@@ -12,6 +12,11 @@ exact posts in Buffer's schedule. It never publishes at once, never deletes
 and never touches LinkedIn. A check at 06:50 UTC each day fails, and GitHub
 emails you, if Buffer refuses the key.
 
+Done: the secret is set, and the ledger first read Buffer with it on
+1 November 2026. Only step 9, the yearly renewal, is still to come. The
+other secrets the workflows read (`GROWTH_WRITEBACK_TOKEN`,
+`ANTHROPIC_API_KEY`, `OPEN_AI_API_KEY`) were added the same way.
+
 1. Open Buffer (https://publish.buffer.com) and sign in.
 2. Click your profile picture (top right) to open the profile menu.
 3. Click **API**.

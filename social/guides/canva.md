@@ -34,7 +34,8 @@ and only after his approval queues it for the approved route.
 
 ## Where exports go
 
-Approved exports and their manifest go to the Drive 4 Growth library, one
-`YYYY-MM-DD - Topic - Channel` folder per campaign, per `docs/ASSET-STORAGE.md`.
+Approved exports and their manifest go in the post's folder in the library's
+`3 Posts` (`YYYY-MM-DD Tue off.day - Subject`), filed with content-engine's
+`send.py`, never 4 Growth (`docs/ASSET-STORAGE.md`).
 The manifest records each file's name, bytes and SHA-256. Candidates and
 rejections stay out of that folder. Private evidence stays in `.scratch/`.

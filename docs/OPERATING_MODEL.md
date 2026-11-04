@@ -23,6 +23,9 @@ stories people forward does, and the process below is built to produce them.
 - **The week has 3 heroes and 4 off days.**
   - Mon, Wed and Fri: video plus article.
   - Tue, Thu, Sat and Sun: one lighter post each, made by Growth.
+  - Later, on 2 November, Sunday became a rest day (Ruling, Krish,
+    2026-11-02, `mix.json` `rest_days`): nothing publishes on Sunday, so the
+    off days are Tue, Thu and Sat.
 - **Ideas come half and half.** Each day gets at least one option from his
   Inspiration asks and one from engine research. Every ask is used,
   combined or declined with a reason.
@@ -242,8 +245,8 @@ everything is, and what needs to be done every day.
 
 ## 4. The ledger: one place for what's what
 
-`calendar/ledger.json` in this repository has one row per day per slot. Each
-row holds:
+`calendar/ledger.json`, which this repository's `growth.py ledger --write`
+builds (it is not committed), has one row per day per slot. Each row holds:
 
 - date, slot (hero or off-day), series and format;
 - piece id and **title of record**;
@@ -254,9 +257,11 @@ row holds:
 
 **Built (31 October 2026).** `python growth.py ledger [--week MONDAY] [--days 14]
 [--write] [--json]` (`engine/ledger.py`) builds it for 14 days from today (UTC):
-hero rows on Monday, Wednesday and Friday, off-day rows on the other four. It
+hero rows on Monday, Wednesday and Friday, off-day rows on the other four
+(it still writes a Sunday row, although Sunday is now a rest day). It
 reads, read-only, content-engine's board (`/api/board/<Monday>/pieces` for the
-day's piece and his mix press, `/api/board/<Monday>` for the build's manifest)
+day's piece and his mix press, `/api/board/<Monday>/build` for the published
+build and its manifest)
 with `GROWTH_WRITEBACK_TOKEN` through the board tick's client, and this engine's
 sent and scheduled Buffer posts with `BUFFER_API_KEY` through the measure job's
 reader. A missing secret never fails the build: the row keeps what was readable
@@ -268,12 +273,16 @@ run's artifact for 14 days; nothing is committed, posted or ticked.
 
 Not yet read: `inspiration_items` (stage 1), the title of record (the pieces read
 carries no title until content-engine adds it, section 6 item 1; the ledger reads
-it the day it does), the Drive folder, and the manifest, whose route takes the
-engine operator key rather than `GROWTH_WRITEBACK_TOKEN`.
+it the day it does) and the Drive folder. The first live run, on 1 November,
+found that the bare week route answers only the engine operator, so the ledger
+now reads `/build`, which content-engine serves on Growth's token.
 
-The board's Today view reads the ledger. Checklists come off Krish's view (the
-records stay underneath). In their place he sees one status per day and only the
-asks that need him.
+The aim is that the board's Today view reads the ledger, with checklists off
+Krish's view (the records stay underneath) and, in their place, one status per
+day and only the asks that need him. The board has a Today view now
+(content-engine `week_board.py`, `today_model`), but it builds that status from
+the board's own records; reading the ledger there is still open (section 6,
+item 4).
 
 ### Snapshot, 31 October 2026 (hand-read, before the daily rebuild was built)
 
@@ -448,7 +457,7 @@ is finishing Mon 2 and Wed 4.
 
 Krish's own setup, needed before anything posts by itself (`docs/SETUP-ONCE.md`):
 
-- `BUFFER_API_KEY`
-- `GROWTH_WRITEBACK_TOKEN`
+- `BUFFER_API_KEY` (set: the ledger first read Buffer with it on 1 Nov)
+- `GROWTH_WRITEBACK_TOKEN` (set: the ledger first read the board with it on 1 Nov)
 - the Buffer plan, before the trial ends on 7 Nov
 - the first post on each route

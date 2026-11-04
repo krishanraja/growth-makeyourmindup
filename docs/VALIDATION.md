@@ -1,5 +1,9 @@
 # Validation and scope record
 
+This is the record of the 17 October 2026 validation, kept as history: its
+counts and limits are as they stood that day (the suite has grown since; run
+`python growth.py --self-test` for today's).
+
 Completed locally on 17 October 2026. The implementation is in the growth
 repository only. No Control Centre write, deployment, credential change,
 social publication, outreach send or platform setting change was performed

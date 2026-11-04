@@ -1,6 +1,6 @@
 # Control Center brief: growth-makeyourmindup
 
-**Status (2026-10-19): adopted in this repository.** The client, the workspace steps (`growth.py cc start` and `cc finish`) and the dispatch workflow are built and tested against a local stand-in; see `docs/ENGINE.md`, "Reporting to Control Center". The first live run is the next dispatch.
+**Status (2026-10-19): adopted in this repository.** The client, the workspace steps (`growth.py cc start` and `cc finish`) and the dispatch workflow are built; see `docs/ENGINE.md`, "Reporting to Control Center". The loop now runs on GitHub Actions every day (`.github/workflows/control-center.yml`, `growth.py cc runner --deliver`), so the brief's lines below about not running on GitHub Actions and building against `mode: synthetic` describe the starting point, kept as written.
 
 Written 2026-10-18 by Control Center. This brief **supersedes `docs/CONTROL_CENTER_HANDOFF.md`**. Krish ruled that every growth engine reports through one protocol (ADR-038 in Control Center). Phases 2 and 3 of your handoff (one action list, honest numbers) are what the protocol gives you. Packs stay for the drafts Krish copies and posts.
 
@@ -50,7 +50,7 @@ The full spec is `docs/control-center/ENGINE-PROTOCOL.md`, with the report and d
 - Unknown is `value: null` with a `reason`, never zero. A measured zero is `0`.
 - `mode: synthetic` is stored and read back but never touches his numbers or his list. Use it to prove your client before Krish switches you on. A live report is refused (409 `engine_inactive`) until he does.
 
-**The wake-up.** Control Center wakes you once a day around 06:10 London with `repository_dispatch` of type `cc-growth-directive`, whose `client_payload` is `{ directive_id, engine_id }` and nothing else. Add that trigger to your workflow. If you do not run on GitHub Actions, pull the directive at the start of your own run instead; it is the same directive.
+**The wake-up.** Control Center wakes you once a day around 05:10 UTC (06:10 London in summer time, 05:10 in winter) with `repository_dispatch` of type `cc-growth-directive`, whose `client_payload` is `{ directive_id, engine_id }` and nothing else. Add that trigger to your workflow. If you do not run on GitHub Actions, pull the directive at the start of your own run instead; it is the same directive.
 
 ## How your old handoff maps
 

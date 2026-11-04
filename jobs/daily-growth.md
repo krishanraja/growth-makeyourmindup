@@ -117,16 +117,19 @@ format; it is not responsible for finding Growth's opportunities for it.
    cadence and Krish's personal voice. Substack Notes have up to two a day
    from Krish's Substack profile (`social/channels/substack-notes.json`), as
    he signs.
+   29 October 2026 (`CHANGES.md`; `docs/MIX.md`): Instagram, YouTube, TikTok
+   and X take four posts a day with a floor of three, laid out by the weekly
+   mix. Since 2 November nothing publishes on a Sunday (`mix.json` `rest_days`).
    Only the specified existing-field metadata repairs have standing authority.
    LinkedIn preparation never submits a comment, reaction, follow or message.
 6. Progress unfinished live audit ranges, recheck repairs and investigate
    dated continuing attention. Use growth.py audit plan/begin/reconcile for
    autonomous metadata repairs, exact-payload journals for separately
    approved protected edits, and checkpoint only complete accounts.
-   krish_only items (LinkedIn) and approval_required items on held accounts
-   (Threads and Facebook, whose audit authority Krish has not extended) go to
-   his list as a described change; the engine never journals or saves either
-   (`audit begin` and `reconcile` refuse them).
+   krish_only items (LinkedIn) go to his list as a described change; the
+   engine never journals or saves them (`audit begin` and `reconcile` refuse
+   them). Threads and Facebook follow the same existing-field authority as the
+   other accounts since Krish extended it on 27 October (docs/CHANNEL-AUDIT.md).
 7. Update the private trial ledger with observed totals, post/draft IDs,
    native URLs, dates, denominators and missingness. Compare equivalent
    windows; do not infer subscriber attribution from a UTM alone. Separate

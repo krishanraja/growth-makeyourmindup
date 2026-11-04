@@ -26,7 +26,7 @@ measure whether they act ([Final Operating Doctrine]).
   because every piece follows who gets paid, opens up how it works and puts a
   dated call on the record that anyone can check later.
 - **Big idea:** see it while it still counts. Every asset carries that one
-  idea, one emotion (the calm of seeing clearly, not alarm) and one action.
+  idea, one emotion (the calm of seeing clearly, with no alarm) and one action.
 
 ## The persuasion chain, for this offer
 
@@ -35,7 +35,7 @@ Find the weakest link and fix only that ([The persuasion chain]).
 | Link | The reader asks | Our answer |
 |---|---|---|
 | Relevance | Is this for me? | Name the decision a leader faces, in the first line |
-| Attention | Why notice it? | The sourced finding itself, not a tease |
+| Attention | Why notice it? | The sourced finding itself, with no tease |
 | Desire | Do I want it? | Seeing the shift before peers do, while it still counts |
 | Difference | Why this one? | Who gets paid, how it works, a dated call on record |
 | Belief | Will it be right? | Facts from the published piece; real settled calls |
@@ -82,15 +82,15 @@ first read and a clear cadence.
 ## Core Four, inside the permitted motions
 
 ([$100M Leads], [Phase 10: Distribute]). Zero paid boosts, so the paid lane
-does not exist here.
+does not exist here. Jobs marked held reach none of Krish's lists: Control Center owns outreach (AGENTS.md).
 
 | Lane | Here it means | Job |
 |---|---|---|
-| Warm, one to one | Replies in live threads; next step on the partner ladder | radar, partners |
-| Cold, one to one | One pitch or swap ask to one named person | pitches, swaps |
+| Warm, one to one | Replies in live threads; next step on the partner ladder | radar; partners (held) |
+| Cold, one to one | One pitch or swap ask to one named person | pitches, swaps (held) |
 | Warm, one to many | Krish's own posts; the front door and welcome | daily, conversion |
-| Cold, one to many | Organic Shorts, Reels, TikTok, X, LinkedIn | daily |
-| Others' reach | Recommendations, partner kits, guest spots, reader forwards | swaps, partners, pitches |
+| Cold, one to many | Organic Shorts, Reels, TikTok, X, LinkedIn | daily; the week's mix (`growth.py mix plan`) |
+| Others' reach | Recommendations, partner kits, guest spots, reader forwards | swaps, partners, pitches (held) |
 
 **Direct outreach structure** ([Part V], Direct outreach structure): a real
 observation from their recent work, the shared reader's problem, why Krish
@@ -115,7 +115,7 @@ subscriber or reader count appears only if read on a dashboard today and
 Krish approves showing it. Put the proof right next to the claim.
 
 **Ethical influence** ([Influence]): give the finding first, in full
-(reciprocity). Authority comes from sources and method, not titles. Social
+(reciprocity). Authority comes from sources and method alone. Social
 proof only when real and comparable. No scarcity at all. Forward and referral
 asks come after value (consistency). Talk like a person, never flatter.
 
@@ -143,7 +143,7 @@ that fit the surface's awareness, then keep one.
 | Contrarian insight | contrarian claim | Yes, if the piece supports it |
 | Mechanism, Reason why | specific utility, curiosity gap | Yes, the payoff comes early |
 | Problem recognition | avoidable loss | Only a real, sourced cost the piece shows a way past |
-| Question | public challenge | Yes, a real question, not bait |
+| Question | public challenge | Yes, a real question with no bait |
 | Direct benefit, How-to | specific utility | Yes |
 | Story | narrative scene | Yes, only what the piece records |
 | Testimonial | (none) | No, unless real and approved |
@@ -207,10 +207,10 @@ Krish's rules win. Each one is listed so no session "fixes" it back:
 2. **Zero paid boosts.** The paid lane of the Core Four and the corpus's
    "before scaling" spend checks do not apply. Growth comes from posts people
    share because they are useful.
-3. **No Substack Notes and no WhatsApp** (Krish, 2026-10-14), whatever a
-   distribution chapter suggests.
-4. **Agents draft, Krish acts.** The corpus assumes a team that sends and
-   publishes. Here every send, post, setting and follow-up is a draft.
+3. **No WhatsApp** (Krish, 2026-10-14), whatever a distribution chapter suggests.
+   Notes, off in the same ruling, came back on 27 October 2026 (`CHANGES.md`).
+4. **Agents draft, Krish acts.** The corpus assumes a team that sends and publishes. Here every
+   send, setting and follow-up is a draft, and a post goes out only as he approved it (AGENTS.md, "Autonomy").
 5. **Facts only from his published pieces or the thread** being answered.
    The corpus's research phase (interviews, reviews, voice-of-customer files)
    does not license new claims.

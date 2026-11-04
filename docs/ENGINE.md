@@ -143,7 +143,10 @@ three or four a day on Instagram, YouTube, TikTok and X, and writes the one
 plan proposal of the week's ideas and mocks. `python growth.py mix learn`
 joins each post's verdict to its concept and lane for next week's ratio.
 Concept approval, release and learning: `docs/MIX.md` (Ruling, Krish,
-2026-10-29; R101 to R103).
+2026-10-29; R101 to R103). Since 30 October the derived (filler) lane is
+approved on content-engine's board instead (R124), option by option since
+1 November, and nothing posts on Sunday (Ruling, Krish, 2026-11-02;
+`mix.json` `rest_days`).
 
 ## Ecosystem routes
 
@@ -282,7 +285,7 @@ of the acquisition cohort. An immature cohort cannot pass validation.
 ## API compatibility, failures and boundaries
 
 `export` produces exactly the current pack write fields. `post FILE` checks
-but does not write. `post FILE --deliver` is only for a future separately
+but does not write. `post FILE --deliver` is only for a separately
 authorised scheduled delivery to the approved HTTPS packs endpoint. It
 omits agent-supplied status marks and every rich metadata field. There is
 no direct database fallback, no retry loop that might duplicate sends,
@@ -334,8 +337,8 @@ labelled block for the drafting steps: how a draft is written, never what
 it is about. Absent `taste` prints "Could not be read today"; an empty
 list prints "None approved yet" and nothing is invented. Nothing that
 checks, scores, queues or reports a draft reads them, and the GitHub
-runner never prints them. The report stays at 1.0.0: 1.5.0 adds nothing
-to it.
+runner never prints them. 1.5.0 adds nothing to the report, so the voice
+rules never raise its version.
 
 **His inspiration board is the baseline (1.15.0).** Krish, 2026-10-29:
 "When the growth-makeyourmindup repository plans: In all this content, it
@@ -424,7 +427,9 @@ the yes means Krish approved those exact words, and he acts.
 
 **The GitHub runner.** `.github/workflows/control-center.yml` runs on
 `repository_dispatch` (`cc-growth-directive`) and `workflow_dispatch`, with
-`contents: read`, one concurrency group and a 20 minute timeout. It runs
+a 05:40 UTC scheduled backup that stops when a dispatch run already
+succeeded that day (`cc runner --backup`). It has `contents: read` and
+`actions: read`, one concurrency group and a 20 minute timeout. It runs
 `growth.py cc runner --deliver`: the unit tests, `doctor --offline` and the
 fixture `dry-run` in child processes that never see a key, and a read of
 the committed channels, journeys and experiments. Its report is `held`
@@ -477,8 +482,11 @@ GET-GOING Step 1 on protocol 1.1.0 (`engine/control_center.py`,
 
 **Stages.** `proposal(..., stage=, parent_proposal_id=)` builds a `plan`, a
 `go_live` (a send, post or spend naming its plan) or a `check_in` (a strategy
-call naming its plan). A report is `1.1.0` only when a proposal uses those
-fields, else `1.0.0`; `validate_report` refuses any other pairing. A 1.1.0
+call naming its plan). A report is `1.1.0` when a proposal uses those
+fields and nothing in it needs a later version, else `1.0.0`. The later
+versions are 1.14.0 for an engagement task, 1.16.0 for `credits_spent` and
+1.17.0 for `buffer_channels`, `post_metrics` or `offdays` (`report_version`
+in `engine/control_center.py`); `validate_report` refuses any other pairing. A 1.1.0
 report goes only after capabilities list `1.1.0`, else the run fails closed
 (`schema_version_unsupported`, or `schema_version_unconfirmed` when they
 cannot be read) and nothing is downgraded or sent.

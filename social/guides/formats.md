@@ -19,7 +19,8 @@ and confirm exact matching long-video continuation. Text editions need native
 copy and sourced claims. Article work retains the separate body/paid-offer gates.
 
 Notes and memes are the Canva lane (`canva.md`, Krish's ruling of 27 October
-2026): their `production_owner` is `growth-canva`, not content-engine. A Note
+2026), with the poll, quote card, receipt card, scorecard and story frame:
+their `production_owner` is `growth-canva`. A Note
 is native Notes copy with at most one approved image. A meme is one approved
 export per channel, built from Krish's idea and shown to him before it queues;
 on YouTube it must be a real video. Preflight refuses a package whose
@@ -35,7 +36,8 @@ Local schema validation cannot certify taste or grant external action authority.
 Krish: "ensuring all the produced snackable content is likelier to be shared
 for a specific reason", from one person to another in a "you will like this"
 way, never by asking for the share. A format whose profile says
-`"snackable": true` (meme, carousel, single image, short video, Story, Note)
+`"snackable": true` (meme, carousel, single image, short video, Story, Note,
+and the Canva lane's quote card, receipt card, scorecard and story frame)
 needs a `share` block in its package, checked by `social preflight` against
 `../share.json`:
 
@@ -48,7 +50,8 @@ needs a `share` block in its package, checked by `social preflight` against
 | `standalone` | True only if it works with no context; a snackable post must |
 
 Each snackable profile names its share mechanic in its delivery checks. For
-Growth's Canva lane (meme, Note) the mechanic is Growth's own to build. For
+Growth's Canva lane (meme, Note and the other `growth-canva` formats) the
+mechanic is Growth's own to build. For
 content-engine's formats (carousel, single image, short video, Story) it is a
 proposed hook in Growth's distribution brief, beside the share block; it
 becomes a production standard only when content-engine adopts it through its

@@ -47,7 +47,7 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`,
    "His approved voice rules" in `AGENTS.md`): how it is written only,
    never what it is about. Then prepare/check and follow `AGENTS.md`. External profile/website/settings
-   changes and Control Centre UI work remain handoff items.
+   changes and Control Center UI work remain handoff items.
 8. Last, report to Control Center with this run's actual file names:
    `python growth.py cc finish --job conversion --envelope .scratch/conversion.json --queue .scratch/queue.json --deliver`.
    It must print "readback digest matches" and "attempt succeeded". If it
