@@ -485,11 +485,13 @@ def load_lanes(root=ROOT):
     for entry in data['automations']:
         _closed(entry, AUTOMATION_FIELDS, 'automation ' + str(entry.get('name') if isinstance(entry, dict) else '?'))
         at = 'automation ' + str(entry['name'])
-        if entry['status'] != 'kept-until-W46':
-            raise ValueError(at + ': status kept-until-W46')
+        # The four engines (docs/reviews/2026-11-05-growth-engine-review.md) run when Krish
+        # starts a Codex session on one of them: on request, never on a schedule.
+        if entry['status'] != ('on-request' if entry['source'] == 'engine-session' else 'kept-until-W46'):
+            raise ValueError(at + ': status kept-until-W46, or on-request for an engine session')
         _strings(entry['jobs'], 'jobs', at)
-        if entry['source'] not in ('automations.json', 'heartbeat'):
-            raise ValueError(at + ': source is automations.json or heartbeat')
+        if entry['source'] not in ('automations.json', 'heartbeat', 'engine-session'):
+            raise ValueError(at + ': source is automations.json, heartbeat or engine-session')
     if not isinstance(data['claude_sessions'], list):
         raise ValueError('claude_sessions is a list')
     for entry in data['claude_sessions']:

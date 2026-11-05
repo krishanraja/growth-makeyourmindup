@@ -16,7 +16,7 @@ import urllib.error
 import urllib.request
 
 from engine.catalog import FEED, discover, pieces, parse_feed, strip_html
-from engine.cc_loop import CONTROL_CENTER_OWNS
+from engine.cc_loop import CONTROL_CENTER_OWNS, OWNED_REASON
 from engine.control_center import APPROVED_ORIGIN, Client, NoRedirect, ProtocolError, opener
 from engine.core import (KINDS, PLATFORMS, http_url, identity, instant, locked,
                          read_json, today, tracked, write_json)
@@ -29,12 +29,11 @@ BASE = os.environ.get('CONTROL_CENTER_URL', 'https://controlcenter.krishraja.com
 TOKEN_FILE = Path.home() / '.config' / 'growth-makeyourmindup' / 'token'
 # The protocol bearer (gen1_) is a different key from the packs key above.
 ENGINE_TOKEN_FILE = TOKEN_FILE.parent / 'engine-token'
-# Control Center's People and Visibility own outreach to shows and guests
-# (Krish, 21 Oct 2026; AGENTS.md "Outreach belongs to Control Center"). These
-# packs never leave here.
+# Make Your Mind Up outreach is this engine's own and Krish enacts it in Codex
+# sessions (Ruling, Krish, 2026-11-05; AGENTS.md "Outreach for Make Your Mind
+# Up"). These packs never go to Control Center.
 OUTREACH = CONTROL_CENTER_OWNS  # one source: pitches, partners and swaps
-OUTREACH_HELD = ("Control Center's People and Visibility own outreach to shows and guests; "
-                 'pitches, partners and swaps packs are never delivered from this engine')
+OUTREACH_HELD = (OWNED_REASON + '; pitches, partners and swaps packs are never delivered to it')
 
 
 def outreach_kind(value):
@@ -187,6 +186,9 @@ def main(argv=None):
     if social_args and social_args[0] == 'ledger':
         from engine.ledger import command as ledger
         return ledger(social_args[1:], ROOT)
+    if social_args and social_args[0] == 'engine':
+        from engine.engines.core import command as engines
+        return engines(social_args[1:], ROOT)
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--self-test', action='store_true')
     sub = parser.add_subparsers(dest='cmd')
@@ -195,6 +197,7 @@ def main(argv=None):
     sub.add_parser('backlog', help='every published piece against channel and format, oldest unamplified first')
     sub.add_parser('mix', help="the week's mix of repurposed carousels and filler lanes, and Krish's one idea and mock press")
     sub.add_parser('ledger', help="calendar/ledger.json: each day's slot, stage, next action and owner (read-only)")
+    sub.add_parser('engine', help='run one of the four engines from shared records: start, check, show, history (read-only); handoff, close, done')
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     p.add_argument('--feed-file'); p.add_argument('--now'); p.add_argument('--json', action='store_true')
     c = sub.add_parser('check'); c.add_argument('file'); c.add_argument('--now')

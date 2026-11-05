@@ -3,6 +3,21 @@
 Rulings: Krish, 26 October 2026. The latest X/TikTok clarification supersedes
 this day's earlier personal-drafts-only instruction for those two accounts.
 
+**Current as of 5 November 2026.** The sections below are dated, and a later
+one wins where it says so. In short:
+
+- Derived (filler) posts on Instagram, YouTube, TikTok and X release from his
+  one "Approve this week's mix" press on content-engine's board, inside every
+  other gate (30 October, below).
+- Series (Monday, Wednesday, Friday) posts still need his per-post Control
+  Center go-live. Threads, Substack Notes and Facebook still sign post by post.
+- LinkedIn is unscheduled drafts and his own click.
+- Buffer's TikTok short-video route is held after a provider rejection; the
+  alternative is the native TikTok uploader under the applicable approval
+  (5 November, below).
+- Make Your Mind Up outreach and social engagement are his own hands, in his
+  Codex sessions, on the exact payload he approves (5 November, below).
+
 ## Approved content: delegated packaging and cadence
 
 After Krish has seen and approved the content, Growth may choose faithful
@@ -216,3 +231,48 @@ rulings above; everything above stands unless a line here says otherwise.
 
 No spending, new connection, automation or account-setting change follows
 from this ruling. Engagement stays prepared only.
+
+## 30 October 2026: one press on the board approves the week's mix
+
+Ruling (Krish, 2026-10-30; R124; `CHANGES.md`, `docs/MIX.md`): "approve the
+week's mix once, let Growth fill it". It adds to the rulings above.
+
+- His "Approve this week's mix" press on content-engine's Sunday board is
+  the approval for the derived (filler) lane, in place of his Control Center
+  yes on the mix plan.
+- A derived post is made and released only when the press says approved,
+  its hash equals the hash of the mix Growth itself proposes for that week,
+  and the post's day, concept and channel and format are one of that day's
+  options. Anything outside the mix never goes out. No press holds quietly.
+- Every other gate above still applies: his no on the plan, a stop, a
+  concept he amended away, its mock and claim, the review at its payload,
+  copy lint, the channel lock, caps and the route checks.
+- Series go-lives are unchanged: still his per-post Control Center go-live.
+
+## 5 November 2026: outreach, engagement and a held route
+
+- **Outreach and social engagement** (Ruling, Krish, 2026-11-05; `AGENTS.md`,
+  "Outreach for Make Your Mind Up"). Krish: "only Outreach for MindMake
+  belongs to Control Center, alongside visibility and networking and events
+  and partners. Anything to do with Make Your Mind Up growth belongs to the
+  Make Your Mind Up engine. I'll be just running Codex sessions, which are
+  connected to all my tools, to enact things like outreach or social
+  engagement rapidly in browser or via the connectors." Outreach for this
+  show is the Acquisition engine's and social engagement is the Engagement
+  engine's. Krish enacts both himself, in the browser or through
+  connectors. An approval binds sender, recipient, channel, subject, body
+  and links, and a redirected recipient needs a fresh decision. Scheduled
+  jobs and sessions he is not driving still only draft. Pitches, partners
+  and swaps packs never go to Control Center.
+- **Buffer's TikTok short video is held** (`social/tools/buffer.json`,
+  capability status `held`; `docs/reviews/2026-11-05-growth-engine-review.md`,
+  section 7). Three Buffer video attempts failed and the provider rejection
+  is unresolved. `engine/social.py` `route()` returns the hold
+  `route_held_after_provider_rejection` with its recheck condition, and
+  release sends no capability check on that route until the condition is
+  met: Buffer or TikTok changes the video route, or the rejection is
+  explained, then one bounded check under Krish's approval. The alternative
+  is the native TikTok uploader, under the applicable approval.
+
+No spending, new connection, automation or account-setting change follows
+from these rulings.

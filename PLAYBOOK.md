@@ -8,7 +8,15 @@ are discovery signals. They do not stand in for subscribers.
 The promise stays: **What's coming in AI, before it's obvious.**
 Monday: follow.the.money. Wednesday: under.the.hood. Friday: mind.the.gap.
 
-## Seven engines, one work queue
+**Current (5 November 2026).** The seven engines below are the doctrine's
+growth levers. The work itself runs as four engines, one per session:
+Acquisition, Engagement, Publishing, and Measurement and Allocation
+(`AGENTS.md`, "Four engines"). Pitches, partners and swaps feed Acquisition,
+which owns Make Your Mind Up outreach; Krish enacts outreach and engagement
+in his own Codex sessions on the exact payload he approves (`AGENTS.md`,
+"Outreach for Make Your Mind Up").
+
+## Seven growth levers ("engines" in the source doctrine), one work queue
 
 | Engine | Work | Job |
 |---|---|---|

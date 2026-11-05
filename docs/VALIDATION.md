@@ -1,5 +1,14 @@
 # Validation and scope record
 
+**Historical record of 17 October 2026.** It describes the first upgrade
+only, and its counts and limits are that day's. Current truth: the suite
+had 1,035 tests on 5 November 2026 (`python3 -m unittest discover -s tests`;
+`python growth.py --self-test` is what CI runs). CI is `check.yml`, on
+Ubuntu and Windows with Python 3.9 and 3.12. Control Center now takes this
+engine's reports through its engine protocol (`docs/CONTROL-CENTER-BRIEF.md`,
+`docs/ENGINE.md`, "Reporting to Control Center"), so the closing line about
+the API dropping rich fields describes the old packs route only.
+
 Completed locally on 17 October 2026. The implementation is in the growth
 repository only. No Control Centre write, deployment, credential change,
 social publication, outreach send or platform setting change was performed

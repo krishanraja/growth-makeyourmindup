@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "tiktok-buffer-video-hold",
+  "category": "tool",
+  "scope": [
+    "buffer",
+    "tiktok",
+    "short-video"
+  ],
+  "status": "observed",
+  "finding": "Three Buffer video attempts to Krish's TikTok account failed and the provider rejection stayed unresolved, while a Buffer photo carousel had succeeded earlier. Wednesday's approved video and caption went live through the native TikTok uploader with public playback verified. Hold Buffer TikTok video with its failure, date and recheck condition; keep the verified Buffer photo route; offer native video under the applicable approval.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": "docs/reviews/2026-11-05-growth-engine-review.md",
+    "observed_at": "2026-11-05",
+    "result": "Buffer tiktok short-video held (social/tools/buffer.json); the Buffer tiktok carousel route stays verified."
+  },
+  "revisit_when": "Buffer or TikTok changes the video route, or the provider rejection is explained.",
+  "supersedes": null
+}

@@ -326,14 +326,14 @@ class ReportTests(unittest.TestCase):
         report = workspace_report('daily', 'r1', NOW, [env], queue=queue, rev='fixture')[0]
         self.assertEqual([p['proposal_id'] for p in report['proposals']], ['makeyourmindup:' + env['metadata'][0]['item_id']])
 
-    def test_outreach_is_control_centers_so_pitches_swaps_and_partners_are_held(self):
-        # Ruling (Krish, 2026-10-21): People and Visibility own outreach to shows and guests.
+    def test_mymu_outreach_never_goes_to_control_center(self):
+        # Ruling (Krish, 2026-11-05): MYMU outreach is this engine's, enacted in his Codex sessions.
         for kind in ('pitches', 'swaps', 'partners'):
             env = envelope()
             env['pack']['kind'] = kind
             report = workspace_report(kind, 'r1', NOW, [env], rev='fixture')[0]
             self.assertEqual(report['proposals'], [], kind)
-            self.assertIn("Control Center's People and Visibility own outreach to shows and guests", [h['reason'] for h in report['holds']], kind)
+            self.assertIn(cc_loop.OWNED_REASON, [h['reason'] for h in report['holds']], kind)
         env = envelope()
         report = workspace_report('daily', 'r1', NOW, [env], rev='fixture')[0]
         self.assertEqual(report['proposals'][0]['wall'], 'post', 'posts still go to Krish')

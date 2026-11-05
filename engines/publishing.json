@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "kind": "engine",
+  "id": "publishing",
+  "name": "Publishing",
+  "entry_request": "Run Publishing",
+  "job": "jobs/publishing.md",
+  "source": "docs/reviews/2026-11-05-growth-engine-review.md",
+  "owns": [
+    "getting each approved edition to its intended destination",
+    "asset and caption versions, slots, duplicate prevention and native exceptions",
+    "reader links, delivery checks and recent-post audits",
+    "route holds: a failed route held with its failure, date and recheck condition"
+  ],
+  "permitted_actions": [
+    "read every engine record and contract, social/ and the release ledgers",
+    "look up a route with python growth.py social route CHANNEL FORMAT",
+    "read back the public reader view of a post: grid, player, continuation link, playable video and email delivery",
+    "record each reader-facing check separately on the same post ID with publishing.readback",
+    "close an edition with publishing.close_edition once every applicable check is passed on its post ID",
+    "hold a failed route with its failure, date, recheck condition and alternative",
+    "append records to engines/records/publishing.jsonl",
+    "keep exact captions, post URLs and raw receipts in .scratch/engines/publishing.jsonl",
+    "hand work another engine owns, or work that can run in parallel, to that engine's queue with python growth.py engine handoff publishing TO --what TEXT --why TEXT, ask Krish the question it prints, and send its message to that engine's session",
+    "keep Krish's session links in the private .scratch/engines/sessions.json with python growth.py engine session set, show and clear, and python growth.py engine start publishing --session LINK",
+    "create a Codex session for another engine with the Codex tools available, only when Krish says to, start it with the handoff message and record its link",
+    "send a report-back from python growth.py engine done to the session that sent the handoff, and record a report-back that arrives",
+    "close each session with python growth.py engine close publishing --learnings FILE, after writing the learnings file in .scratch/engines/",
+    "close one of this engine's own records, an inbound handoff included, with python growth.py engine done publishing ID --note TEXT"
+  ],
+  "forbidden_actions": [
+    "post, publish or schedule anything",
+    "send, reply, comment, like or follow",
+    "spend money or credits",
+    "write to Control Center",
+    "close a check on a saved setting or an API success; only a public readback closes it",
+    "close an edition while any applicable check is open",
+    "attempt a held route again before its recheck condition changes",
+    "schedule a LinkedIn edition: it follows its human publication rule, Krish's click",
+    "commit exact captions, post URLs or raw receipts (they stay in .scratch/engines/)",
+    "doing another engine's work in this session"
+  ],
+  "done": [
+    "each destination records what was scheduled, what became public, what the reader experienced and any remaining repair",
+    "an edition is done only when every applicable check is closed against the public reader view",
+    "a discrepancy stays open on the same post ID with a dated recheck, dated once the post ID is known",
+    "a failed route carries a recheck condition",
+    "LinkedIn follows its human publication rule",
+    "a session record with what to do better next time, and every cross-engine item handed off"
+  ],
+  "recover_first": [
+    "due slots",
+    "approved editions",
+    "existing provider records",
+    "route holds",
+    "unresolved public checks"
+  ],
+  "hands_off_to": {
+    "measurement": "editions done against the reader view, for judging at the proper observation window",
+    "acquisition": "a working continuation that attracts few visits, as an experiment",
+    "krish": "native exceptions such as native TikTok video, under the applicable approval, and every LinkedIn click"
+  }
+}

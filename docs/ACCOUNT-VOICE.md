@@ -56,7 +56,10 @@ hashtags or a compulsory engagement question? A failed answer holds the
 copy for revision. Review any cross-post separately in its account context.
 
 Publication authority is separate and governed by PUBLISHING-AUTHORITY.md:
-approved branded content plus scoped X and TikTok have delegated cadence;
+approved branded content plus scoped X, TikTok and Threads have delegated cadence;
 LinkedIn remains unscheduled drafts for Krish's manual publication. Personal LinkedIn has no
 volume quota or assumed publication-subscriber North Star. Comment and
-account-setting authority remains separate.
+account-setting authority remains separate: comments and replies are the
+Engagement engine's (`jobs/engagement.md`) and outreach in Krish's voice is
+the Acquisition engine's (`jobs/acquisition.md`), both enacted only on his
+approval of the exact text (`AGENTS.md`, "Outreach for Make Your Mind Up").

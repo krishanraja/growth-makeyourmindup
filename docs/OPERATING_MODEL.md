@@ -4,6 +4,18 @@ Status: Decided by Krish, 31 October 2026 (his answers are in section 0). First 
 31 October asking that the sprawl be brought into one standard process, with
 this repository in charge of the schedule and of posting.
 
+**Current as of 5 November 2026.** The pipeline, the ledger and Krish's
+decisions below stand. Since then: the ledger runs daily on GitHub
+(`ledger.yml`, 04:05 UTC; first run 1 November, `now-notes/2026-11-01-ledger-live.md`);
+Growth's own work also runs as four engine sessions Krish opens on
+request (Acquisition, Engagement, Publishing, and Measurement and
+Allocation; `AGENTS.md`, "Four engines"), in a shadow week beside the
+existing jobs; Make Your Mind Up outreach and social engagement are
+Krish's own, in his Codex sessions (Ruling, Krish, 2026-11-05); and Buffer's
+TikTok short-video route is held (`docs/PUBLISHING-AUTHORITY.md`). The
+snapshot table in section 4 and sections 5 and 6 are the 31 October
+picture, kept as history; the live rows are in each ledger run's artifact.
+
 North Star part this moves: "posts people share because they are useful". The
 ideas are the product. A week of homework-style pitches gets no shares. A week of
 stories people forward does, and the process below is built to produce them.
@@ -448,7 +460,8 @@ is finishing Mon 2 and Wed 4.
 
 Krish's own setup, needed before anything posts by itself (`docs/SETUP-ONCE.md`):
 
-- `BUFFER_API_KEY`
-- `GROWTH_WRITEBACK_TOKEN`
+- `BUFFER_API_KEY` (set by 1 Nov: the first ledger run read Buffer with it)
+- `GROWTH_WRITEBACK_TOKEN` (set by 1 Nov: the same run read the board with it)
 - the Buffer plan, before the trial ends on 7 Nov
-- the first post on each route
+- the first post on each route (Buffer's TikTok short video is held, so
+  that route has no first post until its recheck condition is met)

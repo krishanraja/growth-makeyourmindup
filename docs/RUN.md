@@ -137,10 +137,9 @@ bytes against its signed manifest line; a file in 4 Growth is never trusted.
 
 ## Closeout (docs/ASSET-STORAGE.md)
 
-1. Approved delivery assets and exact copy go to the Drive
-   **4 Growth** library, one `YYYY-MM-DD - Topic - Channel` folder each with
-   a SHA-256 manifest.
-2. Private evidence stays in `.scratch/`, never in 4 Growth (link-editable).
+1. Approved delivery assets and exact copy go to the library's `3 Posts`,
+   one dated folder each with a SHA-256 manifest.
+2. Private evidence stays in `.scratch/`, never in a link-editable library.
 3. Lessons go to `social/lessons/`; run `python growth.py social check`.
 4. Creative feedback goes to Content Engine, which owns the craft.
 5. Point `docs/SESSION-HANDOVER.md` and `NOW.md` at the dated private closeout:
@@ -154,5 +153,6 @@ bytes against its signed manifest line; a file in 4 Growth is never trusted.
 - `docs/PUBLISHING-AUTHORITY.md`: who may publish where.
 - `docs/ACCOUNT-VOICE.md`: X, TikTok, Threads and LinkedIn are his personal
   accounts, in his own voice (sincere, warm, humble).
-- `AGENTS.md` ("The rules that never bend", "Autonomy"): outreach is
-  Control Center's; never pitches, partners or swaps packs.
+- `AGENTS.md` ("The rules that never bend", "Autonomy", "Outreach for Make
+  Your Mind Up"): Krish sends this show's outreach in Codex, never via
+  Control Center.

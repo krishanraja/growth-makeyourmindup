@@ -145,6 +145,33 @@ joins each post's verdict to its concept and lane for next week's ratio.
 Concept approval, release and learning: `docs/MIX.md` (Ruling, Krish,
 2026-10-29; R101 to R103).
 
+## The four engine sessions
+
+Built 5 November 2026 from `docs/reviews/2026-11-05-growth-engine-review.md`
+(`AGENTS.md`, "Four engines"). Acquisition, Engagement, Publishing, and
+Measurement and Allocation each run as one Codex session Krish opens on
+request ("Run Acquisition" and so on), never on a schedule. Each follows its
+job file (`jobs/acquisition.md`, `jobs/engagement.md`, `jobs/publishing.md`,
+`jobs/measurement.md`) and its contract in `engines/NAME.json`, and records
+what it did in `engines/records/`. `engine/engines/core.py` (`command`) is
+the code:
+
+| Command | What it does |
+|---|---|
+| `growth.py engine start NAME [--session LINK]` | What a fresh session recovers first: its queue, inbound handoffs and the last sessions' learnings. `--session` records this session's own link (its one write) |
+| `growth.py engine check` | Validates every committed engine record and contract |
+| `growth.py engine show NAME [ID]` and `engine history NAME ID` | One engine's current records, or every committed line of one record |
+| `growth.py engine handoff FROM TO --what TEXT --why TEXT [--link ID]` | Hands work another engine owns to that engine's queue and prints the question for Krish and the message for the other session |
+| `growth.py engine done NAME ID --note TEXT [--next TEXT]` | Closes one record; for a handoff it prints the report-back |
+| `growth.py engine session set|show|clear` | Krish's session links, kept only in the ignored `.scratch/engines/sessions.json` |
+| `growth.py engine close NAME --learnings FILE` | Ends the session; refuses to close without specific "better next time" lines |
+
+`NAME` is `acquisition`, `engagement`, `publishing` or `measurement`.
+Committed records stay privacy-safe: exact words, recipients and post URLs
+live only in `.scratch/engines/`. This is the shadow week: the daily job,
+the PC automations and the L0 workflows keep running, and Measurement then
+compares the engines' decisions with what the operation did.
+
 ## Ecosystem routes
 
 Every run spec slot names a route into the wider ecosystem
@@ -372,9 +399,19 @@ attempt `failed` with `report_conflict`.
 | daily | `post`, with the exact words | `published` |
 | radar | `post`: one engagement task for the day (below) | `tapped` |
 | conversion | `post`, the exact copy | `applied` |
-| pitches, swaps, partners | `send`, with the exact words | `sent` |
+| pitches, swaps, partners | never proposed: each item is a hold (below) | not reported |
 | report | `strategy` | `reviewed` |
 | numbers | `none` | `verified` |
+
+**Outreach never goes to Control Center** (Ruling, Krish, 2026-11-05;
+`AGENTS.md`, "Outreach for Make Your Mind Up"). Make Your Mind Up outreach is
+this engine's own, owned by the Acquisition engine, and Krish enacts it in
+his own Codex sessions on the exact payload he approves. So `cc finish`
+turns every pitches, swaps or partners item into a hold with the reason
+"Make Your Mind Up outreach is this engine's own, enacted in Krish's Codex
+sessions; it never goes to Control Center" (`engine/cc_loop.py`,
+`OWNED_REASON`), and `post --deliver` refuses those packs. Only Mindmake's
+own outreach is Control Center's.
 
 **The engagement task (protocol 1.14.0).** The radar's selected replies and
 comments go as one ask, `makeyourmindup:engage:<New York date>`, never one

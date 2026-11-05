@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "kind": "engine",
+  "id": "acquisition",
+  "name": "Acquisition",
+  "entry_request": "Run Acquisition",
+  "job": "jobs/acquisition.md",
+  "source": "docs/reviews/2026-11-05-growth-engine-review.md",
+  "owns": [
+    "which audiences, placements, collaborations and discovery experiments to pursue",
+    "which existing MYMU work earns access and how a new reader finds, follows and subscribes",
+    "the reason to enter an external conversation (Engagement prepares the comment)",
+    "outreach for Make Your Mind Up: shows, newsletters, creators, editorial features, swaps and partners (Ruling, Krish, 2026-11-05). Mindmake outreach stays with Control Center; nothing of this goes to Control Center",
+    "bounded creative to commission from Content Engine"
+  ],
+  "permitted_actions": [
+    "read every engine record and contract",
+    "rank routes into an audience with rank_routes and record fit and access evidence",
+    "append records to engines/records/acquisition.jsonl through acquisition.add, which refuses duplicate pitches or briefs and suppressed asks",
+    "keep exact words, recipients and receipts in .scratch/engines/acquisition.jsonl",
+    "prepare one outreach draft for one recipient that passes outreach_errors, for Krish to enact on the exact approved draft",
+    "in a Codex session Krish is driving, enact one outreach send through the browser or a connector only after Krish approves that exact bound payload (approval_digest of sender, recipient, channel, subject, body and links) in that session, immediately before sending; then record the receipt as sent and nothing further until evidenced. Scheduled jobs and sessions he is not driving only draft",
+    "record approvals by digest and each outcome rung Krish reports with its evidence",
+    "hand an outgoing comment to Engagement with the same opportunity_id, and bounded creative to Content Engine",
+    "hand work another engine owns, or work that can run in parallel, to that engine's queue with python growth.py engine handoff acquisition TO --what TEXT --why TEXT, ask Krish the question it prints, and send its message to that engine's session",
+    "keep Krish's session links in the private .scratch/engines/sessions.json with python growth.py engine session set, show and clear, and python growth.py engine start acquisition --session LINK",
+    "create a Codex session for another engine with the Codex tools available, only when Krish says to, start it with the handoff message and record its link",
+    "send a report-back from python growth.py engine done to the session that sent the handoff, and record a report-back that arrives",
+    "close each session with python growth.py engine close acquisition --learnings FILE, after writing the learnings file in .scratch/engines/",
+    "close one of this engine's own records, an inbound handoff included, with python growth.py engine done acquisition ID --note TEXT"
+  ],
+  "forbidden_actions": [
+    "post, publish or schedule anything",
+    "send, reply, comment, like or follow, except one outreach send in a Codex session Krish is driving, after he approves that exact bound payload there",
+    "spend money or credits",
+    "write to Control Center",
+    "carry an approval to a redirected recipient, or to any changed sender, channel, subject, body or link",
+    "ask again after a decline, or open a second pitch or brief for the same opportunity",
+    "rank on seniority or publisher-wide audience alone",
+    "infer an earlier outcome rung from a later one",
+    "touch an outreach batch waiting at Krish's approval gate",
+    "commit exact outgoing words, recipient addresses or raw receipts (they stay in .scratch/engines/)",
+    "doing another engine's work in this session"
+  ],
+  "done": [
+    "each opportunity has a verified route, a concrete offer, a next action and a recorded disposition",
+    "a successful placement has a live reference and a route into MYMU",
+    "attributable results are attached when available",
+    "the run started from the strongest available route into an audience, not from individual conversations",
+    "a session record with what to do better next time, and every cross-engine item handed off"
+  ],
+  "recover_first": [
+    "best available opportunity",
+    "evidence of access",
+    "outstanding approval",
+    "closed or declined routes",
+    "active experiment",
+    "next action"
+  ],
+  "hands_off_to": {
+    "engagement": "an outgoing comment commissioned as the first step, with the same opportunity_id; Krish sees one draft and one decision",
+    "content-engine": "bounded creative for an opportunity",
+    "krish": "each exact draft to approve and enact; approvals bind sender, recipient, channel, subject, body and links",
+    "measurement": "live placements and attributable results to judge"
+  }
+}

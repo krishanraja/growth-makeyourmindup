@@ -6,6 +6,7 @@ Owns feed posts, carousels, Reels, Stories and memes on makeyourmind.up and the 
 |---|---|---|
 | An approved package goes to Instagram and Facebook | Pair it: packaging per channel, matched timing, both outputs verified on their own, native cross-sharing deduplicated | R41 |
 | A package reaches release | Run social preflight first: account, voice context, asset hashes, approval binding | R45, R50 |
+| A Reel cover is set | It closes only when the public grid and the public player each show it, as separate checks on the same post (jobs/publishing.md); a saved setting never closes it | R38, P6 |
 | A Story is planned | Only after the feed post reads back live; one frame per post | P6, R41 |
 | A Story would need a link sticker or poll | Never claim it as automatic or draw a fake control; hold for a tested native route | R42 |
 | Realistic synthetic media is present | Set the native AI label; never add illustration boilerplate to the caption | R43 |

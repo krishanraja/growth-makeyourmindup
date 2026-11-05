@@ -115,10 +115,14 @@
     {
       "channel": "tiktok",
       "format": "short-video",
-      "status": "unverified",
+      "status": "held",
       "verified_at": null,
-      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
-      "verified_operations": []
+      "evidence_ref": "docs/reviews/2026-11-05-growth-engine-review.md, section 7",
+      "verified_operations": [],
+      "held_since": "2026-11-05",
+      "failure": "Krish's TikTok account, short video through Buffer: three Buffer video attempts failed and the provider rejection is unresolved.",
+      "recheck_when": "Buffer or TikTok changes the video route, or the provider rejection is explained; then one bounded check under Krish's approval, never a repeat attempt.",
+      "alternative": "native TikTok uploader, under the applicable approval (Wednesday's approved video went live this way with public playback verified)"
     },
     {
       "channel": "youtube",
@@ -288,6 +292,7 @@
     "native-release-readback",
     "buffer-document-preview-hold",
     "shared-buffer-workspace",
-    "provider-metric-freshness"
+    "provider-metric-freshness",
+    "tiktok-buffer-video-hold"
   ]
 }

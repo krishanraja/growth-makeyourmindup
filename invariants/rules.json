@@ -241,14 +241,14 @@
     },
     {
       "id": "R20",
-      "statement": "Outreach to shows and guests is Control Center's: this engine proposes posts and measures, and holds every pitch, swap and partner note.",
+      "statement": "Make Your Mind Up outreach is this engine's, enacted by Krish in Codex sessions; pitches, swaps and partner notes never go to Control Center (Ruling, Krish, 2026-11-05).",
       "source_file": "AGENTS.md",
-      "quote": "So this engine proposes posts and measures. It proposes no pitch, swap or partner note",
+      "quote": "So outreach for Make Your Mind Up (shows, newsletters, creators, editorial features, swaps and partners) is this engine's",
       "enforced_by": [
         "engine/cc_loop.py:workspace_report"
       ],
       "tests": [
-        "test_outreach_is_control_centers_so_pitches_swaps_and_partners_are_held",
+        "test_mymu_outreach_never_goes_to_control_center",
         "test_post_deliver_refuses_outreach_kinds"
       ]
     },

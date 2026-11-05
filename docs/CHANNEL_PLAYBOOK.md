@@ -6,6 +6,15 @@ acts on platforms; website and Control Centre changes go to their owners.
 A suggested improvement is a hypothesis until measured. Keep published
 facts, promise and series consistent across all entries.
 
+Owners since 5 November 2026 (`AGENTS.md`, "Four engines"): replies and
+comments below are the Engagement engine's (`jobs/engagement.md`);
+partners, communities, shows, newsletters and other Make Your Mind Up
+outreach are the Acquisition engine's (`jobs/acquisition.md`), enacted by
+Krish in his own Codex sessions on the exact draft he approves, never through
+Control Center; closing a post against its public reader view is the
+Publishing engine's (`jobs/publishing.md`); measured results are the
+Measurement engine's (`jobs/measurement.md`).
+
 ## First actions, in order
 
 | Priority | Observed in this audit | Concrete change | Verification |
@@ -216,6 +225,10 @@ experience. Pick the live source first; do not publish a placeholder.
    sounds, trends, recycled watermarks, hashtag piles or invented test results.
 5. Compare actual views, watch time, completion, profile visits and qualified
    onward visits. Account-level growth is not proof a particular clip caused it.
+6. Since 5 November 2026 Buffer short video to this account is held after
+   three failed attempts; video goes through the native TikTok uploader under
+   the applicable approval, and Buffer photo carousels stay verified (lesson
+   `tiktok-buffer-video-hold`).
 
 ## Spotify and audio
 

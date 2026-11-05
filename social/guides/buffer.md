@@ -4,6 +4,7 @@ Owner: Growth. Evidence baseline: 26 October 2026. Capability status and review
 interval live in `../tools/buffer.json`; do not duplicate a status table here.
 Publication authority comes from docs/PUBLISHING-AUTHORITY.md. Approved branded
 content has delegated cadence; LinkedIn remains an unscheduled draft; scoped X, TikTok and Threads have delegated cadence.
+Buffer TikTok short-video is held (below, "TikTok short video").
 Browser operations use
 only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie export.
 
@@ -132,6 +133,22 @@ omitted the unsupported field. The resulting draft saved, but no native AI
 label was applied. Krish subsequently prohibited public illustration
 boilerplate; that copy was removed and independently read back. Do not restore
 it as a workaround. Recheck supported native metadata before a live action.
+
+## TikTok short video: held, observed 5 November
+
+Three Buffer video attempts to Krish's TikTok account failed and the provider
+rejection is unresolved (lesson `tiktok-buffer-video-hold`; review of 5
+November 2026, section 7). `../tools/buffer.json` holds that route, `python
+growth.py social route tiktok short-video` returns
+`route_held_after_provider_rejection`, and release schedules nothing on it,
+not even a capability check. Do not make another Buffer TikTok video attempt.
+Recheck only when Buffer or TikTok changes the video route or the rejection is
+explained, then as one bounded check under Krish's approval. The alternative
+is the native TikTok uploader under the applicable approval: Wednesday's
+approved video went live that way with public playback verified. The Buffer
+TikTok photo carousel route stays verified. The Publishing engine
+(`jobs/publishing.md`) records the hold and closes each edition only on a
+public readback.
 
 ## Stories and paired Meta delivery
 

@@ -5,6 +5,13 @@ and L3. The lanes say who has to do something before it happens. The machine-che
 is `lanes.json`; this page is the plain summary, and where the two differ,
 `lanes.json` wins.
 
+Current as of 5 November 2026: eight GitHub Actions workflows run in L0
+(below); the nine PC automations and the daily heartbeat keep running until
+W46; the four engine sessions (Acquisition, Engagement, Publishing, and
+Measurement and Allocation) run only when Krish opens one ("The four engine
+sessions" below); and Make Your Mind Up outreach and social engagement are
+Krish's own hands in his Codex sessions (L3), never Control Center's.
+
 ## Times
 
 London and UTC are the same clock from 25 October 2026 to 28 March 2027.
@@ -19,10 +26,11 @@ Nobody has to be awake or online for these.
 |---|---|---|
 | The Control Center runner (`control-center.yml`): reads the day's instructions, checks the engine, sends the report, reads Krish's answers | every day 05:10, when Control Center wakes it; a backup at 05:40 runs only if that run has not worked today | 05:10, backup 05:40 |
 | The key check (`keys.yml`): checks that both keys still work. A refused or missing key fails the run, so GitHub emails Krish | every day 06:50 | 06:50 |
-| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). That is each day's go-live he approved (a go-live naming more than one New York day holds), and each post made from an idea and mock he approved in the week's mix plan, read back from Control Center (below). A post still scheduled after a No fails the run, so GitHub emails Krish. It holds a post whose words fail the copy lint or ask for the share, and every post on a Buffer route not yet recorded as passed: that route's one capability check goes through `run release` first. Never LinkedIn | every 30 minutes | every 30 minutes |
+| Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). That is each day's go-live he approved (a go-live naming more than one New York day holds), and each post made from an idea and mock he approved in the week's mix plan, read back from Control Center (below). A post still scheduled after a No fails the run, so GitHub emails Krish. It holds a post whose words fail the copy lint or ask for the share, and every post on a Buffer route not yet recorded as passed: that route's one capability check goes through `run release` first. A route held after a provider rejection (today Buffer's TikTok short video, `social/tools/buffer.json`) gets no capability check until its recheck condition is met. Never LinkedIn | every 30 minutes | every 30 minutes |
 | Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
 | The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea | when that maker wakes it | when that maker wakes it |
 | The maker (`maker.yml`, [MAKER.md](MAKER.md)): makes the next New York day's posts from the ideas and mocks Krish approved in the week's mix plan, as Buffer drafts with no due time, writes their words and a blind review of them with the Anthropic API, and hands each off with its review, so release can schedule it. Only the approved mock files, checked by hash; one draft per idea, channel and week; never LinkedIn; it never schedules, publishes or deletes | every day 04:30; by hand a dry run unless deliver is ticked | 04:30 |
+| The ledger (`ledger.yml`): rebuilds `calendar/ledger.json` and `calendar/LEDGER.md`, one row per day per slot for the next 14 days, from content-engine's board and Buffer, read-only (`docs/OPERATING_MODEL.md` section 4). It keeps the two files as the run's artifact for 14 days and commits, posts, schedules and ticks nothing | every day 04:05, before the maker | 04:05 |
 | The test suite (`check.yml`) | on every push and pull request | on every push and pull request |
 | Art direction (`artdirect.yml`): Codex invents one visual idea for each piece of the coming week and builds it as a piece kit (`render/KIT.md`, "Piece kits"), with no network, only in that piece's own folder, and on at most three pieces a run. The renderer's checks are the gate: a kit that fails is removed and that piece uses the house kit. The kits that pass come to Krish as one pull request, "Piece kits for week W", which the workflow never merges. Its log carries counts and codes only | Saturdays 07:00 | 07:00 |
 
@@ -38,8 +46,9 @@ secret `OPEN_AI_API_KEY`, given to that one step and to no other job.
 ### How release reads what Krish approved
 
 Release trusts only what it reads back from Control Center, each record by
-its exact address and digest, and Buffer itself. It never trusts a file on
-the runner, a dispatch payload or anything on Krish's PC.
+its exact address and digest, Buffer itself and, for the week's mix press,
+content-engine's board. It never trusts a file on the runner, a dispatch
+payload or anything on Krish's PC.
 
 - **A go-live.** His decision, then the go-live and its plan read back from
   their own reports by the digest he decided on.
@@ -51,6 +60,12 @@ the runner, a dispatch payload or anything on Krish's PC.
   or his No with the same code the Control Center runner uses. His No on any
   part stops the week; a newer plan he has not answered withdraws an older
   yes.
+- **The board's mix press** (Krish, 30 Oct 2026: "approve the week's mix
+  once, let Growth fill it"; R124). For the derived (filler) lane, his
+  "Approve this week's mix" press on content-engine's Sunday board is the
+  approval, read with `GROWTH_WRITEBACK_TOKEN`, and only on the hash of the
+  mix Growth itself proposes (`docs/MIX.md`). No press holds quietly; his
+  Control Center No still stops the week. Series go-lives are unchanged.
 - **A post made from an approved idea.** The handoff records its review
   under the post's own hash. Release reads that record back by the exact
   hash, rebuilds the post from its Buffer draft, and schedules it only when
@@ -122,6 +137,28 @@ Saturday 12:00 London) and the 09:00 London daily heartbeat. They are kept
 until W46; `lanes.json` names the L0 job that takes over each one, where
 there is one.
 
+### The four engine sessions (built 5 November 2026)
+
+Four Codex sessions run on request, never on a schedule. Each is in
+`lanes.json` `automations` with `source` `engine-session` and `status`
+`on-request`, checked by `engine/run/invariants.py`. A session Krish opens
+with one of these requests is that engine and nothing else (`AGENTS.md`,
+"Four engines"):
+
+| Krish says | Job | First command |
+|---|---|---|
+| Run Acquisition | `jobs/acquisition.md` | `python growth.py engine start acquisition` |
+| Run Engagement | `jobs/engagement.md` | `python growth.py engine start engagement` |
+| Run Publishing | `jobs/publishing.md` | `python growth.py engine start publishing` |
+| Run Measurement | `jobs/measurement.md` | `python growth.py engine start measurement` |
+
+Work another engine owns goes through `growth.py engine handoff FROM TO`;
+`engine done` closes a record; `engine session set|show|clear` keeps
+Krish's session links in the ignored `.scratch/engines/sessions.json`; and
+every session ends with `growth.py engine close NAME --learnings FILE`. They
+make under the same walls as every other maker. This is the shadow week: the
+PC automations, the heartbeat and every L0 job keep running alongside them.
+
 ## L2: waits for Krish's eyes (one press in Control Center)
 
 These wait on his one list in Control Center. Each is one press: yes, change
@@ -141,7 +178,18 @@ it first, or no. They wait until he opens the list.
 
 ## L3: waits for Krish's hands
 
-Only he can do these. Nothing in L0 or L2, and no session, does them for him.
+Only he can do these. Nothing in L0 or L2, and no session he is not driving,
+does them for him.
+
+- **Make Your Mind Up outreach and social engagement** (Ruling, Krish,
+  2026-11-05). Outreach for this show (shows, newsletters, creators,
+  editorial features, swaps and partners) is the Acquisition engine's, and
+  social engagement is the Engagement engine's. Krish enacts both himself,
+  in his own Codex sessions, in the browser or through connectors, and
+  sends only after he approves the exact payload (sender, recipient,
+  channel, subject, body and links). Scheduled jobs and sessions he is not
+  driving only draft. None of it goes to Control Center; only Mindmake's own
+  outreach, visibility, networking, events and partners stay there.
 
 - **LinkedIn.** The engine leaves LinkedIn posts as drafts in Buffer. He
   presses publish himself.

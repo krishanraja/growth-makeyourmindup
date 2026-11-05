@@ -1,5 +1,13 @@
 # Job: recommendations
 
+**Current (5 November 2026).** This outreach is this engine's own and feeds
+the Acquisition engine (`jobs/acquisition.md`; `AGENTS.md`, "Outreach for Make
+Your Mind Up"). Its pack never goes to Control Center: `cc finish` holds it
+with the reason "Make Your Mind Up outreach is this engine's own, enacted in
+Krish's Codex sessions; it never goes to Control Center", and `post --deliver`
+refuses it. This job drafts; Krish sends in his own Codex session, on the
+exact draft he approves.
+
 Kind `swaps`. Read the shared instructions and `docs/ENGINE.md`.
 Recommendations are a fit hypothesis to measure, not a guaranteed source.
 
@@ -26,7 +34,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    until a real event is confirmed. Gmail is optional only under separate
    scheduled-job authorisation. Prepare evidence, merge the global queue,
    check, then use the delivery boundary in `AGENTS.md`.
-6. Last, report to Control Center with this run's actual file names:
+6. Last, report the run to Control Center (its drafts are held there, not
+   proposed) with this run's actual file names:
    `python growth.py cc finish --job swaps --envelope .scratch/swaps.json --queue .scratch/queue.json --deliver`.
    It must print "readback digest matches" and "attempt succeeded". If it
    prints a failure code instead, name that code in the final message.

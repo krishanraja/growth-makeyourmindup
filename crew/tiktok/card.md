@@ -8,6 +8,7 @@ Owns photo posts, video and memes on @therealkrisho, Krish's personal account wi
 | The voice review fails | Hold the copy for revision | R58 |
 | A photo post is prepared | The AI flag is never set on a photo post | P6, F02 |
 | A video carries realistic synthetic media | Set TikTok's AI-generated label | R43 |
+| A video post is prepared | Buffer TikTok short-video is held after a provider rejection; never attempt it again before its recheck condition changes; use the native TikTok uploader under the applicable approval; Buffer photo posts stay verified | R95, P6 |
 | A caption is written | It leads with the searchable phrase | P6 |
 | A file carries another platform's watermark | Hold it; upload the clean file | P6, D8 |
 | A post reaches 72 hours | Read watch time, profile visits and follows against its own median | P6, R08 |

@@ -12,6 +12,8 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Only Krish changes it.
 <!-- north-star:end -->
 
+**Current (5 November 2026).** The work runs as four engines, one per session: read "Four engines" below before anything else. Make Your Mind Up outreach is this engine's and social engagement is the Engagement engine's; Krish enacts both in his own Codex sessions on the exact payload he approves, and only Mindmake's outreach stays with Control Center ("Outreach for Make Your Mind Up" below). Through the shadow week the existing automations, `jobs/daily-growth.md` and the GitHub workflows keep running. Older sections below stay as dated evidence; where one says otherwise, those two sections win.
+
 ## Asset continuity (Krish, 27 October 2026)
 
 **One pipeline (proposed 31 October 2026).** `docs/OPERATING_MODEL.md` sets the seven stages from Inspiration to posting, who owns each, the ledger this repository keeps of every day's slot, and the pitch format every idea is written in. Krish ruled on 31 October that this repository schedules and posts everything and keeps track of what's what every day.
@@ -43,9 +45,11 @@ Older lines below stay as written; where they say otherwise, this wins.
 
 ## Open setup: read before any other work
 
-Written 2026-10-21. Any session that can do one of these does it, then
-deletes its line here in the same commit. Leave a line in place if you
-cannot do it, and say why in one sentence at the end of your run.
+Written 2026-10-21. Both lines are still here, so treat both as open. Any
+session that can do one of these does it, then deletes its line here in the
+same commit. Leave a line in place if you cannot do it, and say why in one
+sentence at the end of your run. An engine session ("Four engines") leaves
+these to a setup session and does its own engine's work.
 
 - **The ninth automation is not scheduled yet.** `automations.json` gained
   "Growth: answer piece" (Saturdays 09:00 New York, `jobs/answer.md`) on
@@ -53,7 +57,7 @@ cannot do it, and say why in one sentence at the end of your run.
   that can create scheduled tasks runs steps 1, 2, 4 and 5 of "When Krish
   says: create the automations" below for that one entry, updating rather
   than duplicating. A session that cannot (the GitHub Actions runner, a
-  Claude session) reports it as a hold on Krish's list with reason
+  cloud session without Codex scheduled tasks) reports it as a hold on Krish's list with reason
   `automation_missing` and does not ask him to paste anything.
 - **The answer piece's question set.** Each answer piece's question also
   belongs in AEO-Engine's question set (`krishanraja/AEO-Engine`), so the
@@ -171,6 +175,8 @@ Go-live is "Approve each day Monday"; every route goes through Buffer,
 pinned by channelId to this engine's eight channels, and every post passes
 content-engine's copy lint. Engagement is a daily 10-minute queue across X,
 TikTok, Instagram and LinkedIn, still prepared only. LinkedIn stays his click.
+(Since 5 November the Engagement engine prepares that queue and Krish enacts
+it in his own Codex sessions: "Outreach for Make Your Mind Up" above.)
 
 Growth strategy is self-contained here. Content-engine supplies production
 assets; Control Center is the eventual unified review surface. Scheduled
@@ -183,8 +189,9 @@ Read, in this order, before any job:
 3. `BROWSER.md`: what you may and may never do in Krish's signed-in browser;
 4. the job's own file in `jobs/`.
 
-If nobody named a job, run the one today's schedule (below) says, unless the
-user asked for implementation or an audit. Never run a scheduled job as a side
+A session Krish opens as one engine ("Run Acquisition" and the rest) follows
+"Four engines" above; one he opens with "Get going" or no specific task
+follows "Get going" above. A scheduled run follows the job its prompt names. Never run a scheduled job as a side
 effect of repository development. The
 source documents behind the playbook are in `knowledge/`; read them when a
 job needs depth (the references, the templates, the case studies).
@@ -216,9 +223,28 @@ carousels, oldest unamplified first, interleaved with memes, positive news and
 level-up advice, with each post's verdict moving the ratio next week (R103,
 `docs/MIX.md`). He approves the ideas and mocks in one press ("Autonomy").
 
-## Outreach belongs to Control Center (Ruling, Krish, 2026-10-21)
+## Outreach for Make Your Mind Up (Ruling, Krish, 2026-11-05)
 
-Control Center's People tab (Guests, weighted 70 to this show) and Visibility already find, draft and track outreach to shows and guests, drafted from Jonny's mailbox. So this engine proposes posts and measures. It proposes no pitch, swap or partner note: `growth.py cc finish` holds that work with the reason "Control Center's People and Visibility own outreach to shows and guests". The Tuesday, Wednesday and Thursday jobs below may still prepare lists and research for Krish's own use, but nothing from them reaches his list. His list also shows one of this engine's asks at a time, a go-live first, then a check-in, then a plan, so never add a second ask of a kind that already waits.
+Krish: "only Outreach for MindMake belongs to Control Center, alongside visibility and networking and events and partners. Anything to do with Make Your Mind Up growth belongs to the Make Your Mind Up engine. I'll be just running Codex sessions, which are connected to all my tools, to enact things like outreach or social engagement rapidly in browser or via the connectors."
+
+So outreach for Make Your Mind Up (shows, newsletters, creators, editorial features, swaps and partners) is this engine's, owned by the Acquisition engine (`jobs/acquisition.md`, "Four engines" below). Social engagement is the Engagement engine's. Krish enacts both in his own Codex sessions, in the browser or through connectors, on the exact draft he approves: an approval binds sender, recipient, channel, subject, body and links, and a redirected recipient needs a fresh decision. None of it goes to Control Center: `growth.py cc finish` still holds pitches, partners and swaps packs and `post --deliver` refuses them, now with the reason "Make Your Mind Up outreach is this engine's own, enacted in Krish's Codex sessions; it never goes to Control Center". Mindmake's own outreach, visibility, networking, events and partners stay with Control Center. This supersedes the 2026-10-21 ruling that Control Center's People and Visibility own this show's outreach. Rule 1 below is unchanged for scheduled jobs and for sessions Krish is not driving: they draft, he acts. His list in Control Center also shows one of this engine's asks at a time, a go-live first, then a check-in, then a plan, so never add a second ask of a kind that already waits.
+
+## Four engines (built 2026-11-05, shadow week)
+
+From `docs/reviews/2026-11-05-growth-engine-review.md`. When Krish opens a Codex session with one of these requests, that session is that engine and nothing else. It follows the job file, and the job file's first command recovers its queue, inbound handoffs and the last sessions' learnings from the shared records in `engines/records/`:
+
+| Krish says | Job | First command |
+|---|---|---|
+| Run Acquisition | `jobs/acquisition.md` | `python growth.py engine start acquisition` |
+| Run Engagement | `jobs/engagement.md` | `python growth.py engine start engagement` |
+| Run Publishing | `jobs/publishing.md` | `python growth.py engine start publishing` |
+| Run Measurement | `jobs/measurement.md` | `python growth.py engine start measurement` |
+
+Krish, 2026-11-05: "Ensure every new session I run with this engine automatically reports back its learnings: what it would do better next time, at the end of each session." So every engine session ends with `python growth.py engine close NAME --learnings FILE`, which refuses to close without specific "better next time" lines, and refuses a learning that repeats until it is written into the engine's contract, job or a lesson. The session's final message carries those learnings.
+
+Krish, same day: "One session should work on one engine only." Work that belongs to another engine (Publishing scheduled a post and its measured results are Measurement's; a comment Acquisition commissions is Engagement's) becomes `python growth.py engine handoff FROM TO`, never done in place. Krish, later that day: "whenever there's parallel work to be done by another engine or a handoff, it asks me, 'Do you have a session running for the X engine?' If not, 'Spin one up and let me know what it is, or I'll create one myself.'" So the handoff prints that question for the session to ask him first (or asks him to confirm the link it already knows), then the exact message for that session, naming the session to report back to. On his answer the session records the link with `python growth.py engine session set TO LINK`, or creates the other engine's Codex session itself, and sends the message there with the Codex tools it has. Parallel work is dispatched the same way and this session carries on without waiting. `engine done` on a handoff prints the report-back for the session that sent it. Session links live only in the ignored `.scratch/engines/sessions.json` (`engine start NAME --session LINK` records a session's own link, the one write start makes). Each session commits and pushes the handoff line before it sends the message (the other session finds it only after `git pull`), and commits and pushes its other new record lines at close.
+
+Each engine records what it did; Measurement and Allocation judges what worked. Committed records stay privacy-safe: exact words, recipients and post URLs live only in `.scratch/engines/`. The existing daily job and automations keep running through the shadow week; Measurement then compares the engines' decisions with what the operation actually did.
 
 ## What you are growing
 
@@ -274,8 +300,11 @@ that it runs there:
    email: at most save a draft. Never spend money. If a step seems to need
    any of that, write the draft and stop. `BROWSER.md` has the full line.
    Exceptions are the scoped weekly browser-audit edits above, the explicit
-   unscheduled Buffer draft preparation in BROWSER.md, and an approved
-   go-live taken live by the engine's go-live step. Draft saves never
+   unscheduled Buffer draft preparation in BROWSER.md, an approved
+   go-live taken live by the engine's go-live step, and, in a Codex
+   session Krish is driving, one outreach send or one comment he approved
+   word for word in that session ("Outreach for Make Your Mind Up";
+   `engines/acquisition.json`, `engines/engagement.json`). Draft saves never
    authorise scheduling or publication.
 2. **Facts only from his published pieces.** Every fact, number and name in
    a draft comes from an article `python3 growth.py pieces
@@ -348,9 +377,11 @@ truth. First-person experience must be present in the published source.
    endpoint fails, retain the ignored local envelope, report the failure,
    and never claim delivery. No database fallback or second write path.
    27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
-   pitches, partners and swaps are held (Control Center owns
-   outreach): skip `post --deliver` for those kinds, which exits 1 with the
-   outreach hold; `cc finish` still reports the hold.
+   pitches, partners and swaps are held from Control Center: skip
+   `post --deliver` for those kinds, which exits 1 with the outreach hold;
+   `cc finish` still reports the hold. The reason was "Control Center owns
+   outreach" until 5 November; it is now that this outreach is this
+   engine's own ("Outreach for Make Your Mind Up" above).
 7. Every scheduled job then ends with `growth.py cc finish ... --deliver`
    (the next section), which reports the same selected drafts as proposals.
 
@@ -399,7 +430,7 @@ two steps; in short:
    `python growth.py cc finish --job KIND --envelope FILE --queue .scratch/queue.json --deliver`
    (the numbers job adds `--observations .scratch/observations.json`). It
    turns the selected drafts into proposals for Krish (posts and comments
-   behind the `post` wall, pitches and asks held as Control Center's (above), report
+   behind the `post` wall, pitches and asks held from Control Center ("Outreach for Make Your Mind Up" above), report
    recommendations behind `strategy`, each with its exact words), deferred
    and blocked work into holds, reports with the run's stable id
    (`makeyourmindup:<New York date>:<kind>`), reads the report back by its
@@ -416,14 +447,16 @@ Only the GitHub runner (a repository secret) and Krish's PC (the file, for
 Codex workspace runs) hold it. A Claude session never sets or reads it: it
 reads Control Center through the Control Center connector, and its
 proposals reach Control Center only through the runner (`docs/LANES.md`).
-There are no Claude routines (Krish, 29 Oct 2026); whoever makes or writes
-for this engine follows `docs/TASTE.md`.
+There are no Claude routines (Krish, 29 Oct 2026); the one exception he made
+that day is the daily credits session in `lanes.json` (`claude_sessions`,
+`docs/CREDITS.md`). Whoever makes or writes for this engine follows
+`docs/TASTE.md`.
 Separately, Control Center wakes `.github/workflows/control-center.yml`
 every morning; that GitHub runner checks the engine offline and reports
 what a clean runner can see. Its numbers are always "measured only in the
-publication workspace". GitHub Actions runs seven workflows, all lane L0
-(`docs/LANES.md`): control-center, release, measure, keys, handoff,
-artdirect, maker and check. The maker (`docs/MAKER.md`) drafts each next day's posts from
+publication workspace". GitHub Actions runs nine workflows, all lane L0
+(`docs/LANES.md`, `lanes.json`): control-center, release, measure, keys,
+handoff, check, artdirect, maker and ledger. The maker (`docs/MAKER.md`) drafts each next day's posts from
 the ideas and mocks Krish approved and hands them off; it never schedules. The nine automations below run on Krish's PC and are kept until W46.
 
 ## The schedule (New York time)
@@ -433,12 +466,16 @@ the ideas and mocks Krish approved and hands them off; it never schedules. The n
 | Every day 06:00 | Numbers | `numbers` | `jobs/numbers.md` |
 | Every day 06:30 | Conversation radar | `radar` | `jobs/radar.md` |
 | Mon, Wed, Fri 13:30 (after the piece is out) | The day's pack | `daily` | `jobs/daily-pack.md` |
-| Tuesday 07:00 | Pitches (held: Control Center owns outreach) | `pitches` | `jobs/pitches.md` |
-| Wednesday 07:00 | Partners (held: Control Center owns outreach) | `partners` | `jobs/partners.md` |
-| Thursday 07:00 | Recommendations (held: Control Center owns outreach) | `swaps` | `jobs/swaps.md` |
+| Tuesday 07:00 | Pitches (feeds Acquisition; never to Control Center) | `pitches` | `jobs/pitches.md` |
+| Wednesday 07:00 | Partners (feeds Acquisition; never to Control Center) | `partners` | `jobs/partners.md` |
+| Thursday 07:00 | Recommendations (feeds Acquisition; never to Control Center) | `swaps` | `jobs/swaps.md` |
 | Saturday 09:00 | The answer piece | `daily` | `jobs/answer.md` |
 | Saturday 12:00 London | Weekly live channel audit, then front door | `conversion` | `jobs/channel-audit.md` |
 | Sunday 07:00 | The weekly report | `report` | `jobs/report.md` |
+
+Two more run outside this table: the daily heartbeat (`jobs/daily-growth.md`,
+every day 09:00 Europe/London, in `lanes.json` and not in `automations.json`)
+and the four engine sessions, on request ("Four engines" above).
 
 Krish's time budget is about 20 minutes a day and 30 on Sunday, across all
 jobs together. Merge the day's envelopes into one queue; a later job counts
@@ -526,7 +563,8 @@ weekly `answer` job drafts one answer-first piece from a real question.
 
 ## Why it works this way
 
-`PLAYBOOK.md` is the operating system (seven engines, the channel jobs,
+`PLAYBOOK.md` is the operating system (seven growth levers, not the four
+engines above; the channel jobs,
 tracked links, kill-keep-scale), taken from the documents in `knowledge/`
 that Krish gave it on 14 October 2026. `knowledge/README.md` says where his
 own rules override them (no Notes, no percentages, he does every post). The

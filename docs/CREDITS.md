@@ -67,7 +67,8 @@ copy doctrine apply to every word you make.
 - Never past `remaining_for_you`.
 - Never a top-up, a plan change or new money.
 - Never publish, post or send anything you made. Publishing goes through the
-  go-live, or an approved concept.
+  go-live, an approved concept, or the week's mix press on content-engine's
+  board (`docs/PUBLISHING-AUTHORITY.md`).
 - Never change this repository.
 - A spend recorded here is never reported again in a runner report's
   `credits_spent`. Control Center already counts it.

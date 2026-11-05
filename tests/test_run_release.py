@@ -507,6 +507,21 @@ class ReleaseTests(unittest.TestCase):
         resign(notes, odd_decision, odd)
         self.assertTrue(self.holds(self.plan(odd, odd_decision))['notes-1'].startswith('route_unknown: '))
 
+    def test_a_route_held_after_provider_rejection_releases_no_capability_check(self):
+        # Review of 5 Nov 2026, section 7: three Buffer TikTok video attempts failed, so the route is
+        # held with its recheck condition; `run release` never spends another attempt as its check.
+        patch.stopall()  # the real route records
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        slot = [s for s in spec['slots'] if s['slot_id'] == 'tiktok-photo-1'][0]
+        slot['format'] = 'short-video'
+        resign(slot, decision, spec)
+        result = self.plan(spec, decision)
+        self.assertNotIn('tiktok-photo-1', self.by_slot(result))
+        self.assertNotIn('tiktok-photo-1', result['ledger']['released'])
+        hold = self.holds(result)['tiktok-photo-1']
+        self.assertTrue(hold.startswith('route_held_after_provider_rejection: '), hold)
+        self.assertIn('provider rejection is explained', hold)
+
     def test_capability_check_holds_its_route_across_runs(self):
         # "until a route has passed it, the route holds": a check another run released, and not yet
         # recorded as passed, holds this run's route too, instead of becoming a second check.

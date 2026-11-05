@@ -160,6 +160,13 @@ association is not assumed to be a text-link edit and needs approval.
 Source checked 2026-10-21:
 https://support.google.com/youtube/answer/13748639?hl=en
 
+Closing a new edition against its public reader view is the Publishing
+engine's (`jobs/publishing.md`, since 5 November 2026): a cover on the public
+grid and the public player, a Short's continuation, and Substack's
+publication, playable video and email delivery are separate checks, and a
+saved setting never closes one (lesson `public-cover-verification`). This
+audit still inspects the same pages weekly.
+
 YouTube says titles, thumbnails and descriptions matter more for discovery
 than tags, which usually play a small role. Do not fail every post for
 missing hashtags. Source checked 2026-10-21:

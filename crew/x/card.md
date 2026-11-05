@@ -13,4 +13,4 @@ Owns receipt posts on @therealkrisho, Krish's personal account with delegated ca
 | A profile link is changed in the audit | It stays within the observed field limit | F30, R23 |
 | A post reaches 48 hours | Read replies, profile clicks, link clicks and follows against its own median | P5, R08 |
 | A post is in the top tenth of the channel baseline at 24 hours | Hand it to P8 breakout amplification | P8 |
-| A reply to someone else is wanted | The Engagement Preparer drafts it; Krish sends it | R01 |
+| A reply to someone else is wanted | The Engagement engine drafts it (jobs/engagement.md); Krish sends it, or approves the exact text in a session he drives | R01 |

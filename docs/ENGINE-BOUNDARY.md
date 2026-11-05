@@ -3,6 +3,23 @@
 Ruling: Krish, 26 October 2026. This supersedes any older instruction that
 makes Growth a content-production or production-standards owner.
 
+**Current as of 5 November 2026.** The dated sections below add to or
+supersede the 26 October split where they say so. Two later facts sit on top
+of all of it:
+
+- **Make Your Mind Up outreach is Growth's** (Ruling, Krish, 2026-11-05;
+  `AGENTS.md`, "Outreach for Make Your Mind Up"). Outreach for this show
+  (shows, newsletters, creators, editorial features, swaps and partners) is
+  owned by the Acquisition engine, and social engagement by the Engagement
+  engine. Krish enacts both in his own Codex sessions, in the browser or
+  through connectors, on the exact payload he approves. Only Mindmake's own
+  outreach, visibility, networking, events and partners stay with Control
+  Center.
+- **Growth runs as four engines** (built 5 November 2026; `AGENTS.md`, "Four
+  engines"; `docs/LANES.md`): Acquisition, Engagement, Publishing, and
+  Measurement and Allocation, each one Codex session Krish opens on
+  request. Production stays content-engine's exactly as below.
+
 Growth-MakeYourMindUp is the social media manager and distribution engine
 for makeyourmindup and Krish's named personal accounts. It ensures published
 videos and articles are amplified into suitable native formats and delivered
@@ -192,3 +209,9 @@ submits every reply, and following and liking stay his.
 Built so far (28 October): the release channel lock and the copy lint. The
 lane, the engage queue, derived carousels and the Monday go-live reads are
 Wave 2 of the plan, with the first off-day posts due Tuesday 10 November.
+Built since (`CHANGES.md`): the week's mix plan and its one board press
+(`docs/MIX.md`), the maker (`docs/MAKER.md`), the derived lane in release
+and the engage queue as one copy-and-open task in Control Center
+(`docs/ENGINE.md`). On 29 October Krish chose "Mix wins: every day", so the
+lighter lanes run every day, not only on the off days
+(`docs/PUBLISHING-AUTHORITY.md`).

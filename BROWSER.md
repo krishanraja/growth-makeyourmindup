@@ -1,5 +1,18 @@
 # Browser access: inspect and make only authorised audit repairs
 
+**Current (5 November 2026).** In a Codex session Krish is driving, one
+outreach send (Acquisition) or one comment or reply (Engagement) may be
+submitted in this browser or through a connector, only after he approves
+that exact payload in that session, immediately before it goes
+(`AGENTS.md`, "Outreach for Make Your Mind Up"; `engines/acquisition.json`,
+`engines/engagement.json`). Scheduled jobs and sessions he is not driving
+stay under "The line you never cross" below. Open conflict: the 5 November
+review keeps every ready LinkedIn draft open in its tab, while the
+2026-10-24 ruling below allows one prefilled LinkedIn box at a time; this
+file holds until Krish rules. Buffer's TikTok short-video route is held
+(`social/tools/buffer.json`); the native TikTok uploader is the alternative
+under the applicable approval.
+
 The later 26 October ruling in docs/PUBLISHING-AUTHORITY.md also permits
 scheduling/publishing already approved branded content at Growth's cadence.
 LinkedIn remains unscheduled drafts for Krish's manual final click. Approved X and TikTok content has the same delegated cadence as branded Instagram; personal voice still applies.
@@ -67,7 +80,8 @@ unowned desktop dialog, or retry an uncertain save without readback.
 
 In a signed-in browser you may open pages, scroll, search, sort and filter,
 open analytics, and copy text out. Outside scoped existing-field audit edits,
-the explicit Buffer draft authority and LinkedIn preparation above, you may **never**:
+the explicit Buffer draft authority, LinkedIn preparation and the approved
+send or comment in a session Krish is driving (top of this file), you may **never**:
 
 - type into a post, comment, reply, message, note or chat box, except the
   explicitly authorised LinkedIn comment preparation above;

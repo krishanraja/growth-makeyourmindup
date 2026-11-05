@@ -53,3 +53,16 @@ automations on your PC.
 If you created a "Growth: make", "Growth: plan" or "Growth: watch" routine
 on claude.ai before 29 October, delete it: open **Code**, then
 **Routines**, open each one and delete it.
+
+## 4. The other repository secrets
+
+The workflows read these repository secrets too. Each is added on the same
+page as step 1 (**New repository secret**), under exactly this name, and
+never pasted anywhere else.
+
+| Secret | Read by | Note |
+|---|---|---|
+| `CONTROL_CENTER_ENGINE_TOKEN` | control-center, keys, measure, release, handoff, maker | Issued by Control Center for this engine alone ([KEY.md](KEY.md)) |
+| `GROWTH_WRITEBACK_TOKEN` | release (the board tick and the mix press), maker, ledger | Set by 1 November 2026, when the first ledger run read the board with it. It must match the value in content-engine's Vercel |
+| `ANTHROPIC_API_KEY` | maker | Without it the maker holds as `anthropic_key_missing` ([MAKER.md](MAKER.md)) |
+| `OPEN_AI_API_KEY` | artdirect | Given to the Codex step only ([LANES.md](LANES.md)) |

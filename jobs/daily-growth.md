@@ -1,5 +1,14 @@
 # Daily channel work and Buffer trial
 
+**Current (5 November 2026).** This heartbeat keeps running through the four
+engines' shadow week (`AGENTS.md`, "Four engines"); Measurement then compares
+the engines' decisions with what this job actually did. A session Krish opens
+as one engine runs that engine's job file, not this one. Make Your Mind Up
+outreach belongs to Acquisition and social engagement to Engagement; Krish
+enacts both in his own Codex sessions on the exact payload he approves
+(`AGENTS.md`, "Outreach for Make Your Mind Up"). This job still only drafts
+them.
+
 Read `docs/ASSET-STORAGE.md` and `docs/SESSION-HANDOVER.md` first. Store exact
 approved distribution assets in the existing structured Growth library; keep
 production originals in Content Engine and private evidence locally. Complete
@@ -89,6 +98,9 @@ format; it is not responsible for finding Growth's opportunities for it.
      presentation and continuation checks; keep it distinct from personal profiles.
    - TikTok: plan and commission photo/video editions for its audience;
      verify the account's real format and profile-link capabilities.
+     Buffer's TikTok short-video route is held since 5 November
+     (`social/tools/buffer.json`); the native TikTok uploader is the
+     alternative, under the applicable approval.
    - YouTube: commission native Shorts and their exact matching long-video
      continuation. Keep long-form upload work native where unsupported.
    - X: commission a visual post/thread edition and prepare specific reply options.
