@@ -20,7 +20,10 @@
     "keep raw receipts and exact readings that are not privacy-safe in .scratch/engines/measurement.jsonl",
     "propose spending on tools or production, kept apart from approved spending",
     "return a broken continuation to Publishing as a defect, and a weak working continuation to Acquisition as an experiment",
-    "hand work another engine owns to that engine's queue with python growth.py engine handoff measurement TO --what TEXT --why TEXT, and give Krish the paste-ready message",
+    "hand work another engine owns, or work that can run in parallel, to that engine's queue with python growth.py engine handoff measurement TO --what TEXT --why TEXT, ask Krish the question it prints, and send its message to that engine's session",
+    "keep Krish's session links in the private .scratch/engines/sessions.json with python growth.py engine session set, show and clear, and python growth.py engine start measurement --session LINK",
+    "create a Codex session for another engine with the Codex tools available, only when Krish says to, start it with the handoff message and record its link",
+    "send a report-back from python growth.py engine done to the session that sent the handoff, and record a report-back that arrives",
     "close each session with python growth.py engine close measurement --learnings FILE, after writing the learnings file in .scratch/engines/",
     "close one of this engine's own records, an inbound handoff included, with python growth.py engine done measurement ID --note TEXT"
   ],

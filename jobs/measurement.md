@@ -1,22 +1,27 @@
 # Job: measurement
 
-Krish says "Run Measurement". This file is the whole job. The rules come
-from the growth engine review of 5 November 2026
-(`docs/reviews/2026-11-05-growth-engine-review.md`, "What Measurement &
+Krish says "Run Measurement". This file is the whole job. The rules come from the growth engine
+review of 5 November 2026 (`docs/reviews/2026-11-05-growth-engine-review.md`, "What Measurement &
 Allocation should produce") and build on the Measurement Specialist
-(`crew/attribution-ladder/card.md`) and the What-Works Analyst
-(`crew/what-works/card.md`).
+(`crew/attribution-ladder/card.md`) and the What-Works Analyst (`crew/what-works/card.md`).
 
 ## This session
 
-One engine per session: this one. Run `git pull`, then take `inbound_handoffs` from `engine
-start`, oldest first, and close each with `python growth.py engine done measurement ID --note
-TEXT`. Work another engine owns becomes a handoff: `python growth.py engine handoff measurement
-TO --what TEXT --why TEXT --link ID`. An allocation change goes to the engine that owns the
-work: a broken continuation to Publishing as a defect, a weak working continuation or a route to
-test to Acquisition, a response pattern to Engagement. When Krish pastes a session link for a
-handoff, send the handoff message to that session with the Codex tools available; if none can,
-give him the message to paste. Never do the other engine's work in this session.
+One engine per session: this one. Run `git pull` and the first command below, then take
+`inbound_handoffs` oldest first; `python growth.py engine done measurement ID --note TEXT --next
+TEXT` closes each and prints a report-back to send to the session that sent it (with the Codex
+tools available, or Krish pastes it). Work another engine owns becomes `python growth.py engine
+handoff measurement TO --what TEXT --why TEXT --link ID`. An allocation change goes to the engine
+that owns the work: a broken continuation to Publishing as a defect, a weak working continuation
+or a route to test to Acquisition, a response pattern to Engagement. Before anything else with
+that item, ask Krish the question it prints, exactly as printed ("Do you have a session running
+for the X engine? ..."). If he says to create one, create a new Codex session with the Codex tools
+available, start it with the handoff message and record its link with `python growth.py engine
+session set TO LINK`; if he pastes a link, record it and send the message there. Commit and push
+the new handoff line before sending the message, so `git pull` there finds it. Parallel work goes
+the same way: dispatch it and carry on here without waiting, unless this engine's next step
+depends on the result. Record a report-back from another session (`engine done` or an update on
+the linked record) and carry on. Never do the other engine's work in this session.
 
 ## Read, in this order
 
@@ -27,18 +32,18 @@ give him the message to paste. Never do the other engine's work in this session.
 
 ## The single job
 
-Answer one question each week: where should the next five hours go, and
-what evidence would change that decision? Other engines record what they
-did. This engine judges what worked.
+Answer one question each week: where should the next five hours go, and what evidence would change
+that decision? Other engines record what they did. This engine judges what worked.
 
 ## First command
 
-    python growth.py engine start measurement
+    python growth.py engine start measurement --session LINK
 
-It only reads. Its `recover` block gives the current number and its
-source, the comparable observation windows, overdue measurements, the
-largest observed constraint and the open resource decision. `next_action`
-is where the run begins.
+Pass `--session` with this session's link when Krish has given it: the one write start makes, into
+the private `.scratch/engines/sessions.json`, so other sessions can report back here. Otherwise it
+only reads. Its `recover` block gives the current number and its source, the comparable
+observation windows, overdue measurements, the largest observed constraint and the open resource
+decision. `next_action` is where the run begins.
 
 ## Measuring
 
@@ -92,28 +97,27 @@ is where the run begins.
 
 ## Recording and handing off
 
-Append to `engines/records/measurement.jsonl` with `core.append`, then run
-`python growth.py engine check`. Raw receipts stay in
-`.scratch/engines/measurement.jsonl`. A broken continuation goes to
-Publishing as a defect. A working continuation with few visits goes to
-Acquisition as an experiment. The memo goes to Krish.
+Append to `engines/records/measurement.jsonl` with `core.append`, then run `python growth.py
+engine check`. Raw receipts stay in `.scratch/engines/measurement.jsonl`. A broken continuation
+goes to Publishing as a defect. A working continuation with few visits goes to Acquisition as an
+experiment. The memo goes to Krish.
 
 ## Done
 
-A dated scorecard and a decision memo say what to increase, reduce, stop,
-continue or test, each with its evidence, uncertainty, owner, review date
-and reversal condition. Close by naming what moved the North Star, or
-saying nothing did.
+A dated scorecard and a decision memo say what to increase, reduce, stop, continue or test, each
+with its evidence, uncertainty, owner, review date and reversal condition. Close by naming what
+moved the North Star, or saying nothing did.
 
 ## Close
 
-Hand off anything left for another engine, then write
+Hand off anything left for another engine (asked and sent as above), then write
 `.scratch/engines/measurement-learnings.json` with `did`, `better_next_time` (specific changes),
-`worked`, `handoffs` (every id made), `promoted` and `session_ref` (Krish's session link), and
-run `python growth.py engine close measurement --learnings
+`worked`, `handoffs` (every id made), `promoted` and `session_ref` (this session's link,
+`my_session_ref`), and run `python growth.py engine close measurement --learnings
 .scratch/engines/measurement-learnings.json`. A repeat of an earlier session's line is refused
 until its words are written into this file, `engines/measurement.json` or a `social/lessons/`
-record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a
-message naming Measurement and the date, and push: another engine's session sees a handoff only
-after `git pull`. If the push fails, put each new record line in the final message. End the
-final message with the learnings and each paste-ready handoff message the close prints.
+record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a message
+naming Measurement and the date, and push: another engine's session sees a handoff only after `git
+pull`. If the push fails, put each new record line in the final message. End the final message
+with the learnings, each handoff's question and message the close prints, and any unsent
+report-back.

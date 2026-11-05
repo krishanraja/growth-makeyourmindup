@@ -1,24 +1,27 @@
 # Job: acquisition
 
 Krish says "Run Acquisition". This file is the whole job. The rules come from the growth engine
-review of 5 November 2026 (`docs/reviews/2026-11-05-growth-engine-review.md`, sections 1 to 3)
-and the outreach ruling of the same day (`AGENTS.md`, "Outreach for Make Your Mind Up").
+review of 5 November 2026 (`docs/reviews/2026-11-05-growth-engine-review.md`, sections 1 to 3) and
+the outreach ruling of the same day (`AGENTS.md`, "Outreach for Make Your Mind Up"). Read
+`AGENTS.md` (the rules that never bend), then `engines/acquisition.json` (what this engine owns,
+may do and must not do), then this file.
 
 ## This session
 
-One engine per session: this one. Run `git pull`, then take `inbound_handoffs` from `engine
-start`, oldest first, and close each with `python growth.py engine done acquisition ID --note
-TEXT`. Work another engine owns becomes a handoff: `python growth.py engine handoff acquisition
-TO --what TEXT --why TEXT --link ID`. A commissioned comment goes to Engagement (link the batch
-from `commission_comment`); a live placement and its results go to Measurement; a broken reader
-link goes to Publishing. When Krish pastes a session link for a handoff, send the handoff
-message to that session with the Codex tools available; if none can, give him the message to
-paste. Never do the other engine's work in this session.
-
-## Read, in this order
-
-`AGENTS.md` (the rules that never bend), then `engines/acquisition.json` (what this engine owns,
-may do and must not do), then this file.
+One engine per session: this one. Run `git pull` and the first command below, then take
+`inbound_handoffs` oldest first; `python growth.py engine done acquisition ID --note TEXT --next
+TEXT` closes each and prints a report-back to send to the session that sent it. Work another
+engine owns becomes `python growth.py engine handoff acquisition TO --what TEXT --why TEXT --link
+ID`. A commissioned comment goes to Engagement (link the batch from `commission_comment`); a live
+placement and its results go to Measurement; a broken reader link goes to Publishing. Before
+anything else with that item, ask Krish the question it prints, exactly as printed ("Do you have a
+session running for the X engine? ..."). If he says to create one, create a new Codex session with
+the Codex tools available, start it with the handoff message and record its link with `python
+growth.py engine session set TO LINK`; if he pastes a link, record it and send the message there.
+Commit and push the new handoff line before sending the message, so `git pull` there finds it.
+Parallel work goes the same way: dispatch it and carry on here without waiting, unless this
+engine's next step depends on the result. Record a report-back from another session (`engine done`
+or an update on the linked record) and carry on. Never do the other engine's work in this session.
 
 ## The single job
 
@@ -28,12 +31,14 @@ Individual conversations come later, and Engagement prepares them.
 
 ## First command
 
-    python growth.py engine start acquisition
+    python growth.py engine start acquisition --session LINK
 
-It only reads. Its `recover` block names the best open opportunity, the evidence of access, the
+Pass `--session` with this session's link when Krish has given it: the one write start makes, into
+the private `.scratch/engines/sessions.json`, so other sessions can report back here. Otherwise it
+only reads. Its `recover` block names the best open opportunity, the evidence of access, the
 outstanding approvals, the closed and declined routes with what is suppressed, the active
-experiment, the rules and any conflicts. `next_action` is where the run begins. With no
-qualified route, it says to find one.
+experiment, the rules and any conflicts. `next_action` is where the run begins. With no qualified
+route, it says to find one.
 
 ## Ranking a route
 
@@ -83,37 +88,37 @@ qualified route, it says to find one.
 
 Acquisition owns Make Your Mind Up outreach: shows, newsletters, creators, editorial features,
 swaps and partners. Mindmake outreach stays with Control Center; nothing goes to Control Center.
-In a Codex session Krish is driving, this session may enact one outreach send through the
-browser or a connector only after Krish approves that exact bound payload (its `approval_digest`
-of sender, recipient, channel, subject, body and links) in that session, immediately before
-sending. It then records the receipt as sent and nothing further until evidenced. Scheduled jobs
-and sessions he is not driving only draft.
+In a Codex session Krish is driving, this session may enact one outreach send through the browser
+or a connector only after Krish approves that exact bound payload (its `approval_digest` of
+sender, recipient, channel, subject, body and links) in that session, immediately before sending.
+It then records the receipt as sent and nothing further until evidenced. Scheduled jobs and
+sessions he is not driving only draft.
 
 ## Recording and handing off
 
 Committed records in `engines/records/acquisition.jsonl` carry digests, states and decisions.
 Exact words, recipient addresses, URLs and receipts go only in
 `.scratch/engines/acquisition.jsonl`. Every record carries its source, observation date, state,
-next owner and revisit condition. Append committed lines with `acquisition.add`, then run
-`python growth.py engine check`. Hand live placements and attributable results to Measurement,
-which judges what worked.
+next owner and revisit condition. Append committed lines with `acquisition.add`, then run `python
+growth.py engine check`. Hand live placements and attributable results to Measurement, which
+judges what worked.
 
 ## Done
 
 Each opportunity touched has a verified route, a concrete offer, a next action and a recorded
 disposition. A successful placement has a live reference and a route into MYMU. Attributable
-results are attached when available. Close by naming what moved the North Star, or saying
-nothing did.
+results are attached once known. Close by naming what moved the North Star, or that nothing did.
 
 ## Close
 
-Hand off anything left for another engine, then write
+Hand off anything left for another engine (asked and sent as above), then write
 `.scratch/engines/acquisition-learnings.json` with `did`, `better_next_time` (specific changes),
-`worked`, `handoffs` (every id made), `promoted` and `session_ref` (Krish's session link), and
-run `python growth.py engine close acquisition --learnings
+`worked`, `handoffs` (every id made), `promoted` and `session_ref` (this session's link,
+`my_session_ref`), and run `python growth.py engine close acquisition --learnings
 .scratch/engines/acquisition-learnings.json`. A repeat of an earlier session's line is refused
 until its words are written into this file, `engines/acquisition.json` or a `social/lessons/`
-record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a
-message naming Acquisition and the date, and push: another engine's session sees a handoff only
-after `git pull`. If the push fails, put each new record line in the final message. End the
-final message with the learnings and each paste-ready handoff message the close prints.
+record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a message
+naming Acquisition and the date, and push: another engine's session sees a handoff only after `git
+pull`. If the push fails, put each new record line in the final message. End the final message
+with the learnings, each handoff's question and message the close prints, and any unsent
+report-back.

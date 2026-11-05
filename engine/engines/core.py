@@ -9,6 +9,11 @@ Every engine also accepts two shared kinds, checked here rather than in the engi
 (what one session did and what it would do better next time, written by engine close) and a "handoff" record
 (work one engine found that another engine owns, kept in the target engine's queue until it closes it). One
 session runs one engine; anything owned by another engine becomes a handoff.
+
+Krish's session links live only in the ignored registry .scratch/engines/sessions.json ({engine: {ref, set_at,
+set_by_session}}), so a handoff can ask him whether a session for the target engine is running and address its
+report back to the session that sent it. Committed records carry session links only in session_ref,
+from_session_ref and to_session_ref.
 """
 import argparse
 import hashlib
@@ -30,7 +35,8 @@ SOURCE_KINDS = ('user_ruling', 'live_readback', 'published_source', 'private_fil
 SHARED_KINDS = ('session', 'handoff')
 SHARED_STATES = {'session': (CLOSED,), 'handoff': ('open', CLOSED)}
 SESSION_KEYS = ('session_ref', 'did', 'better_next_time', 'worked', 'handoffs', 'promoted')
-HANDOFF_KEYS = ('from_engine', 'to_engine', 'from_session', 'to_session_ref', 'what', 'why_not_here',
+HANDOFF_KEYS = ('from_engine', 'to_engine', 'from_session', 'from_session_ref', 'to_session_ref', 'what',
+                'why_not_here',
                 'first_command', 'done_note', 'done_on')
 LEARNING_MIN = 25
 LINE_MAX = 400
@@ -51,7 +57,9 @@ GENERIC = {'be more careful', 'be more thorough', 'be more efficient', 'be more 
            'be more careful with details', 'pay attention to detail', 'pay more attention to detail'}
 WHOLE_LINE_ONLY = {'do more', 'test more', 'check more', 'keep going', 'plan ahead', 'be better', 'do better'}
 URL = re.compile(r'https?://|\bwww\.', re.I)
-REF_KEYS = ('session_ref', 'to_session_ref')
+REF_KEYS = ('session_ref', 'from_session_ref', 'to_session_ref')
+SESSIONS_FILE = PRIVATE_DIR / 'sessions.json'
+REF_MAX = 500
 OWNERS = ENGINES + ('krish', 'content-engine', 'none')
 FIELDS = ('id', 'engine', 'kind', 'title', 'state', 'source', 'next_owner', 'next_action', 'revisit_when',
           'opportunity_id', 'links', 'updated_at', 'detail')
@@ -310,10 +318,14 @@ def _first_action(engine, records):
     return {k: r.get(k) for k in ('id', 'title', 'state', 'next_owner', 'next_action', 'revisit_when')}
 
 
-def start(engine, root=ROOT, now=None, private=True):
-    """What a fresh chat needs to run one engine. Reads only; writes nothing."""
+def start(engine, root=ROOT, now=None, private=True, session=None):
+    """What a fresh chat needs to run one engine. Reads only, with one exception: given session (this session's
+    own link), it records that link for this engine in the private registry so other sessions can report back."""
     as_of = calendar_date(now).isoformat() if now else today()
     contract = load_contract(engine, root)
+    if session:
+        set_session(engine, session, root, as_of, session_id(engine, as_of, root))
+    known = load_sessions(root) if private or session else {}
     whole = all_records(root, private)
     everything = {e: own(r) for e, r in whole.items()}
     recovered = package.module(engine).recover(everything[engine], everything, as_of)
@@ -325,6 +337,7 @@ def start(engine, root=ROOT, now=None, private=True):
     return {'engine': engine, 'as_of': as_of, 'entry_request': contract['entry_request'], 'job': contract['job'],
             'single_job': True,
             'this_session': {'engine': engine, 'rule': SESSION_RULE.format(name=engine)},
+            'my_session_ref': (known.get(engine) or {}).get('ref'), 'known_sessions': known,
             'inbound_handoffs': inbound, 'last_learnings': last_learnings(engine, whole[engine]),
             'recover': recovered, 'next_action': first,
             'authority': {'permitted_actions': contract['permitted_actions'],
@@ -334,8 +347,62 @@ def start(engine, root=ROOT, now=None, private=True):
 # Sessions and handoffs ---------------------------------------------------------------------------------
 
 SESSION_RULE = ('One engine per session. Work owned by another engine becomes a handoff (python growth.py engine '
-                'handoff); never do it here. Close with python growth.py engine close {name} --learnings FILE '
+                'handoff); ask Krish the question it prints, send its message to that engine\'s session, and '
+                'never do the work here. Close with python growth.py engine close {name} --learnings FILE '
                 'before your final message.')
+
+
+def _sessions_path(root):
+    return Path(root) / SESSIONS_FILE
+
+
+def load_sessions(root=ROOT):
+    """The private registry of Krish's session links: {engine: {ref, set_at, set_by_session}}."""
+    path = _sessions_path(root)
+    if not path.is_file():
+        return {}
+    with open(path, encoding='utf-8-sig') as handle:
+        try:
+            value = json.load(handle)
+        except ValueError as error:
+            raise ValueError(path.as_posix() + ': not JSON: ' + str(error)) from None
+    if not isinstance(value, dict):
+        raise ValueError(path.as_posix() + ': must be an object of engine to session link')
+    return {e: v for e, v in value.items()
+            if e in ENGINES and isinstance(v, dict) and _one_line(v.get('ref'), REF_MAX)}
+
+
+def _save_sessions(registry, root):
+    path = _sessions_path(root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(registry, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
+
+
+def set_session(engine, link, root=ROOT, now=None, by=None):
+    """Record Krish's session link for one engine in the private registry. Never committed."""
+    if engine not in ENGINES:
+        raise ValueError('unknown engine: ' + str(engine))
+    if not _one_line(link, REF_MAX):
+        raise ValueError('a session link is one non-empty line of at most ' + str(REF_MAX) + ' characters')
+    registry = load_sessions(root)
+    registry[engine] = {'ref': link.strip(), 'set_at': calendar_date(now).isoformat() if now else today(),
+                        'set_by_session': by}
+    _save_sessions(registry, root)
+    return registry[engine]
+
+
+def clear_session(engine, root=ROOT):
+    """Forget one engine's session link, for instance when that session has ended."""
+    if engine not in ENGINES:
+        raise ValueError('unknown engine: ' + str(engine))
+    registry = load_sessions(root)
+    gone = registry.pop(engine, None)
+    _save_sessions(registry, root)
+    return gone
+
+
+def session_ref(engine, root=ROOT):
+    return (load_sessions(root).get(engine) or {}).get('ref')
 
 
 def own(records):
@@ -433,8 +500,9 @@ def shared_detail_errors(record):
         errors.append('a handoff lives in the target engine\'s queue: to_engine must be ' + engine)
     if d.get('from_session') is not None and not (isinstance(d['from_session'], str) and ID.match(d['from_session'])):
         errors.append('detail.from_session must be a session record id or null')
-    if d.get('to_session_ref') is not None and not _one_line(d['to_session_ref'], 500):
-        errors.append('detail.to_session_ref must be a session link or null')
+    for key in ('from_session_ref', 'to_session_ref'):
+        if d.get(key) is not None and not _one_line(d[key], REF_MAX):
+            errors.append('detail.' + key + ' must be a session link or null')
     for key in ('what', 'why_not_here'):
         if not _one_line(d.get(key)):
             errors.append('detail.' + key + ' must be one non-empty line')
@@ -528,23 +596,57 @@ def _names(engine, root):
     return contract['name'], contract['entry_request']
 
 
+QUESTION = ('Do you have a session running for the {to} engine? If so, paste its link. If not, spin one up and '
+            'tell me which it is, or I\'ll create one myself.')
+CONFIRM = 'Is {link} still your {to} session? Say yes, paste another link, or I\'ll create a new one.'
+
+
 def handoff_message(record, root=ROOT):
-    """The paste-ready instruction and message for one handoff."""
+    """The question for Krish (unless the target session is confirmed) and the exact message for that session."""
     d = record['detail']
     from_name, _ = _names(d['from_engine'], root)
     to_name, entry = _names(d['to_engine'], root)
+    back = d.get('from_session_ref')
     message = (entry + '. Pick up handoff ' + record['id'] + ' from ' + from_name + ': ' + d['what'].rstrip('.')
-               + '. First: git pull, then ' + d['first_command'] + '.')
+               + '. First: git pull, then ' + d['first_command'] + '. When it is done, '
+               + ('report back to the ' + from_name + ' session at ' + back + '.' if back else 'report back here.'))
     if d.get('to_session_ref'):
+        question = None
         instruction = 'Send this to your ' + to_name + ' session at ' + d['to_session_ref'] + ':'
     else:
-        instruction = ('Send this to your existing ' + to_name + ' session (paste that session\'s link here and '
-                       'this session will pass it on), or start a new ' + to_name + ' session with it:')
-    return {'id': record['id'], 'to_engine': d['to_engine'], 'instruction': instruction, 'message': message}
+        known = session_ref(d['to_engine'], root)
+        question = CONFIRM.format(link=known, to=to_name) if known else QUESTION.format(to=to_name)
+        instruction = ('Once Krish answers, send this to that ' + to_name + ' session with the Codex tools available '
+                       '(record its link with python growth.py engine session set ' + d['to_engine']
+                       + ' LINK), or give it to him to paste:')
+    push = ('Before sending it, commit engines/records/' + d['to_engine'] + '.jsonl to main and push: the '
+            + to_name + ' session finds this handoff only after git pull.')
+    return {'id': record['id'], 'to_engine': d['to_engine'], 'question': question, 'push': push,
+            'instruction': push + ' ' + instruction, 'message': message}
+
+
+def report_back(record, note, next_step=None, root=ROOT):
+    """What the target session sends back to the source session when it closes a handoff."""
+    d = record['detail']
+    from_name, _ = _names(d['from_engine'], root)
+    to_name, _ = _names(d['to_engine'], root)
+    to = d.get('from_session_ref') or session_ref(d['from_engine'], root)
+    message = (to_name + ' finished handoff ' + record['id'] + ': ' + str(note).strip().rstrip('.') + '. Next for '
+               + from_name + ': ' + (str(next_step).strip().rstrip('.') if next_step else 'nothing further') + '.')
+    instruction = ('Commit engines/records/' + d['to_engine'] + '.jsonl to main and push first, so the '
+                   + from_name + ' session sees the closed handoff after git pull. Then send this report back to '
+                   'the ' + from_name + ' session '
+                   + ('at ' + to if to else '(its link is not known; ask Krish for it)')
+                   + ' with the Codex tools available, or give it to Krish to paste there:')
+    return {'id': record['id'], 'to': to, 'instruction': instruction, 'message': message}
+
+
+def report_back_text(report):
+    return report['instruction'] + '\n\n    ' + report['message']
 
 
 def handoff(from_engine, to_engine, what, why, links=(), opportunity_id=None, to_session=None, root=ROOT,
-            now=None):
+            now=None, from_session=None):
     """Append an open handoff to the target engine's queue. One session runs one engine: work it finds that
     another engine owns goes there, with the records it concerns."""
     as_of = calendar_date(now).isoformat() if now else today()
@@ -564,6 +666,10 @@ def handoff(from_engine, to_engine, what, why, links=(), opportunity_id=None, to
     from_name, _ = _names(from_engine, root)
     to_name, _ = _names(to_engine, root)
     sid = session_id(from_engine, as_of, root)
+    for link in (from_session, to_session):
+        if link is not None and not _one_line(link, REF_MAX):
+            raise ValueError('a session link is one non-empty line of at most ' + str(REF_MAX) + ' characters')
+    from_ref = from_session or session_ref(from_engine, root)
     title = 'Handoff from ' + from_name + ': ' + ' '.join(str(what).split())
     record = {'id': _next_id('handoff-' + from_engine + '-to-' + to_engine + '-' + as_of + '-', whole),
               'engine': to_engine, 'kind': 'handoff',
@@ -572,11 +678,15 @@ def handoff(from_engine, to_engine, what, why, links=(), opportunity_id=None, to
               'next_owner': to_engine, 'next_action': 'Pick up the handoff from ' + from_name + ': ' + str(what),
               'revisit_when': 'the next ' + to_name + ' session', 'links': links, 'updated_at': as_of,
               'detail': {'from_engine': from_engine, 'to_engine': to_engine, 'from_session': sid,
-                         'to_session_ref': to_session or None, 'what': what, 'why_not_here': why,
+                         'from_session_ref': from_ref or None, 'to_session_ref': to_session or None,
+                         'what': what, 'why_not_here': why,
                          'first_command': 'python growth.py engine start ' + to_engine}}
     if opportunity_id:
         record['opportunity_id'] = opportunity_id
     append(to_engine, record, root)
+    for name, link in ((from_engine, from_session), (to_engine, to_session)):
+        if link:
+            set_session(name, link, root, as_of, sid)
     return record
 
 
@@ -697,6 +807,7 @@ def report_text(report, root=ROOT):
     if report['handoffs']:
         out += ['', 'Handoffs:']
         for h in report['handoffs']:
+            out += ['', 'Ask Krish: ' + h['question']] if h.get('question') else []
             out += ['', h['instruction'], '', '    ' + h['message']]
     else:
         out += ['', 'Handoffs: none.']
@@ -708,7 +819,8 @@ def report_text(report, root=ROOT):
 
 def handoff_text(record, root=ROOT):
     m = handoff_message(record, root)
-    return m['instruction'] + '\n\n    ' + m['message']
+    ask = 'Ask Krish first, exactly:\n\n    ' + m['question'] + '\n\n' if m['question'] else ''
+    return ask + m['instruction'] + '\n\n    ' + m['message']
 
 
 def _read_learnings(path):
@@ -725,11 +837,13 @@ def command(argv, root=ROOT, out=print):
                         help='repository root holding engines/ (default: ' + ROOT_ENV + ' or this repository)')
     parser = argparse.ArgumentParser(prog='growth.py engine', parents=[common],
                                      description='Run one of the four engines. start, check, show and history '
-                                                 'read only; handoff, close and done append one record.')
+                                                 'read only (start --session also records this session\'s link); handoff, close and '
+                                                 'done append one record; session keeps Krish\'s session links.')
     sub = parser.add_subparsers(dest='cmd')
     s = sub.add_parser('start', parents=[common], help='what a fresh chat recovers first for one engine')
     s.add_argument('name', choices=ENGINES); s.add_argument('--now', help='YYYY-MM-DD')
     s.add_argument('--no-private', action='store_true', help='ignore the private overlay in .scratch/engines/')
+    s.add_argument('--session', help='this session\'s own link, recorded in the private registry (start\'s one write)')
     sub.add_parser('check', parents=[common], help='validate every committed engine record and contract')
     w = sub.add_parser('show', parents=[common], help='current records of one engine, or one record')
     w.add_argument('name', choices=ENGINES); w.add_argument('id', nargs='?')
@@ -742,17 +856,27 @@ def command(argv, root=ROOT, out=print):
     o.add_argument('--why', required=True, help='why this session does not do it, in one line')
     o.add_argument('--link', action='append', default=[], help='a record id the handoff concerns (repeatable)')
     o.add_argument('--opportunity-id'); o.add_argument('--to-session', help='the target session link, if known')
+    o.add_argument('--from-session', help='this session\'s own link, for the report back')
     o.add_argument('--now', help='YYYY-MM-DD')
     c = sub.add_parser('close', parents=[common], help='record this session\'s learnings and handoffs')
     c.add_argument('name', choices=ENGINES); c.add_argument('--learnings', required=True, help='a JSON file')
     c.add_argument('--now', help='YYYY-MM-DD')
     d = sub.add_parser('done', parents=[common], help='close one of this engine\'s records, a handoff included')
     d.add_argument('name', choices=ENGINES); d.add_argument('id'); d.add_argument('--note', required=True)
+    d.add_argument('--next', help='for a handoff: what the source engine does next, for the report back')
     d.add_argument('--now', help='YYYY-MM-DD')
+    r = sub.add_parser('session', parents=[common], help='Krish\'s session links, kept in ' + SESSIONS_FILE.as_posix())
+    rs = r.add_subparsers(dest='session_cmd')
+    rset = rs.add_parser('set', parents=[common], help='record the session link for one engine')
+    rset.add_argument('engine', choices=ENGINES); rset.add_argument('link'); rset.add_argument('--now')
+    rshow = rs.add_parser('show', parents=[common], help='every known session link, or one engine\'s')
+    rshow.add_argument('engine', nargs='?', choices=ENGINES); rshow.add_argument('--now')
+    rclear = rs.add_parser('clear', parents=[common], help='forget one engine\'s session link')
+    rclear.add_argument('engine', choices=ENGINES); rclear.add_argument('--now')
     args = parser.parse_args(argv)
     root = Path(getattr(args, 'root', None) or os.environ.get(ROOT_ENV, '').strip() or root)
     if args.cmd == 'start':
-        result = start(args.name, root, args.now, not args.no_private)
+        result = start(args.name, root, args.now, not args.no_private, args.session)
     elif args.cmd == 'check':
         errors = check(root)
         out(json.dumps({'ok': not errors, 'errors': errors}, indent=2, ensure_ascii=False))
@@ -769,7 +893,7 @@ def command(argv, root=ROOT, out=print):
             raise ValueError('no ' + args.name + ' record ' + args.id)
     elif args.cmd == 'handoff':
         record = handoff(args.from_engine, args.to_engine, args.what, args.why, args.link, args.opportunity_id,
-                         args.to_session, root, args.now)
+                         args.to_session, root, args.now, args.from_session)
         out(json.dumps(record, indent=2, ensure_ascii=False))
         out('\n' + handoff_text(record, root))
         return 0
@@ -780,6 +904,22 @@ def command(argv, root=ROOT, out=print):
         return 0
     elif args.cmd == 'done':
         result = done(args.name, args.id, args.note, root, args.now)
+        if result.get('kind') == 'handoff':
+            out(json.dumps(result, indent=2, ensure_ascii=False))
+            out('\n' + report_back_text(report_back(result, args.note, args.next, root)))
+            return 0
+    elif args.cmd == 'session':
+        if args.session_cmd == 'set':
+            result = set_session(args.engine, args.link, root, args.now)
+        elif args.session_cmd == 'clear':
+            result = {'cleared': args.engine, 'was': clear_session(args.engine, root)}
+        elif args.session_cmd == 'show':
+            result = load_sessions(root)
+            if args.engine:
+                result = result.get(args.engine)
+        else:
+            r.print_help()
+            return 0
     else:
         parser.print_help()
         return 0

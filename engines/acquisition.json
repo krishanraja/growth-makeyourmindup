@@ -22,7 +22,10 @@
     "in a Codex session Krish is driving, enact one outreach send through the browser or a connector only after Krish approves that exact bound payload (approval_digest of sender, recipient, channel, subject, body and links) in that session, immediately before sending; then record the receipt as sent and nothing further until evidenced. Scheduled jobs and sessions he is not driving only draft",
     "record approvals by digest and each outcome rung Krish reports with its evidence",
     "hand an outgoing comment to Engagement with the same opportunity_id, and bounded creative to Content Engine",
-    "hand work another engine owns to that engine's queue with python growth.py engine handoff acquisition TO --what TEXT --why TEXT, and give Krish the paste-ready message",
+    "hand work another engine owns, or work that can run in parallel, to that engine's queue with python growth.py engine handoff acquisition TO --what TEXT --why TEXT, ask Krish the question it prints, and send its message to that engine's session",
+    "keep Krish's session links in the private .scratch/engines/sessions.json with python growth.py engine session set, show and clear, and python growth.py engine start acquisition --session LINK",
+    "create a Codex session for another engine with the Codex tools available, only when Krish says to, start it with the handoff message and record its link",
+    "send a report-back from python growth.py engine done to the session that sent the handoff, and record a report-back that arrives",
     "close each session with python growth.py engine close acquisition --learnings FILE, after writing the learnings file in .scratch/engines/",
     "close one of this engine's own records, an inbound handoff included, with python growth.py engine done acquisition ID --note TEXT"
   ],

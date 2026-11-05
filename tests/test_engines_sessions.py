@@ -165,8 +165,10 @@ class SessionTests(unittest.TestCase):
         message = ('Run Measurement. Pick up handoff ' + record['id'] + ' from Publishing: Read the measured results.'
                    ' First: git pull, then python growth.py engine start measurement.')
         self.assertIn(message, text)
-        self.assertIn('Send this to your existing Measurement & Allocation session (paste that session\'s link here',
-                      text)
+        self.assertIn('Ask Krish first, exactly:\n\n    Do you have a session running for the Measurement & Allocation'
+                      ' engine? If so, paste its link. If not, spin one up and tell me which it is, or I\'ll create'
+                      ' one myself.', text)
+        self.assertIn(message + ' When it is done, report back here.', text)
         link = 'https://chatgpt.com/codex/tasks/task-measure'
         code, record, text = self.cli('handoff', 'publishing', 'measurement', '--what', 'Read the measured results',
                                       '--why', 'Measurement judges results', '--to-session', link)
@@ -174,6 +176,22 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(record['detail']['to_session_ref'], link)
         self.assertIn('Send this to your Measurement & Allocation session at ' + link + ':', text)
         self.assertEqual(core.check(self.root), [])
+
+    def test_the_handoff_says_to_push_its_record_before_the_message_is_sent(self):
+        push = ('Before sending it, commit engines/records/measurement.jsonl to main and push: the Measurement &'
+                ' Allocation session finds this handoff only after git pull.')
+        for extra in ((), ('--to-session', 'https://chatgpt.com/codex/tasks/task-measure')):
+            code, record, text = self.cli('handoff', 'publishing', 'measurement', '--what', 'Judge Tuesday',
+                                          '--why', 'Measurement judges results', *extra)
+            self.assertEqual(code, 0)
+            self.assertIn(push, text)
+            self.assertLess(text.index(push), text.index('Pick up handoff ' + record['id']))
+            self.assertEqual(core.handoff_message(record, self.root)['push'], push)
+        for job in ('publishing', 'measurement', 'acquisition', 'engagement'):
+            words = ' '.join((Path(core.ROOT) / 'jobs' / (job + '.md')).read_text(encoding='utf-8').split()).lower()
+            self.assertIn('commit and push the new handoff line before sending the message', words, job)
+        agents = ' '.join((Path(core.ROOT) / 'AGENTS.md').read_text(encoding='utf-8').split())
+        self.assertIn('commits and pushes the handoff line before it sends the message', agents)
 
     def test_the_target_starts_with_its_oldest_inbound_handoff(self):
         first = self.handoff(what='Read the X results at 48 hours')
@@ -258,6 +276,89 @@ class SessionTests(unittest.TestCase):
         core.close('publishing', learnings(handoffs=[made['id']]), self.root, NOW)
         self.assertEqual(core.check(self.root), [])
 
+    # session links, private --------------------------------------------------------------------------------
+
+    def test_the_registry_lives_under_scratch_and_the_cli_sets_shows_and_clears_it(self):
+        link = 'https://chatgpt.com/codex/tasks/task-measure'
+        code, entry, _ = self.cli('session', 'set', 'measurement', link)
+        self.assertEqual((code, entry), (0, {'ref': link, 'set_at': NOW, 'set_by_session': None}))
+        path = self.root / '.scratch' / 'engines' / 'sessions.json'
+        self.assertEqual(path, self.root / core.SESSIONS_FILE)
+        self.assertEqual(json.loads(path.read_text(encoding='utf-8'))['measurement']['ref'], link)
+        self.assertFalse(any(link in f.read_text(encoding='utf-8')
+                             for f in (self.root / 'engines' / 'records').glob('*')))
+        self.assertEqual(self.cli('session', 'show')[1], {'measurement': entry})
+        self.assertEqual(self.cli('session', 'show', 'measurement')[1], entry)
+        self.assertEqual(self.cli('session', 'clear', 'measurement')[1], {'cleared': 'measurement', 'was': entry})
+        self.assertEqual(core.load_sessions(self.root), {})
+        with self.assertRaises(ValueError):
+            core.set_session('measurement', 'two\nlines', self.root, NOW)
+        self.assertEqual(core.check(self.root), [])
+
+    def test_start_with_session_records_my_session_ref(self):
+        before = core.start('publishing', self.root, NOW)
+        self.assertEqual((before['my_session_ref'], before['known_sessions']), (None, {}))
+        self.assertFalse((self.root / core.SESSIONS_FILE).exists())  # start without --session writes nothing
+        link = 'https://chatgpt.com/codex/tasks/task-publish'
+        code, value, _ = self.cli('start', 'publishing', '--session', link)
+        self.assertEqual(value['my_session_ref'], link)
+        self.assertEqual(value['known_sessions']['publishing'],
+                         {'ref': link, 'set_at': NOW, 'set_by_session': 'session-publishing-2026-11-05-1'})
+        other = core.start('measurement', self.root, NOW)
+        self.assertEqual((other['my_session_ref'], other['known_sessions']['publishing']['ref']), (None, link))
+
+    def test_handoff_asks_to_confirm_a_known_session(self):
+        link = 'https://chatgpt.com/codex/tasks/task-measure'
+        core.set_session('measurement', link, self.root, NOW)
+        made = self.handoff()
+        self.assertIsNone(made['detail']['to_session_ref'])
+        m = core.handoff_message(made, self.root)
+        self.assertEqual(m['question'], 'Is ' + link + ' still your Measurement & Allocation session? Say yes, paste'
+                                        ' another link, or I\'ll create a new one.')
+        self.assertIn('Ask Krish first, exactly:\n\n    ' + m['question'], core.handoff_text(made, self.root))
+
+    def test_to_session_records_the_registry_and_addresses_the_message(self):
+        mine, theirs = 'https://chatgpt.com/codex/tasks/task-publish', 'https://chatgpt.com/codex/tasks/task-measure'
+        code, made, text = self.cli('handoff', 'publishing', 'measurement', '--what', 'Read the measured results',
+                                    '--why', 'Measurement judges results', '--to-session', theirs,
+                                    '--from-session', mine)
+        self.assertEqual((made['detail']['to_session_ref'], made['detail']['from_session_ref']), (theirs, mine))
+        registry = core.load_sessions(self.root)
+        self.assertEqual((registry['measurement']['ref'], registry['publishing']['ref']), (theirs, mine))
+        self.assertEqual(registry['measurement']['set_by_session'], made['detail']['from_session'])
+        self.assertNotIn('Ask Krish', text)
+        self.assertIn('Send this to your Measurement & Allocation session at ' + theirs + ':', text)
+        self.assertIn('First: git pull, then python growth.py engine start measurement. When it is done, report back'
+                      ' to the Publishing session at ' + mine + '.', text)
+        # A later handoff from the same engine finds its own link in the registry.
+        later = self.handoff(what='Read the Substack results at 7 days')
+        self.assertEqual(later['detail']['from_session_ref'], mine)
+        self.assertEqual(core.check(self.root), [])
+
+    def test_done_on_a_handoff_reports_back_to_the_from_session(self):
+        mine = 'https://chatgpt.com/codex/tasks/task-publish'
+        core.set_session('publishing', mine, self.root, NOW)
+        made = self.handoff()
+        code, closed, text = self.cli('done', 'measurement', made['id'], '--note', 'Read at 48 hours; recorded',
+                                      '--next', 'hold the Wednesday slot until the read is in')
+        self.assertEqual((code, closed['state']), (0, 'closed'))
+        self.assertIn('Commit engines/records/measurement.jsonl to main and push first, so the Publishing session'
+                      ' sees the closed handoff after git pull. Then send this report back to the Publishing session'
+                      ' at ' + mine + ' with the Codex tools available, or give it to Krish to paste there:', text)
+        self.assertIn('Measurement & Allocation finished handoff ' + made['id'] + ': Read at 48 hours; recorded.'
+                      ' Next for Publishing: hold the Wednesday slot until the read is in.', text)
+        self.assertEqual(core.check(self.root), [])
+
+    def test_committed_records_allow_session_links_only_in_their_fields(self):
+        link = 'https://chatgpt.com/codex/tasks/task-measure'
+        made = self.handoff(to_session=link)
+        bad = dict(made, id=made['id'][:-1] + '9', detail=dict(made['detail'], why_not_here='See ' + link))
+        self.assertTrue(any('no URL in a committed handoff' in e for e in core.validate(bad)))
+        bad = dict(made, id=made['id'][:-1] + '9', detail=dict(made['detail'], session_link=link))
+        self.assertTrue(core.validate(bad))
+        good = dict(made, detail=dict(made['detail'], from_session_ref=link))
+        self.assertEqual(core.validate(good), [])
+
     # Krish's example, end to end ---------------------------------------------------------------------------
 
     def test_publishing_schedules_then_hands_the_results_to_measurement(self):
@@ -303,7 +404,12 @@ class CommittedSessionRulesTests(unittest.TestCase):
             for needle in ('## This session', '## Close', 'python growth.py engine close ' + name,
                            'Never do the other engine\'s work in this session'):
                 self.assertIn(needle, job, name + ': ' + needle)
-            self.assertLess(len((ROOT / 'jobs' / (name + '.md')).read_text(encoding='utf-8').splitlines()), 120)
+            for needle in ('python growth.py engine start ' + name + ' --session', 'Do you have a session running',
+                           'python growth.py engine session set', 'without waiting', 'report-back'):
+                self.assertIn(needle, job, name + ': ' + needle)
+            for needle in ('python growth.py engine session set', 'Codex session for another engine'):
+                self.assertIn(needle, permitted, name + ': ' + needle)
+            self.assertLess(len((ROOT / 'jobs' / (name + '.md')).read_text(encoding='utf-8').splitlines()), 125)
 
     def test_outreach_belongs_to_acquisition_not_control_center(self):
         contract = json.dumps(core.load_contract('acquisition', ROOT))

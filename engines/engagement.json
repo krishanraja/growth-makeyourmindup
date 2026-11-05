@@ -21,7 +21,10 @@
     "in a Codex session Krish is driving, submit one comment or reply through the browser or a connector only on his explicit approval of the exact text in that session, immediately before submitting; then record it as posted by Krish's approval and nothing further until evidenced. Otherwise leave it ready in the editor for his click. Scheduled jobs and sessions he is not driving only draft",
     "keep exact words, post URLs and recovery copy in .scratch/engines/engagement.jsonl",
     "return a weak candidate to the researcher",
-    "hand work another engine owns to that engine's queue with python growth.py engine handoff engagement TO --what TEXT --why TEXT, and give Krish the paste-ready message",
+    "hand work another engine owns, or work that can run in parallel, to that engine's queue with python growth.py engine handoff engagement TO --what TEXT --why TEXT, ask Krish the question it prints, and send its message to that engine's session",
+    "keep Krish's session links in the private .scratch/engines/sessions.json with python growth.py engine session set, show and clear, and python growth.py engine start engagement --session LINK",
+    "create a Codex session for another engine with the Codex tools available, only when Krish says to, start it with the handoff message and record its link",
+    "send a report-back from python growth.py engine done to the session that sent the handoff, and record a report-back that arrives",
     "close each session with python growth.py engine close engagement --learnings FILE, after writing the learnings file in .scratch/engines/",
     "close one of this engine's own records, an inbound handoff included, with python growth.py engine done engagement ID --note TEXT"
   ],

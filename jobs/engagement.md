@@ -2,20 +2,27 @@
 
 The entry point when Krish says "Run Engagement". One engine, one job: answer people interacting
 with MYMU, keep relationships, spot repeat questions and prepare the outgoing comments he asked
-for. The other three engines (Acquisition, Publishing, Measurement) run as their own jobs; do
-not do their work here. The contract is `engines/engagement.json`; the review that set it is
+for. The other three engines (Acquisition, Publishing, Measurement) run as their own jobs; do not
+do their work here. The contract is `engines/engagement.json`; the review that set it is
 `docs/reviews/2026-11-05-growth-engine-review.md`, sections 4 and 5.
 
 ## This session
 
-One engine per session: this one. Run `git pull`, then take `inbound_handoffs` from `engine
-start`, oldest first, and close each with `python growth.py engine done engagement ID --note
-TEXT`. Work another engine owns becomes a handoff: `python growth.py engine handoff engagement
-TO --what TEXT --why TEXT --link ID`. A recurring audience question goes to Acquisition (and
-Content Engine through its `question` record); substantive responses and repeat participants go
-to Measurement; a broken post goes to Publishing. When Krish pastes a session link for a
-handoff, send the handoff message to that session with the Codex tools available; if none can,
-give him the message to paste. Never do the other engine's work in this session.
+One engine per session: this one. Run `git pull` and the first command below, then take
+`inbound_handoffs` oldest first; `python growth.py engine done engagement ID --note TEXT --next
+TEXT` closes each and prints a report-back to send to the session that sent it (with the Codex
+tools available, or Krish pastes it). Work another engine owns becomes `python growth.py engine
+handoff engagement TO --what TEXT --why TEXT --link ID`. A recurring audience question goes to
+Acquisition (and Content Engine through its `question` record); substantive responses and repeat
+participants go to Measurement; a broken post goes to Publishing. Before anything else with that
+item, ask Krish the question it prints, exactly as printed ("Do you have a session running for the
+X engine? ..."). If he says to create one, create a new Codex session with the Codex tools
+available, start it with the handoff message and record its link with `python growth.py engine
+session set TO LINK`; if he pastes a link, record it and send the message there. Commit and push
+the new handoff line before sending the message, so `git pull` there finds it. Parallel work goes
+the same way: dispatch it and carry on here without waiting, unless this engine's next step
+depends on the result. Record a report-back from another session (`engine done` or an update on
+the linked record) and carry on. Never do the other engine's work in this session.
 
 ## Read first
 
@@ -23,13 +30,14 @@ give him the message to paste. Never do the other engine's work in this session.
 2. `docs/ACCOUNT-VOICE.md` before writing for any personal account.
 3. Then run, before anything else:
 
-   `python growth.py engine start engagement`
+   `python growth.py engine start engagement --session LINK`
 
-   It reads only. Its `recover` block is the queue: unanswered incoming
-   items, any requested outgoing batch with its ready count, unchecked
-   identities, handled and excluded keys, stale `ready` states, returned
-   candidates, open questions and decision conflicts. Start from its
-   `next_action`.
+   Pass `--session` with this session's link when Krish has given it: the one write start makes,
+   into the private `.scratch/engines/sessions.json`, so other sessions can report back here.
+   Otherwise it only reads. Its `recover` block is the queue: unanswered incoming items, any
+   requested outgoing batch with its ready count, unchecked identities, handled and excluded keys,
+   stale `ready` states, returned candidates, open questions and decision conflicts. Start from
+   its `next_action`.
 
 ## What it may do
 
@@ -55,10 +63,10 @@ human draft.
 
 Social engagement for Make Your Mind Up is this engine's; nothing goes to Control Center. In a
 Codex session Krish is driving, this session may submit one comment or reply through the browser
-or a connector only on his explicit approval of the exact text in that session, immediately
-before submitting, then record it as posted on his approval and nothing further until evidenced.
-Otherwise the draft stays ready in the editor for his click. Scheduled jobs and sessions he is
-not driving only draft.
+or a connector only on his explicit approval of the exact text in that session, immediately before
+submitting, then record it as posted on his approval and nothing further until evidenced.
+Otherwise the draft stays ready in the editor for his click. Scheduled jobs and sessions he is not
+driving only draft.
 
 ## Open for Krish
 
@@ -87,28 +95,29 @@ prefilled box at a time and raise the conflict with him in the final message.
 
 ## How it records
 
-Append one line per change through `engine.engines.core.append` (committed) or with
-`private=True` (the overlay), then run `python growth.py engine check`. The latest line for an
-id is current; earlier lines are its history. Every open record carries its source, observation
-date, next owner, next action and revisit condition.
+Append one line per change through `engine.engines.core.append` (committed) or with `private=True`
+(the overlay), then run `python growth.py engine check`. The latest line for an id is current;
+earlier lines are its history. Every open record carries its source, observation date, next owner,
+next action and revisit condition.
 
 ## Done
 
 Each item is ready in the correct editor or has an accurate disposition: handled, skipped,
-awaiting Krish, posted by Krish or returned to the researcher. The final message reports
-incoming and outgoing counts separately and the number actually ready. Recurring questions are
-with Acquisition and content-engine; substantive responses and repeat participants are recorded
-for Measurement.
+awaiting Krish, posted by Krish or returned to the researcher. The final message reports incoming
+and outgoing counts separately and the number actually ready. Recurring questions are with
+Acquisition and content-engine; substantive responses and repeat participants are recorded for
+Measurement.
 
 ## Close
 
-Hand off anything left for another engine, then write
+Hand off anything left for another engine (asked and sent as above), then write
 `.scratch/engines/engagement-learnings.json` with `did`, `better_next_time` (specific changes),
-`worked`, `handoffs` (every id made), `promoted` and `session_ref` (Krish's session link), and
-run `python growth.py engine close engagement --learnings
+`worked`, `handoffs` (every id made), `promoted` and `session_ref` (this session's link,
+`my_session_ref`), and run `python growth.py engine close engagement --learnings
 .scratch/engines/engagement-learnings.json`. A repeat of an earlier session's line is refused
 until its words are written into this file, `engines/engagement.json` or a `social/lessons/`
-record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a
-message naming Engagement and the date, and push: another engine's session sees a handoff only
-after `git pull`. If the push fails, put each new record line in the final message. End the
-final message with the learnings and each paste-ready handoff message the close prints.
+record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a message
+naming Engagement and the date, and push: another engine's session sees a handoff only after `git
+pull`. If the push fails, put each new record line in the final message. End the final message
+with the learnings, each handoff's question and message the close prints, and any unsent
+report-back.
