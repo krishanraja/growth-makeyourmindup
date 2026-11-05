@@ -1686,20 +1686,24 @@
     },
     {
       "id": "R125",
-      "statement": "The publishing day decides an asset's colour, Monday to Saturday: Monday wears butter (follow.the.money), Wednesday lilac (under.the.hood), Friday coral (mind.the.gap), and Tuesday, Thursday and Saturday are neutral (ink, cream, green, the house mint at most as the accent) with no subchannel colour or name anywhere. Art direction briefs the day to Codex and its gate refuses a kit whose renders paint another day's colour; a render job that gives its date takes its day's tone and is refused for painting another (scripts/render_mocks.mjs dayLook); a dated Canva design is linted the same way.",
+      "statement": "No Growth asset wears a series' colour or name, on any day: butter (follow.the.money), lilac (under.the.hood) and coral (mind.the.gap) belong to content-engine's one weekly piece of each series and its hero assets, which Growth never makes. Growth's assets use ink, deep ink, cream, green and the house mint. The renderer refuses a series tone, a field naming a series and a page that paints a series colour (scripts/render_mocks.mjs); the art-direction gate refuses a kit whose renders paint one; the Canva lint refuses a series colour or name, dated or not. The Tuesday meme carries the house mark small in the bottom-right corner, and a Canva meme without it is refused.",
       "source_file": "CHANGES.md",
-      "quote": "Just subtle brand recognition would be nice as a hard rule across Monday to Saturday assets",
+      "quote": "I should be allowed to post random stuff on any day but it doesn't take on the brand colours of Follow the Money, Mind the Gap, or Under the Hood",
       "enforced_by": [
-        "engine/day_colours.py:colour_errors",
-        "engine/run/artdirect.py:day_errors",
-        "engine/run/canva.py:lint_design"
+        "engine/series_colours.py:colour_errors",
+        "engine/series_colours.py:name_errors",
+        "engine/run/artdirect.py:series_errors",
+        "engine/run/canva.py:lint_design",
+        "engine/run/canva.py:meme_mark_findings"
       ],
       "tests": [
-        "test_each_series_day_wears_its_subchannel_and_every_other_day_the_house_mint",
-        "test_an_off_day_paints_no_subchannel_colour",
-        "test_a_series_day_paints_its_own_colour_only",
-        "test_art_direction_briefs_the_day_and_gates_the_render",
-        "test_a_dated_canva_design_is_held_to_its_day"
+        "test_no_asset_wears_a_series_colour_on_any_day",
+        "test_no_asset_names_a_series",
+        "test_art_direction_briefs_the_rule_and_gates_every_render",
+        "test_a_canva_design_is_refused_a_series_colour_or_name_dated_or_not",
+        "test_the_house_meme_templates_carry_the_mark_bottom_right_and_nothing_else",
+        "test_a_canva_meme_needs_its_mark_small_in_the_bottom_right",
+        "test_the_first_saturday_carousel_is_the_reference_kit"
       ]
     }
   ]

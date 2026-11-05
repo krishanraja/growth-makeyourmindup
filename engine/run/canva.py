@@ -8,7 +8,11 @@ A summary: {"channel": "x", "width": 1600, "height": 900, "size": "x-card" (opti
 "template": "<kit template key>" (optional), "colours": ["#0C1512"], "fonts": ["Anton"],
 "texts": ["..."], "quotes": ["..."] (optional; any double-quoted text also counts),
 "required_texts": ["..."] (optional; Krish's quotes from growth.py mix briefs, each on the design exactly),
-"date": "YYYY-MM-DD" (optional; the publishing day, which decides the accent: R125, engine/day_colours.py)}.
+"mark": {"box": [x0, y0, x1, y1]} (a meme template only: where the house mark sits, in pixels)}.
+
+No design wears a series colour (butter, lilac, coral) or names a series, on any day (R125, engine/series_colours.py).
+A meme carries the house mark small in the bottom-right corner (Krish, 2026-11-04: "The Tuesday meme is likely to be
+more random but needs to be lightly subtly skinned in the bottom right corner").
 """
 import argparse
 import json
@@ -17,7 +21,7 @@ import re
 
 from ..core import read_json
 from ..social import has_boilerplate
-from .. import day_colours
+from .. import series_colours
 
 ROOT = Path(__file__).resolve().parents[2]
 KIT = ROOT / 'social' / 'brand' / 'kit.json'
@@ -75,6 +79,26 @@ def sizes_for(kit, channel):
     return {name: dims for name, dims in kit['dimensions'].items() if channel in dims['channels']}
 
 
+MARK_MAX_SHARE = 0.2   # the house mark on a meme is at most a fifth of the width: subtle
+VERTICAL_BOTTOM = 340  # a vertical meme's bottom safe zone, as render/templates.json meme-vertical
+
+
+def meme_mark_findings(dataset):
+    """A meme's house mark sits small in the bottom-right corner, clear of a vertical frame's bottom safe zone."""
+    mark = dataset.get('mark')
+    box = mark.get('box') if isinstance(mark, dict) else None
+    if not (isinstance(box, list) and len(box) == 4 and all(isinstance(v, int) and not isinstance(v, bool) for v in box)):
+        return [finding('meme_mark_missing', '$.mark', 'a meme carries the house mark bottom right: {"box": [x0, y0, x1, y1]}')]
+    w, h = dataset['width'], dataset['height']
+    x0, y0, x1, y1 = box
+    floor = h - VERTICAL_BOTTOM if h > w * 1.5 else h
+    if not (0 <= x0 < x1 <= w and 0 <= y0 < y1 <= floor and x0 >= w / 2 and y0 >= h / 2):
+        return [finding('meme_mark_misplaced', '$.mark.box', 'the mark sits in the bottom-right corner, inside the frame and its safe zone')]
+    if x1 - x0 > MARK_MAX_SHARE * w:
+        return [finding('meme_mark_too_big', '$.mark.box', 'the mark is at most %d%% of the width: lightly, subtly' % round(MARK_MAX_SHARE * 100))]
+    return []
+
+
 def lint_design(dataset, piece_text=None, kit=None, root=ROOT, require_template=True):
     """Error codes for one design: off-kit colour or font, wrong size, an unfaithful quote, boilerplate."""
     kit = kit or load_kit(root)
@@ -91,13 +115,11 @@ def lint_design(dataset, piece_text=None, kit=None, root=ROOT, require_template=
     for i, value in enumerate(dataset['colours']):
         if colour(value) not in palette:
             out.append(finding('off_kit_colour', '$.colours[%d]' % i, str(value)))
-    if dataset.get('date'):
-        # The day decides the accent (R125): a series day wears only its own subchannel colour, an off day none.
-        try:
-            for problem in day_colours.colour_errors([colour(v) for v in dataset['colours']], dataset['date']):
-                out.append(finding('wrong_day_colour', '$.colours', problem))
-        except ValueError:
-            out.append(finding('bad_dataset', '$.date', 'date is YYYY-MM-DD'))
+    # No series colour or name on any Growth design, dated or not (R125).
+    for problem in series_colours.colour_errors([colour(v) for v in dataset['colours']]):
+        out.append(finding('series_colour', '$.colours', problem))
+    for problem in series_colours.name_errors(dataset['texts']):
+        out.append(finding('series_name', '$.texts', problem))
     families = [' '.join(f.lower().split()) for f in kit['fonts'].values()]
     for i, name in enumerate(dataset['fonts']):
         if not font_ok(name, families):
@@ -114,6 +136,8 @@ def lint_design(dataset, piece_text=None, kit=None, root=ROOT, require_template=
     template = dataset.get('template')
     if require_template and (not isinstance(template, str) or template not in kit['templates']):
         out.append(finding('template_not_approved', '$.template', str(template) + ' is not an approved kit template'))
+    if isinstance(template, str) and template.startswith('meme'):
+        out += meme_mark_findings(dataset)
     # Krish's quotes on the option (offday.mock_briefs required_texts; Ruling, Krish, 2026-11-02): each must be on the
     # design exactly as he wrote it. Only where a line breaks may differ, since the layout sets the breaks.
     flat = lambda t: ' '.join(normalise(t).split())

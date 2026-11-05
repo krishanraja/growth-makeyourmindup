@@ -16,14 +16,14 @@
         "page": "text"
       },
       "required": ["label", "headline"],
-      "choices": {"tone": ["green", "coral"]},
+      "choices": {"tone": ["green"]},
       "example": {
         "label": "series.label",
         "headline": "Who gets paid",
         "accent": "for one made-up answer",
         "page": "1 of 3"
       },
-      "note": "headline is printed in ink on the tape, accent in green unless tone says coral."
+      "note": "headline is printed in ink on the tape, accent in green."
     },
     "tape-items": {
       "file": "templates/tape-items.html",
@@ -80,7 +80,7 @@
         "stamp": "Paid",
         "page": "3 of 3"
       },
-      "note": "the stamp is one short word across the finished receipt, in coral; leave it empty and no stamp is drawn."
+      "note": "the stamp is one short word across the finished receipt, in green; leave it empty and no stamp is drawn."
     }
   }
 }

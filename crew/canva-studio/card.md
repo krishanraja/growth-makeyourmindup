@@ -16,4 +16,5 @@ Owns brand kit custody and the growth-canva formats in invariants/boundary.json:
 | A private journal or raw evidence is to hand | It stays in local .scratch, never in 4 Growth | R47, R48 |
 | An export is ready | Hand it to the Release Gate; Canva never posts | R01 |
 | An ad-hoc meme idea arrives from Krish | Build it, show him, and queue only on his approval | R61 |
+| A meme is built | Its look is free, but it wears no series colour (butter, lilac, coral) or series name, and it carries the house mark small in the bottom-right corner, recorded as `mark.box` in the design summary; `lint_design` refuses it otherwise | R125 |
 | A design is judged | By the gate outcome (approve, amend, decline) and downstream verdicts | P8, R65 |

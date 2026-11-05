@@ -23,7 +23,6 @@ html, body { background: var(--ink-deep); }
 .cut { flex: none; height: 0; border-top: 3px dashed var(--ink); opacity: 0.35; margin: 34px 0; }
 .tape .headline { color: var(--ink); text-align: center; }
 .tape .accent, .tape.tone-green .accent { color: var(--green); }
-.tape.tone-coral .accent { color: var(--coral); }
 .tape .body { color: var(--ink); text-align: center; }
 
 /* Line items: the name, a dotted leader, the amount. */
@@ -41,7 +40,7 @@ html, body { background: var(--ink-deep); }
 
 /* The stamp across the finished receipt. */
 .stamp { position: absolute; right: 56px; bottom: 120px; transform: rotate(-9deg); padding: 14px 30px;
-  border: 7px solid var(--coral); border-radius: 14px; color: var(--coral); font-family: var(--heading);
+  border: 7px solid var(--green); border-radius: 14px; color: var(--green); font-family: var(--heading);
   line-height: 1; text-transform: uppercase; opacity: 0.92; }
 
 /* The line under the tape, on the dark ground. */

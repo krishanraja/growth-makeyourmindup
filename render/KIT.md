@@ -22,6 +22,7 @@ The reference images are private. They are never copied into this repository.
 | Rule | Source |
 | --- | --- |
 | Only the eight kit colours: ink, deep ink, cream, green, mint, butter, coral and lilac. | Observed on both boards. Every colour in the artwork is one of them or a muted mix of them. |
+| Butter, lilac and coral are the three series' colours (follow.the.money, under.the.hood, mind.the.gap). They belong to content-engine's one weekly piece of each series, so no Growth asset wears them or names a series, on any day (R125). Ink, deep ink, cream, green and mint carry everything Growth makes. | Ruling, Krish, 2026-11-04: "I should be allowed to post random stuff on any day but it doesn't take on the brand colours of Follow the Money, Mind the Gap, or Under the Hood." The renderer, the art-direction gate and the Canva lint refuse a series colour or name. |
 | Covers and share cards sit on deep ink. Number cards and chapter cards sit on ink. | Observed: sampled from the pixels, the 26 October cover, share card and square post are exactly deep ink, and the 19 October number cards and 26 October chapter cards are exactly ink. |
 | Evidence cards sit on deep ink. | Interpreted. The 19 October evidence cards use a very dark green that is not a kit colour; deep ink is the nearest kit colour. |
 | Muted text and hairlines are a kit colour turned down (lower opacity), never a new grey. | Interpreted. The artwork has soft greys; the kit has none, so the templates fade cream or mint instead. |
@@ -34,7 +35,14 @@ The reference images are private. They are never copied into this repository.
 | --- | --- |
 | The brand mark is the official logo file, `render/brand/makeyourmindup-horizontal.png` (with `-mark` and `-stacked` beside it), copied from the Control Center repository with the sha256 content-engine's `config/studio.json` records. It is never set as type or redrawn. Templates place it with `<div class="brandmark"></div>`; `kit.css` paints it. | The 2026-11-03 ruling on the Saturday carousel: a wordmark set as type is a fabricated logo. |
 | On every carousel card it sits small and subtle in a bottom corner, never at the top: in the footer's right corner on the house carousel pages, `<div class="brandmark corner"></div>` on a piece kit's cards. | The same ruling, for all carousels of this nature. |
-| Elsewhere (quote, receipt, meme, versus, story and evidence cards) it takes the place the drawn wordmark had. | Carried over; only the drawing was replaced. |
+| On a meme it is the only brand: small and subtle in the bottom-right corner (`<div class="brandmark corner"></div>`, just above the safe zone on the vertical), with no masthead, series label or URL footer. A Canva meme records where it sits (`mark.box`) and the lint refuses one without it. | Ruling, Krish, 2026-11-04: "The Tuesday meme is likely to be more random but needs to be lightly subtly skinned in the bottom right corner." |
+| Elsewhere (quote, receipt, versus, story and evidence cards) it takes the place the drawn wordmark had. | Carried over; only the drawing was replaced. |
+
+## The Saturday carousel
+
+| Rule | Source |
+| --- | --- |
+| Every Saturday carousel keeps the standard of the first, the 7 November 2026 good news, `render/pieces/off-sat-goodnews/`: a full-bleed photo cover, one photo-led card for each of five stories, a centred close, all 1080x1350, the house mark small in a bottom corner of every card, no series colour or name. Its look is its own, never the house templates'. | Ruling, Krish, 2026-11-04: "Saturday's carousel should have the standards of the first one that's coming up this Saturday." Five stories: content-engine's docs/CAROUSEL-STANDARD.md and its `week_board.py` `STORY_COUNT`. |
 
 ## Headlines
 
@@ -42,7 +50,7 @@ The reference images are private. They are never copied into this repository.
 | --- | --- |
 | Heavy condensed capitals, tightly leaded. | Observed on the 26 October vertical cover, share card and chapter cards. |
 | Two tones: cream lines first, then one accent line. The accent line may wrap. | Observed: cream then butter on the 26 October cover and share card; cream then mint on every 26 October chapter card. |
-| The accent is butter, mint, coral or lilac, set with the `tone` field, and the day decides it (R125, Ruling, Krish, 2026-11-04): butter on Monday, lilac on Wednesday, coral on Friday; Tuesday, Thursday and Saturday are neutral, with mint at most as the accent and no subchannel's colour or name; never another day's colour. A job that gives its `date` takes its day's tone; without one, covers default to butter and chapter cards to mint. | Butter and mint observed. Coral is interpreted: it is a kit colour that neither board used for a headline. Lilac is under.the.hood's, added 4 Nov for Wednesday. |
+| The accent is the house mint (`tone` takes `mint` only). | Mint observed. Butter, coral and lilac left the kit's accents on 4 November 2026 (R125, above). |
 | A quote card keeps one colour. | Interpreted. A quote is word for word, so colouring part of it would edit it. |
 
 ## Versus rows (versus-card, versus-card-tall)
@@ -50,7 +58,7 @@ The reference images are private. They are never copied into this repository.
 | Rule | Source |
 | --- | --- |
 | Dark rows with a thin border, the name on the left, a solid colour chip on the right. | Observed on the 26 October vertical cover, share card and square post. |
-| The chip text is mono, dark on the chip. Chips go butter, then mint, then lilac. | Butter then mint observed on the 26 October cover. Lilac third is interpreted from the kit. |
+| The chip text is mono, dark on the chip. Chips go mint, then cream. | Butter then mint observed on the 26 October cover; butter left the kit's accents on 4 November 2026 (R125). |
 | A row with no value is a quiet centred strip of names. | Observed: the third row on the 26 October cover is a strip of small logos with no chip. The template writes names, not logos. |
 | The wide card puts the wordmark and headline on the left and the rows on the right. | Interpreted. The 26 October share card has a headshot on the left; that is left out (see below), and the rows take its place. |
 
@@ -62,15 +70,15 @@ The reference images are private. They are never copied into this repository.
 | A mono eyebrow in the accent colour, such as a series name and a number. | Observed on the 19 October number cards. |
 | A mixed-case condensed title in cream, not capitals. | Observed on the 19 October number cards. |
 | An optional mono context line in the accent colour, such as a date. | Observed on the 19 October number cards. |
-| Each row: an Archivo label, a quieter sub-label under it, and giant condensed numerals in butter on the right, with an arrow for a change ("$2 → $4"). | Observed on the 19 October number cards. The arrow is drawn in CSS so every font shows it the same. |
+| Each row: an Archivo label, a quieter sub-label under it, and giant condensed numerals in mint on the right, with an arrow for a change ("$2 → $4"). | Observed on the 19 October number cards. The arrow is drawn in CSS so every font shows it the same. |
 | Hairlines between rows, an optional closing line in condensed type, and a quiet mono source line at the foot. | Observed on the 19 October number cards. |
-| `tone` can turn the rule, eyebrow and numerals mint or coral. | Interpreted. Every number card on the board was butter. |
+| The rule, eyebrow and numerals are mint. | Every number card on the board was butter; butter left the kit's accents on 4 November 2026 (R125). |
 
 ## Chapter cards (chapter-card, chapter-card-vertical)
 
 | Rule | Source |
 | --- | --- |
-| A spaced-out butter mono eyebrow, such as "CHAPTER 6 OF 6 · WHAT I'D DO". | Observed on the 26 October chapter cards. |
+| A spaced-out cream mono eyebrow, such as "CHAPTER 6 OF 6 · WHAT I'D DO". | Observed in butter on the 26 October chapter cards; cream since 4 November 2026 (R125). |
 | A cream headline with a mint second line, left aligned, with the entity name in bold Archivo under it. | Observed on the 26 October chapter cards, which show the company's logo there. The template writes the name in type. |
 | No wordmark and no footer on a chapter card. | Observed on the 26 October chapter cards. |
 | The vertical size keeps the same layout inside the story safe zones. | Interpreted. Only wide chapter cards were on the board. |
@@ -81,9 +89,9 @@ The reference images are private. They are never copied into this repository.
 | --- | --- |
 | Framed panels. What came in is a cream card with a mono label, the words in bold Archivo and a mono tag, on a green shadow. | Observed on the 19 October evidence card about an inbox test. |
 | An arrow from what came in to the first actor. | Observed on the same card. |
-| Each actor is a panel with a coloured bar on the left (mint first, lilac second), the name in condensed capitals and a mono status on the right, such as "FLAGGED · SKIPPED". | Observed on the 19 October evidence cards. |
+| Each actor is a panel with a coloured bar on the left (mint first, cream second), the name in condensed capitals and a mono status on the right, such as "FLAGGED · SKIPPED". | Observed on the 19 October evidence cards, mint then lilac; cream since 4 November 2026 (R125). |
 | The first actor's finding is a quoted line in condensed type, with one plain line under it. | Observed on the 19 October inbox card. |
-| The second actor's words sit in a cream box with a lilac tag, such as "ACTUAL DRAFT · REDACTED". | Observed in shape on the 19 October cards, where the box holds a screenshot. The template holds typed words instead. |
+| The second actor's words sit in a cream box with a mint tag, such as "ACTUAL DRAFT · REDACTED". | Observed in shape on the 19 October cards, where the box holds a screenshot. The template holds typed words instead. |
 | Mono footer lines left and right, such as "20 OCT · NOTHING SENT". | Observed on the 19 October evidence cards. |
 | Each actor gets a square tile with its first letter. | Interpreted. The artwork shows each tool's app icon, which the kit does not carry. |
 

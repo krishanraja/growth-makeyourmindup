@@ -12,7 +12,7 @@ into the post's images.
 - Title: {{title}}
 - Claims it makes:
 {{claims}}
-- Its day's colour: {{day}}
+- Colour: {{colour_rule}}
 
 ## The bar
 
@@ -59,16 +59,16 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
   `../../../kit.css` then `../piece.css`, ends with `<script src="../../../fit.js"></script>`, and
   has one element with `class="frame"`. Text that can grow sits in a `data-fit` box with
   `data-max` and `data-min` font sizes, as in the house templates.
-- Colours: only the eight kit colours, always written as `var(--ink)`, `var(--ink-deep)`,
-  `var(--cream)`, `var(--green)`, `var(--mint)`, `var(--butter)`, `var(--coral)` or `var(--lilac)`,
-  plus `transparent` and `currentColor`. No hex codes, no colour names, no `rgb()`, `hsl()` or
+- Colours: only the kit colours a Growth asset may wear, always written as `var(--ink)`,
+  `var(--ink-deep)`, `var(--cream)`, `var(--green)` or `var(--mint)`, plus `transparent` and
+  `currentColor`. No hex codes, no colour names, no `rgb()`, `hsl()` or
   `color-mix()`. Turn a colour down with `opacity`, never with a new colour. No `filter` and no blend
   modes. Never redefine a kit token.
-- The day decides the accent (R125; the piece's day is above): Monday `var(--butter)`, Wednesday
-  `var(--lilac)`, Friday `var(--coral)`. Tuesday, Thursday and Saturday are neutral (`var(--ink)`,
-  `var(--cream)`, `var(--green)`) with `var(--mint)` at most as the one accent, and name no subchannel.
-  Use no other day's colour, and on an off day none of butter, lilac or coral anywhere. The gate refuses
-  a kit whose renders paint one.
+- No series colour or name (R125; the colour line above): butter, lilac and coral belong to the three
+  weekly series pieces, which Growth never makes. Use neutral `var(--ink)`, `var(--cream)` and
+  `var(--green)`, with `var(--mint)` at most as the one accent, never `var(--butter)`, `var(--lilac)`
+  or `var(--coral)`, and never the words follow.the.money, under.the.hood or mind.the.gap. The gate
+  refuses a kit whose renders paint one.
 - Fonts: only `var(--heading)` (Anton), `var(--sub)` (Fraunces), `var(--body)` (Archivo) and
   `var(--mono)` (IBM Plex Mono). They load from the house kit. No `@font-face`, no `@import`, no
   at-rules of any kind.

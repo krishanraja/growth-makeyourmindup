@@ -69,13 +69,10 @@
       },
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac)."
+      "note": "headline is the cream lines, accent the one line in the house mint (no Growth asset wears butter, lilac or coral, on any day: R125)."
     },
     "scorecard": {
       "file": "templates/scorecard.html",
@@ -192,13 +189,10 @@
       },
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac)."
+      "note": "headline is the cream lines, accent the one line in the house mint (no Growth asset wears butter, lilac or coral, on any day: R125)."
     },
     "carousel-body": {
       "file": "templates/carousel-body.html",
@@ -271,43 +265,34 @@
       },
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac)."
+      "note": "headline is the cream lines, accent the one line in the house mint (no Growth asset wears butter, lilac or coral, on any day: R125)."
     },
     "meme-square": {
       "file": "templates/meme-square.html",
       "width": 1080,
       "height": 1080,
       "fields": {
-        "label": "text",
         "setup": "text",
         "punchline": "text",
         "tone": "text"
       },
       "required": [
-        "label",
         "setup",
         "punchline"
       ],
       "example": {
-        "label": "series.label",
         "setup": "The everyday moment everyone at work knows.",
         "punchline": "The kind twist at the end."
       },
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
-      "note": "the punchline is the accent line, in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac)."
+      "note": "the punchline is the accent line, in the house mint. The look is free; the only brand is the house mark, small in the bottom-right corner, never a series label or colour (R125; render/KIT.md)."
     },
     "meme-vertical": {
       "file": "templates/meme-vertical.html",
@@ -318,29 +303,23 @@
         "bottom": 340
       },
       "fields": {
-        "label": "text",
         "setup": "text",
         "punchline": "text",
         "beat": "text",
         "tone": "text"
       },
       "required": [
-        "label",
         "setup",
         "punchline"
       ],
       "example": {
-        "label": "series.label",
         "setup": "The everyday moment everyone at work knows.",
         "punchline": "The kind twist at the end."
       },
-      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly. The punchline is the accent line, in the tone colour (the day's tone when the job gives its date: butter Monday, lilac Wednesday, coral Friday, mint on an off day; otherwise butter unless tone says mint, coral or lilac).",
+      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly. The punchline is the accent line, in the house mint. The look is free; the only brand is the house mark, small in the bottom-right corner, never a series label or colour (R125; render/KIT.md).",
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       }
     },
@@ -377,10 +356,7 @@
       ],
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
       "example": {
@@ -401,7 +377,7 @@
           ]
         ]
       },
-      "note": "rows are [name, value]: the name on the left, the value in a solid chip, butter, mint and lilac in turn. A row with an empty value is a quiet strip of names. Up to four rows."
+      "note": "rows are [name, value]: the name on the left, the value in a solid chip, mint and cream in turn. A row with an empty value is a quiet strip of names. Up to four rows."
     },
     "versus-card-tall": {
       "file": "templates/versus-card-tall.html",
@@ -420,10 +396,7 @@
       ],
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
       "example": {
@@ -444,7 +417,7 @@
           ]
         ]
       },
-      "note": "rows are [name, value]: the name on the left, the value in a solid chip, butter, mint and lilac in turn. A row with an empty value is a quiet strip of names. Up to four rows."
+      "note": "rows are [name, value]: the name on the left, the value in a solid chip, mint and cream in turn. A row with an empty value is a quiet strip of names. Up to four rows."
     },
     "number-card": {
       "file": "templates/number-card.html",
@@ -466,10 +439,7 @@
       ],
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
       "example": {
@@ -491,7 +461,7 @@
         "takeaway": "One short line that says what it means.",
         "source": "Where the numbers come from, with the date"
       },
-      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. tone sets the top rule, the eyebrow and the numerals (butter unless it says mint or coral). Two or three rows read best."
+      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. the top rule, the eyebrow and the numerals are mint. Two or three rows read best."
     },
     "number-card-tall": {
       "file": "templates/number-card-tall.html",
@@ -513,10 +483,7 @@
       ],
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
       "example": {
@@ -538,7 +505,7 @@
         "takeaway": "One short line that says what it means.",
         "source": "Where the numbers come from, with the date"
       },
-      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. tone sets the top rule, the eyebrow and the numerals (butter unless it says mint or coral). Two or three rows read best."
+      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. the top rule, the eyebrow and the numerals are mint. Two or three rows read best."
     },
     "chapter-card": {
       "file": "templates/chapter-card.html",
@@ -557,10 +524,7 @@
       ],
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
       "example": {
@@ -569,7 +533,7 @@
         "accent": "and its second line",
         "entity": "the company name"
       },
-      "note": "A video chapter card. The accent line is mint unless tone says butter, coral or lilac (a dated job takes its day's tone); entity is the name the chapter is about."
+      "note": "A video chapter card. The accent line is mint and the eyebrow cream; entity is the name the chapter is about."
     },
     "chapter-card-vertical": {
       "file": "templates/chapter-card-vertical.html",
@@ -592,10 +556,7 @@
       ],
       "choices": {
         "tone": [
-          "butter",
-          "mint",
-          "coral",
-          "lilac"
+          "mint"
         ]
       },
       "example": {
@@ -604,7 +565,7 @@
         "accent": "and its second line",
         "entity": "the company name"
       },
-      "note": "A video chapter card. The accent line is mint unless tone says butter, coral or lilac (a dated job takes its day's tone); entity is the name the chapter is about."
+      "note": "A video chapter card. The accent line is mint and the eyebrow cream; entity is the name the chapter is about."
     },
     "evidence-card": {
       "file": "templates/evidence-card.html",
@@ -649,7 +610,7 @@
         "foot_left": "How this was put together",
         "foot_right": "The date, and that nothing was sent"
       },
-      "note": "The first actor has a mint bar, the second a lilac bar; leave every actor2 field empty and that panel is not drawn."
+      "note": "The first actor has a mint bar, the second a cream bar; leave every actor2 field empty and that panel is not drawn."
     }
   }
 }

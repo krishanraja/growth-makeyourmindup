@@ -5,6 +5,24 @@ newest first, apart from the 15 and 17 October entries at the end. An entry is t
 can replace it. What runs today is in `AGENTS.md`, `NOW.md` and the docs they
 point to.
 
+- 2026-11-04 (later): Series colours belong to the weekly series piece, never the day; R125 now says Growth's
+  assets wear none (this replaces the entry below). His words: "Post random memes on a Monday but that doesn't
+  mean it's Monday's colour and brand. Then follow the money. There is only one "follow the money" piece, one
+  "mind the gap" piece, and one "mind the gap" piece every week. Other stuff can be fluid, maybe changeable." and
+  "I should be allowed to post random stuff on any day but it doesn't take on the brand colours of Follow the
+  Money, Mind the Gap, or Under the Hood. Which are only once a week, omni-channel, and a completely different
+  distribution format". Asked whether a post Growth makes from a series piece wears its colour, he chose the
+  series piece's own hero assets only. Then: "Yes harden this brand kit but just realise that the Saturday
+  carousel and the Tuesday meme are likely to follow their own random visual style. Saturday's carousel should
+  have the standards of the first one that's coming up this Saturday. The Tuesday meme is likely to be more
+  random but needs to be lightly subtly skinned in the bottom right corner."
+  - No Growth asset wears butter, lilac or coral or names follow.the.money, under.the.hood or mind.the.gap, on
+    any day: the renderer, the art-direction gate and the Canva lint refuse them (`engine/series_colours.py`).
+  - The kit's accent is the house mint; the versus chips go mint then cream; number cards, chapter eyebrows and
+    the evidence card's second actor moved off butter and lilac.
+  - The house memes carry only the house mark, small in the bottom-right corner (no masthead, series label or URL
+    footer); a Canva meme records where its mark sits and the lint refuses one without it.
+  - The Saturday carousel keeps the standard of the 7 November good news (`render/pieces/off-sat-goodnews/`).
 - 2026-11-04: Each day's assets wear the day's colour, Monday to Saturday (R125). His words: "lightly
   colour-code the thumbnail and cover asset templates for Monday, Wednesday, and Friday? When they go on
   Facebook and Instagram they're slightly differently coloured based on the colour theme of each day. The off

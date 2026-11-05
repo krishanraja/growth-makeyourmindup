@@ -42,7 +42,7 @@ TEMPLATES = {**TEN, **FROM_THE_ARTWORK}
 WORDMARK = {'carousel-cover', 'carousel-body', 'carousel-close', 'story-frame', 'quote-card', 'receipt-card', 'meme-square', 'meme-vertical',
             'versus-card', 'versus-card-tall', 'evidence-card'}
 WITH_RULE = {'quote-card', 'receipt-card', 'carousel-body', 'carousel-close', 'meme-square', 'meme-vertical', 'profile-art'}
-TONES = ['butter', 'mint', 'coral', 'lilac']   # lilac is under.the.hood's, for Wednesday (R125)
+TONES = ['mint']   # butter, lilac and coral are the series' colours, which no Growth asset wears (R125)
 PLACEHOLDER = re.compile(r'\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}')
 HEX = re.compile(r'#[0-9A-Fa-f]{3,8}\b')
 
@@ -101,9 +101,11 @@ class TemplatesExist(unittest.TestCase):
             self.assertIn('--bottom: 340px', text)
 
     def test_the_older_pages_keep_the_footer_label_and_rule(self):
+        # The memes carry only the house mark, bottom right (Krish, 2026-11-04: "needs to be lightly subtly skinned in
+        # the bottom right corner"); tests/test_series_colours.py holds them to it.
         for tid in TEN:
             text = template_text(manifest()['templates'][tid])
-            if tid != 'profile-art':
+            if tid not in ('profile-art', 'meme-square', 'meme-vertical'):
                 self.assertIn('makeyourmindup.ai', text, tid)
                 self.assertIn('class="label"', text, tid)
             if tid in WITH_RULE:
@@ -135,7 +137,7 @@ class TemplatesExist(unittest.TestCase):
                 self.assertEqual(text.count('class="accent"'), 1, tid)
                 self.assertIn('tone', spec['fields'], tid)
 
-    def test_choices_name_declared_fields_and_the_three_tones(self):
+    def test_choices_name_declared_fields_and_the_house_tone(self):
         for tid, spec in manifest()['templates'].items():
             for name, allowed in spec.get('choices', {}).items():
                 self.assertIn(name, spec['fields'], tid)

@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
-as_of: 2026-11-04
+as_of: 2026-11-05
 head: 4f771dd
 lifecycle: live
 production_url: none
@@ -32,14 +32,14 @@ Lifecycle: live. The detail is in `README.md`, `docs/ENGINE.md` and `docs/OPERAT
 - **Release runs about four times a day, against a schedule of every 30 minutes** (4 Nov: 00:16, 06:46, 14:56, 21:01 UTC; GitHub thins scheduled runs). Release schedules a draft only 5 to 90 minutes before it is due, so most due posts would miss their window. Suspected, not yet measured on a real post.
 - **Posting goes through Buffer only**, pinned to this engine's eight channels by id (`engine/buffer_channels.py`); the fulltime.fm, Heartside and yourdoghasnotes channels are refused by id. Content-engine's copy lint (2026-11-01.1) runs before every draft, title and alt text reaches Buffer.
 - **What may go out:** his per-post go-live for series posts; for the derived and off-day lane, each off-day option he approved on the board (Ruling, Krish, 2026-11-01: "Mock looks right, lock it and build it"), inside the week's mix. Sunday is a rest day (Ruling, Krish, 2026-11-02). Four posts a day with a floor of three on Instagram, YouTube, TikTok and X (R102).
-- **Assets:** the official logo file small in a bottom corner on carousels (3 Nov); his quoted words go on the picture word for word, and nothing he only asked for (2 Nov); finished posts are filed in 3 Posts, never 4 Growth (R46, 3 Nov); and from 4 Nov each asset wears its day's colour (R125).
+- **Assets:** the official logo file small in a bottom corner on carousels (3 Nov); his quoted words go on the picture word for word, and nothing he only asked for (2 Nov); finished posts are filed in 3 Posts, never 4 Growth (R46, 3 Nov); no Growth asset wears a series' colour (butter, lilac, coral) or name, on any day, since those belong to content-engine's weekly series pieces (R125, 4 Nov); the Tuesday meme carries only the house mark, small in the bottom-right corner; the Saturday carousel keeps the standard of the 7 Nov good news (`render/pieces/off-sat-goodnews/`).
 - **The ledger** (`python growth.py ledger`) reads the board's build (4 Nov) and writes a row per day per slot; on 4 Nov one row reached stage 7, posted. The week's mix press on the board has not been pressed.
 - **Docs were checked against the code on 4 November**; this repository has no closeout fold workflow, so its notes were folded by hand (`docs/history/LOG.md`).
-- **Tests:** 942 local tests plus R125's, all passing once NOW.md is under its 16 KB cap (`test_studio` NowCap failed before this rewrite).
+- **Tests:** 951 local tests, all passing on 5 Nov, the Chromium renders included.
 
 ## What changed recently
 
-- 2026-11-04 Krish: "subtle brand recognition would be nice as a hard rule across Monday to Saturday assets" (R125). Monday wears butter, Wednesday lilac (new to the kit), Friday coral; the off days are neutral, with mint at most as the accent and no subchannel colour or name. Art direction briefs the day to Codex and its gate refuses another day's colour; a dated render job or Canva design is held the same way. It waits on his yes to the revised covers.
+- 2026-11-04 Krish: "I should be allowed to post random stuff on any day but it doesn't take on the brand colours of Follow the Money, Mind the Gap, or Under the Hood" (R125, replacing the same day's day-keyed colours). Growth's kit accent is the house mint; the renderer, the art-direction gate and the Canva lint refuse a series colour or name on every asset; memes carry the house mark bottom right and a Canva meme without it is refused.
 - 2026-11-04 Docs pass across the three repositories (Krish: "every single word ... 100% clear and up to date before you merge"): the docs now describe per-option approval, the Sunday rest day, 3 Posts filing and nine workflows.
 - 2026-11-03 Finished posts, the off days included, file into 3 Posts (R46), the one folder for the week.
 - 2026-11-03 The drawn wordmark is gone: carousels carry the official logo file, small in a bottom corner.

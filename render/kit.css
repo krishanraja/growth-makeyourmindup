@@ -71,9 +71,6 @@ html, body {
 .mono { font-family: var(--mono); }
 
 .mint { color: var(--mint); }
-.butter { color: var(--butter); }
-.coral { color: var(--coral); }
-.lilac { color: var(--lilac); }
 .on-green { background: var(--green); }
 .on-deep { background: var(--ink-deep); }
 
@@ -111,14 +108,11 @@ html, body {
 /* The eyebrow: small mono capitals, spaced out. */
 .eyebrow { font-family: var(--mono); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; line-height: 1.25; flex: none; }
 
-/* The two-tone headline: cream lines, then one accent line in the piece's tone, which is its day's colour (R125: butter Monday,
-   lilac Wednesday, coral Friday, mint on an off day; butter when a job names no tone and no date). */
+/* The two-tone headline: cream lines, then one accent line in the house mint. Butter, lilac and coral are the series'
+   colours and no Growth asset wears them, on any day (R125). */
 .headline { font-family: var(--heading); font-weight: 400; text-transform: uppercase; line-height: 1; color: var(--cream); }
 .headline .lead, .headline .accent { display: block; }
-.accent, .tone-butter .accent { color: var(--butter); }
-.tone-mint .accent { color: var(--mint); }
-.tone-coral .accent { color: var(--coral); }
-.tone-lilac .accent { color: var(--lilac); }
+.accent, .tone-mint .accent { color: var(--mint); }
 
 /* An arrow between two values ("$2 -> $4"), drawn so every font shows it the same way. */
 .arrow { display: inline-block; position: relative; width: 0.62em; height: 0.045em; min-height: 3px; margin: 0 0.22em;
@@ -127,15 +121,14 @@ html, body {
   border-top: 0.045em solid currentColor; border-right: 0.045em solid currentColor; transform: translate(0, -50%) rotate(45deg);
   transform-origin: 50% 50%; }
 
-/* Versus rows: bordered dark rows, the name on the left and a solid chip on the right (butter, mint, lilac in turn). */
+/* Versus rows: bordered dark rows, the name on the left and a solid chip on the right (mint and cream in turn). */
 .versus .rows { gap: 16px; }
 .versus .row { position: relative; align-items: center; border: none; padding: 14px 20px 14px 26px; min-height: 0; }
 .versus .row::before { content: ''; position: absolute; inset: 0; border: 2px solid var(--cream); opacity: 0.16; pointer-events: none; }
 .versus .row .name { font-family: var(--body); font-weight: 700; color: var(--cream); line-height: 1.1; }
-.versus .row .value { font-family: var(--mono); font-weight: 500; color: var(--ink); background: var(--butter); line-height: 1.15;
+.versus .row .value { font-family: var(--mono); font-weight: 500; color: var(--ink); background: var(--mint); line-height: 1.15;
   padding: 0.12em 0.32em; -webkit-text-stroke: 0.035em var(--ink); }
-.versus .row:nth-child(3n+2) .value { background: var(--mint); }
-.versus .row:nth-child(3n+3) .value { background: var(--lilac); }
+.versus .row:nth-child(2n) .value { background: var(--cream); }
 .versus .row .value:empty { display: none; }
 .versus .row:has(.value:empty) { justify-content: center; }
 .versus .row:has(.value:empty) .name { font-family: var(--mono); font-weight: 400; font-size: 0.66em; text-align: center; opacity: 0.8; }
@@ -146,7 +139,4 @@ html, body {
 .numbers .row::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--cream); opacity: 0.2; }
 .numbers .row .name { display: flex; flex-direction: column; gap: 0.2em; font-family: var(--body); font-weight: 600; line-height: 1.1; }
 .numbers .row .name .note { font-weight: 400; font-size: 0.64em; opacity: 0.78; }
-.numbers .row .value { font-family: var(--heading); line-height: 1.12; color: var(--butter); }
-.tone-mint .numbers .row .value { color: var(--mint); }
-.tone-coral .numbers .row .value { color: var(--coral); }
-.tone-lilac .numbers .row .value { color: var(--lilac); }
+.numbers .row .value { font-family: var(--heading); line-height: 1.12; color: var(--mint); }

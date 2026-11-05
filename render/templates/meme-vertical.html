@@ -3,19 +3,18 @@
 <link rel="stylesheet" href="../kit.css">
 <style>
   /* Same safe zones as a Story: the top 250px and bottom 340px stay clear. */
-  :root { --w: 1080px; --h: 1920px; --top: 250px; --bottom: 340px; --wm: 40px; }
-  .masthead .label { font-size: 24px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .grow { margin: 56px 0 56px; }
+  :root { --w: 1080px; --h: 1920px; --top: 250px; --bottom: 340px; --bm: 168px; }
+  /* The look is free; the only brand is the house mark, small in the bottom-right corner, just above the safe
+     zone (R125, render/KIT.md). */
+  .brandmark.corner { bottom: calc(var(--bottom) + 8px); opacity: 0.85; }
+  .grow { margin-bottom: 64px; }
   .rule { margin: 56px 0 48px; }
-  .footer span { opacity: 0.66; }
   .beat-setup .punch { visibility: hidden; }
 </style></head>
 <body class="beat-{{beat}} tone-{{tone}}"><div class="frame">
-  <div class="masthead"><div class="brandmark"></div><div class="label">{{label}}</div></div>
   <div class="grow" data-fit="setup and punchline">
     <p class="body" data-max="72" data-min="44">{{setup}}</p>
     <div class="rule"></div>
     <p class="headline punch" data-max="128" data-min="60"><span class="accent">{{punchline}}</span></p>
   </div>
-  <div class="footer"><span>makeyourmindup.ai</span></div>
-</div><script src="../fit.js"></script></body></html>
+</div><div class="brandmark corner"></div><script src="../fit.js"></script></body></html>

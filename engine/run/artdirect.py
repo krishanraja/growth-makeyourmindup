@@ -34,7 +34,7 @@ import shutil
 import subprocess
 
 from ..copy_lint import copy_lint_errors
-from .. import day_colours
+from .. import series_colours
 from ..core import instant, ny_time, read_json, write_json
 from ..packs import prose_errors
 from .plain import lint_text
@@ -481,11 +481,8 @@ def pieces_from_mix(mix, inventory=None):
             first[cid] = min(first.get(cid, due), due)
     late = dt.datetime.max.replace(tzinfo=dt.timezone.utc)
     concepts = sorted(mix.get('concepts') or [], key=lambda c: (first.get(c['concept_id'], late), c['concept_id']))
-    # Each piece carries the New York date its first post is due: that day decides its colour (R125).
-    return [dict({'piece_id': c['concept_id'], 'title': titles.get(c.get('piece_id')) or c['idea'],
-                  'claims': [c['claim']] if c.get('claim') else [], 'lane': c['lane']},
-                 **({'date': ny_time(first[c['concept_id']]).date().isoformat()} if c['concept_id'] in first else {}))
-            for c in concepts]
+    return [{'piece_id': c['concept_id'], 'title': titles.get(c.get('piece_id')) or c['idea'],
+             'claims': [c['claim']] if c.get('claim') else [], 'lane': c['lane']} for c in concepts]
 
 
 def week_pieces(week_of, inventory=None, root=ROOT):
@@ -510,11 +507,6 @@ def piece_errors(piece):
         return 'claims is a list of strings'
     if not isinstance(piece.get('lane'), str) or not piece['lane'].strip():
         return 'a piece has a lane'
-    if 'date' in piece:
-        try:
-            dt.date.fromisoformat(str(piece['date']))
-        except ValueError:
-            return 'a piece\'s date is YYYY-MM-DD'
     return None
 
 
@@ -523,12 +515,9 @@ def piece_errors(piece):
 def build_prompt(piece, template=None):
     text = template if template is not None else PROMPT.read_text(encoding='utf-8')
     claims = '\n'.join('  - ' + ' '.join(c.split()) for c in piece.get('claims') or []) or '  - (none given)'
-    day = (day_colours.day_rule(piece['date']) if piece.get('date') else
-           'Not dated yet: use only the house mint as the accent, on neutral ink, cream or green, and no subchannel '
-           'colour (butter, lilac or coral).')
     values = {'piece_id': piece['piece_id'], 'lane': piece['lane'], 'title': ' '.join(piece['title'].split()),
-              'claims': claims, 'day': day}
-    return re.sub(r'\{\{(piece_id|lane|title|claims|day)\}\}', lambda m: values[m.group(1)], text)
+              'claims': claims, 'colour_rule': series_colours.asset_rule()}
+    return re.sub(r'\{\{(piece_id|lane|title|claims|colour_rule)\}\}', lambda m: values[m.group(1)], text)
 
 
 def codex_command(kit_dir, codex='codex'):
@@ -651,8 +640,7 @@ def make(pieces, week_of, out_dir=OUT, runner=run_codex, max_pieces=MAX_PIECES, 
                          'reasons': [e[:200] for e in errors[:40]]})
             continue
         write_json(out_dir / 'jobs' / (pid + '.json'), render_jobs(kit_dir))
-        rows.append(dict({'piece_id': pid, 'kit': 'awaiting_render', 'code': None, 'reasons': []},
-                         **({'date': piece['date']} if piece.get('date') else {})))
+        rows.append({'piece_id': pid, 'kit': 'awaiting_render', 'code': None, 'reasons': []})
     summary = {'schema': 'growth-artdirect/1', 'week_of': str(week_of), 'week': week_label(week_of),
                'max_pieces': max_pieces, 'codex_runs': attempted, 'codex_tokens': usage, 'pieces': rows,
                'local_only': True, 'external_writes': 0}
@@ -671,7 +659,7 @@ def gate(out_dir=OUT, pieces_dir=PIECES, root=ROOT):
         report = out_dir / 'rendered' / (row['piece_id'] + '.json')
         try:
             results = read_json(report)
-            errors = (painted_errors(kit_dir, results, root) + day_errors(results, row.get('date'))
+            errors = (painted_errors(kit_dir, results, root) + series_errors(results)
                       if isinstance(results, list) else ['no render report'])
         except (OSError, ValueError):
             errors = ['the renderer refused it or did not render it twice the same']
@@ -688,12 +676,12 @@ def gate(out_dir=OUT, pieces_dir=PIECES, root=ROOT):
     return summary
 
 
-def day_errors(results, date):
-    """Each render held to its day's colour (R125): a series day paints no other day's colour, an off day none."""
+def series_errors(results):
+    """No render paints a series colour (R125): Growth's assets belong to no series, on any day."""
     errors = []
     for result in results:
         if isinstance(result, dict):
-            for e in day_colours.colour_errors(result.get('colours') or [], date):
+            for e in series_colours.colour_errors(result.get('colours') or []):
                 errors.append(str(result.get('template', '?')).split('/')[-1] + ': ' + e)
     return errors
 
