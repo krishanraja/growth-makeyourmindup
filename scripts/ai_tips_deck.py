@@ -10,7 +10,7 @@ It writes, into --out: jobs.json (render jobs for the ai-tips-screen kit), the t
 manifest.json (unless --no-render), and caption.txt. It exits non-zero on any failed check.
 
 The checks are the format's standard made executable (docs/briefs/ai-tips-carousel.md):
-  * shape: 5 to 10 jobs, each with 2 to 4 tools, one prompt, exactly three steps, one image;
+  * shape: 5 to 8 jobs, so a cover and a close make at most 10 cards (Buffer's limit), each with 2 to 4 tools, one prompt, exactly three steps, one image;
   * sources: every tool has a vendor page and a check date no older than 7 days before the post;
   * sync: each image says what it shows, and that text shares a word with the prompt;
   * freshness: no job headline and no lead tool repeats a week file dated in the 28 days before;
@@ -40,6 +40,7 @@ NOT_X_Y = re.compile(r"\bnot\b[^.!?]{0,40}[,;]\s*(?:but\s+)?\w+|\bnot just\b|\bi
 SERIES_COLOURS = {'#FFD84D': 'butter', '#B7A6FF': 'lilac', '#FF6A4D': 'coral'}
 KIT_FONTS = {'Anton', 'Archivo', 'Fraunces', 'IBM Plex Mono'}
 CAPTION_LIMIT = 2200
+MAX_CARDS = 10
 SOURCE_MAX_AGE = 7
 NO_REPEAT_DAYS = 28
 STOP = set('a an and the to of for in on my me your our this that it is be with from what who i by as at or'.split())
@@ -54,8 +55,9 @@ def check_week(week, others=()):
     errs = []
     day = dt.date.fromisoformat(week['date'])
     jobs = week.get('jobs', [])
-    if not 5 <= len(jobs) <= 10:
-        errs.append('jobs: %d, want 5 to 10' % len(jobs))
+    # Buffer takes at most ten cards a carousel, cover and close included (Krish, 5 Nov 2026).
+    if not 5 <= len(jobs) <= MAX_CARDS - 2:
+        errs.append('jobs: %d, want 5 to %d (a cover and a close make at most %d cards)' % (len(jobs), MAX_CARDS - 2, MAX_CARDS))
     for n, j in enumerate(jobs, 1):
         at = 'job %d' % n
         tools = j.get('tools', [])

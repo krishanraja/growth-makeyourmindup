@@ -53,6 +53,11 @@ class Shape(unittest.TestCase):
     def test_too_few_jobs_fails(self):
         self.assertTrue(deck.check_week(week(jobs=4)))
 
+    def test_more_than_ten_cards_fails(self):
+        # Buffer takes at most ten cards, cover and close included (Krish, 5 Nov 2026).
+        self.assertEqual(deck.check_week(week(jobs=8)), [])
+        self.assertTrue(any('at most 10 cards' in e for e in deck.check_week(week(jobs=9))))
+
     def test_two_steps_fail(self):
         w = week()
         w['jobs'][1]['steps'] = w['jobs'][1]['steps'][:2]

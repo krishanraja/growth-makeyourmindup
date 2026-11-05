@@ -20,11 +20,11 @@ lands, a conflict goes to content-engine's standard, not to this page.
 
 ## What it is
 
-- **What the reader gets:** five to ten jobs AI does well right now, one per card. Each card shows the tools
+- **What the reader gets:** five to eight jobs AI does well right now, one per card. Each card shows the tools
   that do the job, a real image of it being done, one prompt to paste and three steps.
 - **The goal:** a post people save and send to a colleague. That serves the North Star's "posts people share
   because they are useful".
-- **The cards:** a 1080x1350 Instagram carousel. A cover, the job cards, then a close.
+- **The cards:** a 1080x1350 Instagram carousel. A cover, the job cards, then a close: at most ten cards in all, Buffer's limit. Krish, 5 Nov 2026: "Can you ensure all future carousels do not exceed 10 cards in total, including cover and call to action?"
 - **When:** off days. Krish, 5 Nov 2026: "off-day stuff is fluid". It can fill a gap, as it did on 5 Nov, or
   run on a planned day. Never on Saturday, which is the good-news carousel, or on Sunday, the rest day
   (ruling of 2 Nov).
