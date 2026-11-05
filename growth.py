@@ -16,7 +16,7 @@ import urllib.error
 import urllib.request
 
 from engine.catalog import FEED, discover, pieces, parse_feed, strip_html
-from engine.cc_loop import CONTROL_CENTER_OWNS
+from engine.cc_loop import CONTROL_CENTER_OWNS, OWNED_REASON
 from engine.control_center import APPROVED_ORIGIN, Client, NoRedirect, ProtocolError, opener
 from engine.core import (KINDS, PLATFORMS, http_url, identity, instant, locked,
                          read_json, today, tracked, write_json)
@@ -29,12 +29,11 @@ BASE = os.environ.get('CONTROL_CENTER_URL', 'https://controlcenter.krishraja.com
 TOKEN_FILE = Path.home() / '.config' / 'growth-makeyourmindup' / 'token'
 # The protocol bearer (gen1_) is a different key from the packs key above.
 ENGINE_TOKEN_FILE = TOKEN_FILE.parent / 'engine-token'
-# Control Center's People and Visibility own outreach to shows and guests
-# (Krish, 21 Oct 2026; AGENTS.md "Outreach belongs to Control Center"). These
-# packs never leave here.
+# Make Your Mind Up outreach is this engine's own and Krish enacts it in Codex
+# sessions (Ruling, Krish, 2026-11-05; AGENTS.md "Outreach for Make Your Mind
+# Up"). These packs never go to Control Center.
 OUTREACH = CONTROL_CENTER_OWNS  # one source: pitches, partners and swaps
-OUTREACH_HELD = ("Control Center's People and Visibility own outreach to shows and guests; "
-                 'pitches, partners and swaps packs are never delivered from this engine')
+OUTREACH_HELD = (OWNED_REASON + '; pitches, partners and swaps packs are never delivered to it')
 
 
 def outreach_kind(value):

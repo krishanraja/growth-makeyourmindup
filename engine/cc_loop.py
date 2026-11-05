@@ -38,10 +38,11 @@ NO_SPEND = 'this engine has no spend authority, bought no boosts and does not re
 WALLS = {'daily': ('post', 'published'), 'radar': ('post', 'published'), 'conversion': ('post', 'applied'),
          'pitches': ('send', 'sent'), 'swaps': ('send', 'sent'), 'partners': ('send', 'sent'),
          'report': ('strategy', 'reviewed'), 'numbers': ('none', 'verified')}
-# Outreach to shows, guests, swaps and partners is Control Center's: People and Visibility
-# find, draft and track it (Ruling, Krish, 2026-10-21). That work is held, never proposed.
+# Make Your Mind Up outreach (shows, guests, swaps and partners) belongs to this engine, and
+# Krish enacts it himself in Codex sessions (Ruling, Krish, 2026-11-05). Only Mindmake's own
+# outreach is Control Center's. So this work never becomes a Control Center proposal.
 CONTROL_CENTER_OWNS = frozenset({'pitches', 'swaps', 'partners'})
-OWNED_REASON = "Control Center's People and Visibility own outreach to shows and guests"
+OWNED_REASON = "Make Your Mind Up outreach is this engine's own, enacted in Krish's Codex sessions; it never goes to Control Center"
 COMPLETIONS = {'Published': 'published', 'Sent': 'sent', 'Applied': 'applied',
                'Verified': 'verified', 'Reviewed': 'reviewed'}
 NAMES = {'linkedin': 'LinkedIn', 'x': 'X', 'youtube': 'YouTube', 'tiktok': 'TikTok', 'seo': 'search',

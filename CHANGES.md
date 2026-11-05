@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-05: Make Your Mind Up outreach belongs to this engine, not Control Center. His words: "only
+  Outreach for MindMake belongs to Control Center, alongside visibility and networking and events and
+  partners. Anything to do with Make Your Mind Up growth belongs to the Make Your Mind Up engine. I'll be
+  just running Codex sessions, which are connected to all my tools, to enact things like outreach or
+  social engagement rapidly in browser or via the connectors." The Acquisition engine owns this show's
+  outreach and Engagement owns social engagement; he enacts both in Codex on the exact approved draft.
+  Pitches, partners and swaps packs still never go to Control Center (reason reworded in
+  engine/cc_loop.py). Supersedes the 2026-10-21 "Outreach belongs to Control Center" ruling for MYMU.
 - 2026-10-30: Channel work runs as the seven channel tasks. Krish asked for each of seven saved Instagram
   growth prompts to be its own task for every specialist, and for a process to the North Star. They are
   defined once in ai-harness `contract/channel-tasks.md`; docs/CHANNEL-TASKS.md maps them here, and

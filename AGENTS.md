@@ -216,9 +216,11 @@ carousels, oldest unamplified first, interleaved with memes, positive news and
 level-up advice, with each post's verdict moving the ratio next week (R103,
 `docs/MIX.md`). He approves the ideas and mocks in one press ("Autonomy").
 
-## Outreach belongs to Control Center (Ruling, Krish, 2026-10-21)
+## Outreach for Make Your Mind Up (Ruling, Krish, 2026-11-05)
 
-Control Center's People tab (Guests, weighted 70 to this show) and Visibility already find, draft and track outreach to shows and guests, drafted from Jonny's mailbox. So this engine proposes posts and measures. It proposes no pitch, swap or partner note: `growth.py cc finish` holds that work with the reason "Control Center's People and Visibility own outreach to shows and guests". The Tuesday, Wednesday and Thursday jobs below may still prepare lists and research for Krish's own use, but nothing from them reaches his list. His list also shows one of this engine's asks at a time, a go-live first, then a check-in, then a plan, so never add a second ask of a kind that already waits.
+Krish: "only Outreach for MindMake belongs to Control Center, alongside visibility and networking and events and partners. Anything to do with Make Your Mind Up growth belongs to the Make Your Mind Up engine. I'll be just running Codex sessions, which are connected to all my tools, to enact things like outreach or social engagement rapidly in browser or via the connectors."
+
+So outreach for Make Your Mind Up (shows, newsletters, creators, editorial features, swaps and partners) is this engine's, owned by the Acquisition engine (`jobs/acquisition.md`, "Four engines" below). Social engagement is the Engagement engine's. Krish enacts both in his own Codex sessions, in the browser or through connectors, on the exact draft he approves: an approval binds sender, recipient, channel, subject, body and links, and a redirected recipient needs a fresh decision. None of it goes to Control Center: `growth.py cc finish` still holds pitches, partners and swaps packs and `post --deliver` refuses them, now with the reason "Make Your Mind Up outreach is this engine's own, enacted in Krish's Codex sessions; it never goes to Control Center". Mindmake's own outreach, visibility, networking, events and partners stay with Control Center. This supersedes the 2026-10-21 ruling that Control Center's People and Visibility own this show's outreach. Rule 1 below is unchanged for scheduled jobs and for sessions Krish is not driving: they draft, he acts. His list in Control Center also shows one of this engine's asks at a time, a go-live first, then a check-in, then a plan, so never add a second ask of a kind that already waits.
 
 ## What you are growing
 
@@ -399,7 +401,7 @@ two steps; in short:
    `python growth.py cc finish --job KIND --envelope FILE --queue .scratch/queue.json --deliver`
    (the numbers job adds `--observations .scratch/observations.json`). It
    turns the selected drafts into proposals for Krish (posts and comments
-   behind the `post` wall, pitches and asks held as Control Center's (above), report
+   behind the `post` wall, pitches and asks held from Control Center ("Outreach for Make Your Mind Up" above), report
    recommendations behind `strategy`, each with its exact words), deferred
    and blocked work into holds, reports with the run's stable id
    (`makeyourmindup:<New York date>:<kind>`), reads the report back by its
@@ -433,9 +435,9 @@ the ideas and mocks Krish approved and hands them off; it never schedules. The n
 | Every day 06:00 | Numbers | `numbers` | `jobs/numbers.md` |
 | Every day 06:30 | Conversation radar | `radar` | `jobs/radar.md` |
 | Mon, Wed, Fri 13:30 (after the piece is out) | The day's pack | `daily` | `jobs/daily-pack.md` |
-| Tuesday 07:00 | Pitches (held: Control Center owns outreach) | `pitches` | `jobs/pitches.md` |
-| Wednesday 07:00 | Partners (held: Control Center owns outreach) | `partners` | `jobs/partners.md` |
-| Thursday 07:00 | Recommendations (held: Control Center owns outreach) | `swaps` | `jobs/swaps.md` |
+| Tuesday 07:00 | Pitches (feeds Acquisition; never to Control Center) | `pitches` | `jobs/pitches.md` |
+| Wednesday 07:00 | Partners (feeds Acquisition; never to Control Center) | `partners` | `jobs/partners.md` |
+| Thursday 07:00 | Recommendations (feeds Acquisition; never to Control Center) | `swaps` | `jobs/swaps.md` |
 | Saturday 09:00 | The answer piece | `daily` | `jobs/answer.md` |
 | Saturday 12:00 London | Weekly live channel audit, then front door | `conversion` | `jobs/channel-audit.md` |
 | Sunday 07:00 | The weekly report | `report` | `jobs/report.md` |

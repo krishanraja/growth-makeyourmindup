@@ -1,4 +1,4 @@
-"""G2: Control Center owns outreach (Krish, 21 Oct 2026), so post --deliver never sends it."""
+"""G2: Make Your Mind Up outreach is enacted in Krish's Codex sessions (Krish, 5 Nov 2026), so post --deliver never sends it to Control Center."""
 import contextlib
 import io
 from pathlib import Path
@@ -24,14 +24,14 @@ class PostOutreachTests(unittest.TestCase):
                 envelope = Path(folder) / (kind + '.json')
                 write_json(envelope, {'schema_version': 2, 'pack': {'kind': kind, 'pack_date': '2026-10-27',
                                                                     'headline': 'TEST FIXTURE ONLY', 'items': []}})
-                with self.assertRaisesRegex(ValueError, "Control Center's People and Visibility own outreach"):
+                with self.assertRaisesRegex(ValueError, "Make Your Mind Up outreach is this engine's own"):
                     growth.main(['post', str(envelope), '--deliver'])
                 legacy = Path(folder) / (kind + '-legacy.json')
                 write_json(legacy, {'kind': kind, 'pack_date': '2026-10-27', 'headline': 'TEST FIXTURE ONLY'})
-                with self.assertRaisesRegex(ValueError, 'own outreach'):
+                with self.assertRaisesRegex(ValueError, 'never goes to Control Center'):
                     growth.main(['post', str(legacy), '--deliver'])
                 # The transport refuses it too, before it reads a token.
-                with self.assertRaisesRegex(ValueError, 'own outreach'):
+                with self.assertRaisesRegex(ValueError, 'never goes to Control Center'):
                     growth.call('POST', '/api/growth/packs', {'kind': kind, 'items': []}, deliver=True)
 
     def test_post_deliver_still_carries_other_kinds_to_the_transport(self):
