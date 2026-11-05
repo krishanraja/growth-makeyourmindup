@@ -27,12 +27,12 @@ html, body { background: var(--ink); }
 .prompt::before { content: ''; position: absolute; left: 40px; top: 46px; width: 22px; height: 44px; background: var(--mint); }
 .prompt .how { width: 790px; height: 180px; font-family: var(--body); font-weight: 500; line-height: 1.22; color: var(--cream); }
 .saves { position: absolute; left: 72px; top: 1086px; width: 936px; display: flex; align-items: center; gap: 28px; }
-.saves .key { font-family: var(--mono); font-size: 26px; color: var(--mint); width: 230px; }
+.saves .key { font-family: var(--mono); font-size: 26px; color: var(--mint); width: 150px; }
 .bars { display: flex; gap: 10px; }
 .bar { width: 64px; height: 26px; border-radius: 6px; border: 3px solid var(--green); }
 .m1 .bar:nth-child(-n+1), .m2 .bar:nth-child(-n+2), .m3 .bar:nth-child(-n+3), .m4 .bar:nth-child(-n+4),
 .m5 .bar:nth-child(-n+5) { background: var(--mint); border-color: var(--mint); }
-.who { width: 300px; height: 40px; font-family: var(--mono); font-size: 26px; color: var(--cream); text-align: right; line-height: 1.4; }
+.who { width: 400px; height: 40px; font-family: var(--mono); font-size: 26px; color: var(--cream); text-align: right; line-height: 1.4; }
 .count { position: absolute; left: 72px; bottom: 56px; font-family: var(--mono); font-weight: 500; font-size: 28px; color: var(--mint); }
 .rule-line { position: absolute; left: 72px; right: 72px; top: 1186px; height: 2px; background: var(--green); }
 
