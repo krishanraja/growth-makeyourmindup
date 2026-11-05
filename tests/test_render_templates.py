@@ -132,15 +132,29 @@ class TemplatesExist(unittest.TestCase):
         # Ruling (Krish, 2026-11-05): "Every single makeyourmindup carousel should have a "Follow for more" call to
         # action on the last card, just above the "Make Your Mind Up" word mark. Which should be a bit larger and
         # centered on the last card always".
-        sign = '<div class="follow">Follow for more</div><div class="brandmark"></div></div>'
+        sign = re.compile(r'<div class="follow">[Ff]ollow for more</div><div class="brandmark"></div></div>')
         closes = [template_text(manifest()['templates']['carousel-close'])]
         closes += [p.read_text() for p in (ROOT / 'render' / 'pieces').glob('*/templates/close*.html')]
         self.assertGreater(len(closes), 1)
         for text in closes:
             self.assertIn('<div class="close-sign', text)
-            self.assertIn(sign, text)
+            self.assertRegex(text, sign)
             self.assertEqual(text.count('brandmark'), 1)
             self.assertNotIn('brandmark corner', text)
+
+    def test_the_good_news_close_is_fixed(self):
+        # Ruling (Krish, 2026-11-05): the final card for all good news carousels permanently, option A: that week's
+        # five people, then "If this inspires you to / MAKE THE WORLD BETTER / by combining your ideas + AI,"
+        # and "follow for more" in lower case above the mark.
+        kit = ROOT / 'render' / 'pieces' / 'off-sat-goodnews'
+        text = (kit / 'templates' / 'close.html').read_text()
+        for words in ('If this inspires you to', 'make the world better', 'by combining your ideas + AI,',
+                      '<div class="follow">follow for more</div>'):
+            self.assertIn(words, text)
+        for i in range(1, 6):
+            self.assertIn('{{photo:p%d}}' % i, text)
+        spec = json.loads((kit / 'templates.json').read_text())['templates']['close']
+        self.assertEqual(sorted(spec['fields']), ['p1', 'p2', 'p3', 'p4', 'p5'])
 
     def test_a_two_tone_headline_has_one_accent_line(self):
         for tid, spec in manifest()['templates'].items():

@@ -23,6 +23,16 @@ html, body { background: var(--ink); }
   display: flex; align-items: center; justify-content: center; }
 .foot .brandmark { width: 220px; }
 .cover .foot { border-top-color: transparent; }
-.close { padding: 108px; align-items: center; justify-content: center; gap: 44px; }
-.close .big { width: 864px; height: 440px; display: flex; align-items: center; justify-content: center; }
-.note { width: 864px; height: 180px; font-family: var(--body); line-height: 1.2; color: var(--mint); }
+/* The close, the same on every good-news carousel (Ruling, 5 Nov 2026): that week's five people in mint rings on a
+   green glow, then one sentence that the house sign finishes, "follow for more" in lower case. */
+.lift { background: radial-gradient(ellipse 900px 620px at 50% 330px, var(--green) 0%, var(--ink) 70%); }
+.faces { position: absolute; left: 0; right: 0; top: 120px; height: 420px; }
+.face { position: absolute; width: 250px; height: 250px; border-radius: 50%; overflow: hidden; border: 5px solid var(--mint); box-shadow: 0 0 0 10px var(--ink), 0 0 60px var(--mint); }
+.face .photo { width: 100%; height: 100%; object-fit: cover; }
+.f1 { left: 60px; top: 120px; } .f2 { left: 250px; top: 20px; } .f3 { left: 415px; top: 150px; width: 260px; height: 260px; }
+.f4 { left: 580px; top: 20px; } .f5 { left: 770px; top: 120px; }
+.say { position: absolute; left: 60px; right: 60px; top: 760px; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; }
+.say .lead { font-family: var(--body); font-weight: 600; font-size: 52px; line-height: 1.2; color: var(--cream); }
+.say .lift-big { font-family: var(--heading); text-transform: uppercase; font-size: 100px; line-height: 1; white-space: nowrap; color: var(--mint); }
+.lift .close-sign .follow { font-size: 56px; font-weight: 700; color: var(--cream); }
+.lift .close-sign.pinned { bottom: 70px; gap: 22px; }

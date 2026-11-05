@@ -57,18 +57,27 @@
       "width": 1080,
       "height": 1350,
       "fields": {
-        "headline": "text",
-        "takeaway": "text"
+        "p1": "photo",
+        "p2": "photo",
+        "p3": "photo",
+        "p4": "photo",
+        "p5": "photo"
       },
       "required": [
-        "headline",
-        "takeaway"
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5"
       ],
       "example": {
-        "headline": "The closing headline",
-        "takeaway": "The short caption reminder"
+        "p1": "Story 1 photograph",
+        "p2": "Story 2 photograph",
+        "p3": "Story 3 photograph",
+        "p4": "Story 4 photograph",
+        "p5": "Story 5 photograph"
       },
-      "note": "Only a centred headline and takeaway. Point readers to the caption for sources and photo credits."
+      "note": "The same close on every good-news carousel: that week's five story photographs in mint rings, in story order, then the fixed sentence 'If this inspires you to MAKE THE WORLD BETTER by combining your ideas + AI, follow for more' above the house mark. The words are part of the template and never change."
     }
   }
 }
