@@ -2,7 +2,7 @@ html, body { background: var(--cream); color: var(--ink); }
 .frame { padding: 0; overflow: hidden; }
 .fit { flex: none; overflow: hidden; }
 .photo { display: block; }
-.big { font-family: var(--sub); font-weight: 600; font-variation-settings: 'SOFT' 100, 'WONK' 0; text-transform: none; line-height: 1.04; color: var(--ink); }
+.big { font-family: var(--sub); font-weight: 600; font-variation-settings: 'SOFT' 100, 'WONK' 1; text-transform: none; line-height: 1.04; color: var(--ink); }
 .big .accent { color: var(--green); }
 
 /* Cover: the scene, ink rising from the foot, centred words. */
