@@ -1705,6 +1705,20 @@
         "test_a_canva_meme_needs_its_mark_small_in_the_bottom_right",
         "test_the_first_saturday_carousel_is_the_reference_kit"
       ]
+    },
+    {
+      "id": "R126",
+      "statement": "A carousel is at most ten cards, the cover and the last card included, because Buffer posts no more: social/formats/carousel.json max_assets is 10, so preflight refuses a package and the release's draft-shape check refuses a Buffer draft with an eleventh card.",
+      "source_file": "CHANGES.md",
+      "quote": "carousels can only have 10 cards maximum. Can you ensure all future carousels do not exceed 10 cards in total, including cover and call to action?",
+      "enforced_by": [
+        "engine/social.py:preflight",
+        "engine/run/release.py:format_shape_errors"
+      ],
+      "tests": [
+        "test_the_carousel_format_takes_at_most_ten_cards",
+        "test_a_buffer_draft_of_eleven_cards_is_refused_and_ten_passes"
+      ]
     }
   ]
 }

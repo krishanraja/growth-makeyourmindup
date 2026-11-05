@@ -5,6 +5,11 @@ newest first, apart from the 15 and 17 October entries at the end. An entry is t
 can replace it. What runs today is in `AGENTS.md`, `NOW.md` and the docs they
 point to.
 
+- 2026-11-05: A carousel is at most ten cards, cover and last card included (R126). His words: "There's an
+  interesting quirk in Buffer: carousels can only have 10 cards maximum. Can you ensure all future carousels do not
+  exceed 10 cards in total, including cover and call to action?" `social/formats/carousel.json` `max_assets` is 10,
+  so preflight and the release's draft-shape check refuse an eleventh card before Buffer; content-engine's story schema
+  and board hold the same cap.
 - 2026-11-04 (later): Series colours belong to the weekly series piece, never the day; R125 now says Growth's
   assets wear none (this replaces the entry below). His words: "Post random memes on a Monday but that doesn't
   mean it's Monday's colour and brand. Then follow the money. There is only one "follow the money" piece, one
