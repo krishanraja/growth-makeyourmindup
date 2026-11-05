@@ -97,6 +97,48 @@
         "line": "One short line on what to do next"
       },
       "note": "Quiet ink card with a mint glow line."
+    },
+    "cover-flow": {
+      "file": "templates/cover-flow.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "photo": "photo",
+        "step1": "photo",
+        "label1": "text",
+        "step2": "photo",
+        "label2": "text",
+        "step3": "photo",
+        "label3": "text",
+        "headline": "text",
+        "accent": "text",
+        "dek": "text"
+      },
+      "required": [
+        "photo",
+        "step1",
+        "label1",
+        "step2",
+        "label2",
+        "step3",
+        "label3",
+        "headline",
+        "accent",
+        "dek"
+      ],
+      "example": {
+        "photo": "The local cover scene",
+        "step1": "The first real screen crop",
+        "label1": "The first step in a few words",
+        "step2": "The second real screen crop",
+        "label2": "The second step in a few words",
+        "step3": "The third real screen crop",
+        "label3": "The result in a few words",
+        "headline": "The first headline line",
+        "accent": "The mint headline line",
+        "dek": "One short line on what the reader gets"
+      },
+      "note": "The scene fills the card; three real screen crops cascade through its middle with mono labels, clear of the title. Crops come from the owner's own screenshots."
     }
   }
 }
