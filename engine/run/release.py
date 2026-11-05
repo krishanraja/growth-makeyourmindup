@@ -101,7 +101,7 @@ from engine.copy_lint import copy_lint_errors, version as copy_lint_version
 from engine.core import instant, locked, ny_time, read_json, write_json
 from engine.run.buffer_api import signed_meta
 from engine.share import cta_applies, cta_errors
-from engine.social import inventory, route
+from engine.social import HELD, inventory, route
 from engine import intensity
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -864,7 +864,9 @@ def route_holds(slot, as_of):
     except (ValueError, KeyError) as exc:
         return ['route_unknown: ' + str(exc)], False, None
     record = decision.get('known_capability') or {}
-    return decision['holds'], True, record.get('verified_at')
+    recheck = (decision.get('route_hold') or {}).get('recheck_when')
+    holds = [h + ': ' + recheck if h == HELD and recheck else h for h in decision['holds']]
+    return holds, True, record.get('verified_at')
 
 
 def capability_checks(spec, signed, ledger=None):
@@ -1107,6 +1109,12 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
             unchecked, known, since = routes[key]
             if not known:
                 hold(unchecked[0])
+                continue
+            held = [h for h in unchecked if h.startswith(HELD)]
+            if held:
+                # Review of 5 Nov 2026, section 7: a route held after a provider rejection releases no
+                # capability check; it waits for its recheck condition.
+                hold(held[0])
                 continue
             if not unchecked:
                 # F105: a route verified and fresh is L0's. The go-live he approves goes out

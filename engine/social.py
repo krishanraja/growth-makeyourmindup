@@ -32,6 +32,10 @@ FLOOD_CHANNELS = ('instagram', 'youtube', 'tiktok', 'x')
 FLOOD_TARGET, FLOOD_FLOOR = 4, 3
 MAX_DAILY_POSTS = dict({'substack-notes': 2}, **{c: FLOOD_TARGET for c in FLOOD_CHANNELS})
 DEFAULT_MAX_DAILY_POSTS = 1
+# A capability held after a provider rejection (review of 5 Nov 2026, section 7) names when it was held,
+# what failed and the condition for reconsidering it.
+HELD = 'route_held_after_provider_rejection'
+HELD_FIELDS = ('held_since', 'failure', 'recheck_when')
 
 
 def max_daily_posts(channel_id):
@@ -181,6 +185,8 @@ def inventory(root=ROOT):
                 raise ValueError('verified capability requires observation date')
             if cap['status'] == 'verified' and not cap['verified_operations']:
                 raise ValueError('verified capability requires its specific tested operation')
+            if cap['status'] == 'held' and not all(cap.get(k) for k in HELD_FIELDS):
+                raise ValueError('held capability requires ' + ', '.join(HELD_FIELDS))
     for obj in result['lesson'].values():
         if obj['status'] == 'accepted' and obj['evidence']['kind'] != 'user_ruling':
             raise ValueError('accepted rule needs a user ruling, not a performance inference')
@@ -203,8 +209,13 @@ def route(channel, format_id, tool='buffer', as_of=None, root=ROOT):
         raise ValueError('format is not routed for this channel')
     now = date.fromisoformat(as_of) if as_of else datetime.now(timezone.utc).date()
     caps = [x for x in t['capabilities'] if x['channel'] == channel and x['format'] == format_id]
-    holds = []
-    if not caps or caps[0]['status'] != 'verified':
+    holds, route_hold = [], None
+    if caps and caps[0]['status'] == 'held':
+        # Review of 5 Nov 2026, section 7: a route that failed at the provider is held with its recheck
+        # condition, so the lookup offers the alternative instead of another bounded check.
+        holds.append(HELD)
+        route_hold = {k: caps[0][k] for k in HELD_FIELDS + ('alternative',) if k in caps[0]}
+    elif not caps or caps[0]['status'] != 'verified':
         holds.append('capability_not_verified_for_selected_channel_and_format')
     else:
         age = (now - date.fromisoformat(caps[0]['verified_at'])).days
@@ -216,7 +227,7 @@ def route(channel, format_id, tool='buffer', as_of=None, root=ROOT):
             'read': ['social/README.md', c['guide'], c['voice_policy'], c['authority_ref'], f['guide'], t['guide']],
             'known_capability': caps[0] if caps else None,
             'live_checks': c['live_checks'] + t['always_live_checks'],
-            'holds': holds, 'lessons': [records['lesson'][x] for x in lesson_ids
+            'holds': holds, 'route_hold': route_hold, 'lessons': [records['lesson'][x] for x in lesson_ids
                                       if records['lesson'][x]['status'] != 'superseded']}
 
 

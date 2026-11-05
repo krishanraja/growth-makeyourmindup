@@ -50,7 +50,8 @@
             "enum": [
               "verified",
               "unverified",
-              "unsupported"
+              "unsupported",
+              "held"
             ]
           },
           "verified_at": {
@@ -75,6 +76,22 @@
               ]
             },
             "uniqueItems": true
+          },
+          "held_since": {
+            "type": "string",
+            "format": "date"
+          },
+          "failure": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recheck_when": {
+            "type": "string",
+            "minLength": 1
+          },
+          "alternative": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [

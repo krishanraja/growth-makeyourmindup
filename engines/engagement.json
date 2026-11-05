@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "engine",
+  "id": "engagement",
+  "name": "Engagement",
+  "entry_request": "Run Engagement",
+  "job": "jobs/engagement.md",
+  "source": "docs/reviews/2026-11-05-growth-engine-review.md",
+  "owns": [
+    "answering people interacting with MYMU",
+    "maintaining relationships and identifying repeat questions",
+    "preparing requested outgoing comments",
+    "observing account identity, exclusions and human review"
+  ],
+  "permitted_actions": [
+    "read every engine record and contract",
+    "open the actual post and read it in full before drafting",
+    "prepare a LinkedIn comment in the actual comment box for Krish's final click (BROWSER.md, 2026-10-24): one prefilled LinkedIn box at a time; preserve any existing human draft; verify account, exact post and parent comment first",
+    "show the exact copy beside the open post on every other account",
+    "append records to engines/records/engagement.jsonl",
+    "keep exact words, post URLs and recovery copy in .scratch/engines/engagement.jsonl",
+    "return a weak candidate to the researcher"
+  ],
+  "forbidden_actions": [
+    "post, publish or schedule anything",
+    "send, reply, comment, like or follow",
+    "press Enter, Comment, Reply, Post or any submit control",
+    "leave more than one prefilled LinkedIn comment box open, or overwrite a human draft (BROWSER.md, 2026-10-24)",
+    "spend money or credits",
+    "write to Control Center",
+    "count an incoming item toward an outgoing batch",
+    "pad a batch with a weak candidate",
+    "use personal encouragement alone as the reason for a comment",
+    "commit exact outgoing words, post URLs, recipient addresses or raw receipts (they stay in .scratch/engines/)"
+  ],
+  "done": [
+    "each item is ready in the correct editor or has an accurate disposition: handled, skipped or awaiting Krish",
+    "an outgoing draft counts as ready only after the post was opened, the editor filled, switched away, returned and the full text verified, with the tab left open and recovery copy kept with the post URL",
+    "incoming and outgoing counts are reported separately",
+    "recurring audience questions go back to Acquisition and Content Engine"
+  ],
+  "recover_first": [
+    "unanswered incoming items",
+    "any requested outgoing batch",
+    "correct identities",
+    "handled exclusions",
+    "count of drafts actually ready for review"
+  ],
+  "hands_off_to": {
+    "acquisition": "recurring audience questions",
+    "content-engine": "recurring audience questions",
+    "measurement": "substantive responses and repeat participants",
+    "krish": "the final click on each ready draft and the one decision on a commissioned comment"
+  },
+  "open_for_krish": [
+    "the review asks for each ready LinkedIn draft to keep its tab open, while BROWSER.md (2026-10-24) allows one prefilled LinkedIn box at a time and never multiple stale drafts; until Krish rules, BROWSER.md holds"
+  ]
+}

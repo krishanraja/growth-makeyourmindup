@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "kind": "engine",
+  "id": "measurement",
+  "name": "Measurement & Allocation",
+  "entry_request": "Run Measurement",
+  "job": "jobs/measurement.md",
+  "source": "docs/reviews/2026-11-05-growth-engine-review.md",
+  "owns": [
+    "measuring the North Star independently: weekly organic subscribers against the ladder, with source, window and freshness",
+    "attribution: source attribution, activity attribution and unknowns kept apart",
+    "locating losses between exposure and subscription for Acquisition, Engagement and Publishing",
+    "evaluating experiments at the What-Works judge windows with minimum evidence",
+    "recommending changes to time and money: what to increase, reduce, stop, continue or test"
+  ],
+  "permitted_actions": [
+    "read every engine's records and contracts, and docs/NORTH_STAR.md",
+    "read Substack Growth sources and other measurement sources, read only",
+    "append observations, scorecards, funnels and allocation memos to engines/records/measurement.jsonl",
+    "keep raw receipts and exact readings that are not privacy-safe in .scratch/engines/measurement.jsonl",
+    "propose spending on tools or production, kept apart from approved spending",
+    "return a broken continuation to Publishing as a defect, and a weak working continuation to Acquisition as an experiment"
+  ],
+  "forbidden_actions": [
+    "post, publish or schedule anything",
+    "send, reply, comment, like or follow",
+    "spend money or credits, or treat proposed spending as approved",
+    "write to Control Center",
+    "count a paid boost toward the organic target",
+    "record a missing reading as zero",
+    "turn a source attribution into an activity attribution without evidence",
+    "change a channel default or claim a performance result before its judge window and at least 6 observations",
+    "change docs/NORTH_STAR.md; only Krish changes it",
+    "commit exact outgoing words, recipient addresses or raw receipts (they stay in .scratch/engines/)"
+  ],
+  "done": [
+    "a dated scorecard reports weekly organic subscribers against the ladder, with source, window, freshness and unavailable metrics",
+    "a decision memo answers: where should the next five hours go, and what evidence would change that decision",
+    "each recommendation names the action, what moves, from, to, hours or cost, duration, evidence, uncertainty, owner, review date and reversal condition",
+    "python growth.py engine check passes"
+  ],
+  "recover_first": [
+    "current number and source",
+    "comparable observation windows",
+    "overdue measurements",
+    "largest observed constraint",
+    "one resource decision"
+  ],
+  "hands_off_to": {
+    "publishing": "a broken continuation, as a defect",
+    "acquisition": "a working continuation that attracts few visits, as an experiment",
+    "krish": "the allocation memo and any spending decision"
+  }
+}

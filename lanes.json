@@ -426,6 +426,42 @@
       ],
       "status": "kept-until-W46",
       "successor": null
+    },
+    {
+      "name": "Engine session: Acquisition",
+      "source": "engine-session",
+      "jobs": [
+        "jobs/acquisition.md"
+      ],
+      "status": "on-request",
+      "successor": null
+    },
+    {
+      "name": "Engine session: Engagement",
+      "source": "engine-session",
+      "jobs": [
+        "jobs/engagement.md"
+      ],
+      "status": "on-request",
+      "successor": null
+    },
+    {
+      "name": "Engine session: Publishing",
+      "source": "engine-session",
+      "jobs": [
+        "jobs/publishing.md"
+      ],
+      "status": "on-request",
+      "successor": null
+    },
+    {
+      "name": "Engine session: Measurement",
+      "source": "engine-session",
+      "jobs": [
+        "jobs/measurement.md"
+      ],
+      "status": "on-request",
+      "successor": null
     }
   ],
   "claude_sessions": [

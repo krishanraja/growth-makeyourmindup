@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "public-cover-verification",
+  "category": "format",
+  "scope": [
+    "short-video",
+    "facebook",
+    "youtube",
+    "substack"
+  ],
+  "status": "observed",
+  "finding": "A cover could appear saved while the public grid or player still showed an old or black frame, and Facebook's Reels grid and direct player returned different posters. Close a cover against the public grid and the public player, not the saved setting. A correct grid cover closes only the grid check; a player discrepancy stays open on the same post ID with a dated recheck. A YouTube Short's continuation and Substack's publication, playable video and email delivery are separate checks too.",
+  "evidence": {
+    "kind": "private_file",
+    "ref": "docs/reviews/2026-11-05-growth-engine-review.md",
+    "observed_at": "2026-11-05",
+    "result": "Publishing records each reader-facing check separately (engine/engines/publishing.py); saved settings never close one."
+  },
+  "revisit_when": "A provider changes how covers or continuations are saved or shown to readers.",
+  "supersedes": null
+}
