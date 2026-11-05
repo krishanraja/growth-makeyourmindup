@@ -1,5 +1,11 @@
 # Existing Control Centre credential
 
+**Current as of 5 November 2026.** There are two Control Center keys. The
+one in daily use is `CONTROL_CENTER_ENGINE_TOKEN`, the engine protocol key
+("The engine protocol key" below). `GROWTH_ENGINE_TOKEN` is the older packs
+key that only `growth.py post --deliver` reads; the first section is its
+17 October 2026 record. Neither key is ever printed.
+
 Krish confirmed on 17 October 2026 that `GROWTH_ENGINE_TOKEN` is in GitHub
 secrets, and Vercel project access is available. A secret's presence does
 not prove a particular local runner has it. Never print or copy its value
@@ -51,9 +57,12 @@ other copy is the file on Krish's PC for Codex workspace runs:
   `.github/workflows/` read it: `control-center.yml` (the 05:10 UTC dispatch,
   with a 05:40 UTC backup that stops when the dispatch already ran),
   `keys.yml` (06:50 UTC), `measure.yml` (07:00, 13:00 and 19:00 UTC),
-  `release.yml` (every 30 minutes) and `handoff.yml` (when a session or PC
-  automation that saved drafts wakes it). All but the first also read the
-  `BUFFER_API_KEY` secret. The key check, measure (which checks first) and
+  `release.yml` (every 30 minutes), `handoff.yml` (when a session or PC
+  automation that saved drafts wakes it) and `maker.yml` (04:30 UTC). All
+  but the first also read the `BUFFER_API_KEY` secret. The other L0
+  workflows read no engine key: `ledger.yml` reads `BUFFER_API_KEY` and
+  `GROWTH_WRITEBACK_TOKEN`, `artdirect.yml` reads `OPEN_AI_API_KEY`, and
+  `check.yml` reads none. The key check, measure (which checks first) and
   release fail the run on a refused key with `cc_token_refused` or
   `buffer_key_refused`, so GitHub emails Krish. A Claude session's
   proposals reach Control Center only through this runner

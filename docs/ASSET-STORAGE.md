@@ -12,7 +12,9 @@ places every session. This applies to interactive work and scheduled jobs.
   `scripts/post-pack/send.py` into the library's `3 Posts`, as `YYYY-MM-DD Tue off.day - Subject` (Thu and Sat
   likewise), with the series days' sections (`3 Video`, `4 Social`). The board links that folder.
 - **Older Growth library:** [makeyourmindup / 4 Growth](https://drive.google.com/drive/folders/1Ck0Eulgcs5pFIpS_Ds1vJ6mEAW__Xjwy)
-  holds earlier distribution copies. Do not file new posts there.
+  holds earlier distribution copies. Do not file new posts there. Its
+  `mocks` folder holds the approved mock files the maker reads
+  (`docs/MAKER.md`).
 - **Production source:** Content Engine retains its existing production folders,
   manifests, editable sources and standards. Growth references them and stores
   immutable distribution exports only when needed for delivery. Never move or
@@ -69,9 +71,14 @@ If Drive is unavailable, preserve locally and record the exact upload hold.
 6. Verify automation ownership/schedule if changed. Update existing jobs, never
    duplicate them. Ending a chat does not cancel ongoing daily/weekly duties.
 
-## Current continuation
+## Continuation
 
-- Latest private closeout: `.scratch/session-closeout-20261027/CLOSEOUT.md`.
+The latest closeout is the one `NOW.md` and `docs/SESSION-HANDOVER.md` point
+to (on 5 November 2026, the 1 November Sunday review,
+`.scratch/channel-audit/daily-20261101/SUNDAY-REVIEW.md`). The 27 October
+continuation below is kept as history.
+
+- 27 October private closeout: `.scratch/session-closeout-20261027/CLOSEOUT.md`.
 - Shopping-agent library: [27 October LinkedIn package](https://drive.google.com/drive/folders/1TJwaaZ5nf13CfwsgYVJiM0o5msYCxTl8).
 - Existing pilot receipts remain under
   `.scratch/channel-audit/first-carousel-experiment-20261026/`.

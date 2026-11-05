@@ -1,4 +1,4 @@
-> **Superseded on 2026-10-18** by [`docs/CONTROL-CENTER-BRIEF.md`](CONTROL-CENTER-BRIEF.md): Control Center now runs one protocol for every growth engine. Kept for its history.
+> **Superseded on 2026-10-18** by [`docs/CONTROL-CENTER-BRIEF.md`](CONTROL-CENTER-BRIEF.md): Control Center now runs one protocol for every growth engine. Kept for its history; nothing below is current. How this engine reports today is in `docs/ENGINE.md`, "Reporting to Control Center", and Make Your Mind Up outreach never goes to Control Center (Ruling, Krish, 2026-11-05; `AGENTS.md`).
 
 # Control Centre handoff: MYMU growth engine
 

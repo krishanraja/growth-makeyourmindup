@@ -1,7 +1,8 @@
 # Taste: what a maker reads from Inspiration House, and what it tells it
 
 Any session or PC automation that makes or writes for this engine (Canva
-assets, words, Buffer drafts) follows this file before it builds. There are
+assets, words, Buffer drafts), the four engine sessions included
+(`docs/LANES.md`), follows this file before it builds. There are
 no Claude routines (Krish, 29 Oct 2026); whoever makes, makes under the same
 walls (`docs/LANES.md`). The procedure itself lives in
 krishanraja/inspirationhouse (its README.md and docs/TWO_WAY.md); this file

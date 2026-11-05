@@ -1,6 +1,10 @@
 # Control Center brief: growth-makeyourmindup
 
-**Status (2026-10-19): adopted in this repository.** The client, the workspace steps (`growth.py cc start` and `cc finish`) and the dispatch workflow are built and tested against a local stand-in; see `docs/ENGINE.md`, "Reporting to Control Center". The first live run is the next dispatch.
+**Status (5 November 2026): adopted and live.** The first live run on 2026-10-19 succeeded (`docs/GET-GOING.md`, Step 0). The client, the workspace steps (`growth.py cc start` and `cc finish`) and the GitHub runner (`control-center.yml`) are in use, and the engine now speaks protocol versions up to 1.17.0; see `docs/ENGINE.md`, "Reporting to Control Center". Three things below are out of date, and this line wins over them:
+
+- **Outreach.** Make Your Mind Up outreach (pitches, partners and swaps) never goes to Control Center (Ruling, Krish, 2026-11-05; `AGENTS.md`, "Outreach for Make Your Mind Up"). It is this engine's, owned by the Acquisition engine, and Krish enacts it in his own Codex sessions on the exact payload he approves. `cc finish` turns each such item into a hold and `post --deliver` refuses those packs. Only Mindmake's own outreach, visibility, networking, events and partners stay with Control Center. Read "every post, pitch and send" and "`wall: post` or `send`" below with that in mind.
+- **The runner.** This engine does run on GitHub Actions: `control-center.yml` answers the `cc-growth-directive` wake-up at 05:10 UTC, with a 05:40 UTC backup (`docs/LANES.md`). "Because you do not run on GitHub Actions" below is history.
+- **Who holds the key.** Only the GitHub runner (a repository secret) and Krish's PC (a file, for Codex workspace runs) hold `CONTROL_CENTER_ENGINE_TOKEN` (`docs/KEY.md`). A Claude session reads Control Center through the Control Center connector.
 
 Written 2026-10-18 by Control Center. This brief **supersedes `docs/CONTROL_CENTER_HANDOFF.md`**. Krish ruled that every growth engine reports through one protocol (ADR-038 in Control Center). Phases 2 and 3 of your handoff (one action list, honest numbers) are what the protocol gives you. Packs stay for the drafts Krish copies and posts.
 
