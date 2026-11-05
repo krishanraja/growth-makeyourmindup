@@ -226,8 +226,7 @@
       "fields": {
         "label": "text",
         "headline": "text",
-        "body": "text",
-        "page": "text"
+        "body": "text"
       },
       "required": [
         "label",
@@ -236,8 +235,7 @@
       "example": {
         "label": "series.label",
         "headline": "Where the whole piece lives",
-        "body": "Read the full piece free at makeyourmindup.ai",
-        "page": "4 of 4"
+        "body": "Read the full piece free at makeyourmindup.ai"
       }
     },
     "story-frame": {

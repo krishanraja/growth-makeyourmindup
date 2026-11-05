@@ -103,7 +103,7 @@ class TemplatesExist(unittest.TestCase):
     def test_the_older_pages_keep_the_footer_label_and_rule(self):
         for tid in TEN:
             text = template_text(manifest()['templates'][tid])
-            if tid != 'profile-art':
+            if tid not in ('profile-art', 'carousel-close'):
                 self.assertIn('makeyourmindup.ai', text, tid)
                 self.assertIn('class="label"', text, tid)
             if tid in WITH_RULE:
@@ -122,11 +122,25 @@ class TemplatesExist(unittest.TestCase):
 
     def test_carousels_carry_the_mark_in_a_bottom_corner_never_the_top(self):
         # Ruling (Krish, 2026-11-03): "They need to go in the bottom corner, subtly, on all carousels of this nature."
-        for tid in ('carousel-cover', 'carousel-body', 'carousel-close'):
+        for tid in ('carousel-cover', 'carousel-body'):
             text = template_text(manifest()['templates'][tid])
             footer = text[text.index('<div class="footer">'):]
             self.assertIn('<div class="brandmark"></div>', footer, tid)
             self.assertEqual(text.count('brandmark'), 1, tid)
+
+    def test_every_last_card_says_follow_for_more_above_the_mark(self):
+        # Ruling (Krish, 2026-11-05): "Every single makeyourmindup carousel should have a "Follow for more" call to
+        # action on the last card, just above the "Make Your Mind Up" word mark. Which should be a bit larger and
+        # centered on the last card always".
+        sign = '<div class="follow">Follow for more</div><div class="brandmark"></div></div>'
+        closes = [template_text(manifest()['templates']['carousel-close'])]
+        closes += [p.read_text() for p in (ROOT / 'render' / 'pieces').glob('*/templates/close*.html')]
+        self.assertGreater(len(closes), 1)
+        for text in closes:
+            self.assertIn('<div class="close-sign', text)
+            self.assertIn(sign, text)
+            self.assertEqual(text.count('brandmark'), 1)
+            self.assertNotIn('brandmark corner', text)
 
     def test_a_two_tone_headline_has_one_accent_line(self):
         for tid, spec in manifest()['templates'].items():

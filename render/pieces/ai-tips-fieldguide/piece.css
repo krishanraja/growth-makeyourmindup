@@ -41,3 +41,5 @@ html, body { background: var(--cream); color: var(--ink); }
 
 .brandmark.corner { right: 56px; bottom: 50px; }
 .big > div { width: 100%; }
+.close .strip { height: 200px; }
+.close .close-sign.pinned { bottom: 46px; }

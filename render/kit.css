@@ -102,6 +102,13 @@ html, body {
 /* On carousels: small and subtle in a bottom corner, never at the top (the same ruling). */
 .brandmark.corner { position: absolute; z-index: 3; right: 56px; bottom: 52px; width: var(--bm, 220px); }
 .footer .brandmark { width: var(--bm, 220px); align-self: center; }
+/* The last card of every carousel signs off the same way: "Follow for more" just above the house mark, a bit
+   larger than the corner mark and centred (the 5 Nov 2026 ruling). In flow by default; .pinned holds it at the
+   foot of a card whose words are laid out absolutely or centred. */
+.close-sign { display: flex; flex-direction: column; align-items: center; gap: 18px; flex: none; align-self: center; }
+.close-sign.pinned { position: absolute; z-index: 3; left: 0; right: 0; bottom: 64px; }
+.close-sign .follow { font-family: var(--body); font-weight: 600; font-size: 36px; line-height: 1; color: var(--cream); }
+.close-sign .brandmark { width: var(--bm-close, 360px); background-position: center; }
 
 /* A header band: the brand mark on the left, the series in mono on the right, a green hairline under both. */
 .masthead { display: flex; justify-content: space-between; align-items: center; gap: 32px; flex: none;
