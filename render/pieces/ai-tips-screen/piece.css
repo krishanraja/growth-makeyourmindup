@@ -13,20 +13,28 @@ html, body { background: var(--ink-deep); }
 .cover .dek { width: 860px; height: 110px; font-family: var(--body); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.2; color: var(--cream); text-align: center; }
 .cover .glowline { width: 640px; height: 4px; background: linear-gradient(to right, transparent, var(--mint), transparent); }
 
-/* Tip. */
-.head { position: absolute; left: 60px; right: 60px; top: 46px; height: 84px; display: flex; align-items: center; gap: 22px; }
-.tile { flex: none; width: 84px; height: 84px; border-radius: 20px; background: var(--cream); display: flex; align-items: center; justify-content: center; }
-.tile .photo { width: 60px; height: 60px; object-fit: contain; }
-.tool { width: 640px; height: 46px; font-family: var(--mono); font-weight: 500; color: var(--cream); line-height: 1.4; }
-.count { margin-left: auto; font-family: var(--mono); font-weight: 500; font-size: 30px; color: var(--mint); }
-.shot { position: absolute; left: 60px; right: 60px; top: 160px; height: 560px; border: 3px solid var(--mint); border-radius: 30px; overflow: hidden;
+/* Tip: the job, the tools that do it, the real screen, one prompt to try, three steps. */
+.count { position: absolute; left: 60px; top: 58px; font-family: var(--mono); font-weight: 500; font-size: 30px; color: var(--mint); }
+.works { position: absolute; right: 60px; top: 44px; height: 72px; display: flex; align-items: center; gap: 12px; }
+.works .key { font-family: var(--mono); font-size: 24px; color: var(--cream); margin-right: 6px; }
+.tile { flex: none; width: 72px; height: 72px; border-radius: 18px; background: var(--cream); display: flex; align-items: center; justify-content: center; }
+.tile:empty { display: none; }
+.tile .photo { width: 50px; height: 50px; object-fit: contain; }
+.tip .big { position: absolute; left: 60px; top: 140px; width: 960px; height: 200px; display: block; }
+.shot { position: absolute; left: 60px; right: 60px; top: 362px; height: 470px; border: 3px solid var(--mint); border-radius: 30px; overflow: hidden;
   background: var(--ink); box-shadow: 0 0 0 12px var(--ink), 0 0 90px var(--green); }
-.shot .photo { width: 100%; height: 100%; object-fit: contain; object-position: center; }
-.tip .big { position: absolute; left: 60px; top: 752px; width: 960px; height: 270px; display: block; }
-.panels { position: absolute; left: 60px; right: 60px; top: 1050px; height: 196px; display: flex; gap: 18px; }
-.panel { flex: 1 1 0; border: 2px solid var(--green); border-radius: 22px; background: var(--ink); padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; }
-.panel .key { font-family: var(--heading); font-size: 30px; color: var(--mint); text-transform: uppercase; }
-.panel .fit { width: 270px; height: 112px; font-family: var(--body); font-weight: 500; line-height: 1.18; color: var(--cream); }
+.shot .photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.try { position: absolute; left: 60px; right: 60px; top: 862px; height: 132px; background: var(--ink); border: 2px solid var(--green); border-radius: 24px;
+  padding: 20px 30px 20px 74px; }
+.try::before { content: ''; position: absolute; left: 32px; top: 30px; width: 18px; height: 38px; background: var(--mint); }
+.try .fit { width: 860px; height: 92px; font-family: var(--body); font-weight: 500; font-style: italic; line-height: 1.22; color: var(--cream); }
+.steps { position: absolute; left: 60px; top: 1018px; width: 960px; height: 216px; }
+.steps > div { display: flex; gap: 16px; height: 100%; }
+.steps .row { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; border: 2px solid var(--green);
+  border-radius: 22px; padding: 18px 20px; background: var(--ink); justify-content: flex-start; }
+.steps .name { flex: none; width: 48px; height: 48px; border-radius: 50%; background: var(--mint); color: var(--ink); font-family: var(--heading);
+  font-size: 30px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.steps .value { white-space: normal; min-width: 0; font-family: var(--body); font-weight: 600; font-size: inherit; line-height: 1.18; color: var(--cream); text-align: left; }
 
 /* Close. */
 .close { align-items: center; justify-content: center; padding: 108px; gap: 40px; }
