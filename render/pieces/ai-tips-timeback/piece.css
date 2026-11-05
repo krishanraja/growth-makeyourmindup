@@ -1,0 +1,47 @@
+html, body { background: var(--ink); }
+.frame { padding: 0; overflow: hidden; }
+.fit { flex: none; overflow: hidden; }
+.photo { display: block; }
+.big { font-family: var(--heading); text-transform: uppercase; line-height: 0.98; color: var(--cream); }
+.big .accent { color: var(--mint); }
+
+/* Cover: one full-bleed scene, ink rising from the foot, the words over it with no box. */
+.cover .photo { position: absolute; inset: 0; width: 1080px; height: 1350px; object-fit: cover; object-position: center top; }
+.cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--ink) 0px, var(--ink) 300px, transparent 900px); }
+.cover-words { position: absolute; z-index: 1; left: 72px; right: 72px; bottom: 132px; display: flex; flex-direction: column; gap: 26px; }
+.cover .big { width: 936px; height: 380px; display: flex; flex-direction: column; }
+
+.cover .dek { width: 820px; height: 120px; font-family: var(--body); font-weight: 500; line-height: 1.2; color: var(--cream); }
+
+/* Tip card. */
+.rank { position: absolute; left: 60px; top: 48px; font-family: var(--heading); font-size: 330px; line-height: 0.86;
+  color: var(--ink); -webkit-text-stroke: 4px var(--mint); }
+.tile { position: absolute; right: 72px; top: 84px; width: 176px; height: 176px; border-radius: 36px; background: var(--cream);
+  display: flex; align-items: center; justify-content: center; }
+.tile .photo { width: 120px; height: 120px; object-fit: contain; }
+.tool { position: absolute; right: 72px; top: 284px; width: 460px; height: 44px; text-align: right;
+  font-family: var(--mono); font-weight: 500; color: var(--cream); line-height: 1.2; }
+.tip .big { position: absolute; left: 72px; top: 390px; width: 936px; height: 360px; display: block; }
+.prompt { position: absolute; left: 72px; top: 790px; width: 936px; height: 250px; background: var(--ink-deep);
+  border: 3px solid var(--green); border-radius: 30px; padding: 34px 40px 34px 92px; display: flex; align-items: center; }
+.prompt::before { content: ''; position: absolute; left: 40px; top: 46px; width: 22px; height: 44px; background: var(--mint); }
+.prompt .how { width: 790px; height: 180px; font-family: var(--body); font-weight: 500; line-height: 1.22; color: var(--cream); }
+.saves { position: absolute; left: 72px; top: 1086px; width: 936px; display: flex; align-items: center; gap: 28px; }
+.saves .key { font-family: var(--mono); font-size: 26px; color: var(--mint); width: 230px; }
+.bars { display: flex; gap: 10px; }
+.bar { width: 64px; height: 26px; border-radius: 6px; border: 3px solid var(--green); }
+.m1 .bar:nth-child(-n+1), .m2 .bar:nth-child(-n+2), .m3 .bar:nth-child(-n+3), .m4 .bar:nth-child(-n+4),
+.m5 .bar:nth-child(-n+5) { background: var(--mint); border-color: var(--mint); }
+.who { width: 300px; height: 40px; font-family: var(--mono); font-size: 26px; color: var(--cream); text-align: right; line-height: 1.4; }
+.count { position: absolute; left: 72px; bottom: 56px; font-family: var(--mono); font-weight: 500; font-size: 28px; color: var(--mint); }
+.rule-line { position: absolute; left: 72px; right: 72px; top: 1186px; height: 2px; background: var(--green); }
+
+/* Close. */
+.close { align-items: center; justify-content: center; padding: 108px; gap: 48px; }
+.close .big { width: 864px; height: 560px; display: block; text-align: center; }
+.close .note { width: 820px; height: 170px; font-family: var(--body); font-weight: 500; line-height: 1.25; color: var(--mint); text-align: center; }
+.ticks { display: flex; gap: 14px; }
+.ticks span { width: 52px; height: 12px; border-radius: 6px; background: var(--mint); }
+
+.brandmark.corner { right: 56px; bottom: 52px; }
+.big > div { width: 100%; }

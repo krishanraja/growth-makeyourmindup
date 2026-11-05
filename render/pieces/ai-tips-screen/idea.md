@@ -1,0 +1,1 @@
+The screen. Each tip leads with the real product as people will see it, in a glowing mint frame. Above it sit the real logo and the tool name. Below it the task is set in two-tone capitals. Three small panels say what it does, where to find it and who it suits. The cover is one funny scene. The close is a quiet ink card that tells readers where the links are.

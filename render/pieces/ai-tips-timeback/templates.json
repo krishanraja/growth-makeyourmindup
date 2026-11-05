@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "ai-tips-timeback",
+  "about": "Ten useful AI tips, ranked. A full-bleed cover scene, then one card per tip: an outlined rank number, the real tool logo on a cream tile, the task in two-tone capitals, a dark prompt bar saying what to click or type, and a five bar meter for how much time it gives back. The close asks readers to pick one tip today. Sources, dates and logo credits go in the post description.",
+  "templates": {
+    "cover": {
+      "file": "templates/cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "photo": "photo", "headline": "text", "accent": "text", "dek": "text" },
+      "required": ["photo", "headline", "accent", "dek"],
+      "example": { "photo": "The local cover scene", "headline": "The first headline line", "accent": "The mint headline line", "dek": "One short line on what the reader gets" },
+      "note": "The scene fills the card and keeps its lower half dark. The words sit over the ink gradient with no box."
+    },
+    "tip": {
+      "file": "templates/tip.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "rank": "text", "logo": "photo", "tool": "text", "headline": "text", "accent": "text", "how": "text", "meter": "text", "who": "text", "count": "text" },
+      "required": ["rank", "logo", "tool", "headline", "accent", "how", "meter", "who", "count"],
+      "choices": { "meter": ["1", "2", "3", "4", "5"] },
+      "example": { "rank": "01", "logo": "The local logo file", "tool": "The tool and feature name", "headline": "The task in a few words", "accent": "The payoff in a few words", "how": "Where to click or what to type, in one or two short lines", "meter": "4", "who": "Who it suits", "count": "01 of 10" },
+      "note": "Ten of these. The logo is the real mark from Brandfetch on a cream tile. The meter is the ranking's time judgement, one to five."
+    },
+    "close": {
+      "file": "templates/close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "headline": "text", "accent": "text", "line": "text" },
+      "required": ["headline", "accent", "line"],
+      "example": { "headline": "The closing line", "accent": "The mint closing line", "line": "One short line on what to do next" },
+      "note": "Ten mint ticks, a centred instruction and one line pointing to the caption for links."
+    }
+  }
+}

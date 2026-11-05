@@ -1,0 +1,38 @@
+html, body { background: var(--ink-deep); }
+.frame { padding: 0; overflow: hidden; }
+.fit { flex: none; overflow: hidden; }
+.photo { display: block; }
+.big { font-family: var(--heading); text-transform: uppercase; line-height: 0.98; color: var(--cream); text-align: center; }
+.big .accent { color: var(--mint); }
+
+/* Cover. */
+.cover .photo { position: absolute; inset: 0; width: 1080px; height: 1350px; object-fit: cover; object-position: center top; }
+.cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--ink-deep) 0px, var(--ink-deep) 300px, transparent 900px); }
+.cover-words { position: absolute; z-index: 1; left: 60px; right: 60px; bottom: 140px; display: flex; flex-direction: column; align-items: center; gap: 30px; }
+.cover .big { width: 960px; height: 400px; display: block; }
+.cover .dek { width: 860px; height: 110px; font-family: var(--body); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.2; color: var(--cream); text-align: center; }
+.cover .glowline { width: 640px; height: 4px; background: linear-gradient(to right, transparent, var(--mint), transparent); }
+
+/* Tip. */
+.head { position: absolute; left: 60px; right: 60px; top: 46px; height: 84px; display: flex; align-items: center; gap: 22px; }
+.tile { flex: none; width: 84px; height: 84px; border-radius: 20px; background: var(--cream); display: flex; align-items: center; justify-content: center; }
+.tile .photo { width: 60px; height: 60px; object-fit: contain; }
+.tool { width: 640px; height: 46px; font-family: var(--mono); font-weight: 500; color: var(--cream); line-height: 1.4; }
+.count { margin-left: auto; font-family: var(--mono); font-weight: 500; font-size: 30px; color: var(--mint); }
+.shot { position: absolute; left: 60px; right: 60px; top: 160px; height: 560px; border: 3px solid var(--mint); border-radius: 30px; overflow: hidden;
+  background: var(--ink); box-shadow: 0 0 0 12px var(--ink), 0 0 90px var(--green); }
+.shot .photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.tip .big { position: absolute; left: 60px; top: 752px; width: 960px; height: 270px; display: block; }
+.panels { position: absolute; left: 60px; right: 60px; top: 1050px; height: 196px; display: flex; gap: 18px; }
+.panel { flex: 1 1 0; border: 2px solid var(--green); border-radius: 22px; background: var(--ink); padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; }
+.panel .key { font-family: var(--heading); font-size: 30px; color: var(--mint); text-transform: uppercase; }
+.panel .fit { width: 270px; height: 112px; font-family: var(--body); font-weight: 500; line-height: 1.18; color: var(--cream); }
+
+/* Close. */
+.close { align-items: center; justify-content: center; padding: 108px; gap: 40px; }
+.close .big { width: 864px; height: 560px; display: block; }
+.close .glowline { width: 640px; height: 4px; background: linear-gradient(to right, transparent, var(--mint), transparent); }
+.close .note { width: 820px; height: 170px; font-family: var(--body); font-weight: 600; text-transform: uppercase; line-height: 1.25; color: var(--cream); text-align: center; }
+
+.brandmark.corner { right: 56px; bottom: 40px; --bm: 200px; }
+.big > div { width: 100%; }

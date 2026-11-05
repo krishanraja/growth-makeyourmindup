@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "ai-tips-fieldguide",
+  "about": "Ten useful AI tips as a pocket field guide. A full-bleed cover scene, then cream pages: a large green number, the real tool logo in a framed tile, the task in ink and green capitals, up to three numbered steps, and who it suits. An ink strip at the foot carries the page count and the house mark. Sources, dates and logo credits go in the post description.",
+  "templates": {
+    "cover": {
+      "file": "templates/cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "photo": "photo", "headline": "text", "accent": "text", "dek": "text" },
+      "required": ["photo", "headline", "accent", "dek"],
+      "example": { "photo": "The local cover scene", "headline": "The first headline line", "accent": "The mint headline line", "dek": "One short line on what the reader gets" },
+      "note": "The scene fills the card and keeps its lower half dark. Centred words over the ink gradient, no box."
+    },
+    "tip": {
+      "file": "templates/tip.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "rank": "text", "logo": "photo", "tool": "text", "headline": "text", "accent": "text", "steps": "rows", "who": "text", "count": "text" },
+      "required": ["rank", "logo", "tool", "headline", "accent", "steps", "who", "count"],
+      "example": { "rank": "01", "logo": "The local logo file", "tool": "The tool and feature name", "headline": "The task in a few words", "accent": "The payoff in a few words", "steps": [["1", "The first click"], ["2", "The second click"], ["3", "What to type"]], "who": "Who it suits", "count": "01 of 10" },
+      "note": "Ten of these. Up to three steps, each a few words. The logo is the real mark from Brandfetch."
+    },
+    "close": {
+      "file": "templates/close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "headline": "text", "accent": "text", "line": "text" },
+      "required": ["headline", "accent", "line"],
+      "example": { "headline": "The closing line", "accent": "The green closing line", "line": "One short line on what to do next" },
+      "note": "Cream page, the instruction in capitals, one line in Fraunces, the ink strip with the house mark."
+    }
+  }
+}

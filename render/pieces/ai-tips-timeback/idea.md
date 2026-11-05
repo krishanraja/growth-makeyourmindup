@@ -1,0 +1,1 @@
+Time back. Each card shows a giant outlined rank number. The real tool logo sits on a cream tile. The task is set in big capitals. A dark prompt bar with a mint cursor says what to click or type. Five bars show how much time the tip gives back. The cover is one funny scene about spare time. The close asks readers to pick one tip today.

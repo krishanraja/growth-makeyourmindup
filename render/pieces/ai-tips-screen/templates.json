@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "ai-tips-screen",
+  "about": "Ten useful AI tips, each led by the real product. A full-bleed cover scene, then one card per tip: the real logo and tool name, the product image in a glowing mint frame, the task in two-tone capitals and three panels for what it does, where it is and who it suits. Sources, dates and image credits go in the post description.",
+  "templates": {
+    "cover": {
+      "file": "templates/cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "photo": "photo", "headline": "text", "accent": "text", "dek": "text" },
+      "required": ["photo", "headline", "accent", "dek"],
+      "example": { "photo": "The local cover scene", "headline": "The first headline line", "accent": "The mint headline line", "dek": "One short line on what the reader gets" },
+      "note": "The scene fills the card and keeps its lower half dark. Centred words over the ink gradient, no box."
+    },
+    "tip": {
+      "file": "templates/tip.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "logo": "photo", "tool": "text", "count": "text", "shot": "photo", "headline": "text", "accent": "text", "does": "text", "where": "text", "who": "text" },
+      "required": ["logo", "tool", "count", "shot", "headline", "accent", "does", "where", "who"],
+      "example": { "logo": "The local logo file", "tool": "The tool and feature name", "count": "01 of 10", "shot": "The vendor product image", "headline": "The task in a few words", "accent": "The payoff in a few words", "does": "What it does in a few words", "where": "Where to find it", "who": "Who it suits" },
+      "note": "Ten of these. The product image comes from the vendor's own page, credited in the description, never a screenshot of text."
+    },
+    "close": {
+      "file": "templates/close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": { "headline": "text", "accent": "text", "line": "text" },
+      "required": ["headline", "accent", "line"],
+      "example": { "headline": "The closing line", "accent": "The mint closing line", "line": "One short line on what to do next" },
+      "note": "Quiet ink card with a mint glow line."
+    }
+  }
+}
