@@ -14,6 +14,8 @@ narrative production standard; commission there rather than redesigning here.
   and approval identity. Verify cover crop and readable native presentation;
   return any production defect to content-engine.
 - Write a caption that adds useful context and preserves the source's limits.
+  Its first line carries the topic's keyword; one save line says what to keep it
+  for; the pinned comment asks one specific question (`formats.md`, captions).
   Keep method/source detail outside the approved artwork. Do not add a generic
   hashtag wall or an unrelated call to action merely to tick a box.
 - Only say "link in bio" or promise a Story continuation after opening the

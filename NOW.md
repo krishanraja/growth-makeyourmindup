@@ -39,6 +39,7 @@ Lifecycle: live. The detail is in `README.md`, `docs/ENGINE.md` and `docs/OPERAT
 
 ## What changed recently
 
+- 2026-11-05 Captions open with the topic's keyword, carry one specific save line, and the pinned comment asks one specific question (`social/guides/formats.md`; content-engine's YOUTUBE_PACKAGE).
 - 2026-11-05 A generated carousel cover shows the house felt robot or no robot (`render/KIT.md`, "Generated pictures"; content-engine's `cover_scene.py` checks the prompt).
 - 2026-11-04 Krish: "I should be allowed to post random stuff on any day but it doesn't take on the brand colours of Follow the Money, Mind the Gap, or Under the Hood" (R125, replacing the same day's day-keyed colours). Growth's kit accent is the house mint; the renderer, the art-direction gate and the Canva lint refuse a series colour or name on every asset; memes carry the house mark bottom right and a Canva meme without it is refused.
 - 2026-11-04 Docs pass across the three repositories (Krish: "every single word ... 100% clear and up to date before you merge"): the docs now describe per-option approval, the Sunday rest day, 3 Posts filing and nine workflows.

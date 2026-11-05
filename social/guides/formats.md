@@ -31,6 +31,14 @@ hashes/alt text, format, tool and proposed time. Every meaning-changing revision
 needs the corresponding approval; a native draft ID alone identifies no approval.
 Local schema validation cannot certify taste or grant external action authority.
 
+Every caption on Instagram, TikTok, YouTube Shorts and Facebook follows content-engine's house rule YOUTUBE_PACKAGE
+(Krish, 2026-11-05: "Can you ensure my teleprompter scripts and captions follow rules like this every time?"): the
+first line carries the topic's keyword as people would search it; one save line says what to keep the post for
+("Save this for your next budget meeting"); and the pinned comment, where the channel has one, asks one specific
+question about the post. Never a generic ask: `share_cta` still refuses "share this", "send this to" and "like and
+share", and `engine/packs.py` refuses "thoughts?" and "agree?". A question his audience asked in the comments may
+become the next post, in their own words, with its record (`docs/CHANNEL_PLAYBOOK.md`, audience questions).
+
 ## Built to be sent (Krish, 28 October 2026)
 
 Krish: "ensuring all the produced snackable content is likelier to be shared
