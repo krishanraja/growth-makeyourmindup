@@ -1,6 +1,6 @@
 # Human engagement and channel growth
 
-Owner: Krish Raja. Updated 2026-10-24.
+Owner: Krish Raja. Updated 2026-10-24; engine owners added 2026-11-05.
 Status: daily work authorised; draft preparation and live audit active.
 A daily 09:00 London heartbeat was created on 2026-10-24 under Krish's
 instruction to work every day. jobs/daily-growth.md owns that routine.
@@ -23,6 +23,21 @@ Instagram and LinkedIn: one-click copy on every drafted reply, and each
 link opens the exact post, reply box or profile. It stays prepared only;
 he submits. Where the routines below say otherwise, this wins
 (`docs/ENGINE-BOUNDARY.md`, "28 October 2026").
+
+5 November 2026 (Ruling, Krish, 2026-11-05; `AGENTS.md`, "Outreach for Make
+Your Mind Up" and "Four engines"): social engagement for Make Your Mind Up is
+the Engagement engine's (`jobs/engagement.md`, contract
+`engines/engagement.json`), and Make Your Mind Up outreach is the Acquisition
+engine's (`jobs/acquisition.md`). Krish enacts both in his own Codex sessions.
+In a session he is driving, one comment or reply may be submitted only on his
+explicit approval of the exact text just before submitting; scheduled jobs and
+sessions he is not driving only draft. A requested batch counts outgoing
+drafts only, each ready only when verified in the native editor (read back
+against the draft after switching away and returning); an incoming reply
+never counts toward it, and the final report gives incoming and outgoing
+counts separately. Where the text below says otherwise for those sessions,
+`jobs/engagement.md` wins. The scheduled radar's engagement task to Control
+Center (routine 1 below, `docs/ENGINE.md`) is unchanged in code.
 
 ## Outcome
 

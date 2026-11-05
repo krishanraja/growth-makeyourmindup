@@ -22,7 +22,8 @@
     "growth-measurement",
     "personal-account-register",
     "publishing-authority-split",
-    "tiktok-photo-disclosure"
+    "tiktok-photo-disclosure",
+    "tiktok-buffer-video-hold"
   ],
   "publication_mode": "approved_content_cadence",
   "authority_ref": "docs/PUBLISHING-AUTHORITY.md",

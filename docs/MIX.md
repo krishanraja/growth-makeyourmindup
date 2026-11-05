@@ -24,6 +24,11 @@ is four; on Monday, Wednesday and Friday the piece's own cut takes one slot, so
 the mix fills three there and four on the other days, never under the floor of
 three (`daily_posts_target` and `daily_posts_floor` in `social/channels`).
 Times are New York: 08:30, 12:30, 17:30 and 20:30, the series slot at 12:30.
+Since 5 November 2026 Buffer TikTok short-video is held after a provider
+rejection (`social/tools/buffer.json`, lesson `tiktok-buffer-video-hold`), so
+release holds a TikTok video slot; the native TikTok uploader, under the
+applicable approval, is the alternative. TikTok carousels through Buffer stay
+verified.
 
 ## The lanes and the ratio
 

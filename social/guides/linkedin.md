@@ -29,8 +29,13 @@ Read results before scaling; do not copy Instagram's caption or success metric.
 
 Find actual relevant current posts and read them. Offer short contextual human
 responses; no forced sales insertion, fake experience, links or generic flattery.
-Follow `docs/ENGAGEMENT-LOOP.md` when available and BROWSER.md's preparation
-boundary. Preserve existing drafts. Krish performs the final Comment/Reply click.
+The Engagement engine owns this work (`jobs/engagement.md`): follow it,
+`docs/ENGAGEMENT-LOOP.md` and BROWSER.md's preparation boundary. Preserve
+existing drafts. Krish performs the final Comment/Reply click; in a Codex
+session he is driving, one comment may be submitted only on his explicit
+approval of the exact text just before submitting (Ruling, Krish, 2026-11-05).
+A requested batch counts only outgoing drafts verified in the native editor;
+an incoming reply never counts toward it.
 Posting this prepared asset is Krish's manual action. Keep it unscheduled;
 neither creative approval nor a prior go-live boolean permits auto-publication.
 There is no daily LinkedIn quota. His confirmed personal North Star is trusted commercial-AI judgment and

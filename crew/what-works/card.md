@@ -1,6 +1,6 @@
 # Card: What-Works Analyst
 
-Owns knowing what works: experiments, verdicts, lessons and channel defaults. Judge windows: a Note at 24 hours; LinkedIn, X and Threads at 48 hours; a Reel, Short or TikTok at 72 hours; subscriber impact at 7 days.
+Owns knowing what works: experiments, verdicts, lessons and channel defaults. The Measurement and Allocation engine builds on this card (jobs/measurement.md). Judge windows: a Note at 24 hours; LinkedIn, X and Threads at 48 hours; a Reel, Short or TikTok at 72 hours; subscriber impact at 7 days.
 
 | If | Then | Cite |
 |---|---|---|

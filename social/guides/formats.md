@@ -15,7 +15,10 @@ them or claim a document post from an image upload.
 
 For single images, choose an accepted visual that is useful in isolation and
 give it a native context wrapper. For Shorts, request the approved video edition
-and confirm exact matching long-video continuation. Text editions need native
+and confirm exact matching long-video continuation. A short video's cover
+closes against the public grid and the public player as separate checks, never
+the saved setting (lesson `public-cover-verification`; the Publishing engine,
+`jobs/publishing.md`). Text editions need native
 copy and sourced claims. Article work retains the separate body/paid-offer gates.
 
 Notes and memes are the Canva lane (`canva.md`, Krish's ruling of 27 October

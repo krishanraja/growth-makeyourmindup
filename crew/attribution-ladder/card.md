@@ -1,6 +1,6 @@
 # Card: Measurement Specialist
 
-Owns the North Star count, Substack Growth sources, own-link tagging and Google Analytics (GA4). The number is new publication subscribers a week from organic posts and shares, zero paid. Substack Growth sources stay the North Star source; GA4 attributes each post.
+Owns the North Star count, Substack Growth sources, own-link tagging and Google Analytics (GA4). The number is new publication subscribers a week from organic posts and shares, zero paid. Substack Growth sources stay the North Star source; GA4 attributes each post. The Measurement and Allocation engine builds on this card (jobs/measurement.md).
 
 | If | Then | Cite |
 |---|---|---|

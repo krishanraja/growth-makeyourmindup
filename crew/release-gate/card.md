@@ -14,6 +14,7 @@ Owns every release. It checks; it does not judge creative.
 | A slot would pass its signed frequency (Notes per day as signed, at most two a day) | Hold the slot | P1, R60, R81 |
 | Buffer shows the post as scheduled | It is not live | R38 |
 | A post is to be counted as live | Buffer sent plus the native URL read back for each destination | R38 |
+| A route is held after a provider rejection (social/tools/buffer.json) | Release nothing on it, not even a capability check, until its recheck condition changes | R95, R31 |
 | The outcome of a call is uncertain | Hold it; never retry blindly | R31 |
 | A Story frame is released | One frame per post, deduplicated by media URL | R41, P6 |
 | A slot carries a link sticker claim | Refuse the claim; it is never automatic | R42 |

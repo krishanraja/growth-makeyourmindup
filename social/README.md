@@ -27,6 +27,12 @@ creating or uploading a package; keep private evidence out of the shared library
 These are typed contracts, not a second queue or publishing orchestrator. They
 feed the existing daily job, audit and go-live route. Existing account authority,
 private evidence, shared locks and approval walls continue to apply.
+Since 5 November 2026 four engines split the session work (`AGENTS.md`, "Four
+engines"): Publishing (`jobs/publishing.md`) closes each edition against its
+public reader view, one check at a time, and holds a failed route; Engagement
+(`jobs/engagement.md`) owns replies and comments; Acquisition
+(`jobs/acquisition.md`) owns placements and outreach; Measurement
+(`jobs/measurement.md`) judges what worked.
 
 ## Fast path
 
@@ -43,6 +49,12 @@ python growth.py social send-test .scratch/my-post/package.json
 
 The route command returns the narrow reading path, relevant learned rules,
 specific tested tool capability, remaining holds and mandatory live checks.
+A route held after a provider rejection returns
+`route_held_after_provider_rejection` with its failure, recheck condition and
+alternative. Today that is Buffer TikTok short-video (lesson
+`tiktok-buffer-video-hold`): never attempt it again before the recheck
+condition changes; the native TikTok uploader is the alternative, and the
+Buffer TikTok carousel route stays verified.
 Preflight verifies identity/context, format, publication mode, production asset
 bytes and any stored exact-payload digest. A Buffer package names its
 `buffer_channel_id`, which must be this engine's pinned channel in

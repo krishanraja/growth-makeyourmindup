@@ -43,7 +43,11 @@ The channel auditor already owns every profile pass (docs/CHANNEL-AUDIT.md), so
 profile-audit stays with it. The canva-studio lane, the engagement lane, the
 What-Works Analyst and the Send-Test Reader keep their jobs: Canva makes what a
 task drafts, the Send-Test Reader judges the picked hook and caption blind, and
-What-Works reads the results.
+What-Works reads the results. Since 5 November 2026 the engagement lane's
+session work is the Engagement engine (`jobs/engagement.md`), and the
+Measurement and Allocation engine (`jobs/measurement.md`) builds on the
+What-Works Analyst and the Measurement Specialist (`AGENTS.md`, "Four
+engines").
 
 Where they run:
 

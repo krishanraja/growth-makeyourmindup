@@ -17,5 +17,5 @@ Owns Notes, P1 and P9. Judge a Note at 24 hours and subscriber impact at 7 days.
 | A slot would touch the paywall, a price or the offer | Hold it for Krish's decision | P9, R44 |
 | Visitors per arm are under about 100 a week | Hold any P9 onboarding test; results would be noise | P9 |
 | A Substack article slot is planned | No daily target; the editorial rhythm stands | R36 |
-| A Recommendation or cross-post ask comes up | Draft it and hold it for Control Center's People and Visibility tabs | P2, P3, R20 |
+| A Recommendation or cross-post ask comes up | Draft it for the Acquisition engine (jobs/acquisition.md); Krish enacts it in his own session, never through Control Center | P2, P3, R20 |
 | Buffer has no Substack channel connected | Draft the Notes for Krish to post by hand; never connect it | R44, R66 |

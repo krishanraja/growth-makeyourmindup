@@ -117,7 +117,10 @@ Each derived post also needs, at release:
 - room under its channel's daily cap;
 - `publish_mode` engine (LinkedIn stays his click: never a concept post);
 - copy lint, share asks, the ecosystem route, the Buffer channel lock and,
-  on a route not yet verified, the route's one capability check;
+  on a route not yet verified, the route's one capability check; a route held
+  after a provider rejection (today Buffer TikTok short-video,
+  `social/tools/buffer.json`) releases no check and holds until its recheck
+  condition changes;
 - no decline in the go-live ledger still unmatched to its plan, and no
   `concept_hold`.
 

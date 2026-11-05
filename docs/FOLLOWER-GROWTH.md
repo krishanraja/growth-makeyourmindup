@@ -22,14 +22,19 @@ today Substack Notes and memes; Content Engine owns every other format.
 4. For IG/FB, pair distribution and plan native Story continuation; check real
    platform presentation and actual interactive capabilities. For X, make one
    concrete finding legible in the feed. For TikTok/YouTube, select an accepted
-   native photo/video edition and a clear first-view promise. Test distribution
+   native photo/video edition and a clear first-view promise (TikTok video goes
+   through the native uploader while Buffer TikTok video is held, lesson
+   `tiktok-buffer-video-hold`). Test distribution
    ideas against actual performance rather than declaring universal best times.
 5. On LinkedIn, find a small number of relevant, publicly active professional
    voices and source-verified posts. Offer a sincere, non-salesy response worth
    Krish's time, safely prepared for his own final click. No automatic engagement.
+   The Engagement engine owns this (`jobs/engagement.md`).
 6. Improve discoverability and follow/subscribe continuation with authorised
    metadata/link repairs. Bio, pin, positioning and creative changes still need
-   approval. Propose collaborations and other relationship work as exact drafts.
+   approval. Propose collaborations and other relationship work as exact drafts;
+   the Acquisition engine owns them (`jobs/acquisition.md`), and Krish enacts
+   them in his own Codex sessions, never through Control Center.
 7. Run one clearly defined growth test at a time per channel: hypothesis, changed
    variable, baseline/comparator, window, meaningful result and next decision.
    Measure follows/profile visits/shares/saves/retention where exposed, and source-
