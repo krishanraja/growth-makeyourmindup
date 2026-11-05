@@ -16,16 +16,61 @@ Growth also produces, in Canva, the formats content-engine does not cover
 (today Substack Notes and memes; `docs/ENGINE-BOUNDARY.md`, "the Canva
 lane"). Content-engine keeps every other format and all production standards.
 
+**Current (5 November 2026).** The work runs as four engines, one per
+session: Acquisition, Engagement, Publishing, and Measurement and
+Allocation ([Four engines](#four-engines) below; AGENTS.md, "Four engines").
+Make Your Mind Up outreach (shows, newsletters, creators, editorial
+features, swaps and partners) is this engine's, owned by Acquisition, and
+social engagement is Engagement's. Krish enacts both in his own Codex
+sessions on the exact payload he approves; only Mindmake's outreach stays
+with Control Center (AGENTS.md, "Outreach for Make Your Mind Up"). Through
+the shadow week the nine automations, the daily heartbeat
+([jobs/daily-growth.md](jobs/daily-growth.md)) and the GitHub workflows keep
+running unchanged.
+
+## Four engines
+
+Krish opens a Codex session with "Run Acquisition", "Run Engagement", "Run
+Publishing" or "Run Measurement". That session is that engine only and
+follows its job file: [jobs/acquisition.md](jobs/acquisition.md),
+[jobs/engagement.md](jobs/engagement.md),
+[jobs/publishing.md](jobs/publishing.md) or
+[jobs/measurement.md](jobs/measurement.md). Each engine's contract is
+`engines/<name>.json`; its committed, privacy-safe records are
+`engines/records/<name>.jsonl`; exact words, recipients, post URLs and
+session links stay in the ignored `.scratch/engines/`. The spec is
+[docs/reviews/2026-11-05-growth-engine-review.md](docs/reviews/2026-11-05-growth-engine-review.md).
+
+```powershell
+python growth.py engine start NAME [--session LINK]
+python growth.py engine check
+python growth.py engine show NAME [ID]
+python growth.py engine history NAME ID
+python growth.py engine handoff FROM TO --what TEXT --why TEXT [--link ID]
+python growth.py engine done NAME ID --note TEXT [--next TEXT]
+python growth.py engine close NAME --learnings FILE
+python growth.py engine session set|show|clear ENGINE [LINK]
+```
+
+`start` recovers the queue, inbound handoffs and the last sessions'
+learnings; with `--session` it also records this session's own link.
+`handoff` prints the question for Krish ("Do you have a session running for
+the X engine? ...") and the exact message for that session. `done` on a
+handoff prints the report-back for the session that sent it. `close`
+refuses to close without specific "better next time" learnings.
+
 ## Lanes: what runs alone and what needs Krish
 
 [docs/LANES.md](docs/LANES.md) says, in plain words, what runs on its own
 (L0 GitHub Actions), what waits for one press in Control Center (L2) and
 what waits for Krish's hands (L3: LinkedIn, the Buffer plan, one-time set-up
-in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs seven
-workflows: control-center, release, measure, keys, handoff, artdirect, maker
-([docs/MAKER.md](docs/MAKER.md)) and check. There
+in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs nine
+workflows: control-center, release, measure, keys, handoff, check, artdirect,
+maker ([docs/MAKER.md](docs/MAKER.md)) and ledger. There
 are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct
-2026): a new schedule is a GitHub Actions job. Making (Canva assets, words,
+2026): a new schedule is a GitHub Actions job. His one exception that day is
+the daily credits session in `lanes.json` (`claude_sessions`,
+[docs/CREDITS.md](docs/CREDITS.md)). Making (Canva assets, words,
 Buffer drafts) is done by sessions and the nine automations on Krish's PC
 (below, kept until W46) under the same walls, and follows
 [docs/TASTE.md](docs/TASTE.md). Only the GitHub
@@ -92,9 +137,9 @@ python growth.py export .scratch/envelope.json --out .scratch/legacy-pack.json
 python growth.py post .scratch/envelope.json
 ```
 
-The last command is a dry run. No Control Centre write happens without
+The last command is a dry run. No Control Center write happens without
 `--deliver`, which is reserved for a separately authorised scheduled run.
-This implementation session does not deliver packs or change Control Centre.
+An interactive session never delivers packs or changes Control Center.
 The supported legacy API drops rich metadata, so full records stay local
 until the handoff is implemented. No database fallback exists.
 
@@ -103,8 +148,11 @@ until the handoff is implemented. No database fallback exists.
 Every scheduled job starts with `python growth.py cc start --job KIND --deliver`
 and ends with `python growth.py cc finish --job KIND ... --deliver`: the growth
 engine protocol loop (attempt, directive, report with a digest readback,
-decisions, attempt end). Each selected draft goes to Krish as a proposal with
-its exact words; the engine never posts or sends. Without `--deliver` both are
+decisions, attempt end). Each selected post or comment draft goes to Krish as
+a proposal with its exact words. Pitches, partners and swaps never go to
+Control Center: `cc finish` holds them, because Make Your Mind Up outreach is
+this engine's own. The loop itself never posts or sends; only an approved
+go-live does, through the go-live step. Without `--deliver` both are
 local dry runs. Control Center also wakes `.github/workflows/control-center.yml`
 every morning; that runner checks the engine offline and reports what it can
 see. Details: [docs/ENGINE.md](docs/ENGINE.md), "Reporting to Control Center",
@@ -139,7 +187,7 @@ changes follow New York, rather than storing a one-time local conversion.
 | Report | Sun 07:00 | `Run jobs/report.md as AGENTS.md says.` |
 
 `python growth.py doctor` separately checks public-feed and authenticated
-Control Centre read access. It does not prove signed-in social insights are
+Control Center read access. It does not prove signed-in social insights are
 available. Those access states are captured per observation. Existing
 `GROWTH_ENGINE_TOKEN` setup is described in `docs/KEY.md`; do not regenerate
 an already configured secret. GitHub secrets cannot be read back.

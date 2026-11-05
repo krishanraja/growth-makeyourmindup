@@ -2,6 +2,8 @@
 
 When Krish opens this repository and says "Get going", this is the work. AGENTS.md says how to use it; this file says what to do. Written 2026-10-19 by Control Center, from this engine's first live reports.
 
+**Current (5 November 2026).** A session Krish opens with "Run Acquisition", "Run Engagement", "Run Publishing" or "Run Measurement" is that engine and follows its job file, not this one (AGENTS.md, "Four engines"). "Get going" still means the build below. Make Your Mind Up outreach is this engine's, never Control Center's (AGENTS.md, "Outreach for Make Your Mind Up"). The dated sections below ("Where things stand (2026-10-19)", "This engine") are the brief as first written.
+
 ## What "Get going" does
 
 1. Read AGENTS.md to the end (it records Krish's rulings), then docs/NORTH_STAR.md. Say in one line which part of the North Star this run moves.

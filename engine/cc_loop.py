@@ -836,7 +836,7 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
             holds.append({'reason': 'Over the ten proposals one report carries', 'detail': item['item_id']})
             continue
         if (item.get('pack_kind') or job) in CONTROL_CENTER_OWNS:
-            holds.append({'reason': OWNED_REASON, 'detail': item.get('item_id', '?') + ': open People in Control Center'})
+            holds.append({'reason': OWNED_REASON, 'detail': item.get('item_id', '?') + ': in the Acquisition queue (jobs/acquisition.md); Krish sends it from his Codex session'})
             continue
         try:
             proposals.append(item_proposal(item, job, evidence))

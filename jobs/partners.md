@@ -1,5 +1,13 @@
 # Job: partners
 
+**Current (5 November 2026).** This outreach is this engine's own and feeds
+the Acquisition engine (`jobs/acquisition.md`; `AGENTS.md`, "Outreach for Make
+Your Mind Up"). Its pack never goes to Control Center: `cc finish` holds it
+with the reason "Make Your Mind Up outreach is this engine's own, enacted in
+Krish's Codex sessions; it never goes to Control Center", and `post --deliver`
+refuses it. This job drafts; Krish sends in his own Codex session, on the
+exact draft he approves.
+
 Kind `partners`. Read the shared instructions and `docs/ENGINE.md`. Map
 quality matters more than a quota. This work shares the day's budget.
 
@@ -27,7 +35,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
 5. Update the list with a stable person ID, sourced facts and `drafted`
    status only. Commit actual list changes under `AGENTS.md`. Prepare a v2
    envelope, merge today's queue, then apply the delivery boundary.
-6. Last, report to Control Center with this run's actual file names:
+6. Last, report the run to Control Center (its drafts are held there, not
+   proposed) with this run's actual file names:
    `python growth.py cc finish --job partners --envelope .scratch/partners.json --queue .scratch/queue.json --deliver`.
    It must print "readback digest matches" and "attempt succeeded". If it
    prints a failure code instead, name that code in the final message.
