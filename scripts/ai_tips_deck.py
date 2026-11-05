@@ -56,7 +56,8 @@ def check_week(week, others=()):
     day = dt.date.fromisoformat(week['date'])
     jobs = week.get('jobs', [])
     # Buffer takes at most ten cards a carousel, cover and close included (Krish, 5 Nov 2026).
-    if not 5 <= len(jobs) <= MAX_CARDS - 2:
+    # From 6 Nov 2026; the 5 Nov edition went out natively at twelve cards.
+    if not 5 <= len(jobs) <= (10 if day <= dt.date(2026, 11, 5) else MAX_CARDS - 2):
         errs.append('jobs: %d, want 5 to %d (a cover and a close make at most %d cards)' % (len(jobs), MAX_CARDS - 2, MAX_CARDS))
     for n, j in enumerate(jobs, 1):
         at = 'job %d' % n
@@ -108,7 +109,7 @@ def build_jobs(week, assets):
             credits['step%d' % k] = step['credit']
     out = [dict(template='piece:%s/%s' % (KIT, template), out='00-cover.png', fields=cover, credits=credits)]
     for n, j in enumerate(week['jobs'], 1):
-        f = dict(count='%02d / %02d' % (n, total), headline=j['headline'], accent=j['accent'],
+        f = dict(headline=j['headline'], accent=j['accent'],
                  shot=str(a / j['image']['file']), steps=[[str(i), s] for i, s in enumerate(j['steps'], 1)])
         f['try'] = j['prompt']
         cr = {'shot': j['image']['credit']}

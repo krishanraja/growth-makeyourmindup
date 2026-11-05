@@ -33,7 +33,6 @@
       "width": 1080,
       "height": 1350,
       "fields": {
-        "count": "text",
         "logo1": "photo",
         "logo2": "photo",
         "logo3": "photo",
@@ -45,7 +44,6 @@
         "steps": "rows"
       },
       "required": [
-        "count",
         "logo1",
         "headline",
         "accent",
@@ -54,7 +52,6 @@
         "steps"
       ],
       "example": {
-        "count": "01 / 10",
         "logo1": "The first tool logo",
         "headline": "The job in a few words",
         "accent": "The payoff in a few words",

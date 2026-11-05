@@ -30,21 +30,18 @@
       "width": 1080,
       "height": 1350,
       "fields": {
-        "count": "text",
         "photo": "photo",
         "headline": "text",
         "accent": "text",
         "line": "text"
       },
       "required": [
-        "count",
         "photo",
         "headline",
         "accent",
         "line"
       ],
       "example": {
-        "count": "01 / 05",
         "photo": "The local story photograph",
         "headline": "Who it happened to",
         "accent": "What AI changed for them",

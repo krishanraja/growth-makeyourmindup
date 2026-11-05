@@ -14,8 +14,7 @@ html, body { background: var(--ink-deep); }
 .cover .glowline { width: 640px; height: 4px; background: linear-gradient(to right, transparent, var(--mint), transparent); }
 
 /* Tip: the job, the tools that do it, the real screen, one prompt to try, three steps. */
-.count { position: absolute; left: 60px; top: 58px; font-family: var(--mono); font-weight: 500; font-size: 30px; color: var(--mint); }
-.works { position: absolute; right: 60px; top: 44px; height: 72px; display: flex; align-items: center; gap: 12px; }
+.works { position: absolute; left: 60px; right: 60px; justify-content: center; top: 44px; height: 72px; display: flex; align-items: center; gap: 12px; }
 .works .key { font-family: var(--mono); font-size: 24px; color: var(--cream); margin-right: 6px; }
 .tile { flex: none; width: 72px; height: 72px; border-radius: 18px; background: var(--cream); display: flex; align-items: center; justify-content: center; }
 .tile:empty { display: none; }

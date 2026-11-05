@@ -142,6 +142,17 @@ class TemplatesExist(unittest.TestCase):
             self.assertEqual(text.count('brandmark'), 1)
             self.assertNotIn('brandmark corner', text)
 
+    def test_no_carousel_card_is_numbered(self):
+        # Ruling (Krish, 2026-11-05): "If we can avoid having numbered cards in the top left corner in the future, that
+        # would be helpful as well, because then we can just slice out cards at will a lot more easily without it
+        # looking weird. That goes for all carousels."
+        texts = [template_text(manifest()['templates'][t]) for t in ('carousel-cover', 'carousel-body', 'carousel-close')]
+        texts += [(ROOT / 'render' / 'pieces' / k / 'templates' / f).read_text()
+                  for k, f in (('ai-tips-screen', 'tip.html'), ('off-sat-goodnews', 'item.html'))]
+        for text in texts:
+            for field in ('{{count}}', '{{page}}', '{{rank}}'):
+                self.assertNotIn(field, text)
+
     def test_the_good_news_close_is_fixed(self):
         # Ruling (Krish, 2026-11-05): the final card for all good news carousels permanently, option A: that week's
         # five people, then "If this inspires you to / MAKE THE WORLD BETTER / by combining your ideas + AI,"

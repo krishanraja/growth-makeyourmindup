@@ -55,8 +55,8 @@ class Shape(unittest.TestCase):
 
     def test_more_than_ten_cards_fails(self):
         # Buffer takes at most ten cards, cover and close included (Krish, 5 Nov 2026).
-        self.assertEqual(deck.check_week(week(jobs=8)), [])
-        self.assertTrue(any('at most 10 cards' in e for e in deck.check_week(week(jobs=9))))
+        self.assertEqual(deck.check_week(week('2026-11-12', jobs=8)), [])
+        self.assertTrue(any('at most 10 cards' in e for e in deck.check_week(week('2026-11-12', jobs=9))))
 
     def test_two_steps_fail(self):
         w = week()
@@ -118,10 +118,11 @@ class Paint(unittest.TestCase):
         errs = deck.check_paint([dict(out='01-tip.png', colours=['#0C1512', '#FFD84D'], fonts=['Anton', 'Arial'])])
         self.assertEqual(len(errs), 2)
 
-    def test_jobs_use_the_kit_and_number_the_cards(self):
+    def test_jobs_use_the_kit_and_carry_no_card_number(self):
+        # Krish, 5 Nov 2026: no numbered cards, so cards can be sliced out at will.
         jobs = deck.build_jobs(week(), '/assets')
         self.assertEqual([j['out'] for j in jobs][:2], ['00-cover.png', '01-tip.png'])
-        self.assertEqual(jobs[1]['fields']['count'], '01 / 05')
+        self.assertNotIn('count', jobs[1]['fields'])
         self.assertEqual(jobs[1]['template'], 'piece:ai-tips-screen/tip')
         self.assertEqual(jobs[-1]['out'], '06-close.png')
 

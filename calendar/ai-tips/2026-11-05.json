@@ -1,350 +1,106 @@
 {
  "date": "2026-11-05",
- "note": "The first AI-tips carousel, posted Thu 5 Nov 2026 in place of an off-day video. Images live outside this public repository; paths are relative to the --assets folder. Cut to eight tips on 5 Nov to fit Buffer's ten-card limit.",
+ "note": "The first AI-tips carousel, posted Thu 5 Nov 2026 in place of an off-day video. Images live outside this public repository; paths are relative to the --assets folder.",
  "cover": {
   "headline": "What could you",
   "accent": "hand to AI this week?",
-  "dek": "Eight jobs AI does well now. Swipe for the tools and exactly where to click.",
-  "scene": {
-   "file": "covers/hourglass.png",
-   "credit": "Higgsfield GPT Image 2.5, job 13d812cf, record beside the file"
-  },
+  "dek": "Ten jobs AI does well now. Swipe for the tools and exactly where to click.",
+  "scene": {"file": "covers/hourglass.png", "credit": "Higgsfield GPT Image 2.5, job 13d812cf, record beside the file"},
   "flow": [
-   {
-    "file": "shots/flow_search.png",
-    "label": "A quick search",
-    "credit": "Owner screenshot"
-   },
-   {
-    "file": "shots/flow_sources.png",
-    "label": "22 sources found in seconds",
-    "credit": "Owner screenshot"
-   },
-   {
-    "file": "shots/flow_player.png",
-    "label": "An AI podcast, ready to play",
-    "credit": "Owner screenshot"
-   }
+   {"file": "shots/flow_search.png", "label": "A quick search", "credit": "Owner screenshot"},
+   {"file": "shots/flow_sources.png", "label": "22 sources found in seconds", "credit": "Owner screenshot"},
+   {"file": "shots/flow_player.png", "label": "An AI podcast, ready to play", "credit": "Owner screenshot"}
   ]
  },
  "jobs": [
-  {
-   "label": "Long threads",
-   "headline": "Catch up on a long thread",
-   "accent": "in seconds",
+  {"label": "Long threads", "headline": "Catch up on a long thread", "accent": "in seconds",
    "tools": [
-    {
-     "name": "Copilot in Outlook",
-     "logo": "copilot",
-     "url": "support.microsoft.com/en-us/outlook/copilot-pages/summarize-an-email-thread-with-copilot-in-outlook",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Gemini in Gmail",
-     "logo": "gmail",
-     "url": "support.google.com/mail/answer/16561387",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Claude",
-     "logo": "claude",
-     "url": "support.claude.com/en/articles/10166901",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "ChatGPT",
-     "logo": "chatgpt",
-     "url": "help.openai.com/en/articles/10408842",
-     "checked": "2026-11-05"
-    }
-   ],
+    {"name": "Copilot in Outlook", "logo": "copilot", "url": "support.microsoft.com/en-us/outlook/copilot-pages/summarize-an-email-thread-with-copilot-in-outlook", "checked": "2026-11-05"},
+    {"name": "Gemini in Gmail", "logo": "gmail", "url": "support.google.com/mail/answer/16561387", "checked": "2026-11-05"},
+    {"name": "Claude", "logo": "claude", "url": "support.claude.com/en/articles/10166901", "checked": "2026-11-05"},
+    {"name": "ChatGPT", "logo": "chatgpt", "url": "help.openai.com/en/articles/10408842", "checked": "2026-11-05"}],
    "prompt": "Give me a detailed summary of this email thread.",
-   "steps": [
-    "Open the email thread",
-    "Tap the AI summary button",
-    "Ask what you need to reply"
-   ],
-   "image": {
-    "file": "shots/final01.png",
-    "tool": "Gemini in Gmail",
-    "shows": "Gemini summarising an email thread in Gmail",
-    "credit": "Vendor image, support.google.com/mail/answer/16561387"
-   }
-  },
-  {
-   "label": "Meeting notes",
-   "headline": "Never take meeting notes",
-   "accent": "again",
+   "steps": ["Open the email thread", "Tap the AI summary button", "Ask what you need to reply"],
+   "image": {"file": "shots/final01.png", "tool": "Gemini in Gmail", "shows": "Gemini summarising an email thread in Gmail", "credit": "Vendor image, support.google.com/mail/answer/16561387"}},
+  {"label": "Meeting notes", "headline": "Never take meeting notes", "accent": "again",
    "tools": [
-    {
-     "name": "Teams recap",
-     "logo": "copilot",
-     "url": "support.microsoft.com/en-us/teams/meetings/recap-in-microsoft-teams",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Google Meet",
-     "logo": "meet",
-     "url": "support.google.com/meet/answer/14754931",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Zoom",
-     "logo": "zoom",
-     "url": "support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0058013",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "ChatGPT Record",
-     "logo": "chatgpt",
-     "url": "help.openai.com/en/articles/11487532",
-     "checked": "2026-11-05"
-    }
-   ],
+    {"name": "Teams recap", "logo": "copilot", "url": "support.microsoft.com/en-us/teams/meetings/recap-in-microsoft-teams", "checked": "2026-11-05"},
+    {"name": "Google Meet", "logo": "meet", "url": "support.google.com/meet/answer/14754931", "checked": "2026-11-05"},
+    {"name": "Zoom", "logo": "zoom", "url": "support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0058013", "checked": "2026-11-05"},
+    {"name": "ChatGPT Record", "logo": "chatgpt", "url": "help.openai.com/en/articles/11487532", "checked": "2026-11-05"}],
    "prompt": "List the decisions, owners and deadlines from this meeting.",
-   "steps": [
-    "Turn on AI notes before the call",
-    "Run the meeting as normal",
-    "Open the recap afterwards"
-   ],
-   "image": {
-    "file": "shots/final02.png",
-    "tool": "Teams recap",
-    "shows": "A Teams meeting recap with notes and tasks",
-    "credit": "Vendor image, the Teams recap help page"
-   }
-  },
-  {
-   "label": "Spreadsheets",
-   "headline": "Fix a spreadsheet",
-   "accent": "without formulas",
+   "steps": ["Turn on AI notes before the call", "Run the meeting as normal", "Open the recap afterwards"],
+   "image": {"file": "shots/final02.png", "tool": "Teams recap", "shows": "A Teams meeting recap with notes and tasks", "credit": "Vendor image, the Teams recap help page"}},
+  {"label": "Meeting prep", "headline": "Prep for any meeting", "accent": "in two minutes",
    "tools": [
-    {
-     "name": "Claude for Google Workspace (beta)",
-     "logo": "claude",
-     "url": "support.claude.com/en/articles/16951679",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Gemini in Sheets",
-     "logo": "google",
-     "url": "support.google.com/docs/answer/14356410",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Copilot in Excel",
-     "logo": "copilot",
-     "url": "support.microsoft.com/en-us/excel/copilot/data-insights-with-copilot-in-excel",
-     "checked": "2026-11-05"
-    }
-   ],
+    {"name": "Copilot", "logo": "copilot", "url": "support.microsoft.com/en-us/outlook/prepare-for-your-meeting-with-copilot", "checked": "2026-11-05"},
+    {"name": "Gemini", "logo": "google", "url": "support.google.com/gemini/answer/15305236", "checked": "2026-11-05"},
+    {"name": "Claude", "logo": "claude", "url": "support.claude.com/en/articles/10166901", "checked": "2026-11-05"},
+    {"name": "ChatGPT", "logo": "chatgpt", "url": "help.openai.com/en/articles/10408842", "checked": "2026-11-05"}],
+   "prompt": "Prepare me for this meeting: who is coming and what they need from me.",
+   "steps": ["Connect your calendar and email", "Name the meeting", "Ask for a one-page brief"],
+   "image": {"file": "shots/final03.png", "tool": "Copilot", "shows": "Copilot preparing a brief for a meeting", "credit": "Vendor image, the Copilot meeting prep help page"}},
+  {"label": "Spreadsheets", "headline": "Fix a spreadsheet", "accent": "without formulas",
+   "tools": [
+    {"name": "Claude for Google Workspace (beta)", "logo": "claude", "url": "support.claude.com/en/articles/16951679", "checked": "2026-11-05"},
+    {"name": "Gemini in Sheets", "logo": "google", "url": "support.google.com/docs/answer/14356410", "checked": "2026-11-05"},
+    {"name": "Copilot in Excel", "logo": "copilot", "url": "support.microsoft.com/en-us/excel/copilot/data-insights-with-copilot-in-excel", "checked": "2026-11-05"}],
    "prompt": "Make a chart of revenue by segment, then explain the trend.",
-   "steps": [
-    "Open the AI sidebar in your sheet",
-    "Say what to fix",
-    "Check each change it makes"
-   ],
-   "image": {
-    "file": "shots/final04.png",
-    "shows": "Claude in Google Sheets making a chart of revenue",
-    "credit": "Vendor image, support.claude.com/en/articles/16951679"
-   }
-  },
-  {
-   "label": "Research",
-   "headline": "Get a researched answer",
-   "accent": "with every source",
+   "steps": ["Open the AI sidebar in your sheet", "Say what to fix", "Check each change it makes"],
+   "image": {"file": "shots/final04.png", "shows": "Claude in Google Sheets making a chart of revenue", "credit": "Vendor image, support.claude.com/en/articles/16951679"}},
+  {"label": "Research", "headline": "Get a researched answer", "accent": "with every source",
    "tools": [
-    {
-     "name": "ChatGPT deep research",
-     "logo": "chatgpt",
-     "url": "help.openai.com/en/articles/10500283",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Claude",
-     "logo": "claude",
-     "url": "support.claude.com/en/articles/11088861",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Gemini",
-     "logo": "google",
-     "url": "support.google.com/gemini/answer/15719111",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Perplexity",
-     "logo": "perplexity",
-     "url": "perplexity.ai/help-center/en/articles/10352895",
-     "checked": "2026-11-05"
-    }
-   ],
+    {"name": "ChatGPT deep research", "logo": "chatgpt", "url": "help.openai.com/en/articles/10500283", "checked": "2026-11-05"},
+    {"name": "Claude", "logo": "claude", "url": "support.claude.com/en/articles/11088861", "checked": "2026-11-05"},
+    {"name": "Gemini", "logo": "google", "url": "support.google.com/gemini/answer/15719111", "checked": "2026-11-05"},
+    {"name": "Perplexity", "logo": "perplexity", "url": "perplexity.ai/help-center/en/articles/10352895", "checked": "2026-11-05"}],
    "prompt": "Give me everything I need to know about AI pricing for my business.",
-   "steps": [
-    "Pick the research mode",
-    "Ask one clear question",
-    "Check the sources it cites"
-   ],
-   "image": {
-    "file": "shots/final05.png",
-    "shows": "A cited research answer on AI pricing for a business",
-    "credit": "Owner screenshot"
-   }
-  },
-  {
-   "label": "Forms",
-   "headline": "Hand off the forms",
-   "accent": "to a browser agent",
+   "steps": ["Pick the research mode", "Ask one clear question", "Check the sources it cites"],
+   "image": {"file": "shots/final05.png", "shows": "A cited research answer on AI pricing for a business", "credit": "Owner screenshot"}},
+  {"label": "Dashboards", "headline": "Turn your data", "accent": "into a live dashboard",
    "tools": [
-    {
-     "name": "Claude in Chrome (beta)",
-     "logo": "claude",
-     "url": "support.claude.com/en/articles/12012173",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "ChatGPT agent",
-     "logo": "chatgpt",
-     "url": "help.openai.com/en/articles/11752874",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Gemini in Chrome (US only)",
-     "logo": "google",
-     "url": "support.google.com/chrome/answer/16821166",
-     "checked": "2026-11-05"
-    }
-   ],
+    {"name": "Claude Dashboards (beta)", "logo": "claude", "url": "support.claude.com/en/articles/17454700", "checked": "2026-11-05"},
+    {"name": "Copilot in Power BI", "logo": "copilot", "url": "learn.microsoft.com/en-us/power-bi/create-reports/copilot-create-reports", "checked": "2026-11-05"}],
+   "prompt": "Make a dashboard from a year of our ride data.",
+   "steps": ["Connect your data source", "Ask for a dashboard", "Share the link"],
+   "image": {"file": "shots/final06.png", "shows": "Claude building a dashboard from ride data", "credit": "Vendor image, support.claude.com/en/articles/17454700"}},
+  {"label": "Forms", "headline": "Hand off the forms", "accent": "to a browser agent",
+   "tools": [
+    {"name": "Claude in Chrome (beta)", "logo": "claude", "url": "support.claude.com/en/articles/12012173", "checked": "2026-11-05"},
+    {"name": "ChatGPT agent", "logo": "chatgpt", "url": "help.openai.com/en/articles/11752874", "checked": "2026-11-05"},
+    {"name": "Gemini in Chrome (US only)", "logo": "google", "url": "support.google.com/chrome/answer/16821166", "checked": "2026-11-05"}],
    "prompt": "Fill in the billing details from this statement. Stop before submitting.",
-   "steps": [
-    "Add the browser agent",
-    "Open the form and ask",
-    "Check it, then submit"
-   ],
-   "image": {
-    "file": "shots/final07.png",
-    "shows": "Claude in Chrome filling in billing details",
-    "credit": "Vendor image, support.claude.com/en/articles/12012173"
-   }
-  },
-  {
-   "label": "Morning briefing",
-   "headline": "Get a briefing",
-   "accent": "before you start work",
+   "steps": ["Add the browser agent", "Open the form and ask", "Check it, then submit"],
+   "image": {"file": "shots/final07.png", "shows": "Claude in Chrome filling in billing details", "credit": "Vendor image, support.claude.com/en/articles/12012173"}},
+  {"label": "Morning briefing", "headline": "Get a briefing", "accent": "before you start work",
    "tools": [
-    {
-     "name": "ChatGPT tasks",
-     "logo": "chatgpt",
-     "url": "help.openai.com/en/articles/10291617",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Claude",
-     "logo": "claude",
-     "url": "support.claude.com/en/articles/13854387",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Gemini",
-     "logo": "google",
-     "url": "support.google.com/gemini/answer/16316416",
-     "checked": "2026-11-05"
-    }
-   ],
+    {"name": "ChatGPT tasks", "logo": "chatgpt", "url": "help.openai.com/en/articles/10291617", "checked": "2026-11-05"},
+    {"name": "Claude", "logo": "claude", "url": "support.claude.com/en/articles/13854387", "checked": "2026-11-05"},
+    {"name": "Gemini", "logo": "google", "url": "support.google.com/gemini/answer/16316416", "checked": "2026-11-05"}],
    "prompt": "Every morning at 9am, email me the most important things to get done today.",
-   "steps": [
-    "Describe the briefing you want",
-    "Set it to repeat each morning",
-    "Turn on notifications"
-   ],
-   "image": {
-    "file": "shots/final08.png",
-    "shows": "A scheduled task that emails a morning list of things to get done",
-    "credit": "Owner screenshot, private lines blurred"
-   }
-  },
-  {
-   "label": "Voice notes",
-   "headline": "Talk your thoughts",
-   "accent": "into a plan",
+   "steps": ["Describe the briefing you want", "Set it to repeat each morning", "Turn on notifications"],
+   "image": {"file": "shots/final08.png", "shows": "A scheduled task that emails a morning list of things to get done", "credit": "Owner screenshot, private lines blurred"}},
+  {"label": "Voice notes", "headline": "Talk your thoughts", "accent": "into a plan",
    "tools": [
-    {
-     "name": "Wispr Flow",
-     "logo": "wispr",
-     "url": "wisprflow.ai",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "ChatGPT voice",
-     "logo": "chatgpt",
-     "url": "help.openai.com/en/articles/20001274",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "Claude voice",
-     "logo": "claude",
-     "url": "support.claude.com/en/articles/11101966",
-     "checked": "2026-11-05"
-    }
-   ],
+    {"name": "Wispr Flow", "logo": "wispr", "url": "wisprflow.ai", "checked": "2026-11-05"},
+    {"name": "ChatGPT voice", "logo": "chatgpt", "url": "help.openai.com/en/articles/20001274", "checked": "2026-11-05"},
+    {"name": "Claude voice", "logo": "claude", "url": "support.claude.com/en/articles/11101966", "checked": "2026-11-05"}],
    "prompt": "What is the most strategic, smart way to spend initial money tomorrow?",
-   "steps": [
-    "Voice note your thinking anywhere",
-    "Send it to your AI tool",
-    "Ask for a plan with owners"
-   ],
-   "image": {
-    "file": "shots/final09.png",
-    "shows": "A dictated question on the smartest way to spend money tomorrow",
-    "credit": "Owner screenshot"
-   }
-  },
-  {
-   "label": "Audio briefs",
-   "headline": "Listen to your reading",
-   "accent": "on the way to work",
+   "steps": ["Voice note your thinking anywhere", "Send it to your AI tool", "Ask for a plan with owners"],
+   "image": {"file": "shots/final09.png", "shows": "A dictated question on the smartest way to spend money tomorrow", "credit": "Owner screenshot"}},
+  {"label": "Audio briefs", "headline": "Listen to your reading", "accent": "on the way to work",
    "tools": [
-    {
-     "name": "Gemini Notebook",
-     "logo": "google",
-     "url": "support.google.com/gemininotebook/answer/16212820",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "ChatGPT read aloud",
-     "logo": "chatgpt",
-     "url": "help.openai.com/en/articles/8142208",
-     "checked": "2026-11-05"
-    },
-    {
-     "name": "ElevenReader",
-     "logo": "elevenreader",
-     "url": "elevenreader.io",
-     "checked": "2026-11-05"
-    }
-   ],
+    {"name": "Gemini Notebook", "logo": "google", "url": "support.google.com/gemininotebook/answer/16212820", "checked": "2026-11-05"},
+    {"name": "ChatGPT read aloud", "logo": "chatgpt", "url": "help.openai.com/en/articles/8142208", "checked": "2026-11-05"},
+    {"name": "ElevenReader", "logo": "elevenreader", "url": "elevenreader.io", "checked": "2026-11-05"}],
    "prompt": "Turn these 22 sources into a short audio brief I can play on the go.",
-   "steps": [
-    "Add your sources",
-    "Click Audio Overview",
-    "Press play on the way"
-   ],
-   "image": {
-    "file": "shots/final10.png",
-    "shows": "Gemini Notebook turning sources into an audio overview",
-    "credit": "Owner screenshot"
-   }
-  }
+   "steps": ["Add your sources", "Click Audio Overview", "Press play on the way"],
+   "image": {"file": "shots/final10.png", "shows": "Gemini Notebook turning sources into an audio overview", "credit": "Owner screenshot"}}
  ],
- "close": {
-  "headline": "Pick one job.",
-  "accent": "Try it this week.",
-  "line": "Save this post. Links and dates for every tool are in the caption."
- },
+ "close": {"headline": "Pick one job.", "accent": "Try it this week.", "line": "Save this post. Links and dates for every tool are in the caption."},
  "caption": {
-  "intro": "Eight jobs you can hand to AI this week. Pick one and try it before Friday.\n\nMost of these work in more than one tool, so use the one you already pay for. Send this to the colleague who still takes meeting notes by hand.",
-  "outro": "Some need a paid plan or a work licence. Screenshots on cards 1, 2, 3 and 5 come from each vendor's own help pages.",
+  "intro": "Ten jobs you can hand to AI this week. Pick one and try it before Friday.\n\nMost of these work in more than one tool, so use the one you already pay for. Send this to the colleague who still takes meeting notes by hand.",
+  "outro": "Some need a paid plan or a work licence. Screenshots on cards 1, 2, 3, 4, 6 and 7 come from each vendor's own help pages.",
   "tags": "#AI #productivity #futureofwork"
  }
 }
