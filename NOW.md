@@ -22,9 +22,9 @@ The makeyourmindup growth engine: it drafts the posts that bring new readers to 
 
 Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
 
-## Where it is right now (as of 2026-10-29)
+## Where it is right now (as of 2026-11-05)
 
-<!-- north-star-state {"week_of": "2026-10-26", "week_target": 25, "current": 0, "current_as_of": "2026-10-30", "current_source": "Substack Growth sources, new subscribers, 7 days (2026-10-23 to 2026-10-30), read 2026-10-30: all sources 0, organic not classified", "urgency": 4, "urgency_reason": "0 of 25; under two fifths"} --> **North Star number: U4, far behind.** 0 of 25 new publication subscribers this week from organic posts and shares, read on 30 October 2026.
+<!-- north-star-state {"week_of": "2026-11-02", "week_target": 86, "current": 1, "current_as_of": "2026-11-05", "current_source": "Substack Growth sources, new subscribers, 7 days to 2026-11-05, read 2026-11-05 in Krish's working copy and recorded in docs/reviews/2026-11-05-growth-engine-review.md: all sources 1, under Substack then its child category Notes, counted once; organic not classified; the Note and any outreach link unknown", "urgency": 5, "urgency_reason": "1 of 86; under two fifths two weeks running"} --> **North Star number: U5, stalled.** 1 of 86 new publication subscribers this week from organic posts and shares, read on 5 November 2026.
 
 Lifecycle: live. The detail is in `README.md`.
 
