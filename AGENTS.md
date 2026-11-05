@@ -222,6 +222,23 @@ Krish: "only Outreach for MindMake belongs to Control Center, alongside visibili
 
 So outreach for Make Your Mind Up (shows, newsletters, creators, editorial features, swaps and partners) is this engine's, owned by the Acquisition engine (`jobs/acquisition.md`, "Four engines" below). Social engagement is the Engagement engine's. Krish enacts both in his own Codex sessions, in the browser or through connectors, on the exact draft he approves: an approval binds sender, recipient, channel, subject, body and links, and a redirected recipient needs a fresh decision. None of it goes to Control Center: `growth.py cc finish` still holds pitches, partners and swaps packs and `post --deliver` refuses them, now with the reason "Make Your Mind Up outreach is this engine's own, enacted in Krish's Codex sessions; it never goes to Control Center". Mindmake's own outreach, visibility, networking, events and partners stay with Control Center. This supersedes the 2026-10-21 ruling that Control Center's People and Visibility own this show's outreach. Rule 1 below is unchanged for scheduled jobs and for sessions Krish is not driving: they draft, he acts. His list in Control Center also shows one of this engine's asks at a time, a go-live first, then a check-in, then a plan, so never add a second ask of a kind that already waits.
 
+## Four engines (built 2026-11-05, shadow week)
+
+From `docs/reviews/2026-11-05-growth-engine-review.md`. When Krish opens a Codex session with one of these requests, that session is that engine and nothing else. It follows the job file, and the job file's first command recovers its queue, inbound handoffs and the last sessions' learnings from the shared records in `engines/records/`:
+
+| Krish says | Job | First command |
+|---|---|---|
+| Run Acquisition | `jobs/acquisition.md` | `python growth.py engine start acquisition` |
+| Run Engagement | `jobs/engagement.md` | `python growth.py engine start engagement` |
+| Run Publishing | `jobs/publishing.md` | `python growth.py engine start publishing` |
+| Run Measurement | `jobs/measurement.md` | `python growth.py engine start measurement` |
+
+Krish, 2026-11-05: "Ensure every new session I run with this engine automatically reports back its learnings: what it would do better next time, at the end of each session." So every engine session ends with `python growth.py engine close NAME --learnings FILE`, which refuses to close without specific "better next time" lines, and refuses a learning that repeats until it is written into the engine's contract, job or a lesson. The session's final message carries those learnings.
+
+Krish, same day: "One session should work on one engine only." Work that belongs to another engine (Publishing scheduled a post and its measured results are Measurement's; a comment Acquisition commissions is Engagement's) becomes `python growth.py engine handoff FROM TO`, never done in place. The session gives Krish one line to send it to his existing session for that engine, or to start a new one, and the exact message to paste. When he pastes that session's link, the session passes the message on with the Codex tools it has, or gives it to him to paste. Each session commits and pushes its new record lines so the other session sees them after `git pull`.
+
+Each engine records what it did; Measurement and Allocation judges what worked. Committed records stay privacy-safe: exact words, recipients and post URLs live only in `.scratch/engines/`. The existing daily job and automations keep running through the shadow week; Measurement then compares the engines' decisions with what the operation actually did.
+
 ## What you are growing
 
 **makeyourmindup** is Krish's AI media channel: "What's coming in AI, before

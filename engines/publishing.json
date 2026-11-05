@@ -20,7 +20,10 @@
     "close an edition with publishing.close_edition once every applicable check is passed on its post ID",
     "hold a failed route with its failure, date, recheck condition and alternative",
     "append records to engines/records/publishing.jsonl",
-    "keep exact captions, post URLs and raw receipts in .scratch/engines/publishing.jsonl"
+    "keep exact captions, post URLs and raw receipts in .scratch/engines/publishing.jsonl",
+    "hand work another engine owns to that engine's queue with python growth.py engine handoff publishing TO --what TEXT --why TEXT, and give Krish the paste-ready message",
+    "close each session with python growth.py engine close publishing --learnings FILE, after writing the learnings file in .scratch/engines/",
+    "close one of this engine's own records, an inbound handoff included, with python growth.py engine done publishing ID --note TEXT"
   ],
   "forbidden_actions": [
     "post, publish or schedule anything",
@@ -31,14 +34,16 @@
     "close an edition while any applicable check is open",
     "attempt a held route again before its recheck condition changes",
     "schedule a LinkedIn edition: it follows its human publication rule, Krish's click",
-    "commit exact captions, post URLs or raw receipts (they stay in .scratch/engines/)"
+    "commit exact captions, post URLs or raw receipts (they stay in .scratch/engines/)",
+    "doing another engine's work in this session"
   ],
   "done": [
     "each destination records what was scheduled, what became public, what the reader experienced and any remaining repair",
     "an edition is done only when every applicable check is closed against the public reader view",
     "a discrepancy stays open on the same post ID with a dated recheck, dated once the post ID is known",
     "a failed route carries a recheck condition",
-    "LinkedIn follows its human publication rule"
+    "LinkedIn follows its human publication rule",
+    "a session record with what to do better next time, and every cross-engine item handed off"
   ],
   "recover_first": [
     "due slots",

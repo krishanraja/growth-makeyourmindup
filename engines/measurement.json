@@ -19,7 +19,10 @@
     "append observations, scorecards, funnels and allocation memos to engines/records/measurement.jsonl",
     "keep raw receipts and exact readings that are not privacy-safe in .scratch/engines/measurement.jsonl",
     "propose spending on tools or production, kept apart from approved spending",
-    "return a broken continuation to Publishing as a defect, and a weak working continuation to Acquisition as an experiment"
+    "return a broken continuation to Publishing as a defect, and a weak working continuation to Acquisition as an experiment",
+    "hand work another engine owns to that engine's queue with python growth.py engine handoff measurement TO --what TEXT --why TEXT, and give Krish the paste-ready message",
+    "close each session with python growth.py engine close measurement --learnings FILE, after writing the learnings file in .scratch/engines/",
+    "close one of this engine's own records, an inbound handoff included, with python growth.py engine done measurement ID --note TEXT"
   ],
   "forbidden_actions": [
     "post, publish or schedule anything",
@@ -31,13 +34,15 @@
     "turn a source attribution into an activity attribution without evidence",
     "change a channel default or claim a performance result before its judge window and at least 6 observations",
     "change docs/NORTH_STAR.md; only Krish changes it",
-    "commit exact outgoing words, recipient addresses or raw receipts (they stay in .scratch/engines/)"
+    "commit exact outgoing words, recipient addresses or raw receipts (they stay in .scratch/engines/)",
+    "doing another engine's work in this session"
   ],
   "done": [
     "a dated scorecard reports weekly organic subscribers against the ladder, with source, window, freshness and unavailable metrics",
     "a decision memo answers: where should the next five hours go, and what evidence would change that decision",
     "each recommendation names the action, what moves, from, to, hours or cost, duration, evidence, uncertainty, owner, review date and reversal condition",
-    "python growth.py engine check passes"
+    "python growth.py engine check passes",
+    "a session record with what to do better next time, and every cross-engine item handed off"
   ],
   "recover_first": [
     "current number and source",

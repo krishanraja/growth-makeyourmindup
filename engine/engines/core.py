@@ -4,6 +4,11 @@ Committed records (engines/records/<engine>.jsonl) are privacy-safe: digests, st
 words, recipients, URLs and raw receipts live only in the ignored overlay (.scratch/engines/<engine>.jsonl),
 whose lines merge over the committed record with the same id. The latest line for an id is current; earlier
 lines are its history. Nothing here posts, sends, schedules, spends or writes to Control Center.
+
+Every engine also accepts two shared kinds, checked here rather than in the engine modules: a "session" record
+(what one session did and what it would do better next time, written by engine close) and a "handoff" record
+(work one engine found that another engine owns, kept in the target engine's queue until it closes it). One
+session runs one engine; anything owned by another engine becomes a handoff.
 """
 import argparse
 import hashlib
@@ -21,7 +26,32 @@ RECORDS_DIR = Path('engines') / 'records'
 PRIVATE_DIR = Path('.scratch') / 'engines'
 ROOT_ENV = 'GROWTH_ENGINES_ROOT'
 CLOSED = 'closed'
-SOURCE_KINDS = ('user_ruling', 'live_readback', 'published_source', 'private_file', 'review')
+SOURCE_KINDS = ('user_ruling', 'live_readback', 'published_source', 'private_file', 'review', 'session')
+SHARED_KINDS = ('session', 'handoff')
+SHARED_STATES = {'session': (CLOSED,), 'handoff': ('open', CLOSED)}
+SESSION_KEYS = ('session_ref', 'did', 'better_next_time', 'worked', 'handoffs', 'promoted')
+HANDOFF_KEYS = ('from_engine', 'to_engine', 'from_session', 'to_session_ref', 'what', 'why_not_here',
+                'first_command', 'done_note', 'done_on')
+LEARNING_MIN = 25
+LINE_MAX = 400
+FILLER = re.compile(r'^(none|nothing|nil|n a|na|nope|no changes?|no improvements?|not sure|nothing much)\b')
+NO_CHANGE = re.compile(r'\b(went (quite |really |very |pretty |mostly )?(well|fine|smoothly|ok|okay)|'
+                       r'(was|were|is) (all |quite |really |pretty )?(fine|good|great|smooth|ok|okay)|'
+                       r'no (issues|problems)|nothing (to|i would|i d) (change|improve|add|do differently)|'
+                       r'keep doing|(all|every) (the )?tasks? (were|was) (completed|done|finished))\b')
+SOFTENERS = ('next time', 'in the future', 'in future', 'going forward', 'from now on', 'i would', 'i will',
+             'i should', 'i d', 'we should', 'we would', 'try to', 'always', 'just', 'overall', 'generally',
+             'a bit', 'a little', 'even', 'really', 'probably', 'maybe')
+GENERIC = {'be more careful', 'be more thorough', 'be more efficient', 'be more organised', 'be more organized',
+           'be more proactive', 'be more specific', 'be more focused', 'be faster', 'be quicker', 'be better',
+           'work faster', 'work harder', 'move faster', 'do better', 'do more', 'try harder', 'pay more attention',
+           'communicate better', 'plan better', 'plan ahead', 'keep going', 'keep it up', 'more of the same',
+           'same as before', 'all good', 'everything went well', 'it went well', 'nothing to improve',
+           'test more', 'check more', 'double check everything', 'check everything', 'read more carefully',
+           'be more careful with details', 'pay attention to detail', 'pay more attention to detail'}
+WHOLE_LINE_ONLY = {'do more', 'test more', 'check more', 'keep going', 'plan ahead', 'be better', 'do better'}
+URL = re.compile(r'https?://|\bwww\.', re.I)
+REF_KEYS = ('session_ref', 'to_session_ref')
 OWNERS = ENGINES + ('krish', 'content-engine', 'none')
 FIELDS = ('id', 'engine', 'kind', 'title', 'state', 'source', 'next_owner', 'next_action', 'revisit_when',
           'opportunity_id', 'links', 'updated_at', 'detail')
@@ -96,7 +126,10 @@ def validate(record, private=False):
         return errors + ['engine must be one of ' + ', '.join(ENGINES)]
     mod = package.module(engine)
     kind, state = record.get('kind'), record.get('state')
-    if kind not in mod.KINDS:
+    if kind in SHARED_KINDS:
+        if state not in SHARED_STATES[kind]:
+            errors.append('state ' + repr(state) + ' is not a state of ' + kind)
+    elif kind not in mod.KINDS:
         errors.append('kind ' + repr(kind) + ' is not a ' + engine + ' kind')
     elif state not in tuple(mod.STATES.get(kind, ())) + (CLOSED,) + tuple(mod.CLOSED_STATES):
         errors.append('state ' + repr(state) + ' is not a state of ' + kind)
@@ -128,7 +161,7 @@ def validate(record, private=False):
     if not isinstance(record.get('detail'), dict):
         errors.append('detail must be an object')
     elif not errors:
-        errors += mod.validate_detail(record)
+        errors += shared_detail_errors(record) if kind in SHARED_KINDS else mod.validate_detail(record)
     if not private:
         errors += privacy_errors(record)
     return errors
@@ -212,7 +245,7 @@ def load_contract(engine, root=ROOT):
 
 def check(root=ROOT):
     """Errors across every committed record file and contract. Missing record files are empty queues."""
-    errors, seen, kinds, links = [], {}, {}, []
+    errors, seen, kinds, links, opened = [], {}, {}, [], set()
     for engine in ENGINES:
         try:
             load_contract(engine, root)
@@ -235,6 +268,16 @@ def check(root=ROOT):
                 errors.append(where + 'id ' + rid + ' is already in ' + seen[rid])
             if kinds.setdefault((engine, rid), value.get('kind')) != value.get('kind'):
                 errors.append(where + 'id ' + rid + ' changed kind')
+            # A session is written once, and a handoff is opened once. A second opening line
+            # means two checkouts took the same id the same day: say so instead of letting the
+            # later line silently replace the earlier record. Renumber the later one.
+            opening = value.get('kind') == 'session' or (value.get('kind') == 'handoff'
+                                                         and value.get('state') == 'open')
+            if opening and (engine, rid) in opened:
+                errors.append(where + 'id ' + rid + ' was opened twice, likely by two checkouts on the '
+                              'same day; renumber the later record')
+            if opening:
+                opened.add((engine, rid))
             if isinstance(last.get(rid), str) and isinstance(value.get('updated_at'), str) \
                     and value['updated_at'] < last[rid]:
                 errors.append(where + 'id ' + rid + ' updated_at goes backwards')
@@ -242,13 +285,15 @@ def check(root=ROOT):
             links += [(where, link) for link in value.get('links') or [] if isinstance(link, str)]
     errors += [where + 'link ' + link + ' resolves to no record' for where, link in links if link not in seen]
     if not errors:  # rules across current records, once every line is valid
-        everything = all_records(root, private=False)
+        whole = all_records(root, private=False)
+        everything = {e: own(r) for e, r in whole.items()}
         for engine in ENGINES:
             mod = package.module(engine)
             rules, shared = getattr(mod, 'check_records', None), getattr(mod, 'check_shared', None)
             name = RECORDS_DIR.as_posix() + '/' + engine + '.jsonl: '
             errors += [name + e for e in (rules(everything[engine]) if rules else [])]
             errors += [name + e for e in (shared(everything) if shared else [])]
+            errors += [name + e for e in session_errors(engine, whole)]
     return errors
 
 
@@ -256,7 +301,7 @@ def check(root=ROOT):
 
 
 def _first_action(engine, records):
-    queue = sorted((r for r in records.values() if r.get('next_owner') in (engine, 'krish')
+    queue = sorted((r for r in own(records).values() if r.get('next_owner') in (engine, 'krish')
                     and not is_closed(engine, r.get('state'))),
                    key=lambda r: (str(r.get('updated_at')), r.get('id')))
     if not queue:
@@ -269,14 +314,409 @@ def start(engine, root=ROOT, now=None, private=True):
     """What a fresh chat needs to run one engine. Reads only; writes nothing."""
     as_of = calendar_date(now).isoformat() if now else today()
     contract = load_contract(engine, root)
-    everything = all_records(root, private)
+    whole = all_records(root, private)
+    everything = {e: own(r) for e, r in whole.items()}
     recovered = package.module(engine).recover(everything[engine], everything, as_of)
     first = recovered.get('next_action') if isinstance(recovered, dict) and 'next_action' in recovered \
         else _first_action(engine, everything[engine])
+    inbound = inbound_handoffs(engine, whole[engine])
+    if inbound:
+        first = {k: inbound[0].get(k) for k in ('id', 'title', 'state', 'next_owner', 'next_action', 'revisit_when')}
     return {'engine': engine, 'as_of': as_of, 'entry_request': contract['entry_request'], 'job': contract['job'],
-            'single_job': True, 'recover': recovered, 'next_action': first,
+            'single_job': True,
+            'this_session': {'engine': engine, 'rule': SESSION_RULE.format(name=engine)},
+            'inbound_handoffs': inbound, 'last_learnings': last_learnings(engine, whole[engine]),
+            'recover': recovered, 'next_action': first,
             'authority': {'permitted_actions': contract['permitted_actions'],
                           'forbidden_actions': contract['forbidden_actions']}}
+
+
+# Sessions and handoffs ---------------------------------------------------------------------------------
+
+SESSION_RULE = ('One engine per session. Work owned by another engine becomes a handoff (python growth.py engine '
+                'handoff); never do it here. Close with python growth.py engine close {name} --learnings FILE '
+                'before your final message.')
+
+
+def own(records):
+    """An engine's records without the shared session and handoff kinds: what its module reasons about."""
+    return {k: v for k, v in records.items() if v.get('kind') not in SHARED_KINDS}
+
+
+def normal(line):
+    """A learning line compared case, whitespace and punctuation insensitively."""
+    return ' '.join(re.sub(r'[^\w\s]+', ' ', str(line).lower()).split())
+
+
+def _one_line(value, limit=LINE_MAX):
+    return isinstance(value, str) and bool(value.strip()) and '\n' not in value and len(value) <= limit
+
+
+def generic(line):
+    """True when a learning line says nothing specific: none, nothing, or filler such as "be more careful"."""
+    words = re.sub(r'[^a-z0-9]+', ' ', str(line).lower()).strip()
+    if FILLER.match(words):
+        return True
+    padded = ' ' + words + ' '
+    for soft in SOFTENERS:
+        padded = padded.replace(' ' + soft + ' ', ' ')
+    rest = ' '.join(padded.split())
+    if rest in GENERIC or len(rest.split()) < 4 or NO_CHANGE.search(words):
+        return True
+    return any((' ' + g + ' ') in (' ' + rest + ' ') for g in GENERIC - WHOLE_LINE_ONLY)
+
+
+def learning_errors(lines):
+    """What makes better_next_time unfit: missing, empty, too short, or generic filler."""
+    if not isinstance(lines, list) or not lines:
+        return ['better_next_time needs at least one specific line: what this session would do better next time']
+    errors = []
+    for i, line in enumerate(lines):
+        where = 'better_next_time.' + str(i) + ': '
+        if not _one_line(line):
+            errors.append(where + 'must be one non-empty line')
+        elif len(line.strip()) < LEARNING_MIN:
+            errors.append(where + 'too short; say specifically what to do differently (at least '
+                          + str(LEARNING_MIN) + ' characters)')
+        elif generic(line):
+            errors.append(where + 'too generic; name the specific step, check or tool to change')
+    seen = [normal(x) for x in lines if isinstance(x, str)]
+    if len(set(seen)) != len(seen):
+        errors.append('better_next_time repeats a line')
+    return errors
+
+
+def _safe_path(value):
+    return isinstance(value, str) and bool(value.strip()) and not value.startswith(('/', '\\')) \
+        and not DRIVE_PATH.search(value) and '..' not in Path(value).parts
+
+
+def _lines_errors(d, key, required):
+    value = d.get(key, [])
+    if not isinstance(value, list) or (required and not value) or not all(_one_line(x) for x in value):
+        return [('detail.' + key + ' must be a list of one-line strings')
+                + (', at least one' if required else '')]
+    return []
+
+
+def shared_detail_errors(record):
+    """The detail rules of the shared session and handoff kinds."""
+    d, engine, kind = record['detail'], record['engine'], record['kind']
+    allowed = SESSION_KEYS if kind == 'session' else HANDOFF_KEYS
+    errors = ['detail.' + k + ': unknown key' for k in d if k not in allowed]
+    errors += url_errors(record)
+    if kind == 'session':
+        ref = d.get('session_ref')
+        if ref is not None and not _one_line(ref, 500):
+            errors.append('detail.session_ref must be a session link or null')
+        errors += _lines_errors(d, 'did', True) + _lines_errors(d, 'worked', False)
+        errors += ['detail.' + e for e in learning_errors(d.get('better_next_time'))]
+        handoffs = d.get('handoffs', [])
+        if not isinstance(handoffs, list) or not all(isinstance(x, str) and ID.match(x) for x in handoffs):
+            errors.append('detail.handoffs must be a list of handoff record ids')
+        elif not set(handoffs) <= set(record.get('links') or []):
+            errors.append('detail.handoffs must also be in links')
+        promoted = d.get('promoted', [])
+        if not isinstance(promoted, list) or not all(
+                isinstance(p, dict) and set(p) == {'learning', 'to'} and _one_line(p['learning'])
+                and _safe_path(p['to']) for p in promoted):
+            errors.append('detail.promoted must be a list of {learning, to: a repository path}')
+        if record.get('next_owner') != 'none':
+            errors.append('a session record has next_owner none')
+        return errors
+    frm, to = d.get('from_engine'), d.get('to_engine')
+    if frm not in ENGINES or to not in ENGINES:
+        errors.append('detail.from_engine and detail.to_engine must be engines')
+    elif frm == to:
+        errors.append('a handoff goes to another engine; from_engine and to_engine are both ' + frm)
+    if to != engine:
+        errors.append('a handoff lives in the target engine\'s queue: to_engine must be ' + engine)
+    if d.get('from_session') is not None and not (isinstance(d['from_session'], str) and ID.match(d['from_session'])):
+        errors.append('detail.from_session must be a session record id or null')
+    if d.get('to_session_ref') is not None and not _one_line(d['to_session_ref'], 500):
+        errors.append('detail.to_session_ref must be a session link or null')
+    for key in ('what', 'why_not_here'):
+        if not _one_line(d.get(key)):
+            errors.append('detail.' + key + ' must be one non-empty line')
+    if d.get('first_command') != 'python growth.py engine start ' + str(engine):
+        errors.append('detail.first_command must be python growth.py engine start ' + str(engine))
+    if record.get('state') == 'open' and record.get('next_owner') != engine:
+        errors.append('an open handoff has next_owner ' + str(engine))
+    if record.get('state') == CLOSED and not (_one_line(d.get('done_note')) and _date(d.get('done_on'))):
+        errors.append('a closed handoff carries detail.done_note and detail.done_on')
+    return errors
+
+
+def url_errors(record):
+    """A committed session or handoff carries no URL outside its session link: post and page URLs stay in
+    the private overlay, and the record links the record id instead."""
+    found = []
+
+    def walk(value, where):
+        if isinstance(value, dict):
+            for k, v in value.items():
+                if k not in REF_KEYS:
+                    walk(v, where + '.' + str(k))
+        elif isinstance(value, list):
+            for i, v in enumerate(value):
+                walk(v, where + '.' + str(i))
+        elif isinstance(value, str) and URL.search(value):
+            found.append(where)
+
+    walk(record.get('detail'), 'detail')
+    for key in ('title', 'next_action'):
+        if isinstance(record.get(key), str) and URL.search(record[key]):
+            found.append(key)
+    return [w + ': no URL in a committed ' + str(record.get('kind')) + ' record; keep it in '
+            + PRIVATE_DIR.as_posix() + ' and link the record id instead' for w in found]
+
+
+def _handoffs(whole):
+    return {rid: r for recs in whole.values() for rid, r in recs.items() if r.get('kind') == 'handoff'}
+
+
+def session_errors(engine, whole):
+    """Across engines: every handoff a session lists exists and came from that session's engine."""
+    handoffs, errors = _handoffs(whole), []
+    for r in sorted(whole[engine].values(), key=lambda r: r['id']):
+        if r.get('kind') != 'session':
+            continue
+        for hid in r['detail'].get('handoffs', []):
+            if hid not in handoffs:
+                errors.append(r['id'] + ': handoff ' + hid + ' is not a handoff record')
+            elif handoffs[hid]['detail'].get('from_engine') != engine:
+                errors.append(r['id'] + ': handoff ' + hid + ' is not from ' + engine)
+    return errors
+
+
+def _created(record):
+    return (record.get('source') or {}).get('observed_at') or record.get('updated_at') or ''
+
+
+def inbound_handoffs(engine, records):
+    """Open handoffs waiting in this engine's queue, oldest first."""
+    return [r for r in sorted(records.values(), key=lambda r: (_created(r), r['id']))
+            if r.get('kind') == 'handoff' and r.get('state') == 'open']
+
+
+def _sessions(records):
+    return sorted((r for r in records.values() if r.get('kind') == 'session'),
+                  key=lambda r: (str(r.get('updated_at')), r['id']))
+
+
+def last_learnings(engine, records, count=3):
+    """better_next_time from this engine's last three session records, newest last."""
+    return [{'id': r['id'], 'date': r['updated_at'], 'better_next_time': r['detail'].get('better_next_time', [])}
+            for r in _sessions(records)[-count:]]
+
+
+def _next_id(prefix, records):
+    taken = {rid for recs in records.values() for rid in recs}
+    n = 1
+    while prefix + str(n) in taken:
+        n += 1
+    return prefix + str(n)
+
+
+def session_id(engine, as_of, root=ROOT):
+    """The id the current session of this engine will close under."""
+    return _next_id('session-' + engine + '-' + as_of + '-', all_records(root, private=False))
+
+
+def _names(engine, root):
+    contract = load_contract(engine, root)
+    return contract['name'], contract['entry_request']
+
+
+def handoff_message(record, root=ROOT):
+    """The paste-ready instruction and message for one handoff."""
+    d = record['detail']
+    from_name, _ = _names(d['from_engine'], root)
+    to_name, entry = _names(d['to_engine'], root)
+    message = (entry + '. Pick up handoff ' + record['id'] + ' from ' + from_name + ': ' + d['what'].rstrip('.')
+               + '. First: git pull, then ' + d['first_command'] + '.')
+    if d.get('to_session_ref'):
+        instruction = 'Send this to your ' + to_name + ' session at ' + d['to_session_ref'] + ':'
+    else:
+        instruction = ('Send this to your existing ' + to_name + ' session (paste that session\'s link here and '
+                       'this session will pass it on), or start a new ' + to_name + ' session with it:')
+    return {'id': record['id'], 'to_engine': d['to_engine'], 'instruction': instruction, 'message': message}
+
+
+def handoff(from_engine, to_engine, what, why, links=(), opportunity_id=None, to_session=None, root=ROOT,
+            now=None):
+    """Append an open handoff to the target engine's queue. One session runs one engine: work it finds that
+    another engine owns goes there, with the records it concerns."""
+    as_of = calendar_date(now).isoformat() if now else today()
+    for name in (from_engine, to_engine):
+        if name not in ENGINES:
+            raise ValueError('unknown engine: ' + str(name))
+    if from_engine == to_engine:
+        raise ValueError('a handoff goes to another engine; this is already ' + from_engine + '\'s work')
+    whole = all_records(root, private=False)
+    index = {rid: r for recs in whole.values() for rid, r in recs.items()}
+    links = list(dict.fromkeys(links or ()))
+    missing = [x for x in links if x not in index]
+    if missing:
+        raise ValueError('no record ' + ', '.join(missing) + ' to link')
+    if opportunity_id is None:
+        opportunity_id = next((index[x]['opportunity_id'] for x in links if index[x].get('opportunity_id')), None)
+    from_name, _ = _names(from_engine, root)
+    to_name, _ = _names(to_engine, root)
+    sid = session_id(from_engine, as_of, root)
+    title = 'Handoff from ' + from_name + ': ' + ' '.join(str(what).split())
+    record = {'id': _next_id('handoff-' + from_engine + '-to-' + to_engine + '-' + as_of + '-', whole),
+              'engine': to_engine, 'kind': 'handoff',
+              'title': title if len(title) <= TITLE_MAX else title[:TITLE_MAX - 3].rstrip() + '...',
+              'state': 'open', 'source': {'kind': 'session', 'ref': sid, 'observed_at': as_of},
+              'next_owner': to_engine, 'next_action': 'Pick up the handoff from ' + from_name + ': ' + str(what),
+              'revisit_when': 'the next ' + to_name + ' session', 'links': links, 'updated_at': as_of,
+              'detail': {'from_engine': from_engine, 'to_engine': to_engine, 'from_session': sid,
+                         'to_session_ref': to_session or None, 'what': what, 'why_not_here': why,
+                         'first_command': 'python growth.py engine start ' + to_engine}}
+    if opportunity_id:
+        record['opportunity_id'] = opportunity_id
+    append(to_engine, record, root)
+    return record
+
+
+def _promotion_errors(engine, learnings, earlier, root):
+    errors, promoted = [], {}
+    for p in learnings.get('promoted') or []:
+        if isinstance(p, dict) and isinstance(p.get('to'), str):
+            path = Path(root) / p['to'] if _safe_path(p['to']) else None
+            if path is None or not path.is_file():
+                errors.append('promoted to ' + p['to'] + ': no such file in the repository')
+            elif normal(p.get('learning', '')) not in normal(path.read_text(encoding='utf-8-sig')):
+                errors.append('promoted to ' + p['to'] + ': the learning is not written there yet; add its words '
+                              'to that file before close')
+            else:
+                promoted[normal(p.get('learning', ''))] = p['to']
+    homes = ('engines/' + engine + '.json', 'jobs/' + engine + '.md')
+    for line in learnings.get('better_next_time') or []:
+        if not isinstance(line, str) or normal(line) not in earlier:
+            continue
+        to = promoted.get(normal(line))
+        if not to or not (to in homes or to.startswith('social/lessons/')):
+            errors.append('better_next_time repeats a learning from ' + earlier[normal(line)] + ': "' + line.strip()
+                          + '". Promote it into ' + ' or '.join(homes) + ' or a social/lessons record, then list'
+                          ' it under promoted with that path')
+    return errors
+
+
+def close(engine, learnings, root=ROOT, now=None):
+    """Write this session's record: what it did, what it would do better next time, and every handoff it made.
+    Refuses weak or repeated learnings and unreported handoffs."""
+    as_of = calendar_date(now).isoformat() if now else today()
+    if engine not in ENGINES:
+        raise ValueError('unknown engine: ' + str(engine))
+    if not isinstance(learnings, dict):
+        raise ValueError('the learnings file must be a JSON object')
+    unknown = [k for k in learnings if k not in SESSION_KEYS]
+    errors = ['unknown key ' + k + ' in the learnings file' for k in unknown]
+    errors += learning_errors(learnings.get('better_next_time'))
+    whole = all_records(root, private=False)
+    handoffs = _handoffs(whole)
+    listed = learnings.get('handoffs') or []
+    if not isinstance(listed, list):
+        errors.append('handoffs must be a list of handoff record ids')
+        listed = []
+    for hid in listed:
+        if hid not in handoffs:
+            errors.append('handoff ' + str(hid) + ' does not exist')
+        elif handoffs[hid]['detail'].get('from_engine') != engine:
+            errors.append('handoff ' + hid + ' is not from ' + engine)
+    sessions = _sessions(whole[engine])
+    earlier = {}
+    for r in sessions:
+        for line in r['detail'].get('better_next_time', []):
+            earlier.setdefault(normal(line), r['id'])
+    errors += _promotion_errors(engine, learnings, earlier, root)
+    reported = {h for r in sessions for h in r['detail'].get('handoffs', [])}
+    unlisted = sorted(hid for hid, h in handoffs.items() if h['detail'].get('from_engine') == engine
+                      and _created(h) == as_of and hid not in reported and hid not in listed)
+    if unlisted:
+        errors.append('handoffs made today from ' + engine + ' are not listed: ' + ', '.join(unlisted)
+                      + '; list every handoff so nothing handed off goes unreported')
+    if errors:
+        raise ValueError('; '.join(errors))
+    name, _ = _names(engine, root)
+    sid = session_id(engine, as_of, root)
+    detail = {'session_ref': learnings.get('session_ref') or None, 'did': learnings.get('did') or [],
+              'better_next_time': learnings['better_next_time'], 'worked': learnings.get('worked') or [],
+              'handoffs': list(listed), 'promoted': learnings.get('promoted') or []}
+    record = {'id': sid, 'engine': engine, 'kind': 'session',
+              'title': name + ' session ' + as_of + ': what to do better next time', 'state': CLOSED,
+              'source': {'kind': 'session', 'ref': sid, 'observed_at': as_of}, 'next_owner': 'none',
+              'next_action': None, 'revisit_when': None, 'links': list(listed), 'updated_at': as_of,
+              'detail': detail}
+    append(engine, record, root)
+    current = load(engine, root, private=False)
+    still_open = [{k: r.get(k) for k in ('id', 'kind', 'title', 'state', 'next_owner', 'next_action')}
+                  for r in sorted(current.values(), key=lambda r: (str(r.get('updated_at')), r['id']))
+                  if r.get('kind') != 'session' and not is_closed(engine, r.get('state'))]
+    return {'session': record, 'better_next_time': record['detail']['better_next_time'],
+            'handoffs': [handoff_message(handoffs[h], root) for h in listed], 'still_open': still_open}
+
+
+def done(engine, record_id, note, root=ROOT, now=None):
+    """Close one of this engine's own records, an inbound handoff included, with a note. Keeps history."""
+    as_of = calendar_date(now).isoformat() if now else today()
+    if not _one_line(note):
+        raise ValueError('--note must be one non-empty line')
+    records = load(engine, root, private=False)
+    if record_id not in records:
+        owner = next((e for e, recs in all_records(root, private=False).items() if record_id in recs), None)
+        raise ValueError(record_id + (' is ' + owner + '\'s record; only ' + owner + ' closes it' if owner
+                                      else ' is not a record') + '; ' + engine + ' closes only its own records')
+    current = records[record_id]
+    if is_closed(engine, current.get('state')):
+        raise ValueError(record_id + ' is already ' + str(current.get('state')))
+    kind, mod = current.get('kind'), package.module(engine)
+    if kind in getattr(mod, 'NO_PLAIN_CLOSE', ()):
+        raise ValueError('a ' + engine + ' ' + kind + ' closes only through its own rule, not engine done')
+    if kind == 'session':
+        raise ValueError('a session record is already closed')
+    if current.get('next_owner') == 'krish':
+        raise ValueError(record_id + ' waits on Krish; only his decision closes it, not engine done')
+    line = dict(current, state=CLOSED, revisit_when=None, updated_at=max(as_of, str(current.get('updated_at'))),
+                detail=dict(current['detail'], done_note=note, done_on=as_of))
+    if kind == 'handoff':
+        line['next_action'] = None
+    admit = getattr(mod, 'admit_errors', None)
+    errors = admit(own(records), line) if admit and kind not in SHARED_KINDS else []
+    if errors:
+        raise ValueError('; '.join(errors))
+    return append(engine, line, root)
+
+
+def report_text(report, root=ROOT):
+    """The closing report for Krish, ready to end the session's final message."""
+    out = ['What I would do better next time:']
+    out += ['- ' + line for line in report['better_next_time']]
+    if report['handoffs']:
+        out += ['', 'Handoffs:']
+        for h in report['handoffs']:
+            out += ['', h['instruction'], '', '    ' + h['message']]
+    else:
+        out += ['', 'Handoffs: none.']
+    out += ['', 'Still open in ' + report['session']['engine'] + ':']
+    out += ['- ' + r['id'] + ' (' + str(r['state']) + '): ' + str(r['next_action'] or r['title'])
+            for r in report['still_open']] or ['- nothing']
+    return '\n'.join(out)
+
+
+def handoff_text(record, root=ROOT):
+    m = handoff_message(record, root)
+    return m['instruction'] + '\n\n    ' + m['message']
+
+
+def _read_learnings(path):
+    with open(path, encoding='utf-8-sig') as handle:
+        try:
+            return json.load(handle)
+        except ValueError as error:
+            raise ValueError(str(path) + ': not JSON: ' + str(error)) from None
 
 
 def command(argv, root=ROOT, out=print):
@@ -284,7 +724,8 @@ def command(argv, root=ROOT, out=print):
     common.add_argument('--root', default=argparse.SUPPRESS,
                         help='repository root holding engines/ (default: ' + ROOT_ENV + ' or this repository)')
     parser = argparse.ArgumentParser(prog='growth.py engine', parents=[common],
-                                     description='Run one of the four engines. Read-only.')
+                                     description='Run one of the four engines. start, check, show and history '
+                                                 'read only; handoff, close and done append one record.')
     sub = parser.add_subparsers(dest='cmd')
     s = sub.add_parser('start', parents=[common], help='what a fresh chat recovers first for one engine')
     s.add_argument('name', choices=ENGINES); s.add_argument('--now', help='YYYY-MM-DD')
@@ -295,6 +736,19 @@ def command(argv, root=ROOT, out=print):
     w.add_argument('--no-private', action='store_true')
     h = sub.add_parser('history', parents=[common], help='every committed line of one record')
     h.add_argument('name', choices=ENGINES); h.add_argument('id')
+    o = sub.add_parser('handoff', parents=[common], help='hand work another engine owns to that engine\'s queue')
+    o.add_argument('from_engine', choices=ENGINES); o.add_argument('to_engine', choices=ENGINES)
+    o.add_argument('--what', required=True, help='the work, in one line')
+    o.add_argument('--why', required=True, help='why this session does not do it, in one line')
+    o.add_argument('--link', action='append', default=[], help='a record id the handoff concerns (repeatable)')
+    o.add_argument('--opportunity-id'); o.add_argument('--to-session', help='the target session link, if known')
+    o.add_argument('--now', help='YYYY-MM-DD')
+    c = sub.add_parser('close', parents=[common], help='record this session\'s learnings and handoffs')
+    c.add_argument('name', choices=ENGINES); c.add_argument('--learnings', required=True, help='a JSON file')
+    c.add_argument('--now', help='YYYY-MM-DD')
+    d = sub.add_parser('done', parents=[common], help='close one of this engine\'s records, a handoff included')
+    d.add_argument('name', choices=ENGINES); d.add_argument('id'); d.add_argument('--note', required=True)
+    d.add_argument('--now', help='YYYY-MM-DD')
     args = parser.parse_args(argv)
     root = Path(getattr(args, 'root', None) or os.environ.get(ROOT_ENV, '').strip() or root)
     if args.cmd == 'start':
@@ -313,6 +767,19 @@ def command(argv, root=ROOT, out=print):
         result = history(args.name, args.id, root)
         if not result:
             raise ValueError('no ' + args.name + ' record ' + args.id)
+    elif args.cmd == 'handoff':
+        record = handoff(args.from_engine, args.to_engine, args.what, args.why, args.link, args.opportunity_id,
+                         args.to_session, root, args.now)
+        out(json.dumps(record, indent=2, ensure_ascii=False))
+        out('\n' + handoff_text(record, root))
+        return 0
+    elif args.cmd == 'close':
+        report = close(args.name, _read_learnings(args.learnings), root, args.now)
+        out(json.dumps(report, indent=2, ensure_ascii=False))
+        out('\n' + report_text(report, root))
+        return 0
+    elif args.cmd == 'done':
+        result = done(args.name, args.id, args.note, root, args.now)
     else:
         parser.print_help()
         return 0

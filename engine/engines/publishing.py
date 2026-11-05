@@ -20,6 +20,9 @@ CLOSED_STATES = ('done', 'released', 'passed')
 # The closing state each kind may take: an edition is done, a hold released, a check passed on a readback.
 ALLOWED = {'edition': STATES['edition'] + ('done',), 'route_hold': STATES['route_hold'] + ('released',),
            'check': STATES['check'] + ('passed',)}
+# engine done never closes these: an edition closes through close_edition, a check only on a passed readback,
+# a hold by release.
+NO_PLAIN_CLOSE = KINDS
 CHECKS = ('scheduled', 'public', 'grid_cover', 'player_cover', 'playable_video', 'continuation_link',
           'email_delivery')
 # Checks beyond scheduled and public that a destination carries (review section 6).

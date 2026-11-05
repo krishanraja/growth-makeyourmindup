@@ -10,7 +10,7 @@
     "which audiences, placements, collaborations and discovery experiments to pursue",
     "which existing MYMU work earns access and how a new reader finds, follows and subscribes",
     "the reason to enter an external conversation (Engagement prepares the comment)",
-    "outreach for Make Your Mind Up: shows, newsletters, creators, editorial features, swaps and partners (Ruling, Krish, 2026-11-05)",
+    "outreach for Make Your Mind Up: shows, newsletters, creators, editorial features, swaps and partners (Ruling, Krish, 2026-11-05). Mindmake outreach stays with Control Center; nothing of this goes to Control Center",
     "bounded creative to commission from Content Engine"
   ],
   "permitted_actions": [
@@ -19,12 +19,16 @@
     "append records to engines/records/acquisition.jsonl through acquisition.add, which refuses duplicate pitches or briefs and suppressed asks",
     "keep exact words, recipients and receipts in .scratch/engines/acquisition.jsonl",
     "prepare one outreach draft for one recipient that passes outreach_errors, for Krish to enact on the exact approved draft",
+    "in a Codex session Krish is driving, enact one outreach send through the browser or a connector only after Krish approves that exact bound payload (approval_digest of sender, recipient, channel, subject, body and links) in that session, immediately before sending; then record the receipt as sent and nothing further until evidenced. Scheduled jobs and sessions he is not driving only draft",
     "record approvals by digest and each outcome rung Krish reports with its evidence",
-    "hand an outgoing comment to Engagement with the same opportunity_id, and bounded creative to Content Engine"
+    "hand an outgoing comment to Engagement with the same opportunity_id, and bounded creative to Content Engine",
+    "hand work another engine owns to that engine's queue with python growth.py engine handoff acquisition TO --what TEXT --why TEXT, and give Krish the paste-ready message",
+    "close each session with python growth.py engine close acquisition --learnings FILE, after writing the learnings file in .scratch/engines/",
+    "close one of this engine's own records, an inbound handoff included, with python growth.py engine done acquisition ID --note TEXT"
   ],
   "forbidden_actions": [
     "post, publish or schedule anything",
-    "send, reply, comment, like or follow",
+    "send, reply, comment, like or follow, except one outreach send in a Codex session Krish is driving, after he approves that exact bound payload there",
     "spend money or credits",
     "write to Control Center",
     "carry an approval to a redirected recipient, or to any changed sender, channel, subject, body or link",
@@ -32,13 +36,15 @@
     "rank on seniority or publisher-wide audience alone",
     "infer an earlier outcome rung from a later one",
     "touch an outreach batch waiting at Krish's approval gate",
-    "commit exact outgoing words, recipient addresses or raw receipts (they stay in .scratch/engines/)"
+    "commit exact outgoing words, recipient addresses or raw receipts (they stay in .scratch/engines/)",
+    "doing another engine's work in this session"
   ],
   "done": [
     "each opportunity has a verified route, a concrete offer, a next action and a recorded disposition",
     "a successful placement has a live reference and a route into MYMU",
     "attributable results are attached when available",
-    "the run started from the strongest available route into an audience, not from individual conversations"
+    "the run started from the strongest available route into an audience, not from individual conversations",
+    "a session record with what to do better next time, and every cross-engine item handed off"
   ],
   "recover_first": [
     "best available opportunity",

@@ -7,6 +7,17 @@ Allocation should produce") and build on the Measurement Specialist
 (`crew/attribution-ladder/card.md`) and the What-Works Analyst
 (`crew/what-works/card.md`).
 
+## This session
+
+One engine per session: this one. Run `git pull`, then take `inbound_handoffs` from `engine
+start`, oldest first, and close each with `python growth.py engine done measurement ID --note
+TEXT`. Work another engine owns becomes a handoff: `python growth.py engine handoff measurement
+TO --what TEXT --why TEXT --link ID`. An allocation change goes to the engine that owns the
+work: a broken continuation to Publishing as a defect, a weak working continuation or a route to
+test to Acquisition, a response pattern to Engagement. When Krish pastes a session link for a
+handoff, send the handoff message to that session with the Codex tools available; if none can,
+give him the message to paste. Never do the other engine's work in this session.
+
 ## Read, in this order
 
 1. `AGENTS.md`, the rules that never bend.
@@ -93,3 +104,16 @@ A dated scorecard and a decision memo say what to increase, reduce, stop,
 continue or test, each with its evidence, uncertainty, owner, review date
 and reversal condition. Close by naming what moved the North Star, or
 saying nothing did.
+
+## Close
+
+Hand off anything left for another engine, then write
+`.scratch/engines/measurement-learnings.json` with `did`, `better_next_time` (specific changes),
+`worked`, `handoffs` (every id made), `promoted` and `session_ref` (Krish's session link), and
+run `python growth.py engine close measurement --learnings
+.scratch/engines/measurement-learnings.json`. A repeat of an earlier session's line is refused
+until its words are written into this file, `engines/measurement.json` or a `social/lessons/`
+record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a
+message naming Measurement and the date, and push: another engine's session sees a handoff only
+after `git pull`. If the push fails, put each new record line in the final message. End the
+final message with the learnings and each paste-ready handoff message the close prints.

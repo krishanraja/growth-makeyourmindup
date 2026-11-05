@@ -18,26 +18,32 @@
     "prepare a LinkedIn comment in the actual comment box for Krish's final click (BROWSER.md, 2026-10-24): one prefilled LinkedIn box at a time; preserve any existing human draft; verify account, exact post and parent comment first",
     "show the exact copy beside the open post on every other account",
     "append records to engines/records/engagement.jsonl",
+    "in a Codex session Krish is driving, submit one comment or reply through the browser or a connector only on his explicit approval of the exact text in that session, immediately before submitting; then record it as posted by Krish's approval and nothing further until evidenced. Otherwise leave it ready in the editor for his click. Scheduled jobs and sessions he is not driving only draft",
     "keep exact words, post URLs and recovery copy in .scratch/engines/engagement.jsonl",
-    "return a weak candidate to the researcher"
+    "return a weak candidate to the researcher",
+    "hand work another engine owns to that engine's queue with python growth.py engine handoff engagement TO --what TEXT --why TEXT, and give Krish the paste-ready message",
+    "close each session with python growth.py engine close engagement --learnings FILE, after writing the learnings file in .scratch/engines/",
+    "close one of this engine's own records, an inbound handoff included, with python growth.py engine done engagement ID --note TEXT"
   ],
   "forbidden_actions": [
     "post, publish or schedule anything",
-    "send, reply, comment, like or follow",
-    "press Enter, Comment, Reply, Post or any submit control",
+    "send, reply, comment, like or follow, except one comment or reply in a Codex session Krish is driving, after his explicit approval of the exact text there",
+    "press Enter, Comment, Reply, Post or any submit control without Krish's explicit approval of the exact text in this session",
     "leave more than one prefilled LinkedIn comment box open, or overwrite a human draft (BROWSER.md, 2026-10-24)",
     "spend money or credits",
     "write to Control Center",
     "count an incoming item toward an outgoing batch",
     "pad a batch with a weak candidate",
     "use personal encouragement alone as the reason for a comment",
-    "commit exact outgoing words, post URLs, recipient addresses or raw receipts (they stay in .scratch/engines/)"
+    "commit exact outgoing words, post URLs, recipient addresses or raw receipts (they stay in .scratch/engines/)",
+    "doing another engine's work in this session"
   ],
   "done": [
     "each item is ready in the correct editor or has an accurate disposition: handled, skipped or awaiting Krish",
     "an outgoing draft counts as ready only after the post was opened, the editor filled, switched away, returned and the full text verified, with the tab left open and recovery copy kept with the post URL",
     "incoming and outgoing counts are reported separately",
-    "recurring audience questions go back to Acquisition and Content Engine"
+    "recurring audience questions go back to Acquisition and Content Engine",
+    "a session record with what to do better next time, and every cross-engine item handed off"
   ],
   "recover_first": [
     "unanswered incoming items",

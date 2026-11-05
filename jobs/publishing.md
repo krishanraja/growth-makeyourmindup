@@ -6,6 +6,17 @@ what a reader can see and do. The other three engines (Acquisition,
 Engagement, Measurement) run as their own jobs; do not do their work here.
 Contract: `engines/publishing.json`. Review: `docs/reviews/2026-11-05-growth-engine-review.md`, sections 6 and 7.
 
+## This session
+
+One engine per session: this one. Run `git pull`, then take `inbound_handoffs` from `engine
+start`, oldest first, and close each with `python growth.py engine done publishing ID --note
+TEXT`. Work another engine owns becomes a handoff: `python growth.py engine handoff publishing
+TO --what TEXT --why TEXT --link ID`. Publishing scheduled a post: the live check of the reader
+view stays here; the measured results go to Measurement (link the edition). A working
+continuation with few visits goes to Acquisition. When Krish pastes a session link for a
+handoff, send the handoff message to that session with the Codex tools available; if none can,
+give him the message to paste. Never do the other engine's work in this session.
+
 ## Read first
 
 1. `AGENTS.md` (the rules that never bend), `BROWSER.md` and
@@ -93,3 +104,16 @@ recheck condition. A done edition goes to Measurement for its
 observation window; a broken continuation stays here as a defect; a
 working continuation with few visits goes to Acquisition as an
 experiment.
+
+## Close
+
+Hand off anything left for another engine, then write
+`.scratch/engines/publishing-learnings.json` with `did`, `better_next_time` (specific changes),
+`worked`, `handoffs` (every id made), `promoted` and `session_ref` (Krish's session link), and
+run `python growth.py engine close publishing --learnings
+.scratch/engines/publishing-learnings.json`. A repeat of an earlier session's line is refused
+until its words are written into this file, `engines/publishing.json` or a `social/lessons/`
+record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a
+message naming Publishing and the date, and push: another engine's session sees a handoff only
+after `git pull`. If the push fails, put each new record line in the final message. End the
+final message with the learnings and each paste-ready handoff message the close prints.

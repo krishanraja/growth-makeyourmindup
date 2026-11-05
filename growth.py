@@ -197,7 +197,7 @@ def main(argv=None):
     sub.add_parser('backlog', help='every published piece against channel and format, oldest unamplified first')
     sub.add_parser('mix', help="the week's mix of repurposed carousels and filler lanes, and Krish's one idea and mock press")
     sub.add_parser('ledger', help="calendar/ledger.json: each day's slot, stage, next action and owner (read-only)")
-    sub.add_parser('engine', help='run one of the four engines from shared records: start, check, show, history (read-only)')
+    sub.add_parser('engine', help='run one of the four engines from shared records: start, check, show, history (read-only); handoff, close, done')
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     p.add_argument('--feed-file'); p.add_argument('--now'); p.add_argument('--json', action='store_true')
     c = sub.add_parser('check'); c.add_argument('file'); c.add_argument('--now')
