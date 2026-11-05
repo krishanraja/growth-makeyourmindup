@@ -30,21 +30,27 @@
       "width": 1080,
       "height": 1350,
       "fields": {
+        "count": "text",
         "photo": "photo",
         "headline": "text",
+        "accent": "text",
         "line": "text"
       },
       "required": [
+        "count",
         "photo",
         "headline",
+        "accent",
         "line"
       ],
       "example": {
+        "count": "01 / 05",
         "photo": "The local story photograph",
-        "headline": "The short story headline",
+        "headline": "Who it happened to",
+        "accent": "What AI changed for them",
         "line": "One short line on why it helps"
       },
-      "note": "Repeat for five stories. The photograph fills the top 840 pixels. The centred headline takes at most three lines, the short line at most two. Supply visual photographs, never screenshots of text. Sources, dates and photo credits go in the post description, never in card fields."
+      "note": "Repeat for five stories. The photograph sits in a mint-framed window at the top. The headline is two Anton lines: who it happened to in cream, then what changed in mint. The short line takes at most two lines. The house mark sits small and centred in its own footer. Supply visual photographs, never screenshots of text. Sources, dates and photo credits go in the post description, never in card fields."
     },
     "close": {
       "file": "templates/close.html",

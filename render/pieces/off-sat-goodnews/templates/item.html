@@ -4,10 +4,9 @@
 <link rel="stylesheet" href="../piece.css">
 <style>:root { --w: 1080px; --h: 1350px; }</style></head>
 <body><div class="frame item">
-  {{photo:photo}}
-  <div class="story-words">
-    <div class="fit big" data-fit="headline"><div data-max="92" data-min="52">{{headline}}</div></div>
-    <div class="fit copy" data-fit="line"><div data-max="44" data-min="30">{{line}}</div></div>
-  </div>
-  <div class="brandmark corner"></div>
+  <div class="count">{{count}}</div>
+  <div class="window">{{photo:photo}}</div>
+  <div class="fit big" data-fit="headline"><div><div data-max="84" data-min="52">{{headline}}</div><div class="accent" data-max="84" data-min="52">{{accent}}</div></div></div>
+  <div class="fit copy" data-fit="line"><div data-max="40" data-min="28">{{line}}</div></div>
+  <div class="foot"><div class="brandmark"></div></div>
 </div><script src="../../../fit.js"></script></body></html>
