@@ -417,7 +417,7 @@
       "tests": [
         "test_decline_suppresses_outreach",
         "test_cooldown_expires_from_real_send",
-        "test_outreach_is_control_centers_so_pitches_swaps_and_partners_are_held"
+        "test_mymu_outreach_never_goes_to_control_center"
       ],
       "status": "tested"
     },

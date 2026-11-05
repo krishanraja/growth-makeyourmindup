@@ -71,7 +71,7 @@ class RuleTests(unittest.TestCase):
         for anchor in ('Never post, send, comment', 'Never invent a number', 'Content-engine owns production',
                        'No links in LinkedIn comments', 'No mass outreach', 'one you read on a page today',
                        'Never change Control Center', 'never authorises any other go-live',
-                       'LinkedIn stays unscheduled drafts', 'It proposes no pitch, swap or partner note',
+                       'LinkedIn stays unscheduled drafts', 'None of it goes to Control Center',
                        'incidental step', 'Purge on a go-live', 'Never force a fact', 'his no stops the plan'):
             self.assertIn(anchor, agents)
         self.assertTrue(any('personal identity must sound sincere' in r['quote'] for r in rules))
