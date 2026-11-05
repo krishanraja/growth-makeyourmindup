@@ -2,7 +2,7 @@ html, body { background: var(--ink); }
 .frame { padding: 0; overflow: hidden; }
 .fit { flex: none; overflow: hidden; }
 .photo { display: block; }
-.big { font-family: var(--body); font-weight: 800; text-transform: none; line-height: 1.04; color: var(--cream); }
+.big { font-family: var(--heading); text-transform: uppercase; line-height: 0.98; color: var(--cream); }
 .big .accent { color: var(--mint); }
 
 /* Cover: one full-bleed scene, ink rising from the foot, the words over it with no box. */
