@@ -24,17 +24,17 @@ html, body { background: var(--ink-deep); }
 .shot { position: absolute; left: 60px; right: 60px; top: 362px; height: 470px; border: 3px solid var(--mint); border-radius: 30px; overflow: hidden;
   background: var(--ink); box-shadow: 0 0 0 12px var(--ink), 0 0 90px var(--green); }
 .shot .photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
-.try { position: absolute; left: 60px; right: 60px; top: 862px; height: 132px; background: var(--ink); border: 2px solid var(--green); border-radius: 24px;
-  padding: 20px 30px 20px 74px; }
-.try::before { content: ''; position: absolute; left: 32px; top: 30px; width: 18px; height: 38px; background: var(--mint); }
-.try .fit { width: 860px; height: 92px; font-family: var(--body); font-weight: 500; font-style: italic; line-height: 1.22; color: var(--cream); }
-.steps { position: absolute; left: 60px; top: 1018px; width: 960px; height: 216px; }
-.steps > div { display: flex; gap: 16px; height: 100%; }
-.steps .row { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; border: 2px solid var(--green);
-  border-radius: 22px; padding: 18px 20px; background: var(--ink); justify-content: flex-start; }
-.steps .name { flex: none; width: 48px; height: 48px; border-radius: 50%; background: var(--mint); color: var(--ink); font-family: var(--heading);
-  font-size: 30px; line-height: 1; display: flex; align-items: center; justify-content: center; }
-.steps .value { white-space: normal; min-width: 0; font-family: var(--body); font-weight: 600; font-size: inherit; line-height: 1.18; color: var(--cream); text-align: left; }
+.try { position: absolute; left: 60px; right: 60px; top: 872px; height: 128px; padding-left: 92px; display: flex; align-items: center; }
+.try::before { content: '\201C'; position: absolute; left: 0; top: -18px; font-family: var(--heading); font-size: 150px; line-height: 1; color: var(--mint); }
+.try .fit { width: 868px; height: 120px; font-family: var(--body); font-weight: 500; line-height: 1.24; color: var(--cream); }
+.steps { position: absolute; left: 60px; top: 1030px; width: 960px; height: 176px; border-top: 2px solid var(--green); padding-top: 26px; }
+.steps > div { display: flex; height: 100%; }
+.steps .row { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 16px; padding: 0 26px;
+  border: none; border-left: 2px solid var(--green); background: none; }
+.steps .row:first-child { border-left: none; padding-left: 0; }
+.steps .name { flex: none; font-family: var(--mono); font-weight: 500; font-size: 24px; letter-spacing: 0.08em; line-height: 1; color: var(--mint); }
+.steps .name::before { content: '0'; }
+.steps .value { white-space: normal; min-width: 0; font-family: var(--body); font-weight: 600; font-size: inherit; line-height: 1.2; color: var(--cream); text-align: left; }
 
 /* Close. */
 .close { align-items: center; justify-content: center; padding: 108px; gap: 40px; }
