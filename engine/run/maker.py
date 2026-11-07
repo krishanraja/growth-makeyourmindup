@@ -338,7 +338,26 @@ def note_brief(note):
     return out
 
 
-def word_checks(slot, concept, words, title):
+# Krish's personal accounts, by maker channel, as Control Center's voice check names them (Ruling, Krish,
+# 2026-11-07: everything on his personal socials sounds like him). TikTok and YouTube captions take Instagram's rules.
+VOICE_CHANNEL = {'x': 'x', 'instagram': 'instagram', 'tiktok': 'instagram', 'youtube': 'instagram'}
+
+
+def voice_reasons(cc, voice, channel, words):
+    """The hard krish-voice rules these words break, as refusals, for a personal account only. A verdict the check
+    cannot give (Control Center without the route, or unreachable) is None: the run counts it and the copy lint
+    still holds; a broken rule is never waved through on a reply it did read."""
+    if voice != 'personal' or cc is None or not hasattr(cc, 'voice_check') or channel not in VOICE_CHANNEL:
+        return []
+    try:
+        verdict = cc.voice_check(words, VOICE_CHANNEL[channel])
+    except ProtocolError:
+        return None
+    hard = verdict.get('hard') if isinstance(verdict.get('hard'), list) else []
+    return sorted({h.get('message') for h in hard if isinstance(h, dict) and isinstance(h.get('message'), str)})
+
+
+def word_checks(slot, concept, words, title, voice_found=None):
     """[(code, reasons)] the words and title fail, in order: the claim, the length, the copy lint, the share ask
     and the YouTube title. Empty when they pass."""
     channel, fmt = slot['channel'], slot['format']
@@ -349,6 +368,7 @@ def word_checks(slot, concept, words, title):
          else ['the words are longer than ' + str(WORDS_MAX[channel]) + ' characters']),
         ('copy_lint_refused', release.copy_errors(words)),
         ('share_ask_refused', release.share_ask_errors({'format': fmt}, words)),
+        ('voice_refused', voice_found or []),
         ('title_refused', ([] if channel != 'youtube' else
                            ['a YouTube post needs a plain title'] if not title.strip() or len(title) > TITLE_MAX
                            else release.copy_errors(title, 'titles')))) if found]
@@ -358,8 +378,9 @@ def share_block(share):
     return dict({k: share.get(k) for k in ('sender', 'receiver', 'job', 'dm_line', 'moment')}, standalone=True)
 
 
-def write_words(anthropic, slot, concept, voice, files, profile=None, note=None):
-    """(words, title, share) that carry the claim and pass every check, or Held. One rewrite with the reasons."""
+def write_words(anthropic, slot, concept, voice, files, profile=None, note=None, voice_check=None):
+    """(words, title, share) that carry the claim and pass every check, or Held. One rewrite with the reasons.
+    voice_check(words) gives the hard krish-voice rules the words break (voice_reasons), checked like the copy lint."""
     brief = brief_of(slot, concept, voice, files, profile, note)
     reasons, code = [], None
     for _ in range(MAX_WRITES):
@@ -374,7 +395,7 @@ def write_words(anthropic, slot, concept, voice, files, profile=None, note=None)
             continue
         words = words.strip()
         share = share_block(share)
-        failed = word_checks(slot, concept, words, title)
+        failed = word_checks(slot, concept, words, title, voice_check(words) if voice_check else None)
         shared = share_errors(share, True)
         if shared:
             failed.insert(len([f for f in failed if f[0] != 'title_refused']), ('share_block_refused', shared))
@@ -479,6 +500,14 @@ class Maker:
             out.append((sha, ext))
         return out
 
+    def voice_found(self, voice, channel, words):
+        """voice_reasons for this run's client, with an unread verdict counted (voice_check_unread), never a hold."""
+        found = voice_reasons(self.cc, voice, channel, words)
+        if found is None:
+            self.tally.count('voice_check_unread')
+            return []
+        return found
+
     def prepare(self, slot, concept, manifest):
         """(files, blind asset names) of one placement, or Held."""
         due = autorelease.due_instant(slot['due_at'])
@@ -491,7 +520,8 @@ class Maker:
     def make(self, slot, concept, voice, manifest, monday, note=None):
         """The handoff slot for one draft made and handed off (or None in a dry run), Held, or Stop."""
         files, assets = self.prepare(slot, concept, manifest)
-        words, title, share = write_words(self.anthropic, slot, concept, voice, files, self.profile, note)
+        words, title, share = write_words(self.anthropic, slot, concept, voice, files, self.profile, note,
+                                          voice_check=lambda w: self.voice_found(voice, slot['channel'], w))
         answer = review_words(self.anthropic, slot, words, share, assets)
         if not self.deliver:
             return None
@@ -537,7 +567,7 @@ class Maker:
                 raise Held('made_not_handed_off')
             meta = post.get('metadata') if isinstance(post.get('metadata'), dict) else {}
             title = meta.get('title') if slot['channel'] == 'youtube' and isinstance(meta.get('title'), str) else ''
-            failed = word_checks(slot, concept, words, title)
+            failed = word_checks(slot, concept, words, title, self.voice_found(voice, slot['channel'], words))
             if failed:
                 raise Held(failed[0][0])
             share = declare_share(self.anthropic, slot, concept, voice, files, words, self.profile, note)

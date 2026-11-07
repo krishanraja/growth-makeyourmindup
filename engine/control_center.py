@@ -622,6 +622,17 @@ class Client:
             raise ProtocolError('attempt_not_confirmed')
         return result
 
+    def voice_check(self, text, channel, subject=None):
+        """krish-voice's check on words in Krish's name, from Control Center's one voice check
+        (features.voice_check, 2026-11-07). A verdict only: it approves nothing and sends nothing."""
+        body = {'text': text, 'channel': channel}
+        if subject:
+            body['subject'] = subject
+        result = self._request('POST', 'voice-check', body)
+        if result.get('ok') is not True or not isinstance(result.get('check'), dict):
+            raise ProtocolError('bad_voice_check')
+        return result['check']
+
     def directive(self):
         result = self._request('GET', 'directive')
         if result.get('ok') is not True or not isinstance(result.get('directive'), dict):
