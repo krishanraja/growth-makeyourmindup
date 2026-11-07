@@ -1,0 +1,1 @@
+An answer vending machine makes the money side of AI visible. The cover puts the headline behind its glass. The open service panel holds a breakdown of costs or payees. The final card places the takeaway in its collection tray. A price window and coin slot connect every view.

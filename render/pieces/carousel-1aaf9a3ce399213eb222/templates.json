@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "carousel-1aaf9a3ce399213eb222",
+  "about": "An answer vending machine, from its price window to its open service panel and collection tray.",
+  "templates": {
+    "machine-cover": {
+      "file": "templates/machine-cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "price": "text",
+        "page": "text",
+        "body": "text",
+        "tray": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "body"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "A short headline for this card",
+        "price": "Price label",
+        "page": "Page label",
+        "body": "One plain line about this card",
+        "tray": "A short prompt to keep reading"
+      }
+    },
+    "machine-breakdown": {
+      "file": "templates/machine-breakdown.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "price": "text",
+        "page": "text",
+        "items": "rows",
+        "tray": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "items"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "A short headline for this card",
+        "price": "Price label",
+        "page": "Page label",
+        "items": [
+          [
+            "First cost label",
+            "First value"
+          ],
+          [
+            "Second cost label",
+            "Second value"
+          ],
+          [
+            "Third cost label",
+            "Third value"
+          ]
+        ],
+        "tray": "A short source line"
+      },
+      "note": "Use two or three short label and value pairs. Keep each value to a few words."
+    },
+    "machine-takeaway": {
+      "file": "templates/machine-takeaway.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "price": "text",
+        "page": "text",
+        "body": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "body"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "A short headline for this card",
+        "price": "Price label",
+        "page": "Page label",
+        "body": "The closing thought goes in the collection tray"
+      }
+    }
+  }
+}

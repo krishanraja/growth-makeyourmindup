@@ -1,0 +1,32 @@
+.frame { background: var(--ink-deep); padding: 76px 70px 126px; }
+.sheet { position: relative; flex: 1; min-height: 0; padding: 85px 48px 42px; border: 4px solid var(--green); border-radius: 18px; background: var(--cream); color: var(--ink); box-shadow: 14px 14px 0 var(--green); display: flex; flex-direction: column; gap: 26px; }
+.clip { position: absolute; width: 280px; height: 62px; top: -29px; left: calc(50% - 140px); border: 8px solid var(--mint); background: var(--ink); border-radius: 14px 14px 5px 5px; }
+.clip::after { content: ''; position: absolute; width: 84px; height: 12px; left: 90px; top: 15px; border: 3px solid var(--cream); border-radius: 10px; }
+.meta { height: 42px; flex: none; color: var(--green); font-family: var(--mono); }
+.title-box { height: 345px; flex: none; }
+.sheet h1, .sheet h2 { font-family: var(--heading); font-weight: 400; line-height: 1.04; color: var(--ink); }
+.copy-box { height: 132px; flex: none; }
+.sheet p { font-family: var(--body); font-weight: 500; line-height: 1.25; }
+.check-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; border-top: 4px solid var(--ink); }
+.check-column { padding: 24px 24px 0 0; display: flex; flex-direction: column; gap: 23px; }
+.check-column + .check-column { border-left: 3px solid var(--ink); padding: 24px 0 0 24px; }
+.column-label { height: 68px; flex: none; font-family: var(--mono); line-height: 1.2; }
+.box { width: 66px; height: 66px; flex: none; border: 4px solid var(--coral); position: relative; }
+.box.done { background: var(--mint); border-color: var(--ink); }
+.box.done::after { content: ''; position: absolute; width: 31px; height: 17px; border-left: 7px solid var(--ink); border-bottom: 7px solid var(--ink); transform: rotate(-45deg); left: 12px; top: 15px; }
+.check-line { display: flex; align-items: center; gap: 18px; }
+.blank-line { height: 4px; flex: 1; background: var(--green); opacity: 0.35; }
+.page-box { position: absolute; left: 70px; bottom: 48px; width: 340px; height: 34px; font-family: var(--mono); color: var(--mint); }
+.brandmark.corner { right: 70px; bottom: 48px; width: 220px; }
+.detail .title-box { height: 225px; }
+.entry { border-top: 4px solid var(--ink); padding-top: 22px; display: flex; gap: 25px; }
+.entry-content { flex: 1; min-width: 0; }
+.entry-label { height: 45px; color: var(--green); font-family: var(--mono); }
+.entry-copy { height: 174px; margin-top: 12px; }
+.entry.result { flex: 1; border-color: var(--coral); }
+.result .entry-copy { height: 188px; }
+.result-lines { height: 44px; border-bottom: 3px solid var(--coral); opacity: 0.45; }
+.close .title-box { height: 265px; }
+.close .entry.result { padding: 30px; border: 4px solid var(--coral); }
+.close .entry-copy { height: 255px; }
+.close .copy-box { height: 120px; }

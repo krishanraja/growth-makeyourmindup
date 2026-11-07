@@ -1,0 +1,50 @@
+body { background: var(--ink-deep); }
+.frame { padding: 76px 80px 110px; }
+.topline { display: flex; justify-content: space-between; gap: 32px; height: 50px; }
+.labelbox { width: 740px; height: 50px; }
+.label { font-size: 26px; }
+.pagebox { width: 130px; height: 50px; text-align: right; color: var(--mint); font-family: var(--mono); }
+.titlebox { height: 310px; margin-top: 34px; }
+h1 { font-family: var(--heading); font-weight: 400; line-height: 1.02; color: var(--cream); }
+.captionbox { height: 120px; margin-top: 24px; }
+p { font-family: var(--body); line-height: 1.24; }
+.hardware { position: relative; height: 550px; flex: none; margin-top: 28px; }
+.backbox { position: absolute; left: 34px; top: 26px; width: 470px; height: 440px; background: var(--ink); border: 5px solid var(--green); border-radius: 30px; }
+.backbox::before, .backbox::after { content: ''; position: absolute; width: 32px; height: 32px; border: 4px solid var(--green); border-radius: 50%; left: 214px; }
+.backbox::before { top: 18px; }
+.backbox::after { bottom: 18px; }
+.wire { position: absolute; border: 17px solid var(--mint); border-radius: 70px; width: 260px; height: 180px; left: 112px; top: 118px; }
+.wire.second { border-color: var(--lilac); left: 176px; top: 192px; width: 330px; height: 180px; }
+.wire.third { border-color: var(--butter); left: 78px; top: 268px; width: 300px; height: 160px; }
+.faceplate { position: absolute; left: 474px; top: 40px; width: 300px; height: 420px; border: 7px solid var(--cream); background: var(--ink-deep); border-radius: 28px; transform: rotate(9deg); }
+.faceplate::before, .faceplate::after { content: ''; position: absolute; width: 22px; height: 22px; border: 3px solid var(--cream); border-radius: 50%; left: 132px; }
+.faceplate::before { top: 22px; }
+.faceplate::after { bottom: 22px; }
+.socket { position: absolute; width: 188px; height: 228px; left: 49px; top: 90px; border: 4px solid var(--cream); border-radius: 72px; }
+.slot { position: absolute; width: 17px; height: 52px; background: var(--cream); top: 52px; left: 50px; }
+.slot.other { left: 112px; }
+.earth { position: absolute; width: 28px; height: 34px; background: var(--cream); border-radius: 18px 18px 4px 4px; left: 76px; top: 144px; }
+.plug { position: absolute; width: 150px; height: 104px; background: var(--coral); border-radius: 22px; left: 710px; top: 380px; transform: rotate(-12deg); }
+.plug::before, .plug::after { content: ''; position: absolute; width: 15px; height: 56px; background: var(--cream); top: -56px; }
+.plug::before { left: 35px; }
+.plug::after { right: 35px; }
+.cord { position: absolute; width: 180px; height: 80px; border: 14px solid var(--coral); border-top: none; border-right: none; border-radius: 0 0 0 48px; left: 782px; top: 480px; }
+.tagbox { position: absolute; left: 42px; bottom: 0; width: 600px; height: 54px; color: var(--mint); font-family: var(--mono); }
+.brandmark.corner { right: 80px; bottom: 48px; width: 220px; }
+.detail .titlebox { height: 220px; }
+.terminal-board { position: relative; border: 5px solid var(--green); border-radius: 24px; margin-top: 28px; height: 670px; padding: 42px 36px 42px 120px; background: var(--ink); }
+.terminal { position: relative; height: 180px; border-bottom: 2px solid var(--green); padding: 22px 24px 20px 62px; }
+.terminal:last-child { border: none; }
+.terminal::before { content: ''; position: absolute; width: 40px; height: 40px; border: 7px solid var(--mint); border-radius: 50%; left: -20px; top: 56px; }
+.terminal::after { content: ''; position: absolute; width: 118px; height: 105px; border: 12px solid var(--mint); border-right: none; border-bottom: none; border-radius: 36px 0 0 0; left: -122px; top: 70px; }
+.terminal:nth-child(2)::before, .terminal:nth-child(2)::after { border-color: var(--lilac); }
+.terminal:nth-child(3)::before, .terminal:nth-child(3)::after { border-color: var(--butter); }
+.terminaltext { height: 132px; }
+.terminal p { font-weight: 600; }
+.detail .captionbox { height: 110px; }
+.close .titlebox { height: 265px; }
+.close .hardware { height: 480px; transform: scale(0.85); transform-origin: top left; width: 1000px; margin-bottom: -60px; }
+.close .faceplate { left: 190px; top: 40px; transform: none; }
+.close .plug { left: 630px; top: 250px; }
+.close .cord { left: 700px; top: 350px; }
+.close .captionbox { height: 220px; border-top: 5px solid var(--mint); padding-top: 24px; }
