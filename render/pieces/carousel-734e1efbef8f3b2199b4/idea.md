@@ -1,0 +1,1 @@
+A wall socket hides the work behind a simple plug. The cover pulls its faceplate away, exposing loose wires. The detail card follows those wires through three labelled terminals. The closing card returns the faceplate, leaving the wiring visible beside the next step.

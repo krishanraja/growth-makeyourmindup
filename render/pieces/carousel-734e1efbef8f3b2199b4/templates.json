@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "carousel-734e1efbef8f3b2199b4",
+  "about": "A wall socket with its cover removed, shown whole, inside, and ready for the next step.",
+  "templates": {
+    "socket-cover": {
+      "file": "templates/socket-cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "page": "text",
+        "headline": "text",
+        "body": "text"
+      },
+      "required": [
+        "label",
+        "page",
+        "headline",
+        "body"
+      ],
+      "example": {
+        "label": "series.label",
+        "page": "Card position",
+        "headline": "The main thought for this card",
+        "body": "A plain line that explains this part of the story."
+      }
+    },
+    "socket-detail": {
+      "file": "templates/socket-detail.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "page": "text",
+        "headline": "text",
+        "body": "text",
+        "first": "text",
+        "second": "text",
+        "third": "text"
+      },
+      "required": [
+        "label",
+        "page",
+        "headline",
+        "body",
+        "first",
+        "second",
+        "third"
+      ],
+      "example": {
+        "label": "series.label",
+        "page": "Card position",
+        "headline": "The main thought for this card",
+        "body": "A plain line that explains this part of the story.",
+        "first": "The first part that needs work",
+        "second": "The next part that needs work",
+        "third": "The final part that needs work"
+      }
+    },
+    "socket-close": {
+      "file": "templates/socket-close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "page": "text",
+        "headline": "text",
+        "body": "text"
+      },
+      "required": [
+        "label",
+        "page",
+        "headline",
+        "body"
+      ],
+      "example": {
+        "label": "series.label",
+        "page": "Card position",
+        "headline": "The main thought for this card",
+        "body": "A plain line that explains this part of the story."
+      }
+    }
+  }
+}

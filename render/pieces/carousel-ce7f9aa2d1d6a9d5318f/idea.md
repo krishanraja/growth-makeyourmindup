@@ -1,0 +1,1 @@
+A clipboard pairs ticked task boxes with empty result boxes. The cover shows this gap on a clipped work sheet. The detail card opens one task and its missing check. The closing card leaves a large result box for the reader's next step. Mint ticks and coral outlines carry the same contrast throughout.
