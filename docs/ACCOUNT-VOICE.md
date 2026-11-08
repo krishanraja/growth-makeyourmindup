@@ -32,6 +32,14 @@ personal stays personal"), so first person is fine, but his name, a
 spelling or handle of it, or a possessive of it never appears in the text
 (Krish, 28 October: "Remember, no content refers to Krish, ever."). The copy
 lint refuses it, with no override.
+
+Every personal post's words also pass Control Center's one voice check before
+Buffer holds them (Ruling, Krish, 2026-11-07: everything on his personal
+socials sounds like him). The maker asks `voice-check` (engine/run/maker.py
+`voice_reasons`) and treats a hard krish-voice fail (em dash, banned word, US
+spelling, engagement bait, Unicode bold, emoji bullets, his own name) like a
+copy-lint refusal: one rewrite with the reasons, then `voice_refused`. The
+rules live in ai-harness krish-voice `references/kill-list.json`, never here.
 This does not rewrite the approved carousel artwork, whose reader-centred
 wording and absence of I/me/my remain governed by content-engine's standard.
 

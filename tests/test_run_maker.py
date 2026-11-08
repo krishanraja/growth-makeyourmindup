@@ -318,7 +318,9 @@ class MakerTests(unittest.TestCase):
         self.assertEqual(self.creates(), [])
         self.assertEqual(self.buf.posts, {})
         self.assertEqual(self.cc.reports, reports)
-        self.assertEqual([c for c in self.cc.calls if c['method'] == 'POST'], [], 'a dry run writes nothing to Control Center')
+        # The voice check is a POST that reads: it stores nothing (Control Center api/_voiceCheck.ts).
+        self.assertEqual([c for c in self.cc.calls if c['method'] == 'POST' and not c['path'].endswith('/voice-check')], [],
+                         'a dry run writes nothing to Control Center')
 
     def test_a_draft_buffer_reads_back_as_queued_stops_the_whole_run_at_once(self):
         # Review finding 1: saveToDraft ignored and the post queued. The readback stops the run loudly at the first

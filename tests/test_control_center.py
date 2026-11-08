@@ -98,6 +98,11 @@ class StandIn:
                         return self.reply(409, {'error': 'conflict'})
                     stand.attempts[body['attempt_id']] = body
                     return self.reply(200, {'ok': True, 'attempt': body, 'replayed': old == body})
+                if method == 'POST' and route == 'voice-check':
+                    # Control Center's one voice check (2026-11-07): this stand-in finds nothing broken; a test that
+                    # wants a hard fail sets stand.voice_hard.
+                    return self.reply(200, {'ok': True, 'check': {'hard': list(getattr(stand, 'voice_hard', [])),
+                                                                     'warn': [], 'checks': [], 'distance': 0.1}})
                 if method == 'GET' and route == 'capabilities' and stand.capabilities is not None:
                     return self.reply(200, stand.capabilities)
                 if method == 'GET' and route == 'directive':
