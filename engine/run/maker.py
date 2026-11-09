@@ -77,7 +77,7 @@ import sys
 import tempfile
 import time
 
-from engine import concepts as concept_rules, mix as mix_rules
+from engine import concepts as concept_rules, mix as mix_rules, voice as voice_check
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.cc_loop import decisions_paged
 from engine.control_center import SLUG, ProtocolError
@@ -338,23 +338,10 @@ def note_brief(note):
     return out
 
 
-# Krish's personal accounts, by maker channel, as Control Center's voice check names them (Ruling, Krish,
-# 2026-11-07: everything on his personal socials sounds like him). TikTok and YouTube captions take Instagram's rules.
-VOICE_CHANNEL = {'x': 'x', 'instagram': 'instagram', 'tiktok': 'instagram', 'youtube': 'instagram'}
-
-
 def voice_reasons(cc, voice, channel, words):
-    """The hard krish-voice rules these words break, as refusals, for a personal account only. A verdict the check
-    cannot give (Control Center without the route, or unreachable) is None: the run counts it and the copy lint
-    still holds; a broken rule is never waved through on a reply it did read."""
-    if voice != 'personal' or cc is None or not hasattr(cc, 'voice_check') or channel not in VOICE_CHANNEL:
-        return []
-    try:
-        verdict = cc.voice_check(words, VOICE_CHANNEL[channel])
-    except ProtocolError:
-        return None
-    hard = verdict.get('hard') if isinstance(verdict.get('hard'), list) else []
-    return sorted({h.get('message') for h in hard if isinstance(h, dict) and isinstance(h.get('message'), str)})
+    """The hard voice rules these words break, for every account, personal or the publication's (engine/voice.py;
+    Ruling, Krish, 2026-11-09: absolutely everything passes the one voice check). voice is kept for its callers."""
+    return voice_check.voice_reasons(cc, channel, words)
 
 
 def word_checks(slot, concept, words, title, voice_found=None):
