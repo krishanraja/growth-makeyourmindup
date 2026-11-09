@@ -107,7 +107,7 @@ import re
 import sys
 import tempfile
 
-from engine import concepts as concept_rules, intensity, mix as mix_rules
+from engine import concepts as concept_rules, intensity, mix as mix_rules, voice as voice_check
 from engine.cc_loop import (GOLIVE_LEDGER, claim_golives, decisions_paged, decisions_since, golive_ledger,
                             record_stops, revision, state_path)
 from engine.control_center import (APPROVED_ORIGIN, RUN_ID, TIMEZONE, Client, ProtocolError, _decided_at, _latest,
@@ -793,6 +793,12 @@ class Run:
             return self.hold(why.split(':')[0])
         if release.copy_errors(slot['words']):
             return self.hold('copy_lint_refused')
+        # Every post passes the one voice check before Buffer schedules it (Ruling, Krish, 2026-11-09).
+        found = voice_check.voice_reasons(getattr(self, 'cc', None), slot['channel'], slot['words'])
+        if found is None:
+            self.count('voice_check_unread')
+        elif found:
+            return self.hold('voice_refused')
         if share_ask_errors(slot, slot['words'], snack):
             return self.hold('share_ask_refused')
         if spec_digest(line) != fields['payload_sha256']:
@@ -1491,6 +1497,7 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
                'golives': {'releasable': 0, 'held': {}, 'claimed': 0}, 'derived': {'read': 0, 'weeks': {}},
                'slots': {}, 'holds': {}, 'mutations': 0, 'loud': [], 'error': None}
     run = Run(buffer, now, deliver, fetch, root, clock)
+    run.cc = cc  # the voice check asks Control Center (engine/voice.py)
     folder = None
     try:
         organizations = buffer.account_check().get('organization_ids') or []

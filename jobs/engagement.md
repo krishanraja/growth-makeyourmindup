@@ -43,7 +43,7 @@ the linked record) and carry on. Never do the other engine's work in this sessio
 
 - Read every engine's records and contracts.
 - Open the actual post and read it in full before drafting.
-- Draft a reply or comment in Krish's voice that says something real.
+- Draft a reply or comment in Krish's voice that says something real, and pass it through Control Center's one voice check before it reaches his comment box or his screen (`check_voice` with channel `comment`, or `Client.voice_check(words, 'comment')`; Ruling, Krish, 2026-11-09). Rewrite once on a hard fail; if it still fails, hold it and say why.
 - Prepare a LinkedIn comment in the actual comment box for his final click (BROWSER.md,
   2026-10-24): one prefilled LinkedIn box at a time; preserve any existing human draft; verify
   account, exact post and parent comment first. On every other account, show the exact copy

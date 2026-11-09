@@ -27,16 +27,16 @@ class VoiceReasonsTests(unittest.TestCase):
         self.assertEqual(found, ['US spelling "organize". Krish writes British: "organise".'])
         self.assertEqual(cc.calls, [('We organize it.', 'x')])
 
-    def test_tiktok_and_youtube_captions_take_instagram_rules(self):
+    def test_each_channel_is_checked_as_its_own_account(self):
         cc = CC()
-        maker.voice_reasons(cc, 'personal', 'tiktok', 'Words.')
-        maker.voice_reasons(cc, 'personal', 'youtube', 'Words.')
-        self.assertEqual([c[1] for c in cc.calls], ['instagram', 'instagram'])
+        for ch in ('x', 'linkedin', 'threads', 'substack-notes', 'tiktok', 'instagram', 'facebook', 'youtube', 'substack'):
+            maker.voice_reasons(cc, 'any', ch, 'Words.')
+        self.assertEqual([c[1] for c in cc.calls],
+                         ['x', 'linkedin', 'threads', 'substack_note', 'instagram', 'caption', 'caption', 'caption', 'substack'])
 
-    def test_the_publication_account_is_not_his_voice_and_is_not_asked(self):
-        cc = CC(hard=[{'message': 'anything'}])
-        self.assertEqual(maker.voice_reasons(cc, 'publication', 'x', 'Words.'), [])
-        self.assertEqual(cc.calls, [])
+    def test_the_publication_is_checked_too_absolutely_everything(self):
+        cc = CC(hard=[{'rule': 'publication:exclamation', 'message': "Make Your Mind Up's canon (exclamation)."}])
+        self.assertEqual(maker.voice_reasons(cc, 'publication', 'instagram', 'Big news!'), ["Make Your Mind Up's canon (exclamation)."])
 
     def test_a_verdict_the_check_cannot_give_is_none_never_a_pass_of_a_broken_rule(self):
         self.assertIsNone(maker.voice_reasons(CC(error='not_found'), 'personal', 'x', 'Words.'))

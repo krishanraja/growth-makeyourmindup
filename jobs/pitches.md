@@ -28,6 +28,7 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    the published finding/source list and one easy next step. No promise to
    create an unapproved editorial asset. Sign: "Krish Raja, makeyourmindup.ai,
    hello@krishraja.com". Track the listener landing and placement distinctly.
+   Before it goes in the envelope, pass the subject and body through Control Center's one voice check (`check_voice` with channel `email`, or `Client.voice_check(body, 'email', subject)`; Ruling, Krish, 2026-11-09); rewrite once on a hard fail, else hold it with the reason.
 4. Prepare the offer in the local envelope, never a platform compose box.
    A Gmail draft is optional only in a separately authorised scheduled job
    with that capability; this implementation makes no such external write.
