@@ -126,3 +126,13 @@ and send, and the go-live step posts what he signed on those four channels.
 Override 5 is narrowed for the Canva lane only (`docs/ENGINE-BOUNDARY.md`):
 Growth makes Substack Notes and memes that content-engine does not cover,
 never articles or scripts.
+
+## External growth skills, 10 November 2026
+
+Krish asked how to use two public skill collections (`giulioco/skills` and the
+`awesome-growth-hacking-skills` list) to level up this engine. Nothing was
+copied in as doctrine. [External growth skills](corpus/external-growth-skills.md)
+is a short digest written here: the few mechanics adopted and where each is
+wired, the do-not-quote list `growth.py check` enforces, what was refused and
+why, and each source's repository, commit, path and licence. It is recorded in
+the [corpus manifest](corpus/manifest.json) with its size and SHA-256.
