@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -43,6 +44,41 @@ def outreach_kind(value):
     pack = value.get('pack') if isinstance(value.get('pack'), dict) else value
     kind = pack.get('kind')
     return kind if isinstance(kind, str) and kind in OUTREACH else None
+
+
+# Statistics the external growth skills repeat with no source anyone can check
+# (knowledge/corpus/external-growth-skills.md, "Do not quote"). Rule 6: a number is
+# one read on a page today, with where it was read. Percentages are already refused
+# by the prose lint; these catch the same claims written as words or counts.
+DO_NOT_QUOTE = (
+    ('the 8-second attention span', re.compile(
+        r'\b(?:8|eight)[- ]?(?:seconds?|secs?)\.?[- ]attention\b'
+        r'|attention span[^.\n]{0,40}\b(?:8|eight)[- ]?(?:seconds?|secs?)\b'
+        r'|\bgoldfish\b[^.\n]{0,40}attention|attention[^.\n]{0,40}\bgoldfish\b', re.I)),
+    ('cold emails under 75 words get more replies', re.compile(
+        r'(?:\b(?:under|fewer than|less than|below|at most|no more than|up to)\s+(?:75|seventy[- ]five)\s+words'
+        r'|\b(?:75|seventy[- ]five)[- ]word\b)[^.\n]{0,60}repl', re.I)),
+    ('decision-makers ignore irrelevant emails', re.compile(r'decision[- ]makers ignore irrelevant', re.I)),
+    ('success is mostly "human engineering"', re.compile(
+        r'\bsuccess\b[^.\n]{0,60}\bhuman engineering\b|\bhuman engineering\b[^.\n]{0,40}\bsuccess\b', re.I)),
+)
+
+
+def unsourced_stats(value):
+    """Lines in a pack or envelope that quote a statistic on the do-not-quote list."""
+    pack = value.get('pack') if isinstance(value, dict) and isinstance(value.get('pack'), dict) else value
+    if not isinstance(pack, dict):
+        return []
+    fields = [('headline', pack.get('headline'))]
+    for i, item in enumerate(pack.get('items') or [], 1):
+        if isinstance(item, dict):
+            fields += [('draft ' + str(i) + ' ' + k, item.get(k)) for k in ('text', 'why', 'target_name')]
+    for i, row in enumerate(pack.get('numbers') or [], 1):
+        if isinstance(row, dict):
+            fields.append(('number row ' + str(i) + ' note', row.get('note')))
+    return [where + ' quotes an unsourced statistic (' + label + '); leave it out'
+            for where, text in fields if isinstance(text, str)
+            for label, pattern in DO_NOT_QUOTE if pattern.search(text)]
 
 
 def token():
@@ -264,6 +300,9 @@ def main(argv=None):
         return 0
     if args.cmd == 'check':
         value = read_json(args.file)
+        quoted = unsourced_stats(value)
+        if quoted:
+            raise ValueError('; '.join(quoted))
         if isinstance(value, dict) and value.get('schema_version') == 2:
             validate_envelope(value, args.now)
         else:

@@ -4,6 +4,14 @@ Newest first. Entries are written by the docs steward (`krishanraja/ai-harness`,
 and by people doing the same job by hand. Nothing in this file describes current behaviour; `NOW.md` and
 `README.md` do. Text moved here from `NOW.md` keeps its wording verbatim.
 
+## 2026-11-10
+
+Moved verbatim from `NOW.md` (skills uplift closeout, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-10-29 **PR #19 merged (`fe391f0`) after four adversarial reviews of the concept posting path.** His no on any part of any version stops the week for good; a line he adds or changes in an amended yes holds it; a concept he deleted or edited stays stopped; a concept goes out once per channel a week, as Buffer shows it; a post still scheduled or sent after his no is loud; the mock link he opens must download to a mock hash he approves; the local `run release` counts the day from Buffer too. Failures F120 to F132, rules R111 to R113, 745 tests on Python 3.9 and 3.12. Read back on main: keys, measure and release each ran green by hand with counts-only logs (release stops at "BUFFER_API_KEY not set"). The first W45 `growth-mix-plan` dispatch was refused `bad_weights`: GitHub hands the client_payload over with its keys reordered, and the handoff required mix.json's order. It now accepts any order and restores mix.json's (F132). The W45 board is published privately for Krish with every mock and its hash.
+
 ## 2026-10-30
 
 Moved verbatim from `NOW.md` (R124 closeout, to keep NOW.md under its byte cap).

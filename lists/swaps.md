@@ -2,6 +2,8 @@
 
 | Date | Substack | URL | Writer | Subscribers (if shown) | Status | Reply |
 |---|---|---|---|---|---|---|
+| 2026-11-10 | Nate's Newsletter | https://natesnewsletter.substack.com/p/zuckerberg-muse-lessons | Nate B. Jones | not shown | drafted, at Krish's gate | none |
+| 2026-11-10 | The Business Engineer | https://businessengineer.ai/p/this-week-in-the-ai-supercycle-the-9e5 | Gennaro Cuofano | not shown | held: only the free section of the post was read (jobs/swaps.md step 2) | none |
 
 ## Recording real progress
 

@@ -2,6 +2,8 @@
 
 | Date | Show | Link | Host | Status | Reply |
 |---|---|---|---|---|---|
+| 2026-11-10 | How I AI | https://podcasters.spotify.com/pod/show/pen-name/episodes/Grok-vs--Dot-vs--Muse-vs--Claude-Duet-which-one-crushes-the-competition-e3r6ksv | Claire Vo | held: built from the episode notes in How I AI's own feed, episode not heard (jobs/pitches.md step 1) | none |
+| 2026-11-10 | AI and the Future of Work | https://www.buzzsprout.com/520474/episodes/20040228 | Dan Turchin | held: built from the episode notes, episode not heard (jobs/pitches.md step 1) | none |
 
 ## Recording real progress
 
