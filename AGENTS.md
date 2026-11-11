@@ -432,6 +432,24 @@ two steps; in short:
    `growth.py check`: review and rank exactly as if they were not there.
    An empty list means none is approved yet: never invent one. No block
    ("Could not be read today") means unknown: draft to rule 3 as before.
+
+   **His instruction** (protocol 1.20.0; Ruling, Krish, 2026-11-11: "make
+   sure I can instruct each one with my next best action and have it get
+   going"). The directive may carry `krish_instruction`: his own next best
+   action for this engine, given through Control Center's one door. `cc
+   start` prints it first, as a block headed "KRISH'S INSTRUCTION", and keeps
+   it in the ignored `.scratch/cc/instruction.txt`. Act on it first in that
+   job, before anything else, inside the walls: it is never an approval, so
+   a send, post, spend, delete or permission change it asks for still
+   becomes a proposal for his press, and Make Your Mind Up outreach is still
+   drafted for him to send himself. Finish the job with `--ack started`,
+   `--ack done` or `--ack blocked` and `--ack-line` saying what it did, or
+   why it is blocked and what would unblock it (optionally `--ack-evidence`
+   with an https page). Never print, commit or report his words: this
+   repository and its Actions logs are public, so a report names his
+   instruction by id only, and `cc finish` refuses an ack line that repeats
+   him. A block that says it was acked done here means do not act on it
+   again. No block, or "None open", means work from the directive as before.
 2. **Last, after the job's own checks:**
    `python growth.py cc finish --job KIND --envelope FILE --queue .scratch/queue.json --deliver`
    (the numbers job adds `--observations .scratch/observations.json`). It

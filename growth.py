@@ -267,8 +267,13 @@ def main(argv=None):
             x.add_argument('--job', required=True, choices=KINDS)
             x.add_argument('--envelope', action='append', default=[]); x.add_argument('--queue')
             x.add_argument('--observations', action='append', default=[]); x.add_argument('--completions')
+            # Krish's instruction (protocol 1.20.0): what this job did with it, never his words.
+            x.add_argument('--ack', choices=('started', 'done', 'blocked'), help="what this job did with Krish's instruction")
+            x.add_argument('--ack-line', help='what it did, or why it is blocked and what would unblock it (never his words)')
+            x.add_argument('--ack-evidence', help='an https page that shows it, if there is one')
         else:
             x.add_argument('--backup', action='store_true', help="the scheduled backup of Control Center's morning dispatch")
+            x.add_argument('--wake', help="a second wake the same day (Krish's instruction): the GitHub run id and attempt")
         x.add_argument('--deliver', action='store_true'); x.add_argument('--mode', choices=('live', 'synthetic'), default='live')
         x.add_argument('--run-id'); x.add_argument('--now')
     bs = ccsub.add_parser('backstop', help="file the chat backstop's kept lines in taste_reports, once each")

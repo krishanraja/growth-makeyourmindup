@@ -26,7 +26,7 @@ import datetime as dt
 from pathlib import Path
 import sys
 
-from .. import meter
+from .. import engine_state, intensity, meter
 from ..cc_loop import (STATE_DIR, count, WEB_ANALYTICS_FILE, keep_web_analytics, revision, run, summary,
                        web_analytics_activity, web_analytics_block, web_analytics_summary)
 from ..control_center import SLUG, build_report, iso, objective
@@ -217,7 +217,7 @@ def ga4_part(block, posts, config):
     return lines, None, joined
 
 
-def build(posts_read, block, now, root, mode, config, directive_pulled):
+def build(posts_read, block, now, root, mode, config, directive_pulled, state=None):
     """The report and its work error. posts_read is buffer_reads.sent_posts output, or a {'note'} or {'error'}."""
     activity, holds, work_error = [], [], None
     if directive_pulled:
@@ -261,8 +261,10 @@ def build(posts_read, block, now, root, mode, config, directive_pulled):
     status = 'degraded' if work_error or hold else ('ready' if posts or joined else 'held')
     if status == 'held' and not holds:
         holds.append({'reason': 'Nothing to measure this run', 'detail': None})
+    # 1.20.0: the engine's state rides on this report too (engine/engine_state.py), so the newest live report
+    # always carries it; acks are the runner's and the workspace jobs'.
     report = build_report(run_id(now), mode, now, revision(root), now, status, objectives, activity, [], [], holds,
-                          post_metrics=post_metrics(posts, now) or None)
+                          post_metrics=post_metrics(posts, now) or None, state=state)
     return report, work_error, counts
 
 
@@ -297,7 +299,9 @@ def main(argv=None, make_client=None, buffer=None, out=print, root=ROOT, environ
         block = web_analytics_block(directive) if pulled else _local_block(root)
         if pulled:
             keep_web_analytics(root, directive)
-        report, error, counts = build(read_buffer(client, note, clock()), block, clock(), root, args.mode, config, pulled)
+        state = engine_state.fields(root, intensity.state(root, clock(), directive), directive) if pulled else None
+        report, error, counts = build(read_buffer(client, note, clock()), block, clock(), root, args.mode, config, pulled,
+                                      state)
         seen['counts'] = counts
         return report, error
 

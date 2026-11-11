@@ -7,6 +7,12 @@ name: control-center
 # and it uploads nothing: this repository is public, so its log carries only
 # counts, codes and digests.
 #
+# Krish's instruction (protocol 1.20.0) can wake it again the same day, with
+# client_payload.instruction_id: that run reports under its own run_id
+# (--wake, the GitHub run id and attempt), acks the instruction as received
+# and leaves acting on it to the next publication workspace job. The id is
+# the only thing it prints; his words never reach this public log.
+#
 # The 05:40 UTC schedule is the backup: it first asks the GitHub API whether a
 # repository_dispatch run of this workflow already succeeded today (UTC). If
 # one did it stops with "dispatch already ran today"; otherwise it runs the
@@ -51,6 +57,7 @@ jobs:
           CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
           CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
           CC_DISPATCH_ENGINE_ID: ${{ github.event.client_payload.engine_id }}
+          CC_DISPATCH_INSTRUCTION_ID: ${{ github.event.client_payload.instruction_id }}
         run: |
           if [ -z "$CONTROL_CENTER_ENGINE_TOKEN" ]; then
             echo "::error::The CONTROL_CENTER_ENGINE_TOKEN secret is not set for this repository. Nothing was reported."
@@ -62,6 +69,10 @@ jobs:
           fi
           if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
             python growth.py cc runner --deliver --backup
+          elif [ -n "$CC_DISPATCH_INSTRUCTION_ID" ] || [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            # A second wake the same day (Krish's instruction, protocol 1.20.0, or a run by hand) reports
+            # under its own run_id, never the morning's. Only the id is used; his words never reach this log.
+            python growth.py cc runner --deliver --wake "gh${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT}"
           else
             python growth.py cc runner --deliver
           fi

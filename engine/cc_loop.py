@@ -21,10 +21,10 @@ import sys
 import tempfile
 
 from . import meter
-from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, ProtocolError, _decided_at, action_key, action_errors,
-                             build_report, canonical_json, copy_open, engage_action, golive_review, iso,
-                             match_decisions, objective, proposal, _stops)
-from . import engage, intensity
+from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, STATE_FIELDS, ProtocolError, _decided_at, action_key,
+                             action_errors, build_report, canonical_json, copy_open, engage_action, golive_review, iso,
+                             match_decisions, objective, proposal, without_state, _stops)
+from . import engage, engine_state, intensity
 from .credits import credits_block, credits_lines
 from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
@@ -56,6 +56,21 @@ def count(number, noun):
 
 def run_id_for(command, now=None):
     return SLUG + ':' + today(now) + ':' + command
+
+
+WAKE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,39}$')
+
+
+def runner_run_id(now, backup=False, wake=None):
+    """The runner's run_id: one a day, and one more for each extra wake. Krish's instruction can wake the runner a
+    second time the same day (protocol 1.20.0), so that wake reports under its own discriminator (the GitHub run
+    id and attempt) and never conflicts with the morning's report."""
+    base = run_id_for('runner-backup' if backup else 'runner', now)
+    if wake is None:
+        return base
+    if not WAKE.match(str(wake)):
+        raise ValueError('--wake is up to 40 letters, digits, dots, dashes or underscores')
+    return base + ':wake-' + wake
 
 
 def revision(root):
@@ -143,17 +158,29 @@ class Loop:
             report, work_error = build(self.directive)
             outcome['report'] = report
             self.phase = 'report'
-            try:
-                posted = self.client.post_report(report)
-            except ProtocolError as error:
-                # A refused or unconfirmed report was not stored, so the plain one is not a resend.
-                if not (degrade and error.code in ENGAGE_DEGRADE and any(copy_open(p) for p in report['proposals'])):
-                    raise
-                self.phase = 'work'
-                report, work_error = degrade(self.directive)
-                outcome.update(report=report, degraded=error.code)
-                self.phase = 'report'
-                posted = self.client.post_report(report)
+            tried = set()
+            while True:
+                try:
+                    posted = self.client.post_report(report)
+                    break
+                except ProtocolError as error:
+                    # A refused or unconfirmed report was not stored, so the next one is not a resend.
+                    if 'state' not in tried and error.code in STATE_DEGRADE and any(k in report for k in STATE_FIELDS):
+                        # Control Center could not take 1.20.0 today: report the run without its new fields.
+                        tried.add('state')
+                        report = without_state(report)
+                        outcome.update(report=report, state_dropped=error.code)
+                        continue
+                    if not ('engage' not in tried and degrade and error.code in ENGAGE_DEGRADE
+                            and any(copy_open(p) for p in report['proposals'])):
+                        raise
+                    tried.add('engage')
+                    self.phase = 'work'
+                    report, work_error = degrade(self.directive)
+                    if 'state' in tried:
+                        report = without_state(report)
+                    outcome.update(report=report, degraded=error.code)
+                    self.phase = 'report'
             outcome['posted'] = posted
             if posted['conflict']:
                 # The same run_id already holds a different payload. Never
@@ -407,7 +434,7 @@ def _after(item, cutoff):
         return False
 
 
-def already_sent(client, now, directive=None, mode='live'):
+def already_sent(client, now, directive=None, mode='live', include_today=False):
     """What Krish already has from this engine: {proposal_id: decision or 'pending'}, or None.
 
     A clean runner keeps no state, so Control Center is the ledger. Every
@@ -419,7 +446,9 @@ def already_sent(client, now, directive=None, mode='live'):
     reach still counts. A report that could not read its ledger, or of the
     other mode, is passed over. Today's own report is never read, and a
     decision after now is not counted, so a rerun with the same --now makes
-    the same report. None when any read fails: then nothing is proposed."""
+    the same report. A second wake the same day (include_today) reads that
+    morning's report first, so it never proposes again what the morning did.
+    None when any read fails: then nothing is proposed."""
     known, answered = {}, {}
     cutoff = instant(now)
     body = directive.get('directive', {}) if isinstance(directive, dict) else {}
@@ -428,7 +457,7 @@ def already_sent(client, now, directive=None, mode='live'):
         if decisions is None:
             return None
         decisions = [d for d in body.get('decisions_since') or [] if not _after(d, cutoff)] + decisions
-        for day in range(1, LOOKBACK_DAYS + 1):
+        for day in range(0 if include_today else 1, LOOKBACK_DAYS + 1):
             run_id = run_id_for('runner', cutoff - dt.timedelta(days=day))
             try:
                 found = client.read_report(run_id).get('report')
@@ -517,18 +546,22 @@ def backlog_line(backlog):
 
 
 def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None,
-                  backlog=None, gap=None, extra_activity=()):
+                  backlog=None, gap=None, extra_activity=(), directive=None, seen=False):
     """The runner's held report. sent is already_sent(): asks Krish has, answered or pending, are
     never sent again, and None (not read) proposes nothing. backlog is backlog.for_runner():
     (inventory, None) or (None, reason); None means it was not read. extra_activity: lines
-    the runner adds (the web_analytics shape it kept, its own cost so far)."""
+    the runner adds (the web_analytics shape it kept, its own cost so far). directive: today's, for
+    Krish's instruction and the 1.20.0 state (engine/engine_state.py); seen: an earlier report already
+    named his open instruction, so 'received' is not sent again."""
     root = Path(root)
     automations = automation_count(root)
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
     by_name = {c['name']: c for c in checks}
     failed = [c['name'] for c in checks if not c['ok']]
-    # Every report leads with the gap (Ruling, Krish, 2026-10-29; engine/intensity.py).
-    activity = [{'line': intensity.gap_line(gap or intensity.state(root, now))}]
+    gap = gap or intensity.state(root, now)
+    # Every report leads with the gap (Ruling, Krish, 2026-10-29; engine/intensity.py); his instruction is next.
+    told, acks = engine_state.report_part(directive, now, 'runner', seen)
+    activity = [{'line': intensity.gap_line(gap)}] + [{'line': line} for line in told]
     if directive_pulled:
         activity.append({'line': "Pulled today's directive on the GitHub runner"})
     tests = by_name.get('self_test')
@@ -590,7 +623,8 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
         objective('new_subscribers', reason=WORKSPACE_ONLY + '; a GitHub runner cannot read the Substack dashboard'),
         objective('paid_boosts_usd', reason=WORKSPACE_ONLY + '; ' + NO_SPEND)]
     report = build_report(run_id, mode, now, rev or revision(root), now, 'degraded' if failed else 'held',
-                          objectives, activity, proposals, [], holds)
+                          objectives, activity, proposals, [], holds,
+                          state=engine_state.fields(root, gap, directive, acks))
     return report, ('offline_checks_failed' if failed else None)
 
 
@@ -737,6 +771,8 @@ def item_proposal(item, job, evidence):
 ENGAGE_JOBS = ('radar',)
 # Control Center refuses or cannot take the engagement task: the same taps then go as one plain proposal.
 ENGAGE_DEGRADE = ('schema_version_unsupported', 'schema_version_unconfirmed', 'copy_open_unsupported', 'bad_request')
+# When Control Center cannot take the 1.20.0 state fields, the run still reports, once, without them.
+STATE_DEGRADE = ('schema_version_unsupported', 'schema_version_unconfirmed', 'engine_state_unsupported', 'bad_request')
 
 
 def _tap(item):
@@ -812,7 +848,10 @@ def completion_events(rows, now):
 
 
 def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=None, completions=None,
-                     mode='live', directive_pulled=False, rev=None, root='.', gap=None, plain_taps=False):
+                     mode='live', directive_pulled=False, rev=None, root='.', gap=None, plain_taps=False,
+                     directive=None, seen=False, acted=None, started_at=None):
+    """One workspace job's report. directive, seen, acted and started_at carry Krish's instruction (protocol
+    1.20.0, engine/engine_state.py): acted is (state, line, evidence_url), what this job did with it."""
     if job not in KINDS:
         raise ValueError('unknown job ' + str(job))
     evidence = {e['evidence_id']: e for env in envelopes for e in env.get('evidence', [])}
@@ -854,7 +893,8 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     goal = new_subscribers(observations, now)
     objectives = [goal, objective('paid_boosts_usd', reason=NO_SPEND[0].upper() + NO_SPEND[1:])]
     events = completion_events(completions, now)
-    activity = [{'line': intensity.gap_line(gap)}]
+    told, acks = engine_state.report_part(directive, now, job, seen, acted, started_at)
+    activity = [{'line': intensity.gap_line(gap)}] + [{'line': line} for line in told]
     if intensity.raised(gap['urgency']):
         activity.append({'line': 'At U' + str(gap['urgency']) + ' the volume caps rise to their bounds in intensity.json: '
                          + str(intensity.engagement_taps(gap['urgency'], root)) + ' engagement taps a day; each channel'
@@ -891,7 +931,9 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     # 1.17.0, only when a mix plan is kept: the week's off-day options his list counts. The channels a
     # go-live may name ride on each go-live's own report (engine/run/handoff.py reports_for).
     report = build_report(run_id, mode, now, rev or revision(root), now, status, objectives,
-                          activity, proposals, events, holds, offdays=offdays_field(root, now))
+                          activity, proposals, events, holds, offdays=offdays_field(root, now),
+                          state=engine_state.fields(root, gap, directive, acks,
+                                                    done=bool(acted) and acted[0] == 'done'))
     return report, None
 
 
@@ -1215,11 +1257,12 @@ def inspiration_block(directive):
     return lines
 
 
-def describe(directive):
-    """A short local summary of the directive. Never used on a public runner log."""
+def describe(directive, ledger=None):
+    """A short local summary of the directive, Krish's instruction first. Never used on a public runner log."""
     body = directive.get('directive', {}) if isinstance(directive, dict) else {}
     action = body.get('next_action') or {}
-    lines = ['directive ' + str(body.get('directive_id')) + ' (chosen by ' + str(directive.get('chosen_by')) + ')',
+    lines = engine_state.block(directive, ledger)
+    lines += ['directive ' + str(body.get('directive_id')) + ' (chosen by ' + str(directive.get('chosen_by')) + ')',
              'next action: ' + str(action.get('instruction')), 'why: ' + str(action.get('why'))]
     if action.get('proposal_id'):
         lines.append('proposal: ' + str(action['proposal_id']))
@@ -1239,6 +1282,8 @@ def state_label(name):
 
 def summary(outcome, public=False, matched=None):
     lines = []
+    if outcome.get('state_dropped'):
+        lines.append('engine state not taken (' + outcome['state_dropped'] + '); reported without it')
     if outcome.get('degraded'):
         lines.append('engagement task not taken (' + outcome['degraded'] + '); the same taps went as one plain ask')
     posted = outcome.get('posted') or {}
@@ -1286,8 +1331,10 @@ def cli(args, root, make_client, out=print, checks=None):
         if dispatched and dispatched != ENGINE_ID:
             out('Not ready: the dispatch named another engine; nothing was run')
             return 1
-        # The 05:40 UTC backup reports under its own run_id, so it never conflicts with the dispatch's report.
-        run_id = args.run_id or run_id_for('runner-backup' if getattr(args, 'backup', False) else 'runner', now)
+        # The 05:40 UTC backup reports under its own run_id, so it never conflicts with the dispatch's report, and
+        # a second wake the same day (Krish's instruction, protocol 1.20.0) under its own discriminator.
+        wake = getattr(args, 'wake', None)
+        run_id = args.run_id or runner_run_id(now, getattr(args, 'backup', False), wake)
         if not args.deliver:
             report, error = runner_report(root, run_id, now, checks(root), args.mode, sent={})
             out('Dry run: no Control Center call. Report ' + report['status'] + ', payload_sha256 ' + report['payload_sha256'])
@@ -1303,14 +1350,26 @@ def cli(args, root, make_client, out=print, checks=None):
             lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web'])]
             # The share of each prepaid pool (1.16.0); the runner spends none of it (docs/CREDITS.md is how a session does).
             lines += credits_lines(credits_block(directive)) + [meter.cost_line('before this report')]
+            # Krish's instruction (1.20.0): 'received' once, so an earlier report naming it counts.
+            state, item = engine_state.instruction(directive)
+            told = bool(state == 'open' and engine_state.served(directive) and engine_state.mentioned(client, item['id']))
             return runner_report(root, run_id, clock(), checks(root), args.mode, True,
-                                 sent=already_sent(client, clock(), directive, args.mode),
+                                 sent=already_sent(client, clock(), directive, args.mode, include_today=bool(wake)),
                                  backlog=for_runner(root, clock()),
-                                 gap=intensity.state(root, clock(), directive), extra_activity=lines)
+                                 gap=intensity.state(root, clock(), directive), extra_activity=lines,
+                                 directive=directive, seen=told)
 
-        outcome = run(client, 'runner', run_id, build, now - dt.timedelta(days=7), clock)
+        loop = Loop(client, 'runner', run_id, clock)
+        try:
+            loop.start()
+            outcome = loop.finish(build, now - dt.timedelta(days=7))
+        except ProtocolError as error:
+            outcome = loop.end('failed', error.code)
         if 'web' in seen:
             out(web_analytics_line(seen['web']))
+        if loop.directive is not None:
+            # His instruction by id and what was acked, never his words: this log is public.
+            out(engine_state.public_line(loop.directive, (outcome.get('report') or {}).get('instruction_acks') or []))
         for line in summary(outcome, public=True):
             out(line)
         out(meter.cost_line('in all'))
@@ -1320,8 +1379,17 @@ def cli(args, root, make_client, out=print, checks=None):
     run_id = args.run_id or run_id_for(job, now)
     saved = state_path(root, job + '.state.json')
     voice_file = state_path(root, VOICE_RULES_FILE)
-    if args.cc_cmd in ('start', 'run') and voice_file.exists():
-        voice_file.unlink()  # Never let yesterday's rules stand in for today's, even on a dry run.
+    instruction_file = state_path(root, engine_state.INSTRUCTION_FILE)
+    ledger_file = state_path(root, engine_state.LEDGER_FILE)
+    if args.cc_cmd in ('start', 'run'):
+        # Never let yesterday's rules or instruction stand in for today's, even on a dry run.
+        for stale in (voice_file, instruction_file):
+            if stale.exists():
+                stale.unlink()
+    acted = None
+    if getattr(args, 'ack', None) or getattr(args, 'ack_line', None):
+        acted = (args.ack, args.ack_line, getattr(args, 'ack_evidence', None))
+    told, started = {'seen': False}, {'at': None}
 
     def build(directive, plain_taps=False):
         return workspace_report(job, run_id, clock(), _load_many(args.envelope),
@@ -1329,12 +1397,17 @@ def cli(args, root, make_client, out=print, checks=None):
                                 [o for rows in _load_many(args.observations) for o in rows],
                                 read_json(args.completions) if args.completions else None,
                                 args.mode, directive is not None, root=root,
-                                gap=intensity.state(root, clock(), directive), plain_taps=plain_taps)
+                                gap=intensity.state(root, clock(), directive), plain_taps=plain_taps,
+                                directive=directive, seen=told['seen'], acted=acted,
+                                started_at=started['at'])
 
     if not args.deliver:
         if args.cc_cmd == 'start':
             out('Dry run: no Control Center call. A scheduled run adds --deliver to journal the start and pull the directive.')
             return 0
+        if acted:
+            out("Not reported: a dry run has no directive, so there is no instruction of Krish's to ack")
+            return 1
         report, _ = build(None)
         write_json(state_path(root, 'report-' + job + '.json'), report)
         out('Dry run: report ' + report['status'] + ' with ' + count(len(report['proposals']), 'proposal') + ', payload_sha256 '
@@ -1364,16 +1437,35 @@ def cli(args, root, make_client, out=print, checks=None):
         voice_file.write_text('\n'.join(voice_block(loop.directive)) + '\n', encoding='utf-8')
         # His inspiration board (1.15.0), the baseline for what the plan schedules; local and ignored like the rules.
         inspiration_file.write_text('\n'.join(inspiration_block(loop.directive)) + '\n', encoding='utf-8')
+        # His instruction (1.20.0), which the job acts on first; local and ignored, never a public log.
+        ledger = engine_state.read_ledger(ledger_file)
+        instruction_file.write_text('\n'.join(engine_state.block(loop.directive, ledger)) + '\n', encoding='utf-8')
         keep_web_analytics(root, loop.directive)
-        for line in describe(loop.directive):
+        for line in describe(loop.directive, ledger):
             out(line)
         if args.cc_cmd == 'start':
             out('attempt started: finish this job with growth.py cc finish --job ' + job + ' --deliver')
             return 0
+    state, item = engine_state.instruction(loop.directive)
+    if acted:
+        errors = engine_state.workspace_ack_errors(acted[0], acted[1], acted[2], item if state == 'open' else None)
+        if errors:
+            # Nothing is reported yet: the attempt stays started, so this finish can be run again, fixed.
+            out('Not reported: ' + '; '.join(errors))
+            return 1
+        if not engine_state.served(loop.directive):
+            out("Not acked: today's directive does not serve engine_state yet, so the report goes without the ack")
+    started['at'] = loop.started_at
+    if state == 'open' and engine_state.served(loop.directive):
+        acked = (engine_state.read_ledger(ledger_file).get(item['id']) or {}).get('acks')
+        told['seen'] = bool(acked) or bool(engine_state.mentioned(client, item['id']))
     since = decisions_since(root, now)
     outcome = loop.finish(build, since, degrade=lambda d: build(d, plain_taps=True))
     if outcome.get('report'):
         write_json(state_path(root, 'report-' + job + '.json'), outcome['report'])
+    posted = outcome.get('posted') or {}
+    if posted.get('accepted') and not posted.get('conflict'):
+        engine_state.remember_acks(ledger_file, outcome['report'].get('instruction_acks') or [])
     matched = None
     if 'decisions' in outcome:
         matched = remember(root, outcome['report'], outcome['decisions'], now)

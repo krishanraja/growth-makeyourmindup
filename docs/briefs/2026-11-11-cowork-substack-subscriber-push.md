@@ -101,8 +101,8 @@ writes each one for one named person, and Krish approves and sends each himself.
 
 ## What to hand back
 
-Save one file in Krish's working copy of the growth repository:
-`C:/Users/krish/dev/growth-makeyourmindup/.scratch/cowork/2026-11-11-substack-subscriber-push.md`,
+Save one file in Krish's working copy of the growth repository (its folder is `repos` in
+`config/studio.json`), at `.scratch/cowork/2026-11-11-substack-subscriber-push.md` inside it,
 with these sections:
 
 1. **The reading:** every number from Task 1, with the page and time it was read.

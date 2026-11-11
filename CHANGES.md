@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-11: Krish instructs the engine from Control Centre, and its state shows there live. His words:
+  "Ensure the priorities, obsessions, and next steps for all the growth engines are feeding live to this
+  dashboard, and not just in the growth tab. They are responsible for driving the overall success of each
+  venture, so make sure I can instruct each one with my next best action and have it get going (as well as
+  always understand the current state of play and what's outstanding)." The engine reads his instruction from
+  the directive (protocol 1.20.0), acts on it first in the next workspace job, inside the walls, and acks it by
+  id (received, started, done or blocked); every report carries its priorities, his quoted aims and its next
+  steps. The words of an instruction never reach this public repository or its logs. Every wall, approval and
+  spend rule is unchanged.
 - 2026-11-11: Dial up the subscriber push. His words: "have it dial up its urgency in getting me new
   subscribers to my substack." The engine was already at U5 with every volume cap at its bound and one
   new subscriber the week before, so he chose three levers (11 Nov): a conversion push, Substack-native
