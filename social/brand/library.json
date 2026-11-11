@@ -82,9 +82,9 @@
       "use": "Krish's cartoon character: base, poses, contact sheet, manifest. content-engine config/ve/character.json reads it by path; do not move or rename. Not approved for use until that file says approved."
     },
     "music": {
-      "path": "00_Brand-Assets/07_Music",
-      "id": "1pmPWx8vTOZuUXkp-WjhLlCTvof8MrRxK",
-      "use": "Licensed Epidemic Sound beds. Their one home is this folder: content-engine config/music-library.json reads it by id and Windows path, so it stays outside the kit. File new tracks here and nowhere else."
+      "path": "1 Brand kit (permanent)/Music",
+      "id": "1oHyJ9A5et5_uKW7QTq1VHX0NuGwwQVri",
+      "use": "The one home for licensed Epidemic Sound beds (content-engine runtime.music_root and config/music-library.json). File new tracks here and nowhere else."
     },
     "channel_art": {
       "path": "2 Channel art (permanent)",
@@ -101,11 +101,6 @@
       "path": "Ventures > Inspiration > Production Inspo",
       "use": "Reference clips for production quality. Studied, never published, never part of the brand kit."
     },
-    "music_mirror": {
-      "path": "1 Brand kit (permanent)/Music",
-      "id": "1oHyJ9A5et5_uKW7QTq1VHX0NuGwwQVri",
-      "use": "A mirror the engine fills: content-engine music.py publish copies 07_Music into the library and Library Sync files it here so any machine can fetch it. Never file a track here by hand."
-    },
     "style_references_mirror": {
       "path": "1 Brand kit (permanent)/Style references",
       "id": "1J4cWCWaAtdUMEEsUs27pdWm3H50jGSPC",
@@ -113,14 +108,6 @@
     }
   },
   "not_canonical": {
-    "00_Brand-Assets": {
-      "id": "1XaFOCeA6Hy_pYF6If8H1frjxo_k7IVOu",
-      "why": "Holds only 07_Music (above). Everything else in it was an older copy of the kit and moved out on 11 Nov 2026."
-    },
-    "archive": {
-      "path": "_Archive/PREVIOUS VERSIONS - archive, not current, do not use/2026-11-11 brand kit cleanup",
-      "id": "1rBsiOrLfT_VZBy8oVb8uuwI9603TUcAO",
-      "why": "Duplicates and superseded material moved on 11 Nov 2026: a second copy of kit v1.5, older channel art and launch exports, launch HTML, the frozen 28 Oct video formats and old Canva concept links. Never read for current brand."
-    }
+    "note": "Since 11 Nov 2026 there is one brand folder. 00_Brand-Assets and every old copy (kit v1.5 duplicate, old channel art, launch exports, old Canva links, frozen video formats) were deleted to the Drive bin on Krish's instruction. Nothing else holds brand."
   }
 }

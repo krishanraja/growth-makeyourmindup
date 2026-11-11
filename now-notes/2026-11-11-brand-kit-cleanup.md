@@ -12,3 +12,5 @@
 **North Star check.** This moves the number only indirectly: on-brand Notes, memes and cards made faster and more consistently by the Canva lane and makers. It does not move subscribers this week. U5 still stands at 1 of 86 (5 Nov reading); no new measurement this session.
 
 **Correction, same day.** `1 Brand kit/Music` and `1 Brand kit/Style references` are not duplicates: content-engine publishes them on purpose as mirrors (`music.py`, `references.py`) so any machine can fetch them. Both were moved back into the kit, same IDs. The `music-library.json` note was right all along. content-engine's `docs/DRIVE.md` ("The brand kit"), `AGENTS.md` and the two scripts' comments now say all of this.
+
+**One folder, same day.** On Krish's instruction `00_Brand-Assets` and every archived old copy were deleted to the Drive bin. Music's home is now `1 Brand kit (permanent)/Music` (content-engine #539 merged first, so nothing reading music broke).

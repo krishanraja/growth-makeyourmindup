@@ -34,8 +34,7 @@ class BrandLibraryTests(unittest.TestCase):
         for name, asset in self.lib['assets'].items():
             path = asset.get('path', '')
             self.assertNotIn('_Archive', path, name)
-            if name != 'music':
-                self.assertFalse(path.startswith('00_Brand-Assets'), name)
+            self.assertFalse(path.startswith('00_Brand-Assets'), name)
 
     def test_canva_ids_match_kit(self):
         kit = load('social/brand/kit.json')
