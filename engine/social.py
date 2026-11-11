@@ -23,14 +23,16 @@ SHARE_LESSON = 'built-to-be-sent'
 DELEGATED_PERSONAL = ('x', 'tiktok', 'threads', 'substack-notes')
 
 
-# The posting policy (27 Oct): Substack Notes up to two a day, every other
+# The posting policy (27 Oct): Substack Notes up to two a day, raised to four
+# (Ruling, Krish, 2026-11-11: dial up the subscriber push at U5), every other
 # account at most one. Ruling (Krish, 2026-10-29): three or four posts a day on
 # Instagram, YouTube, TikTok and X, so those four take up to four, with a floor
 # of three the weekly mix plans (engine/mix.py, R102). engine/intensity.py
 # raises a cap only up to this.
 FLOOD_CHANNELS = ('instagram', 'youtube', 'tiktok', 'x')
 FLOOD_TARGET, FLOOD_FLOOR = 4, 3
-MAX_DAILY_POSTS = dict({'substack-notes': 2}, **{c: FLOOD_TARGET for c in FLOOD_CHANNELS})
+NOTES_MAX = 4
+MAX_DAILY_POSTS = dict({'substack-notes': NOTES_MAX}, **{c: FLOOD_TARGET for c in FLOOD_CHANNELS})
 DEFAULT_MAX_DAILY_POSTS = 1
 # A capability held after a provider rejection (review of 5 Nov 2026, section 7) names when it was held,
 # what failed and the condition for reconsidering it.
@@ -144,11 +146,11 @@ def inventory(root=ROOT):
             raise ValueError('account context cannot expand publication authority')
         if expected_mode == 'human_publish_only' and obj['daily_posts_target'] is not None:
             raise ValueError('human-only accounts have no automatic posting quota')
-        # Notes post from Krish's own Substack profile at up to two a day as he
-        # signs (27 Oct); Instagram, YouTube, TikTok and X up to four (29 Oct);
+        # Notes post from Krish's own Substack profile at up to four a day as he
+        # signs (27 Oct, raised 11 Nov); Instagram, YouTube, TikTok and X up to four (29 Oct);
         # every other account stays at one a day.
         if (obj['daily_posts_target'] or 0) > max_daily_posts(obj['id']):
-            raise ValueError('a daily target above its policy bound: Substack Notes two, Instagram, YouTube,'
+            raise ValueError('a daily target above its policy bound: Substack Notes four, Instagram, YouTube,'
                              ' TikTok and X four, every other account one')
         floor = obj.get('daily_posts_floor')
         if floor is not None and (obj['daily_posts_target'] is None or floor > obj['daily_posts_target']):
@@ -270,8 +272,16 @@ def draft_target_errors(package, target):
     return errors
 
 
-def preflight(package, as_of=None, root=ROOT, send_test=None, target=None):
+def _urgency_now():
+    from . import intensity  # intensity reads this module's policy bounds
+    return intensity.state(ROOT)['urgency']
+
+
+def preflight(package, as_of=None, root=ROOT, send_test=None, target=None, urgency=None):
     """Structural package checks. send_test is the blind reader's answer, when one has run.
+
+    urgency is the North Star urgency; at the conversion urgency in intensity.json the package needs a
+    subscribe route (subscribe_cta; Ruling, Krish, 2026-11-11). The command line reads it.
 
     target is a get_post readback of an existing draft the package would be
     saved over with edit_post; it must pass draft_target_errors first.
@@ -317,6 +327,11 @@ def preflight(package, as_of=None, root=ROOT, send_test=None, target=None):
     problems = share_errors(package['share'], f['snackable'], share_rules)
     if problems:
         raise ValueError('share block: ' + '; '.join(problems))
+    from . import intensity
+    routeless = intensity.subscribe_errors(package.get('subscribe_cta'), package['channel'], package['caption'],
+                                           (package.get('subscribe_cta') or {}).get('placement'), urgency, root)
+    if routeless:
+        raise ValueError('subscribe route: ' + '; '.join(routeless))
     if package['production']['owner'] != f['production_owner']:
         raise ValueError('production owner does not match the selected format')
     count = len(package['assets'])
@@ -395,7 +410,8 @@ def command(argv=None):
                 result = send_test_request(package)
         else:
             result = preflight(read(args.file), args.as_of, send_test=read(args.send_test) if args.send_test else None,
-                               target=read(args.target) if args.target else None)
+                               target=read(args.target) if args.target else None,
+                               urgency=_urgency_now())
     except (ValueError, KeyError, OSError) as exc:
         print(json.dumps({'valid': False, 'error': str(exc)}))
         return 1

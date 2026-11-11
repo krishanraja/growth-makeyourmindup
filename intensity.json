@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "ruling": "Ruling (Krish, 2026-10-29): At U3 to U5, engines and Control Center may raise volume caps up to each repo's existing policy bounds without a signed week spec. This is volume only: walls unchanged.",
+  "ruling": "Ruling (Krish, 2026-10-29): At U3 to U5, engines and Control Center may raise volume caps up to each repo's existing policy bounds without a signed week spec. This is volume only: walls unchanged. Ruling (Krish, 2026-11-11): dial up the subscriber push at U5: raise the volume walls (Substack Notes four a day, engagement taps 25 at U5), every post carries a subscribe route at U4 and U5, and Acquisition drafts a daily batch of Substack-native outreach for him to approve.",
   "applies_from_urgency": 3,
   "daily_posts": {
     "bound": "social_policy",
-    "why": "A channel's posting cap rises only to its own policy bound in engine/social.py: Instagram, YouTube, TikTok and X four a day with a floor of three (Ruling, Krish, 2026-10-29), Substack Notes two (27 Oct), every other channel one. Every channel already sits at its bound, so no urgency caps those four below three. A human-only channel (LinkedIn, null) gets no automatic posts at any urgency."
+    "why": "A channel's posting cap rises only to its own policy bound in engine/social.py: Instagram, YouTube, TikTok and X four a day with a floor of three (Ruling, Krish, 2026-10-29), Substack Notes four (raised from two, Ruling, Krish, 2026-11-11), every other channel one. A human-only channel (LinkedIn, null) gets no automatic posts at any urgency."
   },
   "engagement_taps": {
     "by_urgency": {
@@ -12,9 +12,33 @@
       "2": 5,
       "3": 10,
       "4": 15,
-      "5": 20
+      "5": 25
     },
-    "why": "Five was the radar's daily ceiling. Control Center's copy_open task carries at most 25 taps (protocol 1.14.0); these stay under it. Every tap still clears the bar in docs/ENGAGEMENT-LOOP.md."
+    "why": "Five was the radar's daily ceiling. Control Center's copy_open task carries at most 25 taps (protocol 1.14.0); U5 sits at that ceiling (Ruling, Krish, 2026-11-11). Every tap still clears the bar in docs/ENGAGEMENT-LOOP.md."
   },
-  "unchanged": "Walls, spend (zero), Krish's 20 and 30 minute daily budget, the creative bar and every approval stay as they are at every urgency."
+  "unchanged": "Spend (zero), every approval, the creative bar, the share-ask rule and the ecosystem route stay as they are at every urgency. Krish's daily approval time grows by about ten minutes at U5 for the outreach drafts and the extra taps.",
+  "conversion": {
+    "applies_from_urgency": 4,
+    "subscribe_url": "https://home.makeyourmindup.ai/subscribe",
+    "placements": {
+      "in_post": "the tagged subscribe URL is in the words",
+      "first_reply": "the tagged subscribe URL goes in the first reply; the slot or package link_placement is first_reply",
+      "profile_link": "the channel cannot carry a clickable link in a post, so the words point to the profile link, which is the tagged subscribe page (engine/channel_audit.py)"
+    },
+    "profile_link_channels": [
+      "instagram",
+      "tiktok"
+    ],
+    "why": "Hundreds of posts a week brought one subscriber (5 November 2026): the volume is at its bounds, so the gap is conversion. At U4 and U5 every run spec slot and every social package names a subscribe route (subscribe_cta) with the source tags Measurement credits it by. It sits beside the ecosystem route, never in place of it, and it is a destination, never a share ask (social/share.json)."
+  },
+  "outreach_drafts": {
+    "by_urgency": {
+      "1": 0,
+      "2": 0,
+      "3": 2,
+      "4": 3,
+      "5": 5
+    },
+    "why": "Substack grows from other publications: recommendation swaps, cross-posts, collaborations and guest pieces. At U3 to U5 Acquisition prepares this many new outreach drafts a day, each for one named person citing something they made (AGENTS.md rule 5), for Krish to approve and enact by digest in his own Codex session. Nothing is sent by the engine."
+  }
 }

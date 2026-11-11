@@ -12,13 +12,17 @@ intensity.json; nothing here touches a wall, spend, approval or Krish's time.
 """
 from pathlib import Path
 import re
+from urllib.parse import parse_qs, urlsplit
 
-from .core import instant, ny_time, read_json
+from .core import http_url, instant, ny_time, read_json
 from .run import measure
 from .social import max_daily_posts
 
 ROOT = Path(__file__).resolve().parents[1]
 BOUNDS = 'intensity.json'
+PLACEMENTS = ('in_post', 'first_reply', 'profile_link')
+SOURCE_TAGS = ('utm_source', 'utm_content')
+OUTREACH_MAX = 10
 
 
 def bounds(root=ROOT):
@@ -29,6 +33,20 @@ def bounds(root=ROOT):
         raise ValueError('intensity.json engagement_taps needs U1 to U5, each 1 to 25')
     if value['daily_posts'].get('bound') != 'social_policy':
         raise ValueError('intensity.json daily_posts bound is the channel policy in engine/social.py, never a number of its own')
+    conversion = value.get('conversion')
+    if (not isinstance(conversion, dict) or conversion.get('applies_from_urgency') not in (1, 2, 3, 4, 5)
+            or not isinstance(conversion.get('subscribe_url'), str)
+            or not conversion['subscribe_url'].startswith('https://')
+            or not isinstance(conversion.get('placements'), dict) or not conversion['placements']
+            or set(conversion['placements']) - set(PLACEMENTS)
+            or not isinstance(conversion.get('profile_link_channels'), list)):
+        raise ValueError('intensity.json conversion needs applies_from_urgency 1 to 5, an https subscribe_url, '
+                         'placements from ' + ', '.join(PLACEMENTS) + ' and profile_link_channels')
+    drafts = (value.get('outreach_drafts') or {}).get('by_urgency') if isinstance(value.get('outreach_drafts'), dict) else None
+    if (not isinstance(drafts, dict) or sorted(drafts) != ['1', '2', '3', '4', '5']
+            or any(type(v) is not int or not 0 <= v <= OUTREACH_MAX for v in drafts.values())):
+        raise ValueError('intensity.json outreach_drafts needs U1 to U5, each 0 to ' + str(OUTREACH_MAX)
+                         + ' (one named person each, never bulk: AGENTS.md rule 5)')
     return value
 
 
@@ -105,7 +123,7 @@ def daily_cap(record, urgency=None, root=ROOT):
     """Scheduled posts a channel takes per New York day at this urgency; None means no engine cap.
 
     At U3 and above the cap rises only to that channel's own policy bound
-    (engine/social.py: Instagram, YouTube, TikTok and X four, Substack Notes two,
+    (engine/social.py: Instagram, YouTube, TikTok and X four, Substack Notes four,
     every other channel one), never to
     the schema's maximum. A null record (a human-only channel) stays null at
     every urgency."""
@@ -121,3 +139,62 @@ def daily_cap(record, urgency=None, root=ROOT):
 def engagement_taps(urgency=None, root=ROOT):
     """How many engagement taps one day's batch may carry at this urgency."""
     return bounds(root)['engagement_taps']['by_urgency'][str(urgency if urgency in (1, 2, 3, 4, 5) else 1)]
+
+
+def _level(urgency):
+    return urgency if urgency in (1, 2, 3, 4, 5) else None
+
+
+def outreach_drafts(urgency=None, root=ROOT):
+    """New one-person outreach drafts Acquisition prepares a day at this urgency (0 when unknown)."""
+    level = _level(urgency)
+    return bounds(root)['outreach_drafts']['by_urgency'][str(level)] if level else 0
+
+
+def subscribe_required(urgency=None, root=ROOT):
+    """Whether every post must carry a subscribe route at this urgency (Ruling, Krish, 2026-11-11)."""
+    level = _level(urgency)
+    return level is not None and level >= bounds(root)['conversion']['applies_from_urgency']
+
+
+URL_IN_TEXT = re.compile(r'https?://[^\s<>"]+')
+
+
+def subscribe_errors(cta, channel, words, link_placement=None, urgency=None, root=ROOT):
+    """Why a post has no usable subscribe route, or []. Nothing is required below the conversion urgency.
+
+    cta is {"url", "placement"}: the subscribe page with its source tags, and in_post (the URL is in the
+    words), first_reply (link_placement first_reply) or profile_link (only on a channel whose posts carry no
+    clickable link, and the words point to the profile). A subscribe route is a destination, never a share
+    ask, and it sits beside the ecosystem route, never in place of it."""
+    if not subscribe_required(urgency, root):
+        return []
+    conversion = bounds(root)['conversion']
+    if not isinstance(cta, dict):
+        return ['no subscribe route at U' + str(urgency) + ': name subscribe_cta {url, placement} '
+                '(intensity.json conversion)']
+    url, placement = cta.get('url'), cta.get('placement')
+    if not isinstance(url, str) or not http_url(url) or not url.startswith('https://'):
+        return ['the subscribe route needs an https URL']
+    page, parts = urlsplit(conversion['subscribe_url']), urlsplit(url)
+    if (parts.hostname or '').lower() != page.hostname or parts.path.rstrip('/') != page.path.rstrip('/'):
+        return [url + ' is not the subscribe page ' + conversion['subscribe_url']]
+    query = parse_qs(parts.query)
+    missing = [t for t in SOURCE_TAGS if not (query.get(t) or [''])[0].strip()]
+    if missing:
+        return ['the subscribe URL needs its source tags (' + ', '.join(missing) + ') so Measurement can credit it']
+    if placement not in conversion['placements']:
+        return ['unknown subscribe placement ' + str(placement) + '; one of ' + ', '.join(conversion['placements'])]
+    if placement == 'in_post':
+        found = {u.rstrip('.,;:!?)') for u in URL_IN_TEXT.findall(words or '')}
+        if url not in found:
+            return ['an in_post subscribe route must have its URL in the words']
+    if placement == 'first_reply' and link_placement != 'first_reply':
+        return ['a first_reply subscribe route needs link_placement first_reply']
+    if placement == 'profile_link':
+        if channel not in conversion['profile_link_channels']:
+            return [str(channel) + ' can carry the link itself; profile_link is only for '
+                    + ', '.join(conversion['profile_link_channels'])]
+        if not re.search(r'\b(?:link in (?:my |the )?(?:bio|profile)|profile link|subscribe)\b', words or '', re.I):
+            return ['a profile_link subscribe route needs the words to point to the profile link']
+    return []

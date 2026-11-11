@@ -56,6 +56,12 @@ class SyntheticLadder(unittest.TestCase):
         patcher = patch.object(spec_module, 'ladder', lambda root=None: REAL_LADDER(self.root))
         patcher.start()
         self.addCleanup(patcher.stop)
+        # The command line reads the live urgency; these tests are not about the U4 and U5 subscribe route
+        # (tests/test_intensity.py covers it), so the CLI sees U3: caps raised, no route required.
+        live = spec_module.intensity.state
+        held = patch.object(spec_module.intensity, 'state', lambda *a, **k: {**live(*a, **k), 'urgency': 3})
+        held.start()
+        self.addCleanup(held.stop)
 
 
 def fixture(name):

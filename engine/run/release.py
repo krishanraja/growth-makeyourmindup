@@ -116,9 +116,10 @@ SAFE = re.compile(r'[^A-Za-z0-9._-]+')
 SLOT_KEYS = {'slot_id', 'channel', 'format', 'play', 'due_at', 'words', 'assets', 'link_placement',
              'cta', 'forward_line', 'experiment_arm', 'publish_mode', 'buffer_draft_id', 'meta',
              'buffer_channel_id', 'payload_sha256'}
-# Optional on a slot and outside its digest: share (built to be sent), ecosystem_cta (lint's route) and
-# concept_id (the approved concept it is made from, R101).
-OPTIONAL_SLOT_KEYS = {'share', 'ecosystem_cta', 'concept_id'}
+# Optional on a slot and outside its digest: share (built to be sent), ecosystem_cta (lint's route),
+# subscribe_cta (the subscribe route U4 and U5 require, Ruling, Krish, 2026-11-11) and concept_id (the
+# approved concept it is made from, R101).
+OPTIONAL_SLOT_KEYS = {'share', 'ecosystem_cta', 'subscribe_cta', 'concept_id'}
 ASSET_KEYS = {'name', 'sha256', 'url', 'bytes'}
 # meta: exactly what an edit sends besides the words and the time (buffer_api.signed_meta);
 # buffer_channel_id: the one Buffer account the draft is on. Both are filled from the draft.
@@ -263,8 +264,8 @@ def is_draft(slot):
 def check_slot(slot):
     """Refuse a malformed slot or one whose stored digest is not its own."""
     if not isinstance(slot, dict) or set(slot) - OPTIONAL_SLOT_KEYS != SLOT_KEYS:
-        raise ValueError('slot must carry exactly the run-spec slot fields (share, ecosystem_cta and concept_id'
-                         ' are optional)')
+        raise ValueError('slot must carry exactly the run-spec slot fields (share, ecosystem_cta, subscribe_cta and'
+                         ' concept_id are optional)')
     sid = slot['slot_id']
     if not isinstance(sid, str) or not sid.strip():
         raise ValueError('slot_id is required')
@@ -991,7 +992,7 @@ def concept_post_hold(slot, decision, review, caps, per_day, formats=None):
 
 def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, now=None, targets=None,
                  other_checks=None, stopped_proposals=(), unresolved_stops=(), reviews=None, caps=None,
-                 other_scheduled=None, buffer_scheduled=None):
+                 other_scheduled=None, buffer_scheduled=None, urgency=None):
     """Arguments for signed, unreleased slots only, once per slot.
 
     asset_paths maps slot_id to its ordered local files; without them a slot
@@ -1100,6 +1101,12 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
         if asks:
             # Krish, 28 Oct 2026: a snackable post is shared for a reason, never asked for the share.
             hold('share_cta_refused: ' + '; '.join(asks))
+            continue
+        routeless = intensity.subscribe_errors(slot.get('subscribe_cta'), slot['channel'], slot['words'],
+                                               slot['link_placement'], urgency)
+        if routeless:
+            # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route.
+            hold('subscribe_cta_refused: ' + '; '.join(routeless))
             continue
         capability_check = False
         if not is_draft(slot):
@@ -1517,7 +1524,8 @@ def main(argv=None, root=None):
                                       unresolved_stops(root), run_reviews(spec, root),
                                       concept_caps(intensity.state(root)['urgency'], root),
                                       other_scheduled(root, spec['run_id']),
-                                      read_json(args.scheduled) if args.scheduled else None)
+                                      read_json(args.scheduled) if args.scheduled else None,
+                                      intensity.state(root)['urgency'])
                 if result['calls']:
                     write_json(ledger_path, result['ledger'])
                 if result['holds']:

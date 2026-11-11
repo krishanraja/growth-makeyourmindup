@@ -12,6 +12,7 @@ closes the opportunity and suppresses further asks. This module prepares and rec
 import json
 import re
 
+from engine import intensity
 from engine.engines import core
 
 KINDS = ('opportunity', 'outreach', 'experiment', 'rule')
@@ -402,14 +403,47 @@ def _conflicts(records):
     return out
 
 
-def recover(records, all_records, now):
-    """What a fresh Acquisition run recovers first (review, "How a fresh chat runs one engine")."""
+SUBSTACK_NATIVE = ('Recommendation swap with an aligned Substack publication (newsletter_placement)',
+                   'Cross-post or collaboration ask to an aligned Substack writer (creator_collaboration)',
+                   'Guest piece pitch that reuses an existing MYMU piece (editorial_feature)')
+
+
+def daily_outreach(records, now, urgency=None, root=core.ROOT):
+    """Today's outreach quota at this urgency (Ruling, Krish, 2026-11-11): new one-person drafts to prepare.
+
+    Substack grows from other publications, so at U3 to U5 the batch leans on Substack-native routes. Each
+    draft is still one named person citing something they made (AGENTS.md rule 5); Krish approves and enacts
+    each by digest. Suppressed recipients are never drafted again (suppressed())."""
+    day = str(now)[:10]
+    quota = intensity.outreach_drafts(urgency, root)
+    drafted = sum(1 for r in records.values() if r['kind'] == 'outreach'
+                  and str(r.get('created_at') or r.get('updated_at') or '')[:10] == day)
+    return {'urgency': urgency, 'quota': quota, 'drafted_today': drafted, 'remaining': max(0, quota - drafted),
+            'lean_on': list(SUBSTACK_NATIVE) if quota else [],
+            'rule': 'one named person per draft, citing something they made; Krish approves and enacts each by digest'}
+
+
+def recover(records, all_records, now, urgency=None):
+    """What a fresh Acquisition run recovers first (review, "How a fresh chat runs one engine").
+
+    urgency defaults to this week's North Star urgency (engine/intensity.py)."""
+    if urgency is None:
+        try:
+            urgency = intensity.state(core.ROOT)['urgency']
+        except (ValueError, KeyError, TypeError, OSError):
+            urgency = None
+    batch = daily_outreach(records, now, urgency)
     ranked = rank_routes(records.values())
     best = next((r for r in ranked if r['next_owner'] == 'acquisition'), None)
     pending = [r for r in records.values() if r['kind'] == 'outreach'
                and r['state'] in ('drafted', 'awaiting_approval', 'needs_fresh_decision')]
     if best:
         action = {**_brief(best), 'next_action': best['next_action'] or 'Qualify the route and prepare the offer'}
+    elif batch['remaining'] and not pending:
+        action = {'id': None, 'title': 'Draft today\'s Substack-native outreach batch', 'state': None,
+                  'next_owner': 'acquisition', 'revisit_when': 'every run',
+                  'next_action': 'Prepare ' + str(batch['remaining']) + ' one-person drafts at U' + str(urgency)
+                                 + ': ' + '; '.join(SUBSTACK_NATIVE)}
     else:
         action = {'id': None, 'title': 'Find the strongest route into an audience', 'state': None,
                   'next_owner': 'acquisition', 'next_action': FIND, 'revisit_when': 'every run'}
@@ -430,5 +464,6 @@ def recover(records, all_records, now):
         'handed_off': [_brief(r) for r in sorted(records.values(), key=lambda r: r['id'])
                        if r['next_owner'] in ('engagement', 'content-engine', 'measurement') and not _closed(r)],
         'conflicts': _conflicts(records),
+        'daily_outreach': batch,
         'next_action': action,
     }
