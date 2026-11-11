@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "kind": "brand-library",
+  "as_of": "2026-11-11",
+  "note": "Where every makeyourmindup brand asset lives. Read this before fetching any logo, colour, font, photo, template, sting, character pose, music or channel art. Prefer the Drive id: ids survive moves, paths do not. Krish asked for one canonical brand kit on 11 Nov 2026 (docs/BRAND-KIT.md). The Canva kit itself is social/brand/kit.json.",
+  "drive_root": {
+    "name": "makeyourmindup",
+    "id": "1HHI0u24N3o3-yeprQzHdXVZtA7cNcKxh",
+    "windows": "H:\\My Drive\\Ventures\\Active Ventures\\makeyourmindup"
+  },
+  "canonical_kit": {
+    "name": "1 Brand kit (permanent)",
+    "id": "1kOCNq1F-MD3u2SGvF8hoqUKo4DPnyuNi",
+    "version": "1.5",
+    "source_of_truth": "krishanraja/makeyourmindup (apps/cover, docs/brandbooknew). Where a file here and that repository disagree, the repository wins."
+  },
+  "assets": {
+    "brand_book": {
+      "path": "1 Brand kit (permanent)/guidelines/makeyourmindup-brand-book.pdf",
+      "id": "1Pjd_kQAKT1dcbrI2TWDan2qIrlidxURT",
+      "use": "The rules: name, logo, colour, type, sections, photography, voice. Start here."
+    },
+    "brand_book_components": {
+      "path": "1 Brand kit (permanent)/guidelines/makeyourmindup-Brand-Book.pdf",
+      "id": "1CeIsgKkiNk9EwM-5j9Iyg5JX0JLqBlWw",
+      "use": "43-page component and token reference (27 Oct 2026): buttons, stickers, stamps, diagrams, contrast pairs, every token.",
+      "caveat": "Its page 4 puts under.the.hood on Monday and follow.the.money on Wednesday. That is wrong. follow.the.money is Monday, under.the.hood Wednesday, mind.the.gap Friday. The colours are right: butter follow.the.money, lilac under.the.hood, coral mind.the.gap."
+    },
+    "logos": {
+      "path": "1 Brand kit (permanent)/logos",
+      "id": "1w5A-7PLTLPlQFYleVntqpN4kgn27pKZr",
+      "children": {
+        "stacked": "1selzGTwn3y9KiEiyBNP9vuNteEzAQXEU",
+        "horizontal": "1dqQoKtyu4DVCz5qR87r_Dwk7-uGRba5L",
+        "mark": "1g5ZSOXOkf_t_GpKOdrPUZmSStc6D40X6"
+      },
+      "use": "Stacked for covers and first screens, horizontal for nav, footers and email headers, mark for avatars and favicons. The logo only sits on ink."
+    },
+    "colours": {
+      "path": "1 Brand kit (permanent)/colours",
+      "id": "1ZeUkVJPUYqi1R3BoLmBdXDKifUEG-6I-",
+      "use": "palette.txt: every colour with hex, RGB and its one job. Same values as social/brand/kit.json and render/kit.css."
+    },
+    "tokens": {
+      "path": "1 Brand kit (permanent)/tokens",
+      "id": "1H1RomeEJhp_MX3glC28FKrg-jEx49AnK",
+      "use": "tokens.css, tokens.json, tailwind.preset.cjs for anything built on screen."
+    },
+    "fonts": {
+      "path": "1 Brand kit (permanent)/fonts",
+      "id": "1hAVurHSWQmJuX0_rKnORNB4Iu_QAJHtN",
+      "use": "Anton (headings), Fraunces italic (the human line), Archivo (body), IBM Plex Mono (labels), each with its SIL OFL licence. Vendored here at render/fonts."
+    },
+    "photography": {
+      "path": "1 Brand kit (permanent)/photography",
+      "id": "1r1f03SMngt42jOG0S0O82Qr9CIvzAPNt",
+      "use": "The felt robot lying down (cover) and standing (welcome), as sources and cut onto ink; editor/ holds Krish's two photos."
+    },
+    "applications": {
+      "path": "1 Brand kit (permanent)/artwork",
+      "id": "1KbHJhhwEceh_6fjrm-WXXSPrm_q4uHh1",
+      "use": "Finished examples: social card 1200x630, Substack cover and wordmark, email banner, signature banner, site screenshots."
+    },
+    "templates": {
+      "path": "1 Brand kit (permanent)/templates",
+      "id": "1dHjwqwxZQ5XXa9-7I9LTFQD-9go4n1TD",
+      "use": "Editable PowerPoint starters: social post, ad, deck. Replace sample text before use. Canva templates are in social/brand/kit.json."
+    },
+    "design_system": {
+      "path": "1 Brand kit (permanent)/06_Claude-Design-System",
+      "id": "1Au-j6KCBjzZCdI-cQsjAFhsE2PJ4LTGn",
+      "use": "The Claude Design System package (8 Oct 2026): makeyourmindup.tokens.json, makeyourmindup-Brand-system.md, the two-part zip and MIGRATE.md to rebuild it in another account."
+    },
+    "intro_sting": {
+      "path": "1 Brand kit (permanent)/Intro sting",
+      "id": "1qnaJkMPLKYoXVqVHEeRMfqn3kGQMWpH6",
+      "use": "One sting per section in 16x9 and 9x16. content-engine config/intro-sting.json reads these by path; do not move or rename."
+    },
+    "character": {
+      "path": "1 Brand kit (permanent)/character/krish",
+      "id": "1D2MfX8-dAftGxILc_uzssCI6-sjElsJa",
+      "use": "Krish's cartoon character: base, poses, contact sheet, manifest. content-engine config/ve/character.json reads it by path; do not move or rename. Not approved for use until that file says approved."
+    },
+    "music": {
+      "path": "00_Brand-Assets/07_Music",
+      "id": "1pmPWx8vTOZuUXkp-WjhLlCTvof8MrRxK",
+      "use": "Licensed Epidemic Sound beds. content-engine config/music-library.json reads this exact folder by id and Windows path, so it stays outside the kit. File new tracks here and nowhere else."
+    },
+    "channel_art": {
+      "path": "2 Channel art (permanent)",
+      "id": "1Q2O4BSwjf3LOWYMzsDK6L3JwXWtbosJq",
+      "use": "YouTube banner and watermark, profile pictures, Facebook cover, X header, Instagram highlight covers, bios. READ ME - profiles.txt says which file goes where."
+    },
+    "canva_kit": {
+      "canva_brand_kit_id": "kAHZOJ-K6I8",
+      "canva_template_folder": "FAHZOvDdY8E",
+      "use": "The Canva brand kit and growth templates. Ids and sizes in social/brand/kit.json."
+    },
+    "inspiration": {
+      "drive_id": "1QxrzxISYFXq0er0DG0XSapm7qhvuRmh-",
+      "path": "Ventures > Inspiration > Production Inspo",
+      "use": "Reference clips for production quality. Studied, never published, never part of the brand kit."
+    }
+  },
+  "not_canonical": {
+    "00_Brand-Assets": {
+      "id": "1XaFOCeA6Hy_pYF6If8H1frjxo_k7IVOu",
+      "why": "Holds only 07_Music (above). Everything else in it was an older copy of the kit and moved out on 11 Nov 2026."
+    },
+    "archive": {
+      "path": "_Archive/PREVIOUS VERSIONS - archive, not current, do not use/2026-11-11 brand kit cleanup",
+      "id": "1rBsiOrLfT_VZBy8oVb8uuwI9603TUcAO",
+      "why": "Duplicates and superseded material moved on 11 Nov 2026: a second copy of kit v1.5, older channel art and launch exports, launch HTML, the frozen 28 Oct video formats, old Canva concept links, a duplicate music folder and a duplicate copy of Production Inspo. Never read for current brand."
+    }
+  }
+}

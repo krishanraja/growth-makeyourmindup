@@ -21,6 +21,7 @@ creating or uploading a package; keep private evidence out of the shared library
 | What exact post is proposed? | Private package conforming to `schemas/package.schema.json` |
 | Why would one person send it to another? | The package's `share` block, checked against `share.json`; the blind reader is `crew/send-test/` |
 | How is creative made and judged? | Content-engine's production contract; see `docs/ENGINE-BOUNDARY.md` |
+| Where is a brand asset (logo, font, colour, photo, template, sting, music)? | `brand/library.json` (Drive ids), with `docs/BRAND-KIT.md` |
 | How are Notes and memes made? | `guides/canva.md` (format `production_owner` is `growth-canva`) |
 | What is live right now? | Actual owned native pages and tool readback; private run evidence |
 
