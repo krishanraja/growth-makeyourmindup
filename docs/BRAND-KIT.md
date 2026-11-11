@@ -36,8 +36,11 @@ from 7 October. Nothing was deleted. Everything was moved:
 | `00_Brand-Assets/04_Decks` (now empty), `05_Historical-and-Source` | Archive | History |
 | `00_Brand-Assets/CANVA-SOURCES.md`, `START-HERE.txt` | Archive | Old Canva concepts; the live Canva kit is `kAHZOJ-K6I8` |
 | `06_Claude-Design-System/Video formats (frozen 28 Oct 2026)` | Archive | Superseded video design proof |
-| `1 Brand kit/Music` | Archive | Byte-for-byte copy of `07_Music`, which the engine reads |
-| `1 Brand kit/Style references` | Archive | A copy of `Ventures > Inspiration > Production Inspo`; inspiration is never brand |
+
+`1 Brand kit/Music` and `1 Brand kit/Style references` stay in the kit. They are mirrors
+content-engine fills on purpose, of `07_Music` and of `Ventures > Inspiration > Production Inspo`,
+so any machine can fetch them (`music.py`, `references.py`; Library Sync files them). They were
+archived for an hour on 11 November by mistake and put back. Never file anything in them by hand.
 
 Archive: `_Archive/PREVIOUS VERSIONS - archive, not current, do not use/2026-11-11 brand kit cleanup`
 (id `1rBsiOrLfT_VZBy8oVb8uuwI9603TUcAO`). Never read it for current brand.
