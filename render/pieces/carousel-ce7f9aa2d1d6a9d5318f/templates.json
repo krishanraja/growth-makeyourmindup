@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "kind": "piece_kit",
+  "piece_id": "carousel-ce7f9aa2d1d6a9d5318f",
+  "about": "A clipped work sheet pairs completed task boxes with empty result boxes.",
+  "templates": {
+    "clipboard-cover": {
+      "file": "templates/clipboard-cover.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "page": "text",
+        "subhead": "text",
+        "task_label": "text",
+        "result_label": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "page",
+        "subhead",
+        "task_label",
+        "result_label"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "The main line for this card",
+        "page": "Card position",
+        "subhead": "A short line introducing the card",
+        "task_label": "The task column label",
+        "result_label": "The result column label"
+      }
+    },
+    "clipboard-detail": {
+      "file": "templates/clipboard-detail.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "page": "text",
+        "task_label": "text",
+        "task": "text",
+        "result_label": "text",
+        "result": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "page",
+        "task_label",
+        "task",
+        "result_label",
+        "result"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "The main line for this card",
+        "page": "Card position",
+        "task_label": "The task label",
+        "task": "The task described in plain words",
+        "result_label": "The result label",
+        "result": "The follow-up question for this slot"
+      }
+    },
+    "clipboard-close": {
+      "file": "templates/clipboard-close.html",
+      "width": 1080,
+      "height": 1350,
+      "fields": {
+        "label": "text",
+        "headline": "text",
+        "page": "text",
+        "task_label": "text",
+        "task": "text",
+        "result_label": "text",
+        "result": "text"
+      },
+      "required": [
+        "label",
+        "headline",
+        "page",
+        "task_label",
+        "task",
+        "result_label",
+        "result"
+      ],
+      "example": {
+        "label": "series.label",
+        "headline": "The main line for this card",
+        "page": "Card position",
+        "task_label": "The task label",
+        "task": "The task described in plain words",
+        "result_label": "The result label",
+        "result": "The follow-up question for this slot"
+      }
+    }
+  }
+}
