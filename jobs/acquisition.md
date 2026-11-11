@@ -38,7 +38,7 @@ the private `.scratch/engines/sessions.json`, so other sessions can report back 
 only reads. Its `recover` block names the best open opportunity, the evidence of access, the
 outstanding approvals, the closed and declined routes with what is suppressed, the active
 experiment, the rules and any conflicts. `next_action` is where the run begins. With no qualified
-route, it says to find one.
+route, it says to find one, or at U3 to U5 to draft `recover.daily_outreach` (docs/ENGINE.md, "The subscriber push").
 
 ## Ranking a route
 

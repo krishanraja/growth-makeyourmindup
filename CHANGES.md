@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-11: Dial up the subscriber push. His words: "have it dial up its urgency in getting me new
+  subscribers to my substack." The engine was already at U5 with every volume cap at its bound and one
+  new subscriber the week before, so he chose three levers (11 Nov): a conversion push, Substack-native
+  outreach and raising the volume walls. At U4 and U5 every run spec slot and social package names a
+  tagged subscribe route (`subscribe_cta`; lint, preflight and release refuse one without); Acquisition
+  prepares a daily batch of one-person outreach drafts (2, 3 and 5 at U3 to U5), leaning on Substack
+  recommendation swaps, cross-posts and guest pieces; Substack Notes rise from two to four a day and U5
+  engagement taps from 20 to 25. Zero spend, every approval and the ecosystem route are unchanged.
 - 2026-11-05: Make Your Mind Up outreach belongs to this engine, not Control Center. His words: "only
   Outreach for MindMake belongs to Control Center, alongside visibility and networking and events and
   partners. Anything to do with Make Your Mind Up growth belongs to the Make Your Mind Up engine. I'll be

@@ -330,6 +330,9 @@ def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urg
                            ' from the content (social/share.json)', sid) for e in cta_errors(slot['words'])]
     if routes is not None:
         errors += ecosystem_errors(slot, at, routes)
+    errors += [finding('subscribe_cta', at + '.subscribe_cta', e, sid)
+               for e in intensity.subscribe_errors(slot.get('subscribe_cta'), slot['channel'], slot['words'],
+                                                   slot['link_placement'], urgency, root)]
     warnings += [finding('forward_line_prose', at + '.forward_line', 'forward_line ' + e, sid)
                  for e in prose_errors(slot['forward_line'])]
     listed, approved = manifest

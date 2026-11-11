@@ -413,6 +413,33 @@
             ],
             "additionalProperties": false
           },
+          "subscribe_cta": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "The slot's subscribe route (Ruling, Krish, 2026-11-11): the tagged subscribe page and where it sits. Required by lint and release at the urgency in intensity.json conversion; it sits beside ecosystem_cta, never in place of it. Not part of payload_sha256.",
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^https://\\S+$"
+              },
+              "placement": {
+                "type": "string",
+                "enum": [
+                  "in_post",
+                  "first_reply",
+                  "profile_link"
+                ]
+              }
+            },
+            "required": [
+              "url",
+              "placement"
+            ],
+            "additionalProperties": false
+          },
           "concept_id": {
             "type": [
               "string",

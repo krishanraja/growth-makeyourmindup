@@ -211,12 +211,27 @@ from the runner and from each workspace job, leads with the gap line
 short by unknown", never zero). At U3 and above the caps rise to the bounds
 in `intensity.json`: a channel's scheduled posts a day only to its own
 policy bound in `engine/social.py` (Instagram, YouTube, TikTok and X four
-with a floor of three, the 29 Oct ruling; Substack Notes two and every other
-channel one, the 27 Oct ruling; every channel already sits there, so `run
+with a floor of three, the 29 Oct ruling; Substack Notes four, raised from two
+on 11 Nov, and every other channel one, the 27 Oct ruling; every channel already sits there, so `run
 lint` reads the urgency and no urgency caps those four below three; a
-human-only channel stays manual), and the day's engagement taps from 5 to 10, 15 and 20 at U3, U4
-and U5, under Control Center's 25. Raised volume comes from the taps. Walls, zero spend, approvals, the
-creative bar and Krish's 20 and 30 minute budget never move with it.
+human-only channel stays manual), and the day's engagement taps from 5 to 10, 15 and 25 at U3, U4
+and U5, Control Center's ceiling. Raised volume comes from the taps. Zero spend, approvals and the
+creative bar never move with it.
+
+### The subscriber push (Ruling, Krish, 2026-11-11)
+
+At U4 and U5 (`intensity.json`, `conversion`) every run spec slot and social package names a
+subscribe route, `subscribe_cta` {url, placement}: the subscribe page
+(`https://home.makeyourmindup.ai/subscribe`) with its `utm_source` and `utm_content` tags (`python
+growth.py link ... conversion` makes them), placed `in_post` (the URL is in the words),
+`first_reply` (the slot's `link_placement` is `first_reply`) or `profile_link` (only Instagram and
+TikTok, and the words point to the profile link). `run lint`, social preflight and release all
+refuse a post without one; release holds it as `subscribe_cta_refused`. It sits beside the
+ecosystem route, never in place of it, and it is a destination, never a share ask. At U3 to U5
+Acquisition's `recover` names the day's outreach batch (`daily_outreach`: 2, 3 and 5 one-person
+drafts), leaning on Substack recommendation swaps, cross-posts and guest pieces. The browser half
+(the reading, the profile links, the swap list) is the Cowork brief in
+`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`.
 
 ## Tracking and the work queue
 

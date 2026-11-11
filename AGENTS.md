@@ -213,6 +213,12 @@ short by Z"), and `engine/intensity.py` raises the daily post and engagement
 caps to the bounds in `intensity.json`, a channel's posts only to its own
 policy bound in `engine/social.py` (docs/ENGINE.md, "Intensity").
 
+Ruling (Krish, 2026-11-11), "dial up its urgency in getting me new subscribers to my substack": at U4
+and U5 every post carries a tagged subscribe route (`subscribe_cta`) beside its ecosystem route, and
+lint, preflight and release refuse one without; Acquisition prepares a daily batch of one-person
+outreach drafts (2, 3 and 5 at U3 to U5); Substack Notes rise to four a day and U5 engagement taps
+to 25 (docs/ENGINE.md, "The subscriber push").
+
 ## Flood the short-form channels (Ruling, Krish, 2026-10-29)
 
 "When it comes to Instagram, YouTube, and TikTok, I am more than happy to pump
