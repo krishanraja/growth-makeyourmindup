@@ -44,6 +44,22 @@ CREDITS_FEATURE = 'credits'
 # channel; raised only when a report carries one of them.
 CHANNELS_VERSION = '1.17.0'
 V17_FIELDS = ('buffer_channels', 'post_metrics', 'offdays')
+# 1.20.0 adds the engine's state on every place in Control Center (priorities, obsessions, next_steps) and
+# what it did with Krish's instruction (instruction_acks). Sent only when the served directive says
+# features.engine_state, and raised only when a report carries one of them (Ruling, Krish, 2026-11-11).
+STATE_VERSION = '1.20.0'
+STATE_FEATURE = 'engine_state'
+STATE_FIELDS = ('priorities', 'obsessions', 'next_steps', 'instruction_acks')
+STATE_MAX = {'priorities': 5, 'obsessions': 3, 'next_steps': 5, 'instruction_acks': 5}
+STATE_LINE_MAX = 200
+ACK_LINE_MAX = 280
+ACK_STATES = ('received', 'started', 'done', 'blocked')
+WAITS_ON = ('engine', 'krish', 'other')
+INSTRUCTION_ID = re.compile(r'^ki_[0-9a-f]{24}$')
+# An activity line naming one of his instructions, by id only (never his words).
+INSTRUCTION_LINE = re.compile(r"Krish's instruction ki_[0-9a-f]{24}")
+YMD = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+CONTROL_CHAR = re.compile('[\x00-\x1f\x7f]')
 CHANNEL_NAME = re.compile(r'^[a-z][a-z0-9_-]{0,31}$')
 BUFFER_ID_TEXT = re.compile(r'^[A-Za-z0-9]{8,64}$')
 SLOT_TEXT = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$')
@@ -396,9 +412,12 @@ def copy_open_errors(item):
     return errors
 
 
-def report_version(proposals, credits_spent=None, v17=False):
-    """1.17.0 when the report carries buffer_channels, post_metrics or offdays, 1.16.0 when it carries
-    credits_spent, 1.14.0 when a proposal is an engagement task, 1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
+def report_version(proposals, credits_spent=None, v17=False, state=False):
+    """1.20.0 when the report carries priorities, obsessions, next_steps or instruction_acks, 1.17.0 when it
+    carries buffer_channels, post_metrics or offdays, 1.16.0 when it carries credits_spent, 1.14.0 when a
+    proposal is an engagement task, 1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
+    if state:
+        return STATE_VERSION
     if v17:
         return CHANNELS_VERSION
     if credits_spent:
@@ -462,15 +481,78 @@ def v17_errors(report):
     return errors
 
 
+def state_line_errors(where, line, limit):
+    """Control Center's rule for a state or ack line: plain text on one line, 1 to limit characters, no
+    address or phone number (its stateLine and lineCarriesContact)."""
+    if not isinstance(line, str) or not line.strip() or len(line) > limit or CONTROL_CHAR.search(line):
+        return [where + ' needs a line: plain text on one line, at most ' + str(limit) + ' characters']
+    if EMAIL.search(line) or has_phone(line):
+        return [where + ' line carries an email address or a phone number']
+    return []
+
+
+def state_errors(report):
+    """The 1.20.0 rules the JSON schema cannot say (Control Center's parseEngineState): a line is never
+    empty and never carries an address or number, a date is a real day, an ack names an instruction id."""
+    errors = []
+    for key in STATE_FIELDS:
+        items = report.get(key)
+        if key not in report:
+            continue
+        if not isinstance(items, list) or len(items) > STATE_MAX[key]:
+            errors.append(key + ' must be a list of at most ' + str(STATE_MAX[key]))
+            continue
+        for index, item in enumerate(items):
+            where = key + '[' + str(index) + ']'
+            if not isinstance(item, dict):
+                errors.append(where + ' is not an object')
+                continue
+            errors += state_line_errors(where, item.get('line'), ACK_LINE_MAX if key == 'instruction_acks' else STATE_LINE_MAX)
+            for field in ('since', 'when'):
+                value = item.get(field)
+                if value is not None:
+                    try:
+                        if not (isinstance(value, str) and YMD.match(value)):
+                            raise ValueError
+                        instant(value + 'T00:00:00Z')
+                    except (ValueError, TypeError):
+                        errors.append(where + '.' + field + ' must be YYYY-MM-DD or null')
+            if key == 'priorities' and (isinstance(item.get('rank'), bool) or item.get('rank') not in range(1, 6)):
+                errors.append(where + '.rank must be a whole number from 1 to 5')
+            if key == 'next_steps' and item.get('waits_on') not in WAITS_ON:
+                errors.append(where + '.waits_on must be one of ' + ', '.join(WAITS_ON))
+            if key == 'instruction_acks':
+                if not INSTRUCTION_ID.match(str(item.get('instruction_id'))):
+                    errors.append(where + '.instruction_id must be an instruction id')
+                if item.get('state') not in ACK_STATES:
+                    errors.append(where + '.state must be one of ' + ', '.join(ACK_STATES))
+    return errors
+
+
+def without_state(report):
+    """The same report without its 1.20.0 fields, or its activity lines naming one of his instructions, resealed.
+
+    Used once when Control Center cannot confirm 1.20.0 today, so the run still reports what it did; an ack
+    that was not delivered is never claimed in a line."""
+    plain = {key: value for key, value in report.items() if key not in STATE_FIELDS + ('payload_sha256',)}
+    plain['activity'] = [a for a in report.get('activity', []) if not INSTRUCTION_LINE.search(str(a.get('line')))]
+    plain['schema_version'] = report_version(plain.get('proposals') or [], plain.get('credits_spent'),
+                                             any(k in plain for k in V17_FIELDS))
+    plain['payload_sha256'] = report_digest(plain)
+    return validate_report(plain)
+
+
 def validate_report(report):
     errors = schema_errors(report, load_schema())
     expected = report_version(report.get('proposals') if isinstance(report.get('proposals'), list) else [],
-                              report.get('credits_spent'), any(k in report for k in V17_FIELDS))
+                              report.get('credits_spent'), any(k in report for k in V17_FIELDS),
+                              any(k in report for k in STATE_FIELDS))
     if report.get('schema_version') != expected:
         errors.append('schema_version must be ' + expected + ': raise it only for a field the report uses')
     if 'credits_spent' in report:
         errors += spent_errors(report['credits_spent'])
     errors += v17_errors(report)
+    errors += state_errors(report)
     if report.get('engine_id') != ENGINE_ID or report.get('product_slug') != PRODUCT_SLUG:
         errors.append('report must name ' + ENGINE_ID + ' and ' + PRODUCT_SLUG)
     for item in report.get('objectives', []):
@@ -502,13 +584,20 @@ def validate_report(report):
 
 def build_report(run_id, mode, observed_at, revision, captured_at, status, objectives=(),
                  activity=(), proposals=(), events=(), holds=(), credits_spent=None, buffer_channels=None,
-                 post_metrics=None, offdays=None):
+                 post_metrics=None, offdays=None, state=None):
+    """state: the 1.20.0 fields ({priorities, obsessions, next_steps, instruction_acks}); each is sent only
+    when it holds an entry, so a report without them is unchanged."""
     proposals = list(proposals)
     credits_spent = list(credits_spent or [])
     extra = {k: v for k, v in (('buffer_channels', buffer_channels), ('post_metrics', post_metrics or None),
                                ('offdays', offdays)) if v is not None}
+    unknown = set(state or {}) - set(STATE_FIELDS)
+    if unknown:
+        raise ValueError('not a 1.20.0 state field: ' + ', '.join(sorted(unknown)))
+    lists = {key: list(value) for key, value in (state or {}).items() if value}
     report = whole({
-        'schema_version': report_version(proposals, credits_spent, bool(extra)), 'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
+        'schema_version': report_version(proposals, credits_spent, bool(extra), bool(lists)),
+        'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
         'run_id': run_id, 'mode': mode, 'observed_at': iso(observed_at),
         'source': {'revision': clip(revision, 128), 'captured_at': iso(captured_at)},
         'status': status, 'objectives': list(objectives),
@@ -521,6 +610,9 @@ def build_report(run_id, mode, observed_at, revision, captured_at, status, objec
         report['credits_spent'] = whole(credits_spent)
     for key, value in extra.items():
         report[key] = whole(value)
+    for key in STATE_FIELDS:
+        if key in lists:
+            report[key] = whole(lists[key])
     report['payload_sha256'] = report_digest(report)
     return validate_report(report)
 
@@ -642,11 +734,20 @@ class Client:
     def read_report(self, run_id):
         return self._request('GET', 'reports/' + quote(run_id, safe=''))
 
+    def recent_reports(self, count=10):
+        """This engine's own latest live reports, newest first: run_id, accepted_at, status and activity only
+        (protocol 1.10.0, features.recent_reports). Never the proposals or the payload."""
+        result = self._request('GET', 'reports?recent=' + str(max(1, min(10, int(count)))))
+        if result.get('ok') is not True or not isinstance(result.get('reports'), list):
+            raise ProtocolError('bad_recent_reports')
+        return result['reports']
+
     def post_report(self, report):
         """Report once, then read it back. A 409 is read back, never retried."""
         validate_report(report)
         if report['schema_version'] != SCHEMA_VERSION:
-            feature = {ENGAGE_VERSION: ENGAGE_KIND, CREDITS_VERSION: CREDITS_FEATURE}.get(report['schema_version'])
+            feature = {ENGAGE_VERSION: ENGAGE_KIND, CREDITS_VERSION: CREDITS_FEATURE,
+                       STATE_VERSION: STATE_FEATURE}.get(report['schema_version'])
             # 1.17.0 names no feature flag: its version in capabilities is the whole check.
             self.confirm_version(report['schema_version'], feature)
         ours = report['payload_sha256']

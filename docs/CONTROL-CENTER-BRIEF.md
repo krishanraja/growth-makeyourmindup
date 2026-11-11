@@ -108,3 +108,11 @@ The directive's figures win over this table: read `share_amount` and `remaining_
 - Never past `remaining_for_you`, and never a top-up, a plan change or new money.
 - Nothing made with credits is published, posted or sent without its own approval: the go-live, or an approved concept under the 2026-10-29 mix plan ruling (AGENTS.md, "Autonomy"). Anything in Krish's cloned voice needs his approval to publish.
 - Never spend to exhaust a pool: credits serve the objectives, not the other way round. Apify is never a pool to exhaust at all.
+
+## Krish's instruction and the engine's state (protocol 1.20.0)
+
+Added 2026-11-11. Ruling (Krish, 2026-11-11): every growth engine's priorities, obsessions, next steps and outstanding items feed live across Control Centre, and Krish instructs each engine with his next best action, which starts it. The spec is `docs/control-center/ENGINE-PROTOCOL.md`, "Krish's instruction and the engine's state (1.20.0)"; how this engine does it is `docs/ENGINE.md`, "Krish's instruction and the engine's state (protocol 1.20.0)".
+
+- **His instruction** arrives as the directive's `krish_instruction` and wakes the runner with `client_payload.instruction_id`. The runner acks `received` by id, under its own `--wake` run_id; the next publication workspace job prints it first, acts on it inside the walls and acks `started`, `done` or `blocked` (`cc finish --ack`). It is never an approval: walled work still comes to his list as a proposal, and Make Your Mind Up outreach is still drafted for him to send himself.
+- **This engine's state** rides on every report that pulls the directive, once the directive serves `features.engine_state`: `priorities` (the North Star gap and the levers `intensity.json` sets), `obsessions` (his own quotes in `config/engine-state.json`, checked against their source) and `next_steps` (his open instruction, the newest now-notes' `Next:` lines, NOW.md's "What is next" and the first unticked GET-GOING step).
+- **The words of an instruction** never reach this public repository, its Actions logs or a report: only its id does.

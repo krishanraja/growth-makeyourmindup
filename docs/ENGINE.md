@@ -522,6 +522,79 @@ ends and what closes it.
 output, files or exceptions. `tests/test_control_center.py` proves the loop
 against a local stand-in server, including the worked example's digest.
 
+### Krish's instruction and the engine's state (protocol 1.20.0)
+
+Ruling (Krish, 2026-11-11): every growth engine's priorities, obsessions,
+next steps and outstanding items feed live across Control Centre, and Krish
+instructs each engine with his next best action, which starts it. His
+words: "They are responsible for driving the overall success of each
+venture, so make sure I can instruct each one with my next best action and
+have it get going (as well as always understand the current state of play
+and what's outstanding)." The code is `engine/engine_state.py`; the tests
+are `tests/test_engine_state.py`.
+
+**Nothing new until it is served.** Every new field is sent only when the
+directive says `features.engine_state: true`. Before that the reports are
+exactly as they were. A report carrying one goes at 1.20.0, only where
+capabilities list it and `features.engine_state` is true. If Control Center
+cannot take it (`schema_version_unsupported`, `schema_version_unconfirmed`,
+`engine_state_unsupported` or a 400), the loop sends the same report once
+without the new fields and without any line naming his instruction, and
+says "engine state not taken".
+
+**His instruction.** `krish_instruction` is null (none open), absent (not
+read today, or an older Control Center) or `{ id, words, given_at,
+given_by, supersedes }`. It is never an approval: the walls do not move.
+
+- The runner (the 05:10 UTC push, and a wake his instruction starts) cannot
+  draft, so it acks `received` with the line that the next publication
+  workspace job acts on it first. An instruction wake carries
+  `client_payload.instruction_id`, and the workflow then runs `cc runner
+  --deliver --wake gh<run id>.<attempt>`: that report's run_id is
+  `makeyourmindup:<date>:runner:wake-<...>`, so it never conflicts with the
+  morning's report, and it reads the morning's report before proposing, so
+  nothing is proposed twice. A run by hand (`workflow_dispatch`) wakes the
+  same way.
+- A workspace job prints the block first at `cc start`, keeps it in
+  `.scratch/cc/instruction.txt`, acts on it first, and finishes with
+  `--ack started|done|blocked --ack-line "..."` (AGENTS.md, "His
+  instruction"). Its report acks `received` (when no earlier report named
+  it) and then what it did. `.scratch/cc/instructions.json` keeps the acks
+  sent from this workspace, so a later job never sends `received` again and
+  is told when one was acked done.
+- `received` goes once: an earlier report naming the instruction (this
+  engine's latest live reports, `GET reports?recent=10`, or the workspace's
+  own record) counts. If those cannot be read, `received` is sent again,
+  which Control Center counts as stale and ignores.
+- A held engine is told only its hold (`krish_instruction` null). An
+  instruction handed to it anyway is acked `received` and then `blocked`
+  ("engine held"), and nothing is acted on.
+- His words never reach a public log, a commit or a report: the runner
+  prints only the id and what it acked, an activity line names the id
+  (activity lines only), no state or ack line carries the id (24 hex
+  characters can hold ten digits in a row, which Control Center reads as a
+  phone number), and `cc finish` refuses an ack line that repeats six of
+  his words in order.
+
+**The engine's state**, on every report that pulls the directive (the
+runner, every workspace job and the measure lane), so the newest live
+report always carries it:
+
+- `priorities`: the North Star gap ("X of Y this week, U-n, short by Z"),
+  then the levers `intensity.json` sets at this urgency (the subscribe
+  route, the daily outreach drafts, the volume bounds), then zero paid
+  boosts.
+- `obsessions`: Krish's own quoted aims in `config/engine-state.json`, each
+  kept only while the file it is quoted from still holds the quote word for
+  word. Never a paraphrase and never a goal of the engine's own.
+- `next_steps`: his open instruction first, then the newest now-notes'
+  `Next:` lines, NOW.md's "What is next" and the first unticked step of
+  `docs/GET-GOING.md`, at most five, each a whole sentence or a whole
+  leading clause of at most 200 characters, never cut mid-clause.
+
+Every line is plain text with no address or phone number; anything else
+is refused here before it is sent.
+
 ## Autonomy loop
 
 GET-GOING Step 1 on protocol 1.1.0 (`engine/control_center.py`,

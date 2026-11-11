@@ -1,0 +1,20 @@
+{
+  "why": "Krish's own aims this engine keeps, sent to Control Center as its obsessions (protocol 1.20.0; Ruling, Krish, 2026-11-11). Each line is his words in quotation marks, exactly as the source file quotes him; engine/engine_state.py drops any line whose source no longer holds the quote, and tests/test_engine_state.py checks every one. Only Krish's quoted aims belong here: never a paraphrase, never a goal of the engine's own.",
+  "obsessions": [
+    {
+      "line": "\"By 31 December 2026, the publication grows every week from posts people share because they are useful, with zero paid boosts, and the right leaders make up most of the new subscribers.\"",
+      "since": "2026-10-18",
+      "source": "docs/NORTH_STAR.md"
+    },
+    {
+      "line": "\"have it dial up its urgency in getting me new subscribers to my substack\"",
+      "since": "2026-11-11",
+      "source": "CHANGES.md"
+    },
+    {
+      "line": "\"I need a ... strategy that constantly works to bring new relevant followers to my socials and substack ... without paid boosts\"",
+      "since": "2026-10-14",
+      "source": "AGENTS.md"
+    }
+  ]
+}
