@@ -7,6 +7,8 @@
 - Kept in place on purpose: `00_Brand-Assets/07_Music`, `Intro sting` and `character`, which content-engine reads by path.
 - Found: the 27 Oct component book has Monday and Wednesday swapped (page 4). Recorded in the index; the PDF is unchanged.
 
-**Next step.** content-engine's `config/music-library.json` note says new tracks are filed to `1 Brand kit (permanent)/Music`; that folder is now archived and `07_Music` is the one home. Fix that note in content-engine (this session could not push there).
+**Next step.** None left from this cleanup.
 
 **North Star check.** This moves the number only indirectly: on-brand Notes, memes and cards made faster and more consistently by the Canva lane and makers. It does not move subscribers this week. U5 still stands at 1 of 86 (5 Nov reading); no new measurement this session.
+
+**Correction, same day.** `1 Brand kit/Music` and `1 Brand kit/Style references` are not duplicates: content-engine publishes them on purpose as mirrors (`music.py`, `references.py`) so any machine can fetch them. Both were moved back into the kit, same IDs. The `music-library.json` note was right all along. content-engine's `docs/DRIVE.md` ("The brand kit"), `AGENTS.md` and the two scripts' comments now say all of this.

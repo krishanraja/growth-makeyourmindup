@@ -84,7 +84,7 @@
     "music": {
       "path": "00_Brand-Assets/07_Music",
       "id": "1pmPWx8vTOZuUXkp-WjhLlCTvof8MrRxK",
-      "use": "Licensed Epidemic Sound beds. content-engine config/music-library.json reads this exact folder by id and Windows path, so it stays outside the kit. File new tracks here and nowhere else."
+      "use": "Licensed Epidemic Sound beds. Their one home is this folder: content-engine config/music-library.json reads it by id and Windows path, so it stays outside the kit. File new tracks here and nowhere else."
     },
     "channel_art": {
       "path": "2 Channel art (permanent)",
@@ -100,6 +100,16 @@
       "drive_id": "1QxrzxISYFXq0er0DG0XSapm7qhvuRmh-",
       "path": "Ventures > Inspiration > Production Inspo",
       "use": "Reference clips for production quality. Studied, never published, never part of the brand kit."
+    },
+    "music_mirror": {
+      "path": "1 Brand kit (permanent)/Music",
+      "id": "1oHyJ9A5et5_uKW7QTq1VHX0NuGwwQVri",
+      "use": "A mirror the engine fills: content-engine music.py publish copies 07_Music into the library and Library Sync files it here so any machine can fetch it. Never file a track here by hand."
+    },
+    "style_references_mirror": {
+      "path": "1 Brand kit (permanent)/Style references",
+      "id": "1J4cWCWaAtdUMEEsUs27pdWm3H50jGSPC",
+      "use": "A mirror of Production Inspo the engine fills (content-engine references.py). Never file a clip here by hand, never publish one."
     }
   },
   "not_canonical": {
@@ -110,7 +120,7 @@
     "archive": {
       "path": "_Archive/PREVIOUS VERSIONS - archive, not current, do not use/2026-11-11 brand kit cleanup",
       "id": "1rBsiOrLfT_VZBy8oVb8uuwI9603TUcAO",
-      "why": "Duplicates and superseded material moved on 11 Nov 2026: a second copy of kit v1.5, older channel art and launch exports, launch HTML, the frozen 28 Oct video formats, old Canva concept links, a duplicate music folder and a duplicate copy of Production Inspo. Never read for current brand."
+      "why": "Duplicates and superseded material moved on 11 Nov 2026: a second copy of kit v1.5, older channel art and launch exports, launch HTML, the frozen 28 Oct video formats and old Canva concept links. Never read for current brand."
     }
   }
 }
