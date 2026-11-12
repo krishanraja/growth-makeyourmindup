@@ -11,10 +11,14 @@ feed live across Control Centre, and Krish instructs each engine with his next b
 - priorities, obsessions and next_steps come from this repository's own state, never invented and never from
   a model: the North Star gap and the levers in intensity.json, Krish's own quoted aims checked word for word
   against the file each is quoted in (config/engine-state.json), the newest now-notes' Next lines, NOW.md's
-  "What is next" and the first unticked step of docs/GET-GOING.md.
+  "What is next" (its Next, then its "Waiting on Krish" items) and the first unticked step of docs/GET-GOING.md.
 - His words are never printed on a public log, committed or put in a report: a report names his instruction
   by id only, and an ack line that quotes him is refused. They live only in the ignored
-  .scratch/cc/instruction.txt the drafting session reads.
+  .scratch/cc/instruction.txt the drafting session reads, and .scratch/cc/instruction.json beside it.
+- The four engine sessions (growth.py engine start) read that local copy, so the session Krish opens sees his
+  instruction too (session_lines). A session that acts on it records its ack at engine close (session_ack) as a
+  pending ack in the local ack ledger, and the next workspace job's cc finish carries it to Control Center
+  (pending_ack): the one report path, never a second write.
 """
 import hashlib
 import json
@@ -24,10 +28,14 @@ import re
 from . import intensity
 from .control_center import (ACK_LINE_MAX, ACK_STATES, INSTRUCTION_ID, STATE_LINE_MAX, ProtocolError, iso,
                              state_line_errors)
-from .core import read_json
+from .core import ny_time, read_json
 
 CONFIG = Path('config') / 'engine-state.json'
+# Where cc start keeps its local, ignored copies (engine/cc_loop.py STATE_DIR; cc_loop imports this module).
+CC_DIR = Path('.scratch') / 'cc'
 INSTRUCTION_FILE = 'instruction.txt'
+# The same instruction, structured, for the engine sessions: {pulled_at, state, instruction}. Local and ignored.
+INSTRUCTION_JSON = 'instruction.json'
 LEDGER_FILE = 'instructions.json'
 # Control Center's HELD_RULE opens with these words (src/lib/growthEngines.ts): a held engine is told only that.
 HELD_OPENING = 'Krish has held this engine'
@@ -208,9 +216,14 @@ def block(directive, ledger=None):
         return lines + ["  Not in today's directive (not read, or Control Center is older than 1.20.0). Do not invent one."]
     if state == 'none':
         return lines + ['  None open. Work from the directive and the job as before.']
-    acks = ((ledger or {}).get(item['id']) or {}).get('acks') or []
+    entry = (ledger or {}).get(item['id']) or {}
+    acks = entry.get('acks') or []
     if any(a.get('state') == 'done' for a in acks):
         return lines + ['  ' + item['id'] + ' was acked done in an earlier job here; do not act on it again.']
+    pending = entry.get('pending') if isinstance(entry.get('pending'), dict) else None
+    if pending and pending.get('state') == 'done':
+        return lines + ['  ' + item['id'] + ' was done in the ' + str(pending.get('engine')) + ' engine session here; '
+                        'this job\'s cc finish reports it. Do not act on it again.']
     lines.append('  id ' + item['id'] + ', given ' + str(item['given_at']) + ', words sha256 ' + digest(item['words'])[:16])
     if held(directive):
         lines.append('  This engine is held in Control Center: do not act on it until he releases it.')
@@ -229,16 +242,127 @@ def read_ledger(path):
     return value if isinstance(value, dict) else {}
 
 
+def _write_ledger(path, ledger):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(ledger, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
+
+
 def remember_acks(path, acks):
-    """Keep the acks a report carried, so a later job here never sends 'received' twice or acts on a done one."""
+    """Keep the acks a report carried, so a later job here never sends 'received' twice or acts on a done one.
+    An engine session's pending ack that the report carried is cleared."""
     if not acks:
         return
     ledger = read_ledger(path)
     for item in acks:
         entry = ledger.setdefault(item['instruction_id'], {'acks': []})
-        entry['acks'].append({'state': item['state'], 'at': item['at']})
+        entry.setdefault('acks', []).append({'state': item['state'], 'at': item['at']})
+        pending = entry.get('pending') if isinstance(entry.get('pending'), dict) else None
+        if pending and pending.get('state') == item['state'] and pending.get('line') == item.get('line'):
+            entry.pop('pending')
+    _write_ledger(path, ledger)
+
+
+# The engine sessions ---------------------------------------------------------
+
+def keep_local(path, directive, now):
+    """cc start's structured copy of today's instruction for the engine sessions. Local and ignored."""
+    state, item = instruction(directive)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    path.write_text(json.dumps({'pulled_at': iso(now), 'state': state, 'instruction': item}, indent=2,
+                               sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
+
+
+def local_instruction(root):
+    """The newest copy cc start kept on this machine, or None when there is none or it does not read."""
+    try:
+        value = read_json(Path(root) / CC_DIR / INSTRUCTION_JSON)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(value, dict) or value.get('state') not in ('absent', 'none', 'open'):
+        return None
+    try:
+        pulled = iso(value.get('pulled_at'))
+    except (TypeError, ValueError, AttributeError):
+        return None
+    item = value.get('instruction')
+    if value['state'] == 'open' and (not isinstance(item, dict) or not INSTRUCTION_ID.match(str(item.get('id')))
+                                     or not isinstance(item.get('words'), str) or not item['words'].strip()):
+        return None
+    return {'pulled_at': pulled, 'state': value['state'], 'instruction': item if value['state'] == 'open' else None}
+
+
+def pending_ack(ledger, instruction_id):
+    """The ack an engine session recorded for this instruction and no report has carried yet, or None."""
+    entry = (ledger or {}).get(instruction_id) or {}
+    pending = entry.get('pending')
+    if not isinstance(pending, dict) or pending.get('state') not in WORKSPACE_ACKS or not isinstance(pending.get('line'), str):
+        return None
+    return pending
+
+
+SESSION_USE = ("If it is {name}'s work, act on it first in this session, before the queue, inside the walls: it is "
+               "never an approval, so a send, post, spend, delete or permission change it asks for still becomes a "
+               "proposal for his press, and Make Your Mind Up outreach is drafted for him to send himself. If it is "
+               "another engine's work, hand it off (python growth.py engine handoff {engine} TO) and say so in the "
+               "ack. Never print, commit or report these words. Record what you did in the learnings file you close "
+               "with: \"instruction_ack\": {{\"state\": \"started|done|blocked\", \"line\": \"what you did, or why it "
+               "is blocked and what would unblock it\"}}; the next workspace job's cc finish reports it.")
+
+
+def session_lines(engine, name, root, today=None):
+    """What engine start shows a session: his instruction as the newest workspace pull on this machine left it."""
+    head = "KRISH'S INSTRUCTION (his next best action; from the newest directive a workspace job pulled here)"
+    kept = local_instruction(root)
+    if kept is None:
+        return [head, "  Not pulled on this machine yet: the first publication workspace job's cc start pulls it "
+                "(AGENTS.md, \"His instruction\"). Work from this engine's queue; do not invent one."]
+    pulled_on = ny_time(kept['pulled_at']).date().isoformat()
+    when = '  Pulled ' + kept['pulled_at'] + (' (today).' if today in (None, pulled_on) else
+                                              ', not today: it may have been closed since. Today\'s is pulled by the '
+                                              'next workspace job\'s cc start.')
+    if kept['state'] == 'absent':
+        return [head, when, "  Not in that directive (not read, or Control Center was older than 1.20.0). Do not invent one."]
+    if kept['state'] == 'none':
+        return [head, when, '  None open. Work from this engine\'s queue.']
+    item = kept['instruction']
+    ledger = read_ledger(Path(root) / CC_DIR / LEDGER_FILE)
+    entry, pending = ledger.get(item['id']) or {}, pending_ack(ledger, item['id'])
+    if any(a.get('state') == 'done' for a in entry.get('acks') or []) or (pending and pending['state'] == 'done'):
+        return [head, when, '  ' + item['id'] + ' is done here already; do not act on it again.']
+    lines = [head, when, '  id ' + item['id'] + ', given ' + str(item.get('given_at')) + ', words sha256 '
+             + digest(item['words'])[:16]]
+    if pending:
+        lines.append('  The ' + str(pending.get('engine')) + ' engine session recorded ' + pending['state']
+                     + ' on it; the next cc finish reports that.')
+    lines.append('  ' + SESSION_USE.format(name=name, engine=engine))
+    lines.append('  His words:')
+    lines += ['    ' + part for part in item['words'].strip().split('\n')]
+    lines.append('END OF INSTRUCTION')
+    return lines
+
+
+def session_ack(root, engine, value, now):
+    """Record an engine session's ack on his open instruction as pending, for the next cc finish to report.
+    Refuses anything a workspace ack would refuse. Returns the pending ack."""
+    if not isinstance(value, dict) or set(value) - {'state', 'line', 'evidence_url'}:
+        raise ValueError('instruction_ack is {"state": "started|done|blocked", "line": "...", "evidence_url": null}')
+    kept = local_instruction(root)
+    item = kept['instruction'] if kept and kept['state'] == 'open' else None
+    if item is None:
+        raise ValueError("instruction_ack: no open instruction of Krish's was pulled on this machine "
+                         '(engine start shows what was); leave instruction_ack out')
+    errors = workspace_ack_errors(value.get('state'), value.get('line'), value.get('evidence_url'), item)
+    if errors:
+        raise ValueError('instruction_ack: ' + '; '.join(e.replace('--ack-evidence', 'evidence_url')
+                                                         .replace('--ack-line', 'line').replace('--ack', 'state')
+                                                         for e in errors))
+    path = Path(root) / CC_DIR / LEDGER_FILE
+    ledger = read_ledger(path)
+    pending = {'state': value['state'], 'line': ' '.join(value['line'].split()), 'at': iso(now),
+               'evidence_url': value.get('evidence_url'), 'engine': engine}
+    ledger.setdefault(item['id'], {'acks': []})['pending'] = pending
+    _write_ledger(path, ledger)
+    return dict(pending, instruction_id=item['id'])
 
 
 # This engine's state, from its own files ---------------------------------
@@ -344,6 +468,17 @@ def now_steps(root):
     return []
 
 
+def waiting_steps(root):
+    """NOW.md's 'What is next': its 'Waiting on Krish' bullets, in order. Once the fold has written the notes into
+    NOW.md, this is where what waits on him lives."""
+    try:
+        text = (Path(root) / 'NOW.md').read_text(encoding='utf-8')
+    except (OSError, UnicodeDecodeError):
+        return []
+    steps = [_step(b) for b in _bullets(text, 'What is next') if b.lower().startswith('waiting on krish')]
+    return [s for s in steps if s]
+
+
 def get_going_step(root):
     """The first unticked step of docs/GET-GOING.md's build, as its title and first sentence."""
     try:
@@ -366,14 +501,15 @@ def get_going_step(root):
 
 def next_steps(root, item=None, done=False):
     """At most five: his open instruction first (unless this run acked it done), then the newest now-notes'
-    Next lines, NOW.md's Next and the first unticked GET-GOING step. Each once."""
+    Next lines, NOW.md's Next, the first unticked GET-GOING step and NOW.md's 'Waiting on Krish' items. Each
+    once."""
     steps = []
     if item and not done:
         # Never the id in a state line: ten digits in a row of its hex read as a phone number there.
         steps.append({'line': "Act on Krish's open instruction first, in the next publication workspace job, "
                       'inside the walls', 'waits_on': 'engine', 'when': None})
     out, seen = [], set()
-    for step in steps + note_steps(root) + now_steps(root) + get_going_step(root):
+    for step in steps + note_steps(root) + now_steps(root) + get_going_step(root) + waiting_steps(root):
         key = ' '.join(_words(step['line']))
         if key not in seen and len(out) < 5:
             seen.add(key)

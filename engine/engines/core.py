@@ -10,6 +10,10 @@ Every engine also accepts two shared kinds, checked here rather than in the engi
 (work one engine found that another engine owns, kept in the target engine's queue until it closes it). One
 session runs one engine; anything owned by another engine becomes a handoff.
 
+Krish's instruction (protocol 1.20.0): start shows it as the newest workspace job's cc start left it on this machine
+(.scratch/cc/instruction.json), and close records what the session did with it ("instruction_ack" in the learnings
+file) as a pending ack the next workspace job's cc finish reports. Nothing here calls Control Center itself.
+
 Krish's session links live only in the ignored registry .scratch/engines/sessions.json ({engine: {ref, set_at,
 set_by_session}}), so a handoff can ask him whether a session for the target engine is running and address its
 report back to the session that sent it. Committed records carry session links only in session_ref,
@@ -22,6 +26,7 @@ import os
 import re
 from pathlib import Path
 
+from engine import engine_state
 from engine import engines as package
 from engine.core import calendar_date, today
 from engine.engines import ENGINES
@@ -336,6 +341,8 @@ def start(engine, root=ROOT, now=None, private=True, session=None):
         first = {k: inbound[0].get(k) for k in ('id', 'title', 'state', 'next_owner', 'next_action', 'revisit_when')}
     return {'engine': engine, 'as_of': as_of, 'entry_request': contract['entry_request'], 'job': contract['job'],
             'single_job': True,
+            # Read first: his next best action, local only (never committed, never a public log).
+            'krish_instruction': engine_state.session_lines(engine, contract['name'], root, as_of),
             'this_session': {'engine': engine, 'rule': SESSION_RULE.format(name=engine)},
             'my_session_ref': (known.get(engine) or {}).get('ref'), 'known_sessions': known,
             'inbound_handoffs': inbound, 'last_learnings': last_learnings(engine, whole[engine]),
@@ -722,7 +729,7 @@ def close(engine, learnings, root=ROOT, now=None):
         raise ValueError('unknown engine: ' + str(engine))
     if not isinstance(learnings, dict):
         raise ValueError('the learnings file must be a JSON object')
-    unknown = [k for k in learnings if k not in SESSION_KEYS]
+    unknown = [k for k in learnings if k not in SESSION_KEYS + ('instruction_ack',)]
     errors = ['unknown key ' + k + ' in the learnings file' for k in unknown]
     errors += learning_errors(learnings.get('better_next_time'))
     whole = all_records(root, private=False)
@@ -750,6 +757,9 @@ def close(engine, learnings, root=ROOT, now=None):
                       + '; list every handoff so nothing handed off goes unreported')
     if errors:
         raise ValueError('; '.join(errors))
+    # What this session did with Krish's instruction: pending until the next cc finish reports it. Never committed.
+    acked = engine_state.session_ack(root, engine, learnings['instruction_ack'], None) \
+        if learnings.get('instruction_ack') is not None else None
     name, _ = _names(engine, root)
     sid = session_id(engine, as_of, root)
     detail = {'session_ref': learnings.get('session_ref') or None, 'did': learnings.get('did') or [],
@@ -766,7 +776,8 @@ def close(engine, learnings, root=ROOT, now=None):
                   for r in sorted(current.values(), key=lambda r: (str(r.get('updated_at')), r['id']))
                   if r.get('kind') != 'session' and not is_closed(engine, r.get('state'))]
     return {'session': record, 'better_next_time': record['detail']['better_next_time'],
-            'handoffs': [handoff_message(handoffs[h], root) for h in listed], 'still_open': still_open}
+            'handoffs': [handoff_message(handoffs[h], root) for h in listed], 'still_open': still_open,
+            'instruction_ack': ({'instruction_id': acked['instruction_id'], 'state': acked['state']} if acked else None)}
 
 
 def done(engine, record_id, note, root=ROOT, now=None):
@@ -811,6 +822,9 @@ def report_text(report, root=ROOT):
             out += ['', h['instruction'], '', '    ' + h['message']]
     else:
         out += ['', 'Handoffs: none.']
+    if report.get('instruction_ack'):
+        out += ['', "Krish's instruction " + report['instruction_ack']['instruction_id'] + ': '
+                + report['instruction_ack']['state'] + ' recorded here; the next workspace job\'s cc finish reports it.']
     out += ['', 'Still open in ' + report['session']['engine'] + ':']
     out += ['- ' + r['id'] + ' (' + str(r['state']) + '): ' + str(r['next_action'] or r['title'])
             for r in report['still_open']] or ['- nothing']

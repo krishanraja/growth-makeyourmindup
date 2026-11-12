@@ -135,16 +135,19 @@
       "id": "check",
       "lane": "L0_code",
       "workflow": "check.yml",
-      "trigger": "every push and pull request",
+      "trigger": "every push and pull request; on a push to main it also folds the closeout notes",
       "may_write": [
-        "the CI result"
+        "the CI result",
+        "on main only: NOW.md, now-notes/ and docs/history/LOG.md, each closeout note folded into NOW.md and removed, in one docs(closeout) commit"
       ],
       "never": [
         "read a key",
-        "reach Control Center or any platform"
+        "reach Control Center or any platform",
+        "write anything but NOW.md, now-notes/ and docs/history/LOG.md"
       ],
       "actions": [
-        "self-test"
+        "self-test",
+        "fold-closeout-notes"
       ],
       "secrets": []
     },

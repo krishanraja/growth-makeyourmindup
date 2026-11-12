@@ -37,7 +37,7 @@ the linked record) and carry on. Never do the other engine's work in this sessio
    Otherwise it only reads. Its `recover` block is the queue: unanswered incoming items, any
    requested outgoing batch with its ready count, unchecked identities, handled and excluded keys,
    stale `ready` states, returned candidates, open questions and decision conflicts. Start from
-   its `next_action`.
+   its `next_action`, after `krish_instruction` (his instruction; its own lines say how to act on it and ack it).
 
 ## What it may do
 
@@ -113,7 +113,7 @@ Measurement.
 Hand off anything left for another engine (asked and sent as above), then write
 `.scratch/engines/engagement-learnings.json` with `did`, `better_next_time` (specific changes),
 `worked`, `handoffs` (every id made), `promoted` and `session_ref` (this session's link,
-`my_session_ref`), and run `python growth.py engine close engagement --learnings
+`my_session_ref`) and any `instruction_ack`, and run `python growth.py engine close engagement --learnings
 .scratch/engines/engagement-learnings.json`. A repeat of an earlier session's line is refused
 until its words are written into this file, `engines/engagement.json` or a `social/lessons/`
 record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a message

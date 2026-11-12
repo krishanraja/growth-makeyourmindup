@@ -26,8 +26,10 @@ def runs(*items):
     return {'total_count': len(items), 'workflow_runs': list(items)}
 
 
-def run_item(event='repository_dispatch', conclusion='success', created='2026-10-27T05:10:12Z', status='completed'):
-    return {'id': 1, 'event': event, 'status': status, 'conclusion': conclusion, 'created_at': created}
+def run_item(event='repository_dispatch', conclusion='success', created='2026-10-27T05:10:12Z', status='completed',
+             title='control-center'):
+    return {'id': 1, 'event': event, 'status': status, 'conclusion': conclusion, 'created_at': created,
+            'display_title': title}
 
 
 class Response(io.BytesIO):
@@ -50,6 +52,15 @@ class BackupGateTests(unittest.TestCase):
         self.assertFalse(backup.dispatch_succeeded_today(runs(), NOW))
         with self.assertRaises(ValueError):
             backup.dispatch_succeeded_today({'message': 'synthetic'}, NOW)
+
+    def test_an_instruction_wake_before_the_backup_is_not_the_morning_push(self):
+        # Krish's instruction woke the runner at 02:00 UTC and the 05:10 push never came: the backup still runs.
+        wake = run_item(created='2026-10-27T02:00:00Z', title=backup.WAKE_TITLE)
+        self.assertFalse(backup.dispatch_succeeded_today(runs(wake), NOW))
+        # The morning push beside it still skips the backup, whatever the order.
+        self.assertTrue(backup.dispatch_succeeded_today(runs(wake, run_item()), NOW))
+        # A run listed with no title (an older run) is still a dispatch run.
+        self.assertTrue(backup.dispatch_succeeded_today(runs(dict(run_item(), display_title=None)), NOW))
 
     def test_the_request_asks_only_for_todays_successful_dispatches(self):
         seen = []
@@ -217,6 +228,9 @@ class WorkflowTests(unittest.TestCase):
                        'cc-growth-directive', 'workflow_dispatch'):
             self.assertIn(needle, text)
         self.assertNotIn('actions: write', text)
+        # An instruction wake carries the title the backup ignores (engine/run/backup.py).
+        self.assertIn("run-name: ${{ github.event.client_payload.instruction_id && '" + backup.WAKE_TITLE
+                      + "' || 'control-center' }}", text)
 
     def test_measure_runs_three_times_a_day_after_a_key_check(self):
         text = self.read('measure.yml')

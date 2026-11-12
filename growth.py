@@ -225,6 +225,9 @@ def main(argv=None):
     if social_args and social_args[0] == 'engine':
         from engine.engines.core import command as engines
         return engines(social_args[1:], ROOT)
+    if social_args and social_args[0] == 'closeout':
+        from engine.closeout import command as closeout
+        return closeout(social_args[1:], ROOT)
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--self-test', action='store_true')
     sub = parser.add_subparsers(dest='cmd')
@@ -234,6 +237,7 @@ def main(argv=None):
     sub.add_parser('mix', help="the week's mix of repurposed carousels and filler lanes, and Krish's one idea and mock press")
     sub.add_parser('ledger', help="calendar/ledger.json: each day's slot, stage, next action and owner (read-only)")
     sub.add_parser('engine', help='run one of the four engines from shared records: start, check, show, history (read-only); handoff, close, done')
+    sub.add_parser('closeout', help='closeout notes: check them, or fold them into NOW.md (the fold job on main)')
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     p.add_argument('--feed-file'); p.add_argument('--now'); p.add_argument('--json', action='store_true')
     c = sub.add_parser('check'); c.add_argument('file'); c.add_argument('--now')

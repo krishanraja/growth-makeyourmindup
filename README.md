@@ -52,12 +52,14 @@ python growth.py engine close NAME --learnings FILE
 python growth.py engine session set|show|clear ENGINE [LINK]
 ```
 
-`start` recovers the queue, inbound handoffs and the last sessions'
-learnings; with `--session` it also records this session's own link.
+`start` shows Krish's open instruction first (`krish_instruction`, below),
+then recovers the queue, inbound handoffs and the last sessions' learnings;
+with `--session` it also records this session's own link.
 `handoff` prints the question for Krish ("Do you have a session running for
 the X engine? ...") and the exact message for that session. `done` on a
 handoff prints the report-back for the session that sent it. `close`
-refuses to close without specific "better next time" learnings.
+refuses to close without specific "better next time" learnings, and takes
+an `instruction_ack` when the session acted on his instruction.
 
 ## Lanes: what runs alone and what needs Krish
 
@@ -74,8 +76,9 @@ the daily credits session in `lanes.json` (`claude_sessions`,
 Buffer drafts) is done by sessions and the automations on Krish's PC
 (below; nine kept until W46) under the same walls, and follows
 [docs/TASTE.md](docs/TASTE.md). Only the GitHub
-runner holds the Control Center engine key; sessions read Control Center
-through its connector.
+runner (a repository secret) and Krish's PC (a file, for Codex workspace
+runs) hold the Control Center engine key ([docs/KEY.md](docs/KEY.md)); a
+Claude session reads Control Center through its connector.
 
 ## Weekly channel audit
 
@@ -157,6 +160,23 @@ local dry runs. Control Center also wakes `.github/workflows/control-center.yml`
 every morning; that runner checks the engine offline and reports what it can
 see. Details: [docs/ENGINE.md](docs/ENGINE.md), "Reporting to Control Center",
 and [docs/CONTROL-CENTER-BRIEF.md](docs/CONTROL-CENTER-BRIEF.md).
+
+**Krish's instruction** (protocol 1.20.0). Krish can give this engine his
+next best action from Control Center (the Engine drawer's Instruct). It comes
+in the directive as `krish_instruction` and is never an approval: the walls
+stay where they are. The runner acks it `received` by id; when it wakes the
+runner a second time in a day, that run reports under its own `--wake`
+run_id and is named "control-center instruction wake", which the 05:40 UTC
+backup never mistakes for the morning push. `cc start` prints it first and
+keeps it in the ignored `.scratch/cc/`; the job acts on it first and ends
+with `cc finish --ack started|done|blocked --ack-line "..."`. The four engine
+sessions see the same local copy at `engine start` and record what they did
+with it at `engine close` (`instruction_ack`), and the next workspace job's
+`cc finish` reports that ack. His words never reach a commit, a public log or
+a report. Every report that pulls the directive also carries this engine's
+state (priorities, obsessions and next steps), each left out when empty.
+Details: AGENTS.md, "His instruction", and docs/ENGINE.md, "Krish's
+instruction and the engine's state".
 
 ```powershell
 python growth.py cc finish --job daily --envelope .scratch/daily.json --queue .scratch/queue.json
