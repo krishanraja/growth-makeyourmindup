@@ -241,17 +241,34 @@ def placed_options(listed_by_week):
     return out
 
 
-def post_rows(entries, placed, status_of, sent, accounts=None):
+def piece_days(listed_by_week):
+    """{date ISO: (board week, day key, piece id)} for each day of the weeks read that has its piece on the board. Pure."""
+    out = {}
+    for monday, listed in sorted(listed_by_week.items()):
+        for day, entry in board_days(listed, dt.date.fromisoformat(monday)).items():
+            out[entry['date']] = (monday, day, entry['piece_id'])
+    return out
+
+
+def post_rows(entries, placed, status_of, sent, accounts=None, pieces=None):
     """{board week: [post, ...]}: this engine's own record of each post it made for an option he approved, filed under
     the week the option is on now (Ruling, Krish, 2026-11-12: the move updates every place that names its day):
     made (a Buffer draft exists), scheduled (with its time), live (Buffer shows it sent, with its native link). The
     evidence is this engine's own: the derived slots indexed in Control Center tie each Buffer post to its option, and
     nothing is attributed by its date or guessed. entries: {concept_id, channel, due_at, buffer_draft_id};
-    status_of(post id) -> (status, dueAt) or None; sent: {post id: buffer_reads.sent_posts post}. Pure but for status_of."""
+    status_of(post id) -> (status, dueAt) or None; sent: {post id: buffer_reads.sent_posts post}. Pure but for status_of.
+
+    pieces (piece_days): a post of this engine's own for a day's piece that Buffer has scheduled goes back as the
+    piece's own entry, {piece_id, day, state: scheduled, channel, due_at, buffer_post_id}, kept on the day's box for its
+    channel (Ruling, Krish, 2026-11-12: the board shows exactly where everything is; Fri 13 Nov was scheduled while the
+    board said "Ready to post"). A post that went out is board tick's; nothing is reported for a day with no piece."""
     out = {}
     for entry in entries:
         where = placed.get(entry.get('concept_id'))
         if where is None:
+            row = piece_row(entry, pieces or {}, status_of, sent)
+            if row is not None:
+                out.setdefault(row.pop('_week'), []).append(row)
             continue
         post_id = entry['buffer_draft_id']
         went = sent.get(post_id)
@@ -274,6 +291,30 @@ def post_rows(entries, placed, status_of, sent, accounts=None):
         row.update({'option': where[2], 'buffer_post_id': post_id})
         out.setdefault(where[0], []).append(row)
     return out
+
+
+def piece_row(entry, pieces, status_of, sent):
+    """The piece's own scheduled entry for one of this engine's posts on a day with a piece, or None. Pure but for
+    status_of."""
+    post_id = entry.get('buffer_draft_id')
+    box = next(iter(BOXES.get(entry.get('channel'), ())), None)
+    if not post_id or box is None or post_id in sent:
+        return None
+    read = status_of(post_id)
+    if read is None or read[0] not in LIVE_STATUS:
+        return None
+    due = read[1] or entry.get('due_at')
+    if not due:
+        return None
+    try:
+        date = ny_time(due).date().isoformat()
+    except (TypeError, ValueError):
+        return None
+    where = pieces.get(date)
+    if where is None:
+        return None
+    return {'_week': where[0], 'piece_id': where[2], 'day': where[1], 'state': 'scheduled', 'channel': box,
+            'due_at': instant(due).isoformat().replace('+00:00', 'Z'), 'buffer_post_id': post_id}
 
 
 def record_rows(record, placed):
@@ -328,7 +369,7 @@ def report_posts(board, cc, buffer, sent, now=None, deliver=False, record=None, 
                 return None
             return (post.get('status'), post.get('dueAt')) if isinstance(post, dict) else None
 
-        rows = post_rows(entries, placed, status_of, sent, accounts)
+        rows = post_rows(entries, placed, status_of, sent, accounts, piece_days(listed))
     summary['posts'] = sum(len(v) for v in rows.values())
     if not deliver:
         return summary

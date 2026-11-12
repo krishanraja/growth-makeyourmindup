@@ -147,7 +147,8 @@ post it did not post: `python growth.py run board posts --deliver` (after the ti
 posts from the derived slots indexed in Control Center and Buffer (made, scheduled with its time, live with its native
 link) to `POST /api/board/<Monday>/offday-posts`, and a session that posted by hand reports its own receipts with
 `--record <receipts.json>`. The board then shows the post out (an approved option Growth reports live makes its day
-done). A post already scheduled for a day it left is moved only through the approved posting route (a signed go-live
+done). A day's piece's own posts that Buffer has scheduled go back the same way, as the piece's entries with their time,
+so the board says when the day goes out (Ruling, Krish, 2026-11-12: the board shows exactly where everything is). A post already scheduled for a day it left is moved only through the approved posting route (a signed go-live
 names its time); until then the board says plainly "Still scheduled for Tue 17 on Instagram: move it there too". Content-engine's PUBLISH_BOARDS.md, "Moving an off-day item to any day".
 
 ## The brand palette (Ruling, Krish, 2026-11-12)

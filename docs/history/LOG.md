@@ -10,6 +10,14 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "Where it is right now":
 
+- The maker no longer fails while a week's mix waits on Krish (Ruling, Krish, 2026-11-12: with no approved weekly mix, the maker drafts from the standing plan and asks him once a week instead of failing). It had failed all 13 runs from 30 October to 11 November (`mix_plan_not_reported` for W44 and W46, `slots_record_missing` for W45) and made nothing. Now, until a week's mix is approved on the board, it drafts one X text post a day from a piece already published (`specs/standing-plan.json`'s cadence; Instagram, TikTok and YouTube Shorts need an edition he approved, so they get nothing), keeps each day's drafts in Control Center only (`makeyourmindup:standing:<day>`, never Buffer, never handed to release), and raises "This week's mix isn't approved" on his list once that ISO week (`makeyourmindup:mixask:<week>`). Once he approves the mix, the next run makes his plan. A past week with nothing left to make (its Sunday) is skipped and noted. Release and every gate are unchanged; a test proves a standing draft handed to release holds without his approvals (`docs/MAKER.md`, "With no approved mix"). (2026-11-12)
+
+## 2026-11-12
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
 - The engine reads subscribers every week (Ruling, Krish, 2026-11-12: the engine reads subscribers every week and judges posts by subscribers, not engagement). A tenth PC automation, "Growth: subscribers" (Mondays 06:15 New York, `jobs/subscribers.md`, `standing` in `lanes.json` because only his signed-in browser can read Substack), fills `.scratch/substack/week-<Monday>.json` from the dashboard (total, new by source, per post and per Note where shown) and records the week's North Star reading through `python growth.py run subscribers ingest --write` (NOW.md state line when it loses nothing, `lists/northstar-history.jsonl` once); a read not taken is unknown with its code, never zero. GA4 `sign_up` is verified from Control Center's live Events report (`invariants/ga4.json`, `verified_from`); the paid event name stays open. Built and tested; the automation is not created yet, and the line counts organic subscribers only once Krish approves `invariants/sources.json`. (2026-11-12)
 
 ## 2026-11-12
