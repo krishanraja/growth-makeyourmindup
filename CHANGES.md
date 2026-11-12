@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: Posts are judged by subscribers, and the verdicts change next week's mix. Same ruling as the
+  entry below (Ruling, Krish, 2026-11-12: the engine reads subscribers every week and judges posts by
+  subscribers, not engagement). The measure job's verdict for a post is now the GA4 sign-ups on its own
+  `utm_content` over its first seven days (one works; none on at least 30 visits fails; otherwise
+  insufficient with its reason); engagement against the channel median is kept as supporting evidence only.
+  A new L0 workflow, `learn.yml` (Sundays 10:30 UTC, before next week's plan is made), judges the latest
+  fully measured week that way, joins each post to its lane through the week's derived index, runs `growth.py
+  mix learn --verdicts` and commits `lists/mix-learn/for-<Monday>.json` (tallies only), which `growth.py mix
+  plan` reads for that week by itself. Nothing posted, sent or spent; no Claude routine and no model call.
 - 2026-11-12: The engine reads subscribers every week. His words: "send 3 and 4 to [this session] and then
   once done, you merge to main" (Fix 4 of the subscriber audit). Ruling (Krish, 2026-11-12): the engine
   reads subscribers every week and judges posts by subscribers, not engagement. A tenth PC automation,

@@ -182,6 +182,20 @@ def reading_day(capture):
     return capture['growth_sources']['window']['end']
 
 
+def item_verdicts(items):
+    """Substack's own per-post and per-Note numbers, where it shows them, judged by subscribers
+    (measure.judge_subscribers, Ruling, Krish, 2026-11-12): a new subscriber works; a zero with no visit count
+    beside it is too little to call a fail; not shown is insufficient. Counts by verdict."""
+    out = dict.fromkeys(('works', 'neutral', 'fails', 'insufficient'), 0)
+    for item in items:
+        shown = item['new_free'] is not None or item['new_paid'] is not None
+        gained = (item['new_free'] or 0) + (item['new_paid'] or 0) if shown else None
+        result = measure.judge_subscribers(gained, None, measure.SUBSCRIBER_WINDOW_HOURS,
+                                           reason='Substack did not show a count for it')
+        out[result['verdict']] += 1
+    return out
+
+
 def summary(capture, result):
     """The private weekly record kept in .scratch/substack/weekly.jsonl, never committed."""
     items = capture['items']
@@ -203,6 +217,7 @@ def summary(capture, result):
             'items_view': capture['items_view'],
             'items': {'recorded': len(items), 'with_a_new_subscriber': len([g for g in shown if g >= 1]),
                       'with_none': len([g for g in shown if g == 0]), 'not_shown': len(items) - len(shown)},
+            'items_by_subscribers': item_verdicts(items),
             'north_star': {'week_of': result['week_of'], 'week_target': result['week_target'],
                            'urgency': result['urgency']['urgency'],
                            'not_counted_because': result['not_counted_because']}}
@@ -292,9 +307,11 @@ def main(argv=None, out=print, root=ROOT):
         + '. Urgency U' + str(state['urgency']) + ', ' + result['urgency']['label'] + '.')
     out('NOW.md: ' + result['now_md'] + '. ' + measure.LEDGER.as_posix() + ': ' + result['ledger'] + '.')
     items = result['summary']['items']
+    judged = result['summary']['items_by_subscribers']
     out('Per post and per Note (' + result['summary']['items_view'] + '): ' + str(items['recorded'])
         + ' recorded, ' + str(items['with_a_new_subscriber']) + ' with a new subscriber, '
-        + str(items['with_none']) + ' with none, ' + str(items['not_shown']) + ' not shown.')
+        + str(items['with_none']) + ' with none, ' + str(items['not_shown']) + ' not shown; by subscribers '
+        + ', '.join(k + ' ' + str(v) for k, v in judged.items()) + '.')
     if not args.write:
         out('Dry run: pass --write to record it.')
     return 0

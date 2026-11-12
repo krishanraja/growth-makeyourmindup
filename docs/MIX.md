@@ -135,10 +135,25 @@ activated: no post has gone out this way.
 
 ## Learning
 
-Each post's What-Works verdict lands at `verdict/<slot>.json` in its run
-folder (docs/RUN.md). `python growth.py mix learn SPEC [SPEC ...]` joins each
-verdict to the post's concept and lane, by lane and by channel; the release
-ledger records each post's concept too. The next `mix plan --learn` moves a
+Ruling (Krish, 2026-11-12): the engine reads subscribers every week and
+judges posts by subscribers, not engagement. Every Sunday at 10:30 UTC, before
+next week's plan is made that day, `.github/workflows/learn.yml` runs
+`python growth.py run learn`: it takes the posts of the latest week whose posts
+have all had their seven days, judges each by the sign-ups its own tracked link
+brought in those days (the measure job's rule, `docs/ENGINE.md`, "Judged by
+subscribers"), and finds its concept, and so its lane, by its Buffer id in that
+week's derived index in Control Center. A post not made from the mix is
+counted and left out. Then `python growth.py mix learn --verdicts FILE --out
+lists/mix-learn/for-<Monday>.json` tallies the verdicts by lane and channel,
+with counts and reason codes and no id, word, URL or figure, and the workflow
+commits that one file to main. `python growth.py mix plan --week-of <Monday>`
+reads `lists/mix-learn/for-<Monday>.json` by itself when it exists and says so
+(`--learn FILE` names another, `--no-learn` plans on `mix.json` alone).
+
+Each post's What-Works verdict may also land at `verdict/<slot>.json` in its
+run folder (docs/RUN.md). `python growth.py mix learn SPEC [SPEC ...]` joins
+each verdict to the post's concept and lane, by lane and by channel; the
+release ledger records each post's concept too. The next `mix plan` moves a
 lane by 5 when it has at least 3 judged posts and works minus fails is at least
 a third of them (down by 5 at minus a third), inside its bounds. Insufficient
 verdicts never count, and a lane with too few judged posts keeps its weight.

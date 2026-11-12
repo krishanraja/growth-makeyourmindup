@@ -69,6 +69,7 @@ decision. `next_action` is where the run begins.
 - Judge windows: a Note at 24 hours; LinkedIn, X and Threads at 48 hours;
   a Reel, Short or TikTok at 72 hours; subscriber impact at 7 days. An
   earlier read is recorded, not judged.
+- Posts are judged by the subscribers they brought, engagement only as support (Ruling, Krish, 2026-11-12; `docs/ENGINE.md`, "Judged by subscribers"; next week's mix learns from it, `docs/MIX.md`).
 - A performance claim that would increase, reduce or stop something names
   its linked `experiment` record. `engine check` recomputes the decision with
   `performance_decision`, which calls `engine.operations.experiment_decision`
