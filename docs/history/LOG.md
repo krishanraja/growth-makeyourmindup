@@ -10,6 +10,14 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "Where it is right now":
 
+- Every report that pulls the directive has carried protocol 1.20.0's state (priorities, obsessions and next steps) since the measure run of 12 November at 01:18 UTC. Krish has given this engine no instruction yet (read live on 12 November). (2026-11-12)
+
+## 2026-11-12
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
 - The GitHub runner, release, measure, the key check and the ledger succeed every day. The maker has failed on every run since 30 October on a loud hold: W45's mix plan reached Control Center without its slots record (`slots_record_missing`), and W44's and W46's never reached it (`mix_plan_not_reported`), so the maker has drafted nothing. Release read no decisions on 12 November. All four secrets the maker reads are set. What unblocks it is a week's mix plan sent through the `growth-mix-plan` handoff with its slots and mock records (`growth.py mix plan`; `docs/MIX.md`). (2026-11-12)
 
 ## 2026-11-12
