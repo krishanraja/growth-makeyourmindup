@@ -191,12 +191,15 @@ I one click green light it puts it in the next available slot".
   and Sunday content within the Sunday ideas session if you give me a few
   options to approve as you do the Mon/wed/fri". Growth feeds 2 to 3
   options a day to the Sunday ideas board, never a board of its own. Since
-  11 November the live board (Control Centre's Content tab) reads only the
-  week's ideas in content-engine (`ideas.json`), not `week_board.py`'s inputs
-  such as `growth.py mix offdays`, which fed the now read-only archive (Ruling, Krish, 2026-11-11: one live board, in Control
-  Centre; the old board is a read-only archive; content-engine
-  `docs/PUBLISH_BOARDS.md`). Each shows its format,
-  source and draft copy, and he approves or skips it with one press.
+  12 November they reach the live board (Control Centre's Content tab)
+  through content-engine's `offday_items`, the one place an off-day item's
+  day lives (Ruling, Krish, 2026-11-12: any off-day post or idea moves to
+  any day at his press, and the move updates every place that names its
+  day): `growth.py run board offer --file <offdays.json> --deliver` posts
+  the `growth.py mix offdays` file to `POST /api/board/<Monday>/offdays`.
+  Each shows its format, source and draft copy, and he approves it, moves
+  it to any day or answers it with one press. Growth binds each approved
+  option to the day the board says, not the day it first planned.
 - Mid-week, a green press puts an approved post in the next free off-day
   slot per channel (`docs/PUBLISHING-AUTHORITY.md`).
 - Accountable: Growth reports slots filled against slots available, and

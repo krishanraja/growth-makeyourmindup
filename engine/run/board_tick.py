@@ -138,6 +138,16 @@ class Board:
         listed = self.pieces(monday)
         return board_mix(listed), board_offdays(listed)
 
+    def offer(self, monday, doc):
+        """Growth's off-day options for the week into the one place their day lives (content-engine offday_items,
+        POST /api/board/<Monday>/offdays): each offered on its day; only his press approves or moves one."""
+        return self._request('POST', '/api/board/' + monday + '/offdays', doc)
+
+    def posts(self, monday, posts):
+        """This engine's own record of each of the week's off-day posts (POST .../offday-posts): made, scheduled with
+        its time, live with its link. Never a post it did not post."""
+        return self._request('POST', '/api/board/' + monday + '/offday-posts', {'posts': posts})
+
 
 HEX64 = re.compile(r'^[0-9a-f]{64}$')
 
@@ -187,8 +197,149 @@ def board_offdays(listed):
                     # His open words on the option, exactly as typed (Krish, 2026-11-02: "it would contain the exact
                     # meme text to put above the meme video"): used word for word, never paraphrased.
                     'note': row.get('note') if isinstance(row.get('note'), str) else None,
-                    'approved_at': row.get('approved_at')})
+                    'approved_at': row.get('approved_at'),
+                    # Where its day lives (content-engine offday_items, 2026-11-12): the date the board says it is on,
+                    # the item and its version, and the day he moved it from, if he did.
+                    'date': row.get('date') if isinstance(row.get('date'), str) else None,
+                    'item': row.get('item') if isinstance(row.get('item'), str) else None,
+                    'moved_from': row.get('moved_from') if isinstance(row.get('moved_from'), dict) else None})
     return out
+
+
+OFFDAYS_SCHEMA = 'growth-offdays/1'
+LIVE_STATUS = ('scheduled', 'sending')
+
+
+def offer(board, doc, deliver=False):
+    """Hand the week's off-day options (the growth-offdays/1 file growth.py mix offdays writes) to the board, the one
+    place their day lives (Ruling, Krish, 2026-11-12: any off-day post or idea moves to any day at his press, and the move
+    updates every place that names its day). Counts only. Raises BoardError; ValueError for a file in another shape."""
+    if not isinstance(doc, dict) or doc.get('schema') != OFFDAYS_SCHEMA or not isinstance(doc.get('days'), dict):
+        raise ValueError('not a ' + OFFDAYS_SCHEMA + ' file')
+    monday = str(doc.get('week_of') or '')
+    if not re.match(r'^\d{4}-\d{2}-\d{2}$', monday) or dt.date.fromisoformat(monday).weekday() != 0:
+        raise ValueError('week_of is not a Monday')
+    options = sum(len(v) for v in doc['days'].values() if isinstance(v, list))
+    summary = {'week': monday, 'options': options, 'deliver': bool(deliver)}
+    if not deliver:
+        return summary
+    result = board.offer(monday, {key: doc[key] for key in ('schema', 'week_of', 'days')})
+    for key in ('offered', 'his', 'taken', 'withdrawn'):
+        if isinstance(result.get(key), int):
+            summary[key] = result[key]
+    summary['left'] = len(result.get('left') or []) if isinstance(result.get('left'), list) else 0
+    return summary
+
+
+def placed_options(listed_by_week):
+    """{concept_id: (board week, day, option doc id)} for every off-day option he approved, on the day the board says
+    it is on now. listed_by_week: {Monday ISO: the pieces read}. Pure."""
+    out = {}
+    for monday, listed in sorted(listed_by_week.items()):
+        for row in board_offdays(listed):
+            out[row['option_id']] = (monday, row['day'], 'off-' + row['day'] + '-' + row['option_id'])
+    return out
+
+
+def post_rows(entries, placed, status_of, sent, accounts=None):
+    """{board week: [post, ...]}: this engine's own record of each post it made for an option he approved, filed under
+    the week the option is on now (Ruling, Krish, 2026-11-12: the move updates every place that names its day):
+    made (a Buffer draft exists), scheduled (with its time), live (Buffer shows it sent, with its native link). The
+    evidence is this engine's own: the derived slots indexed in Control Center tie each Buffer post to its option, and
+    nothing is attributed by its date or guessed. entries: {concept_id, channel, due_at, buffer_draft_id};
+    status_of(post id) -> (status, dueAt) or None; sent: {post id: buffer_reads.sent_posts post}. Pure but for status_of."""
+    out = {}
+    for entry in entries:
+        where = placed.get(entry.get('concept_id'))
+        if where is None:
+            continue
+        post_id = entry['buffer_draft_id']
+        went = sent.get(post_id)
+        if went is not None:
+            url = went.get('external_link')
+            if not native_host(entry['channel'], url, (accounts or {}).get(entry['channel'])):
+                continue  # live only with the post's own link on its channel's own host
+            row = {'state': 'live', 'channel': entry['channel'], 'url': url,
+                   'at': instant(went['sent_at']).isoformat().replace('+00:00', 'Z')}
+        else:
+            read = status_of(post_id)
+            if read is None:
+                continue
+            if read[0] in LIVE_STATUS:
+                row = {'state': 'scheduled', 'channel': entry['channel'], 'due_at': read[1] or entry['due_at']}
+            elif read[0] == 'draft':
+                row = {'state': 'made'}
+            else:
+                continue
+        row.update({'option': where[2], 'buffer_post_id': post_id})
+        out.setdefault(where[0], []).append(row)
+    return out
+
+
+def record_rows(record, placed):
+    """{board week: [post, ...]} from a session's own posting receipts (a JSON list, each {option or concept_id, state,
+    channel, due_at, url, at}): what a Codex or Claude session made, scheduled or posted by hand for an option he
+    approved. A live receipt needs its channel and the post's own https link. Pure; ValueError for anything else."""
+    if not isinstance(record, list):
+        raise ValueError('the record is a list of posts')
+    out = {}
+    for post in record:
+        if not isinstance(post, dict) or post.get('state') not in ('made', 'scheduled', 'live', 'cancelled'):
+            raise ValueError('each post names its state: made, scheduled, live or cancelled')
+        cid = post.get('concept_id') or (OFF_OPTION.match(str(post.get('option') or '')) or [None, None, None])[2]
+        where = placed.get(cid)
+        if where is None:
+            raise ValueError('an option he has not approved on the board: ' + str(cid))
+        if post['state'] == 'live' and not (isinstance(post.get('channel'), str) and str(post.get('url') or '').startswith('https://')):
+            raise ValueError('a live post needs its channel and its own https link')
+        row = {k: post[k] for k in ('state', 'channel', 'due_at', 'url', 'at', 'buffer_post_id') if post.get(k) is not None}
+        row['option'] = where[2]
+        out.setdefault(where[0], []).append(row)
+    return out
+
+
+def report_posts(board, cc, buffer, sent, now=None, deliver=False, record=None, accounts=None):
+    """Write back to the board what this engine made, scheduled and posted for each approved off-day option, this
+    week and the next two (and, with record, a session's own receipts). Counts only."""
+    from . import autorelease
+    now = instant(now)
+    today = ny_time(now).date()
+    mondays = [(monday_of(today) + dt.timedelta(days=7 * k)).isoformat() for k in range(-1, 3)]
+    summary = {'weeks': len(mondays), 'posts': 0, 'reported': 0, 'deliver': bool(deliver), 'error': None}
+    listed = {}
+    for monday in mondays:
+        try:
+            listed[monday] = board.pieces(monday)
+        except BoardError as error:
+            summary['error'] = error.code
+            return summary
+    placed = placed_options(listed)
+    if record is not None:
+        rows = record_rows(record, placed)
+    else:
+        holds, entries = {}, []
+        for monday in mondays:
+            entries.extend(autorelease.week_entries(cc, monday, holds) or [])
+
+        def status_of(post_id):
+            try:
+                post = buffer.get_post(post_id)
+            except Exception:  # noqa: BLE001 - an unreadable post is left out, never guessed
+                return None
+            return (post.get('status'), post.get('dueAt')) if isinstance(post, dict) else None
+
+        rows = post_rows(entries, placed, status_of, sent, accounts)
+    summary['posts'] = sum(len(v) for v in rows.values())
+    if not deliver:
+        return summary
+    for monday, posts in sorted(rows.items()):
+        try:
+            result = board.posts(monday, posts)
+        except BoardError as error:
+            summary['error'] = error.code
+            return summary
+        summary['reported'] += int(result.get('items') or 0)
+    return summary
 
 
 def board_from_env():
@@ -310,13 +461,59 @@ def tick(board, client, now=None, deliver=False, root=None, accounts=None):
 def main(argv=None, make_board=None, make_buffer=None, now=None, out=print):
     parser = argparse.ArgumentParser(prog='growth.py run board')
     parser.add_argument('cmd', choices=('board',))
-    parser.add_argument('action', choices=('tick',))
+    parser.add_argument('action', choices=('tick', 'offer', 'posts'))
     parser.add_argument('--deliver', action='store_true')
+    parser.add_argument('--file', help='offer: the growth-offdays/1 file growth.py mix offdays wrote')
+    parser.add_argument('--record', help="posts: a session's own posting receipts (JSON list), instead of the index")
     args = parser.parse_args(sys.argv[1:] if argv is None else argv)
     token = (os.environ.get(TOKEN_ENV) or '').strip()
     if make_board is None and not token:
         out(NOT_CONFIGURED + ': set the ' + TOKEN_ENV + ' secret to tick the publish board')
         return 0
+    if args.action == 'offer':
+        # Growth's options reach the live board through the one place their day lives, never a second file it merges.
+        if not args.file:
+            out('board offer: give --file, the growth-offdays/1 file growth.py mix offdays wrote')
+            return 2
+        board = make_board() if make_board else Board(token)
+        try:
+            summary = offer(board, json.loads(open(args.file, encoding='utf-8').read()), deliver=args.deliver)
+        except (ValueError, OSError) as error:
+            out('board offer: ' + str(error))
+            return 2
+        except BoardError as error:
+            out('board offer: ' + error.code)
+            return 1
+        out('board offer: ' + json.dumps(summary, sort_keys=True))
+        return 0
+    if args.action == 'posts':
+        # Every off-day post this engine made, scheduled or posted goes back to the board, from its own record
+        # (Ruling, Krish, 2026-11-12): the index of its derived slots, or a session's receipts with --record.
+        board = make_board() if make_board else Board(token)
+        if args.record:
+            try:
+                summary = report_posts(board, None, None, {}, now=now, deliver=args.deliver,
+                                       record=json.loads(open(args.record, encoding='utf-8').read()))
+            except (ValueError, OSError) as error:
+                out('board posts: ' + str(error))
+                return 2
+            out('board posts: ' + json.dumps(summary, sort_keys=True))
+            return 1 if summary['error'] == 'board_token_refused' else 0
+        from . import autorelease
+        try:
+            cc = autorelease._cc_client()
+        except Exception:  # noqa: BLE001 - no engine token: say so, read nothing
+            out('board posts: Control Center is not configured; nothing was read')
+            return 0
+        client, why = (make_buffer() if make_buffer else buffer_client(links=True))
+        if client is None:
+            out('board posts: ' + why)
+            return 0
+        sent = {p['post_id']: p for p in sent_posts(client, instant(now) - dt.timedelta(days=10), now)['posts']}
+        summary = report_posts(board, cc, autorelease._buffer_client(), sent, now=now, deliver=args.deliver,
+                               accounts=load_accounts())
+        out('board posts: ' + json.dumps(summary, sort_keys=True))
+        return 1 if summary['error'] == 'board_token_refused' else 0
     client, why = (make_buffer() if make_buffer else buffer_client(links=True))
     if client is None:
         out('board tick: ' + why)

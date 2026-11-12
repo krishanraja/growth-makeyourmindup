@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: Any off-day post or idea moves to any day at his press, and the move updates every place that names its
+  day. His words: "I should be able to fluidly reassign any off-day post or assign any off-day idea to any day at
+  will, and that should update the single source of truth everywhere." The day lives in content-engine's
+  `offday_items`; this engine binds each approved option to the board's day, hands its own options to the board
+  through the same place (`growth.py run board offer`), and writes back every off-day post it made, scheduled or
+  posted, from its own record (`growth.py run board posts`), so the board shows Growth's off-day posts out and says
+  plainly when one is still scheduled for a day it left. A scheduled post is moved only through the approved posting
+  route; every wall is unchanged.
 - 2026-11-11: Krish instructs the engine from Control Centre, and its state shows there live. His words:
   "Ensure the priorities, obsessions, and next steps for all the growth engines are feeding live to this
   dashboard, and not just in the growth tab. They are responsible for driving the overall success of each

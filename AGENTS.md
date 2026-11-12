@@ -120,9 +120,23 @@ content.krishraja.com/board is the archive and takes no press. How every actor u
 Approve puts an idea on the board; Growth proposes and never places one), tick what went out with
 `POST /api/board/<Monday>/posted` (content-engine's GROWTH-HANDOFF.md, "Tick the board when a post goes out"), never keep a board of its own, and file what a session started from a board prompt makes or reads on
 the piece (the Control Center connector's `get_piece_board`, `report_board_session`, `add_piece_material`,
-`read_piece_material`). Every link Growth gives to the board is the live one. Not built yet: the live board reads
-the week's off-day options only from content-engine's `ideas.json`, so a `growth.py mix offdays` file
-(`growth-offdays/1`), which fed only the archive's build, does not reach it until content-engine's view reads it.
+`read_piece_material`). Every link Growth gives to the board is the live one.
+
+**Which day an off-day post is on lives in one place** (Ruling, Krish, 2026-11-12: any off-day post or idea moves to
+any day at his press, and the move updates every place that names its day): content-engine's `offday_items`, read
+through `GET /api/board/<Monday>/pieces` (`offdays`, with each option's `day`, `date`, `item` and `moved_from`). Growth
+binds every option he approved to the day the board says (`autorelease.bound_options`), never the day its own plan
+first put it on, so a post he moved goes out on its new day and is held on the day it left. Growth hands its own
+off-day options to the live board through the same place: `python growth.py run board offer --file <offdays.json>
+--deliver` posts the `growth.py mix offdays` file (`growth-offdays/1`) to `POST /api/board/<Monday>/offdays`, where each
+is offered on its day with Move to… and Approve like every other option; never a file of its own the board must merge.
+Every off-day post Growth makes, schedules or posts goes back to the same place, from Growth's own record and never a
+post it did not post: `python growth.py run board posts --deliver` (after the tick in `release.yml`) reports each option's
+posts from the derived slots indexed in Control Center and Buffer (made, scheduled with its time, live with its native
+link) to `POST /api/board/<Monday>/offday-posts`, and a session that posted by hand reports its own receipts with
+`--record <receipts.json>`. The board then shows the post out (an approved option Growth reports live makes its day
+done). A post already scheduled for a day it left is moved only through the approved posting route (a signed go-live
+names its time); until then the board says plainly "Still scheduled for Tue 17 on Instagram: move it there too". Content-engine's PUBLISH_BOARDS.md, "Moving an off-day item to any day".
 
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 
