@@ -34,7 +34,9 @@ from .core import calendar_date, instant, ny_time, read_json, write_json
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = 'growth-ledger/1'
 DAYS = 14
-BOARD_SITE = 'https://content.krishraja.com'
+# The one live board, where each row's board link opens (Ruling, Krish, 2026-11-11: one live board, in Control Centre;
+# the old board is a read-only archive). content-engine config/boards.json `live_board.url`, at the week and the day.
+LIVE_BOARD = 'https://controlcenter.krishraja.com/#/content'
 DAY_KEYS = ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
 WEEKDAYS = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
 # The publication's rhythm (content-engine api/board/_posted.ts DAY_SERIES; OPERATING_MODEL section 0).
@@ -344,7 +346,7 @@ def row(date, weeks, buffer):
         'piece_id': entry['piece_id'] if entry else None,
         'title_of_record': title_of_record(entry, week.get('manifest'), key),
         'stage': stage, 'stage_name': STAGES.get(stage),
-        'assets': {'board_url': BOARD_SITE + '/board/' + monday + '#' + key,
+        'assets': {'board_url': LIVE_BOARD + '?week=' + monday + '&day=' + key,
                    'drive_folder': _text((entry or {}).get('drive_folder')),
                    'manifest_sha256': manifest_sha256(week)},
         'next_action': action, 'owner': owner, 'due': due,
