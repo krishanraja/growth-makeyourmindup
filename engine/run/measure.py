@@ -695,8 +695,8 @@ def verdict(post, history, window_hours, elapsed_hours):
 # judge window, jobs/measurement.md); engagement is kept beside it only as supporting evidence.
 
 SUBSCRIBER_WINDOW_HOURS = 7 * 24
-# Proposed default for Krish's approval at G-A: a post whose own link brought at least this many visits in
-# its seven days and no sign-up fails; with fewer, a zero says too little to call.
+# A post whose own link brought at least this many visits in its seven days and no sign-up fails; with fewer,
+# a zero says too little to call. Approved by Krish on 2026-11-12 ("i approve 3, 4, 5"), no longer a proposal.
 FAILS_AT_SESSIONS = 30
 
 
@@ -715,7 +715,7 @@ def judge_subscribers(sign_ups, sessions, elapsed_hours, covered=True, reason=No
     out = {'verdict': 'insufficient', 'basis': 'subscribers', 'sign_ups': sign_ups, 'sessions': sessions,
            'window_hours': SUBSCRIBER_WINDOW_HOURS,
            'bands': {'works_at_or_above_sign_ups': 1, 'fails_at_or_above_sessions_with_none': FAILS_AT_SESSIONS,
-                     'status': "proposed defaults for Krish's approval at G-A"}}
+                     'status': 'approved by Krish, 2026-11-12'}}
     if sign_ups is None:
         out['reason'] = reason or 'no sign-up count was attributed to this post'
     elif elapsed_hours < SUBSCRIBER_WINDOW_HOURS:
