@@ -25,7 +25,8 @@ days (`YYYY-MM-DD Tue off.day - Subject`): one Posts folder for the whole week
 (Ruling, Krish, 2026-11-03). Do not file new posts in 4 Growth. Preserve private evidence and rejected versions
 locally with a dated hash inventory before closing or cleaning a workspace.
 The supplied Drive folder is link-editable: never upload private run backups
-there. Update the handover, NOW.md and owning structured lessons at closeout.
+there. Update the handover and owning structured lessons at closeout, and
+write the closeout note ("Closeout" below), never NOW.md itself.
 
 ## Architecture upgrade (Krish, 27 October 2026)
 
@@ -474,6 +475,12 @@ two steps; in short:
    instruction by id only, and `cc finish` refuses an ack line that repeats
    him. A block that says it was acked done here means do not act on it
    again. No block, or "None open", means work from the directive as before.
+   The four engine sessions ("Four engines" above) see it too: `engine
+   start` shows the newest copy a workspace job's `cc start` pulled on this
+   machine, as `krish_instruction`. The session it belongs to acts on it
+   first (another engine's is handed off), and closes with `instruction_ack`
+   in its learnings file; the next workspace job's `cc finish` reports that
+   ack, so Control Center is still written only through `cc finish`.
 2. **Last, after the job's own checks:**
    `python growth.py cc finish --job KIND --envelope FILE --queue .scratch/queue.json --deliver`
    (the numbers job adds `--observations .scratch/observations.json`). It
@@ -635,6 +642,27 @@ click. No percentages still holds.
 Krish keeps or kills a job from the Sunday report. Record his words with the
 date in `CHANGES.md`, then change the job file. The schedule itself lives in
 Codex (`README.md`, "Setting it up").
+
+## Closeout
+
+A session that changed this repository writes one note,
+`now-notes/YYYY-MM-DD-<slug>.md`, and does not edit `NOW.md` (Ruling, Krish,
+2026-10-28: pull requests never edit NOW.md at once). Only these lines, each
+starting its own line:
+
+    Status: what is true now that this work changed
+    Changed: optional, the why, for "What changed recently"
+    Next: the single next action
+    North Star check (YYYY-MM-DD): holds.
+
+(or `North Star check (YYYY-MM-DD): recalibration proposed. <why>`). `python
+growth.py closeout check` says whether the fold can place a note, and the
+self-test runs it on every pull request. When the note reaches main, the
+`fold` job in `check.yml` runs `python growth.py closeout fold`
+(`engine/closeout.py`): it writes the note into NOW.md, deletes it, and moves
+NOW.md's oldest lines to `docs/history/LOG.md` verbatim to keep it under its
+byte cap. ai-harness's administration publisher excludes this repository
+until Krish accepts it there by name, so this fold is the repository's own.
 
 <!-- krish-canon:start release=v2026.10.31.5 sha=6fdbb8c16bbd rendered=2026-11-01 -->
 ## Krish canon

@@ -1,5 +1,7 @@
 name: check
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   self-test:
     strategy:
@@ -23,3 +25,40 @@ jobs:
       - run: python growth.py --self-test
       - run: python growth.py doctor --offline
       - run: python growth.py dry-run
+      - run: python growth.py closeout check
+  fold:
+    # A closeout note that reaches main is folded into NOW.md and removed, so pull requests never edit NOW.md
+    # at once (Ruling, Krish, 2026-10-28). ai-harness's administration publisher excludes this repository,
+    # so the fold is this repository's own (engine/closeout.py). Every attempt folds afresh from the newest
+    # main. A push made with the job's token starts no workflow, so the fold never folds itself.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: closeout-fold
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Fold closeout notes into NOW.md
+        shell: bash
+        run: |
+          set -uo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            git fetch --quiet origin main && git reset --quiet --hard origin/main || exit 1
+            status=0; python growth.py closeout fold --head "$(git rev-parse --short=7 HEAD)" || status=$?
+            if [ -z "$(git status --porcelain -- NOW.md now-notes docs/history/LOG.md)" ]; then exit "$status"; fi
+            git add -A -- NOW.md now-notes docs/history/LOG.md
+            git commit --quiet -m "docs(closeout): fold closeout notes into NOW.md" -m "Written by python growth.py closeout fold (engine/closeout.py)."
+            if git push --quiet origin HEAD:main; then exit "$status"; fi
+            sleep $((attempt * 5))
+          done
+          echo "::error::main kept moving; the notes stay in now-notes/ for the next push to main."
+          exit 1

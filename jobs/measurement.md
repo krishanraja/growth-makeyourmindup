@@ -43,7 +43,7 @@ Pass `--session` with this session's link when Krish has given it: the one write
 the private `.scratch/engines/sessions.json`, so other sessions can report back here. Otherwise it
 only reads. Its `recover` block gives the current number and its source, the comparable
 observation windows, overdue measurements, the largest observed constraint and the open resource
-decision. `next_action` is where the run begins.
+decision. Act first on `krish_instruction` (his instruction; its own lines say how to act on it and ack it), then on `next_action`.
 
 ## Measuring
 
@@ -114,7 +114,7 @@ moved the North Star, or saying nothing did.
 Hand off anything left for another engine (asked and sent as above), then write
 `.scratch/engines/measurement-learnings.json` with `did`, `better_next_time` (specific changes),
 `worked`, `handoffs` (every id made), `promoted` and `session_ref` (this session's link,
-`my_session_ref`), and run `python growth.py engine close measurement --learnings
+`my_session_ref`) and any `instruction_ack`, and run `python growth.py engine close measurement --learnings
 .scratch/engines/measurement-learnings.json`. A repeat of an earlier session's line is refused
 until its words are written into this file, `engines/measurement.json` or a `social/lessons/`
 record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a message

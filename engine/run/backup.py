@@ -6,6 +6,12 @@ the loop it asks the GitHub API whether a repository_dispatch run of that
 workflow already succeeded today (UTC). If one did it says "dispatch already
 ran today" and the loop is skipped; otherwise the loop runs.
 
+Krish's instruction (protocol 1.20.0) wakes the same workflow with the same
+repository_dispatch, any time of day. The workflow names such a run
+WAKE_TITLE (its run-name), and that run never counts as the morning push:
+otherwise an instruction given before 05:40 UTC would stop the backup on a day
+the 05:10 push never came.
+
 Read-only, with the job's own GITHUB_TOKEN (permissions actions: read). It
 talks to api.github.com only, follows no redirect and never prints the
 token or a response body. If the read fails, the backup runs: a second
@@ -29,6 +35,8 @@ MAX_RESPONSE = 2000000
 TIMEOUT = 20
 ALREADY = 'dispatch already ran today'
 RUN = 'no successful dispatch run today (UTC); running the backup'
+# The run-name control-center.yml gives a run woken by Krish's instruction (client_payload.instruction_id).
+WAKE_TITLE = 'control-center instruction wake'
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -44,7 +52,8 @@ def runs_url(repo, day):
 
 
 def dispatch_succeeded_today(runs, now=None):
-    """True when the API's runs list holds a successful repository_dispatch run created today (UTC)."""
+    """True when the API's runs list holds a successful repository_dispatch run created today (UTC) that is not an
+    instruction wake (its display_title is WAKE_TITLE)."""
     day = instant(now).date()
     items = runs.get('workflow_runs') if isinstance(runs, dict) else None
     if not isinstance(items, list):
@@ -54,6 +63,8 @@ def dispatch_succeeded_today(runs, now=None):
             continue
         if run.get('status') != 'completed' or run.get('conclusion') != 'success':
             continue
+        if run.get('display_title') == WAKE_TITLE:
+            continue  # Krish's instruction woke it; that is not the morning push.
         if not isinstance(run.get('created_at'), str):
             continue  # instant(None) would read as now
         try:

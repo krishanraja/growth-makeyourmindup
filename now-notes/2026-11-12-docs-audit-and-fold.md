@@ -1,0 +1,4 @@
+Status: Closeout notes now fold into NOW.md on main by this repository's own fold (`growth.py closeout fold`, the fold job in check.yml), Krish's instruction reaches the four engine sessions (`engine start` shows it, `instruction_ack` at close, reported by the next `cc finish`), an instruction wake no longer stops the 05:40 backup, and NOW.md, README, the brief, GET-GOING, the handover, LANES and the protocol copy match the code and live state.
+Changed: **Docs audit and the closeout fold.** The 32 waiting notes and NOW.md's old lines moved verbatim to `docs/history/LOG.md`; `next_steps` also sends NOW.md's "Waiting on Krish" items.
+Next: build next week's mix plan (`growth.py mix plan`) and send it through the `growth-mix-plan` handoff with its slots and mock records, so Krish can approve its ideas and mocks and the maker drafts from them instead of failing.
+North Star check (2026-11-12): holds.

@@ -33,11 +33,13 @@ Nobody has to be awake or online for these.
 | The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea | when that maker wakes it | when that maker wakes it |
 | The maker (`maker.yml`, [MAKER.md](MAKER.md)): makes the next New York day's posts from the ideas and mocks Krish approved in the week's mix plan, as Buffer drafts with no due time, writes their words and a blind review of them with the Anthropic API, and hands each off with its review, so release can schedule it. Only the approved mock files, checked by hash; one draft per idea, channel and week; never LinkedIn; it never schedules, publishes or deletes | every day 04:30; by hand a dry run unless deliver is ticked | 04:30 |
 | The ledger (`ledger.yml`): rebuilds `calendar/ledger.json` and `calendar/LEDGER.md`, one row per day per slot for the next 14 days, from content-engine's board and Buffer, read-only (`docs/OPERATING_MODEL.md` section 4). It keeps the two files as the run's artifact for 14 days and commits, posts, schedules and ticks nothing | every day 04:05, before the maker | 04:05 |
-| The test suite (`check.yml`) | on every push and pull request | on every push and pull request |
+| The test suite (`check.yml`), which on main also folds each closeout note (`now-notes/`) into `NOW.md` and removes it (`engine/closeout.py`), moving NOW.md's oldest lines to `docs/history/LOG.md` to keep it under its byte cap | on every push and pull request; the fold on every push to main | on every push and pull request |
 | Art direction (`artdirect.yml`): Codex invents one visual idea for each piece of the coming week and builds it as a piece kit (`render/KIT.md`, "Piece kits"), with no network, only in that piece's own folder, and on at most three pieces a run. The renderer's checks are the gate: a kit that fails is removed and that piece uses the house kit. The kits that pass come to Krish as one pull request, "Piece kits for week W", which the workflow never merges. Its log carries counts and codes only | Saturdays 07:00 | 07:00 |
 
-Only this lane holds the Control Center engine key. It is a GitHub
-repository secret. No chat session holds it.
+Of the lanes, only this one holds the Control Center engine key, as a
+GitHub repository secret. The one other copy is the file on Krish's PC that
+the PC automations use for Codex workspace runs (`docs/KEY.md`). No Claude
+session holds it.
 
 Art direction is the one L0 job that runs a model. Codex makes there under
 the same walls as every maker: it writes only a piece kit, which reaches the
