@@ -416,6 +416,12 @@ def state_line(week_of, week_target, current, current_as_of, current_source, urg
         if current is None:
             sentence = ('New publication subscribers this week from organic posts and shares: not measured '
                         'yet, against {:,} this week, so measuring it comes first.').format(week_target)
+        elif as_date(current_as_of) >= as_date(week_of) + dt.timedelta(days=6):
+            # A whole week read once it has ended (jobs/subscribers.md) is that week's, never "this week"
+            # (ai-harness contract/north-star-metric.md: a completed week's line says "in the week of").
+            sentence = ('{:,} of {:,} new publication subscribers in the week of {} from organic posts and shares, '
+                        'the whole week to {}.').format(current, week_target, human_date(week_of),
+                                                        human_date(current_as_of))
         else:
             sentence = ('{:,} of {:,} new publication subscribers this week from organic posts and shares, '
                         'read on {}.').format(current, week_target, human_date(current_as_of))
