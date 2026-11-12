@@ -83,3 +83,25 @@ Stay quiet when nothing changed and no action is needed. Notify Krish of
 verified repairs, approval requests, meaningful findings, or an access blocker
 when it first appears or changes. One unresolved login is not a weekly alert
 loop. The weekly execution is still required even when the summary is quiet.
+
+## Approved: every profile link points to the tagged subscribe page (Krish, 12 Nov 2026)
+
+Krish, 12 Nov 2026: "Happy with your recommendations and yes go for the profile links as well." At the next audit, and every audit after it, each account's
+profile link is set to its tagged subscribe page below, with `link_purpose: align_subscription`
+through `audit begin` and `audit reconcile` as usual: fresh browser evidence of the before value,
+the destination opened at the exact URL, and the page reopened after Save to prove it. A profile
+that already carries exactly this link is skipped. Nothing else on a profile changes (bio,
+positioning and pins still need his approval).
+
+| Account | Profile link |
+|---|---|
+| instagram | `https://home.makeyourmindup.ai/subscribe?utm_source=instagram&utm_medium=organic&utm_content=profile` |
+| tiktok | `https://home.makeyourmindup.ai/subscribe?utm_source=tiktok&utm_medium=organic&utm_content=profile` |
+| x | `https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_medium=organic&utm_content=profile` |
+| threads | `https://home.makeyourmindup.ai/subscribe?utm_source=threads&utm_medium=organic&utm_content=profile` |
+| facebook | `https://home.makeyourmindup.ai/subscribe?utm_source=facebook&utm_medium=organic&utm_content=profile` |
+| youtube | `https://home.makeyourmindup.ai/subscribe?utm_source=youtube&utm_medium=organic&utm_content=profile` |
+
+LinkedIn is Krish's alone (`KRISH_ONLY`): the engine never saves it. Put the LinkedIn line,
+`https://home.makeyourmindup.ai/subscribe?utm_source=linkedin&utm_medium=organic&utm_content=profile`, on his list for him to paste himself.
+Substack has no profile link target: its subscribe button is the publication's own.

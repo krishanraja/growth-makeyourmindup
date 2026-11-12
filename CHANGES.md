@@ -1,5 +1,9 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: Every profile link points to the tagged subscribe page. His words: "Happy with your recommendations and yes go for the profile links as well."
+  `jobs/channel-audit.md` lists the exact link per account (Instagram, TikTok, X, Threads, Facebook,
+  YouTube), saved by the weekly browser audit under its existing alignment authority and verified by
+  reopening the page. LinkedIn stays his to change by hand; nothing else on a profile changes.
 - 2026-11-12: The colour follows the day. His words: "Close the stuff that's still open." The renderer
   (`scripts/render_mocks.mjs`) gives a job with no tone the house mint, and renders butter, lilac or coral only when
   the job's `date` falls on that series' day (Monday, Wednesday, Friday) or it `carries` the series piece, so an
