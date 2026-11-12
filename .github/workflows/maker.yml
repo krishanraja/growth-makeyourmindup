@@ -5,6 +5,10 @@ name: maker
 # Buffer drafts (saved as drafts with no due time, never published), and hands
 # each one off with its review, so release.yml can schedule it later under
 # every gate. The words and their blind review come from the Anthropic API.
+# With no approved mix for a week (Ruling, Krish, 2026-11-12) it drafts from
+# the standing plan instead, into Control Center only (never Buffer, never
+# handed to release), and puts one ask a week on his list (docs/MAKER.md,
+# "With no approved mix").
 # Run by hand it is a dry run unless deliver is ticked: it writes and reviews
 # the words but saves nothing and reports nothing. It never schedules,
 # publishes or deletes, and never touches LinkedIn. This repository is

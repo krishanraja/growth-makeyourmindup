@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: With no approved weekly mix, the maker drafts from the standing plan and asks him once a week
+  instead of failing. He asked for it as fix 3 of the maker audit (12 Nov), after the maker had failed every
+  run since 30 October with nothing made. Until a week's mix is approved on the board, the maker drafts one X
+  text post a day from a piece already published (the standing plan's cadence; Instagram, TikTok and YouTube
+  need an edition he approved, so they get nothing), keeps the drafts in Control Center only, never in Buffer
+  and never handed to release, and raises "This week's mix isn't approved" on his list once that week. Once
+  he approves the mix, the next run makes his plan. A past week with nothing left to make is skipped and
+  noted. Release, its gates and every wall are unchanged (docs/MAKER.md, "With no approved mix").
+
 - 2026-11-11: Krish instructs the engine from Control Centre, and its state shows there live. His words:
   "Ensure the priorities, obsessions, and next steps for all the growth engines are feeding live to this
   dashboard, and not just in the growth tab. They are responsible for driving the overall success of each

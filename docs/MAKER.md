@@ -15,7 +15,9 @@ idea into a post unless a session did it.
 
 It moves the North Star by keeping Instagram, YouTube Shorts, TikTok and X
 at three or four posts a day from the moment Krish says yes, with no session
-and no PC.
+and no PC. Until he says yes to a week's mix, it drafts that week from the
+standing plan instead of failing, and asks him once a week ("With no
+approved mix", below).
 
 ## What it does, in order
 
@@ -99,6 +101,74 @@ nothing. By hand it may also name the New York day to make, but only today
 or tomorrow there, so a yes given after the night's run can still be made
 that morning.
 
+## With no approved mix
+
+Ruling (Krish, 2026-11-12): with no approved weekly mix, the maker drafts
+from the standing plan and asks him once a week instead of failing. Before
+this, a week whose mix was not reported failed every run (13 runs from 30
+October to 11 November, `mix_plan_not_reported` and `slots_record_missing`)
+and made nothing.
+
+**When.** Step 1 says the week has no approved mix yet: its plan is not
+reported (`mix_plan_not_reported`), or it is reported and he has not
+approved it on the board (`mix_not_approved`, `mix_not_proposed`). Every
+other hold (a slots record that does not match, a hash, a missing record of
+a week still to come, a stop) stays exactly as it was. So does a week the
+standing plan does not cover (it names W45 to W52), and every week once he
+has said no to the standing plan itself: then the week holds loudly, as
+before. His no on the week's mix makes nothing, as before.
+
+**What it drafts.** The standing plan (`specs/standing-plan.json`) on the
+maker's four channels, at its own cadence: one useful post a day. Only X
+can be drafted, as a text post, because a text post needs no edition he
+approved; Instagram, TikTok and YouTube Shorts each need a picture or a
+video he approved, so they get nothing and are counted as
+`no_approved_edition` (the standing plan: "A slot with no approved edition
+is recorded as missing, never filled with unapproved creative"). Each X
+draft is written from one piece the publication already published (the
+public feed, oldest unamplified first, as the backlog orders it; a
+different piece each workday, moving on week to week, so no piece repeats
+in a week, and `no_published_piece` when there are too few), by the same
+Anthropic writer with the same checks except the claim, which it does not
+have: its words come only from that piece, never a fact it does not hold.
+The same blind review follows. Sunday rests.
+
+**Where the drafts go.** Nowhere release reads. A standing-plan draft is
+never saved in Buffer and never handed off, so it has no review or index
+record, and release (which reads only those) never sees it; were one ever
+handed to release, the week's missing approval, and then `outside_mix`,
+hold it, and a test proves both. With deliver, each New York day's drafts
+are one live report in Control Center, `makeyourmindup:standing:<day>`:
+each draft's words in a plain line that says it is a draft, not approved,
+with its piece as the line's link, and the whole in a record. A day is
+drafted once; a later run that finds the report counts `already_drafted`.
+No proposal rides on it, so it puts nothing on his list.
+
+**The ask.** The first run that drafts a week from the standing plan puts
+one ask on his list through the same report route every proposal of this
+engine takes: a live report at `makeyourmindup:mixask:<ISO week>` with one
+strategy proposal, "This week's mix isn't approved", saying what the maker
+is doing instead and how to switch (approve the week's mix on the publish
+board). It expires when the week ends. A run raises it only when that
+address is still empty, so every other run that week says nothing about
+it (`already_raised`), and an address it cannot read counts as raised, so
+it is never asked twice. A dry run says `would_raise` and writes nothing.
+
+**Switching to his plan.** Every run reads the week's authority first. Once
+his mix is approved, the next run makes his plan's posts (step 2 onwards)
+and drafts nothing more from the standing plan.
+
+**A past week.** A week whose only day in the run is a rest day (the
+Sunday that ends it, beside Monday of the next) has nothing to make: it is
+skipped, and its hold, if it has one, is noted in `skipped_weeks`, never
+failing the run. So W45's missing slots record, which failed the run on 8
+November, is now a note.
+
+**What it says.** The run's JSON line names what each week was drafted
+from (`drafted_from`: `his_mix` or `standing_plan`), each standing week's
+counts and its ask (`standing`), and the skipped weeks (`skipped_weeks`),
+codes and counts only; the job summary says the same in a line a week.
+
 ## What it never does
 
 - Schedule, publish, queue or delete a post. Only release schedules, and
@@ -107,6 +177,7 @@ that morning.
   TikTok and X channels (`engine/buffer_channels.py`).
 - Use a mock file that is not one he approved, byte for byte.
 - Make a second draft of one idea on one channel in a week.
+- Save a standing-plan draft in Buffer, or hand one to release.
 - Change the words or digest of anything he approved. The slots and the mock
   manifest are records of their own, kept beside the plan.
 - Write words, ids, links or keys to the log. The log is counts and reason
@@ -131,7 +202,11 @@ that morning.
   created since the week's Monday less seven days, and posts scheduled or
   sent since the Monday), and each new draft, read back.
 - **The repository:** `mix.json`, the social records (formats, channels,
-  copy lint, share rules) and nothing on Krish's PC.
+  copy lint, share rules), the standing plan (`specs/standing-plan.json`)
+  and nothing on Krish's PC.
+- **The public feed** (`https://home.makeyourmindup.ai/feed`): only in a
+  week with no approved mix, for the published pieces a standing-plan draft
+  is written from.
 
 ## Where the slots and the mock manifest come from
 
@@ -193,7 +268,10 @@ GitHub repository secrets, read only on the runner:
 Every hold has a code in the run's summary. A hold that means a person must
 look (a slots record that does not match the plan, a missing mock manifest,
 a draft saved but not handed off, a draft whose files Buffer changed) fails
-the run, so GitHub emails Krish. A hold on one post (its words, its review,
+the run, so GitHub emails Krish. A week with no approved mix is not one of
+them: it is drafted from the standing plan and asked once ("With no
+approved mix"). A standing-plan day record that cannot be read, or a
+conflict writing one, is loud. A hold on one post (its words, its review,
 one mock file) leaves the rest of the day to be made.
 
 Some failures stop the whole run at once, loudly, and make nothing more:
