@@ -8,6 +8,7 @@ import copy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import io
 import json
+import re
 import logging
 from pathlib import Path
 import tempfile
@@ -669,13 +670,73 @@ class InspirationBoardTests(unittest.TestCase):
         self.assertEqual(len(inspiration_suggestions(partial)[2]), 1)
 
     def test_the_board_never_feeds_a_judge_scorer_ranker_or_gate(self):
+        # The one exception is protocol 1.21.0's report field inspiration_used (and its builder): it says, after an
+        # asset was made, which card Krish ticked it used, so his tick closes. It never ranks, scores or gates a draft.
+        plain = lambda text: re.sub(r'inspiration_used(_field)?', '', text)
         for name in ('engine/packs.py', 'engine/operations.py', 'engine/control_center.py', 'engine/core.py'):
-            self.assertNotIn('inspiration', (ROOT / name).read_text(encoding='utf-8'), name)
+            self.assertNotIn('inspiration', plain((ROOT / name).read_text(encoding='utf-8')), name)
         source = (ROOT / 'engine/cc_loop.py').read_text(encoding='utf-8')
         for name in ('def workspace_report', 'def runner_report', 'def item_proposal', 'def _items'):
             start = source.index(name)
             end = source.index('\ndef ', start + 1)
-            self.assertNotIn('inspiration', source[start:end], name)
+            self.assertNotIn('inspiration', plain(source[start:end]), name)
+
+
+class InspirationInstructionTests(unittest.TestCase):
+    """Protocol 1.21.0 (Ruling, Krish, 2026-11-12: an inspiration card he ticks is an instruction that jumps the
+    queue: Production means use the style within a week). Every card here is synthetic."""
+
+    TICKED = '11111111-1111-4111-8111-111111111111'
+
+    def ticked(self, **extra):
+        card = dict(SYNTHETIC_CARD, card_id=self.TICKED, name='synthetic-style.mp4', trials=[], his_words=[], answered=False,
+                    instruction={'action_id': '22222222-2222-4222-8222-222222222222', 'kind': 'copy_style',
+                                 'due_at': '2026-11-19T15:00:00Z', 'overdue': False, 'words': 'copy the caption build'})
+        card.update(extra)
+        return card
+
+    def directive(self, served=True, cards=None):
+        return directive_with(inspiration={'rule': 'Synthetic rule', 'suggestions': cards or [SYNTHETIC_CARD, self.ticked()]},
+                              features={'engine_state': True, 'krish_instruction': True, 'inspiration_used': served})
+
+    def test_a_ticked_card_comes_first_as_an_instruction_not_a_suggestion(self):
+        state, _, items = inspiration_suggestions(self.directive())
+        self.assertEqual([i['card_id'] for i in items], [self.TICKED, 'synthetic-card-1'])
+        self.assertEqual(items[0]['instruction']['due_at'], '2026-11-19T15:00:00Z')
+        self.assertIsNone(items[1]['instruction'])
+        text = '\n'.join(inspiration_block(self.directive()))
+        self.assertIn('MUST USE: Krish ticked these as instructions, not inspiration.', text)
+        self.assertIn('MUST USE BY 2026-11-19: 1. synthetic-style.mp4', text)
+        self.assertIn('his instruction: "copy the caption build"', text)
+        self.assertIn("name it as the concept's style_card", text)
+        late = inspiration_block(self.directive(cards=[self.ticked(instruction=dict(self.ticked()['instruction'], overdue=True))]))
+        self.assertIn('PAST DUE MUST USE BY 2026-11-19', '\n'.join(late))
+        # A malformed instruction is dropped, never repaired: the card stays a suggestion.
+        odd = inspiration_suggestions(self.directive(cards=[self.ticked(instruction={'kind': 'make_piece', 'due_at': 'x'})]))[2]
+        self.assertIsNone(odd[0]['instruction'])
+
+    def test_a_mock_made_in_the_ticked_style_is_reported_as_used_only_when_served(self):
+        now = instant('2026-11-12T15:00:00Z')
+        with tempfile.TemporaryDirectory() as tmp:
+            mix = Path(tmp) / cc_loop.MIX_DIR
+            mix.mkdir(parents=True)
+            concepts = [{'concept_id': 'meme-1', 'lane': 'memes', 'idea': 'A synthetic meme, see https://example.invalid/x',
+                         'ready': True, 'style_card': self.TICKED},
+                        {'concept_id': 'meme-2', 'lane': 'memes', 'idea': 'Another', 'ready': True, 'style_card': 'synthetic-card-1'},
+                        {'concept_id': 'meme-3', 'lane': 'memes', 'idea': 'Not made yet', 'ready': False, 'style_card': self.TICKED}]
+            write_json(mix / 'plan-2026-11-16.json', {'concepts': concepts})
+            used = cc_loop.inspiration_used_field(tmp, now, self.directive())
+            self.assertEqual(used, [{'card_id': self.TICKED, 'asset': 'memes for the week of 2026-11-16: A synthetic meme, see', 'made_at': None}])
+            self.assertIsNone(cc_loop.inspiration_used_field(tmp, now, self.directive(served=False)))
+            report = build_report('synthetic-run', 'synthetic', now, 'rev', now, 'held', inspiration_used=used)
+            self.assertEqual(report['schema_version'], '1.21.0')
+            self.assertEqual(validate_report(report), report)
+            with self.assertRaises(ValueError):
+                build_report('synthetic-run', 'synthetic', now, 'rev', now, 'held',
+                             inspiration_used=[{'card_id': self.TICKED, 'asset': 'mail me@example.invalid', 'made_at': None}])
+            plain = build_report('synthetic-run', 'synthetic', now, 'rev', now, 'held')
+            self.assertNotIn('inspiration_used', plain)
+            self.assertEqual(plain['schema_version'], '1.0.0')
 
 
 class VoiceRuleTests(unittest.TestCase):

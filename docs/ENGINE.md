@@ -399,6 +399,20 @@ is invented; an empty list means he has suggested nothing yet. Like the
 voice rules, nothing that checks, scores, ranks, queues or reports a draft
 reads it, and the GitHub runner never prints it.
 
+**A card he ticked is an instruction (1.21.0).** Ruling (Krish, 2026-11-12):
+an inspiration card he ticks is an instruction that jumps the queue: Content
+means make it into a piece now, Production means use the style within a
+week. A Production card he ticked comes in `inspiration` with an
+`instruction` (its due date and his words) and is listed first in
+`inspiration.txt` as MUST USE BY its date (PAST DUE once late). The next
+fitting carousel, meme or off-day post uses that style, rebuilt in our voice
+and look: its concept names the card as `style_card` in the mocks file
+(`docs/MIX.md`), and once the mock is made the workspace report says so in
+`inspiration_used` (only when the directive's `features.inspiration_used` is
+true), which closes his tick in Control Center. Past its date and unused,
+his Publish Board says so in one line. A Content tick is content-engine's to
+make into a piece, never this engine's.
+
 **Identity.** Slug `makeyourmindup`, `engine_id` `growth-makeyourmindup`,
 `product_slug` `publication`. `run_id` is `makeyourmindup:<New York
 date>:<kind>` (or `:runner`); the attempt id adds the start time. A second

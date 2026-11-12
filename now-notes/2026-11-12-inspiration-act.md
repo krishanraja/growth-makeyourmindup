@@ -1,0 +1,4 @@
+Status: Protocol 1.21.0 is built (Ruling, Krish, 2026-11-12: an inspiration card he ticks is an instruction that jumps the queue: Content means make it into a piece now, Production means use the style within a week). A Production card he ticked comes first in `.scratch/cc/inspiration.txt` as MUST USE BY its date with his words; the mock made in that style names it as `style_card` in the mocks file, and the workspace report sends `inspiration_used` (only when the directive's `features.inspiration_used` is true), which closes his tick in Control Center.
+Changed: `engine/cc_loop.py`, `engine/control_center.py`, `engine/mix.py`, the protocol and schema copies in `docs/control-center/`, `docs/ENGINE.md`, `docs/MIX.md`, `jobs/daily-pack.md`, tests.
+Next: Krish ticks a Production card in Control Centre's Inspiration place; the next mix's mocks use it and the next workspace report carries it in inspiration_used.
+North Star check (2026-11-12): holds.

@@ -930,10 +930,15 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
             holds.append({'reason': 'Nothing was prepared this run', 'detail': None})
     # 1.17.0, only when a mix plan is kept: the week's off-day options his list counts. The channels a
     # go-live may name ride on each go-live's own report (engine/run/handoff.py reports_for).
+    # 1.21.0, only when the directive serves it: the cards he ticked as a style that a concept's mocks used.
+    used = inspiration_used_field(root, now, directive)
+    if used:
+        activity.append({'line': 'Used ' + count(len(used), 'style') + ' Krish ticked as an instruction in this week\'s mocks; reported as inspiration_used'})
     report = build_report(run_id, mode, now, rev or revision(root), now, status, objectives,
                           activity, proposals, events, holds, offdays=offdays_field(root, now),
                           state=engine_state.fields(root, gap, directive, acks,
-                                                    done=bool(acted) and acted[0] == 'done'))
+                                                    done=bool(acted) and acted[0] == 'done'),
+                          inspiration_used=used)
     return report, None
 
 
@@ -1192,6 +1197,12 @@ INSPIRATION_USE = ('These are Krish\'s own suggestions. Treat them as the baseli
                    'Rebuild a source in the publication\'s own voice and look; never copy it. Quote his_words as his; '
                    'agreed_reasons are guesses he tapped, never his words. Nothing that checks, scores, ranks or '
                    'queues a draft reads this block.')
+# Protocol 1.21.0 (Ruling, Krish, 2026-11-12: an inspiration card he ticks is an instruction that jumps the queue:
+# Production means use the style within a week). A card he ticked is not a suggestion.
+INSTRUCTION_USE = ('MUST USE: Krish ticked these as instructions, not inspiration. Use each style in your next fitting '
+                   'asset (a carousel, a meme or an off-day post) before its date, rebuilt in our voice and look, '
+                   'never copied. Name the card as the concept\'s style_card in the mocks file, so the report says it '
+                   'was used (inspiration_used) and his tick closes.')
 
 
 def inspiration_suggestions(directive):
@@ -1215,12 +1226,61 @@ def inspiration_suggestions(directive):
             continue
         trials = [{'trial': t['trial'], 'label': text(t, 'label') or t['trial'], 'means': text(t, 'means')}
                   for t in item.get('trials') or [] if isinstance(t, dict) and isinstance(t.get('trial'), str)]
-        out.append({'card_id': text(item, 'card_id'), 'name': text(item, 'name'), 'kind': text(item, 'kind'),
+        raw = item.get('instruction')
+        instruction = ({'action_id': text(raw, 'action_id'), 'kind': 'copy_style', 'due_at': text(raw, 'due_at'),
+                        'overdue': raw.get('overdue') is True, 'words': text(raw, 'words')}
+                       if isinstance(raw, dict) and raw.get('kind') == 'copy_style' and text(raw, 'due_at') else None)
+        out.append({'instruction': instruction, 'card_id': text(item, 'card_id'), 'name': text(item, 'name'), 'kind': text(item, 'kind'),
                     'lane': text(item, 'lane'), 'trials': trials, 'his_words': strings(item, 'his_words'),
                     'agreed_reasons': strings(item, 'agreed_reasons'), 'note_for_claude': text(item, 'note_for_claude'),
                     'read_as': text(item, 'read_as'), 'post_url': text(item, 'post_url'),
                     'drive_url': text(item, 'drive_url'), 'saved_at': text(item, 'saved_at')})
+    # His instructions first, the soonest due first (Control Center sends them so; kept so here too).
+    out.sort(key=lambda i: (i['instruction'] is None, (i['instruction'] or {}).get('due_at') or ''))
     return ('suggestions' if out else 'none'), rule, out
+
+
+def instruction_cards(directive):
+    """The card ids Krish ticked as a style to use (protocol 1.21.0), from today's directive."""
+    return [i['card_id'] for i in inspiration_suggestions(directive)[2] if i['instruction']]
+
+
+def used_served(directive):
+    """True only when the served directive says features.inspiration_used."""
+    body = directive.get('directive', {}) if isinstance(directive, dict) else {}
+    features = body.get('features') if isinstance(body, dict) else None
+    return isinstance(features, dict) and features.get('inspiration_used') is True
+
+
+def inspiration_used_field(root, now, directive):
+    """The cards Krish ticked as a style to use that a concept with its mocks made in that style names
+    (style_card, the mocks file), from this week's and next week's mix plan, as protocol 1.21.0 inspiration_used;
+    None when the directive does not serve it or nothing used one. What was made is said in words: the lane and
+    the idea, never an address or a link."""
+    if not used_served(directive):
+        return None
+    wanted = set(instruction_cards(directive))
+    if not wanted:
+        return None
+    used, monday = {}, next_monday(now) - dt.timedelta(days=7)
+    for day in (monday, monday + dt.timedelta(days=7)):
+        path = Path(root) / MIX_DIR / ('plan-' + day.isoformat() + '.json')
+        if not path.is_file():
+            continue
+        try:
+            concepts = read_json(path).get('concepts') or []
+        except (ValueError, OSError, AttributeError):
+            continue
+        for c in concepts:
+            card = str(c.get('style_card') or '').lower() if isinstance(c, dict) else ''
+            if card not in wanted or card in used or not c.get('ready'):
+                continue
+            words = ' '.join(str(c.get('idea') or '').split())
+            words = re.sub(r'https?://\S+|\S+@\S+', '', words).strip()
+            asset = (str(c.get('lane') or 'post').replace('_', ' ') + ' for the week of ' + day.isoformat()
+                     + (': ' + words if words else ''))[:200]
+            used[card] = {'card_id': card, 'asset': asset, 'made_at': None}
+    return list(used.values()) or None
 
 
 def inspiration_block(directive):
@@ -1237,11 +1297,22 @@ def inspiration_block(directive):
         lines.append('  He has suggested nothing yet. Do not invent any.')
         return lines
     tried = [i for i in items if i['trials']]
-    lines.append('  ' + str(len(tried)) + ' with a trial he tagged, ' + str(len(items)) + ' in all, newest first.')
+    told = [i for i in items if i['instruction']]
+    if told:
+        lines.append('  ' + INSTRUCTION_USE)
+    lines.append('  ' + str(len(told)) + ' he ticked as an instruction, ' + str(len(tried)) + ' with a trial he tagged, '
+                 + str(len(items)) + ' in all; his instructions first, then newest first.')
     for number, item in enumerate(items, 1):
         head = str(number) + '. ' + (item['name'] or item['card_id'])
         head += ' (' + ', '.join(x for x in (item['kind'], item['lane'], item['saved_at']) if x) + ')'
+        if item['instruction']:
+            due = (item['instruction']['due_at'] or '')[:10]
+            head = ('PAST DUE ' if item['instruction']['overdue'] else '') + 'MUST USE BY ' + due + ': ' + head
         lines.append('  ' + head)
+        if item['instruction']:
+            lines.append('     card id (name it as the concept\'s style_card): ' + item['card_id'])
+            if item['instruction']['words']:
+                lines.append('     his instruction: "' + ' '.join(item['instruction']['words'].split()) + '"')
         if item['trials']:
             lines.append('     try: ' + '; '.join(t['label'] + (' (' + t['means'] + ')' if t['means'] else '') for t in item['trials']))
         for words in item['his_words']:

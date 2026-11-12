@@ -316,6 +316,10 @@ def plan(inventory, week_of, ideas=(), mocks=None, learned=None, root=ROOT, urge
                    'piece_id': pick['piece_id'], 'mock_sha256': list(given.get('mock_sha256') or []),
                    'placements': placements}
         concept['text_only'] = all(formats[p['format']]['min_assets'] == 0 for p in placements)
+        # The inspiration card whose style the mock was made in, when Krish ticked one as an instruction (protocol
+        # 1.21.0; Ruling, Krish, 2026-11-12). Not part of what he approves: it never moves concept_sha256.
+        if isinstance(given.get('style_card'), str) and given['style_card'].strip():
+            concept['style_card'] = given['style_card'].strip().lower()
         concept['ready'] = ready(concept)
         concept['concept_sha256'] = concept_rules.concept_sha256(concept) if concept['ready'] else None
         concepts.append(concept)
