@@ -10,6 +10,19 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "What changed recently":
 
+- 2026-11-09 **One voice check for everything (#58, #59).** Krish, 2026-11-09: "we need to make sure everything goes through the same voice system. Absolutely everything."
+
+From "Where it is right now":
+
+- Posts are judged by subscribers, not engagement (Ruling, Krish, 2026-11-12: the engine reads subscribers every week and judges posts by subscribers, not engagement). The measure job's verdict per post is the GA4 sign-ups on its own utm_content over its first seven days (`judge_subscribers`: one works, none on at least 30 visits fails, otherwise insufficient with a reason code); engagement stays beside it as supporting evidence only. A new L0 workflow, `learn.yml` (Sundays 10:30 UTC), judges the latest fully measured week, joins each post to its lane through the week's derived index, runs `growth.py mix learn --verdicts` and commits `lists/mix-learn/for-<Monday>.json`, which `growth.py mix plan` reads for that week by itself; a test shows three memes that each brought a subscriber move memes from 25 to 30 in next week's plan. Built and tested; the first scheduled run is Sunday 22 November. Few posts carry a tracked link until Fix 1 lands, so most verdicts stay insufficient until then. (2026-11-12)
+- Protocol 1.21.0 is built (Ruling, Krish, 2026-11-12: an inspiration card he ticks is an instruction that jumps the queue: Content means make it into a piece now, Production means use the style within a week). A Production card he ticked comes first in `.scratch/cc/inspiration.txt` as MUST USE BY its date with his words; the mock made in that style names it as `style_card` in the mocks file, and the workspace report sends `inspiration_used` (only when the directive's `features.inspiration_used` is true), which closes his tick in Control Center. (2026-11-12)
+
+## 2026-11-12
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
 - 2026-11-05 **Four engines, and Make Your Mind Up outreach is this engine's.** Built from `docs/reviews/2026-11-05-growth-engine-review.md`: `growth.py engine` (start, check, show, history, handoff, done, close, session), contracts in `engines/`, records in `engines/records/`. Every session closes with "better next time" learnings; work for another engine is handed off after asking Krish "Do you have a session running for the X engine?". Pitches, partners and swaps packs still never go to Control Center. Buffer TikTok short-video is held. Nothing posted, sent or spent.
 
 From "Where it is right now":
