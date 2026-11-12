@@ -165,7 +165,8 @@ class IngestTests(unittest.TestCase):
     def test_unapproved_classification_is_not_counted_and_says_why(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = root(tmp)
-            subscribers.ingest(taken(), base, True, NOW, ROOT / 'invariants' / 'sources.json')
+            # Krish approved the repository's own map on 2026-11-12, so the unapproved case reads the fixture.
+            subscribers.ingest(taken(), base, True, NOW, FIXTURES / 'sources-unapproved.json')
             state = current_state(base)
             self.assertIsNone(state['current'])
             self.assertIn('all sources 7', state['current_source'])

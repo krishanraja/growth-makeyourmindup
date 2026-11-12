@@ -367,12 +367,13 @@ class FailureRegisterTests(unittest.TestCase):
 
 
 class SourceAndBoundaryTests(unittest.TestCase):
-    def test_sources_are_proposed_not_approved(self):
+    def test_sources_are_approved_by_krish(self):
+        # Krish approved the classification on 2026-11-12 ("i approve 3, 4, 5"); an approval names who and when.
         data = load_sources()
-        self.assertIs(data['approved'], False)
-        self.assertIsNone(data['approved_by'])
-        self.assertIsNone(data['approved_at'])
-        self.assertEqual(data['note'], 'Krish approves at G-A; until then only all-source counts are used')
+        self.assertIs(data['approved'], True)
+        self.assertEqual(data['approved_by'], 'Krish')
+        self.assertEqual(data['approved_at'], '2026-11-12')
+        self.assertIn('Approved by Krish on 2026-11-12', data['note'])
         cats = data['categories']
         self.assertEqual(cats['direct'], 'unattributed')
         for label in ('substack notes', 'substack recommendations', 'other substacks', 'trackbacks', 'substack app',

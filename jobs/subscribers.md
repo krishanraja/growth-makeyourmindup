@@ -87,6 +87,6 @@ Run each command on its own line in PowerShell (`python`, or `py` if that is mis
 The North Star line in `NOW.md` is what Control Center and every session read (`docs/NORTH_STAR.md`). The
 Measurement engine (`jobs/measurement.md`) and the weekly report (`jobs/report.md`) read the ledger and
 `.scratch/substack/weekly.jsonl`. The classification of sources into organic, unattributed and paid counts
-only once Krish approves `invariants/sources.json`; until then the line carries the all-source count in its
-source and says the organic count awaits his approval. The daily numbers job (`jobs/numbers.md`) still
+because Krish approved `invariants/sources.json` on 12 November 2026; the line carries the organic count, with
+the all-source count beside it in its source. The daily numbers job (`jobs/numbers.md`) still
 reads this week's progress; this job reads the whole week once it has ended.
