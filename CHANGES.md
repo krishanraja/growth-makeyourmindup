@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: Every post on the engine's Buffer channels carries the subscribe route, whoever drafts it. His words:
+  "I think the point is that you fix that moving forward." From 2 to 11 November the eight pinned channels sent
+  58 posts through Buffer and none of them asked anyone to subscribe, because hand-run sessions drafted straight
+  into Buffer and never ran preflight. A Claude Code hook (`.claude/hooks/buffer-subscribe-gate.py`, check in
+  `engine/subscribe_gate.py`) now refuses any Buffer create_post or edit_post on a pinned channel at U4 and U5
+  that has no tagged subscribe page (utm_source naming the channel) in its words, its first comment or, on
+  Instagram and TikTok, words pointing to the profile link. The hold code is `subscribe_route_missing`. Posts
+  already sent and profile links are untouched.
 - 2026-11-12: Any off-day post or idea moves to any day at his press, and the move updates every place that names its
   day. His words: "I should be able to fluidly reassign any off-day post or assign any off-day idea to any day at
   will, and that should update the single source of truth everywhere." The day lives in content-engine's

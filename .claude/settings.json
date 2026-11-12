@@ -22,6 +22,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__.*__(create_post|edit_post)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/buffer-subscribe-gate.py\" 2>/dev/null || python \"$CLAUDE_PROJECT_DIR/.claude/hooks/buffer-subscribe-gate.py\""
+          }
+        ]
+      }
     ]
   },
   "extraKnownMarketplaces": {
