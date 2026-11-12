@@ -849,6 +849,33 @@ class MakerTests(unittest.TestCase):
                          summary)
         self.assertEqual([c for c in self.buf.calls if c['op'] == 'ScheduleDraft'], [], 'nothing was ever scheduled')
 
+    def test_the_standing_and_ask_reports_carry_the_engine_state_when_served(self):
+        # Control Center shows the newest live report's priorities, obsessions and next steps on every place, so a
+        # maker report without them blanked the engine's state there (the W46 ask, 12 November 2026).
+        self.make()  # not served: both reports go as before, at 1.0.0 with no state
+        plain = [self.cc.reports['makeyourmindup:mixask:2026-W46'],
+                 self.cc.reports['makeyourmindup:standing:2026-11-10']]
+        self.assertEqual([(r['schema_version'], 'priorities' in r) for r in plain], [('1.0.0', False)] * 2)
+        self.cc.reports, self.cc.calls = {}, []
+        saved = (self.cc.versions, self.cc.capabilities, self.cc.directive_extra)
+        self.addCleanup(lambda: setattr(self.cc, 'versions', saved[0]) or setattr(self.cc, 'capabilities', saved[1])
+                        or setattr(self.cc, 'directive_extra', saved[2]))
+        self.cc.versions = None  # the base stand-in then serves these capabilities
+        self.cc.capabilities = {'schema_versions': ['1.0.0', '1.1.0', '1.17.0', '1.20.0'],
+                                'features': {'engine_state': True}}
+        self.cc.directive_extra = {'features': {'engine_state': True, 'krish_instruction': True}}
+        summary, code = self.make()
+        self.assertEqual((code, summary['loud'], summary['error']), (0, [], None), summary)
+        served = [self.cc.reports['makeyourmindup:mixask:2026-W46'],
+                  self.cc.reports['makeyourmindup:standing:2026-11-10']]
+        for report in served:
+            self.assertEqual(report['schema_version'], '1.20.0', report['run_id'])
+            self.assertTrue(report['priorities'], report['run_id'])
+            self.assertTrue(report['next_steps'], report['run_id'])
+            self.assertNotIn('instruction_acks', report, 'the maker acks nothing')
+        directives = [c for c in self.cc.calls if c['method'] == 'GET' and c['path'].endswith('/directive')]
+        self.assertEqual(len(directives), 1, 'the directive is read once a run')
+
     def test_his_no_on_the_standing_plan_means_no_standing_drafts(self):
         self.cc.decisions.append({'proposal_id': 'makeyourmindup:plan:w45-w52', 'decision': 'declined',
                                   'decided_at': DECIDED, 'payload_sha256': 'a' * 64, 'stage': 'plan', 'amended': False})

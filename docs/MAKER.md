@@ -142,7 +142,12 @@ are one live report in Control Center, `makeyourmindup:standing:<day>`:
 each draft's words in a plain line that says it is a draft, not approved,
 with its piece as the line's link, and the whole in a record. A day is
 drafted once; a later run that finds the report counts `already_drafted`.
-No proposal rides on it, so it puts nothing on his list.
+No proposal rides on it, so it puts nothing on his list. Like every report
+that pulls the directive, it carries the engine's state (priorities,
+obsessions and next steps) when the directive serves `features.engine_state`,
+read once a run (`report_state`), so the newest live report never blanks
+the engine's state in Control Center; the 12 November W46 ask, sent
+without it, did.
 
 **The ask.** The first run that drafts a week from the standing plan puts
 one ask on his list through the same report route every proposal of this
@@ -152,7 +157,8 @@ is doing instead and how to switch (approve the week's mix on the publish
 board). It expires when the week ends. A run raises it only when that
 address is still empty, so every other run that week says nothing about
 it (`already_raised`), and an address it cannot read counts as raised, so
-it is never asked twice. A dry run says `would_raise` and writes nothing.
+it is never asked twice. It carries the engine's state as the day's report
+does. A dry run says `would_raise` and writes nothing.
 
 **Switching to his plan.** Every run reads the week's authority first. Once
 his mix is approved, the next run makes his plan's posts (step 2 onwards)

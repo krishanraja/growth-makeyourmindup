@@ -628,8 +628,13 @@ given_by, supersedes }`. It is never an approval: the walls do not move.
   his words in order.
 
 **The engine's state**, on every report that pulls the directive (the
-runner, every workspace job and the measure lane), so the newest live
-report always carries it:
+runner, every workspace job, the measure lane and, since 12 November, the
+maker's standing-plan and weekly-ask reports, which pull it once a run in
+`report_state`), because Control Center shows the newest live report's
+state on every place. The handoff's records and release's claims pull no
+directive and carry none, so for the hours between one of those and the
+next runner or measure report Control Center shows no priorities or
+obsessions and takes the next steps from NOW.md's "What is next":
 
 - `priorities`: the North Star gap ("X of Y this week, U-n, short by Z"),
   then the levers `intensity.json` sets at this urgency (the subscribe

@@ -1,7 +1,12 @@
 # Cowork brief: the Substack half of the subscriber push
 
-Status: ready for Krish to paste into a Cowork session on his own computer
+Status: Tasks 2 and 4 ready for Krish to paste into a Cowork session on his own computer
 Written: 2026-11-11, from the ruling of that day (`CHANGES.md`, "Dial up the subscriber push")
+Updated: 2026-11-12. Task 1 is now the weekly subscriber job (`jobs/subscribers.md`), which read the week
+of 2 November on 12 November and found per-item subscriber metrics for posts and Notes, so a Cowork session
+whose week is already read skips it. Task 3's links are the ones Krish approved on 12 November
+(`jobs/channel-audit.md`), which the weekly browser audit saves and verifies; the links this brief first
+named (`utm_medium=organic_social`, `utm_campaign=launch_30d`, `utm_content=bio`) are superseded.
 
 The engine side is built: at U4 and U5 every post must carry a tagged subscribe route, and Acquisition
 drafts a daily batch of outreach. What no code can do is the work inside Substack and the profile pages,
@@ -72,11 +77,13 @@ Then propose, as before-and-after text for Krish to approve one by one:
 Instagram and TikTok posts can't carry a clickable link, so the engine routes those posts to the profile
 link. The profile link must be the tagged subscribe page:
 
-- Instagram: `https://home.makeyourmindup.ai/subscribe?utm_source=instagram&utm_medium=organic_social&utm_campaign=launch_30d&utm_content=bio`
-- TikTok: `https://home.makeyourmindup.ai/subscribe?utm_source=tiktok&utm_medium=organic_video&utm_campaign=launch_30d&utm_content=bio`
-- X profile link (also used for the bio): `https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_medium=organic_social&utm_campaign=launch_30d&utm_content=bio`
+- Instagram: `https://home.makeyourmindup.ai/subscribe?utm_source=instagram&utm_medium=organic&utm_content=profile`
+- TikTok: `https://home.makeyourmindup.ai/subscribe?utm_source=tiktok&utm_medium=organic&utm_content=profile`
+- X: `https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_medium=organic&utm_content=profile`
+- Threads, Facebook and YouTube: the same, with `utm_source` set to `threads`, `facebook` or `youtube`.
 
-These are the links the engine's channel audit already expects. For each of the publication's own
+These are the links Krish approved on 12 November and the engine's channel audit expects
+(`jobs/channel-audit.md`). LinkedIn is his to change by hand. For each of the publication's own
 accounts (not Krish's personal ones), report the current profile link. Where it differs, show him the
 change and make it only on his yes. Then reopen the profile and confirm the saved link.
 
