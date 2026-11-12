@@ -387,7 +387,7 @@ class HonestLineTests(unittest.TestCase):
 class AutomationCountTests(unittest.TestCase):
     def test_automation_count_strings_match_automations_json(self):
         number = len(read_json(ROOT / 'automations.json')['automations'])
-        self.assertEqual(number, 9, 'doctor requires nine automations')
+        self.assertEqual(number, 10, 'doctor requires ten automations')
         report = runner_report(ROOT, 'r1', NOW, checks(), 'synthetic', True, 'fixture')[0]
         self.assertTrue(any(a['line'].startswith('Checked the ' + str(number) + ' automation definitions')
                             for a in report['activity']))

@@ -486,9 +486,17 @@ def load_lanes(root=ROOT):
         _closed(entry, AUTOMATION_FIELDS, 'automation ' + str(entry.get('name') if isinstance(entry, dict) else '?'))
         at = 'automation ' + str(entry['name'])
         # The four engines (docs/reviews/2026-11-05-growth-engine-review.md) run when Krish
-        # starts a Codex session on one of them: on request, never on a schedule.
-        if entry['status'] != ('on-request' if entry['source'] == 'engine-session' else 'kept-until-W46'):
-            raise ValueError(at + ': status kept-until-W46, or on-request for an engine session')
+        # starts a Codex session on one of them: on request, never on a schedule. A PC automation
+        # is kept until W46, or standing when only his signed-in browser can do it, so no L0 job
+        # takes it over (the weekly Substack read, jobs/subscribers.md; Krish, 2026-11-12).
+        allowed = (('on-request',) if entry['source'] == 'engine-session'
+                   else ('kept-until-W46', 'standing') if entry['source'] == 'automations.json'
+                   else ('kept-until-W46',))
+        if entry['status'] not in allowed:
+            raise ValueError(at + ': status kept-until-W46, standing for a PC automation only his signed-in '
+                                  'browser can run, or on-request for an engine session')
+        if entry['status'] == 'standing' and entry['successor'] is not None:
+            raise ValueError(at + ': a standing automation has no successor')
         _strings(entry['jobs'], 'jobs', at)
         if entry['source'] not in ('automations.json', 'heartbeat', 'engine-session'):
             raise ValueError(at + ': source is automations.json, heartbeat or engine-session')
