@@ -8,6 +8,14 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "Where it is right now":
+
+- The engine reads subscribers every week (Ruling, Krish, 2026-11-12: the engine reads subscribers every week and judges posts by subscribers, not engagement). A tenth PC automation, "Growth: subscribers" (Mondays 06:15 New York, `jobs/subscribers.md`, `standing` in `lanes.json` because only his signed-in browser can read Substack), fills `.scratch/substack/week-<Monday>.json` from the dashboard (total, new by source, per post and per Note where shown) and records the week's North Star reading through `python growth.py run subscribers ingest --write` (NOW.md state line when it loses nothing, `lists/northstar-history.jsonl` once); a read not taken is unknown with its code, never zero. GA4 `sign_up` is verified from Control Center's live Events report (`invariants/ga4.json`, `verified_from`); the paid event name stays open. Built and tested; the automation is not created yet, and the line counts organic subscribers only once Krish approves `invariants/sources.json`. (2026-11-12)
+
+## 2026-11-12
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "What changed recently":
 
 - 2026-11-09 **One voice check for everything (#58, #59).** Krish, 2026-11-09: "we need to make sure everything goes through the same voice system. Absolutely everything."
