@@ -8,6 +8,18 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "What changed recently":
+
+- 2026-11-10 **Skills uplift (#60).** Acquisition ran by hand: one recommendation ask waits at his gate and three are held until their source is read in full; `growth.py check` refuses unsourced statistics. Claude sessions show Krish the Codex sign-in link and code when Codex is signed out (`.claude/hooks/codex-login.sh`).
+
+From "Where it is right now":
+
+- Growth follows the one place an off-day post's day lives (content-engine `offday_items`; Ruling, Krish, 2026-11-12: any off-day post or idea moves to any day at his press, and the move updates every place that names its day). Each option he approved is bound to the day the board says (`autorelease.bound_options`), so a moved post goes out on its new day and is held on the day it left; `growth.py run board offer --file <offdays.json> --deliver` hands Growth's own options to the live board; `growth.py run board posts --deliver` (in release.yml after the tick) writes back each off-day post Growth made, scheduled or posted, from its own record (the index and Buffer, or a session's receipts with `--record`), so the board shows Growth's off-day posts out and says what is still scheduled for a day it left. (2026-11-12)
+
+## 2026-11-12
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "Where it is right now":
 
 - The maker no longer fails while a week's mix waits on Krish (Ruling, Krish, 2026-11-12: with no approved weekly mix, the maker drafts from the standing plan and asks him once a week instead of failing). It had failed all 13 runs from 30 October to 11 November (`mix_plan_not_reported` for W44 and W46, `slots_record_missing` for W45) and made nothing. Now, until a week's mix is approved on the board, it drafts one X text post a day from a piece already published (`specs/standing-plan.json`'s cadence; Instagram, TikTok and YouTube Shorts need an edition he approved, so they get nothing), keeps each day's drafts in Control Center only (`makeyourmindup:standing:<day>`, never Buffer, never handed to release), and raises "This week's mix isn't approved" on his list once that ISO week (`makeyourmindup:mixask:<week>`). Once he approves the mix, the next run makes his plan. A past week with nothing left to make (its Sunday) is skipped and noted. Release and every gate are unchanged; a test proves a standing draft handed to release holds without his approvals (`docs/MAKER.md`, "With no approved mix"). (2026-11-12)

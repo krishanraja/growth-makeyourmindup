@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-11-12
-head: efb5528
+head: 11c7dbb
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -30,6 +30,7 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
+- The maker's standing-plan and weekly-ask reports now carry the engine's state (priorities, obsessions, next steps) when the directive serves it, so they no longer blank this engine's state in Control Center as the 12 November W46 ask did (`report_state` in engine/run/maker.py, tests/test_run_maker.py). The protocol copy carries Control Center 212379e1 (the 16 voice-check channels, the publication's caption and substack among them, and the number objective's target read from docs/NORTH_STAR.md), the North Star line names a whole week read after it ended as that week's, never "this week" (state_line in engine/run/measure.py), and the brief, NOW.md and the Cowork brief now say where the target comes from, the whole-week reading of 12 November, the answered per-Note question and the approved profile links. (2026-11-12)
 - `growth.py run board posts` also writes back a day's piece's own posts that Buffer has scheduled, each as the piece's entry with its channel and time (`piece_days`, `piece_row`), so content-engine's board says "Scheduled: Substack Notes, from Fri 13 Nov, 12:40" in place of "Ready to post" (Ruling, Krish, 2026-11-12: the board shows exactly where everything is). (2026-11-12)
 - Krish approved pointing every profile link to its tagged subscribe page; jobs/channel-audit.md lists the exact link per account for the weekly browser audit to save and verify, and LinkedIn is his to change by hand. (2026-11-12)
 - A Growth render job wears a series colour only on that series' day or when it carries the series piece; a job with no tone is mint (`scripts/render_mocks.mjs`, `tests/test_render_templates.py` ToneFollowsTheDay). (2026-11-12)
@@ -37,10 +38,10 @@ Lifecycle: live. The detail is in `README.md`.
 - Growth's carousel and meme templates follow content-engine's brand palette: one house close for every carousel (takeaway, Subscribe free, wordmark bottom right), the meme mark in the bottom right, lilac as a fourth tone, and the art-direction gate refuses a new piece kit's own close. (2026-11-12)
 - Every Buffer post on the engine's pinned channels must carry the tagged subscribe route at U4 and U5 (Ruling, Krish, 2026-11-12). A PreToolUse hook on the Buffer connector's create_post and edit_post runs `engine/subscribe_gate.py` and refuses a post without it (`subscribe_route_missing`), so hand-run session drafts are held to the same rule as release and preflight. Tests: `tests/test_subscribe_gate.py`. (2026-11-12)
 - Krish approved the source classification and the subscriber rule on 12 November ("i approve 3, 4, 5"). `invariants/sources.json` is approved (approved_by Krish, 2026-11-12), so weekly readings count organic subscribers toward the North Star, with the all-source count beside them. The rule that judges a post by subscribers is approved as it stands: one sign-up in its first seven days works, none on at least 30 visits to its own link fails, anything else is insufficient (`FAILS_AT_SESSIONS`, engine/run/measure.py). The YouTube Data API is live in Control Center's gateway for this engine's research (first read: @makeyourmind-up, 20 videos, 707 views, 0 YouTube subscribers). (2026-11-12)
-- Growth follows the one place an off-day post's day lives (content-engine `offday_items`; Ruling, Krish, 2026-11-12: any off-day post or idea moves to any day at his press, and the move updates every place that names its day). Each option he approved is bound to the day the board says (`autorelease.bound_options`), so a moved post goes out on its new day and is held on the day it left; `growth.py run board offer --file <offdays.json> --deliver` hands Growth's own options to the live board; `growth.py run board posts --deliver` (in release.yml after the tick) writes back each off-day post Growth made, scheduled or posted, from its own record (the index and Buffer, or a session's receipts with `--record`), so the board shows Growth's off-day posts out and says what is still scheduled for a day it left. (2026-11-12)
 
 ## What changed recently
 
+- 2026-11-12 Krish, 2026-11-12: "make sure everything's a cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading left in there".
 - 2026-11-12 The full-week organic reading is now measured and recorded; the current week remains unmeasured.
 - 2026-11-12 five piece kits had ended five different ways and memes carried the logo at the top; the palette Krish approved on 12 Nov allows one close and no logo at the top.
 - 2026-11-12 58 posts went out through Buffer from 2 to 11 November with no subscribe ask, because hand-run drafts skipped preflight; the gate now sits on the path they took.
@@ -50,7 +51,6 @@ Lifecycle: live. The detail is in `README.md`.
 - 2026-11-11 **Protocol 1.20.0 (#66).** Krish's instruction reaches the engine in the directive: the runner acks it received by id, a second wake the same day reports under its own run_id, a workspace job acts on it first and acks started, done or blocked, and every report that pulls the directive carries the engine's priorities, obsessions and next steps.
 - 2026-11-11 **The subscriber push (#61).** Ruling (Krish, 2026-11-11): "dial up its urgency in getting me new subscribers to my substack". The Substack half is a Cowork brief, `docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`.
 - 2026-11-11 **One canonical brand kit (#62 to #65).** Everything moved, nothing deleted, except `00_Brand-Assets`, which went to the Drive bin on Krish's instruction once music moved into the kit. The kit's Music and Style references stay as content-engine's mirrors.
-- 2026-11-10 **Skills uplift (#60).** Acquisition ran by hand: one recommendation ask waits at his gate and three are held until their source is read in full; `growth.py check` refuses unsourced statistics. Claude sessions show Krish the Codex sign-in link and code when Codex is signed out (`.claude/hooks/codex-login.sh`).
 
 ## What is next and what is waiting on Krish
 
