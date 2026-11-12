@@ -1,9 +1,11 @@
 name: measure
 # Three times a day the measure job reads this engine's sent posts and their
 # metrics from Buffer, pulls today's directive for Control Center's GA4 rows,
-# joins them on utm_content, gives each post a verdict against its own
-# channel's median and reports the aggregates to Control Center with a
-# readback. It never posts, sends, publishes or spends, and it uploads
+# joins them on utm_content, gives each post a verdict by the subscribers it
+# brought (GA4 sign-ups on its own link over its first seven days; its
+# engagement against its channel's median is kept as supporting evidence only;
+# Ruling, Krish, 2026-11-12) and reports the aggregates to Control Center with
+# a readback. It never posts, sends, publishes or spends, and it uploads
 # nothing: this repository is public, so its log carries only counts of
 # verdicts, codes, digests and the cost line. Without BUFFER_API_KEY it still
 # measures the GA4 part and says "Buffer not configured".

@@ -689,6 +689,48 @@ def verdict(post, history, window_hours, elapsed_hours):
     return judge(post, history, window_hours, elapsed_hours)['verdict']
 
 
+# Judged by subscribers ----------------------------------------------------
+# Ruling (Krish, 2026-11-12): the engine reads subscribers every week and judges posts by subscribers, not
+# engagement. A post's verdict is the sign-ups attributed to it over its first seven days (the subscriber
+# judge window, jobs/measurement.md); engagement is kept beside it only as supporting evidence.
+
+SUBSCRIBER_WINDOW_HOURS = 7 * 24
+# Proposed default for Krish's approval at G-A: a post whose own link brought at least this many visits in
+# its seven days and no sign-up fails; with fewer, a zero says too little to call.
+FAILS_AT_SESSIONS = 30
+
+
+def judge_subscribers(sign_ups, sessions, elapsed_hours, covered=True, reason=None):
+    """works, fails or insufficient from the subscribers a post brought, never from its engagement.
+
+    sign_ups is the attributed count over the post's first seven days, or None with `reason` (no tracked
+    link, an unverified event name, an unread source). sessions is the visits its own link brought in the
+    same days, or None when not shown. covered says the readings cover all seven days; a zero over days
+    nobody read is never a zero. Unknown stays unknown: insufficient, with why."""
+    if isinstance(elapsed_hours, bool) or not isinstance(elapsed_hours, (int, float)) \
+            or not math.isfinite(elapsed_hours) or elapsed_hours < 0:
+        raise ValueError('elapsed_hours must be a non-negative number')
+    sign_ups = count(sign_ups, 'sign_ups')
+    sessions = count(sessions, 'sessions')
+    out = {'verdict': 'insufficient', 'basis': 'subscribers', 'sign_ups': sign_ups, 'sessions': sessions,
+           'window_hours': SUBSCRIBER_WINDOW_HOURS,
+           'bands': {'works_at_or_above_sign_ups': 1, 'fails_at_or_above_sessions_with_none': FAILS_AT_SESSIONS,
+                     'status': "proposed defaults for Krish's approval at G-A"}}
+    if sign_ups is None:
+        out['reason'] = reason or 'no sign-up count was attributed to this post'
+    elif elapsed_hours < SUBSCRIBER_WINDOW_HOURS:
+        out['reason'] = 'its seven days have not passed'
+    elif not covered:
+        out['reason'] = reason or 'the readings do not cover its seven days'
+    elif sign_ups >= 1:
+        out.update(verdict='works', reason='association, not cause')
+    elif sessions is not None and sessions >= FAILS_AT_SESSIONS:
+        out.update(verdict='fails', reason='association, not cause')
+    else:
+        out['reason'] = 'no sign-up, and too few visits through its link to call it'
+    return out
+
+
 # Command line ------------------------------------------------------------
 
 def main(argv=None):

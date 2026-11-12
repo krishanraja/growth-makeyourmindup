@@ -502,9 +502,12 @@ that day is the daily credits session in `lanes.json` (`claude_sessions`,
 Separately, Control Center wakes `.github/workflows/control-center.yml`
 every morning; that GitHub runner checks the engine offline and reports
 what a clean runner can see. Its numbers are always "measured only in the
-publication workspace". GitHub Actions runs nine workflows, all lane L0
+publication workspace". GitHub Actions runs ten workflows, all lane L0
 (`docs/LANES.md`, `lanes.json`): control-center, release, measure, keys,
-handoff, check, artdirect, maker and ledger. The maker (`docs/MAKER.md`) drafts each next day's posts from
+handoff, check, artdirect, maker, ledger and learn. Measure judges each post
+by the subscribers it brought, and learn turns last judged week's verdicts
+into next week's mix (Ruling, Krish, 2026-11-12: the engine reads
+subscribers every week and judges posts by subscribers, not engagement). The maker (`docs/MAKER.md`) drafts each next day's posts from
 the ideas and mocks Krish approved and hands them off; it never schedules. With no approved mix
 for a week it drafts from the standing plan into Control Center only, never Buffer, and asks him
 once that week (Ruling, Krish, 2026-11-12). The ten automations below run on Krish's PC; nine are kept until W46, and the weekly Substack read stands, because only his signed-in browser can read Substack (Ruling, Krish, 2026-11-12).

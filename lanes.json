@@ -338,6 +338,29 @@
         "GROWTH_WRITEBACK_TOKEN",
         "BUFFER_API_KEY"
       ]
+    },
+    {
+      "id": "learn",
+      "lane": "L0_code",
+      "workflow": "learn.yml",
+      "trigger": "Sundays 10:30 UTC (05:30 New York), before next week's mix plan is made that day, and by hand",
+      "may_write": [
+        "lists/mix-learn/for-<Monday>.json on main: verdict tallies by lane and channel from posts judged by subscribers, with counts and reason codes only (Ruling, Krish, 2026-11-12)"
+      ],
+      "never": [
+        "post, send, publish, schedule or spend",
+        "commit a figure, a word, a URL, a post id or a concept id",
+        "commit any file but its learn file, or change mix.json",
+        "log a figure, a title, a URL or a key: counts and codes only"
+      ],
+      "actions": [
+        "read-metrics",
+        "learn-mix"
+      ],
+      "secrets": [
+        "CONTROL_CENTER_ENGINE_TOKEN",
+        "BUFFER_API_KEY"
+      ]
     }
   ],
   "automations": [

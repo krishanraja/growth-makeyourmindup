@@ -85,8 +85,10 @@ class VerdictRuleTests(unittest.TestCase):
         return sent_posts(FakeBuffer(posts), self.now - dt.timedelta(days=56), self.now)['posts']
 
     def by_id(self, posts):
+        """Engagement results by post id: since 12 November they are supporting evidence beside the subscriber
+        verdict, which needs Control Center's GA4 rows (SubscriberVerdictTests)."""
         results, channels = verdicts(self.read(posts), NOW)
-        return {r['post_id']: r for r in results}, channels
+        return {r['post_id']: r['engagement'] for r in results}, channels
 
     def test_works_neutral_and_fails_against_the_channels_own_median(self):
         history = x_history([100, 100, 100, 100, 100, 100])
@@ -160,6 +162,86 @@ class VerdictRuleTests(unittest.TestCase):
         self.assertNotIn('engagementRate', read['posts'][1]['metrics'])
 
 
+LATER = '2026-11-20T13:00:00Z'
+
+
+def covered_block(rows, through='2026-11-19', first='2026-10-23', skip=()):
+    """A synthetic web_analytics block whose daily capture ran every day from first to through, but skip."""
+    start, end = dt.date.fromisoformat(first), dt.date.fromisoformat(through)
+    days = [(start + dt.timedelta(days=n)).isoformat() for n in range((end - start).days + 1)]
+    days = [d for d in days if d not in skip]
+    return {'property': 'mymu', 'measurement_id': 'G-VC5V9LDE17', 'through': through, 'days': 28,
+            'events': [{'name': 'synthetic_sign_up', 'key_event': False, 'count_28d': 1}],
+            'rows': [{'date': d, 'dim_type': 'utm_content', 'value': c + '|threads|' + e, 'sessions': n,
+                      'users': n, 'key_events': 0} for d, c, e, n in rows],
+            'coverage': {'complete': True, 'reason': None,
+                         'dates': {'source_medium': days, 'landing_page': days, 'utm_content': [first]}}}
+
+
+def sent(n, content=None, day='2026-11-10', impressions=50):
+    words = 'TEST FIXTURE ONLY.' + ('' if content is None else ' ' + LINK.format(src='threads', content=content))
+    return {'post_id': 'p%d' % n, 'channel': 'threads', 'sent_at': instant(day + 'T15:00:00Z'), 'words': words,
+            'metrics': {'impressions': impressions}}
+
+
+class SubscriberVerdictTests(unittest.TestCase):
+    """Ruling (Krish, 2026-11-12): the engine judges posts by subscribers, not engagement."""
+
+    def judge(self, posts, block, verified=True, now=LATER):
+        config = read_json(FIX / 'config-verified.json')
+        if not verified:
+            config['events'] = {k: {'name': None, 'verified': False} for k in config['events']}
+            config['verified_at'] = config['verified_from'] = None
+        results, _ = verdicts(posts, now, block, config)
+        return {r['post_id']: r for r in results}
+
+    def test_a_sign_up_in_its_seven_days_works_and_engagement_never_decides(self):
+        block = covered_block([('2026-11-11', 'placement_a', 'page_view', 4),
+                               ('2026-11-11', 'placement_a', 'synthetic_sign_up', 1),
+                               ('2026-11-12', 'placement_b', 'page_view', 40),
+                               ('2026-11-18', 'placement_c', 'synthetic_sign_up', 1)])
+        loud = sent(2, 'placement_b', impressions=90000)  # the most engagement, no sign-up
+        late = sent(3, 'placement_c', day='2026-11-10')    # its sign-up came on day 9, outside its seven days
+        results = self.judge([sent(1, 'placement_a', impressions=1), loud, late], block)
+        self.assertEqual((results['p1']['verdict'], results['p1']['sign_ups'], results['p1']['basis']),
+                         ('works', 1, 'subscribers'))
+        self.assertEqual((results['p2']['verdict'], results['p2']['sessions']), ('fails', 40))
+        self.assertEqual((results['p3']['verdict'], results['p3']['code']), ('insufficient', 'too_few_visits'))
+        self.assertEqual(results['p3']['sign_ups'], 0)
+        self.assertIn('engagement', results['p2'])
+
+    def test_too_little_data_stays_insufficient_with_why(self):
+        block = covered_block([('2026-11-11', 'placement_a', 'page_view', 3)])
+        results = self.judge([sent(1, 'placement_a'), sent(2), sent(3, 'placement_s'), sent(4, 'placement_s'),
+                              sent(5, 'placement_y', day='2026-11-18')], block)
+        self.assertEqual(results['p1']['code'], 'too_few_visits')
+        self.assertEqual(results['p2']['code'], 'no_tracked_link')
+        self.assertEqual({results['p3']['code'], results['p4']['code']}, {'shared_link'})
+        self.assertEqual(results['p5']['code'], 'not_seven_days')
+        self.assertEqual({r['verdict'] for r in results.values()}, {'insufficient'})
+        self.assertEqual(self.judge([sent(1, 'placement_a')], block, verified=False)['p1']['code'], 'event_unverified')
+        self.assertEqual(self.judge([sent(1, 'placement_a')], None)['p1']['code'], 'ga4_unread')
+        unread = covered_block([('2026-11-11', 'placement_a', 'page_view', 99)], skip=('2026-11-13',))
+        self.assertEqual(self.judge([sent(1, 'placement_a')], unread)['p1']['code'], 'days_not_read')
+        short = covered_block([('2026-11-11', 'placement_a', 'page_view', 99)], through='2026-11-14')
+        self.assertEqual(self.judge([sent(1, 'placement_a')], short)['p1']['code'], 'days_not_read')
+        started_late = covered_block([('2026-11-11', 'placement_a', 'page_view', 99)])
+        started_late['coverage']['dates']['utm_content'] = ['2026-11-12']
+        self.assertEqual(self.judge([sent(1, 'placement_a')], started_late)['p1']['code'], 'days_not_read')
+
+    def test_the_judge_rule_itself(self):
+        from engine.run.measure import FAILS_AT_SESSIONS, judge_subscribers
+        self.assertEqual(judge_subscribers(1, 0, 200)['verdict'], 'works')
+        self.assertEqual(judge_subscribers(0, FAILS_AT_SESSIONS, 200)['verdict'], 'fails')
+        self.assertEqual(judge_subscribers(0, FAILS_AT_SESSIONS - 1, 200)['verdict'], 'insufficient')
+        self.assertEqual(judge_subscribers(0, None, 200)['verdict'], 'insufficient')
+        self.assertEqual(judge_subscribers(5, 100, 100)['verdict'], 'insufficient')  # before its seven days
+        self.assertEqual(judge_subscribers(5, 100, 200, covered=False)['verdict'], 'insufficient')
+        self.assertEqual(judge_subscribers(None, None, 500, reason='why')['reason'], 'why')
+        with self.assertRaises(ValueError):
+            judge_subscribers(-1, 0, 200)
+
+
 class MeasureJobTests(unittest.TestCase):
     def workspace(self, folder, block=True, verified=True):
         (Path(folder) / 'invariants').mkdir()
@@ -191,7 +273,8 @@ class MeasureJobTests(unittest.TestCase):
             fake = FakeBuffer(self.posts())
             code, text = self.run_main(['--now', NOW, '--mode', 'synthetic'], folder, (fake, None))
             self.assertEqual(code, 0, text)
-            self.assertIn('measure: works=1 neutral=7 fails=0 insufficient=1', text)
+            # By subscribers (Ruling, Krish, 2026-11-12): none of these posts has had its seven days yet.
+            self.assertIn('measure: works=0 neutral=0 fails=0 insufficient=9', text)
             self.assertIn('no Control Center call', text)
             # Numbers stay in the report: no metric, session or sign-up figure reaches the log.
             # A figure is matched as a whole number: the report's sha256 is hex and may hold the digits by chance.
@@ -204,7 +287,11 @@ class MeasureJobTests(unittest.TestCase):
             self.assertIn('GA4 joined on utm_content: 2 of 9 posts carry a tracked own link; 12 sessions on them; '
                           'sign-ups 3; paid subscriptions 1; coverage incomplete', lines)
             self.assertIn('Cost before this report:', lines)
-            self.assertIn('threads: 8 posts, judged on impressions at 48 hours, channel median 100 over 8 settled posts', lines)
+            self.assertIn('threads: 8 posts; by subscribers works 0, neutral 0, fails 0, insufficient 8; engagement, '
+                          'supporting only, on impressions at 48 hours, channel median 100 over 8 settled posts', lines)
+            self.assertIn('Insufficient by subscribers because: no tracked own link 7, seven days not passed 2', lines)
+            self.assertIn("Engagement against each post's own channel median, supporting evidence only: works 1, "
+                          'neutral 7, fails 0, insufficient 1', lines)
             self.assertEqual(report['status'], 'ready')
             self.assertEqual(report['run_id'], 'makeyourmindup:2026-11-05:measure-1300Z')
             self.assertEqual([c[0] for c in fake.calls], ['list_posts'])
