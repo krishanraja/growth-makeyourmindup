@@ -10,6 +10,14 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "Where it is right now":
 
+- The live publish board is Control Centre's Content tab; content.krishraja.com/board is a read-only archive, and every ledger row links to the live board. Growth's off-day options (`growth.py mix offdays`) reach the live board only once content-engine's view reads them. (2026-11-12)
+
+## 2026-11-12
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
 - The subscriber push is on (Ruling, Krish, 2026-11-11): at U4 and U5 every run slot and social package carries a tagged subscribe route (`subscribe_cta`), Acquisition prepares 2, 3 or 5 one-person outreach drafts a day at U3 to U5, Substack Notes rise to four a day and U5 engagement taps to 25. (2026-11-11)
 
 ## 2026-11-12
