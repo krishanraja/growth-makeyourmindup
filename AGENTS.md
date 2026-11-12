@@ -45,7 +45,8 @@ Older lines below stay as written; where they say otherwise, this wins.
 
 ## Open setup: read before any other work
 
-Written 2026-10-21. Both lines are still here, so treat both as open. Any
+Written 2026-10-21, with a line added 2026-11-12. Every line still here is
+open. Any
 session that can do one of these does it, then deletes its line here in the
 same commit. Leave a line in place if you cannot do it, and say why in one
 sentence at the end of your run. An engine session ("Four engines") leaves
@@ -58,6 +59,16 @@ these to a setup session and does its own engine's work.
   says: create the automations" below for that one entry, updating rather
   than duplicating. A session that cannot (the GitHub Actions runner, a
   cloud session without Codex scheduled tasks) reports it as a hold on Krish's list with reason
+  `automation_missing` and does not ask him to paste anything.
+- **The tenth automation is not scheduled yet.** `automations.json` gained
+  "Growth: subscribers" (Mondays 06:15 New York, `jobs/subscribers.md`) on
+  2026-11-12: the weekly Substack read (Ruling, Krish, 2026-11-12: the engine
+  reads subscribers every week and judges posts by subscribers, not
+  engagement). It needs the signed-in browser, so it runs on Krish's PC like
+  the others. A Codex session that can create scheduled tasks runs steps 1,
+  2, 4 and 5 of "When Krish says: create the automations" below for that one
+  entry, with browser access on, updating rather than duplicating. A session
+  that cannot reports it as a hold on Krish's list with reason
   `automation_missing` and does not ask him to paste anything.
 - **The answer piece's question set.** Each answer piece's question also
   belongs in AEO-Engine's question set (`krishanraja/AEO-Engine`), so the
@@ -496,7 +507,7 @@ publication workspace". GitHub Actions runs nine workflows, all lane L0
 handoff, check, artdirect, maker and ledger. The maker (`docs/MAKER.md`) drafts each next day's posts from
 the ideas and mocks Krish approved and hands them off; it never schedules. With no approved mix
 for a week it drafts from the standing plan into Control Center only, never Buffer, and asks him
-once that week (Ruling, Krish, 2026-11-12). The nine automations below run on Krish's PC and are kept until W46.
+once that week (Ruling, Krish, 2026-11-12). The ten automations below run on Krish's PC; nine are kept until W46, and the weekly Substack read stands, because only his signed-in browser can read Substack (Ruling, Krish, 2026-11-12).
 
 ## The schedule (New York time)
 
@@ -504,6 +515,7 @@ once that week (Ruling, Krish, 2026-11-12). The nine automations below run on Kr
 |---|---|---|---|
 | Every day 06:00 | Numbers | `numbers` | `jobs/numbers.md` |
 | Every day 06:30 | Conversation radar | `radar` | `jobs/radar.md` |
+| Monday 06:15 | The weekly Substack read: last week's subscribers, by source and per post (signed-in browser) | none | `jobs/subscribers.md` |
 | Mon, Wed, Fri 13:30 (after the piece is out) | The day's pack | `daily` | `jobs/daily-pack.md` |
 | Tuesday 07:00 | Pitches (feeds Acquisition; never to Control Center) | `pitches` | `jobs/pitches.md` |
 | Wednesday 07:00 | Partners (feeds Acquisition; never to Control Center) | `partners` | `jobs/partners.md` |
@@ -544,7 +556,7 @@ this, in order, and nothing else:
    conversion into another local zone can drift around clock changes. If
    the scheduler cannot store the named zone, explain the limitation and
    arrange the required future adjustments; do not claim permanent parity.
-4. **Create the nine scheduled tasks** from `automations.json`, using
+4. **Create the ten scheduled tasks** from `automations.json`, using
    Codex's own scheduled tasks (a Codex chat can create and update them).
    For each entry:
    - name: the entry's `name`;
@@ -566,7 +578,7 @@ this, in order, and nothing else:
    as AGENTS.md says). Confirm it printed "stored in Control Center", then
    "readback digest matches" and "attempt succeeded" from its last step. Give
    Krish the link https://controlcenter.krishraja.com/#/growth?section=packs.
-7. **Finish** with one line: "9 automations live. First radar at 06:30
+7. **Finish** with one line: "10 automations live. First radar at 06:30
    tomorrow. Packs land in Control Center > Growth > Packs."
 
 If your Codex can't create scheduled tasks from a chat, say so in one line.

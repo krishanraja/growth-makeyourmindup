@@ -24,7 +24,7 @@ features, swaps and partners) is this engine's, owned by Acquisition, and
 social engagement is Engagement's. Krish enacts both in his own Codex
 sessions on the exact payload he approves; only Mindmake's outreach stays
 with Control Center (AGENTS.md, "Outreach for Make Your Mind Up"). Through
-the shadow week the nine automations, the daily heartbeat
+the shadow week the PC automations, the daily heartbeat
 ([jobs/daily-growth.md](jobs/daily-growth.md)) and the GitHub workflows keep
 running unchanged.
 
@@ -71,8 +71,8 @@ are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct
 2026): a new schedule is a GitHub Actions job. His one exception that day is
 the daily credits session in `lanes.json` (`claude_sessions`,
 [docs/CREDITS.md](docs/CREDITS.md)). Making (Canva assets, words,
-Buffer drafts) is done by sessions and the nine automations on Krish's PC
-(below, kept until W46) under the same walls, and follows
+Buffer drafts) is done by sessions and the automations on Krish's PC
+(below; nine kept until W46) under the same walls, and follows
 [docs/TASTE.md](docs/TASTE.md). Only the GitHub
 runner holds the Control Center engine key; sessions read Control Center
 through its connector.
@@ -165,11 +165,15 @@ python growth.py cc runner
 
 ## Existing runtime
 
-There are nine scheduled job definitions in `automations.json`, run on
-Krish's PC and kept until W46 (`lanes.json`). The ninth,
-the weekly answer piece, was added on 21 October 2026; Krish creates it in
+There are ten scheduled job definitions in `automations.json`, run on
+Krish's PC (`lanes.json`). Nine are kept until W46. The tenth, the weekly
+Substack read ([jobs/subscribers.md](jobs/subscribers.md)), was added on 12
+November 2026 and stands, because only his signed-in browser can read
+Substack (Ruling, Krish, 2026-11-12: the engine reads subscribers every week
+and judges posts by subscribers, not engagement). The ninth, the weekly
+answer piece, was added on 21 October 2026. Krish creates a new one in
 Codex by saying "create the automations" again, which updates the existing
-eight and adds the new one. The weekly conversion slot now runs the channel
+ones and adds the new one. The weekly conversion slot now runs the channel
 audit at Saturday 12:00 `Europe/London`; all other times are in
 `America/New_York`; use the scheduler's named timezone so daylight-saving
 changes follow New York, rather than storing a one-time local conversion.
@@ -178,6 +182,7 @@ changes follow New York, rather than storing a one-time local conversion.
 |---|---|---|
 | Numbers | daily 06:00 | `Run jobs/numbers.md as AGENTS.md says.` |
 | Radar | daily 06:30 | `Run jobs/radar.md as AGENTS.md says.` |
+| Subscribers (weekly Substack read) | Mon 06:15 | `Run jobs/subscribers.md as AGENTS.md says.` |
 | Day pack | Mon/Wed/Fri 13:30 | `Run jobs/daily-pack.md as AGENTS.md says.` |
 | Pitches | Tue 07:00 | `Run jobs/pitches.md as AGENTS.md says.` |
 | Partners | Wed 07:00 | `Run jobs/partners.md as AGENTS.md says.` |

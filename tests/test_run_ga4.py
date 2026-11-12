@@ -147,6 +147,7 @@ def unverified_config():
     config = copy.deepcopy(load_config(ROOT))
     config['events'] = {k: {'name': None, 'verified': False} for k in ga4.EVENT_KEYS}
     config['verified_at'] = None
+    config['verified_from'] = None
     return config
 
 
@@ -417,16 +418,24 @@ class EventTests(unittest.TestCase):
                     (lambda c: c['events']['sign_up'].update(verified=True), 'without a name'),
                     (lambda c: c['events']['sign_up'].update(name='synthetic_sign_up', verified=True), 'verified_at'),
                     (lambda c: c.update(verified_at='2026-10-27'), 'verified_at'),
+                    (lambda c: c.update(verified_from='a synthetic read'), 'verified_from'),
                     (lambda c: c['events'].update(other={'name': None, 'verified': False}), 'exactly'),
                     (lambda c: c.update(note='ten per cent'), 'percentage'),
                     (lambda c: c.update(measurement_id='UA-1'), 'measurement_id')):
-                data = json.loads((ROOT / 'invariants' / 'ga4.json').read_text(encoding='utf-8'))
+                data = unverified_config()
                 change(data)
                 path.write_text(json.dumps(data), encoding='utf-8')
                 with self.assertRaisesRegex(ValueError, message):
                     load_config(path=path)
         verified = load_config(path=FIXTURES / 'config-verified.json')
         self.assertEqual(verified_event(verified, 'sign_up'), 'synthetic_sign_up')
+        # The committed config: sign_up read from the live Events report on 2026-11-12, with where it was read;
+        # the paid event is still unverified, so a paid count is refused, never guessed.
+        self.assertEqual(verified_event(committed, 'sign_up'), 'sign_up')
+        self.assertEqual(committed['verified_at'], '2026-11-12')
+        self.assertIn('Events report', committed['verified_from'])
+        with self.assertRaisesRegex(ValueError, 'not verified'):
+            verified_event(committed, 'paid_subscription')
         # The report is never filtered by event, so per-slot sessions are never narrowed.
         self.assertNotIn('dimensionFilter', ga4.report_request('2026-11-02', '2026-11-04', '2026-11-05'))
 
@@ -627,7 +636,7 @@ class DirectiveBlockTests(unittest.TestCase):
             ga4.join_directive(dict(block, measurement_id='G-SMXQH8E4CM'), load('spec.json'), self.config())
 
     def test_directive_join_refuses_unverified_event_names(self):
-        config = load_config()  # the committed config: no event name verified yet
+        config = unverified_config()
         result = ga4.join_directive(load('directive-block.json'), load('spec.json'), config)
         threads = {s['slot_id']: s for s in result['slots']}['w45-mon-threads-1']
         self.assertEqual(threads['sessions'], 8)

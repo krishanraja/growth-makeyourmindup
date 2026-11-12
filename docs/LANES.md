@@ -5,10 +5,11 @@ and L3. The lanes say who has to do something before it happens. The machine-che
 is `lanes.json`; this page is the plain summary, and where the two differ,
 `lanes.json` wins.
 
-Current as of 5 November 2026: eight GitHub Actions workflows run in L0
-(below); the nine PC automations and the daily heartbeat keep running until
-W46; the four engine sessions (Acquisition, Engagement, Publishing, and
-Measurement and Allocation) run only when Krish opens one ("The four engine
+Current as of 12 November 2026: nine GitHub Actions workflows run in L0
+(below); nine PC automations and the daily heartbeat keep running until
+W46, and the weekly Substack read (`jobs/subscribers.md`) stands; the four
+engine sessions (Acquisition, Engagement, Publishing, and Measurement and
+Allocation) run only when Krish opens one ("The four engine
 sessions" below); and Make Your Mind Up outreach and social engagement are
 Krish's own hands in his Codex sessions (L3), never Control Center's.
 
@@ -131,11 +132,14 @@ through the handoff's own code instead of a dispatch:
   before Krish sees it. A post made from an approved idea goes in the
   go-live manifest with its idea and its review; it is never asked again.
 
-The jobs on Krish's PC run only while his PC is on: the nine automations in
+The jobs on Krish's PC run only while his PC is on: the ten automations in
 `automations.json` (their times are in `README.md`; the channel audit is
-Saturday 12:00 London) and the 09:00 London daily heartbeat. They are kept
+Saturday 12:00 London) and the 09:00 London daily heartbeat. Nine are kept
 until W46; `lanes.json` names the L0 job that takes over each one, where
-there is one.
+there is one. The tenth, the weekly Substack read (`jobs/subscribers.md`,
+Mondays 06:15 New York), is `standing`: Substack has no public API, so only
+his signed-in browser can read it, and no L0 job takes it over (Ruling,
+Krish, 2026-11-12).
 
 ### The four engine sessions (built 5 November 2026)
 
