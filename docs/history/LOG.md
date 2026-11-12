@@ -8,6 +8,18 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "What changed recently":
+
+- 2026-11-05 **Four engines, and Make Your Mind Up outreach is this engine's.** Built from `docs/reviews/2026-11-05-growth-engine-review.md`: `growth.py engine` (start, check, show, history, handoff, done, close, session), contracts in `engines/`, records in `engines/records/`. Every session closes with "better next time" learnings; work for another engine is handed off after asking Krish "Do you have a session running for the X engine?". Pitches, partners and swaps packs still never go to Control Center. Buffer TikTok short-video is held. Nothing posted, sent or spent.
+
+From "Where it is right now":
+
+- Closeout notes now fold into NOW.md on main by this repository's own fold (`growth.py closeout fold`, the fold job in check.yml), Krish's instruction reaches the four engine sessions (`engine start` shows it, `instruction_ack` at close, reported by the next `cc finish`), an instruction wake no longer stops the 05:40 backup, and NOW.md, README, the brief, GET-GOING, the handover, LANES and the protocol copy match the code and live state. (2026-11-12)
+
+## 2026-11-12
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "Where it is right now":
 
 - Every report that pulls the directive has carried protocol 1.20.0's state (priorities, obsessions and next steps) since the measure run of 12 November at 01:18 UTC. Krish has given this engine no instruction yet (read live on 12 November). (2026-11-12)
