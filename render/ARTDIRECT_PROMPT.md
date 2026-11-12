@@ -35,6 +35,9 @@ nothing else:
    it. Short sentences, under 20 words each. No heading.
 2. `piece.css`: the look of the idea, built only from the house kit's tokens.
 3. `templates/<template-id>.html`: two to four templates, each a page of the same idea at one size.
+   No template is a closing slide: every carousel ends on the house close
+   (`../../templates/carousel-close.html`: the piece's takeaway, Subscribe free and the wordmark small in
+   the bottom right), so no template id names a close, ending, outro, takeaway or call to action.
 4. `templates.json`: the list of templates, in the same shape as `../../templates.json`.
 
 Read these first, and copy their patterns: `../../kit.css` (the house tokens), `../../templates.json`

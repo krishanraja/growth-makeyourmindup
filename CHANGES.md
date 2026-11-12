@@ -1,5 +1,11 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: Growth's templates follow content-engine's brand palette (config/brand-palette.json). His words:
+  "I approve the brand palette sheet, but only if it falls in line with the attached." Every carousel ends on the
+  house close (the piece's takeaway, Subscribe free, the wordmark small in the bottom right); a new piece kit may
+  not ship a close of its own (artdirect gate, OWN_CLOSE), and the five earlier kits and Saturday good news keep
+  theirs. Memes carry the wordmark in the bottom right, never at the top. Lilac is a tone, so a Wednesday
+  under.the.hood post can wear its colour.
 - 2026-11-12: Every post on the engine's Buffer channels carries the subscribe route, whoever drafts it. His words:
   "I think the point is that you fix that moving forward." From 2 to 11 November the eight pinned channels sent
   58 posts through Buffer and none of them asked anyone to subscribe, because hand-run sessions drafted straight

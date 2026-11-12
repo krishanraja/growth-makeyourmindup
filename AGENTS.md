@@ -150,6 +150,13 @@ link) to `POST /api/board/<Monday>/offday-posts`, and a session that posted by h
 done). A post already scheduled for a day it left is moved only through the approved posting route (a signed go-live
 names its time); until then the board says plainly "Still scheduled for Tue 17 on Instagram: move it there too". Content-engine's PUBLISH_BOARDS.md, "Moving an off-day item to any day".
 
+## The brand palette (Ruling, Krish, 2026-11-12)
+
+Every opening, close, icon, wordmark and colour on an asset this engine makes comes from content-engine's
+`config/brand-palette.json` and nowhere else (`render/KIT.md`, "The brand palette"). Krish: "I approve the brand
+palette sheet, but only if it falls in line with the attached." Never add a close, a logo position or a colour
+rule here. Change the palette in content-engine, in his words, first.
+
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 
 **Publishing authority: latest ruling, 26 October.** Read

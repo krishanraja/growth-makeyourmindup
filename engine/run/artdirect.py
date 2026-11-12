@@ -64,6 +64,14 @@ FIELD_TYPES = ('text', 'rows', 'options', 'photo')
 SAFE_VERTICAL = {'top': 250, 'bottom': 340}
 MAX_TEMPLATES = 8
 MAX_FILE_BYTES = 64 * 1024
+# Every carousel ends on the house close (render/templates/carousel-close.html: the takeaway, Subscribe free and the
+# wordmark small in the bottom right), never a close of its own (content-engine config/brand-palette.json
+# house_close_slide; Ruling, Krish, 2026-11-12: "I approve the brand palette sheet, but only if it falls in line with
+# the attached"). Five piece kits made five different endings before the palette; they keep theirs for the record, and
+# Saturday good news keeps the close Krish fixed for it (docs/CAROUSEL-STANDARD.md in content-engine).
+OWN_CLOSE = re.compile(r'(?:^|-)(?:close|closer|ending|end|outro|takeaway|cta)(?:-|$)')
+OWN_CLOSE_KEPT = frozenset({'carousel-1aaf9a3ce399213eb222', 'carousel-2298e19a6b82b4543f0e', 'carousel-734e1efbef8f3b2199b4',
+                            'carousel-96b5d3c036fad579a034', 'carousel-ce7f9aa2d1d6a9d5318f', 'off-sat-goodnews'})
 KIT_CSS_LINK = '<link rel="stylesheet" href="../../../kit.css">'
 PIECE_CSS_LINK = '<link rel="stylesheet" href="../piece.css">'
 FIT_SCRIPT = '<script src="../../../fit.js"></script>'
@@ -345,6 +353,11 @@ def kit_errors(kit_dir, root=ROOT, secrets=(), others=None):
                                                   else 'a person; a kit never names anyone'))
         if SECRET.search(text) or any(s and s in text for s in secrets):
             errors.append(rel + ': holds something shaped like a key')
+    if piece_id not in OWN_CLOSE_KEPT:
+        for rel in sorted(texts):
+            if rel.startswith('templates/') and OWN_CLOSE.search(rel[len('templates/'):-len('.html')]):
+                errors.append(rel + ': a close of its own; every carousel ends on the house close '
+                                    '(render/templates/carousel-close.html, config/brand-palette.json in content-engine)')
     if 'idea.md' in texts:
         errors += idea_errors(texts['idea.md'])
     if 'piece.css' in texts:

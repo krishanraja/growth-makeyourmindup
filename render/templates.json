@@ -71,10 +71,11 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
+      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint, coral or lilac)."
     },
     "scorecard": {
       "file": "templates/scorecard.html",
@@ -193,10 +194,11 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
+      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint, coral or lilac)."
     },
     "carousel-body": {
       "file": "templates/carousel-body.html",
@@ -235,10 +237,11 @@
       ],
       "example": {
         "label": "series.label",
-        "headline": "Where the whole piece lives",
-        "body": "Read the full piece free at makeyourmindup.ai",
+        "headline": "The one takeaway from the piece",
+        "body": "One line on why it matters to the reader",
         "page": "4 of 4"
-      }
+      },
+      "note": "The last slide is the piece's own takeaway (headline) and an optional line on why it matters (body); the footer carries the one action, Subscribe free, and the wordmark small in the bottom right. Every carousel ends on this close (content-engine config/brand-palette.json house_close_slide, 12 Nov 2026)."
     },
     "story-frame": {
       "file": "templates/story-frame.html",
@@ -271,10 +274,11 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint or coral)."
+      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint, coral or lilac)."
     },
     "meme-square": {
       "file": "templates/meme-square.html",
@@ -300,10 +304,11 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
-      "note": "the punchline is the accent line, in the tone colour (butter unless tone says mint or coral)."
+      "note": "the punchline is the accent line, in the tone colour (butter unless tone says mint, coral or lilac)."
     },
     "meme-vertical": {
       "file": "templates/meme-vertical.html",
@@ -330,12 +335,13 @@
         "setup": "The everyday moment everyone at work knows.",
         "punchline": "The kind twist at the end."
       },
-      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly. The punchline is the accent line, in the tone colour (butter unless tone says mint or coral).",
+      "note": "beat \"setup\" lays the full meme out but hides the punchline, so the first beat of a two-beat video matches the second exactly. The punchline is the accent line, in the tone colour (butter unless tone says mint, coral or lilac).",
       "choices": {
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       }
     },
@@ -374,7 +380,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -416,7 +423,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -461,7 +469,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -483,7 +492,7 @@
         "takeaway": "One short line that says what it means.",
         "source": "Where the numbers come from, with the date"
       },
-      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. tone sets the top rule, the eyebrow and the numerals (butter unless it says mint or coral). Two or three rows read best."
+      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. tone sets the top rule, the eyebrow and the numerals (butter unless it says mint, coral or lilac). Two or three rows read best."
     },
     "number-card-tall": {
       "file": "templates/number-card-tall.html",
@@ -507,7 +516,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -529,7 +539,7 @@
         "takeaway": "One short line that says what it means.",
         "source": "Where the numbers come from, with the date"
       },
-      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. tone sets the top rule, the eyebrow and the numerals (butter unless it says mint or coral). Two or three rows read best."
+      "note": "rows are [label, note, value] or [label, value]; write an arrow in a value as → or -> and it is drawn. tone sets the top rule, the eyebrow and the numerals (butter unless it says mint, coral or lilac). Two or three rows read best."
     },
     "chapter-card": {
       "file": "templates/chapter-card.html",
@@ -550,7 +560,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -559,7 +570,7 @@
         "accent": "and its second line",
         "entity": "the company name"
       },
-      "note": "A video chapter card. The accent line is mint unless tone says butter or coral; entity is the name the chapter is about."
+      "note": "A video chapter card. The accent line is mint unless tone says butter, coral or lilac; entity is the name the chapter is about."
     },
     "chapter-card-vertical": {
       "file": "templates/chapter-card-vertical.html",
@@ -584,7 +595,8 @@
         "tone": [
           "butter",
           "mint",
-          "coral"
+          "coral",
+          "lilac"
         ]
       },
       "example": {
@@ -593,7 +605,7 @@
         "accent": "and its second line",
         "entity": "the company name"
       },
-      "note": "A video chapter card. The accent line is mint unless tone says butter or coral; entity is the name the chapter is about."
+      "note": "A video chapter card. The accent line is mint unless tone says butter, coral or lilac; entity is the name the chapter is about."
     },
     "evidence-card": {
       "file": "templates/evidence-card.html",
