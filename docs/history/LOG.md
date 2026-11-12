@@ -6,6 +6,16 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 ## 2026-11-12
 
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
+- One canonical brand kit lives in Drive, `makeyourmindup / 1 Brand kit (permanent)`, indexed for agents in `social/brand/library.json` (`docs/BRAND-KIT.md`). (2026-11-11)
+- Every post this engine makes or releases passes Control Center's one voice check before Buffer holds or schedules it, Krish's personal accounts and the publication's alike (`engine/voice.py`). (2026-11-09)
+- The work runs as four engines, one per session (AGENTS.md, "Four engines"). Make Your Mind Up outreach is this engine's, owned by Acquisition, and Krish enacts it and social engagement in his own Codex sessions; only Mindmake's outreach stays with Control Center (Ruling, Krish, 2026-11-05). Buffer's TikTok short-video route is held; the native TikTok uploader is the alternative (`social/tools/buffer.json`). (2026-11-05)
+
+## 2026-11-12
+
 Moved verbatim from `NOW.md` (the 12 November docs audit, when NOW.md was rewritten to match the code and live state), and the 32 closeout notes that had waited in `now-notes/` since 29 October with no fold to write them in, each verbatim. From now on the fold job in `check.yml` writes each note into NOW.md (`engine/closeout.py`).
 
 From "Where it is right now":
