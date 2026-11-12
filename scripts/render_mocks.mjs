@@ -111,7 +111,23 @@ export function resolveTemplate(manifest, template, piecesDir = path.join(RENDER
 export function fill(manifest, job, piecesDir) {
   const { spec, dir, page } = resolveTemplate(manifest, job.template, piecesDir);
   if (!spec) throw new Error('unknown template ' + JSON.stringify(job.template));
-  const fields = job.fields || {};
+  const fields = { ...(job.fields || {}) };
+  // The colour follows the day (content-engine config/brand-palette.json; Ruling, Krish, 2026-11-12): butter, lilac
+  // and coral belong to Monday's follow.the.money, Wednesday's under.the.hood and Friday's mind.the.gap, and only on
+  // that day's series piece or an asset that carries it (job.carries, its piece id). Everything else is mint, so a
+  // job that names no tone is mint, and a series tone needs job.date on its own day or job.carries.
+  // A piece kit (piece:<id>/...) belongs to one piece and carries it, so its own tones stand.
+  const house = !String(job.template).startsWith('piece:');
+  const tones = (spec.choices && spec.choices.tone) || [];
+  if (house && tones.includes('mint') && (fields.tone === undefined || fields.tone === '')) fields.tone = 'mint';
+  const SERIES_DAY = { butter: [1, 'Monday'], lilac: [3, 'Wednesday'], coral: [5, 'Friday'] };
+  if (house && SERIES_DAY[fields.tone] && !(typeof job.carries === 'string' && job.carries.trim())) {
+    const day = /^\d{4}-\d{2}-\d{2}$/.test(String(job.date || '')) ? new Date(job.date + 'T12:00:00Z').getUTCDay() : null;
+    if (day !== SERIES_DAY[fields.tone][0]) {
+      throw new Error(job.template + ': tone ' + fields.tone + ' is ' + SERIES_DAY[fields.tone][1] + '\'s series colour; give the job '
+        + 'its date on that day, or carries with the series piece it is made from, or use mint (content-engine config/brand-palette.json)');
+    }
+  }
   const unknown = Object.keys(fields).filter((k) => !(k in spec.fields));
   if (unknown.length) throw new Error(job.template + ': unknown field(s) ' + unknown.join(', '));
   const missing = spec.required.filter((k) => fields[k] === undefined || fields[k] === null || fields[k] === '');

@@ -1,5 +1,9 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: The colour follows the day. His words: "Close the stuff that's still open." The renderer
+  (`scripts/render_mocks.mjs`) gives a job with no tone the house mint, and renders butter, lilac or coral only when
+  the job's `date` falls on that series' day (Monday, Wednesday, Friday) or it `carries` the series piece, so an
+  off-day post can no longer wear a series colour (content-engine `config/brand-palette.json`).
 - 2026-11-12: Growth's templates follow content-engine's brand palette (config/brand-palette.json). His words:
   "I approve the brand palette sheet, but only if it falls in line with the attached." Every carousel ends on the
   house close (the piece's takeaway, Subscribe free, the wordmark small in the bottom right); a new piece kit may
