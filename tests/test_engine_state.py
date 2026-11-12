@@ -68,7 +68,8 @@ def engine_files(folder):
     for name in ENGINE_FILES:
         (Path(folder) / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / name, Path(folder) / name)
-    shutil.copytree(ROOT / 'now-notes', Path(folder) / 'now-notes')
+    if (ROOT / 'now-notes').is_dir():  # the fold on main empties it; a fresh checkout may not have it
+        shutil.copytree(ROOT / 'now-notes', Path(folder) / 'now-notes')
     return folder
 
 
@@ -208,6 +209,12 @@ class StateFieldTests(unittest.TestCase):
             self.assertTrue(all(s['when'] is None and len(s['line']) <= 200 for s in steps))
             # Acked done in this run: the instruction step goes; nothing is ever more than five.
             self.assertNotIn('open instruction', ' '.join(s['line'] for s in engine_state.next_steps(folder, item, done=True)))
+            # With room, NOW.md's "Waiting on Krish" items come after the GET-GOING step, each waiting on him.
+            for name in ('2026-11-01-old.md', '2026-11-02-quiet.md', '2026-11-03-new.md'):
+                (Path(folder) / 'now-notes' / name).unlink()
+            steps = engine_state.next_steps(folder)
+            self.assertEqual([(s['line'], s['waits_on']) for s in steps][-1], ('Waiting on Krish: a ruling.', 'krish'))
+            self.assertEqual(len(steps), 3)
         live = engine_state.next_steps(ROOT)
         self.assertTrue(1 <= len(live) <= 5)
         self.assertTrue(all(not engine_state.state_line_errors('x', s['line'], 200) for s in live))
@@ -447,6 +454,108 @@ class WorkspaceTests(unittest.TestCase):
         self.assertNotIn('instruction_acks', report)
         self.assertEqual(report['schema_version'], '1.20.0')
         self.assertTrue(report['priorities'] and report['obsessions'] and report['next_steps'])
+
+
+class EngineSessionTests(unittest.TestCase):
+    """The four engine sessions see his instruction and record what they did with it; the next workspace job's
+    cc finish reports that ack (one write path). Krish, 2026-11-11: "make sure I can instruct each one with my
+    next best action and have it get going"."""
+
+    DAY = NOW[:10]
+    LINE = 'Drafted three swap asks first and put them at his gate; nothing sent'
+
+    def folder(self, folder):
+        env = WorkspaceTests.folder(self, folder)
+        shutil.copytree(ROOT / 'engines', Path(folder) / 'engines')
+        (Path(folder) / 'jobs').mkdir(exist_ok=True)
+        from engine.engines import core
+        for name in core.ENGINES:
+            (Path(folder) / 'jobs' / (name + '.md')).write_text('# Job\n', encoding='utf-8')
+        return env
+
+    def start(self, folder, engine='acquisition'):
+        from engine.engines import core
+        return '\n'.join(core.start(engine, Path(folder), self.DAY)['krish_instruction'])
+
+    def close(self, folder, ack):
+        from engine.engines import core
+        value = {'did': ['Worked the queue'], 'instruction_ack': ack,
+                 'better_next_time': ['Read the recommendation list before drafting so no newsletter is asked twice']}
+        return core.close('acquisition', value, Path(folder), self.DAY)
+
+    def test_cc_dir_is_the_workspace_state_dir(self):
+        self.assertEqual(engine_state.CC_DIR, cc_loop.STATE_DIR)
+
+    def test_a_session_sees_it_records_its_ack_and_the_next_job_reports_it(self):
+        with StateStandIn() as stand, tempfile.TemporaryDirectory() as folder:
+            env = self.folder(folder)
+            self.assertIn('Not pulled on this machine yet', self.start(folder))
+            with self.assertRaises(ValueError) as nothing:
+                self.close(folder, {'state': 'done', 'line': self.LINE})
+            self.assertIn('no open instruction', str(nothing.exception))
+            stand.directive_extra = {'krish_instruction': given(), 'features': SERVED}
+            code, text = run_cli(['cc', 'start', '--job', 'daily', '--deliver', '--mode', 'synthetic', '--now', NOW],
+                                 stand, folder)
+            self.assertEqual(code, 0, text)
+            shown = self.start(folder)
+            self.assertTrue(shown.startswith("KRISH'S INSTRUCTION"))
+            for needle in (WORDS, IID, '(today).', "If it is Acquisition's work, act on it first",
+                           'engine handoff acquisition TO', 'instruction_ack'):
+                self.assertIn(needle, shown)
+            # A line that repeats him is refused, and nothing is written.
+            with self.assertRaises(ValueError) as quoted:
+                self.close(folder, {'state': 'done', 'line': 'Did it: lead the radar with recommendation swap asks to '
+                                                              'three named newsletters'})
+            self.assertIn("repeats Krish's words", str(quoted.exception))
+            self.assertIsNone(engine_state.pending_ack(engine_state.read_ledger(
+                Path(folder) / '.scratch/cc/instructions.json'), IID))
+            report = self.close(folder, {'state': 'done', 'line': self.LINE})
+            self.assertEqual(report['instruction_ack'], {'instruction_id': IID, 'state': 'done'})
+            self.assertNotIn('instruction_ack', report['session']['detail'])  # never committed
+            ledger = read_json(Path(folder) / '.scratch/cc/instructions.json')
+            self.assertEqual((ledger[IID]['pending']['state'], ledger[IID]['pending']['engine']), ('done', 'acquisition'))
+            # Every other session, and the next workspace job, is told it is done.
+            self.assertIn('is done here already', self.start(folder, 'engagement'))
+            code, text = run_cli(['cc', 'start', '--job', 'radar', '--deliver', '--mode', 'synthetic', '--now', NOW],
+                                 stand, folder)
+            self.assertIn('done in the acquisition engine session here', text)
+            self.assertNotIn(WORDS, text)
+            code, text = run_cli(['cc', 'finish', '--job', 'radar', '--envelope', env, '--deliver', '--mode',
+                                  'synthetic', '--now', NOW], stand, folder)
+            self.assertEqual(code, 0, text)
+            self.assertIn("Carrying the acquisition engine session's ack on Krish's instruction: done", text)
+            radar = stand.reports[run_id_for('radar', instant(NOW))]
+            self.assertEqual([(a['state'], a['line']) for a in radar['instruction_acks']],
+                             [('received', 'Received at the start of the radar job in the publication workspace'),
+                              ('done', self.LINE)])
+            self.assertFalse(any('SYNTHETIC FIXTURE WORDS' in s for s in strings(radar)))
+            ledger = read_json(Path(folder) / '.scratch/cc/instructions.json')
+            self.assertNotIn('pending', ledger[IID])
+            self.assertEqual([a['state'] for a in ledger[IID]['acks']], ['received', 'done'])
+
+    def test_an_old_pull_is_named_as_old(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / '.scratch/cc' / engine_state.INSTRUCTION_JSON
+            engine_state.keep_local(path, directive(given()), '2026-10-15T12:00:00Z')
+            lines_ = engine_state.session_lines('acquisition', 'Acquisition', folder, self.DAY)
+            self.assertIn('not today: it may have been closed since', lines_[1])
+            engine_state.keep_local(path, directive(None), NOW)
+            self.assertIn('None open', '\n'.join(engine_state.session_lines('acquisition', 'Acquisition', folder, self.DAY)))
+            path.write_text('{"state": "open", "pulled_at": "' + NOW + '", "instruction": {"id": "x"}}', encoding='utf-8')
+            self.assertIn('Not pulled on this machine yet',
+                          engine_state.session_lines('acquisition', 'Acquisition', folder, self.DAY)[1])
+
+
+class EmptyStateFieldTests(unittest.TestCase):
+    def test_an_empty_state_list_is_left_out_of_the_report(self):
+        # The protocol: leave a field out when it has no source, so Control Center says "Not reported yet" or
+        # shows NOW.md's "What is next" (control-center ENGINE-PROTOCOL.md, "Your state").
+        report = build_report('makeyourmindup:2026-10-17:test', 'synthetic', NOW, 'fixture', NOW, 'held',
+                              [objective('new_subscribers', reason='Fixture: not measured')], [{'line': 'Fixture run'}],
+                              state={'priorities': [{'rank': 1, 'line': 'Grow', 'objective_key': None}],
+                                     'obsessions': [], 'next_steps': [], 'instruction_acks': []})
+        self.assertEqual([k for k in STATE_FIELDS if k in report], ['priorities'])
+        self.assertEqual(report['schema_version'], '1.20.0')
 
 
 if __name__ == '__main__':

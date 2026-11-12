@@ -590,7 +590,10 @@ given_by, supersedes }`. It is never an approval: the walls do not move.
   `makeyourmindup:<date>:runner:wake-<...>`, so it never conflicts with the
   morning's report, and it reads the morning's report before proposing, so
   nothing is proposed twice. A run by hand (`workflow_dispatch`) wakes the
-  same way.
+  same way. A wake's run is named "control-center instruction wake" (the
+  workflow's `run-name`), and the 05:40 UTC backup never counts it as the
+  morning push (`engine/run/backup.py`), so an instruction given before
+  05:40 UTC cannot stop the backup on a day the 05:10 push never came.
 - A workspace job prints the block first at `cc start`, keeps it in
   `.scratch/cc/instruction.txt`, acts on it first, and finishes with
   `--ack started|done|blocked --ack-line "..."` (AGENTS.md, "His
@@ -598,6 +601,18 @@ given_by, supersedes }`. It is never an approval: the walls do not move.
   it) and then what it did. `.scratch/cc/instructions.json` keeps the acks
   sent from this workspace, so a later job never sends `received` again and
   is told when one was acked done.
+- The four engine sessions see it too. `cc start` also keeps it,
+  structured, in the ignored `.scratch/cc/instruction.json`, and `growth.py
+  engine start NAME` shows it first as `krish_instruction`: his words, when
+  it was pulled (a pull from an earlier day says it may have closed since),
+  and how to act on it. The session whose work it is acts on it first,
+  inside the walls; another engine's is handed off. The session closes with
+  `"instruction_ack": {"state": "started|done|blocked", "line": "..."}` in
+  its learnings file, checked as `cc finish --ack` is (never his words) and
+  kept as a pending ack in `.scratch/cc/instructions.json`, never in a
+  committed record. The next workspace job's `cc finish` carries it to
+  Control Center (when the job gives no `--ack` of its own) and clears it,
+  so an engine session never writes to Control Center itself.
 - `received` goes once: an earlier report naming the instruction (this
   engine's latest live reports, `GET reports?recent=10`, or the workspace's
   own record) counts. If those cannot be read, `received` is sent again,
@@ -624,9 +639,14 @@ report always carries it:
   kept only while the file it is quoted from still holds the quote word for
   word. Never a paraphrase and never a goal of the engine's own.
 - `next_steps`: his open instruction first, then the newest now-notes'
-  `Next:` lines, NOW.md's "What is next" and the first unticked step of
-  `docs/GET-GOING.md`, at most five, each a whole sentence or a whole
-  leading clause of at most 200 characters, never cut mid-clause.
+  `Next:` lines (until the fold on main writes them into NOW.md), NOW.md's
+  first "Next" item, the first unticked step of `docs/GET-GOING.md` and
+  NOW.md's "Waiting on Krish" items, at most five, each a whole sentence or
+  a whole leading clause of at most 200 characters, never cut mid-clause.
+
+A field with nothing in it is left out of the report (`build_report`), as
+the protocol asks, so Control Center says "Not reported yet" or, for
+`next_steps`, shows NOW.md's "What is next" instead of an empty list.
 
 Every line is plain text with no address or phone number; anything else
 is refused here before it is sent.

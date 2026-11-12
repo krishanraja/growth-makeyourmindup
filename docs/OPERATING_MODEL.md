@@ -6,7 +6,7 @@ this repository in charge of the schedule and of posting.
 
 **Current as of 5 November 2026.** The pipeline, the ledger and Krish's
 decisions below stand. Since then: the ledger runs daily on GitHub
-(`ledger.yml`, 04:05 UTC; first run 1 November, `now-notes/2026-11-01-ledger-live.md`);
+(`ledger.yml`, 04:05 UTC; first run 1 November, recorded in `docs/history/LOG.md`, 2026-11-12);
 Growth's own work also runs as four engine sessions Krish opens on
 request (Acquisition, Engagement, Publishing, and Measurement and
 Allocation; `AGENTS.md`, "Four engines"), in a shadow week beside the

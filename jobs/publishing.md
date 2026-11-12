@@ -39,7 +39,7 @@ record) and carry on. Never do the other engine's work in this session.
    Otherwise it only reads. Its `recover` block is the queue: due slots, approved editions,
    existing provider records (post IDs), route holds (from `social/tools/buffer.json` and the
    records), editions on a held route, unresolved public checks and overdue rechecks. Start from
-   its `next_action`.
+   its `next_action`, after `krish_instruction` (his instruction; its own lines say how to act on it and ack it).
 
 ## What it may do
 
@@ -111,7 +111,7 @@ continuation with few visits goes to Acquisition as an experiment.
 Hand off anything left for another engine (asked and sent as above), then write
 `.scratch/engines/publishing-learnings.json` with `did`, `better_next_time` (specific changes),
 `worked`, `handoffs` (every id made), `promoted` and `session_ref` (this session's link,
-`my_session_ref`), and run `python growth.py engine close publishing --learnings
+`my_session_ref`) and any `instruction_ack`, and run `python growth.py engine close publishing --learnings
 .scratch/engines/publishing-learnings.json`. A repeat of an earlier session's line is refused
 until its words are written into this file, `engines/publishing.json` or a `social/lessons/`
 record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a message

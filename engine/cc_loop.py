@@ -1451,10 +1451,11 @@ def cli(args, root, make_client, out=print, checks=None):
     saved = state_path(root, job + '.state.json')
     voice_file = state_path(root, VOICE_RULES_FILE)
     instruction_file = state_path(root, engine_state.INSTRUCTION_FILE)
+    instruction_json = state_path(root, engine_state.INSTRUCTION_JSON)
     ledger_file = state_path(root, engine_state.LEDGER_FILE)
     if args.cc_cmd in ('start', 'run'):
         # Never let yesterday's rules or instruction stand in for today's, even on a dry run.
-        for stale in (voice_file, instruction_file):
+        for stale in (voice_file, instruction_file, instruction_json):
             if stale.exists():
                 stale.unlink()
     acted = None
@@ -1511,6 +1512,8 @@ def cli(args, root, make_client, out=print, checks=None):
         # His instruction (1.20.0), which the job acts on first; local and ignored, never a public log.
         ledger = engine_state.read_ledger(ledger_file)
         instruction_file.write_text('\n'.join(engine_state.block(loop.directive, ledger)) + '\n', encoding='utf-8')
+        # The same, structured, for the four engine sessions' engine start (local and ignored).
+        engine_state.keep_local(instruction_json, loop.directive, clock())
         keep_web_analytics(root, loop.directive)
         for line in describe(loop.directive, ledger):
             out(line)
@@ -1518,6 +1521,18 @@ def cli(args, root, make_client, out=print, checks=None):
             out('attempt started: finish this job with growth.py cc finish --job ' + job + ' --deliver')
             return 0
     state, item = engine_state.instruction(loop.directive)
+    if not acted and state == 'open':
+        # What an engine session did with it (engine close), carried by this report: the one write path.
+        pending = engine_state.pending_ack(engine_state.read_ledger(ledger_file), item['id'])
+        if pending:
+            errors = engine_state.workspace_ack_errors(pending['state'], pending['line'], pending.get('evidence_url'),
+                                                       item)
+            if errors:
+                out("Not carried: the engine session's ack on Krish's instruction (" + '; '.join(errors) + ')')
+            else:
+                acted = (pending['state'], pending['line'], pending.get('evidence_url'))
+                out("Carrying the " + str(pending.get('engine')) + " engine session's ack on Krish's instruction: "
+                    + pending['state'])
     if acted:
         errors = engine_state.workspace_ack_errors(acted[0], acted[1], acted[2], item if state == 'open' else None)
         if errors:

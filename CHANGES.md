@@ -8,6 +8,14 @@
   posted, from its own record (`growth.py run board posts`), so the board shows Growth's off-day posts out and says
   plainly when one is still scheduled for a day it left. A scheduled post is moved only through the approved posting
   route; every wall is unchanged.
+- 2026-11-12: With no approved weekly mix, the maker drafts from the standing plan and asks him once a week
+  instead of failing. He asked for it as fix 3 of the maker audit (12 Nov), after the maker had failed every
+  run since 30 October with nothing made. Until a week's mix is approved on the board, the maker drafts one X
+  text post a day from a piece already published (the standing plan's cadence; Instagram, TikTok and YouTube
+  need an edition he approved, so they get nothing), keeps the drafts in Control Center only, never in Buffer
+  and never handed to release, and raises "This week's mix isn't approved" on his list once that week. Once
+  he approves the mix, the next run makes his plan. A past week with nothing left to make is skipped and
+  noted. Release, its gates and every wall are unchanged (docs/MAKER.md, "With no approved mix").
 - 2026-11-12: Posts are judged by subscribers, and the verdicts change next week's mix. Same ruling as the
   entry below (Ruling, Krish, 2026-11-12: the engine reads subscribers every week and judges posts by
   subscribers, not engagement). The measure job's verdict for a post is now the GA4 sign-ups on its own

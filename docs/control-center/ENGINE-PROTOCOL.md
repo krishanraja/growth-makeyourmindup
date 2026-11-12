@@ -157,7 +157,7 @@ an exact human-approved external action and a real independently verified receip
 
 The context, outcomes, prepare-action and execute routes are above, under 1.3.0.
 
-**Features.** `capabilities.features` names 28 flags (`api/_growthEngines.ts`). Each says whether this deployment serves that part to this engine; a false flag means do not use it. A flag added without a version (`places`, `suppression`, `asset_links`, `network_routes`) is a capability, not a version: send or read its part at whatever 1.x you speak, once the flag is true.
+**Features.** `capabilities.features` names its flags (`api/_growthEngines.ts`). Each says whether this deployment serves that part to this engine; a false flag means do not use it. A flag added without a version (`places`, `suppression`, `asset_links`, `network_routes`) is a capability, not a version: send or read its part at whatever 1.x you speak, once the flag is true.
 
 | Flag | Since | Which engine gets it |
 |---|---|---|
@@ -181,6 +181,7 @@ The context, outcomes, prepare-action and execute routes are above, under 1.3.0.
 | `places` | no version (2026-10-28) | Mindmake, where the context is served |
 | `suppression` | no version (2026-10-28) | Mindmake. Its list hides the widget's rows and its taxonomy checks rows, Nos and presses (below) |
 | `asset_links` | no version (2026-10-28) | Mindmake, where the context is served and SendLinks is connected |
+| `voice_check` | no version (2026-11-07) | every engine. `POST voice-check` with `{ text, channel, subject?, mode? }` (channel `email`, `email_jonny`, `linkedin`, `x`, `threads`, `substack_note` or `instagram`) answers `{ ok, check }`: krish-voice's hard fails, warnings, scored checks, fingerprint and distance. Check words in Krish's name before you hand them over; Control Center holds a draft with a hard fail and never rewrites an engine's words. A verdict only, never approval (docs/app/everywhere/voice-check.md) |
 
 **Errors.**
 - **400:** the report or attempt is malformed. The body names the field.
@@ -462,7 +463,7 @@ Control Center holds the tools; the engine decides what to look up. `POST /api/g
 - `kind` is `search` (an Exa web search: up to five results, each `{ title, url, snippet, published }`) or `question` (a Perplexity answer with its citations), or one of the three LinkedIn signal kinds below.
 - `query` is at most 400 characters and never carries an address or a phone number; `why` says what the answer decides.
 - Each `request_id` is answered once: the same id replays its stored answer, and the same id with different words is 409.
-- Status is `answered`, `empty`, `failed` or `over_cap`. Each engine's caps count only its own requests (1.13.0); Mindmake's are per day: 40 searches (about $0.0025 each) and 20 questions (about $0.001 each), from measured unit costs; 6 `posts` (up to $0.02 each), 3 `post_engagers` (up to $0.08 each) and 8 `person_route` (up to $0.01 each), from the Apify actors' published prices, each run also capped in dollars at Apify. Every kind at its cap is about $0.56 a day. Over the cap nothing runs; ask again tomorrow under a new id. `GET .../capabilities` carries `research: { kinds, per_day }`.
+- Status is `answered`, `empty`, `failed` or `over_cap`. Each engine's caps count only its own requests (1.13.0); Mindmake's are per day: 120 searches (about $0.0025 each) and 40 questions (about $0.001 each), from measured unit costs, raised from 40 and 20 on 2026-10-31 (Krish: "Raise the daily lookup"); 6 `posts` (up to $0.02 each), 3 `post_engagers` (up to $0.08 each) and 8 `person_route` (up to $0.01 each), from the Apify actors' published prices, each run also capped in dollars at Apify; 150 `write` (about $0.0015 each, 2026-11-06). Every kind at its cap is about $1.01 a day. Over the cap nothing runs; ask again tomorrow under a new id. `GET .../capabilities` carries `research: { kinds, per_day }`.
 
 **Signals** (Krish, 2026-10-26: people who comment on posts like "AI's next job casualty could be your boss" are worth reaching, "but only if they're the right types of ICP: worried executives, as opposed to AI people"; the voices he follows "are talking to the people I want to talk to"; "the growth engine needs to think about those types of signals and relevant signals from the ICPs I want, and bring them to me for action"). Which signals matter, which posts to read and which commenter is his buyer are yours. Control Center only collects:
 

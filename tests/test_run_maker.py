@@ -6,6 +6,8 @@ byte here is synthetic. Nothing reaches controlcenter.krishraja.com, api.buffer.
 or Google Drive.
 """
 import copy
+import datetime
+import email.utils
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import hashlib
 import json
@@ -30,7 +32,7 @@ except ImportError:  # run as tests.test_run_maker
     from tests.test_mix import WEEK, inventory_of
     from tests.test_concept_release import BoardStandIn
 
-from engine import concepts, mix
+from engine import catalog, concepts, mix
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.run import anthropic_api, autorelease, buffer_api, buffer_drafts, cc_records, handoff, maker
 from engine.run.buffer_api import BufferError
@@ -116,6 +118,31 @@ class Drive:
         return sha(data), len(data), buffer_api.file_type(data[:16])
 
 
+def feed_xml(count=8):
+    """A synthetic public feed: count articles, one a week from 1 September 2026, each with a subtitle and a body."""
+    items = []
+    for n in range(count):
+        when = email.utils.format_datetime(datetime.datetime(2026, 9, 1, 12, tzinfo=datetime.timezone.utc)
+                                           + datetime.timedelta(days=7 * n))
+        items.append('<item><title>TEST FIXTURE piece %d</title>'
+                     '<link>https://home.makeyourmindup.ai/p/test-fixture-piece-%d</link><pubDate>%s</pubDate>'
+                     '<description>TEST FIXTURE subtitle %d</description><content:encoded><![CDATA[<p>TEST FIXTURE body'
+                     ' of piece %d: one useful synthetic point.</p>]]></content:encoded></item>' % (n, n, when, n, n))
+    return ('<?xml version="1.0"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">'
+            '<channel>' + ''.join(items) + '</channel></rss>').encode('utf-8')
+
+
+class Feed:
+    """The public feed a standing-plan draft is written from, synthetic: no test reaches the real one."""
+
+    def __init__(self, data=None):
+        self.data, self.calls = data if data is not None else feed_xml(), 0
+
+    def __call__(self, days=21, now=None):
+        self.calls += 1
+        return catalog.parse_feed(self.data, days, now)
+
+
 class Words:
     """A stub for the Anthropic API: the writer's answer, then the blind reader's, in the schema asked."""
 
@@ -154,6 +181,11 @@ class MakerTests(unittest.TestCase):
         self.concept = next(c for c in self.plan['concepts'] if c['ready'])
         self.board = BoardStandIn()
         patcher = mock.patch.object(autorelease, 'route_holds', lambda slot, as_of: ([], True, '2026-11-02'))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        # The standing plan's pieces come from a synthetic feed: no test reads home.makeyourmindup.ai.
+        self.feed = Feed()
+        patcher = mock.patch.object(catalog, 'pieces', self.feed)
         patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -415,10 +447,16 @@ class MakerTests(unittest.TestCase):
     # His authority -----------------------------------------------------------------------------------
 
     def test_an_unapproved_concept_makes_no_draft(self):
+        # Ruling (Krish, 2026-11-12): with no approved mix the week is drafted from the standing plan instead, which
+        # writes no word of his concept and saves nothing in Buffer.
         self.propose()
         summary, code = self.make()
-        self.assertEqual((code, summary['holds']), (0, {'mix_not_approved': 1}), summary)
-        self.assertEqual((self.creates(), self.words.calls), ([], []))
+        self.assertEqual((code, summary['holds'], summary['drafted_from']), (0, {}, {'2026-W46': 'standing_plan'}),
+                         summary)
+        self.assertEqual(summary['standing']['2026-W46']['why'], 'mix_not_approved')
+        self.assertEqual(self.creates(), [])
+        self.assertEqual([c for c in self.words.calls if c['system'] is maker.WRITER_SYSTEM], [],
+                         'no word of an unapproved concept is written')
 
     def test_a_stopped_week_makes_nothing(self):
         self.decide(self.propose(), 'declined')
@@ -647,6 +685,195 @@ class MakerTests(unittest.TestCase):
             del self.cc.reports[key]
         summary, code = self.make()
         self.assertEqual((code, summary['holds']), (1, {'slots_record_missing': 1}), summary)
+
+    # With no approved mix: the standing plan (Ruling, Krish, 2026-11-12) ------------------------------
+
+    def standing_reports(self):
+        return {k: r for k, r in self.cc.reports.items() if k.startswith('makeyourmindup:standing:')}
+
+    def asks(self):
+        """Every ask on his list: the proposals with this title, across every report."""
+        return [(k, item) for k, r in self.cc.reports.items() for item in r['proposals'] if item['title'] == maker.ASK_TITLE]
+
+    def ask_posts(self):
+        return [c for c in self.cc.calls if c['method'] == 'POST' and (c['key'] or '').startswith('makeyourmindup:mixask:')]
+
+    def test_with_no_mix_reported_the_maker_drafts_from_the_standing_plan(self):
+        summary, code = self.make()  # Monday 23:30 in New York: Tuesday, with no plan reported for the week
+        self.assertEqual((code, summary['loud'], summary['holds'], summary['error']), (0, [], {}, None), summary)
+        self.assertEqual(summary['drafted_from'], {'2026-W46': 'standing_plan'})
+        self.assertEqual(summary['standing']['2026-W46'],
+                         {'why': 'mix_plan_not_reported', 'drafted': 1, 'no_approved_edition': 3, 'held': {},
+                          'ask': 'raised'}, summary)
+        # Drafts only: nothing in Buffer, nothing handed off, so release has nothing to read.
+        self.assertEqual((self.creates(), summary['mutations']), ([], 0))
+        self.assertEqual([c for c in self.buf.calls if c['op'] in ('CreateDraft', 'ScheduleDraft', 'EditPost')], [])
+        self.assertFalse([k for k in self.cc.reports if ':review:' in k or ':derived:' in k])
+        # Kept in Control Center as the day's draft, in plain words marked as a draft, and in a record.
+        reports = self.standing_reports()
+        self.assertEqual(list(reports), ['makeyourmindup:standing:2026-11-10'])
+        report = reports['makeyourmindup:standing:2026-11-10']
+        self.assertEqual((report['mode'], report['proposals']), ('live', []), 'nothing on his list but the ask')
+        lines = [a['line'] for a in report['activity']]
+        self.assertTrue(lines[0].startswith('Drafted from the standing plan (specs/standing-plan.json): no approved mix'
+                                            ' for 2026-W46 (mix_plan_not_reported). These are drafts only'), lines[0])
+        draft = next(a for a in report['activity'] if a['line'].startswith('Draft, X, Tuesday 10 November 2026, not approved'))
+        self.assertTrue(draft['line'].endswith(WORDS), draft)
+        self.assertTrue(draft['evidence_url'].startswith('https://home.makeyourmindup.ai/p/test-fixture-piece-'))
+        record = cc_records.record_of(report, maker.STANDING_SCHEMA)
+        self.assertEqual(([d['channel'] for d in record['drafts']], [d['format'] for d in record['drafts']],
+                          record['drafts'][0]['words']), (['x'], ['text'], WORDS))
+        # The words come only from one piece already published, then a blind review: two calls.
+        writes = [c for c in self.words.calls if c['schema'] is maker.WRITE_SCHEMA]
+        self.assertEqual([c['system'] for c in writes], [maker.STANDING_SYSTEM])
+        self.assertIn('Add no fact, number, name, quote, result or source that is not in it', maker.STANDING_SYSTEM)
+        self.assertIn('TEST FIXTURE body of piece', writes[0]['user'])
+        self.assertIn('Format: text, text only, no picture.', writes[0]['user'])
+        self.assertEqual(len(self.words.calls), 2)
+        # The summary and the job summary carry codes and counts, never words.
+        self.assertNotIn(WORDS[:20], json.dumps(summary))
+        lines = maker.step_summary(summary)
+        self.assertIn('- 2026-W46: drafted from the standing plan, no approved weekly mix (mix_plan_not_reported). Drafts'
+                      ' kept in Control Center: 1 new, 0 already drafted, 0 held; 3 with no approved edition. The ask:'
+                      ' raised.', lines)
+        self.assertNotIn(WORDS[:20], '\n'.join(lines))
+
+    def test_a_standing_plan_dry_run_writes_the_words_and_saves_and_reports_nothing(self):
+        summary, code = self.make(deliver=False)
+        self.assertEqual((code, summary['standing']['2026-W46']['would_draft'], summary['standing']['2026-W46']['ask']),
+                         (0, 1, 'would_raise'), summary)
+        self.assertEqual([c for c in self.cc.calls if c['method'] == 'POST' and c['path'].endswith('/reports')], [])
+        self.assertEqual((self.cc.reports, self.creates()), ({}, []))
+        self.assertIn('Drafts written, dry run, saved nowhere: 1 new', '\n'.join(maker.step_summary(summary)))
+
+    def test_a_past_week_whose_slots_record_is_missing_is_skipped_and_noted(self):
+        # W45's plan was reported with no slots record (6 to 8 November). On Sunday's run its only day is the rest day
+        # that ends it: nothing of it can be made, so its hold is noted and never fails the run.
+        past = mix.plan(inventory_of(0), '2026-11-02', IDEAS,
+                        {NEWS: {'claim': CLAIM, 'mock_sha256': [sha(d) for d in DRIVE.values()]}}, urgency=4)
+        summary, code = self.handoff(dispatch_of(past), now='2026-11-02T12:00:00Z')
+        self.assertEqual(code, 0, summary)
+        for key in [k for k in self.cc.reports if ':mixslots:2026-W45:' in k]:
+            del self.cc.reports[key]
+        summary, code = self.make(now='2026-11-08T12:00:00Z')  # Sunday 07:00 in New York: Sunday and Monday
+        self.assertEqual((summary['days'], summary['weeks']), (['2026-11-08', '2026-11-09'], ['2026-W45', '2026-W46']))
+        self.assertEqual((code, summary['loud'], summary['holds']), (0, [], {}), summary)
+        self.assertEqual(summary['skipped_weeks'], {'2026-W45': 'slots_record_missing'})
+        self.assertEqual(summary['drafted_from'], {'2026-W46': 'standing_plan'})
+        self.assertIn('- 2026-W45: skipped, nothing of it can be made in this run (slots_record_missing).',
+                      maker.step_summary(summary))
+        # A week still to come whose slots were never recorded still holds loudly
+        # (test_a_week_whose_slots_were_never_recorded_holds_loudly).
+
+    def test_the_week_raises_one_ask_and_every_other_run_that_week_is_silent(self):
+        runs = ['2026-11-09T12:00:00Z', '2026-11-09T18:00:00Z', '2026-11-10T12:00:00Z', '2026-11-11T12:00:00Z',
+                '2026-11-12T12:00:00Z', '2026-11-13T12:00:00Z', '2026-11-14T12:00:00Z']  # seven runs, all in W46
+        asks = []
+        for now in runs:
+            summary, code = self.make(now=now)
+            self.assertEqual((code, summary['loud']), (0, []), summary)
+            asks.append(summary['standing']['2026-W46']['ask'])
+        self.assertEqual(asks, ['raised'] + ['already_raised'] * 6)
+        self.assertEqual(len(self.ask_posts()), 1, 'the second to the seventh run raise nothing')
+        self.assertEqual([k for k, _ in self.asks()], ['makeyourmindup:mixask:2026-W46'])
+        # A day is drafted once: Monday to Saturday, never Sunday, the rest day.
+        self.assertEqual(sorted(self.standing_reports()), ['makeyourmindup:standing:2026-11-%02d' % d for d in range(9, 15)])
+        self.assertEqual(len({cc_records.record_of(r, maker.STANDING_SCHEMA)['drafts'][0]['piece_url']
+                              for r in self.standing_reports().values()}), 6, 'no piece twice on X in a week')
+        # A new week raises its own, once.
+        summary, code = self.make(now='2026-11-16T12:00:00Z')
+        self.assertEqual((code, summary['standing']['2026-W47']['ask']), (0, 'raised'), summary)
+        summary, code = self.make(now='2026-11-17T12:00:00Z')
+        self.assertEqual((code, summary['standing']['2026-W47']['ask']), (0, 'already_raised'), summary)
+        self.assertEqual([k for k, _ in self.asks()], ['makeyourmindup:mixask:2026-W46', 'makeyourmindup:mixask:2026-W47'])
+        self.assertEqual(len(self.ask_posts()), 2)
+
+    def test_the_ask_says_what_the_maker_does_and_ends_with_the_week(self):
+        self.make()
+        (key, item), = self.asks()
+        report = self.cc.reports[key]
+        self.assertEqual((item['proposal_id'], item['wall'], item['kind'], item['close_condition']['event']),
+                         ('makeyourmindup:mixask:2026-W46', 'strategy', 'advice', 'mix_approved'))
+        self.assertEqual(item['expires_at'], '2026-11-16T05:00:00Z', 'it ends with the week, New York time')
+        self.assertTrue(item['exact_payload'].startswith(maker.ASK_TITLE + ': the week of Monday 9 November 2026'))
+        for needle in ('drafts from the standing plan', 'Nothing is saved in Buffer, scheduled or posted',
+                       "approve this week's mix on the publish board", 'once a week'):
+            self.assertIn(needle, item['exact_payload'])
+        self.assertEqual(item['evidence'][0]['url'], 'https://controlcenter.krishraja.com/#/content?week=2026-11-09')
+        self.assertEqual((report['status'], report['holds']),
+                         ('held', [{'reason': 'week_mix_not_approved', 'detail': '2026-W46: mix_plan_not_reported'}]))
+        self.assertNotIn('\u2014', item['exact_payload'])
+
+    def test_once_his_mix_is_approved_the_next_run_makes_his_plan(self):
+        summary, _ = self.make(now='2026-11-10T04:30:00Z')
+        self.assertEqual((summary['drafted_from'], summary['standing']['2026-W46']['why']),
+                         ({'2026-W46': 'standing_plan'}, 'mix_plan_not_reported'))
+        self.propose()  # reported, not yet approved on the board: still the standing plan, and no second ask
+        summary, code = self.make(now='2026-11-10T04:40:00Z')
+        self.assertEqual((code, summary['drafted_from'], summary['standing']['2026-W46']),
+                         (0, {'2026-W46': 'standing_plan'},
+                          {'why': 'mix_not_approved', 'already_drafted': 1, 'held': {}, 'ask': 'already_raised'}), summary)
+        self.board.press(self.plan)  # his yes on the week's mix
+        summary, code = self.make(now='2026-11-10T04:50:00Z')
+        self.assertEqual((code, summary['drafted_from'], summary['standing']), (0, {'2026-W46': 'his_mix'}, {}), summary)
+        self.assertEqual((summary['slots'].get('made'), summary['handoff']['recorded'], len(self.creates())), (4, 4, 4))
+        self.assertEqual((len(self.standing_reports()), len(self.ask_posts())), (1, 1))
+
+    def test_a_standing_draft_cannot_pass_release_without_his_approvals(self):
+        # Release keeps every gate as it is. The standing path hands nothing to release, so release reads nothing.
+        summary, _ = self.make()
+        summary, code = self.release()
+        self.assertEqual((code, summary['slots'], summary['derived']['read']), (0, {}, 0), summary)
+        self.assertEqual([c for c in self.buf.calls if c['op'] == 'ScheduleDraft'], [])
+        # The worst case: the standing draft saved in Buffer and handed off as if it were a concept post, with a
+        # passing blind review at its own digest. Without his approved mix, release holds it and schedules nothing.
+        record = cc_records.record_of(self.standing_reports()['makeyourmindup:standing:2026-11-10'], maker.STANDING_SCHEMA)
+        draft = record['drafts'][0]
+        buffer = self.buffer()
+        created = buffer.create_draft('x', BUFFER_CHANNEL_ID['x'], draft['words'], [], None)
+        slot = {'slot_id': 'x-2026-11-10-0830', 'channel': 'x', 'format': 'text', 'due_at': '2026-11-10T13:30:00Z',
+                'concept_id': 'standing-x-2026-11-10'}
+        answer = maker.review_words(self.words, slot, draft['words'], draft['share'], [])
+        work = maker.Maker(self.cc.client(), buffer, self.words, maker.instant(NOW), True, self.drive.fetch, ROOT,
+                           str(Path(self.tmp.name) / 'forged.json'))
+        work.hand(slot, {'concept_id': slot['concept_id']}, buffer.get_post(created['id']), [], [], draft['share'],
+                  answer, WEEK)
+        summary, code = self.release()
+        self.assertEqual((summary['derived']['read'], summary['holds'], summary['derived']['weeks']),
+                         (1, {'concept_hold': 1}, {'2026-W46': 'mix_plan_not_reported'}), summary)
+        self.assertEqual(code, 1, 'a post with no approved mix in the index is loud')
+        # And with his own mix approved for the week, a standing draft is still not one of his ideas: it holds.
+        self.approved()
+        summary, code = self.release()
+        self.assertEqual((summary['holds'], summary['slots'].get('scheduled')), ({'outside_approved_mix': 1}, None),
+                         summary)
+        self.assertEqual([c for c in self.buf.calls if c['op'] == 'ScheduleDraft'], [], 'nothing was ever scheduled')
+
+    def test_his_no_on_the_standing_plan_means_no_standing_drafts(self):
+        self.cc.decisions.append({'proposal_id': 'makeyourmindup:plan:w45-w52', 'decision': 'declined',
+                                  'decided_at': DECIDED, 'payload_sha256': 'a' * 64, 'stage': 'plan', 'amended': False})
+        summary, code = self.make()
+        self.assertEqual((code, summary['holds'], summary['drafted_from']), (1, {'mix_plan_not_reported': 1}, {}),
+                         'with no plan at all the week holds loudly, as before')
+        self.assertEqual((self.standing_reports(), self.asks(), self.words.calls), ({}, [], []))
+
+    def test_a_feed_that_cannot_be_read_drafts_nothing_and_guesses_nothing(self):
+        def down(days=21, now=None):
+            raise OSError('synthetic: the feed is down')
+        with mock.patch.object(catalog, 'pieces', down):
+            summary, code = self.make()
+        self.assertEqual((code, summary['standing']['2026-W46']['held'], summary['standing']['2026-W46']['ask']),
+                         (0, {'pieces_unreadable': 1}, 'raised'), summary)
+        self.assertEqual((self.standing_reports(), self.words.calls), ({}, []))
+        summary, code = self.make(now='2026-11-10T04:40:00Z')  # the feed is back: the day is drafted on the next run
+        self.assertEqual((code, summary['standing']['2026-W46'].get('drafted')), (0, 1), summary)
+
+    def test_a_standing_week_with_too_few_pieces_never_repeats_one(self):
+        self.feed.data = feed_xml(2)
+        summary, code = self.make(now='2026-11-11T12:00:00Z')  # Wednesday and Thursday: the third and fourth workdays
+        self.assertEqual((code, summary['standing']['2026-W46']['held']), (0, {'no_published_piece': 2}), summary)
+        self.assertEqual(self.standing_reports(), {})
+        self.assertEqual(summary['standing']['2026-W46']['ask'], 'raised', 'the ask still goes up')
 
     # Which day, which channels -------------------------------------------------------------------
 
@@ -894,6 +1121,18 @@ class MakerWorkflowTests(unittest.TestCase):
             self.assertIn(needle, section)
         self.assertNotIn('\u2014', text, 'no em dashes')
         self.assertIn('first live run', text)
+
+    def test_the_maker_doc_says_what_it_does_with_no_approved_mix(self):
+        # Ruling (Krish, 2026-11-12): with no approved weekly mix, draft from the standing plan and ask once a week.
+        text = (ROOT / 'docs' / 'MAKER.md').read_text(encoding='utf-8')
+        self.assertIn('## With no approved mix', text)
+        section = ' '.join(text.split('## With no approved mix', 1)[1].split('\n## ', 1)[0].split())
+        for needle in ('Ruling (Krish, 2026-11-12)', 'specs/standing-plan.json', 'never saved in Buffer',
+                       'never handed off', 'makeyourmindup:standing:<day>', 'makeyourmindup:mixask:<ISO week>',
+                       "This week's mix isn't approved", 'every other run that week says nothing', 'skipped_weeks',
+                       'the next run makes his plan', 'no_approved_edition'):
+            self.assertIn(needle, section)
+        self.assertIn('draft-from-standing-plan', json.dumps(json.loads((ROOT / 'lanes.json').read_text(encoding='utf-8'))))
 
 
 if __name__ == '__main__':

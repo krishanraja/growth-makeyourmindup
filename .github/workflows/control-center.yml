@@ -16,7 +16,10 @@ name: control-center
 # The 05:40 UTC schedule is the backup: it first asks the GitHub API whether a
 # repository_dispatch run of this workflow already succeeded today (UTC). If
 # one did it stops with "dispatch already ran today"; otherwise it runs the
-# same loop under its own run_id.
+# same loop under its own run_id. A run woken by Krish's instruction is named
+# "control-center instruction wake" (run-name below) and never counts as the
+# morning push (engine/run/backup.py WAKE_TITLE).
+run-name: ${{ github.event.client_payload.instruction_id && 'control-center instruction wake' || 'control-center' }}
 on:
   repository_dispatch:
     types: [cc-growth-directive]

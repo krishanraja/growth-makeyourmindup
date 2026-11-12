@@ -135,16 +135,19 @@
       "id": "check",
       "lane": "L0_code",
       "workflow": "check.yml",
-      "trigger": "every push and pull request",
+      "trigger": "every push and pull request; on a push to main it also folds the closeout notes",
       "may_write": [
-        "the CI result"
+        "the CI result",
+        "on main only: NOW.md, now-notes/ and docs/history/LOG.md, each closeout note folded into NOW.md and removed, in one docs(closeout) commit"
       ],
       "never": [
         "read a key",
-        "reach Control Center or any platform"
+        "reach Control Center or any platform",
+        "write anything but NOW.md, now-notes/ and docs/history/LOG.md"
       ],
       "actions": [
-        "self-test"
+        "self-test",
+        "fold-closeout-notes"
       ],
       "secrets": []
     },
@@ -294,18 +297,23 @@
       "trigger": "04:30 UTC daily with --deliver, for the rest of today and all of tomorrow in New York; by hand a dry run unless deliver is ticked (today or tomorrow in New York only)",
       "may_write": [
         "Buffer drafts saved with saveToDraft true and no due time, made only from ideas and mock files Krish approved in the week's mix plan",
-        "each draft's review and the day's index in Control Center, through the handoff's own code, read back by digest"
+        "each draft's review and the day's index in Control Center, through the handoff's own code, read back by digest",
+        "with no approved mix for a week (Ruling, Krish, 2026-11-12), each New York day's standing-plan drafts (one X text post from a piece already published) as one live report in Control Center (makeyourmindup:standing:<day>), never in Buffer and never handed off",
+        "one ask a week on Krish's list, This week's mix isn't approved (makeyourmindup:mixask:<ISO week>), raised only while that address is empty"
       ],
       "never": [
         "schedule, publish or delete a post",
         "make a draft on LinkedIn or on any channel but Instagram, YouTube, TikTok and X",
         "use a mock file whose bytes do not hash to its approved sha256",
         "make a second draft of one concept on one channel in a week",
+        "save a standing-plan draft in Buffer or hand one to release",
         "change the words or digest of anything Krish approved"
       ],
       "actions": [
         "make-concept-drafts",
-        "record-derived-reviews"
+        "record-derived-reviews",
+        "draft-from-standing-plan",
+        "raise-weekly-mix-ask"
       ],
       "secrets": [
         "CONTROL_CENTER_ENGINE_TOKEN",

@@ -37,7 +37,7 @@ Pass `--session` with this session's link when Krish has given it: the one write
 the private `.scratch/engines/sessions.json`, so other sessions can report back here. Otherwise it
 only reads. Its `recover` block names the best open opportunity, the evidence of access, the
 outstanding approvals, the closed and declined routes with what is suppressed, the active
-experiment, the rules and any conflicts. `next_action` is where the run begins. With no qualified
+experiment, the rules and any conflicts. Act first on `krish_instruction` (his instruction; its own lines say how to act on it and ack it), then on `next_action`. With no qualified
 route, it says to find one, or at U3 to U5 to draft `recover.daily_outreach` (docs/ENGINE.md, "The subscriber push").
 
 ## Ranking a route
@@ -114,7 +114,7 @@ results are attached once known. Close by naming what moved the North Star, or t
 Hand off anything left for another engine (asked and sent as above), then write
 `.scratch/engines/acquisition-learnings.json` with `did`, `better_next_time` (specific changes),
 `worked`, `handoffs` (every id made), `promoted` and `session_ref` (this session's link,
-`my_session_ref`), and run `python growth.py engine close acquisition --learnings
+`my_session_ref`) and any `instruction_ack`, and run `python growth.py engine close acquisition --learnings
 .scratch/engines/acquisition-learnings.json`. A repeat of an earlier session's line is refused
 until its words are written into this file, `engines/acquisition.json` or a `social/lessons/`
 record and listed under `promoted`. Then commit `engines/records/*.jsonl` to `main` with a message

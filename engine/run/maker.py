@@ -58,6 +58,24 @@ plan. For each week, in order:
    Nothing here schedules, publishes or deletes; release.yml schedules each post, later,
    only while every gate still passes.
 
+With no approved weekly mix (Ruling, Krish, 2026-11-12: with no approved weekly mix, the maker
+drafts from the standing plan and asks him once a week instead of failing): when week_state says
+the week's plan is not reported, or reported and not yet approved on the board (NO_APPROVED_MIX),
+and the standing plan (specs/standing-plan.json) covers the week and he has not declined it, the
+maker drafts that week's workdays from the standing plan instead (standing_week): one text post a
+day on X, the one maker channel whose standing format needs no approved edition, from a piece the
+publication already published (the public feed, oldest unamplified first, a different piece each
+day of the week), written and reviewed blind as above. Instagram, TikTok and YouTube need an
+approved edition, so they are counted as no_approved_edition, as the standing plan says. These are
+drafts only: never saved in Buffer, never handed off, so release, which reads only the handoff's
+index and reviews, never sees one. With --deliver each New York day's drafts are kept in Control
+Center as one live report (makeyourmindup:standing:<day>, the words in plain lines marked as
+drafts, a day drafted once), and the week raises one ask on his list, "This week's mix isn't
+approved" (makeyourmindup:mixask:<ISO week>), only when that address is still empty, so every
+other run that week is silent about it. Once his mix is approved, the next run makes his plan.
+A week whose only days in this run are rest days (the Sunday that ends a past week) has nothing
+to make: it is skipped and its hold, if any, noted in skipped_weeks, never failing the run.
+
 Anthropic calls retry a busy API (anthropic_api.MAX_ATTEMPTS, retry-after honoured, under
 MAX_WAIT seconds of waiting); once a call gives up the run stops loudly. The run has a
 deadline, RUN_BUDGET after it starts: no Anthropic call reaches past it and no slot is
@@ -69,6 +87,7 @@ Output is one JSON line of counts and reason codes: never words, URLs, ids or ke
 """
 import argparse
 import datetime as dt
+import http.client
 import json
 import os
 from pathlib import Path
@@ -77,11 +96,11 @@ import sys
 import tempfile
 import time
 
-from engine import concepts as concept_rules, mix as mix_rules, voice as voice_check
+from engine import backlog, catalog, concepts as concept_rules, mix as mix_rules, voice as voice_check
 from engine.buffer_channels import BUFFER_CHANNEL_ID
-from engine.cc_loop import decisions_paged
-from engine.control_center import SLUG, ProtocolError
-from engine.core import instant, ny_time
+from engine.cc_loop import decisions_paged, revision
+from engine.control_center import SLUG, ProtocolError, build_report, proposal
+from engine.core import instant, ny_time, read_json
 from engine.run import autorelease, buffer_api, cc_records, handoff, release, voice_profile
 from engine.run.anthropic_api import CALL_WORST, GAVE_UP, KEY_ENV, Anthropic, AnthropicAuthError, AnthropicError
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
@@ -105,20 +124,29 @@ NAMES = {'x': 'X', 'instagram': 'Instagram', 'tiktok': 'TikTok', 'youtube': 'You
 LIVE = ['scheduled', 'sending', 'sent']
 STATE_DIR = Path('.scratch') / 'cc'
 
+# With no approved weekly mix (Ruling, Krish, 2026-11-12) ------------------------------------
+STANDING_PLAN = Path('specs') / 'standing-plan.json'
+# What week_state says when the week has no approved mix yet, waiting on the plan or on his press: the maker
+# drafts from the standing plan. Every other hold (a record that does not match, a hash, a stop) stays as it was.
+NO_APPROVED_MIX = ('mix_plan_not_reported', 'mix_not_approved', 'mix_not_proposed')
+# The standing plan's format on each maker channel that needs no approved edition: X takes a text post. Instagram,
+# TikTok and YouTube Shorts need a picture or a video he approved, so with no mix they get nothing (the standing
+# plan: "A slot with no approved edition is recorded as missing, never filled with unapproved creative").
+STANDING_FORMAT = {'x': 'text'}
+STANDING_DAYS = 6  # a week's workdays (Sunday rests): the pieces needed so no piece repeats on a channel in a week
+PIECE_TEXT_MAX = 6000  # characters of the piece the writer is shown
+STANDING_SCHEMA = 'growth-standing-drafts/1'
+ASK_TITLE = "This week's mix isn't approved"
+CONTENT_BOARD = 'https://controlcenter.krishraja.com/#/content?week='
+
 SHARE_RULE = ('Then declare the share: the one specific person who would send this post to one other specific person.'
               ' sender and receiver each name one person by role and relationship (for example: a head of operations'
               ' at a mid-size insurer; her CFO, who signs off the pilot budget), never a crowd. job is the one job'
               ' sending it does for the sender. dm_line is the short message the sender would type with it, in their'
               ' own words. moment is the everyday situation that brings the post to mind.')
-WRITER_SYSTEM = '\n'.join([
-    'You write the words of one social post for makeyourmindup, a publication that takes one AI story apart'
-    ' three times a week: who gets paid, what is real and where it leads.',
-    'The post carries an idea and a claim the editor approved. The claim is fixed: put it in the words exactly as'
-    ' given, character for character, as one whole sentence. Never change, split, shorten or reword it.',
-    'Write only from the idea and the claim. Add no fact, number, name, quote, result or source that is not in'
-    ' them. If you are unsure, leave it out.',
-    'When the editor gave direction, follow it in how you write; it is an instruction, never words to copy into'
-    ' the post. Text already on the picture or video is shown for context; the words need not repeat it.',
+WRITER_HEAD = ('You write the words of one social post for makeyourmindup, a publication that takes one AI story apart'
+               ' three times a week: who gets paid, what is real and where it leads.')
+WRITER_RULES = [
     'Plain English a busy senior leader reads in five seconds. Human and humble: no hype, no lecture, no showing'
     ' off, no launch language.',
     'Never name the person behind the accounts, his handle or his initials. No em dashes. No hashtags, no emojis,'
@@ -127,7 +155,21 @@ WRITER_SYSTEM = '\n'.join([
     SHARE_RULE,
     'title: for YouTube, a plain title of at most 90 characters that carries the idea, with no clickbait;'
     ' for every other channel, an empty string.',
-    'Answer only with the JSON the schema asks for.'])
+    'Answer only with the JSON the schema asks for.']
+WRITER_SYSTEM = '\n'.join([
+    WRITER_HEAD,
+    'The post carries an idea and a claim the editor approved. The claim is fixed: put it in the words exactly as'
+    ' given, character for character, as one whole sentence. Never change, split, shorten or reword it.',
+    'Write only from the idea and the claim. Add no fact, number, name, quote, result or source that is not in'
+    ' them. If you are unsure, leave it out.',
+    'When the editor gave direction, follow it in how you write; it is an instruction, never words to copy into'
+    ' the post. Text already on the picture or video is shown for context; the words need not repeat it.'] + WRITER_RULES)
+# A standing-plan draft: no approved idea or claim, so the words come only from one piece already published.
+STANDING_SYSTEM = '\n'.join([
+    WRITER_HEAD,
+    'The post shares one useful point from one piece the publication already published, given below. Take the'
+    ' point from that piece only. Add no fact, number, name, quote, result or source that is not in it. If you'
+    ' are unsure, leave it out.'] + WRITER_RULES)
 VOICE = {'personal': 'a personal account. Write as a person quietly pleased to share something useful: sincere,'
                      ' warm and humble. First person is fine; never invent a feeling, an experience or a result.',
          'publication': "the publication's account. Speak as makeyourmindup, as we where needed: clear, useful and"
@@ -344,12 +386,12 @@ def voice_reasons(cc, voice, channel, words):
     return voice_check.voice_reasons(cc, channel, words)
 
 
-def word_checks(slot, concept, words, title, voice_found=None):
+def word_checks(slot, concept, words, title, voice_found=None, claim=True):
     """[(code, reasons)] the words and title fail, in order: the claim, the length, the copy lint, the share ask
-    and the YouTube title. Empty when they pass."""
+    and the YouTube title. Empty when they pass. claim=False only for a standing-plan draft, which has no claim."""
     channel, fmt = slot['channel'], slot['format']
     return [(name, found) for name, found in (
-        ('words_missing_claim', [] if concept_rules.carries(concept['claim'], words)
+        ('words_missing_claim', [] if not claim or concept_rules.carries(concept['claim'], words)
          else ['the claim is not in the words exactly as given']),
         ('words_too_long', [] if len(words) <= WORDS_MAX[channel]
          else ['the words are longer than ' + str(WORDS_MAX[channel]) + ' characters']),
@@ -368,12 +410,33 @@ def share_block(share):
 def write_words(anthropic, slot, concept, voice, files, profile=None, note=None, voice_check=None):
     """(words, title, share) that carry the claim and pass every check, or Held. One rewrite with the reasons.
     voice_check(words) gives the hard krish-voice rules the words break (voice_reasons), checked like the copy lint."""
-    brief = brief_of(slot, concept, voice, files, profile, note)
+    return _written(anthropic, WRITER_SYSTEM, brief_of(slot, concept, voice, files, profile, note), slot, concept,
+                    voice_check, claim=True)
+
+
+def standing_brief(channel, voice, piece, profile=None):
+    """The writer's brief for a standing-plan draft: the account's voice, a text post, and one published piece."""
+    style = ('\n' + profile[voice]) if profile and profile.get(voice) else ''
+    return ('Channel: ' + NAMES[channel] + ', ' + VOICE[voice] + style + '\nFormat: ' + STANDING_FORMAT[channel]
+            + ', text only, no picture.\nAt most ' + str(WORDS_MAX[channel]) + ' characters of words.'
+            + '\nThe piece, published ' + str(piece['published_at'])[:10] + ': ' + piece['title']
+            + ('\nIts subtitle: ' + piece['subtitle'] if piece.get('subtitle') else '')
+            + '\nThe piece as published:\n' + piece['text'][:PIECE_TEXT_MAX])
+
+
+def write_standing(anthropic, slot, voice, piece, profile=None, voice_check=None):
+    """(words, title, share) of a standing-plan draft from one published piece, passing every check but the claim
+    (it has none), or Held. One rewrite with the reasons."""
+    return _written(anthropic, STANDING_SYSTEM, standing_brief(slot['channel'], voice, piece, profile), slot, None,
+                    voice_check, claim=False)
+
+
+def _written(anthropic, system, brief, slot, concept, voice_check, claim):
     reasons, code = [], None
     for _ in range(MAX_WRITES):
         user = brief + ('\nYour last draft was held. Write it again so none of these applies: ' + '; '.join(reasons)
                         if reasons else '')
-        got = anthropic.json_message(WRITER_SYSTEM, user, WRITE_SCHEMA)
+        got = anthropic.json_message(system, user, WRITE_SCHEMA)
         words, title, share = got.get('words'), got.get('title'), got.get('share')
         code, reasons = None, []
         if not isinstance(words, str) or not words.strip() or not isinstance(title, str) \
@@ -382,7 +445,7 @@ def write_words(anthropic, slot, concept, voice, files, profile=None, note=None,
             continue
         words = words.strip()
         share = share_block(share)
-        failed = word_checks(slot, concept, words, title, voice_check(words) if voice_check else None)
+        failed = word_checks(slot, concept, words, title, voice_check(words) if voice_check else None, claim)
         shared = share_errors(share, True)
         if shared:
             failed.insert(len([f for f in failed if f[0] != 'title_refused']), ('share_block_refused', shared))
@@ -438,6 +501,129 @@ def draft_metadata(channel, files, title):
     return None
 
 
+# With no approved weekly mix: the standing plan (Ruling, Krish, 2026-11-12) ----------------------
+
+def standing_plan(root, decisions):
+    """The standing plan (specs/standing-plan.json), or None when there is none or his latest decision on it is a no:
+    then a week with no approved mix holds as it always did."""
+    path = Path(root) / STANDING_PLAN
+    if not path.is_file():
+        return None
+    try:
+        plan = read_json(path)
+    except (ValueError, OSError):
+        return None
+    if not isinstance(plan, dict) or not isinstance(plan.get('weeks'), list) \
+            or not isinstance(plan.get('channels'), list) or not isinstance(plan.get('proposal_id'), str):
+        return None
+    on_it = sorted((d for d in decisions or [] if isinstance(d, dict) and d.get('proposal_id') == plan['proposal_id']),
+                   key=lambda d: str(d.get('decided_at') or ''))
+    if on_it and on_it[-1].get('decision') == 'declined':
+        return None
+    return plan
+
+
+def no_approved_mix(state):
+    """The reason code when week_state says the week has no approved mix yet (NO_APPROVED_MIX), else None."""
+    if not isinstance(state, dict) or state.get('stopped'):
+        return None
+    why = state.get('why') if state.get('hold') == 'concept_hold' else state.get('hold')
+    return why if why in NO_APPROVED_MIX else None
+
+
+def week_has_ended(days):
+    """True when every one of a week's days in this run is a rest day: nothing of it can be made (the Sunday
+    that ends a past week)."""
+    return all(mix_rules.is_rest_day(ny_midnight(d) + dt.timedelta(hours=12)) for d in days)
+
+
+def published_pieces(rows, root, now, monday):
+    """The articles published before the week began, with their text, oldest unamplified first (the backlog's
+    order, engine/backlog.py). Published before the Monday so the list, and each day's pick, holds all week."""
+    inventory = backlog.build(rows, None, backlog.pilot_editions(root), root, now, backlog.FEED_DAYS,
+                              ['public feed', str(backlog.PILOTS)])
+    start = ny_midnight(dt.date.fromisoformat(monday))
+    by_id = {r['piece_id']: r for r in rows if isinstance(r, dict)}
+    out = []
+    for piece in inventory['pieces']:
+        row = by_id.get(piece['piece_id'])
+        if piece['kind'] == 'article' and row and row.get('text') and instant(piece['published_at']) < start:
+            out.append(dict(row, published_at=piece['published_at']))
+    return out
+
+
+def standing_piece(pieces, day):
+    """The day's piece: a different one each workday of the week, moving on week to week. None when there are too
+    few for that, so a piece never repeats on a channel in a week."""
+    n = len(pieces)
+    if n >= STANDING_DAYS:
+        return pieces[(day.isocalendar()[1] * STANDING_DAYS + day.weekday()) % n]
+    return pieces[day.weekday()] if day.weekday() < n else None
+
+
+def standing_run_id(day):
+    return SLUG + ':standing:' + day.isoformat()
+
+
+def ask_run_id(week_label):
+    return SLUG + ':mixask:' + week_label
+
+
+MONTHS = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
+          'November', 'December')
+
+
+def _long_day(day):
+    """'Tuesday 10 November 2026', whatever the runner's locale."""
+    return mix_rules.DAYS[day.weekday()] + ' ' + str(day.day) + ' ' + MONTHS[day.month - 1] + ' ' + str(day.year)
+
+
+def standing_report(day, monday, why, drafts, now, root):
+    """One New York day's standing-plan drafts, kept in Control Center as one live report: each draft's words in a
+    plain line marked as a draft, its piece as the line's link, and the whole in a record. No proposal: nothing on
+    his list, and no address release reads (cc_records)."""
+    label = autorelease._week_label(monday)
+    lines = [{'line': 'Drafted from the standing plan (specs/standing-plan.json): no approved mix for ' + label + ' ('
+              + why + '). These are drafts only: nothing is saved in Buffer, scheduled or posted, and release never'
+              ' reads them.'}]
+    lines += [{'line': 'Draft, ' + NAMES[d['channel']] + ', ' + _long_day(day) + ', not approved, from a piece published '
+               + d['published'] + ': ' + d['words'], 'evidence_url': d['piece_url']} for d in drafts]
+    lines.append({'line': 'Posted, sent, published and spent nothing'})
+    record = {'schema': STANDING_SCHEMA, 'day': day.isoformat(), 'week_of': monday, 'why': why,
+              'drafts': [{k: d[k] for k in ('channel', 'format', 'piece_url', 'words', 'title', 'share')} for d in drafts]}
+    return build_report(standing_run_id(day), 'live', now, revision(root), now, 'ready', cc_records.objectives(),
+                        lines + cc_records.record_lines(STANDING_SCHEMA, record))
+
+
+def ask_report(monday, why, now, root):
+    """The week's one ask on his list: a strategy proposal saying the mix is not approved and what the maker is doing
+    instead. It expires when the week ends."""
+    label = autorelease._week_label(monday)
+    first = dt.date.fromisoformat(monday)
+    ends = ny_midnight(first + dt.timedelta(days=7))
+    words = '\n'.join([
+        ASK_TITLE + ': the week of ' + _long_day(first) + ' (' + label + ') has no approved mix yet (' + why + ').',
+        '',
+        'Until it has, the maker drafts from the standing plan (specs/standing-plan.json): one post a day on X from a'
+        ' piece already published, kept in Control Center as a draft. Instagram, TikTok and YouTube Shorts get'
+        ' nothing, because each needs an edition you approved. Nothing is saved in Buffer, scheduled or posted.',
+        '',
+        "To switch to your plan, approve this week's mix on the publish board. The next maker run makes your plan's"
+        ' posts instead.',
+        '',
+        'This ask comes once a week and expires when the week ends.'])
+    item = proposal(ask_run_id(label), ASK_TITLE,
+                    "Nothing from this week's mix can be made until you approve it, so the maker is drafting from the"
+                    ' standing plan, and none of those drafts goes out.',
+                    'advice', 'strategy', 'mix_approved', exact_payload=words,
+                    evidence=[{'label': "This week's publish board", 'url': CONTENT_BOARD + monday}],
+                    reference='docs/MAKER.md, With no approved mix', expires_at=ends)
+    return build_report(ask_run_id(label), 'live', now, revision(root), now, 'held', cc_records.objectives(),
+                        [{'line': 'Drafted from the standing plan: no approved mix for ' + label + ' (' + why + ')'},
+                         {'line': 'Posted, sent, published and spent nothing'}], [item], [],
+                        [{'reason': 'week_mix_not_approved', 'detail': label + ': ' + why}])
+
+
 class Maker:
     def __init__(self, cc, buffer, anthropic, now, deliver, fetch, root, out_path=None, deadline=None,
                  clock=time.monotonic):
@@ -450,6 +636,11 @@ class Maker:
         self.handed = {'recorded': 0, 'holds': {}, 'error': None}
         self.profile = None  # voice_profile.read() for the run; None drafts from the account rules alone
         self.board = None  # the board client whose mix press approves the week (autorelease.mix_binding)
+        # With no approved weekly mix (Ruling, Krish, 2026-11-12): the standing plan, the published pieces (read once,
+        # when a week first needs them), what each week was drafted from, each standing week's counts, and the weeks
+        # skipped because nothing of them can be made in this run.
+        self.standing_doc, self.feed, self.rows = None, catalog.pieces, None
+        self.drafted_from, self.standing, self.skipped = {}, {}, {}
 
     def out_of_time(self):
         return self.deadline is not None and self.clock() >= self.deadline
@@ -608,17 +799,129 @@ class Maker:
             raise Stop('handoff_incomplete')  # a draft exists that release cannot read yet: the next run adopts it
 
 
+def standing_week(work, monday, days, why, voices):
+    """Draft each of days (workdays of the week starting monday) from the standing plan: no approved mix, so the
+    standing plan's own cadence on the maker's channels, from pieces already published. Drafts only: nothing is
+    saved in Buffer or handed off. With deliver, each day's drafts are one live report in Control Center, and the
+    week raises its one ask on his list when none is raised yet. Raises Stop like make_week."""
+    label = autorelease._week_label(monday)
+    counts = work.standing.setdefault(label, {'why': why, 'held': {}})
+
+    def count(key, n=1):
+        counts[key] = counts.get(key, 0) + n
+
+    def hold(code, loud=False):
+        counts['held'][code] = counts['held'].get(code, 0) + 1
+        if loud:
+            work.tally.loud.append(code)
+
+    channels = [c for c in concept_rules.CONCEPT_CHANNELS
+                if c in work.standing_doc['channels'] and c not in release.KRISH_CLICK_ONLY]
+    pieces = None
+    for day in days:
+        try:
+            if cc_records.read_report(work.cc, standing_run_id(day)) is not None:
+                count('already_drafted')  # an earlier run drafted this day: a day is drafted once
+                continue
+        except ValueError:
+            hold('standing_record_unreadable', loud=True)
+            continue
+        drafts = []
+        for channel in channels:
+            fmt = STANDING_FORMAT.get(channel)
+            if fmt is None:
+                count('no_approved_edition')
+                continue
+            if voices.get(channel) not in VOICE:
+                hold('account_voice_unknown')
+                continue
+            if pieces is None:
+                try:
+                    if work.rows is None:
+                        work.rows = work.feed(backlog.FEED_DAYS, work.now)
+                    pieces = published_pieces(work.rows, work.root, work.now, monday)
+                except (ValueError, KeyError, TypeError, OSError, http.client.HTTPException):
+                    pieces = False  # the feed could not be read: nothing is guessed, the next run tries again
+            if pieces is False:
+                hold('pieces_unreadable')
+                continue
+            piece = standing_piece(pieces, day)
+            if piece is None:
+                hold('no_published_piece')
+                continue
+            if work.out_of_time():
+                raise Stop('maker_out_of_time')
+            slot = {'slot_id': channel + '-' + day.isoformat() + '-standing', 'channel': channel, 'format': fmt}
+            try:
+                words, title, share = write_standing(
+                    work.anthropic, slot, voices[channel], piece, work.profile,
+                    voice_check=lambda w, c=channel: work.voice_found(voices[c], c, w))
+                review_words(work.anthropic, slot, words, share, [])
+            except Held as held:
+                hold(held.code)
+                continue
+            except AnthropicAuthError:
+                raise
+            except AnthropicError as error:
+                if error.code in GAVE_UP:
+                    raise Stop(error.code) from None
+                hold(error.code)
+                continue
+            drafts.append({'channel': channel, 'format': fmt, 'piece_url': piece['url'], 'words': words,
+                           'title': title, 'share': share, 'published': str(piece['published_at'])[:10]})
+        if not drafts:
+            continue
+        if not work.deliver:
+            count('would_draft', len(drafts))
+            continue
+        posted = work.cc.post_report(standing_report(day, monday, why, drafts, work.now, work.root))
+        if posted['accepted']:
+            count('drafted', len(drafts))
+        else:
+            hold('standing_report_conflict', loud=True)
+    counts['ask'] = raise_ask(work, monday, why)
+
+
+def raise_ask(work, monday, why):
+    """The week's one ask, "This week's mix isn't approved", on his list once per ISO week: raised only when its
+    address is still empty, so every other run that week says nothing. Returns what happened, as a code."""
+    label = autorelease._week_label(monday)
+    try:
+        if cc_records.read_report(work.cc, ask_run_id(label)) is not None:
+            return 'already_raised'
+    except ValueError:
+        return 'ask_unreadable'  # never raised twice: a record that cannot be read counts as raised
+    if not work.deliver:
+        return 'would_raise'
+    posted = work.cc.post_report(ask_report(monday, why, work.now, work.root))
+    return 'raised' if posted['accepted'] else 'already_raised'
+
+
 def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
-    """Make the slots of days (all in the week starting monday) under that week's plan."""
+    """Make the slots of days (all in the week starting monday) under that week's plan, or, with no approved mix
+    for the week, draft them from the standing plan (standing_week)."""
     tally = work.tally
+    label = autorelease._week_label(monday)
     state = autorelease.week_state(work.cc, monday, decisions, folder, work.now, work.root, proposals, work.board)
+    if week_has_ended(days):
+        # Nothing of this week can be made in this run: its hold, if any, is noted and never fails the run.
+        work.skipped[label] = ('week_stopped' if state.get('stopped') else
+                               (state.get('why') if state.get('hold') == 'concept_hold' else state.get('hold'))
+                               or 'rest_days_only')
+        return
     if state.get('stopped'):
         tally.count('week_stopped')
+        return
+    why = no_approved_mix(state)
+    if why and work.standing_doc is not None and monday in work.standing_doc['weeks']:
+        work.drafted_from[label] = 'standing_plan'
+        standing_week(work, monday, [d for d in days if not week_has_ended([d])], why, voices)
         return
     if state.get('hold'):
         tally.hold(state['why'] if state['hold'] == 'concept_hold' and state.get('why') else state['hold'],
                    loud=state.get('loud', False))
         return
+    work.drafted_from[label] = 'his_mix'
     approved, stops = state['decision']['concepts'], set(state['decision']['stopped_concepts'] or [])
     known = {c['concept_id']: c for c in state['spec']['concepts']}
     parts, read = read_plan(work.cc, monday)
@@ -684,13 +987,16 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
 
 
 def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None, out_path=None, day=None,
-          clock=time.monotonic, board=None, profile=None):
+          clock=time.monotonic, board=None, profile=None, feed=None):
     """Returns (summary, exit_code). summary holds counts and codes only.
 
     day (YYYY-MM-DD) names the New York day to make by hand; only today or tomorrow there is accepted,
     so a yes given after the night's run can still be made that morning (day_out_of_range otherwise).
     Without it, the days are make_days(now).
-    profile is voice_profile.read() (main reads it live); None makes the drafts from the account rules alone."""
+    profile is voice_profile.read() (main reads it live); None makes the drafts from the account rules alone.
+    feed(days, now) reads the published pieces a standing-plan draft is written from (default: the public feed,
+    engine/catalog.py). summary says, per week, what it was drafted from (drafted_from: his_mix or standing_plan),
+    each standing week's counts and its ask (standing), and the weeks skipped with their hold (skipped_weeks)."""
     started = clock()
     now = instant(now)
     root = Path(root or ROOT)
@@ -711,11 +1017,14 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
     summary = {'lane': 'L0', 'command': 'maker', 'deliver': bool(deliver), 'days': [d.isoformat() for d in days],
                'weeks': [autorelease._week_label(m) for m in mondays], 'slots': {}, 'holds': {}, 'mutations': 0,
                'handoff': None, 'taste': 'taste_unavailable', 'loud': [], 'error': None,
-               'voice_profile': 'read' if profile else 'voice_profile_unavailable'}
+               'voice_profile': 'read' if profile else 'voice_profile_unavailable', 'drafted_from': {},
+               'standing': {}, 'skipped_weeks': {}}
     work = Maker(cc, buffer, anthropic, now, deliver, fetch or buffer_api.download_facts, root, out_path,
                  started + RUN_BUDGET, clock)
     work.board = board
     work.profile = profile
+    if feed is not None:
+        work.feed = feed
     tally = work.tally
     if anthropic is None:
         # No words without the key: nothing is read, nothing is made, and the run fails so GitHub emails him.
@@ -732,6 +1041,7 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
         if decisions is None:
             raise autorelease.Unpaged()
         proposals = autorelease.signed_golives(cc, decisions, {}, now)
+        work.standing_doc = standing_plan(root, decisions)
         cfg = mix_rules.load(root)
         voices = {c: (inventory(root)['channel'].get(c) or {}).get('account_context')
                   for c in concept_rules.CONCEPT_CHANNELS}
@@ -759,7 +1069,29 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
         folder.cleanup()
     if work.handed['recorded'] or work.handed['error'] or work.handed['holds']:
         summary['handoff'] = work.handed
+    summary.update(drafted_from=dict(sorted(work.drafted_from.items())), skipped_weeks=dict(sorted(work.skipped.items())),
+                   standing={label: dict(sorted(c.items())) for label, c in sorted(work.standing.items())})
     return _finish(summary, tally, buffer)
+
+
+def step_summary(summary):
+    """The run's lines for the GitHub job summary: what each week was drafted from, in counts and codes only."""
+    lines = []
+    for label, source in sorted((summary.get('drafted_from') or {}).items()):
+        if source != 'standing_plan':
+            lines.append('- ' + label + ": drafted from Krish's approved mix.")
+            continue
+        counts = (summary.get('standing') or {}).get(label) or {}
+        made = counts.get('drafted', 0) + counts.get('would_draft', 0)
+        lines.append('- ' + label + ': drafted from the standing plan, no approved weekly mix (' + str(counts.get('why'))
+                     + '). Drafts ' + ('kept in Control Center' if summary.get('deliver') else 'written, dry run, saved'
+                                       ' nowhere') + ': ' + str(made) + ' new, ' + str(counts.get('already_drafted', 0))
+                     + ' already drafted, ' + str(sum((counts.get('held') or {}).values())) + ' held; '
+                     + str(counts.get('no_approved_edition', 0)) + ' with no approved edition. The ask: '
+                     + str(counts.get('ask')) + '.')
+    for label, code in sorted((summary.get('skipped_weeks') or {}).items()):
+        lines.append('- ' + label + ': skipped, nothing of it can be made in this run (' + str(code) + ').')
+    return ['### Maker', ''] + (lines or ['- Nothing drafted.']) + ['']
 
 
 def _finish(summary, tally, buffer):
@@ -820,6 +1152,13 @@ def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=N
     result, code = maker(cc, buffer, anthropic, args.now, args.deliver, fetch, day=args.day,
                          board=(make_board or board_from_env)(), profile=(read_profile or voice_profile.read)())
     out(json.dumps(result, sort_keys=True))
+    where = os.environ.get('GITHUB_STEP_SUMMARY', '').strip()
+    if where:
+        try:
+            with open(where, 'a', encoding='utf-8') as handle:
+                handle.write('\n'.join(step_summary(result)) + '\n')
+        except OSError:
+            pass  # the job summary is a courtesy: the JSON line above is the record
     return code
 
 
