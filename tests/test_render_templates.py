@@ -42,7 +42,7 @@ TEMPLATES = {**TEN, **FROM_THE_ARTWORK}
 WORDMARK = {'carousel-cover', 'carousel-body', 'carousel-close', 'story-frame', 'quote-card', 'receipt-card', 'meme-square', 'meme-vertical',
             'versus-card', 'versus-card-tall', 'evidence-card'}
 WITH_RULE = {'quote-card', 'receipt-card', 'carousel-body', 'carousel-close', 'meme-square', 'meme-vertical', 'profile-art'}
-TONES = ['butter', 'mint', 'coral']
+TONES = ['butter', 'mint', 'coral', 'lilac']
 PLACEHOLDER = re.compile(r'\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}')
 HEX = re.compile(r'#[0-9A-Fa-f]{3,8}\b')
 
@@ -310,3 +310,33 @@ class OutsideTheEngine(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class FollowsThePalette(unittest.TestCase):
+    """content-engine config/brand-palette.json (Ruling, Krish, 2026-11-12: "I approve the brand palette sheet, but
+    only if it falls in line with the attached"): no logo at the top, the wordmark small in the bottom right, one
+    house close with one action, and lilac for under.the.hood."""
+
+    def test_memes_carry_the_mark_in_the_footer_not_at_the_top(self):
+        for tid in ('meme-square', 'meme-vertical'):
+            text = template_text(manifest()['templates'][tid])
+            self.assertEqual(text.count('class="brandmark'), 1, tid)
+            self.assertIn('<div class="brandmark"></div>', text[text.index('<div class="footer">'):], tid)
+            self.assertNotIn('class="masthead"', text, tid)
+
+    def test_the_carousel_close_carries_one_action(self):
+        text = template_text(manifest()['templates']['carousel-close'])
+        footer = text[text.index('<div class="footer">'):]
+        self.assertIn('Subscribe free', footer)
+        self.assertEqual(text.count('Subscribe'), 1)
+
+    def test_lilac_is_a_tone(self):
+        css = (ROOT / 'render' / 'kit.css').read_text(encoding='utf-8')
+        self.assertIn('.tone-lilac .accent { color: var(--lilac); }', css)
+
+    def test_a_new_piece_kit_may_not_close_on_its_own_slide(self):
+        from engine.run import artdirect
+        for name in ('close', 'socket-close', 'machine-takeaway', 'end-card', 'cta'):
+            self.assertTrue(artdirect.OWN_CLOSE.search(name), name)
+        for name in ('cover', 'detail', 'log-entry', 'tape-items', 'recent'):
+            self.assertFalse(artdirect.OWN_CLOSE.search(name), name)
