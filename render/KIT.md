@@ -23,7 +23,8 @@ Nothing here may differ from it, and only Krish changes it.
 - **Saturday good news.** It keeps Krish's fixed close (`render/pieces/off-sat-goodnews`).
 - **Colour.** butter is Monday's follow.the.money, lilac is Wednesday's under.the.hood and coral is Friday's
   mind.the.gap, only on that day's series piece or an asset that carries it. Everything else is mint and the house
-  tones.
+  tones. `scripts/render_mocks.mjs` holds it: a job with no tone is mint, and a series tone renders only when the job
+  gives its `date` on that series' day or `carries` with the series piece's id.
 - **The mark.** The mark is the official file (`.brandmark`), never set as type.
 
 ## The two boards

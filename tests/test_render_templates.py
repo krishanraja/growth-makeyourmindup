@@ -340,3 +340,37 @@ class FollowsThePalette(unittest.TestCase):
             self.assertTrue(artdirect.OWN_CLOSE.search(name), name)
         for name in ('cover', 'detail', 'log-entry', 'tape-items', 'recent'):
             self.assertFalse(artdirect.OWN_CLOSE.search(name), name)
+
+
+class ToneFollowsTheDay(unittest.TestCase):
+    """A series colour only on its own day's series piece or an asset that carries it; everything else is mint."""
+
+    def run_fill(self, job):
+        script = ("import { fill } from './scripts/render_mocks.mjs';"
+                  "import fs from 'node:fs';"
+                  "const manifest = JSON.parse(fs.readFileSync('render/templates.json', 'utf8'));"
+                  "const job = JSON.parse(process.argv[1]);"
+                  "try { const r = fill(manifest, job, 'render/pieces'); console.log('ok:' + /tone-([a-z]+)/.exec(r.html)[1]); }"
+                  " catch (e) { console.log('refused:' + e.message); }")
+        out = subprocess.run(['node', '--input-type=module', '-e', script, json.dumps(job)], cwd=ROOT,
+                             capture_output=True, text=True)
+        return out.stdout.strip() or out.stderr
+
+    def job(self, **extra):
+        fields = {'label': 'series.label', 'headline': 'A short promise', **extra.pop('fields', {})}
+        return {'template': 'carousel-cover', 'fields': fields, 'out': 'x.png', **extra}
+
+    def test_no_tone_is_mint(self):
+        self.assertEqual(self.run_fill(self.job()), 'ok:mint')
+
+    def test_a_series_colour_on_its_own_day_passes(self):
+        self.assertEqual(self.run_fill(self.job(fields={'tone': 'lilac'}, date='2026-11-18')), 'ok:lilac')
+        self.assertEqual(self.run_fill(self.job(fields={'tone': 'butter'}, date='2026-11-16')), 'ok:butter')
+
+    def test_a_series_colour_on_another_day_or_undated_is_refused(self):
+        for extra in ({'date': '2026-11-17'}, {'date': '2026-11-18'}, {}):
+            with self.subTest(extra):
+                self.assertTrue(self.run_fill(self.job(fields={'tone': 'butter'}, **extra)).startswith('refused:'))
+
+    def test_an_asset_that_carries_the_piece_wears_its_colour_on_any_day(self):
+        self.assertEqual(self.run_fill(self.job(fields={'tone': 'coral'}, date='2026-11-17', carries='piece-123')), 'ok:coral')
