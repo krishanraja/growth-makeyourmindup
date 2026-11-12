@@ -24,7 +24,7 @@ Senior commercial leaders who should be reading makeyourmindup. The publication 
 
 ## Where it is right now (as of 2026-11-12)
 
-<!-- north-star-state {"week_of": "2026-11-02", "week_target": 86, "current": 1, "current_as_of": "2026-11-05", "current_source": "Substack Growth sources, new subscribers, 7 days to 2026-11-05, read 2026-11-05 in Krish's working copy and recorded in docs/reviews/2026-11-05-growth-engine-review.md: all sources 1, under Substack then its child category Notes, counted once; organic not classified; the Note and any outreach link unknown", "urgency": 5, "urgency_reason": "1 of 86; under two fifths two weeks running"} --> **North Star number: U5, stalled.** 1 of 86 new publication subscribers this week from organic posts and shares, read on 5 November 2026.
+<!-- north-star-state {"week_of": "2026-11-02", "week_target": 86, "current": 1, "current_as_of": "2026-11-08", "current_source": "Substack Growth sources, new subscribers, Custom... (2026-11-02 to 2026-11-08), read 2026-11-12: all sources 1, organic 1", "urgency": 5, "urgency_reason": "1 of 86; under two fifths two weeks running"} --> **North Star number: U5, stalled.** 1 of 86 new publication subscribers this week from organic posts and shares, read on 8 November 2026.
 
 The last reading is 1 of 86 new publication subscribers for the week of 2 November, read on 5 November. The week of 9 November (162 on the ladder in `docs/NORTH_STAR.md`) is not measured yet, so the engine reads it as U4 (`engine/intensity.py`) and the subscriber push is on. The line above changes only on a measured reading: `growth.py run northstar` from a capture, or Control Center's North Star refresh from this engine's own live report.
 
