@@ -770,6 +770,66 @@ def join_directive(block, spec, config=None):
             'so a lower bound', 'slots': out, 'unmatched_content': sorted(seen - set(owners))}
 
 
+def post_window(block, words, config, start, end):
+    """One post's sessions and sign-ups from Control Center's block, over its own days only (start to end).
+
+    The post's tracked own links name its utm_content; rows outside its days are left out, so a post is
+    judged on its first days and no other. Unknown stays None with the reason, never zero."""
+    contents = sorted({link['utm_content'] for link in own_links(words) if link['tracked']})
+    rows, reason = None, None
+    if not contents:
+        reason = 'no own link with all four UTMs in its words'
+    elif not isinstance(block, dict) or block.get('measurement_id') != config['measurement_id']:
+        reason = "today's directive carried no web_analytics for " + config['measurement_id']
+    else:
+        try:
+            rows = directive_rows(block)
+        except ValueError as exc:
+            reason = 'the GA4 rows could not be read: ' + str(exc)
+        if rows is None and reason is None:
+            coverage = block.get('coverage') if isinstance(block.get('coverage'), dict) else {}
+            reason = coverage.get('reason') or 'Control Center sent no per-post rows'
+    if reason:
+        empty = {'value': None, 'event_name': None, 'basis': None, 'reason': reason}
+        return {'utm_content': contents, 'sessions': None, 'sign_ups': empty, 'reason': reason}
+    start, end = calendar_date(start).isoformat(), calendar_date(end).isoformat()
+    mine = [r for r in rows if r['content'] in contents and start <= r['date'] <= end]
+    events = block.get('events') if isinstance(block.get('events'), list) else []
+    key_events = {e.get('name') for e in events if isinstance(e, dict) and e.get('key_event') is True}
+    groups = {}
+    for r in mine:
+        key = (r['date'], r['source'], r['content'])
+        groups[key] = max(groups.get(key, 0), r['sessions'])
+    return {'utm_content': contents, 'sessions': sum(groups.values()),
+            'sign_ups': _directive_outcome(mine, config, 'sign_up', key_events), 'reason': None}
+
+
+def days_covered(block, start, end):
+    """(True, None) when Control Center's rows cover every day from start to end, else (False, why).
+
+    A day counts as read when the block lists source_medium rows for it (the daily capture ran); the
+    per-post breakdown must have rows on or before start, so a zero is never a day nobody read."""
+    start, end = calendar_date(start), calendar_date(end)
+    through = block.get('through') if isinstance(block, dict) else None
+    if not isinstance(through, str):
+        return False, 'the GA4 rows have no newest day'
+    if calendar_date(through) < end:
+        return False, 'the GA4 rows end on ' + through + ', before its seven days do'
+    coverage = block.get('coverage') if isinstance(block.get('coverage'), dict) else {}
+    dates = coverage.get('dates')
+    if not isinstance(dates, dict):
+        return False, 'Control Center did not say which days its GA4 rows cover'
+    read = set(d for d in dates.get('source_medium') or [] if isinstance(d, str))
+    days = [(start + dt.timedelta(days=n)).isoformat() for n in range((end - start).days + 1)]
+    missing = [d for d in days if d not in read]
+    if missing:
+        return False, str(len(missing)) + ' of its days have no GA4 capture'
+    per_post = sorted(d for d in dates.get('utm_content') or [] if isinstance(d, str))
+    if not per_post or per_post[0] > start.isoformat():
+        return False, 'the per-post GA4 rows start after it went out'
+    return True, None
+
+
 def weekly_signups(capture, config=None, now=None):
     """The GA4 sign-ups for one seven-day capture, through the verified event name only.
 
