@@ -10,6 +10,22 @@ Make Your Mind Up, which Krish called "really nice". This file says where each r
 
 The reference images are private. They are never copied into this repository.
 
+## The brand palette: read this first
+
+Every opening, close, icon, wordmark and colour on a Growth asset comes from content-engine's
+`config/brand-palette.json` (krishanraja/content-engine; explained in its `docs/production/BRAND_PALETTE.md`).
+Nothing here may differ from it, and only Krish changes it.
+
+- **Carousels.** Card 1 has no logo at the top. Every card carries the wordmark small in the bottom right. The last
+  card is always `templates/carousel-close.html`: the piece's takeaway, Subscribe free and the wordmark. A new piece
+  kit may not ship its own close (`engine/run/artdirect.py` `OWN_CLOSE`).
+- **Memes and Notes images.** No logo at the top, and the wordmark in the bottom right. No close.
+- **Saturday good news.** It keeps Krish's fixed close (`render/pieces/off-sat-goodnews`).
+- **Colour.** butter is Monday's follow.the.money, lilac is Wednesday's under.the.hood and coral is Friday's
+  mind.the.gap, only on that day's series piece or an asset that carries it. Everything else is mint and the house
+  tones.
+- **The mark.** The mark is the official file (`.brandmark`), never set as type.
+
 ## The two boards
 
 - **Board of 26 October 2026**: a tall vertical cover for one story, the same story as a wide
