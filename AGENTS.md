@@ -111,6 +111,19 @@ This go-live exception holds only for an approved go-live decision the engine re
 - **The creative bar.** This engine's go-lives are posts people share because they are useful, where every word is his standard. Krish has a low tolerance for poor creative output. Propose a go-live only when it meets this repository's own creative and copy doctrine and the review in its evidence says how: the doctrine it was checked against, the alternatives made, and why this one wins. Work below the bar is held with its reason, never proposed to fill a slot. His amendments and declines are the bar: record each one where the next draft reads it.
 
 
+## The publish board (Ruling, Krish, 2026-11-11)
+
+Ruling (Krish, 2026-11-11): one live board, in Control Centre; the old board is a read-only archive. The live
+board is Control Centre's Content tab (`https://controlcenter.krishraja.com/#/content?week=<Monday>&day=<day>`);
+content.krishraja.com/board is the archive and takes no press. How every actor uses it is content-engine's
+[PUBLISH_BOARDS.md](https://github.com/krishanraja/content-engine/blob/main/docs/PUBLISH_BOARDS.md); Growth's part: read what Krish approved with `GET /api/board/<Monday>/pieces` (only his
+Approve puts an idea on the board; Growth proposes and never places one), tick what went out with
+`POST /api/board/<Monday>/posted` (content-engine's GROWTH-HANDOFF.md, "Tick the board when a post goes out"), never keep a board of its own, and file what a session started from a board prompt makes or reads on
+the piece (the Control Center connector's `get_piece_board`, `report_board_session`, `add_piece_material`,
+`read_piece_material`). Every link Growth gives to the board is the live one. Not built yet: the live board reads
+the week's off-day options only from content-engine's `ideas.json`, so a `growth.py mix offdays` file
+(`growth-offdays/1`), which fed only the archive's build, does not reach it until content-engine's view reads it.
+
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 
 **Publishing authority: latest ruling, 26 October.** Read

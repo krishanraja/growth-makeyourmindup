@@ -42,7 +42,7 @@ class LedgerFixtureTests(unittest.TestCase):
                 self.assertIn(field, r)
             self.assertEqual(set(r['assets']), {'board_url', 'drive_folder', 'manifest_sha256'})
         self.assertEqual(self.rows['2026-11-04']['assets']['board_url'],
-                         'https://content.krishraja.com/board/2026-11-02#wed')
+                         'https://controlcenter.krishraja.com/#/content?week=2026-11-02&day=wed')
 
     def test_a_posted_hero_counts_only_its_own_slot_on_this_engines_channels(self):
         mon = self.rows['2026-11-02']
