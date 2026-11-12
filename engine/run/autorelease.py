@@ -1182,11 +1182,11 @@ def mix_binding(cc, board, monday, parts, read, cfg, root):
         # Ruling (Krish, 2026-11-01): each off-day option is approved on its own, idea and direction. The binding is
         # exactly the options he approved that Growth itself proposed, each with its own format line; anything else
         # stays outside the mix (outside_mix fails closed).
-        picked = {(row['day'], row['option_id']) for row in approved}
-        options = {key: {o['concept_id']: offday.option_format(o) for o in opts
-                         if o.get('kind') != 'recorded' and (key, o['concept_id']) in picked}
-                   for key, opts in kept.items()}
-        options = {key: row for key, row in options.items() if row}
+        # Ruling (Krish, 2026-11-12): any off-day post or idea moves to any day at his press, and the move updates
+        # every place that names its day. The board's day is the one place (content-engine offday_items, read through
+        # GET /api/board/<Monday>/pieces): each option he approved is bound to the day the board says, whichever day
+        # this engine first planned it for, so a post he moved goes out on its new day and never on the day it left.
+        options = bound_options(kept, approved)
         if not options:
             return None, _held('mix_not_approved', 'mix_not_approved', loud=False)
         chosen = {key: sorted(set(row.values())) for key, row in options.items()}
@@ -1206,6 +1206,24 @@ def mix_binding(cc, board, monday, parts, read, cfg, root):
                for key, opts in kept.items()}
     return {'mix_sha256': sha, 'days': days, 'at': pressed.get('at'), 'options': options,
             'concepts': sorted({cid for row in options.values() for cid in row})}, None
+
+
+def bound_options(kept, approved):
+    """{board day: {concept_id: format line}} for the options he approved that Growth itself proposed, each on the day
+    the board says it is on now, wherever Growth's own plan first put it. A concept Growth never proposed, or a piece he
+    records, binds nothing. Pure."""
+    from engine import offday
+    proposed = {}
+    for opts in kept.values():
+        for o in opts:
+            if o.get('kind') != 'recorded':
+                proposed.setdefault(o['concept_id'], o)
+    options = {}
+    for row in approved:
+        o = proposed.get(row['option_id'])
+        if o is not None:
+            options.setdefault(row['day'], {})[row['option_id']] = offday.option_format(o)
+    return {key: line for key, line in sorted(options.items()) if line}
 
 
 def note_for(state, concept_id, due):
