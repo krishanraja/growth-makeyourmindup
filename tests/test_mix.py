@@ -184,6 +184,19 @@ class Layout(unittest.TestCase):
 
 
 class OnePress(unittest.TestCase):
+    def test_a_mock_made_in_a_ticked_style_names_its_card_and_moves_no_hash(self):
+        # Protocol 1.21.0 (Ruling, Krish, 2026-11-12): a card he ticked as a style to use within a week. The mock made
+        # in that style names it (style_card), which the report says was used; his approval hash never moves.
+        first = mix.plan(inventory_of(), WEEK, ideas(), urgency=4)
+        mocks = mocks_for(first)
+        plain = mix.plan(inventory_of(), WEEK, ideas(), mocks, urgency=4)
+        cid = plain['concepts'][0]['concept_id']
+        card = '11111111-1111-4111-8111-111111111111'
+        styled = mix.plan(inventory_of(), WEEK, ideas(), dict(mocks, **{cid: dict(mocks[cid], style_card=card.upper())}), urgency=4)
+        self.assertEqual(styled['concepts'][0]['style_card'], card)
+        self.assertEqual(styled['concepts'][0]['concept_sha256'], plain['concepts'][0]['concept_sha256'])
+        self.assertNotIn('style_card', plain['concepts'][0])
+
     def test_one_plan_proposal_behind_strategy_lists_every_ready_concept_hash(self):
         result = full_plan()
         item = result['proposal']

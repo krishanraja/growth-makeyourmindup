@@ -58,6 +58,14 @@ WAITS_ON = ('engine', 'krish', 'other')
 INSTRUCTION_ID = re.compile(r'^ki_[0-9a-f]{24}$')
 # An activity line naming one of his instructions, by id only (never his words).
 INSTRUCTION_LINE = re.compile(r"Krish's instruction ki_[0-9a-f]{24}")
+# 1.21.0 adds the used-cards field: the cards Krish ticked on his board as a style to use within a week that an asset
+# this engine made used, each with what it made in words, which close his tick in Control Center (Ruling, Krish,
+# 2026-11-12: a card he ticks is an instruction that jumps the queue). Sent only when the served directive says so in
+# its features, and raised only when a report carries it.
+USED_VERSION = '1.21.0'
+USED_FEATURE = 'inspiration_used'
+USED_MAX = 40
+CARD_ID = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
 YMD = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 CONTROL_CHAR = re.compile('[\x00-\x1f\x7f]')
 CHANNEL_NAME = re.compile(r'^[a-z][a-z0-9_-]{0,31}$')
@@ -412,10 +420,13 @@ def copy_open_errors(item):
     return errors
 
 
-def report_version(proposals, credits_spent=None, v17=False, state=False):
-    """1.20.0 when the report carries priorities, obsessions, next_steps or instruction_acks, 1.17.0 when it
-    carries buffer_channels, post_metrics or offdays, 1.16.0 when it carries credits_spent, 1.14.0 when a
-    proposal is an engagement task, 1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
+def report_version(proposals, credits_spent=None, v17=False, state=False, used=False):
+    """1.21.0 when the report carries the used-cards field, 1.20.0 when it carries priorities, obsessions,
+    next_steps or instruction_acks, 1.17.0 when it carries buffer_channels, post_metrics or offdays, 1.16.0
+    when it carries credits_spent, 1.14.0 when a proposal is an engagement task, 1.1.0 when one uses a 1.1.0
+    field, else 1.0.0."""
+    if used:
+        return USED_VERSION
     if state:
         return STATE_VERSION
     if v17:
@@ -529,12 +540,33 @@ def state_errors(report):
     return errors
 
 
+def used_errors(used):
+    """The 1.21.0 rules for the used-cards field (Control Center's parser): a card id, what was made in words and
+    never an address or a link, and when, or null."""
+    if not isinstance(used, list) or not used or len(used) > USED_MAX:
+        return ['inspiration_used must be a list of 1 to ' + str(USED_MAX)]
+    errors = []
+    for index, item in enumerate(used):
+        where = 'inspiration_used[' + str(index) + ']'
+        if not isinstance(item, dict) or not set(item) <= {'card_id', 'asset', 'made_at'}:
+            errors.append(where + ' is { card_id, asset, made_at }')
+            continue
+        if not CARD_ID.match(str(item.get('card_id'))):
+            errors.append(where + '.card_id must be the card_id of a suggestion in the directive')
+        asset = item.get('asset')
+        if not isinstance(asset, str) or not asset.strip() or len(asset) > 200 or '@' in asset or re.search(r'https?://', asset, re.I):
+            errors.append(where + '.asset says what was made in words, at most 200 characters, never an address or a link')
+        if item.get('made_at') is not None and not isinstance(item.get('made_at'), str):
+            errors.append(where + '.made_at must be an ISO time or null')
+    return errors
+
+
 def without_state(report):
     """The same report without its 1.20.0 fields, or its activity lines naming one of his instructions, resealed.
 
     Used once when Control Center cannot confirm 1.20.0 today, so the run still reports what it did; an ack
     that was not delivered is never claimed in a line."""
-    plain = {key: value for key, value in report.items() if key not in STATE_FIELDS + ('payload_sha256',)}
+    plain = {key: value for key, value in report.items() if key not in STATE_FIELDS + (USED_FEATURE, 'payload_sha256')}
     plain['activity'] = [a for a in report.get('activity', []) if not INSTRUCTION_LINE.search(str(a.get('line')))]
     plain['schema_version'] = report_version(plain.get('proposals') or [], plain.get('credits_spent'),
                                              any(k in plain for k in V17_FIELDS))
@@ -546,13 +578,15 @@ def validate_report(report):
     errors = schema_errors(report, load_schema())
     expected = report_version(report.get('proposals') if isinstance(report.get('proposals'), list) else [],
                               report.get('credits_spent'), any(k in report for k in V17_FIELDS),
-                              any(k in report for k in STATE_FIELDS))
+                              any(k in report for k in STATE_FIELDS), USED_FEATURE in report)
     if report.get('schema_version') != expected:
         errors.append('schema_version must be ' + expected + ': raise it only for a field the report uses')
     if 'credits_spent' in report:
         errors += spent_errors(report['credits_spent'])
     errors += v17_errors(report)
     errors += state_errors(report)
+    if USED_FEATURE in report:
+        errors += used_errors(report[USED_FEATURE])
     if report.get('engine_id') != ENGINE_ID or report.get('product_slug') != PRODUCT_SLUG:
         errors.append('report must name ' + ENGINE_ID + ' and ' + PRODUCT_SLUG)
     for item in report.get('objectives', []):
@@ -584,9 +618,10 @@ def validate_report(report):
 
 def build_report(run_id, mode, observed_at, revision, captured_at, status, objectives=(),
                  activity=(), proposals=(), events=(), holds=(), credits_spent=None, buffer_channels=None,
-                 post_metrics=None, offdays=None, state=None):
+                 post_metrics=None, offdays=None, state=None, inspiration_used=None):
     """state: the 1.20.0 fields ({priorities, obsessions, next_steps, instruction_acks}); each is sent only
-    when it holds an entry, so a report without them is unchanged."""
+    when it holds an entry, so a report without them is unchanged. The 1.21.0 used-cards list is sent only when
+    it holds an entry."""
     proposals = list(proposals)
     credits_spent = list(credits_spent or [])
     extra = {k: v for k, v in (('buffer_channels', buffer_channels), ('post_metrics', post_metrics or None),
@@ -596,7 +631,7 @@ def build_report(run_id, mode, observed_at, revision, captured_at, status, objec
         raise ValueError('not a 1.20.0 state field: ' + ', '.join(sorted(unknown)))
     lists = {key: list(value) for key, value in (state or {}).items() if value}
     report = whole({
-        'schema_version': report_version(proposals, credits_spent, bool(extra), bool(lists)),
+        'schema_version': report_version(proposals, credits_spent, bool(extra), bool(lists), bool(inspiration_used)),
         'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
         'run_id': run_id, 'mode': mode, 'observed_at': iso(observed_at),
         'source': {'revision': clip(revision, 128), 'captured_at': iso(captured_at)},
@@ -613,6 +648,8 @@ def build_report(run_id, mode, observed_at, revision, captured_at, status, objec
     for key in STATE_FIELDS:
         if key in lists:
             report[key] = whole(lists[key])
+    if inspiration_used:
+        report[USED_FEATURE] = whole(list(inspiration_used))
     report['payload_sha256'] = report_digest(report)
     return validate_report(report)
 
