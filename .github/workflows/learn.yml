@@ -1,0 +1,69 @@
+name: learn
+# Lane L0. Ruling (Krish, 2026-11-12): the engine reads subscribers every week
+# and judges posts by subscribers, not engagement. Every Sunday at 10:30 UTC
+# (05:30 New York), before next week's mix plan is made that day, this reads
+# the posts of the latest week whose posts have all had their seven days,
+# judges each by the sign-ups its own link brought (GA4 rows from Control
+# Center's directive, joined on utm_content), joins each to its lane through
+# the week's derived index in Control Center, and runs `growth.py mix learn`
+# on those verdicts. It commits one file to main,
+# lists/mix-learn/for-<next Monday>.json: verdict tallies by lane and channel
+# and counts only. `growth.py mix plan` reads it for that week, so a lane
+# whose posts brought subscribers gains weight inside its bounds (mix.json,
+# learning). It never posts, sends, publishes, schedules or spends, and its
+# log carries counts and codes only: no figure, word, URL or id.
+on:
+  schedule:
+    - cron: '30 10 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: learn
+  cancel-in-progress: false
+
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
+    steps:
+      - name: Start the run clock
+        run: echo "GROWTH_RUN_STARTED=$(date +%s)" >> "$GITHUB_ENV"
+      # The checkout keeps its token: the last step pushes the learn file to main, and nothing else.
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Judge last week's posts by subscribers
+        run: python growth.py run learn
+      - name: Learn next week's mix from those verdicts
+        run: |
+          file=$(ls .scratch/learn/verdicts-for-*.json)
+          monday=${file##*verdicts-for-}
+          monday=${monday%.json}
+          python growth.py mix learn --verdicts "$file" --out "lists/mix-learn/for-$monday.json"
+      - name: Commit the learn file to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lists/mix-learn
+          if git diff --cached --quiet; then
+            echo "learn: nothing new to commit"
+            exit 0
+          fi
+          git commit -q -m "learn: next week's mix from last judged week's subscriber verdicts"
+          for attempt in 1 2 3; do
+            if git pull -q --rebase origin main && git push -q origin HEAD:main; then
+              echo "learn: committed"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "learn: push_failed"
+          exit 1

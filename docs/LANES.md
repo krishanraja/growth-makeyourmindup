@@ -5,10 +5,11 @@ and L3. The lanes say who has to do something before it happens. The machine-che
 is `lanes.json`; this page is the plain summary, and where the two differ,
 `lanes.json` wins.
 
-Current as of 5 November 2026: eight GitHub Actions workflows run in L0
-(below); the nine PC automations and the daily heartbeat keep running until
-W46; the four engine sessions (Acquisition, Engagement, Publishing, and
-Measurement and Allocation) run only when Krish opens one ("The four engine
+Current as of 12 November 2026: ten GitHub Actions workflows run in L0
+(below); nine PC automations and the daily heartbeat keep running until
+W46, and the weekly Substack read (`jobs/subscribers.md`) stands; the four
+engine sessions (Acquisition, Engagement, Publishing, and Measurement and
+Allocation) run only when Krish opens one ("The four engine
 sessions" below); and Make Your Mind Up outreach and social engagement are
 Krish's own hands in his Codex sessions (L3), never Control Center's.
 
@@ -27,7 +28,8 @@ Nobody has to be awake or online for these.
 | The Control Center runner (`control-center.yml`): reads the day's instructions, checks the engine, sends the report, reads Krish's answers | every day 05:10, when Control Center wakes it; a backup at 05:40 runs only if that run has not worked today | 05:10, backup 05:40 |
 | The key check (`keys.yml`): checks that both keys still work. A refused or missing key fails the run, so GitHub emails Krish | every day 06:50 | 06:50 |
 | Release (`release.yml`): puts in Buffer's schedule exactly the posts Krish approved, checked byte for byte and on his own Buffer account, each about an hour before it is due (until then a No stops it). That is each day's go-live he approved (a go-live naming more than one New York day holds), and each post made from an idea and mock he approved in the week's mix plan, read back from Control Center (below). A post still scheduled after a No fails the run, so GitHub emails Krish. It holds a post whose words fail the copy lint or ask for the share, and every post on a Buffer route not yet recorded as passed: that route's one capability check goes through `run release` first. A route held after a provider rejection (today Buffer's TikTok short video, `social/tools/buffer.json`) gets no capability check until its recheck condition is met. Never LinkedIn | every 30 minutes | every 30 minutes |
-| Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
+| Measure (`measure.yml`): checks the keys, then reads how each post did and reports it to Control Center. Each post's verdict is the subscribers it brought: the GA4 sign-ups on its own tracked link over its first seven days; its engagement is kept beside it as supporting evidence only (Ruling, Krish, 2026-11-12) | every day 07:00, 13:00, 19:00 | 07:00, 13:00, 19:00 |
+| Learn (`learn.yml`): judges the posts of the latest week whose posts have all had their seven days by the subscribers they brought, joins each to its lane, runs `growth.py mix learn` and commits `lists/mix-learn/for-<next Monday>.json`, tallies and counts only, which next week's `mix plan` reads ([MIX.md](MIX.md), "Learning"). It posts, schedules and spends nothing | Sundays 10:30, before next week's plan is made | 10:30 |
 | The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea | when that maker wakes it | when that maker wakes it |
 | The maker (`maker.yml`, [MAKER.md](MAKER.md)): makes the next New York day's posts from the ideas and mocks Krish approved in the week's mix plan, as Buffer drafts with no due time, writes their words and a blind review of them with the Anthropic API, and hands each off with its review, so release can schedule it. Only the approved mock files, checked by hash; one draft per idea, channel and week; never LinkedIn; it never schedules, publishes or deletes | every day 04:30; by hand a dry run unless deliver is ticked | 04:30 |
 | The ledger (`ledger.yml`): rebuilds `calendar/ledger.json` and `calendar/LEDGER.md`, one row per day per slot for the next 14 days, from content-engine's board and Buffer, read-only (`docs/OPERATING_MODEL.md` section 4). It keeps the two files as the run's artifact for 14 days and commits, posts, schedules and ticks nothing | every day 04:05, before the maker | 04:05 |
@@ -131,11 +133,14 @@ through the handoff's own code instead of a dispatch:
   before Krish sees it. A post made from an approved idea goes in the
   go-live manifest with its idea and its review; it is never asked again.
 
-The jobs on Krish's PC run only while his PC is on: the nine automations in
+The jobs on Krish's PC run only while his PC is on: the ten automations in
 `automations.json` (their times are in `README.md`; the channel audit is
-Saturday 12:00 London) and the 09:00 London daily heartbeat. They are kept
+Saturday 12:00 London) and the 09:00 London daily heartbeat. Nine are kept
 until W46; `lanes.json` names the L0 job that takes over each one, where
-there is one.
+there is one. The tenth, the weekly Substack read (`jobs/subscribers.md`,
+Mondays 06:15 New York), is `standing`: Substack has no public API, so only
+his signed-in browser can read it, and no L0 job takes it over (Ruling,
+Krish, 2026-11-12).
 
 ### The four engine sessions (built 5 November 2026)
 

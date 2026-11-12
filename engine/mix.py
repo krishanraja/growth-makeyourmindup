@@ -17,11 +17,14 @@ names its concept; the concepts Krish has to approve, idea and mock, go to
 him as one plan proposal behind strategy whose exact payload is the mix and
 every concept_sha256, so one press approves them all (engine/concepts.py).
 
-Learning: `mix learn` reads the What-Works verdicts the week's posts earned
-(verdict/<slot>.json under the run folder, engine/run/measure.py) and joins
-each to its concept and lane; `mix plan --learn` moves a lane's weight one
-step inside its bounds (mix.json, learning). Nothing is invented: a lane
-with too few judged posts keeps its weight.
+Learning: `mix learn` reads the verdicts the week's posts earned and joins
+each to its concept and lane; `mix plan` moves a lane's weight one step inside
+its bounds (mix.json, learning). Since 12 November the verdicts are by
+subscribers (Ruling, Krish, 2026-11-12): the learn workflow's `mix learn
+--verdicts` writes lists/mix-learn/for-<Monday>.json, which `mix plan` reads
+for that week by itself. The older path reads verdict/<slot>.json under a run
+folder. Nothing is invented: a lane with too few judged posts keeps its
+weight.
 
 Nothing here posts, schedules, sends or writes outside where --out points.
 """
@@ -30,6 +33,7 @@ import datetime as dt
 import json
 from pathlib import Path
 import re
+import sys
 
 from . import concepts as concept_rules
 from . import intensity
@@ -651,10 +655,41 @@ def lines_changed(engine_text, approved_text):
 
 # Learning -------------------------------------------------------------------
 
+# Since 12 November the verdicts are by subscribers (Ruling, Krish, 2026-11-12: the engine reads subscribers
+# every week and judges posts by subscribers, not engagement): the scheduled learn workflow
+# (.github/workflows/learn.yml) reads last judged week's posts, judges each by the sign-ups its own link
+# brought (engine/run/measure_auto.py subscriber_verdicts), and `mix learn --verdicts` turns them into
+# lists/mix-learn/for-<Monday>.json, which `mix plan` reads for that week unless told otherwise.
+LEARN_DIR = Path('lists') / 'mix-learn'
+LEARN_SCHEMA = 'growth-mix-learn/1'
+VERDICTS_SCHEMA = 'growth-learn-verdicts/1'
+
+
+def lane_of(concept_id, cfg):
+    """The lane a concept belongs to, from the id this file gives it (backlog_pool, idea_pool), or None."""
+    if not isinstance(concept_id, str):
+        return None
+    for name, lane in cfg['lanes'].items():
+        prefix = 'carousel-' if lane['source'] == 'backlog' else name.replace('_', '-') + '-'
+        if concept_id.startswith(prefix):
+            return name
+    return None
+
+
+def learn_rows(rows):
+    """Tally verdict rows ({channel, lane, verdict}) by lane and by channel."""
+    lanes_out, channels_out = {}, {}
+    for row in rows:
+        for table, key in ((lanes_out, row['lane']), (channels_out, row['channel'])):
+            tally = table.setdefault(key, {v: 0 for v in VERDICTS})
+            tally[row['verdict']] += 1
+    return lanes_out, channels_out
+
+
 def learn(specs, runs_dir=None, root=ROOT):
     """Last week's verdicts by lane and by channel, joined through each slot's concept. Local only."""
     from .run.spec import run_dir
-    lanes_out, channels_out, rows = {}, {}, []
+    rows = []
     for spec in specs:
         known = concept_rules.by_id(spec)
         folder = run_dir(spec, runs_dir, root)
@@ -671,13 +706,53 @@ def learn(specs, runs_dir=None, root=ROOT):
                 continue
             if value not in VERDICTS:
                 continue
-            for table, key in ((lanes_out, concept['lane']), (channels_out, slot['channel'])):
-                row = table.setdefault(key, {v: 0 for v in VERDICTS})
-                row[value] += 1
             rows.append({'slot_id': slot['slot_id'], 'channel': slot['channel'], 'concept_id': concept['concept_id'],
                          'lane': concept['lane'], 'verdict': value})
-    return {'schema': 'growth-mix-learn/1', 'lanes': lanes_out, 'channels': channels_out, 'posts': rows,
-            'local_only': True}
+    lanes_out, channels_out = learn_rows(rows)
+    return {'schema': LEARN_SCHEMA, 'lanes': lanes_out, 'channels': channels_out, 'posts': rows, 'local_only': True}
+
+
+def learn_from_verdicts(verdicts, root=ROOT):
+    """The committed learn file from the learn workflow's verdict rows: tallies by lane and channel only.
+
+    A row whose concept names no lane of mix.json is left out and counted. No post id, concept id, word,
+    URL or figure goes in: this file is committed to the public repository."""
+    if not isinstance(verdicts, dict) or verdicts.get('schema') != VERDICTS_SCHEMA:
+        raise ValueError('verdicts must be a ' + VERDICTS_SCHEMA + ' object')
+    if verdicts.get('basis') != 'subscribers':
+        raise ValueError('the mix learns from subscriber verdicts only (Ruling, Krish, 2026-11-12)')
+    for key in ('for_week_of', 'judged_week_of'):
+        if calendar_date(verdicts.get(key)).weekday() != 0:
+            raise ValueError(key + ' is a Monday')
+    cfg = load(root)
+    rows, unknown, because = [], 0, {}
+    for row in verdicts.get('rows') or []:
+        if not isinstance(row, dict) or row.get('verdict') not in VERDICTS or row.get('channel') not in cfg['channels']:
+            raise ValueError('each row needs a verdict and one of the mix channels')
+        lane = lane_of(row.get('concept_id'), cfg)
+        if lane is None:
+            unknown += 1
+            continue
+        rows.append({'channel': row['channel'], 'lane': lane, 'verdict': row['verdict']})
+        if row['verdict'] == 'insufficient' and isinstance(row.get('code'), str):
+            because[row['code']] = because.get(row['code'], 0) + 1
+    lanes_out, channels_out = learn_rows(rows)
+    counts = dict(verdicts.get('counts') or {})
+    counts.update(joined_to_a_lane=len(rows), no_lane=unknown, insufficient_because=because)
+    return {'schema': LEARN_SCHEMA, 'basis': 'subscribers', 'for_week_of': verdicts['for_week_of'],
+            'judged_week_of': verdicts['judged_week_of'], 'lanes': lanes_out, 'channels': channels_out,
+            'counts': counts}
+
+
+def learned_for(week_of, root=ROOT):
+    """(learn file, its path) committed for this week's plan, or (None, None) when there is none."""
+    path = Path(root) / LEARN_DIR / ('for-' + calendar_date(week_of).isoformat() + '.json')
+    if not path.is_file():
+        return None, None
+    value = read_json(path)
+    if not isinstance(value, dict) or value.get('schema') != LEARN_SCHEMA or value.get('for_week_of') != week_of:
+        raise ValueError(str(LEARN_DIR / path.name) + ' is not a learn file for the week of ' + week_of)
+    return value, path
 
 
 # Command line ---------------------------------------------------------------
@@ -693,17 +768,31 @@ def command(argv, root=ROOT):
     p.add_argument('--inventory', default=str(Path('.scratch') / 'backlog' / 'inventory.json'))
     p.add_argument('--ideas', help='JSON list of filler ideas: idea_id, lane, idea, claim, source_url, source_date')
     p.add_argument('--mocks', help='JSON map concept_id to {claim, mock_sha256}')
-    p.add_argument('--learn', help='a mix learn file from last week')
+    p.add_argument('--learn', help='a mix learn file from last week (default: ' + str(LEARN_DIR / 'for-<week-of>.json')
+                   + ' when the learn workflow committed one)')
+    p.add_argument('--no-learn', action='store_true', help='plan on mix.json weights alone')
     p.add_argument('--urgency', type=int, choices=range(1, 6))
     p.add_argument('--out')
     lp = sub.add_parser('learn', help="last week's verdicts by concept, lane and channel")
-    lp.add_argument('specs', nargs='+'); lp.add_argument('--runs-dir'); lp.add_argument('--out')
+    lp.add_argument('specs', nargs='*'); lp.add_argument('--runs-dir'); lp.add_argument('--out')
+    lp.add_argument('--verdicts', help='the learn workflow\'s subscriber verdicts (' + VERDICTS_SCHEMA + ')')
     args = parser.parse_args(argv)
     if args.action == 'plan':
+        learned = read_json(args.learn) if args.learn else None
+        if learned is None and not args.no_learn:
+            learned, path = learned_for(args.week_of, root)
+            if path is not None:
+                print('learned from ' + (LEARN_DIR / path.name).as_posix(), file=sys.stderr)
         mix = plan(read_json(args.inventory), args.week_of, read_json(args.ideas) if args.ideas else (),
-                   read_json(args.mocks) if args.mocks else None, read_json(args.learn) if args.learn else None,
+                   read_json(args.mocks) if args.mocks else None, learned,
                    root, args.urgency if args.urgency else intensity.state(root)['urgency'])
+    elif args.verdicts:
+        if args.specs:
+            parser.error('learn takes specs or --verdicts, not both')
+        mix = learn_from_verdicts(read_json(args.verdicts), root)
     else:
+        if not args.specs:
+            parser.error('learn needs specs or --verdicts')
         mix = learn([read_json(s) for s in args.specs], args.runs_dir, root)
     if args.out:
         write_json(args.out, mix)

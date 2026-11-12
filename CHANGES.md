@@ -8,6 +8,25 @@
   posted, from its own record (`growth.py run board posts`), so the board shows Growth's off-day posts out and says
   plainly when one is still scheduled for a day it left. A scheduled post is moved only through the approved posting
   route; every wall is unchanged.
+- 2026-11-12: Posts are judged by subscribers, and the verdicts change next week's mix. Same ruling as the
+  entry below (Ruling, Krish, 2026-11-12: the engine reads subscribers every week and judges posts by
+  subscribers, not engagement). The measure job's verdict for a post is now the GA4 sign-ups on its own
+  `utm_content` over its first seven days (one works; none on at least 30 visits fails; otherwise
+  insufficient with its reason); engagement against the channel median is kept as supporting evidence only.
+  A new L0 workflow, `learn.yml` (Sundays 10:30 UTC, before next week's plan is made), judges the latest
+  fully measured week that way, joins each post to its lane through the week's derived index, runs `growth.py
+  mix learn --verdicts` and commits `lists/mix-learn/for-<Monday>.json` (tallies only), which `growth.py mix
+  plan` reads for that week by itself. Nothing posted, sent or spent; no Claude routine and no model call.
+- 2026-11-12: The engine reads subscribers every week. His words: "send 3 and 4 to [this session] and then
+  once done, you merge to main" (Fix 4 of the subscriber audit). Ruling (Krish, 2026-11-12): the engine
+  reads subscribers every week and judges posts by subscribers, not engagement. A tenth PC automation,
+  "Growth: subscribers" (Mondays 06:15 New York, `jobs/subscribers.md`), reads last week's Substack
+  subscribers in his signed-in browser (total, new by source, and per post and per Note where Substack shows
+  it) and records the week's North Star reading through `growth.py run subscribers ingest`; a read that
+  cannot be taken is recorded as unknown with its reason. It stands past W46, because Substack has no
+  public API. GA4's `sign_up` event name is verified from Control Center's live Events report and recorded in
+  `invariants/ga4.json` with where and when; the paid name stays open. Nothing posted, sent or spent, and no
+  Substack setting is changed.
 - 2026-11-11: Krish instructs the engine from Control Centre, and its state shows there live. His words:
   "Ensure the priorities, obsessions, and next steps for all the growth engines are feeding live to this
   dashboard, and not just in the growth tab. They are responsible for driving the overall success of each

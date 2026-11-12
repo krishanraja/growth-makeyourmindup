@@ -8,10 +8,14 @@ Runs on GitHub Actions three times a day (.github/workflows/measure.yml):
    itself with --deliver, or from .scratch/cc/web-analytics.json (kept by the
    runner or `cc start`) on a dry run;
 3. joins them on utm_content (engine/run/ga4.py join_directive);
-4. gives each post a verdict against its own channel's median
-   (engine/run/measure.py judge: works, neutral, fails or insufficient, at
-   least six observations, association not cause), with every channel kept
-   insufficient for its first 14 days;
+4. gives each post a verdict by the subscribers it brought (Ruling, Krish,
+   2026-11-12: judge posts by subscribers, not engagement): the GA4 sign-ups
+   on its own utm_content over its first seven New York days
+   (engine/run/ga4.py post_window, engine/run/measure.py judge_subscribers:
+   works at one sign-up, fails at none on enough visits, otherwise
+   insufficient with why; association, not cause). Its engagement against its
+   own channel's median (measure.judge, every channel insufficient for its
+   first 14 days) stays beside it as supporting evidence only;
 5. reports the aggregates to Control Center by the existing report path
    (engine/cc_loop.py run: attempt, directive, report and readback,
    decisions, attempt end).
@@ -30,10 +34,10 @@ from .. import engine_state, intensity, meter
 from ..cc_loop import (STATE_DIR, count, WEB_ANALYTICS_FILE, keep_web_analytics, revision, run, summary,
                        web_analytics_activity, web_analytics_block, web_analytics_summary)
 from ..control_center import SLUG, build_report, iso, objective
-from ..core import instant, read_json, today, write_json
+from ..core import instant, ny_time, read_json, today, write_json
 from . import buffer_reads
-from .ga4 import directive_rows, join_directive, load_config
-from .measure import judge, share_rates
+from .ga4 import days_covered, directive_rows, join_directive, load_config, post_window
+from .measure import SUBSCRIBER_WINDOW_HOURS, judge, judge_subscribers, share_rates
 from .release import BUFFER_NAME
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -45,6 +49,11 @@ WINDOW_HOURS = {'substack-notes': 24, 'threads': 48, 'x': 48, 'linkedin': 48,
 # the first of these Buffer shows on its posts, so a channel is judged on one measure.
 INDICATORS = ('impressions', 'views', 'reach')
 NEW_CHANNEL_DAYS = 14
+# Why a post is insufficient by subscribers, in the order the report says it (counts only).
+INSUFFICIENT = {'no_tracked_link': 'no tracked own link', 'shared_link': 'a link another post shares',
+                'ga4_unread': 'GA4 rows not read', 'event_unverified': 'sign-up event name not verified',
+                'not_seven_days': 'seven days not passed', 'days_not_read': 'days with no GA4 capture',
+                'too_few_visits': 'no sign-up on too few visits to call'}
 LOOKBACK_DAYS = 56
 NEW_CHANNEL = 'new channel: its first 14 days are a baseline with no verdicts'
 COMMAND = 'measure'
@@ -66,13 +75,14 @@ def _median(values):
     return int(value) if float(value).is_integer() else value
 
 
-def verdicts(posts, now):
-    """One verdict per post against its own channel's median; channels with their aggregates."""
+def engagement_verdicts(posts, now):
+    """Supporting evidence only: each post's engagement against its own channel's median, as before
+    Krish's 12 November ruling made subscribers the verdict. {post_id: result}, {channel: aggregate}."""
     now = instant(now)
     by_channel = {}
     for post in posts:
         by_channel.setdefault(post['channel'], []).append(post)
-    results, channels = [], {}
+    results, channels = {}, {}
     for cid in sorted(by_channel):
         rows = by_channel[cid]
         first = min(p['sent_at'] for p in rows)
@@ -84,7 +94,7 @@ def verdicts(posts, now):
 
         mature = [p for p in rows if indicator and indicator in (p['metrics'] or {}) and elapsed(p) >= window]
         new = now - first < dt.timedelta(days=NEW_CHANNEL_DAYS)
-        tally = dict.fromkeys(VERDICTS, 0)
+        tally_ = dict.fromkeys(VERDICTS, 0)
         for post in rows:
             value = (post['metrics'] or {}).get(indicator) if indicator else None
             if new:
@@ -97,13 +107,74 @@ def verdicts(posts, now):
                 history = [{'channel': cid, 'format': 'all', 'indicator': indicator, 'value': p['metrics'][indicator]}
                            for p in mature if p is not post]
                 result = judge(row, history, window, elapsed(post))
-            tally[result['verdict']] += 1
-            results.append({'post_id': post['post_id'], 'channel': cid, 'indicator': indicator, 'value': value,
-                            'verdict': result['verdict'], 'median': result.get('median'),
-                            'ratio': result.get('ratio'), 'reason': result.get('reason')})
+            tally_[result['verdict']] += 1
+            results[post['post_id']] = {'indicator': indicator, 'value': value, 'verdict': result['verdict'],
+                                        'median': result.get('median'), 'ratio': result.get('ratio'),
+                                        'reason': result.get('reason')}
         channels[cid] = {'posts': len(rows), 'indicator': indicator, 'window_hours': window, 'new': new,
                          'median': _median([p['metrics'][indicator] for p in mature]), 'mature': len(mature),
-                         'verdicts': tally}
+                         'verdicts': tally_}
+    return results, channels
+
+
+def subscriber_verdicts(posts, now, block, config):
+    """Each post's verdict by the subscribers it brought (Ruling, Krish, 2026-11-12): GA4 sign-ups on its own
+    utm_content over its first seven New York days, from Control Center's web_analytics block. A post with no
+    tracked link, a link another post shares, an unverified event name or days nobody read is insufficient,
+    with why. {post_id: result}."""
+    now = instant(now)
+    config = load_config() if config is None else config
+    windows, owners = {}, {}
+    for post in posts:
+        start = ny_time(post['sent_at']).date()
+        end = start + dt.timedelta(days=6)
+        part = post_window(block, post['words'], config, start.isoformat(), end.isoformat())
+        windows[post['post_id']] = (start, end, part)
+        for content in part['utm_content']:
+            owners.setdefault(content, []).append(post['post_id'])
+    out = {}
+    for post in posts:
+        start, end, part = windows[post['post_id']]
+        shared = sorted(c for c in part['utm_content'] if len(owners[c]) > 1)
+        elapsed = max(0.0, (now - post['sent_at']).total_seconds() / 3600)
+        if shared:
+            code = 'shared_link'
+            result = judge_subscribers(None, None, elapsed, reason='its utm_content is shared with another post')
+        elif part['sign_ups']['value'] is None:
+            code = ('no_tracked_link' if not part['utm_content'] else 'ga4_unread' if part['reason']
+                    else 'event_unverified')
+            result = judge_subscribers(None, None, elapsed, reason=part['reason'] or part['sign_ups']['reason'])
+        else:
+            covered, why = days_covered(block, start.isoformat(), end.isoformat())
+            result = judge_subscribers(part['sign_ups']['value'], part['sessions'], elapsed, covered, why)
+            code = (None if result['verdict'] != 'insufficient'
+                    else 'not_seven_days' if elapsed < SUBSCRIBER_WINDOW_HOURS
+                    else 'days_not_read' if not covered else 'too_few_visits')
+        result['code'] = code
+        result['utm_content'] = part['utm_content']
+        out[post['post_id']] = result
+    return out
+
+
+def verdicts(posts, now, block=None, config=None):
+    """One verdict per post by subscribers, with its engagement beside it; channels with their aggregates.
+
+    The verdict is the subscriber one (subscriber_verdicts); the channel's own engagement median stays only
+    as supporting evidence (`engagement`, engagement_verdicts)."""
+    by_subscribers = subscriber_verdicts(posts, now, block, config)
+    by_engagement, channels = engagement_verdicts(posts, now)
+    results = []
+    for cid in sorted(channels):
+        tally_ = dict.fromkeys(VERDICTS, 0)
+        for post in (p for p in posts if p['channel'] == cid):
+            mine = by_subscribers[post['post_id']]
+            tally_[mine['verdict']] += 1
+            results.append({'post_id': post['post_id'], 'channel': cid, 'sent_at': post['sent_at'],
+                            'verdict': mine['verdict'], 'basis': 'subscribers', 'sign_ups': mine['sign_ups'],
+                            'sessions': mine['sessions'], 'reason': mine['reason'], 'code': mine['code'],
+                            'utm_content': mine['utm_content'], 'engagement': by_engagement[post['post_id']]})
+        channels[cid]['engagement_verdicts'] = channels[cid]['verdicts']
+        channels[cid]['verdicts'] = tally_
     return results, channels
 
 
@@ -230,7 +301,7 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
         work_error = 'buffer_read_failed'
     for item in posts_read.get('held', []):
         holds.append({'reason': 'Buffer channel not pinned', 'detail': item['channel'] + ': ' + item['reason']})
-    results, channels = verdicts(posts, now)
+    results, channels = verdicts(posts, now, block, config)
     counts = tally(results)
     if 'listed' in posts_read:
         activity.append({'line': 'Read ' + str(len(posts)) + ' sent posts from Buffer on ' + str(len(channels)) + ' of '
@@ -241,14 +312,28 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
         if quiet:
             activity.append({'line': 'No sent posts seen on: ' + ', '.join(quiet)})
     for cid, info in sorted(channels.items()):
-        activity.append({'line': cid + ': ' + count(info['posts'], 'post') + ', judged on ' + str(info['indicator'] or 'no metric')
+        activity.append({'line': cid + ': ' + count(info['posts'], 'post') + '; by subscribers '
+                         + ', '.join(k + ' ' + str(v) for k, v in info['verdicts'].items())
+                         + '; engagement, supporting only, on ' + str(info['indicator'] or 'no metric')
                          + ' at ' + str(info['window_hours']) + ' hours, channel median '
                          + ('not available' if info['median'] is None else str(info['median'])) + ' over '
                          + count(info['mature'], 'settled post') + ('; baseline, new channel' if info['new'] else '')
-                         + '; ' + ', '.join(k + ' ' + str(v) for k, v in info['verdicts'].items())})
-    activity.append({'line': 'Verdicts against each post\'s own channel median: '
-                     + ', '.join(k + ' ' + str(v) for k, v in counts.items())
+                         + '; ' + ', '.join(k + ' ' + str(v) for k, v in info['engagement_verdicts'].items())})
+    activity.append({'line': 'Verdicts by subscribers (GA4 sign-ups on each post\'s own utm_content over its first 7 '
+                     'days; Ruling, Krish, 2026-11-12): ' + ', '.join(k + ' ' + str(v) for k, v in counts.items())
                      + '. Association, not cause; bands are proposed defaults for Krish at G-A'})
+    why = {}
+    for item in results:
+        if item['code']:
+            why[item['code']] = why.get(item['code'], 0) + 1
+    if why:
+        activity.append({'line': 'Insufficient by subscribers because: '
+                         + ', '.join(INSUFFICIENT[k] + ' ' + str(why[k]) for k in INSUFFICIENT if k in why)})
+    engaged = dict.fromkeys(VERDICTS, 0)
+    for item in results:
+        engaged[item['engagement']['verdict']] += 1
+    activity.append({'line': 'Engagement against each post\'s own channel median, supporting evidence only: '
+                     + ', '.join(k + ' ' + str(v) for k, v in engaged.items())})
     activity += [{'line': line} for line in share_part(posts)[0]]
     lines, hold, joined = ga4_part(block, posts, config)
     activity += [{'line': line} for line in lines]
