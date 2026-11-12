@@ -153,7 +153,9 @@ class LanesTests(unittest.TestCase):
         config = json.loads((ROOT / 'automations.json').read_text(encoding='utf-8'))['automations']
         mapped = {e['name']: e for e in self.lanes['automations']}
         for entry in config:
-            self.assertEqual(mapped[entry['name']]['status'], 'kept-until-W46')
+            # Only the weekly Substack read stands: it needs his signed-in browser, so no L0 job takes it over.
+            wanted = 'standing' if entry['job'] == 'jobs/subscribers.md' else 'kept-until-W46'
+            self.assertEqual(mapped[entry['name']]['status'], wanted, entry['name'])
             self.assertIn(entry['job'], mapped[entry['name']]['jobs'])
         self.assertEqual(tuple(self.lanes['lanes']), ('L0_code', 'L2_eyes', 'L3_hands'))
         self.assertTrue(all(lane['model'] is False for lane in self.lanes['lanes'].values()))
@@ -254,6 +256,9 @@ class LanesTests(unittest.TestCase):
                                                               'model': True}), 'lanes are'),
                    (lambda d: d['automations'][0].update(lane='L1_judgement'), 'needs exactly'),
                    (lambda d: d['automations'][0].update(status='retired'), 'kept-until-W46'),
+                   (lambda d: d['automations'][0].update(status='standing', successor='measure'), 'no successor'),
+                   (lambda d: next(a for a in d['automations'] if a['source'] == 'engine-session').update(
+                       status='standing'), 'on-request'),
                    (lambda d: d.update(extra=1), 'needs exactly'))
         with tempfile.TemporaryDirectory() as folder:
             for change, message in changes:

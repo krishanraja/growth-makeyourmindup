@@ -163,8 +163,11 @@ class VerdictRuleTests(unittest.TestCase):
 class MeasureJobTests(unittest.TestCase):
     def workspace(self, folder, block=True, verified=True):
         (Path(folder) / 'invariants').mkdir()
-        shutil.copy((FIX / 'config-verified.json') if verified else (ROOT / 'invariants' / 'ga4.json'),
-                    Path(folder) / 'invariants' / 'ga4.json')
+        config = read_json(FIX / 'config-verified.json')
+        if not verified:
+            config['events'] = {k: {'name': None, 'verified': False} for k in config['events']}
+            config['verified_at'] = config['verified_from'] = None
+        write_json(Path(folder) / 'invariants' / 'ga4.json', config)
         if block:
             write_json(Path(folder) / '.scratch/cc/web-analytics.json', read_json(FIX / 'directive-block.json'))
 

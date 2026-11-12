@@ -13,5 +13,6 @@
     }
   },
   "verified_at": "2026-10-27",
+  "verified_from": "Synthetic test fixture: no live report was read",
   "note": "Synthetic test fixture: invented event names marked verified to exercise the join"
 }

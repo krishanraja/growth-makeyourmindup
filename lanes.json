@@ -355,6 +355,15 @@
       "successor": null
     },
     {
+      "name": "Growth: subscribers",
+      "source": "automations.json",
+      "jobs": [
+        "jobs/subscribers.md"
+      ],
+      "status": "standing",
+      "successor": null
+    },
+    {
       "name": "Growth: day pack",
       "source": "automations.json",
       "jobs": [

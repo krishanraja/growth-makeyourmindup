@@ -61,7 +61,8 @@ TEXT_KEYS = ROW_KEYS[1:7]
 COUNT_KEYS = ROW_KEYS[7:]
 CAPTURE_KEYS = {'kind', 'measurement_id', 'property_id', 'captured_at', 'date_range', 'rows'}
 EVENT_KEYS = ('sign_up', 'paid_subscription')
-CONFIG_KEYS = {'measurement_id', 'property_id_env', 'credentials_env', 'events', 'verified_at', 'note'}
+CONFIG_KEYS = {'measurement_id', 'property_id_env', 'credentials_env', 'events', 'verified_at', 'verified_from',
+               'note'}
 OWN_HOST = 'home.makeyourmindup.ai'
 UTMS = ('utm_source', 'utm_medium', 'utm_campaign', 'utm_content')
 MAX_DAYS = 90
@@ -141,8 +142,11 @@ def load_config(root=ROOT, path=None):
     verified = any(events[k]['verified'] for k in EVENT_KEYS)
     if verified != (data['verified_at'] is not None):
         raise ValueError('ga4.json verified_at is the date a verified name was read, and null before')
+    if (data['verified_at'] is None) != (data['verified_from'] is None):
+        raise ValueError('ga4.json verified_from says where a verified name was read, and is null before')
     if data['verified_at'] is not None:
         calendar_date(data['verified_at'])
+        plain(data['verified_from'], 'ga4.json verified_from')
     return data
 
 

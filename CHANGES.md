@@ -1,5 +1,15 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: The engine reads subscribers every week. His words: "send 3 and 4 to [this session] and then
+  once done, you merge to main" (Fix 4 of the subscriber audit). Ruling (Krish, 2026-11-12): the engine
+  reads subscribers every week and judges posts by subscribers, not engagement. A tenth PC automation,
+  "Growth: subscribers" (Mondays 06:15 New York, `jobs/subscribers.md`), reads last week's Substack
+  subscribers in his signed-in browser (total, new by source, and per post and per Note where Substack shows
+  it) and records the week's North Star reading through `growth.py run subscribers ingest`; a read that
+  cannot be taken is recorded as unknown with its reason. It stands past W46, because Substack has no
+  public API. GA4's `sign_up` event name is verified from Control Center's live Events report and recorded in
+  `invariants/ga4.json` with where and when; the paid name stays open. Nothing posted, sent or spent, and no
+  Substack setting is changed.
 - 2026-11-11: Krish instructs the engine from Control Centre, and its state shows there live. His words:
   "Ensure the priorities, obsessions, and next steps for all the growth engines are feeding live to this
   dashboard, and not just in the growth tab. They are responsible for driving the overall success of each

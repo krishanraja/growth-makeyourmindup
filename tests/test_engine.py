@@ -597,12 +597,16 @@ class RuntimeTests(unittest.TestCase):
                 clock.side_effect = lambda value=None: instant(value or NOW)
                 self.assertEqual(growth.main(['post', envelope]), 0)
 
-    def test_nine_automations_one_per_job_file(self):
+    def test_ten_automations_one_per_job_file(self):
         config = read_json(ROOT / 'automations.json')
         self.assertEqual(config['timezone'], 'America/New_York')
-        self.assertEqual(len(config['automations']), 9)
+        self.assertEqual(len(config['automations']), 10)
         # Conversion runs the weekly audit. Daily browser work has its own
-        # Codex heartbeat, not an extra entry in this nine-job configuration.
+        # Codex heartbeat, not an extra entry in this ten-job configuration.
+        # The tenth, the weekly Substack read, is Mondays after the week ends (Krish, 2026-11-12).
+        subscribers = next(r for r in config['automations'] if r['job'] == 'jobs/subscribers.md')
+        self.assertEqual(subscribers['schedule'], 'RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=6;BYMINUTE=15')
+        self.assertNotIn('timezone', subscribers)
         self.assertEqual({r['job'] for r in config['automations']},
                          {'jobs/' + p.name for p in (ROOT / 'jobs').glob('*.md')
                           if p.name not in ('channel-audit.md', 'daily-growth.md', 'acquisition.md',

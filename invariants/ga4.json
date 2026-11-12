@@ -4,14 +4,15 @@
   "credentials_env": "GA4_SERVICE_ACCOUNT_JSON",
   "events": {
     "sign_up": {
-      "name": null,
-      "verified": false
+      "name": "sign_up",
+      "verified": true
     },
     "paid_subscription": {
       "name": null,
       "verified": false
     }
   },
-  "verified_at": null,
-  "note": "Event names are confirmed from the live GA4 Events report, never guessed"
+  "verified_at": "2026-11-12",
+  "verified_from": "The live GA4 Events report for this property (eventName and isKeyEvent, the 28 days through 2026-11-10, host filter on), run by Control Center's daily GA4 read (api/growth/web-insights.ts, 2026-11-11 13:20 UTC) with its own service account and stored in web_property_insights.checks.events for property mymu; read 2026-11-12 through the Supabase connector. sign_up is present and is not marked a key event, so a join counts the sessions it fired in. Substack's help page says it sends sign up events to GA4 (support.substack.com article 15955098199444).",
+  "note": "Event names are confirmed from the live GA4 Events report, never guessed. paid_subscription stays unverified: the same report shows purchase, marked a key event, but neither the report nor Substack's help page names the event Substack sends for a paid subscription, so it is not recorded yet"
 }

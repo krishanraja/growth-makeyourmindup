@@ -68,8 +68,11 @@ source, medium, campaign and `utm_content`, joined per post on `utm_content`
 
 1. `python growth.py run ga4 events --days 28 --live` lists the event names
    GA4 sees; record the confirmed sign-up and paid names in
-   `invariants/ga4.json`. A report or join that relies on an unverified event
-   name is refused; record those rows as missing with that refusal as reason.
+   `invariants/ga4.json`, with where and when they were read
+   (`verified_at`, `verified_from`). A report or join that relies on an
+   unverified event name is refused; record those rows as missing with that
+   refusal as reason. Since 12 November 2026 `sign_up` is verified (from
+   Control Center's live GA4 Events report); the paid name is still open.
 2. `python growth.py run ga4 report --start YYYY-MM-DD --end YYYY-MM-DD --live`
    writes a new reading under `.scratch/ga4/` (or `--out FILE`).
 3. `python growth.py run ga4 join CAPTURE SPEC` joins that reading per post.
@@ -85,3 +88,12 @@ reading and logs the gap. `python growth.py run northstar --capture FILE`
 computes the NOW.md North Star line from a settled Growth-sources capture
 instead of a hand-written one. It only prints the line and the diff; NOW.md
 and `lists/northstar-history.jsonl` change only with `--write`.
+
+## 12 November 2026: the weekly read
+
+Ruling (Krish, 2026-11-12): the engine reads subscribers every week and
+judges posts by subscribers, not engagement. This daily job still reads this
+week's progress. The whole week, once it has ended, is read on Monday by
+`jobs/subscribers.md` (the automation "Growth: subscribers"), which records
+the week's North Star reading in `NOW.md` and `lists/northstar-history.jsonl`
+through `python growth.py run subscribers ingest`.

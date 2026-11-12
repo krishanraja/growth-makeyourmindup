@@ -478,7 +478,7 @@
       "source": "AGENTS.md \"Open setup\"",
       "guard": "automations.json checked by growth.py doctor; scheduling it stays open",
       "tests": [
-        "test_nine_automations_one_per_job_file"
+        "test_ten_automations_one_per_job_file"
       ],
       "status": "tested"
     },
