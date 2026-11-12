@@ -66,9 +66,10 @@ an `instruction_ack` when the session acted on his instruction.
 [docs/LANES.md](docs/LANES.md) says, in plain words, what runs on its own
 (L0 GitHub Actions), what waits for one press in Control Center (L2) and
 what waits for Krish's hands (L3: LinkedIn, the Buffer plan, one-time set-up
-in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs nine
+in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs ten
 workflows: control-center, release, measure, keys, handoff, check, artdirect,
-maker ([docs/MAKER.md](docs/MAKER.md)) and ledger. There
+maker ([docs/MAKER.md](docs/MAKER.md)), ledger and learn
+([docs/MIX.md](docs/MIX.md), "Learning"). There
 are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct
 2026): a new schedule is a GitHub Actions job. His one exception that day is
 the daily credits session in `lanes.json` (`claude_sessions`,

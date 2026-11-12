@@ -242,6 +242,20 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(re.findall(r'^\s+(\w+): (?:read|write)$', text, re.M), ['contents'])
 
 
+    def test_learn_runs_on_sunday_before_the_plan_and_commits_only_its_learn_file(self):
+        # Ruling (Krish, 2026-11-12): judge posts by subscribers; the verdicts change next week's plan.
+        text = self.read('learn.yml')
+        for needle in ("cron: '30 10 * * 0'", 'workflow_dispatch', 'contents: write', 'group: learn',
+                       'python growth.py run learn', 'python growth.py mix learn --verdicts',
+                       'git add lists/mix-learn', 'git push -q origin HEAD:main'):
+            self.assertIn(needle, text)
+        self.assertEqual(self.secrets('learn.yml'), {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY'})
+        self.assertLess(text.index('python growth.py run learn'), text.index('python growth.py mix learn'))
+        self.assertEqual(re.findall(r'^\s+(\w+): (?:read|write)$', text, re.M), ['contents'])
+        for banned in ('upload-artifact', 'set -x', 'git add -A', 'git add .', '--force', 'claude'):
+            self.assertNotIn(banned, text)
+
+
 class MeterTests(unittest.TestCase):
     def test_one_counter_sees_every_urllib_call(self):
         class Fake(urllib.request.BaseHandler):

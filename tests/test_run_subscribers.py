@@ -158,6 +158,8 @@ class IngestTests(unittest.TestCase):
             self.assertEqual(kept[-1]['total_subscribers']['value'], 321)
             self.assertEqual(kept[-1]['items'], {'recorded': 3, 'with_a_new_subscriber': 1, 'with_none': 1,
                                                  'not_shown': 1})
+            # Substack's own per-item numbers are judged by subscribers too: a zero with no visit count is no fail.
+            self.assertEqual(kept[-1]['items_by_subscribers'], {'works': 1, 'neutral': 0, 'fails': 0, 'insufficient': 2})
             self.assertNotIn('321', (base / 'lists' / 'northstar-history.jsonl').read_text())
 
     def test_unapproved_classification_is_not_counted_and_says_why(self):

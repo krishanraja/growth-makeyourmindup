@@ -294,6 +294,28 @@ non-null scalar must match a structured observation. Omit rolling
 local; the legacy pack contains only the old fields plus human-readable
 context. Do not imply those notes are queryable structured analytics in CC.
 
+### Judged by subscribers (Ruling, Krish, 2026-11-12)
+
+"The engine reads subscribers every week and judges posts by subscribers, not
+engagement." Each sent post's verdict in the measure job (`growth.py run
+measure auto`, `engine/run/measure_auto.py` `subscriber_verdicts`) is the
+sign-ups its own tracked link brought over its first seven New York days: the
+GA4 `sign_up` rows (verified in `invariants/ga4.json`; not a key event, so the
+sessions it fired in) on the post's `utm_content`, from Control Center's
+`web_analytics` block, only on those seven days (`ga4.post_window`). The rule
+is `engine/run/measure.py` `judge_subscribers`: one sign-up works; none fails
+only when the link brought at least `FAILS_AT_SESSIONS` (30) visits in those
+days; anything else is insufficient, with its reason code: no tracked own
+link, a link another post shares, GA4 rows not read, the sign-up event name
+not verified, seven days not passed, a day with no GA4 capture (the block's
+`coverage.dates`), or no sign-up on too few visits. The bands are proposed
+defaults for Krish at G-A. Association, not cause. Each post's engagement
+against its own channel's median (`engagement_verdicts`, the old verdict) stays
+beside it as supporting evidence only. Substack's own per-post and per-Note
+numbers, where the weekly read (`jobs/subscribers.md`) finds them, are judged
+by the same rule. The weekly learn (`docs/MIX.md`, "Learning") turns these
+verdicts into next week's mix.
+
 ## Relationships and experiments
 
 Maintain a UTF-8 JSON event array in ignored scratch state, with event_id,
