@@ -96,7 +96,8 @@ import sys
 import tempfile
 import time
 
-from engine import backlog, catalog, concepts as concept_rules, mix as mix_rules, voice as voice_check
+from engine import (backlog, catalog, concepts as concept_rules, engine_state, intensity, mix as mix_rules,
+                    voice as voice_check)
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.cc_loop import decisions_paged, revision
 from engine.control_center import SLUG, ProtocolError, build_report, proposal
@@ -578,10 +579,27 @@ def _long_day(day):
     return mix_rules.DAYS[day.weekday()] + ' ' + str(day.day) + ' ' + MONTHS[day.month - 1] + ' ' + str(day.year)
 
 
-def standing_report(day, monday, why, drafts, now, root):
+def report_state(work):
+    """The engine's 1.20.0 state (engine/engine_state.py) for a live report this run posts, or None. Control Center
+    shows the newest live report's priorities, obsessions and next steps on every place, so a maker report without
+    them would blank the engine's state there until the next runner or measure report. Read once a run, from the
+    directive pulled now; nothing when it is not served or cannot be read (the report then goes as before)."""
+    if not work.state_read:
+        work.state_read = True
+        try:
+            directive = work.cc.directive()
+        except ProtocolError:
+            return None
+        work.state_fields = engine_state.fields(work.root, intensity.state(work.root, work.now, directive),
+                                                directive) or None
+    return work.state_fields
+
+
+def standing_report(day, monday, why, drafts, now, root, state=None):
     """One New York day's standing-plan drafts, kept in Control Center as one live report: each draft's words in a
     plain line marked as a draft, its piece as the line's link, and the whole in a record. No proposal: nothing on
-    his list, and no address release reads (cc_records)."""
+    his list, and no address release reads (cc_records). state: report_state's fields, so the engine's state rides
+    on this report too."""
     label = autorelease._week_label(monday)
     lines = [{'line': 'Drafted from the standing plan (specs/standing-plan.json): no approved mix for ' + label + ' ('
               + why + '). These are drafts only: nothing is saved in Buffer, scheduled or posted, and release never'
@@ -592,12 +610,12 @@ def standing_report(day, monday, why, drafts, now, root):
     record = {'schema': STANDING_SCHEMA, 'day': day.isoformat(), 'week_of': monday, 'why': why,
               'drafts': [{k: d[k] for k in ('channel', 'format', 'piece_url', 'words', 'title', 'share')} for d in drafts]}
     return build_report(standing_run_id(day), 'live', now, revision(root), now, 'ready', cc_records.objectives(),
-                        lines + cc_records.record_lines(STANDING_SCHEMA, record))
+                        lines + cc_records.record_lines(STANDING_SCHEMA, record), state=state)
 
 
-def ask_report(monday, why, now, root):
+def ask_report(monday, why, now, root, state=None):
     """The week's one ask on his list: a strategy proposal saying the mix is not approved and what the maker is doing
-    instead. It expires when the week ends."""
+    instead. It expires when the week ends. state: report_state's fields, as on standing_report."""
     label = autorelease._week_label(monday)
     first = dt.date.fromisoformat(monday)
     ends = ny_midnight(first + dt.timedelta(days=7))
@@ -621,7 +639,7 @@ def ask_report(monday, why, now, root):
     return build_report(ask_run_id(label), 'live', now, revision(root), now, 'held', cc_records.objectives(),
                         [{'line': 'Drafted from the standing plan: no approved mix for ' + label + ' (' + why + ')'},
                          {'line': 'Posted, sent, published and spent nothing'}], [item], [],
-                        [{'reason': 'week_mix_not_approved', 'detail': label + ': ' + why}])
+                        [{'reason': 'week_mix_not_approved', 'detail': label + ': ' + why}], state=state)
 
 
 class Maker:
@@ -641,6 +659,8 @@ class Maker:
         # skipped because nothing of them can be made in this run.
         self.standing_doc, self.feed, self.rows = None, catalog.pieces, None
         self.drafted_from, self.standing, self.skipped = {}, {}, {}
+        # The engine's 1.20.0 state for the live reports this run posts (report_state): read once, on first need.
+        self.state_read, self.state_fields = False, None
 
     def out_of_time(self):
         return self.deadline is not None and self.clock() >= self.deadline
@@ -874,7 +894,8 @@ def standing_week(work, monday, days, why, voices):
         if not work.deliver:
             count('would_draft', len(drafts))
             continue
-        posted = work.cc.post_report(standing_report(day, monday, why, drafts, work.now, work.root))
+        posted = work.cc.post_report(standing_report(day, monday, why, drafts, work.now, work.root,
+                                                     report_state(work)))
         if posted['accepted']:
             count('drafted', len(drafts))
         else:
@@ -893,7 +914,7 @@ def raise_ask(work, monday, why):
         return 'ask_unreadable'  # never raised twice: a record that cannot be read counts as raised
     if not work.deliver:
         return 'would_raise'
-    posted = work.cc.post_report(ask_report(monday, why, work.now, work.root))
+    posted = work.cc.post_report(ask_report(monday, why, work.now, work.root, report_state(work)))
     return 'raised' if posted['accepted'] else 'already_raised'
 
 

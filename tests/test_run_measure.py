@@ -261,6 +261,11 @@ class NorthStarTests(unittest.TestCase):
                                '0 of 25 new publication subscribers this week from organic posts and shares, '
                                'read on 27 October 2026.')
         self.assertIn('not measured yet', state_line('2026-10-26', 1312, None, None, None, 4, 'not measured yet'))
+        # A whole week, read once it has ended, is that week's, never "this week".
+        whole = state_line('2026-11-02', 86, 1, '2026-11-08', 'synthetic source', 5, '1 of 86; under two fifths')
+        self.assertTrue(whole.endswith('**North Star number: U5, stalled.** 1 of 86 new publication subscribers in the '
+                                       'week of 2 November 2026 from organic posts and shares, the whole week to '
+                                       '8 November 2026.'), whole)
         for reason, sentence in (('0 of 25; under 40%', None), ('fine', 'A ' + chr(0x2014) + ' dash.'), ('ten per cent', None)):
             with self.assertRaises(ValueError):
                 state_line('2026-10-26', 25, 0, '2026-10-27', 'synthetic', 4, reason, sentence)

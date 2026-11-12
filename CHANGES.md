@@ -1,5 +1,10 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: Every live report the maker sends carries the engine's state. His words: "make sure everything's a
+  cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading
+  left in there". Control Center shows the newest live report's priorities, obsessions and next steps on every place,
+  and the W46 ask (sent at 13:00 UTC) went without them; the standing-plan and ask reports now pull the directive
+  once a run and carry the state when it is served (`report_state`, engine/run/maker.py).
 - 2026-11-12: Every profile link points to the tagged subscribe page. His words: "Happy with your recommendations and yes go for the profile links as well."
   `jobs/channel-audit.md` lists the exact link per account (Instagram, TikTok, X, Threads, Facebook,
   YouTube), saved by the weekly browser audit under its existing alignment authority and verified by
