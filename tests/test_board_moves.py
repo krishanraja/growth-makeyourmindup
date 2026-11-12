@@ -119,6 +119,25 @@ class ItsOwnPostsGoBackToTheBoard(unittest.TestCase):
             {'state': 'made', 'option': 'off-thu-meme-a', 'buffer_post_id': 'p3'}]},
             'a draft is made, an errored post is not reported, and what he never approved is not his item')
 
+    def test_a_pieces_scheduled_posts_go_back_as_the_pieces_own(self):
+        """Fri 13 Nov was scheduled while the board said "Ready to post: Growth posts it on the day" (Ruling, Krish,
+        2026-11-12: the board shows exactly where everything is): a post of this engine's own that Buffer has scheduled
+        on a day with a piece goes back as that piece's entry, with its time, and nothing for a post sent or unscheduled."""
+        piece = '11111111-2222-4333-8444-555555555555'
+        listed = {WEEK: {'offdays': [], 'days': [{'day': 'fri', 'date': '2026-11-20', 'piece_id': piece, 'channels': ['substack-notes']}]}}
+        pieces = board_tick.piece_days(listed)
+        self.assertEqual(pieces, {'2026-11-20': (WEEK, 'fri', piece)})
+        entries = [{'concept_id': 'fri-note', 'channel': 'substack-notes', 'due_at': '2026-11-20T17:40:00Z', 'buffer_draft_id': 'n1'},
+                   {'concept_id': 'fri-x', 'channel': 'x', 'due_at': '2026-11-20T17:40:00Z', 'buffer_draft_id': 'n2'},
+                   {'concept_id': 'sat-x', 'channel': 'x', 'due_at': '2026-11-21T17:40:00Z', 'buffer_draft_id': 'n3'},
+                   {'concept_id': 'fri-ig', 'channel': 'instagram', 'due_at': '2026-11-20T17:40:00Z', 'buffer_draft_id': 'n4'}]
+        status = {'n1': ('scheduled', '2026-11-20T17:40:00.000Z'), 'n2': ('draft', None), 'n3': ('scheduled', '2026-11-21T17:40:00Z'), 'n4': ('scheduled', None)}
+        sent = {'n4': {'post_id': 'n4'}}
+        rows = board_tick.post_rows(entries, {}, status.get, sent, pieces=pieces)
+        self.assertEqual(rows, {WEEK: [{'piece_id': piece, 'day': 'fri', 'state': 'scheduled', 'channel': 'substack-notes',
+                                       'due_at': '2026-11-20T17:40:00Z', 'buffer_post_id': 'n1'}]},
+                         'scheduled only, on a day with a piece, under its box; a draft, a day with no piece and a post sent are not')
+
     def test_live_only_with_the_posts_own_link_on_its_channel(self):
         placed = {'meme-a': (WEEK, 'tue', 'off-tue-meme-a')}
         sent = {'p1': {'post_id': 'p1', 'channel': 'instagram', 'sent_at': '2026-11-17T17:34:00Z', 'external_link': 'https://elsewhere.example/x'}}
