@@ -19,10 +19,18 @@ never publishes it.
 First, before reading any source: `python growth.py cc start --job daily --deliver`.
 Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
 
+AEO-Engine is the one AI-answers specialist (Ruling, Krish, 2026-11-12):
+it asks the AI assistants, never this engine. The runner reads the
+publication's standing from the directive (`ai_answers`, `engine/ai_answers.py`)
+and asks AEO to track the real reader questions on file in
+`config/ai-answer-questions.json`.
+
 1. **Find the real question.** Read this week's public questions about
    makeyourmindup's pieces: Substack and YouTube comments, LinkedIn and X
-   replies, and, when one ran, the AEO-Engine result in Control Center
-   (the buyer questions makeyourmindup is missing from). Search Console
+   replies, and AEO-Engine's reading of the publication in the directive's
+   `ai_answers` (`misses_and_moves`: the questions another site is cited
+   first on, then AEO's moves). When you find a real reader question, add it
+   to `config/ai-answer-questions.json`, word for word, so AEO tracks it. Search Console
    queries count when Krish has shared a reading. Save the question as
    evidence: kind `source_thread` with its real `created_at` for a public
    comment, `dashboard` for an AEO or Search Console reading, `audit` for

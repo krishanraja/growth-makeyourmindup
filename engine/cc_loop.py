@@ -1421,6 +1421,9 @@ def cli(args, root, make_client, out=print, checks=None):
             lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web'])]
             # The share of each prepaid pool (1.16.0); the runner spends none of it (docs/CREDITS.md is how a session does).
             lines += credits_lines(credits_block(directive)) + [meter.cost_line('before this report')]
+            # AI answers are AEO-Engine's (protocol 1.22.0; Ruling, Krish, 2026-11-12): one line, and real reader questions to AEO.
+            from . import ai_answers
+            lines += ai_answers.sync(client, directive, root)
             # Krish's instruction (1.20.0): 'received' once, so an earlier report naming it counts.
             state, item = engine_state.instruction(directive)
             told = bool(state == 'open' and engine_state.served(directive) and engine_state.mentioned(client, item['id']))
