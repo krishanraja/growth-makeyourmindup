@@ -74,6 +74,17 @@ approved mix", below).
    `spec.review_reason`, the judge release uses. This review is
    maker-attested: the engine reviews its own words with a second, blind
    call. It is not an independent judge.
+6b. **Asks content-engine's 10/10 judges** (a carousel or a Short; Ruling, Krish,
+   2026-11-12: "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts.").
+   `engine/run/judges.py` sends the post's format, channel, claim, exact words and each
+   picture's sha256 to `POST https://content.krishraja.com/api/board/<Monday>/judge` on the
+   board key, before anything is saved (an adopted draft is judged before it is handed off).
+   A fail is never made: the slot holds loudly as `judges_failed`, the judges' reasons stay on
+   content-engine's record and in the ignored `.scratch/judges/<slot>.json` for the session
+   that rewrites it, and the public log carries the code only. No answer holds as
+   `judges_unavailable`; a format the judges cover is never made unjudged. A pass is bound to
+   the saved Buffer post (`op: bind`), and `growth.py run board tick` reports every sent post
+   (`op: live`), so content-engine's North Star reading counts each judged post that went live.
 7. **Saves the draft and hands it off at once.** The post is saved in
    Buffer as a draft (`saveToDraft: true`, no due time) and read back. If
    Buffer reads it back as anything but a draft with no due time, the whole

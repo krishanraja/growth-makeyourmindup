@@ -143,6 +143,11 @@ class Board:
         POST /api/board/<Monday>/offdays): each offered on its day; only his press approves or moves one."""
         return self._request('POST', '/api/board/' + monday + '/offdays', doc)
 
+    def judge(self, monday, body):
+        """content-engine's 10/10 judges on one derived post, or a bind or live report (POST .../judge; Ruling,
+        Krish, 2026-11-12: "Judge them; count passes."). engine/run/judges.py says what each carries."""
+        return self._request('POST', '/api/board/' + monday + '/judge', body)
+
     def posts(self, monday, posts):
         """This engine's own record of each of the week's off-day posts (POST .../offday-posts): made, scheduled with
         its time, live with its link. Never a post it did not post."""
@@ -496,7 +501,30 @@ def tick(board, client, now=None, deliver=False, root=None, accounts=None):
             summary['filed'] += 1
         else:
             summary['refused']['not_confirmed'] = summary['refused'].get('not_confirmed', 0) + 1
+    summary['judged_live'] = report_judged_live(board, posts, accounts)
     return summary
+
+
+def report_judged_live(board, posts, accounts=None):
+    """Every post Buffer shows sent with its native link, so content-engine marks live each one its 10/10 judges
+    passed and the maker bound (engine/run/judges.py; Ruling, Krish, 2026-11-12: "each one that passes and goes live
+    counts"). Content-engine ignores a post no judge passed. Returns the count it marked, or a code."""
+    from . import judges  # noqa: PLC0415  (judges imports BoardError from here)
+    by_week = {}
+    for post in posts:
+        url, sent = post.get('external_link'), post.get('sent_at')
+        if not post.get('post_id') or not sent or not native_host(post['channel'], url, (accounts or {}).get(post['channel'])):
+            continue
+        monday = monday_of(ny_time(sent).date()).isoformat()
+        by_week.setdefault(monday, []).append({'buffer_post_id': post['post_id'], 'url': url,
+                                               'at': instant(sent).isoformat().replace('+00:00', 'Z')})
+    marked = 0
+    for monday, rows_ in sorted(by_week.items()):
+        try:
+            marked += judges.report_live(board, monday, rows_)
+        except BoardError as error:
+            return error.code
+    return marked
 
 
 def main(argv=None, make_board=None, make_buffer=None, now=None, out=print):

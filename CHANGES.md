@@ -1,5 +1,11 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: Every carousel and Short goes through content-engine's 10/10 judges before it is made. His words:
+  "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." The maker asks the judges (POST /api/board/<Monday>/judge on
+  GROWTH_WRITEBACK_TOKEN, `engine/run/judges.py`) before a carousel or a Short is saved in Buffer or handed off; a
+  fail is never made and holds loudly as `judges_failed`, its reasons kept on content-engine's record and in the
+  ignored `.scratch/judges/`; a pass is bound to its Buffer post, and the board tick reports every sent post so
+  content-engine counts each judged post that went live on its North Star.
 - 2026-11-12: Every live report the maker sends carries the engine's state. His words: "make sure everything's a
   cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading
   left in there". Control Center shows the newest live report's priorities, obsessions and next steps on every place,

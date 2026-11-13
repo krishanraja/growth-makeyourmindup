@@ -218,7 +218,9 @@ its standards, and the lane applies them by reference.
 derived carousels to content-engine's standard ("take over posting as well
 as creating new assets like carousels") and owns the off-day lane (Tuesday,
 Thursday, Saturday and Sunday on Instagram, TikTok and YouTube Shorts).
-Go-live is "Approve each day Monday"; every route goes through Buffer,
+Go-live is "Approve each day Monday"; every carousel and Short first passes
+content-engine's 10/10 judges (Ruling, Krish, 2026-11-12: "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts."; `engine/run/judges.py`, `docs/MAKER.md` step 6b), and a
+fail comes back with the judges' reasons and is never made; every route goes through Buffer,
 pinned by channelId to this engine's eight channels, and every post passes
 content-engine's copy lint. Engagement is a daily 10-minute queue across X,
 TikTok, Instagram and LinkedIn, still prepared only. LinkedIn stays his click.

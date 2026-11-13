@@ -152,6 +152,13 @@ day in his personal voice, are scoped accounts by his ruling, not because
 Buffer connects them. The line above that a connected Buffer account alone
 never adds it to scope still holds for every other account.
 
+## 12 November 2026: every carousel through content-engine's judges
+
+Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." Content-engine owns the
+judges, as it owns the production standards; Growth asks them for every carousel and Short it makes, before the post
+is saved or handed off (`engine/run/judges.py`, `docs/MAKER.md` step 6b). A fail comes back with the judges' reasons
+and is never made; a pass is bound to its post and counts on content-engine's North Star once it goes live.
+
 ## 28 October 2026: derived carousels, the off-day lane and the engage queue
 
 Rulings: Krish, 28 October 2026 (`CHANGES.md`), from the plan he approved
