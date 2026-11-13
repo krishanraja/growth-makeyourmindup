@@ -520,6 +520,16 @@ two steps; in short:
    digest, reads Krish's decisions and journals the end. It must print
    "readback digest matches" and "attempt succeeded".
 
+**Nothing stale on his list** (Ruling, Krish, 2026-11-12: nothing on his
+list is stale; an engine withdraws its own asks once their week or window has
+passed). He sees one of this engine's asks at a time, so the GitHub runner
+takes back, through the protocol's `withdrawn[]` with a one-line reason, each
+of its own undecided asks whose week or window is over: a past week's mix
+plan parts and mix ask, the standing plan after its last week, an experiment
+after its `end` day. It never deletes a row or answers for him, and nothing
+new is asked about a week that has ended (`engine/stale_asks.py`;
+`docs/ENGINE.md`, "Nothing stale on his list").
+
 Use only the actual file names the job wrote. Without `--deliver` either
 step is a local dry run that writes `.scratch/cc/report-KIND.json` and calls
 nothing. A failure is reported as a failed attempt with a code; never retry a

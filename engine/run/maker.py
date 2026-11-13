@@ -97,7 +97,7 @@ import tempfile
 import time
 
 from engine import (backlog, catalog, concepts as concept_rules, engine_state, intensity, mix as mix_rules,
-                    voice as voice_check)
+                    stale_asks, voice as voice_check)
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.cc_loop import decisions_paged, revision
 from engine.control_center import SLUG, ProtocolError, build_report, proposal
@@ -568,7 +568,7 @@ def standing_run_id(day):
 
 
 def ask_run_id(week_label):
-    return SLUG + ':mixask:' + week_label
+    return stale_asks.mixask_id(week_label)
 
 
 MONTHS = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
@@ -929,8 +929,11 @@ def standing_week(work, monday, days, why, voices):
 
 def raise_ask(work, monday, why):
     """The week's one ask, "This week's mix isn't approved", on his list once per ISO week: raised only when its
-    address is still empty, so every other run that week says nothing. Returns what happened, as a code."""
+    address is still empty, so every other run that week says nothing, and never once the week is over (the
+    runner takes back one still waiting then: engine/stale_asks.py). Returns what happened, as a code."""
     label = autorelease._week_label(monday)
+    if stale_asks.week_over(monday, work.now):
+        return 'week_over'  # Nothing is asked about a week that is over (Ruling, Krish, 2026-11-12).
     try:
         if cc_records.read_report(work.cc, ask_run_id(label)) is not None:
             return 'already_raised'

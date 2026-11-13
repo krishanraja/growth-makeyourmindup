@@ -60,6 +60,9 @@ Four event types, each with a closed client_payload (unknown keys refused):
   cc_loop.plan_proposals: one plan proposal behind strategy, or, when a week
   passes 8,000 characters, parts in order (`makeyourmindup:mix:<week>`, then
   `:p2`, ...), one ask at a time, each part's concepts in its own report.
+  Each part expires when its week ends, and a plan for a week that is already
+  over is refused whole (`week_over`, engine/stale_asks.py): nothing is asked
+  about a week he can no longer use.
   A version record (`makeyourmindup:mixplan:<week>:<n>`) names the parts in
   force. Each mock's first view link rides as the ask's evidence. Beside the
   parts, never inside them, the runner records the week's slots
@@ -100,7 +103,7 @@ from pathlib import Path
 import re
 import sys
 
-from engine import buffer_channels, concepts as concept_rules, mix as mix_rules
+from engine import buffer_channels, concepts as concept_rules, mix as mix_rules, stale_asks
 from engine.cc_loop import NO_SPEND, decisions_paged, plan_proposals, revision
 from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _plan_open, _stops,
                                    build_report, canonical_json, objective, proposal, sha256_hex)
@@ -1157,6 +1160,9 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             raise PayloadRejected('unknown_event')
         if event == MIX_PLAN:
             mix, links, cfg = validate_mix_plan(payload, root)
+            if stale_asks.week_over(mix['week_of'], now):
+                # Nothing is asked about a week that is over (Ruling, Krish, 2026-11-12; engine/stale_asks.py).
+                raise PayloadRejected('week_over')
             files, missing = validate_mock_files(payload.get('mock_files'), mix)
             records_only = payload.get('records_only', False)
             if not isinstance(records_only, bool):
