@@ -8,7 +8,9 @@
     "instagram",
     "linkedin",
     "tiktok",
-    "facebook"
+    "facebook",
+    "threads",
+    "x"
   ],
   "guide": "social/guides/formats.md",
   "min_assets": 2,

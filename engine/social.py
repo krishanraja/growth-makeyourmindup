@@ -35,10 +35,26 @@ FLOOD_TARGET, FLOOD_FLOOR = 4, 3
 NOTES_MAX = 4
 MAX_DAILY_POSTS = dict({'substack-notes': NOTES_MAX}, **{c: FLOOD_TARGET for c in FLOOD_CHANNELS})
 DEFAULT_MAX_DAILY_POSTS = 1
+# Vertical content goes to all five (Ruling, Krish, 2026-11-13: "saturdays post should be instagram, threads,
+# facebook, tiktok, X - all vertical content should be all those platforms"). A vertical post (a portrait
+# carousel, a 9:16 short or a meme) is placed on every one of these five; YouTube Shorts and Substack Notes stay
+# where the strategy already uses them. Every vertical format reaches all five (inventory below), and the run
+# spec warns when one post misses any (engine/run/spec.py, vertical_channels_missing). It moves no wall and no
+# daily cap; each channel's own route checks still run.
+VERTICAL_CHANNELS = ('instagram', 'threads', 'facebook', 'tiktok', 'x')
+VERTICAL_FORMATS = ('carousel', 'short-video', 'meme')
 # A capability held after a provider rejection (review of 5 Nov 2026, section 7) names when it was held,
 # what failed and the condition for reconsidering it.
 HELD = 'route_held_after_provider_rejection'
 HELD_FIELDS = ('held_since', 'failure', 'recheck_when')
+
+
+def vertical_missing(format_id, channels):
+    """The vertical channels a post in this format is not placed on, in VERTICAL_CHANNELS order; [] for any other format."""
+    if format_id not in VERTICAL_FORMATS:
+        return []
+    have = set(channels)
+    return [c for c in VERTICAL_CHANNELS if c not in have]
 
 
 def max_daily_posts(channel_id):
@@ -184,6 +200,12 @@ def inventory(root=ROOT):
         for name in obj['channels']:
             if name not in result['channel'] or obj['id'] not in result['channel'][name]['formats']:
                 raise ValueError('format/channel mismatch: ' + name)
+    for format_id in VERTICAL_FORMATS:
+        record = result['format'].get(format_id)
+        missing = vertical_missing(format_id, record['channels']) if record else list(VERTICAL_CHANNELS)
+        if missing:
+            raise ValueError('a vertical format goes to Instagram, Threads, Facebook, TikTok and X (Ruling, Krish,'
+                             ' 2026-11-13): ' + format_id + ' misses ' + ', '.join(missing))
     for obj in result['tool'].values():
         local_ref(root, obj['guide'])
         keys = set()

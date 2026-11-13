@@ -91,7 +91,7 @@ class Backlog(unittest.TestCase):
             self.assertTrue(record(path, ARTICLE + '?utm_source=x', 'x', 'text', 'https://x.com/i/1', NOW))
             self.assertFalse(record(path, ARTICLE, 'x', 'text', 'https://x.com/i/1', NOW), 'the same edition is not added twice')
             self.assertEqual(list(read_ledger(path, channel_matrix(ROOT))), [ARTICLE], 'tracking is stripped from the piece')
-            for channel, fmt, url in (('substack', 'article', 'https://x.com/i/2'), ('x', 'carousel', 'https://x.com/i/2'),
+            for channel, fmt, url in (('substack', 'article', 'https://x.com/i/2'), ('x', 'long-video', 'https://x.com/i/2'),
                                       ('x', 'text', 'http://x.com/i/2')):
                 with self.assertRaises(ValueError):
                     record(path, ARTICLE, channel, fmt, url, NOW)
