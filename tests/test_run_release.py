@@ -290,7 +290,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(evidence['status'], 'scheduled')
         self.assertIs(evidence['published'], False)
         self.assertIsNone(evidence['native_url'])
-        scheduled['externalLink'] = 'https://www.threads.com/@krishraja1/post/SYNTHETIC1'
+        scheduled['externalLink'] = 'https://www.threads.com/@makeyourmind.up/post/SYNTHETIC1'
         with self.assertRaisesRegex(ValueError, 'scheduled is never sent'):
             release.check_readback(slot, scheduled, 'live', ledger)
         live = release.check_readback(slot, load('readback-live')['threads-1'], 'live', ledger)
@@ -766,6 +766,13 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'therealkrisho.*never guess'):
             release.resolve_channel(slot, only_others)
         self.assertEqual(set(release.BUFFER_NAME), set(release.CHANNELS))
+
+    def test_threads_refuses_personal_connection_after_brand_routing_correction(self):
+        personal = {'id': release.BUFFER_CHANNEL_ID['threads'], 'service': 'threads',
+                    'name': 'krishraja1', 'isDisconnected': False, 'isLocked': False}
+        with self.assertRaisesRegex(ValueError, 'threads/makeyourmind.up.*never guess'):
+            release.resolve_channel({'channel': 'threads'}, [personal])
+        self.assertEqual(release.account_hold('threads', {'channel': personal}), 'wrong_account')
 
     def test_channel_ids_are_pinned_and_other_ventures_denied(self):
         # Read back with a read-only list_channels of "My organization" on 28 Oct 2026.

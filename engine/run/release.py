@@ -146,7 +146,9 @@ CHANNEL_PROFILE = {'substack-notes': 'substack-notes', 'threads': 'threads', 'x'
 # list_channels on 2026-10-27). The Buffer organisation is shared with other
 # ventures, so a service alone never identifies this engine's account; a renamed
 # or missing channel holds instead of guessing.
-BUFFER_NAME = {'substack-notes': 'Krish', 'threads': 'krishraja1', 'x': 'TheRealKrisho',
+# Krish, 13 Nov 2026: Threads always targets makeyourmind.up. The old
+# personal connection fails this name check until the branded channel is verified.
+BUFFER_NAME = {'substack-notes': 'Krish', 'threads': 'makeyourmind.up', 'x': 'TheRealKrisho',
                'instagram': 'makeyourmind.up', 'facebook': 'Makeyourmind/up', 'tiktok': 'therealkrisho',
                'youtube': 'makeyourmindup', 'linkedin': 'krish-raja'}
 # BUFFER_CHANNEL_ID and DENIED_CHANNELS live in engine/buffer_channels.py, the

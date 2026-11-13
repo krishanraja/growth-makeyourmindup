@@ -44,7 +44,7 @@ class NewChannelsTests(unittest.TestCase):
         # Krish, 27 Oct 2026 (CHANGES.md): Threads added, personal voice like X and TikTok.
         self.assertIn('threads', DELEGATED_PERSONAL)
         threads = inventory()['channel']['threads']
-        self.assertEqual(threads['account_url'], 'https://www.threads.com/@krishraja1')
+        self.assertEqual(threads['account_url'], 'https://www.threads.com/@makeyourmind.up')
         self.assertEqual(threads['account_context'], 'personal')
         self.assertEqual(threads['publication_mode'], 'approved_content_cadence')
         self.assertEqual(threads['daily_posts_target'], 1)

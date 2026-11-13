@@ -19,7 +19,7 @@ ACCOUNTS = {
     'linkedin': 'https://www.linkedin.com/in/krish-raja/',
     'substack': 'https://home.makeyourmindup.ai',
     'facebook': 'https://facebook.com/1364858250042525',
-    'threads': 'https://www.threads.com/@krishraja1',
+    'threads': 'https://www.threads.com/@makeyourmind.up',
 }
 # Krish, 26 Oct 2026: no edits to live LinkedIn posts or profile fields; this
 # also covers the older existing-field audit permission. LinkedIn is his own

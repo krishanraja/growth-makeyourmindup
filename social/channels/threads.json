@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "channel",
   "id": "threads",
-  "account_url": "https://www.threads.com/@krishraja1",
+  "account_url": "https://www.threads.com/@makeyourmind.up",
   "account_context": "personal",
   "mission": "Start a real conversation from one concrete finding in an approved piece, in Krish's own warm personal voice, with the link last.",
   "formats": [
@@ -20,7 +20,7 @@
     "Verify signed-in native ownership and intended account; connection alone does not grant scope.",
     "Read current queue, drafts and native identities; preserve existing human work.",
     "Verify the exact destination, visibility and available account capabilities before the selected action.",
-    "Confirm the Buffer Threads channel resolves to the personal krishraja1 profile before first use; record the native identity privately."
+    "Threads always targets @makeyourmind.up (Krish, 13 November 2026). Refuse the old personal account; verify the branded native identity and Buffer channel before first use."
   ],
   "lessons": [
     "revision-identity",

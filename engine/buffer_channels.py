@@ -12,6 +12,9 @@ ids. Offline only: no network, no credentials.
 # pinned by service, name and this id together; a new id under the same name
 # holds until a reviewed change updates this table. The Substack entry is
 # Krish's profile, which carries Notes (R81).
+# Threads pin is the historical connection, not verified for the new branded target.
+# Release also requires BUFFER_NAME: the personal connection cannot pass.
+# Replace this pin only after a live branded-channel readback.
 BUFFER_CHANNEL_ID = {'substack-notes': '6ae09edc2f1f5ed648e9e48c', 'threads': '6adccb77778b240e2fafbe75',
                      'x': '6adccbf5778b240e2fafc457', 'instagram': '6adccb3a778b240e2fafbb63',
                      'facebook': '6adccc1e778b240e2fafc615', 'tiktok': '6adccbdd778b240e2fafc32e',

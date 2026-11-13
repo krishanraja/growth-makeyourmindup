@@ -91,8 +91,8 @@ class PlatformsAuditTests(unittest.TestCase):
         # authority now covers Facebook and Threads, exactly as on the others.
         targets = {'facebook': ('https://www.facebook.com/1364858250042525/posts/synthetic',
                                 'https://facebook.com/1364858250042525/posts/synthetic'),
-                   'threads': ('https://www.threads.com/@krishraja1/post/synthetic',
-                               'https://www.threads.net/@krishraja1/post/synthetic')}
+                   'threads': ('https://www.threads.com/@makeyourmind.up/post/synthetic',
+                               'https://www.threads.net/@makeyourmind.up/post/synthetic')}
         self.assertEqual(HELD_FOR_KRISH, set())
         for channel, urls in targets.items():
             for target in urls:
@@ -109,8 +109,8 @@ class PlatformsAuditTests(unittest.TestCase):
     def test_www_hosts_match_their_account(self):
         fb = repair_plan(change('facebook', 'https://www.facebook.com/1364858250042525/posts/synthetic'), NOW)
         self.assertEqual(fb['disposition'], 'autonomous')
-        for channel, target in (('threads', 'https://threads.com/@krishraja1/post/synthetic'),
-                                ('threads', 'https://threads.net/@krishraja1/post/synthetic')):
+        for channel, target in (('threads', 'https://threads.com/@makeyourmind.up/post/synthetic'),
+                                ('threads', 'https://threads.net/@makeyourmind.up/post/synthetic')):
             self.assertEqual(repair_plan(change(channel, target), NOW)['disposition'], 'autonomous')
         self.assertEqual(repair_plan(change('linkedin', 'https://linkedin.com/posts/synthetic'), NOW)['disposition'],
                          'krish_only')
@@ -120,7 +120,7 @@ class PlatformsAuditTests(unittest.TestCase):
                                 ('facebook', 'https://www.facebook.com.example.com/posts/synthetic'),
                                 ('facebook', 'https://www.www.facebook.com/posts/synthetic'),
                                 ('facebook', 'https://notfacebook.com/posts/synthetic'),
-                                ('threads', 'https://www.threads.org/@krishraja1/post/synthetic'),
+                                ('threads', 'https://www.threads.org/@makeyourmind.up/post/synthetic'),
                                 ('instagram', 'https://www.facebook.com/1364858250042525/posts/synthetic'),
                                 ('youtube', 'https://youtube.com.example.com/watch?v=synthetic')):
             with self.assertRaisesRegex(ValueError, 'another platform'):
@@ -160,13 +160,13 @@ class PlatformsAuditTests(unittest.TestCase):
         # Krish, 27 Oct 2026: Threads joins, and "yes extend" brings it under
         # the 21 Oct existing-field audit authority.
         self.assertIn('threads', PLATFORMS)
-        self.assertEqual(ACCOUNTS['threads'], 'https://www.threads.com/@krishraja1')
+        self.assertEqual(ACCOUNTS['threads'], 'https://www.threads.com/@makeyourmind.up')
         self.assertEqual(channel_rows()['threads']['url'], ACCOUNTS['threads'])
         query = dict(parse_qsl(urlsplit(tracked(URL, 'threads', 'daily', '2026-10-27')).query))
         self.assertEqual(query['utm_source'], 'threads')
-        self.assertEqual(repair_plan(change('threads', 'https://www.threads.com/@krishraja1/post/synthetic'), NOW)
+        self.assertEqual(repair_plan(change('threads', 'https://www.threads.com/@makeyourmind.up/post/synthetic'), NOW)
                          ['disposition'], 'autonomous')
-        self.assertEqual(repair_plan(change('threads', 'https://www.threads.com/@krishraja1/post/synthetic',
+        self.assertEqual(repair_plan(change('threads', 'https://www.threads.com/@makeyourmind.up/post/synthetic',
                                             field='bio'), NOW)['disposition'], 'approval_required')
         self.assertEqual(repair_plan(profile_link('threads', ACCOUNTS['threads']), NOW)['disposition'], 'autonomous')
 

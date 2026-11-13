@@ -680,3 +680,14 @@
   V2 adds evidence records, asset and placement identity, late-publication
   recovery, honest metric windows, relationship events, experiments and a
   shared daily queue. Existing eight schedules remain unchanged.
+
+## 2026-11-13: Threads always targets the publication account
+
+Ruling (Krish, 2026-11-13): "all are done - threads should always post to makeyourmindup".
+Current Threads inventory, audit target and release identity now require
+`https://www.threads.com/@makeyourmind.up`. The personal account is no longer
+the destination. Historical plans and rulings remain as evidence; they do not
+override this destination. Existing voice and creative approvals are unchanged.
+Buffer must expose the branded account and its verified channel ID before release;
+the old personal connection fails the release name check. No connection change or
+publication was made by this correction.
