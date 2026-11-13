@@ -365,6 +365,9 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
                           'check BUFFER_API_KEY with growth.py run keys')
     elif posts or joined:
         row = outcome.row('advanced', str(len(posts)) + ' posts measured, ' + str(sum(counts.values())) + ' verdicts')
+    elif 'note' in posts_read:
+        row = outcome.row('blocked', 'buffer_not_read', 'ask queued: BUFFER_API_KEY in the measure workflow\'s '
+                          'secrets is Krish\'s to add; the GA4 part ran without it')
     else:
         row = outcome.row('nothing_to_do', 'no sent post on the pinned channels in ' + str(LOOKBACK_DAYS)
                           + ' days and no GA4 rows joined')
@@ -431,13 +434,14 @@ def main(argv=None, make_client=None, buffer=None, out=print, root=ROOT, environ
     outcome = run(cc, COMMAND, run_id(now), lambda d: work(d, True), now - dt.timedelta(days=7), clock)
     if outcome.get('report'):
         write_json(root / STATE_DIR / 'report-measure.json', outcome['report'])
-    clock_error = _post_source_clock(cc, seen.get('posts'), now, root, out) if outcome['status'] == 'succeeded' else None
+    if outcome['status'] == 'succeeded':
+        _post_source_clock(cc, seen.get('posts'), now, root, out)  # logged; the next run retries, never fails this one
     if 'counts' in seen:
         out(_counts_line(seen['counts']))
     for line in summary(outcome, public=True):
         out(line)
     out(meter.cost_line('in all'))
-    return int(outcome['status'] != 'succeeded' or bool(clock_error))
+    return int(outcome['status'] != 'succeeded')
 
 
 def _post_source_clock(cc, posts, now, root, out):

@@ -69,21 +69,47 @@ class RouteTests(unittest.TestCase):
 
 
 class GoLivePathTests(unittest.TestCase):
-    """The engine's own release path holds a line with no route, as the Buffer hook holds a hand-made call."""
+    """The engine's own release path holds a routeless draft before it is scheduled, as the Buffer hook holds a
+    hand-made call, and never re-judges a post already scheduled or sent."""
 
-    def test_autorelease_slot_holds_a_routeless_line(self):
+    def run_slot(self, status, matches=True):
         from engine.run import autorelease
         run = autorelease.Run(buffer=None, now='2026-11-16T12:00:00Z', deliver=False, fetch=None)
         run.urgency = 5
         signed = line('threads', 'TEST FIXTURE ONLY. No route.')
         signed.update(format='text', due_at='2026-11-16T13:00:00Z', link_placement='in_post',
                       buffer_draft_id='a' * 24, assets=[], payload_sha256='0' * 64)
+        post = {'via': 'api', 'channelService': 'threads', 'channelId': signed['buffer_channel_id'], 'status': status}
         with patch.object(autorelease, 'may_release', return_value=True), \
                 patch.object(autorelease, 'route_holds', return_value=(False, None, None)), \
-                patch.object(autorelease, 'share_ask_errors', return_value=[]):
-            self.assertEqual(run.slot(signed, dict(signed), {'decision': 'approved', 'stage': 'go_live'}), 'held')
+                patch.object(autorelease, 'share_ask_errors', return_value=[]), \
+                patch.object(autorelease, 'account_hold', return_value=None), \
+                patch.object(autorelease.Run, '_read', return_value=(post, None)), \
+                patch.object(autorelease.Run, '_matches', return_value=matches):
+            outcome = run.slot(signed, dict(signed), {'decision': 'approved', 'stage': 'go_live'})
+        return run, outcome
+
+    def test_a_routeless_draft_is_held_loudly_before_it_is_scheduled(self):
+        run, outcome = self.run_slot('draft')
+        self.assertEqual(outcome, 'held')
         self.assertEqual(run.holds, {'subscribe_route_missing': 1})
         self.assertIn('subscribe_route_missing', run.loud)
+
+    def test_a_post_already_scheduled_or_sent_is_never_re_judged(self):
+        # An older go-live whose lines carry no route goes back through slot() every run for 70 days; it must
+        # count as done, never alarm (the blocking case a fresh review found on 13 Nov 2026).
+        for status in ('scheduled', 'sent'):
+            run, outcome = self.run_slot(status)
+            self.assertEqual(outcome, 'already_' + status)
+            self.assertEqual((run.holds, run.loud), ({}, []))
+
+
+class ProfileRouteTests(unittest.TestCase):
+    def test_the_approved_bio_link_is_a_valid_profile_route(self):
+        bio = PAGE + '?utm_source=instagram&utm_medium=social&utm_content=bio'  # jobs/channel-audit.md, as approved
+        self.assertEqual(intensity.subscribe_errors({'url': bio, 'placement': 'profile_link'}, 'instagram',
+                                                    'Subscribe: link in bio.', None, 5), [])
+        self.assertTrue(intensity.subscribe_errors({'url': bio, 'placement': 'in_post'}, 'x', bio, None, 5))
 
 
 if __name__ == '__main__':

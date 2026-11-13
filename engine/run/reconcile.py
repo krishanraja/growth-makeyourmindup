@@ -5,8 +5,10 @@ line with no route (engine/route.py), but a post made natively in an app, or by 
 passes neither. From 2 to 11 November 58 posts went out with no subscribe ask, and nothing said so for days.
 The measure job now reads every sent post on the eight pinned channels, Buffer-made and native, and counts
 those with no tracked route: an own link with all four UTM tags GA4 credits it by (engine/run/ga4.py
-own_links), or, on Instagram and TikTok, words that point to the profile link. Any such post sent since the
-go-live check landed raises the alarm: a hold in the report and a failed run, so GitHub emails Krish.
+own_links) to the subscribe page, in its words, link card or first comment, or, on Instagram and TikTok, words
+that point to the profile link. Any such post sent since the go-live check landed raises the alarm: a hold in
+the measure report, which Control Center shows on this engine every day. It does not fail the run, because a
+post already sent stays sent and a failed run three times a day would only repeat the same email.
 
 What is not checked here yet: whether each post matches a go-live he approved. That needs the go-live claim
 ledger (growth-golive-claim/1) read in the measure run, and is said as "approval not reconciled" rather than
@@ -14,6 +16,7 @@ guessed. Counts and codes only: the log and the report carry no words, ids or UR
 """
 import datetime as dt
 import re
+from urllib.parse import urlsplit
 
 from .. import intensity
 from ..core import instant
@@ -28,8 +31,11 @@ PROFILE = re.compile(r'\b(?:link in (?:my |the )?(?:bio|profile)|profile link|su
 def routed(post, root=intensity.ROOT):
     """True when the post's words (and link card) carry a tracked own link, or point to the profile link on a
     channel whose posts carry no clickable link."""
-    if any(link['tracked'] for link in own_links(post.get('words') or '')):
-        return True
+    page = urlsplit(intensity.bounds(root)['conversion']['subscribe_url']).path.rstrip('/')
+    for url in intensity.URL_IN_TEXT.findall(post.get('words') or ''):
+        url = url.rstrip('.,;:!?)')
+        if urlsplit(url).path.rstrip('/') == page and any(link['tracked'] for link in own_links(url)):
+            return True
     profile = intensity.bounds(root)['conversion']['profile_link_channels']
     return post.get('channel') in profile and bool(PROFILE.search(post.get('words') or ''))
 

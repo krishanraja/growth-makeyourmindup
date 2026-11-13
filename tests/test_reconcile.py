@@ -20,6 +20,15 @@ class ReconcileTests(unittest.TestCase):
         self.assertFalse(reconcile.routed(post('x', 'TEST FIXTURE ONLY. ' + two_tags)))
         self.assertFalse(reconcile.routed(post('threads', 'TEST FIXTURE ONLY. No link.')))
 
+    def test_a_route_in_the_first_comment_counts_and_an_article_link_does_not(self):
+        from engine.run.buffer_reads import _words
+        url = route.subscribe_url('instagram', 'slot-3')
+        words = _words({'text': 'TEST FIXTURE ONLY.', 'metadata': {'firstComment': 'Subscribe: ' + url}})
+        self.assertTrue(reconcile.routed(post('facebook', words)))
+        article = ('https://home.makeyourmindup.ai/p/a-piece?utm_source=x&utm_medium=social&utm_campaign=growth'
+                   '&utm_content=slot-4')
+        self.assertFalse(reconcile.routed(post('x', 'TEST FIXTURE ONLY. ' + article)))
+
     def test_buffer_made_and_native_posts_are_both_counted(self):
         read = {'listed': 4,
                 'posts': [post('x', 'TEST FIXTURE ONLY. No link.'),
@@ -57,9 +66,6 @@ class OutcomeTests(unittest.TestCase):
             outcome.row('advanced', '  ')
 
 
-if __name__ == '__main__':
-    unittest.main()
-
 
 class MeasureReportTests(unittest.TestCase):
     def test_the_measure_report_carries_the_outcome_and_alarms_a_routeless_post(self):
@@ -95,3 +101,7 @@ class ReleaseOutcomeTests(unittest.TestCase):
         blocked = release_outcome(dict(base, error='decisions_unpaged'))
         self.assertEqual(blocked['outcome'], 'blocked')
         self.assertTrue(blocked['way_out'])
+
+
+if __name__ == '__main__':
+    unittest.main()

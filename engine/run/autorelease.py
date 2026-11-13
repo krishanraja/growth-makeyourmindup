@@ -594,10 +594,6 @@ class Run:
             return self.hold('route_not_verified')
         if share_ask_errors(signed, signed['words']):
             return self.hold('share_ask_refused')
-        if route.line_errors(signed, self.urgency, self.root or ROOT):
-            # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route; the go-live path
-            # checks it as the Buffer hook does a hand-made call (engine/route.py), never only in concept_post_hold.
-            return self.hold('subscribe_route_missing', loud=True)
         post, code = self._read(signed['buffer_draft_id'])
         if code:
             return self.hold(code)
@@ -624,6 +620,11 @@ class Run:
                               'needs_approval': 'needs_approval'}.get(status, 'unknown_status'))
         if acted:
             return self.hold('acted_once_now_a_draft')  # a go-live acts once: never scheduled a second time
+        if route.line_errors(signed, self.urgency, self.root or ROOT):
+            # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route. Checked only on the
+            # draft about to be scheduled, as the Buffer hook checks a hand-made call (engine/route.py): a post
+            # already scheduled or sent is never re-judged here, so older go-lives never alarm on every run.
+            return self.hold('subscribe_route_missing', loud=True)
         if due - self.clock() <= DUE_MARGIN:
             return self.hold('due_time_passed', loud=True)
         try:
@@ -1602,10 +1603,16 @@ def release_outcome(summary):
     if summary['error']:
         return outcome.row('blocked', summary['error'], 'the next run retries in 30 minutes; the failed run already '
                            'emails Krish through GitHub, and a second names the same code')
+    if summary.get('loud'):
+        return outcome.row('blocked', 'loud: ' + ', '.join(summary['loud'][:3]),
+                           'each loud hold is named in this run summary and the failed run emails Krish')
     if summary['mutations']:
         return outcome.row('advanced', str(summary['mutations']) + ' Buffer changes, each a line Krish signed')
-    if summary['holds']:
-        top = sorted(summary['holds'].items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+    held = dict(summary['holds'])
+    for code, count in ((summary.get('golives') or {}).get('held') or {}).items():
+        held['golive_' + code] = held.get('golive_' + code, 0) + count
+    if held:
+        top = sorted(held.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
         return outcome.row('held_below_bar', ', '.join(k + ' ' + str(v) for k, v in top))
     return outcome.row('nothing_to_do', str(summary['decisions_read']) + ' decisions read, no signed line due')
 

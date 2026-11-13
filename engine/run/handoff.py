@@ -783,7 +783,7 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
     urgency = intensity.state(root or ROOT, now)['urgency']
     routed = []
     for line, slot in lines:
-        if line.get('publish_mode') != 'krish_click' and route.line_errors(line, urgency, root or ROOT):
+        if route.line_errors(line, urgency, root or ROOT):  # his own click (LinkedIn) still needs a route
             slots.hold('subscribe_route_missing')
             continue
         routed.append((line, slot))

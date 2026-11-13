@@ -126,12 +126,14 @@ def metric_values(metrics):
 
 
 def _words(post):
-    """The post's text plus any link attachment, so a tracked link in either is joined."""
+    """The post's text, any link attachment and its first comment, so a tracked link in any is joined."""
     words = post.get('text') if isinstance(post.get('text'), str) else ''
     meta = post.get('metadata') if isinstance(post.get('metadata'), dict) else {}
     link = meta.get('linkAttachment') if isinstance(meta.get('linkAttachment'), dict) else {}
     if isinstance(link.get('url'), str):
         words += ' ' + link['url']
+    if isinstance(meta.get('firstComment'), str):
+        words += ' ' + meta['firstComment']  # a route in the first comment counts, as the gate allows it
     return words
 
 

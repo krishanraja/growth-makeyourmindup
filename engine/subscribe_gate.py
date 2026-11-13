@@ -103,7 +103,7 @@ def errors(tool_name, tool_input, urgency=None, root=intensity.ROOT):
     conversion = intensity.bounds(root)['conversion']
     if channel in conversion['profile_link_channels']:
         if not intensity.subscribe_errors({'url': conversion['subscribe_url'] + '?utm_source=' + channel
-                                           + '&utm_medium=social&utm_campaign=profile&utm_content=bio',
+                                           + '&utm_medium=social&utm_content=bio',
                                            'placement': 'profile_link'},
                                           channel, words, None, urgency, root):
             return []
