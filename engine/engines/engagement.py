@@ -8,6 +8,7 @@ Nothing here posts, comments, sends or writes to Control Center: Krish makes the
 """
 import re
 
+from engine import owners
 from engine.engines import core
 
 KINDS = ('interaction', 'batch', 'question')
@@ -17,15 +18,17 @@ STATES = {'interaction': INTERACTION_STATES, 'batch': ('requested', 'awaiting_kr
           'question': ('open', 'handed_off')}
 CLOSED_STATES = ('handled', 'skipped', 'posted_by_krish', 'returned_to_researcher')
 DIRECTIONS = ('incoming', 'outgoing')
-# Krish's named accounts (AGENTS.md, social/channels/).
-ACCOUNTS = ('linkedin', 'x', 'tiktok', 'instagram', 'threads', 'substack-notes', 'youtube', 'facebook')
+# Krish's named accounts this engine engages from (AGENTS.md, social/channels/). His personal LinkedIn is
+# growth-mindmake's since 13 Nov 2026 (Ruling, Krish, 2026-11-13; engine/owners.py), replies included.
+ACCOUNTS = ('x', 'tiktok', 'instagram', 'threads', 'substack-notes', 'youtube', 'facebook')
 # What Krish adds after reading the post (review section 5). Personal encouragement alone is not a reason.
 CONTRIBUTIONS = ('firsthand_observation', 'practical_test', 'real_question')
 EDITOR_STEPS = ('opened_actual_post', 'filled_native_editor', 'switched_away', 'returned', 'full_text_verified',
                 'tab_left_open', 'recovery_copy_with_url')
-# Typing into a native comment box is permitted only for LinkedIn preparation (BROWSER.md, 2026-10-24).
-# Elsewhere the exact copy sits beside the open post, so the editor steps do not apply.
-NATIVE_PREFILL = ('linkedin',)
+# Typing into a native comment box was permitted only for LinkedIn preparation (BROWSER.md, 2026-10-24).
+# LinkedIn left this engine on 13 Nov 2026 (Ruling, Krish, 2026-11-13), so no account here is prefilled:
+# the exact copy sits beside the open post and the prefill-only editor steps never apply.
+NATIVE_PREFILL = ()
 PREFILL_ONLY_STEPS = ('filled_native_editor', 'switched_away', 'returned')
 NEEDS_CONTRIBUTION = ('drafted', 'ready', 'awaiting_krish', 'posted_by_krish')
 NEEDS_IDENTITY = ('ready', 'awaiting_krish')
@@ -54,7 +57,9 @@ def validate_detail(record):
             errors.append('detail.direction must be incoming or outgoing')
         if not _key(d.get('parent_post_key')):
             errors.append('detail.parent_post_key must be the sha256 of the post URL (the URL stays private)')
-        if d.get('account') not in ACCOUNTS:
+        if owners.owner(d.get('account')):
+            errors.append('detail.account: ' + owners.refusal(d['account']))
+        elif d.get('account') not in ACCOUNTS:
             errors.append('detail.account must be one of ' + ', '.join(ACCOUNTS))
         for name in ('author_key', 'draft_digest', 'verified_digest'):
             if d.get(name) is not None and not _key(d[name]):
@@ -64,7 +69,8 @@ def validate_detail(record):
                 or not all(isinstance(v, bool) for v in steps.values()):
             errors.append('detail.editor_verification maps ' + ', '.join(EDITOR_STEPS) + ' to true or false')
         elif d.get('account') not in NATIVE_PREFILL and any(steps.get(s) for s in PREFILL_ONLY_STEPS):
-            errors.append('only LinkedIn comments may be prepared in the native editor (BROWSER.md, 2026-10-24)')
+            errors.append('no comment is prepared in a native editor here: only LinkedIn ever was (BROWSER.md,'
+                          ' 2026-10-24), and it is growth-mindmake\'s since 13 Nov 2026')
         if not isinstance(d.get('identity_checked', False), bool):
             errors.append('detail.identity_checked must be true or false')
         elif d.get('direction') == 'outgoing' and state in NEEDS_IDENTITY and d.get('identity_checked') is not True:

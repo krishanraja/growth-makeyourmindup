@@ -6,7 +6,7 @@ Owns the Saturday live audit (jobs/channel-audit.md) under the 21 Oct ruling, wi
 |---|---|---|
 | A bio or link points to a retired positioning or domain | Raise the fix to Krish's batch the same day; bios need his approval | R23 |
 | A profile link is broken or a subscription link is misaligned | Repair it within the allowlist, then reopen the saved page | R23, P9 |
-| The surface is LinkedIn | Recommend only; no live post or profile edit | R28 |
+| The surface is LinkedIn | Read only: growth-mindmake's since 13 Nov 2026; name a finding for it, never a proposal or a live edit here | R28, R125 |
 | A Short has no Related video | Flag it as a P6 fix | P6 |
 | A change is creative replacement, re-upload, bio, positioning or a pin | Hold it for Krish's approval | R23 |
 | A Save toast appears | It is not persistence; reopen the saved page and compare | F26 |

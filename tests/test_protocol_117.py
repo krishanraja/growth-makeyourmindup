@@ -34,7 +34,11 @@ class Protocol117Tests(unittest.TestCase):
     def test_buffer_channels_name_every_pinned_channel_and_deny_the_other_ventures(self):
         field = buffer_channels.report_field()
         self.assertEqual(field['allowed'], buffer_channels.BUFFER_CHANNEL_ID)
-        self.assertEqual(set(field['denied']), set(buffer_channels.DENIED_CHANNELS))
+        # Krish's LinkedIn channel is denied too since 13 Nov 2026: growth-mindmake's, never a go-live from here.
+        self.assertEqual(set(field['denied']), set(buffer_channels.DENIED_CHANNELS)
+                         | set(buffer_channels.HANDED_OFF_CHANNELS))
+        self.assertNotIn('linkedin', field['allowed'])
+        self.assertIn('6adccba0778b240e2fafc06d', field['denied'])
         for name, bid in field['allowed'].items():
             self.assertRegex(name, r'^[a-z][a-z0-9_-]{0,31}$')
             self.assertRegex(bid, r'^[A-Za-z0-9]{8,64}$')

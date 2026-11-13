@@ -52,8 +52,9 @@ PIECE_ID = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
 CODE = re.compile(r'^[a-z][a-z0-9_]{0,63}$')
 # This engine's channel id -> the board's box names it may fill, first match wins. The piece's
 # vertical cut goes out as a Short, a TikTok and a Reel; X and the rest tick only where the board has a box.
+# LinkedIn's box is growth-mindmake's to tick since 13 Nov 2026 (Ruling, Krish, 2026-11-13; engine/owners.py).
 BOXES = {'youtube': ('shorts', 'youtube'), 'tiktok': ('tiktok',), 'instagram': ('reels', 'instagram'),
-         'linkedin': ('linkedin',), 'x': ('x',), 'threads': ('threads',), 'facebook': ('facebook',),
+         'x': ('x',), 'threads': ('threads',), 'facebook': ('facebook',),
          'substack-notes': ('substack-notes',)}
 
 

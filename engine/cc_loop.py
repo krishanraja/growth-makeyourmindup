@@ -24,7 +24,7 @@ from . import meter
 from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, STATE_FIELDS, ProtocolError, _decided_at, action_key,
                              action_errors, build_report, canonical_json, copy_open, engage_action, golive_review, iso,
                              match_decisions, objective, proposal, without_state, _stops)
-from . import engage, engine_state, intensity, stale_asks
+from . import engage, engine_state, intensity, owners, stale_asks
 from .credits import credits_block, credits_lines
 from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
@@ -889,6 +889,13 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     selected, deferred, queue = _items(envelopes, queue, now, job)
     gap = gap or intensity.state(root, now)
     proposals, holds, minutes = [], [], 0
+    # A draft for a channel another engine owns is held, never proposed or tapped (Ruling, Krish, 2026-11-13:
+    # growth-mindmake owns his personal LinkedIn, posts and replies). A report's reading about it stays.
+    for item in [i for i in selected if owners.owner(i.get('platform'))
+                 and (i.get('pack_kind') or job) not in ('report', 'numbers')]:
+        selected.remove(item)
+        holds.append({'reason': 'Not this engine\'s channel', 'detail': item.get('item_id', '?') + ': '
+                      + owners.refusal(item['platform'])})
     if job == 'report':
         mixed, held = mix_proposal(root, now)
         proposals += [mixed] if mixed else []

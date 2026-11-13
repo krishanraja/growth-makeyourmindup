@@ -44,7 +44,7 @@ One metadata object, in matching order, is required for each item:
 ```json
 {
   "asset_id": "piece_actual-stable-id",
-  "placement": "linkedin-native-post",
+  "placement": "x-native-post",
   "variant": "a",
   "evidence_ids": ["evidence_actual-id"],
   "priority": 1,
@@ -705,7 +705,8 @@ stopped, and in date. Holds fail closed: an undated decision on it or its plan
 (`stop_unresolved`, every go-live), an expiry with no `now`
 (`expiry_unchecked`) or unreadable (`bad_expiry`). A declined check-in or plan
 stops the plan for good, even a later changed version. Spends and LinkedIn are
-always held. Reports carry no `target`, so a go-live built with one is held.
+always held (LinkedIn is growth-mindmake's since 13 November 2026, R125, so no
+LinkedIn go-live is ever made here; this hold is the second wall). Reports carry no `target`, so a go-live built with one is held.
 
 **The ledger.** `claim_golives(root, ...)` reads the clock when given no
 `now`, merges the staged proposals `remember()` kept, and claims each go-live

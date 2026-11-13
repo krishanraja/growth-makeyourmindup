@@ -14,16 +14,16 @@ GAP = {'week_of': '2026-10-26', 'week_target': 25, 'current': 0, 'as_of': '2026-
 CALM = dict(GAP, current=30, urgency=1, reason="at or above this week's target")
 
 
-def radar(n, url='https://www.linkedin.com/feed/update/urn:li:activity:{}/'):
+def radar(n, url='https://x.com/synthetic_one/status/18500000000000{}', platform='x'):
     items, meta = [], []
     for i in range(n):
-        items.append({'platform': 'linkedin', 'text': 'TEST FIXTURE ONLY. A useful reply number ' + str(i) + '.',
+        items.append({'platform': platform, 'text': 'TEST FIXTURE ONLY. A useful reply number ' + str(i) + '.',
                       'target_url': url.format(i), 'target_name': 'Synthetic author ' + str(i)})
         meta.append({'item_id': 'radar-' + str(i), 'placement': 'comment', 'minutes': 1, 'priority': 1,
                      'evidence_ids': ['ev'], 'expires_at': '2026-10-30T0' + str(i % 10) + ':00:00Z',
                      'why_now': 'Fixture only.', 'success_check': 'Fixture.'})
     envelope = {'pack': {'kind': 'radar', 'items': items}, 'metadata': meta,
-                'evidence': [{'evidence_id': 'ev', 'kind': 'source_thread', 'url': 'https://www.linkedin.com/feed/'}]}
+                'evidence': [{'evidence_id': 'ev', 'kind': 'source_thread', 'url': 'https://x.com/synthetic_one'}]}
     queue = {'items': [{'item_id': m['item_id']} for m in meta], 'deferred': [], 'budget_minutes': 20}
     return envelope, queue
 
@@ -47,7 +47,7 @@ class EngagementTask(unittest.TestCase):
         self.assertEqual((action['version'], action['kind']), (2, 'copy_open'))
         self.assertEqual(len(action['taps']), 4)
         self.assertEqual(set(action['taps'][0]), {'label', 'text', 'url'})
-        self.assertTrue(action['taps'][0]['url'].startswith('https://www.linkedin.com/'))
+        self.assertTrue(action['taps'][0]['url'].startswith('https://x.com/'))
         self.assertEqual(task['expires_at'], '2026-10-30T00:00:00Z', 'the ask expires with its first tap')
         self.assertEqual(task['close_condition']['event'], 'tapped')
 
@@ -184,9 +184,6 @@ class ExactTargets(unittest.TestCase):
                 ('tiktok', 'https://www.tiktok.com/@synthetic.one'): 'profile',
                 ('instagram', 'https://www.instagram.com/reel/SYNTHabc12/'): 'post',
                 ('instagram', 'https://www.instagram.com/synthetic.one/'): 'profile',
-                ('linkedin', 'https://www.linkedin.com/feed/update/urn:li:activity:7250000000000000001/'): 'post',
-                ('linkedin', 'https://www.linkedin.com/posts/synthetic-one_ai-activity-7250000000000000001-AbCd'): 'post',
-                ('linkedin', 'https://www.linkedin.com/in/synthetic-one/'): 'profile',
                 ('youtube', 'https://www.youtube.com/watch?v=synthetic'): 'page'}
         for (platform, url), kind in good.items():
             self.assertEqual(target_kind(platform, url), kind, url)
@@ -194,20 +191,40 @@ class ExactTargets(unittest.TestCase):
                ('x', 'http://x.com/synthetic_one/status/1850000000000000001'),
                ('tiktok', 'https://www.tiktok.com/foryou'), ('tiktok', 'https://vm.tiktok.com/ZMabc/'),
                ('instagram', 'https://www.instagram.com/explore/'), ('instagram', 'https://www.instagram.com/'),
-               ('linkedin', 'https://www.linkedin.com/feed/'), ('linkedin', 'https://lnkd.in/abc'),
-               ('linkedin', 'https://www.linkedin.com/search/results/content/?keywords=ai'),
                ('x', 'https://x.com.evil.example/synthetic_one/status/1850000000000000001')]
         for platform, url in bad:
             self.assertIsNone(target_kind(platform, url), url)
 
     def test_a_tap_that_does_not_open_its_exact_target_is_held_by_name(self):
-        result = report(3, url='https://www.linkedin.com/feed/?n={}')
+        result = report(3, url='https://x.com/home?n={}')
         self.assertEqual(result['proposals'], [])
         details = ' '.join(h['detail'] for h in result['holds'])
         self.assertIn('exact post or profile', details)
 
-    def test_a_linkedin_reply_with_a_link_is_held(self):
-        from engine.engage import tap_errors
-        self.assertEqual(tap_errors('linkedin', 'https://www.linkedin.com/in/synthetic-one/', 'Read www.example.com'),
-                         ['a LinkedIn reply carries no link'])
-        self.assertEqual(tap_errors('x', 'https://x.com/synthetic_one', 'See https://example.com'), [])
+    def test_a_linkedin_tap_is_never_queued(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn, replies included. The queue is
+        # X, TikTok and Instagram; a LinkedIn tap, however exact its page, is refused by its owner's reason.
+        from engine import engage, owners
+        self.assertEqual(engage.QUEUE_PLATFORMS, ('x', 'tiktok', 'instagram'))
+        for url in ('https://www.linkedin.com/feed/update/urn:li:activity:7250000000000000001/',
+                    'https://www.linkedin.com/in/synthetic-one/'):
+            self.assertEqual(engage.tap_errors('linkedin', url, 'A useful reply.'), [owners.refusal('linkedin')])
+        self.assertEqual(engage.tap_errors('x', 'https://x.com/synthetic_one', 'See https://example.com'), [])
+        result = report(4, url='https://www.linkedin.com/feed/update/urn:li:activity:72500000000000{}/',
+                        platform='linkedin')
+        self.assertEqual(result['proposals'], [], 'no tap, no plain ask, nothing on his list')
+        held = [h for h in result['holds'] if "growth-mindmake's" in h['detail']]
+        self.assertEqual(sorted(h['detail'].split(':')[0] for h in held), ['radar-0', 'radar-1', 'radar-2', 'radar-3'])
+        # Mixed with X work, only the X taps go.
+        envelope, queue = radar(2)
+        more, extra = radar(2, url='https://www.linkedin.com/in/synthetic-{}/', platform='linkedin')
+        for item, meta in zip(more['pack']['items'], more['metadata']):
+            meta['item_id'] = 'li-' + meta['item_id']
+            envelope['pack']['items'].append(item)
+            envelope['metadata'].append(meta)
+            queue['items'].append({'item_id': meta['item_id']})
+        mixed = workspace_report('radar', 'makeyourmindup:2026-10-29:radar', NOW, [envelope], queue, rev='fixture',
+                                 root=ROOT, gap=GAP)[0]
+        taps = copy_open(mixed['proposals'][0])['taps']
+        self.assertEqual(len(taps), 2)
+        self.assertTrue(all(t['url'].startswith('https://x.com/') for t in taps))

@@ -200,7 +200,7 @@ def envelope(text='TEST FIXTURE ONLY. I asked one useful question.'):
     url = 'https://home.makeyourmindup.ai/p/test-fixture'
     eid = identity('evidence', url, text)
     pack = {'pack_date': '2026-10-17', 'kind': 'daily', 'headline': 'Test fixture',
-            'items': [{'platform': 'x', 'text': text}, {'platform': 'linkedin', 'text': text + ' Second.'}]}
+            'items': [{'platform': 'x', 'text': text}, {'platform': 'threads', 'text': text + ' Second.'}]}
     meta = [{'asset_id': 'piece_fixture', 'placement': 'thread', 'variant': 'a', 'evidence_ids': [eid],
              'priority': 1, 'minutes': 3, 'why_now': 'Fixture only.', 'success_check': 'Fixture source compared.'},
             {'asset_id': 'piece_fixture', 'placement': 'native-post', 'variant': 'a', 'evidence_ids': [eid],

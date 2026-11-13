@@ -30,7 +30,10 @@ Four event types, each with a closed client_payload (unknown keys refused):
   The why Krish reads names, in plain words, the day, and the alt text,
   first comment, titles, privacy, location, AI label and tagged accounts
   that go out with each post.
-  LinkedIn always goes in as krish_click. The slots that pass become the
+  A slot on a channel another engine owns (Krish's personal LinkedIn, growth-
+  mindmake's since 13 November 2026: Ruling, Krish, 2026-11-13) is held
+  (`channel_owned_by_another_engine`) before its draft is read, and never
+  goes in at all (engine/owners.py). The slots that pass become the
   `growth-golive-manifest/1` exact_payload autorelease reads, each go-live a
   `post` wall with target null under the newest open plan Krish approved,
   reported in its own report whose run_id is
@@ -103,7 +106,7 @@ from pathlib import Path
 import re
 import sys
 
-from engine import buffer_channels, concepts as concept_rules, intensity, mix as mix_rules, route, stale_asks
+from engine import buffer_channels, concepts as concept_rules, intensity, mix as mix_rules, owners, route, stale_asks
 from engine.cc_loop import NO_SPEND, decisions_paged, plan_proposals, revision
 from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _plan_open, _stops,
                                    build_report, canonical_json, objective, proposal, sha256_hex)
@@ -546,6 +549,8 @@ class Slots:
 def rebuild(buffer, slot, fetch, now, window=None):
     """(manifest line, None) for one slot whose draft matches, or (None, hold code).
     window is the (start, end) of the run the run_id names, when it names one."""
+    if owners.owner(slot['channel']):
+        return None, owners.HOLD  # Another engine's channel: its draft is never read (Ruling, Krish, 2026-11-13).
     due = None
     if slot['due_at'] is not None:
         due = due_instant(slot['due_at'])
@@ -583,7 +588,7 @@ def rebuild(buffer, slot, fetch, now, window=None):
     if not isinstance(line['words'], str) or not line['words'].strip():
         return None, 'no_words'
     if slot['channel'] in KRISH_CLICK_ONLY and line['publish_mode'] != 'krish_click':
-        # LinkedIn is always his own click: the line goes in as krish_click, with its own digest.
+        # A channel that is only ever his click goes in as krish_click, with its own digest.
         line['publish_mode'] = 'krish_click'
         line['payload_sha256'] = line_digest(line)
     if line['publish_mode'] == 'engine':
@@ -735,8 +740,7 @@ def golive_words(lines, kind, part, parts, day, root, express, on=None):
                 + ('Nothing on another day: each day comes to you as its own go-live. ' if on else '')
                 + 'A yes schedules each post about an hour before it is due. Until then, No stops it. ')
     if clicks:
-        why += (_posts(clicks) + (' stays' if clicks == 1 else ' stay') + ' a draft in Buffer for you to publish yourself'
-                + (', as LinkedIn always does. ' if any(line['channel'] in KRISH_CLICK_ONLY for line in lines) else '. '))
+        why += _posts(clicks) + (' stays' if clicks == 1 else ' stay') + ' a draft in Buffer for you to publish yourself. '
     if day <= show_before_post_until(root):
         why += 'Until ' + _long_date(show_before_post_until(root)) + ' you see every batch before it goes out. '
     details = [text for text in (meta_words(line) for line in lines) if text]
@@ -1238,7 +1242,10 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                 except (BufferError, CarryHold):
                     piece_hold = 'manifest_unreadable'
             for slot in payload['slots']:
-                if 'concept_id' in slot:
+                if owners.owner(slot['channel']):
+                    # Another engine's channel (Ruling, Krish, 2026-11-13): held before its draft is read.
+                    slots.hold(owners.HOLD)
+                elif 'concept_id' in slot:
                     # Made from a concept he approved in the mix plan: its review, never a go-live.
                     record, code = derived_record(buffer, slot, fetch, now, window)
                     if code:
@@ -1255,8 +1262,6 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                     if code:
                         slots.hold(code)
                     else:
-                        if slot['channel'] in KRISH_CLICK_ONLY and slot['publish_mode'] != 'krish_click':
-                            slots.count('linkedin_to_krish_click')
                         lines.append((line, slot))
                 else:
                     slots.hold(reason)

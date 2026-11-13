@@ -27,31 +27,6 @@
       "stickerFields": null
     }
   },
-  "linkedin-1": {
-    "id": "aaaaaaaaaaaaaaaaaaaaaa02",
-    "channelId": "6adccba0778b240e2fafc06d",
-    "channelService": "linkedin",
-    "status": "draft",
-    "via": "buffer",
-    "schedulingType": null,
-    "dueAt": null,
-    "text": "Synthetic LinkedIn draft for tests.",
-    "assets": [
-      {
-        "type": "image",
-        "source": "https://example.org/synthetic/frame-4.png",
-        "thumbnail": "",
-        "image": {
-          "altText": "Synthetic alt text for frame four."
-        }
-      }
-    ],
-    "metadata": {
-      "__typename": "LinkedInPostMetadata",
-      "type": "post",
-      "linkAttachment": null
-    }
-  },
   "x-1": {
     "id": "aaaaaaaaaaaaaaaaaaaaaa03",
     "channelId": "6adccbf5778b240e2fafc457",

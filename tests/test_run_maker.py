@@ -33,6 +33,7 @@ except ImportError:  # run as tests.test_run_maker
     from tests.test_concept_release import BoardStandIn
 
 from engine import catalog, concepts, mix, route
+from engine import buffer_channels
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.run import anthropic_api, autorelease, buffer_api, buffer_drafts, cc_records, handoff, maker
 from engine.run.buffer_api import BufferError
@@ -1063,7 +1064,8 @@ class MakerTests(unittest.TestCase):
 
     def test_the_draft_save_refuses_linkedin_and_any_channel_not_pinned(self):
         buffer = self.buffer()
-        for channel, channel_id in (('linkedin', BUFFER_CHANNEL_ID['linkedin']), ('threads', BUFFER_CHANNEL_ID['threads']),
+        linkedin = next(cid for cid, ch in buffer_channels.HANDED_OFF_CHANNELS.items() if ch == 'linkedin')
+        for channel, channel_id in (('linkedin', linkedin), ('x', linkedin), ('threads', BUFFER_CHANNEL_ID['threads']),
                                     ('x', BUFFER_CHANNEL_ID['instagram'])):
             with self.assertRaises(BufferError) as caught:
                 buffer.create_draft(channel, channel_id, 'Synthetic words.', [])

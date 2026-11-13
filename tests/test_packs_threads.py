@@ -13,7 +13,7 @@ class ThreadsTextLimitTests(unittest.TestCase):
                       problems({'platform': 'threads', 'text': over_limit}))
         # The same length stays legal where the limit is wider.
         self.assertNotIn('exceeds the platform text limit',
-                         problems({'platform': 'linkedin', 'text': over_limit}))
+                         problems({'platform': 'facebook', 'text': over_limit}))
 
 
 if __name__ == '__main__':

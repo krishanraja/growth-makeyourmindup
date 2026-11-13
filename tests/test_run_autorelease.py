@@ -29,7 +29,7 @@ from engine.run import autorelease, buffer_api
 from engine.run.autorelease import (line_digest, may_release, parse_manifest, show_before_post_until,
                                     staged_report_run_id, standing_derivative_allowed)
 from engine.run.buffer_api import Buffer, BufferAuthError, BufferError, CarryHold
-from engine.buffer_channels import BUFFER_CHANNEL_ID
+from engine.buffer_channels import BUFFER_CHANNEL_ID, HANDED_OFF_CHANNELS
 from engine.run.release import BUFFER_NAME, CHANNELS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,8 +40,11 @@ PLAN = 'makeyourmindup:plan:w45-w52'
 GOLIVE = 'makeyourmindup:golive:2026-W45:week'
 P_THREADS, P_X, P_LINKEDIN, P_UNSIGNED = ('aaaaaaaaaaaaaaaaaaaaaa01', 'aaaaaaaaaaaaaaaaaaaaaa02',
                                           'aaaaaaaaaaaaaaaaaaaaaa03', 'aaaaaaaaaaaaaaaaaaaaaa09')
-# The pinned Buffer channelIds (engine/buffer_channels.py): main's channel lock refuses any other.
-CH_THREADS, CH_X, CH_LINKEDIN = (BUFFER_CHANNEL_ID['threads'], BUFFER_CHANNEL_ID['x'], BUFFER_CHANNEL_ID['linkedin'])
+# The pinned Buffer channelIds (engine/buffer_channels.py): main's channel lock refuses any other. LinkedIn's
+# channel is no longer pinned (growth-mindmake's since 13 Nov 2026), but a go-live signed before then may still
+# name a LinkedIn line, so the fixture keeps one to prove release never reads it.
+CH_THREADS, CH_X = (BUFFER_CHANNEL_ID['threads'], BUFFER_CHANNEL_ID['x'])
+CH_LINKEDIN = next(cid for cid, channel in HANDED_OFF_CHANNELS.items() if channel == 'linkedin')
 CH_FOR = {'threads': CH_THREADS, 'x': CH_X, 'linkedin': CH_LINKEDIN}
 WORDS_THREADS = ('Synthetic fixture words for the threads slot. Subscribe: '
                   + route.subscribe_url('threads', 'fixture-threads'))

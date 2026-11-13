@@ -12,11 +12,13 @@ from pathlib import Path
 from engine.engines import core, engagement as eng
 
 ROOT = Path(__file__).resolve().parents[1]
-ALL_STEPS = {s: True for s in eng.EDITOR_STEPS}
+# Every step an X reply needs: no account here is prefilled in a native editor since LinkedIn, the only one
+# that was, went to growth-mindmake on 13 Nov 2026 (Ruling, Krish, 2026-11-13).
+ALL_STEPS = {s: True for s in eng.required_steps('x')}
 DRAFT = core.digest('Would the three models still pick different winners with the brand names hidden?')
 
 
-def item(n, direction='outgoing', state='ready', account='linkedin', links=('batch-one',), **detail):
+def item(n, direction='outgoing', state='ready', account='x', links=('batch-one',), **detail):
     d = {'direction': direction, 'parent_post_key': core.digest('https://example.org/post/' + str(n)),
          'account': account, 'identity_checked': True, 'contribution': 'real_question',
          'draft_digest': DRAFT, 'verified_digest': DRAFT, 'editor_verification': dict(ALL_STEPS)}
@@ -145,12 +147,22 @@ class Rules(unittest.TestCase):
                          {'incoming': 0, 'outgoing': 10, 'ready': 8})
         self.assertEqual(eng.ready_count([item(1, direction='incoming', state='candidate')])['ready'], 0)
 
-    def test_non_linkedin_accounts_are_ready_without_the_native_editor(self):
+    def test_no_account_is_prefilled_in_a_native_editor(self):
         steps = {s: True for s in eng.required_steps('x')}
         self.assertNotIn('filled_native_editor', steps)
+        self.assertEqual(eng.NATIVE_PREFILL, ())
         self.assertTrue(eng.is_ready(item(1, account='x', editor_verification=steps)))
-        self.assertIn('only LinkedIn comments may be prepared in the native editor (BROWSER.md, 2026-10-24)',
-                      core.validate(item(1, account='x')))
+        prefilled = dict(steps, filled_native_editor=True, switched_away=True, returned=True)
+        self.assertTrue(any(e.startswith('no comment is prepared in a native editor here')
+                            for e in core.validate(item(1, account='instagram', editor_verification=prefilled))))
+
+    def test_linkedin_is_not_an_account_this_engine_engages_from(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn and the replies to everyone who
+        # engages with his posts. No interaction, outgoing or incoming, is recorded here on it.
+        self.assertNotIn('linkedin', eng.ACCOUNTS)
+        for direction, state in (('outgoing', 'ready'), ('incoming', 'candidate')):
+            errors = core.validate(item(1, direction=direction, state=state, account='linkedin'))
+            self.assertTrue(any("growth-mindmake's since 2026-11-13" in e for e in errors), errors)
 
     def test_detail_refusals(self):
         self.assertIn('personal encouragement alone is not a reason to comment',
@@ -169,21 +181,21 @@ class Rules(unittest.TestCase):
         self.assertTrue(core.privacy_errors(item(1, text='the exact comment')))
 
     def test_post_urls_and_exact_words_are_refused_in_committed_records(self):
-        words = 'https://www.linkedin.com/feed/update/urn:li:activity:1 Great point, would the models...'
+        words = 'https://x.com/synthetic_one/status/1 Great point, would the models...'
         for key in ('post_url', 'recovery_copy', 'comment'):
             self.assertTrue(core.validate(item(30, **{key: words})), key)
             self.assertEqual(core.validate(item(30, **{key: words}), private=True), [], key)
         self.assertIn('detail.url: a URL; commit parent_post_key and keep the URL in .scratch/engines/',
                       core.validate(item(30, url=words)))
 
-    def test_linkedin_prefill_keeps_browser_md_limits_and_flags_the_conflict(self):
+    def test_contract_and_job_say_linkedin_is_growth_mindmakes(self):
         contract = core.load_contract('engagement', ROOT)
-        job = (ROOT / 'jobs' / 'engagement.md').read_text(encoding='utf-8')
-        rule = 'one prefilled LinkedIn box at a time; preserve any existing human draft; verify account, exact post'
-        self.assertTrue(any(rule in a for a in contract['permitted_actions']))
-        self.assertIn(rule, ' '.join(job.split()))
-        self.assertIn('BROWSER.md', ' '.join(contract['open_for_krish']))
-        self.assertIn('## Open for Krish', job)
+        job = ' '.join((ROOT / 'jobs' / 'engagement.md').read_text(encoding='utf-8').split())
+        self.assertFalse(any('one prefilled LinkedIn box' in a for a in contract['permitted_actions']))
+        self.assertTrue(any("Krish's personal LinkedIn" in a and "growth-mindmake's" in a
+                            for a in contract['forbidden_actions']))
+        self.assertNotIn('open_for_krish', contract, 'the LinkedIn tab conflict closed with the handover')
+        self.assertIn("growth-mindmake's since 13 November 2026", job)
 
     def test_questions_go_to_acquisition_and_content_engine(self):
         q = dict(batch(), id='question-one', kind='question', state='handed_off', next_owner='acquisition',

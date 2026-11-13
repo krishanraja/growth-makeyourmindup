@@ -1,6 +1,16 @@
 # Human engagement and channel growth
 
-Owner: Krish Raja. Updated 2026-10-24; engine owners added 2026-11-05.
+Owner: Krish Raja. Updated 2026-10-24; engine owners added 2026-11-05;
+LinkedIn handed to growth-mindmake 2026-11-13.
+
+**13 November 2026: LinkedIn is not this engine's.** Ruling (Krish,
+2026-11-13): growth-mindmake owns Krish's personal LinkedIn posts and the
+replies to everyone who engages with them; he still clicks every post. The
+daily queue is X, TikTok and Instagram (`engine/engage.py`), a LinkedIn tap
+is refused, and the "LinkedIn review pack" below is growth-mindmake's
+record now, not a routine here. LinkedIn is still read for trends and
+evidence. Where any line below says this engine drafts or prepares
+LinkedIn, this paragraph wins.
 Status: daily work authorised; draft preparation and live audit active.
 A daily 09:00 London heartbeat was created on 2026-10-24 under Krish's
 instruction to work every day. jobs/daily-growth.md owns that routine.
@@ -48,8 +58,8 @@ not establish audience quality or subscriber attribution.
 
 ## Three routines
 
-1. Daily engagement taps: as many as clear the bar, across LinkedIn and
-   the other channels, up to the day's cap (`intensity.json`: 5 at U1 and
+1. Daily engagement taps: as many as clear the bar, across X, TikTok and
+   Instagram (LinkedIn left on 13 November 2026), up to the day's cap (`intensity.json`: 5 at U1 and
    U2, then 10, 15 and 20 at U3, U4 and U5). The bar does not move with the
    cap: every tap responds to the actual thread, is fresh, fits and is one
    Krish would be glad to post; a filler that misses it is skipped, never
@@ -69,7 +79,10 @@ not establish audience quality or subscriber attribution.
    only authorised existing-field repairs, and verify destinations and
    published results. This remains necessary even if a scheduler is added.
 
-## LinkedIn review pack
+## LinkedIn review pack (growth-mindmake's since 13 November 2026)
+
+Kept as the record of how it was done here, for growth-mindmake; this
+engine no longer prepares any of it.
 
 Find public AI/commercial discussions from relevant people, prioritising
 existing relationships and people whose work Krish has a real reason to
@@ -116,7 +129,7 @@ supporting evidence. No paid boosts, engagement pods or follow/unfollow loops.
 
 | Channel | Controllable weekly work | Provisional 14-day outcome target |
 |---|---|---|
-| LinkedIn | As many suggestions per weekday as clear the bar, in the day's one copy and open ask; Krish chooses which to post. No filler below the bar. | Five substantive exchanges with relevant people; follower target set after first verified baseline |
+| LinkedIn | None here since 13 November 2026: growth-mindmake's (Ruling, Krish, 2026-11-13) | Not this engine's to measure as its own work |
 | Instagram | Five native carousel/Reel editions prepared; test opening, useful save/share payoff and relevant continuation | 25 net new followers |
 | YouTube | Five native Shorts prepared from the same source stories; match long-video continuation when available and approved | 10 net new subscribers |
 | TikTok | Five native photo/video editions prepared; test hook, pace and a workable next step | 20 net new followers |

@@ -13,7 +13,7 @@ Inputs, all read-only and each optional:
 - content-engine's board: GET /api/board/<Monday>/pieces (which piece sits on which day, and Krish's
   one press on the week's mix) and GET /api/board/<Monday> (the published build's manifest), with
   GROWTH_WRITEBACK_TOKEN through the board tick's client (engine/run/board_tick.py);
-- Buffer: sent and scheduled posts on this engine's eight pinned channels, through the measure job's
+- Buffer: sent and scheduled posts on this engine's seven pinned channels, through the measure job's
   reader (engine/run/buffer_reads.py) with BUFFER_API_KEY.
 
 A missing secret never fails the build: the row is written with what was readable, and its next action

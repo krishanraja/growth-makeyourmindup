@@ -36,7 +36,7 @@
     "close a check on a saved setting or an API success; only a public readback closes it",
     "close an edition while any applicable check is open",
     "attempt a held route again before its recheck condition changes",
-    "schedule a LinkedIn edition: it follows its human publication rule, Krish's click",
+    "record, schedule or check a LinkedIn edition: Krish's personal LinkedIn is growth-mindmake's since 13 Nov 2026 (Ruling, Krish, 2026-11-13)",
     "commit exact captions, post URLs or raw receipts (they stay in .scratch/engines/)",
     "doing another engine's work in this session"
   ],
@@ -45,7 +45,6 @@
     "an edition is done only when every applicable check is closed against the public reader view",
     "a discrepancy stays open on the same post ID with a dated recheck, dated once the post ID is known",
     "a failed route carries a recheck condition",
-    "LinkedIn follows its human publication rule",
     "a session record with what to do better next time, and every cross-engine item handed off"
   ],
   "recover_first": [
@@ -58,6 +57,6 @@
   "hands_off_to": {
     "measurement": "editions done against the reader view, for judging at the proper observation window",
     "acquisition": "a working continuation that attracts few visits, as an experiment",
-    "krish": "native exceptions such as native TikTok video, under the applicable approval, and every LinkedIn click"
+    "krish": "native exceptions such as native TikTok video, under the applicable approval"
   }
 }

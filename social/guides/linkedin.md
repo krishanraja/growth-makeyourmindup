@@ -1,5 +1,17 @@
 # LinkedIn: Krish's personal profile
 
+**Not this engine's since 13 November 2026.** Ruling (Krish, 2026-11-13): asked
+"Which engine should own your personal LinkedIn posts (you still click every
+post)?", he answered "growth-mindmake owns it". growth-mindmake
+(`krishanraja/growth-mindmake`) now prepares his LinkedIn posts, about three a
+week, and the replies to everyone who engages with them; he still clicks every
+post. This engine drafts, queues, taps and pins nothing there, and
+`growth.py social route linkedin ...` refuses with that reason
+(`engine/owners.py`, `social/channels/linkedin.json` `owned_by`). The guide
+below stays as the record of what was learned here, for growth-mindmake to
+read; it is not a brief for work in this repository. Reading LinkedIn
+(research, trend reading, what other people post) is still fine.
+
 Use `../channels/linkedin.json` for identity and `docs/ACCOUNT-VOICE.md` for the
 non-negotiable account register. This is personal useful sharing, not a brand
 announcement or a chance to demonstrate superiority. Do not post to a connected

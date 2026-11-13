@@ -971,9 +971,9 @@
       "id": "F86",
       "title": "A LinkedIn slot reaches a go-live as an engine post, or release reads or schedules a LinkedIn draft",
       "source": "V1 build, 27 Oct 2026: L0 handoff and release; LinkedIn stays his own final click (R62, R109)",
-      "guard": "engine/run/handoff.py:rebuild turns every LinkedIn line to krish_click with its own digest; engine/run/autorelease.py:slot makes no call for a krish_click slot",
+      "guard": "engine/run/handoff.py:rebuild holds every LinkedIn slot before its draft is read, since LinkedIn is growth-mindmake's (R125, 13 Nov 2026); engine/run/autorelease.py:slot makes no call for a krish_click slot",
       "tests": [
-        "test_linkedin_always_goes_in_as_krish_click",
+        "test_a_linkedin_slot_is_held_before_its_draft_is_read",
         "test_linkedin_stays_a_draft_and_is_never_read"
       ],
       "status": "tested"

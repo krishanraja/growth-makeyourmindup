@@ -5,10 +5,12 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
+from unittest import mock
 
-from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS
+from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, HANDED_OFF_CHANNELS
 from engine.social import (ROOT, command, draft_target_errors, inventory, package_digest, preflight, route,
                            validate)
 
@@ -19,6 +21,48 @@ SHARE = {'sender': 'a head of marketing at a mid-size retailer',
          'dm_line': 'This is the six-week rule I meant: agree one number on day one, then decide.',
          'moment': 'the Monday leadership meeting where the pilot budget comes up again',
          'standalone': True}
+
+
+SYNTHETIC_ID = 'f' * 24
+
+
+@contextlib.contextmanager
+def human_only_root():
+    """A copy of the records with one synthetic personal account that has no delegated cadence
+    (human_publish_only), as any personal identity beyond X, TikTok, Threads and Notes is. LinkedIn was the live
+    one until 13 Nov 2026, when it went to growth-mindmake (Ruling, Krish, 2026-11-13), so the personal guard is
+    proved on this synthetic account and its synthetic pinned Buffer id."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        shutil.copytree(str(ROOT / 'social'), str(root / 'social'))
+        (root / 'docs').mkdir()
+        for name in ('ACCOUNT-VOICE.md', 'PUBLISHING-AUTHORITY.md'):
+            shutil.copyfile(str(ROOT / 'docs' / name), str(root / 'docs' / name))
+        fmt_path = root / 'social' / 'formats' / 'single-image.json'
+        fmt = json.loads(fmt_path.read_text(encoding='utf-8'))
+        fmt['channels'].append('synthetic-personal')
+        fmt_path.write_text(json.dumps(fmt, indent=2), encoding='utf-8')
+        channel = json.loads((root / 'social' / 'channels' / 'x.json').read_text(encoding='utf-8'))
+        channel.update(id='synthetic-personal', account_url='https://example.com/@synthetic', formats=['single-image'],
+                       publication_mode='human_publish_only', daily_posts_target=None)
+        channel.pop('daily_posts_floor', None)
+        (root / 'social' / 'channels' / 'synthetic-personal.json').write_text(json.dumps(channel, indent=2),
+                                                                             encoding='utf-8')
+        tool_path = root / 'social' / 'tools' / 'buffer.json'
+        tool = json.loads(tool_path.read_text(encoding='utf-8'))
+        tool['capabilities'].append({'channel': 'synthetic-personal', 'format': 'single-image', 'status': 'verified',
+                                     'verified_at': '2026-10-26', 'evidence_ref': 'synthetic',
+                                     'verified_operations': ['draft']})
+        tool_path.write_text(json.dumps(tool, indent=2), encoding='utf-8')
+        with mock.patch.dict(BUFFER_CHANNEL_ID, {'synthetic-personal': SYNTHETIC_ID}):
+            yield root
+
+
+def human_only(package):
+    """The package moved onto the synthetic human-only personal account."""
+    package.update(channel='synthetic-personal', account_url='https://example.com/@synthetic',
+                   account_context='personal', buffer_channel_id=SYNTHETIC_ID)
+    return package
 
 
 class SocialContractsTests(unittest.TestCase):
@@ -32,12 +76,20 @@ class SocialContractsTests(unittest.TestCase):
         self.assertEqual(ig['channel']['account_context'], 'publication')
         self.assertFalse(ig['publication_authorized'])
         self.assertIn('clipboard-image-upload', [x['id'] for x in ig['lessons']])
-        li = route('linkedin', 'single-image', as_of='2026-10-26')
-        self.assertEqual(li['channel']['account_context'], 'personal')
-        self.assertEqual(li['holds'], [])
+        x = route('x', 'single-image', as_of='2026-10-26')
+        self.assertEqual(x['channel']['account_context'], 'personal')
+        self.assertEqual(x['holds'], [])
+        # The LinkedIn record stays, marked as growth-mindmake's (Ruling, Krish, 2026-11-13); it routes nothing.
+        self.assertEqual(records['channel']['linkedin']['owned_by']['engine'], 'growth-mindmake')
+        with self.assertRaisesRegex(ValueError, "growth-mindmake's since 2026-11-13"):
+            route('linkedin', 'single-image', as_of='2026-10-26')
 
     def test_unknown_document_route_is_not_inferred_from_png_success(self):
-        result = route('linkedin', 'carousel', as_of='2026-10-26')
+        # The LinkedIn document route this once held is growth-mindmake's since 13 Nov 2026: refused outright.
+        with self.assertRaisesRegex(ValueError, "growth-mindmake's"):
+            route('linkedin', 'carousel', as_of='2026-10-26')
+        # A verified route still never vouches for its unverified neighbour on the same channel.
+        result = route('instagram', 'single-image', as_of='2026-10-26')
         self.assertIn('capability_not_verified_for_selected_channel_and_format', result['holds'])
         with self.assertRaises(ValueError):
             route('youtube', 'carousel', as_of='2026-10-26')
@@ -51,9 +103,9 @@ class SocialContractsTests(unittest.TestCase):
     def fixture(self, path):
         path.write_bytes(b'synthetic accepted asset, not a real post')
         return {'schema_version': 1, 'kind': 'package', 'id': 'synthetic-package',
-                'channel': 'linkedin', 'account_url': 'https://www.linkedin.com/in/krish-raja/',
+                'channel': 'x', 'account_url': 'https://x.com/therealkrisho',
                 'account_context': 'personal', 'format': 'single-image', 'tool': 'buffer',
-                'buffer_channel_id': BUFFER_CHANNEL_ID['linkedin'],
+                'buffer_channel_id': BUFFER_CHANNEL_ID['x'],
                 'source_url': 'https://example.com/verified-test', 'caption': 'Synthetic test copy.',
                 'share': copy.deepcopy(SHARE),
                 'assets': [{'path': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -68,8 +120,39 @@ class SocialContractsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             result = preflight(self.fixture(Path(tmp) / 'asset.bin'), '2026-10-26')
             self.assertTrue(result['structurally_valid'])
-            self.assertIn('exact_publication_approval_missing', result['holds'])
             self.assertFalse(result['publication_authorized'])
+            self.assertIn('live_identity_schema_and_authority_readback_required_before_external_action',
+                          result['holds'])
+            with human_only_root() as root:
+                result = preflight(human_only(self.fixture(Path(tmp) / 'asset.bin')), '2026-10-26', root=root)
+                self.assertTrue(result['structurally_valid'])
+                self.assertIn('exact_publication_approval_missing', result['holds'])
+                self.assertFalse(result['publication_authorized'])
+
+    def test_linkedin_is_never_prepared_here(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn, posts and replies. No package
+        # for it passes preflight, on its old pinned Buffer channel or any other, and its id is refused anywhere.
+        linkedin = next(cid for cid, channel in HANDED_OFF_CHANNELS.items() if channel == 'linkedin')
+        self.assertNotIn('linkedin', BUFFER_CHANNEL_ID)
+        self.assertNotIn(linkedin, BUFFER_CHANNEL_ID.values())
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self.fixture(Path(tmp) / 'asset.bin')
+            for channel_id in (linkedin, BUFFER_CHANNEL_ID['x']):
+                p.update(channel='linkedin', account_url='https://www.linkedin.com/in/krish-raja/',
+                         buffer_channel_id=channel_id)
+                with self.assertRaisesRegex(ValueError, "growth-mindmake's since 2026-11-13"):
+                    preflight(p, '2026-10-26')
+            # Its old Buffer channel is refused on a channel this engine does own, too.
+            p = self.fixture(Path(tmp) / 'asset.bin')
+            p['buffer_channel_id'] = linkedin
+            with self.assertRaisesRegex(ValueError, "growth-mindmake's"):
+                preflight(p, '2026-10-26')
+            path = Path(tmp) / 'package.json'
+            path.write_text(json.dumps(dict(p, channel='linkedin')), encoding='utf-8')
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(command(['route', 'linkedin', 'text', '--as-of', '2026-10-26']), 1)
+                self.assertEqual(command(['preflight', str(path), '--as-of', '2026-10-26']), 1)
+            self.assertIn('growth-mindmake', out.getvalue())
 
     def test_asset_change_and_missing_alt_text_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -94,17 +177,21 @@ class SocialContractsTests(unittest.TestCase):
                     preflight(p, '2026-10-26')
 
     def test_personal_accounts_cannot_receive_a_scheduled_time(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            p = self.fixture(Path(tmp) / 'asset.bin')
+        with tempfile.TemporaryDirectory() as tmp, human_only_root() as root:
+            p = human_only(self.fixture(Path(tmp) / 'asset.bin'))
             p['proposed_due_at'] = '2026-10-27T14:00:00+00:00'
             with self.assertRaisesRegex(ValueError, 'remain unscheduled'):
-                preflight(p, '2026-10-26')
+                preflight(p, '2026-10-26', root=root)
             p['proposed_due_at'] = None
             p['publication_approval'] = {'approved': True, 'payload_sha256': package_digest(p),
                                         'evidence_ref': 'synthetic approval cannot widen authority'}
-            result = preflight(p, '2026-10-26')
+            result = preflight(p, '2026-10-26', root=root)
             self.assertIn('personal_account_human_final_publication_required', result['holds'])
             self.assertFalse(result['publication_authorized'])
+            # LinkedIn, the human-only account this guarded until 13 Nov 2026, is not prepared here at all.
+            p.update(channel='linkedin', account_url='https://www.linkedin.com/in/krish-raja/')
+            with self.assertRaisesRegex(ValueError, "growth-mindmake's"):
+                preflight(p, '2026-10-26')
 
     def test_approved_brand_content_has_delegated_cadence(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -159,8 +246,8 @@ class SocialContractsTests(unittest.TestCase):
             self.assertTrue(preflight(p, '2026-10-26')['structurally_valid'])
 
     def test_his_name_is_refused_in_the_caption_and_the_alt_text(self):
-        # Krish, 2026-10-28: "Remember, no content refers to Krish, ever." On the personal LinkedIn
-        # account too: first person is allowed there, his name in the text never is.
+        # Krish, 2026-10-28: "Remember, no content refers to Krish, ever." On his personal accounts
+        # too: first person is allowed there, his name in the text never is.
         with tempfile.TemporaryDirectory() as tmp:
             p = self.fixture(Path(tmp) / 'asset.bin')
             for caption in ('A test by Krish Raja on the chip money.', 'More at krishraja.com',

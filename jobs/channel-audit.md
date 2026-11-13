@@ -27,7 +27,9 @@ of 2026-10-21 supersedes older blanket read-only rules for this job only.
    links there follow the same rules as the other accounts; bio, positioning,
    pins and creative still need his approval. LinkedIn edits are krish_only:
    the engine never saves them, not even after approval (`audit begin`
-   refuses them).
+   refuses them). Since 13 November 2026 LinkedIn is growth-mindmake's
+   (Ruling, Krish, 2026-11-13): read it only, and name any LinkedIn finding
+   in the final message for growth-mindmake, never as a proposal from here.
    Substack Notes have no audit targets yet.
 3. Capture the run start in UTC, display dates in Europe/London. Pass this
    fixed timestamp as `--now` only to `audit checkpoint`. For each

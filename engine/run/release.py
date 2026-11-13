@@ -94,8 +94,8 @@ import re
 import sys
 from urllib.parse import urlsplit
 
-from engine import concepts as concept_rules
-from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, channel_id_errors
+from engine import concepts as concept_rules, owners
+from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, HANDED_OFF_CHANNELS, channel_id_errors
 from engine.control_center import sha256_hex
 from engine.copy_lint import copy_lint_errors, version as copy_lint_version
 from engine.core import instant, locked, ny_time, read_json, write_json
@@ -151,10 +151,12 @@ CHANNEL_PROFILE = {'substack-notes': 'substack-notes', 'threads': 'threads', 'x'
 BUFFER_NAME = {'substack-notes': 'Krish', 'threads': 'makeyourmind.up', 'x': 'TheRealKrisho',
                'instagram': 'makeyourmind.up', 'facebook': 'Makeyourmind/up', 'tiktok': 'therealkrisho',
                'youtube': 'makeyourmindup', 'linkedin': 'krish-raja'}
-# BUFFER_CHANNEL_ID and DENIED_CHANNELS live in engine/buffer_channels.py, the
+# BUFFER_CHANNEL_ID, DENIED_CHANNELS and HANDED_OFF_CHANNELS live in engine/buffer_channels.py, the
 # one table release and social preflight both read.
 # Native post URLs that carry the account handle as their first path segment.
 HANDLE_IN_PATH = ('x', 'tiktok', 'threads', 'substack-notes')
+# A channel that is only ever his click. LinkedIn, the one channel listed, is also growth-mindmake's since
+# 13 Nov 2026 (engine/owners.py): release holds it before this matters; this stays as the second wall.
 KRISH_CLICK_ONLY = ('linkedin',)
 # A placement that lives entirely in `words`, so one Buffer call carries it.
 EXPRESSIBLE_LINK_PLACEMENTS = (None, 'none', 'in_post')
@@ -1085,6 +1087,10 @@ def release_plan(spec, decision, ledger=None, asset_paths=None, channels=None, n
 
         if sid in concept_holds:
             hold(concept_holds[sid])
+            continue
+        if owners.owner(slot['channel']):
+            # Another engine's channel, even on a week signed before it moved (Ruling, Krish, 2026-11-13).
+            hold(owners.HOLD + ': ' + owners.refusal(slot['channel']))
             continue
         if signed.get(sid) != slot['payload_sha256']:
             hold('unsigned_or_changed_since_signing' if sid not in signed else 'payload_does_not_match_signed_digest')

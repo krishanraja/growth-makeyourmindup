@@ -148,7 +148,7 @@ def _thread_count(post):
 
 
 def sent_posts(client, since, now=None):
-    """This engine's sent posts on its eight pinned channels, with per-post metrics where present."""
+    """This engine's sent posts on its seven pinned channels, with per-post metrics where present."""
     since, now = instant(since), instant(now)
     listed = _posts(client.list_posts(status='sent', since=since.isoformat()))[:MAX_POSTS]
     seen = {}

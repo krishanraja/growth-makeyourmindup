@@ -2,7 +2,7 @@
 
 Runs on GitHub Actions three times a day (.github/workflows/measure.yml):
 
-1. reads this engine's sent posts on its eight pinned Buffer channels, with
+1. reads this engine's sent posts on its seven pinned Buffer channels, with
    Buffer's per-post metrics where present (engine/run/buffer_reads.py);
 2. reads Control Center's `web_analytics` rows: from the directive it pulls
    itself with --deliver, or from .scratch/cc/web-analytics.json (kept by the

@@ -1,16 +1,12 @@
 # Card: LinkedIn (personal)
 
-Owns unscheduled drafts for Krish's own final click. Judge 48 hours after he posts.
+Owns nothing here since 13 Nov 2026. Krish's personal LinkedIn is growth-mindmake's: its posts and the replies to everyone who engages with them (Ruling, Krish, 2026-11-13). He still clicks every post.
 
 | If | Then | Cite |
 |---|---|---|
-| Any LinkedIn item is prepared | An unscheduled draft only: no due time, never queued or published by the engine | R16, R39, R62 |
-| Copy is written | Personal voice: sincere, warm, humble and pleased to share something useful | R54, R55 |
-| A link would go in the body | Leave it out; the subscribe link lives in Featured and the profile | P4, D3 |
-| A document carousel is planned | Hold the document route while Buffer's saved preview is unresolved; at most ten slides | P4, F52, R31 |
-| A comment is prepared for Krish | No links; one candidate at a time; nothing that submits is pressed, except one comment in a Codex session he drives on his explicit approval of the exact text (jobs/engagement.md) | R06, R29 |
-| A weekly frequency is proposed | Two to four a week, proposed at G-A with its citation, not imposed; there is no quota | P4, R16 |
-| Reach falls more than three tenths below the four-week median | Check for a body link or an off-topic post; restore the topic | P4 |
-| Comments arrive from target titles | Put them first in Krish's reply block | P4 |
-| Krish has posted and 48 hours have passed | Read profile visits, Featured clicks and comments from target titles | P4, R08 |
-| An audit finds a LinkedIn fix | Recommend it to Krish; no live edit | R28 |
+| A LinkedIn post, comment, reply or engagement tap is asked for here | Refuse it and name growth-mindmake; never draft, queue, tap, schedule or pin it | R125 |
+| A week spec, calendar row, handoff slot or release line names LinkedIn | It fails or holds with channel_owned_by_another_engine; nothing is read from Buffer | R125, R109 |
+| A Buffer call names LinkedIn's channel id | Refuse it by id; it is not pinned here | R125 |
+| LinkedIn is useful as research, a trend or what other people post | Read it, never act on it | R79, P4 |
+| An audit or a reading finds a LinkedIn fix | Name it in the final message for growth-mindmake; no proposal and no live edit here | R28, R125 |
+| Subscribers arrive from LinkedIn | Count them as organic, as Substack reports them | R08, P4 |

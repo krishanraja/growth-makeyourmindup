@@ -11,6 +11,17 @@
   route, `invariants/boundary.json`, `social/formats/meme.json` and `note.json`); off-day voiceover shorts are made on
   content-engine's ve route. No workflow, cron or runner here makes any of them. The route is content-engine's
   `docs/CAROUSEL-STANDARD.md`, "How a carousel is made".
+- 2026-11-13: Krish's personal LinkedIn is growth-mindmake's, not this engine's. Asked "Which engine should own your
+  personal LinkedIn posts (you still click every post)?", he answered "growth-mindmake owns it". growth-mindmake
+  owns his personal LinkedIn posts (Mindmake's published thinking, about three a week) and replies to everyone who
+  engages with them; he still clicks every post, so LinkedIn stays `human_publish_only`. His X and the publication's
+  own accounts (Instagram, Facebook, YouTube, Substack, Threads, Substack Notes and TikTok) stay here. The ruling
+  also records that the media kit says the publication should not lean on LinkedIn. This engine now drafts, queues,
+  taps, schedules and pins nothing there: one owner table (`engine/owners.py`) and the channel record's `owned_by`
+  agree, and the social route, the pack check, Control Center reports, the engagement tap queue, the Engagement and
+  Publishing engines, the calendar (its four weekly LinkedIn drafts and LinkedIn cap are gone), the spec lint, the
+  L0 handoff, the backlog and the Buffer channel table all refuse it. Reading LinkedIn (research, trend reading,
+  what others post) stays (`AGENTS.md`, "Krish's personal LinkedIn is growth-mindmake's"; R125).
 - 2026-11-12: Nothing on his list is stale; the engine takes back its own asks once their week or window has passed.
   His words: everything must be "not only up to date but impossible to sprawl over time". His list shows one of this
   engine's asks at a time, and nine older asks (the three-part mix plan for the week of 2 November, which is over,

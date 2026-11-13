@@ -3,7 +3,7 @@
 Rulings: Krish, 26 October 2026. The latest X/TikTok clarification supersedes
 this day's earlier personal-drafts-only instruction for those two accounts.
 
-**Current as of 5 November 2026.** The sections below are dated, and a later
+**Current as of 13 November 2026.** The sections below are dated, and a later
 one wins where it says so. In short:
 
 - Derived (filler) posts on Instagram, YouTube, TikTok and X release from his
@@ -11,7 +11,9 @@ one wins where it says so. In short:
   other gate (30 October, below).
 - Series (Monday, Wednesday, Friday) posts still need his per-post Control
   Center go-live. Threads, Substack Notes and Facebook still sign post by post.
-- LinkedIn is unscheduled drafts and his own click.
+- Krish's personal LinkedIn is growth-mindmake's, not this engine's
+  (13 November, below). This engine drafts, queues, taps, schedules and pins
+  nothing there; he still clicks every post growth-mindmake prepares.
 - Buffer's TikTok short-video route is held after a provider rejection; the
   alternative is the native TikTok uploader under the applicable approval
   (5 November, below).
@@ -38,6 +40,10 @@ Scheduling proves only a scheduled post. Actual publication needs the native
 URL/content/account and a dated readback. Preserve uncertain outcomes.
 
 ## LinkedIn and unscoped personal identities
+
+Superseded for this engine on 13 November 2026 (below): LinkedIn is
+growth-mindmake's, and this engine prepares nothing there. The lines that
+follow still describe the wall growth-mindmake works inside.
 
 Krish's LinkedIn is unscheduled drafts only. Never queue, schedule, publish,
 submit comments, like, follow or message. He reviews and makes the final click.
@@ -150,7 +156,8 @@ line here says otherwise.
   slot, and both routes wait on their capability checks.
 - **LinkedIn stays click-only.** Unchanged: unscheduled drafts and his
   final click.
-- **Only this engine's eight Buffer channels.** The Buffer organisation is
+- **Only this engine's eight Buffer channels** (seven since 13 November,
+  when LinkedIn's left: below). The Buffer organisation is
   shared with other ventures. Release acts only on a channel whose
   service, name and channelId all match its pinned entry, and refuses the
   fulltime.fm TikTok, the Heartside Facebook Page and both yourdoghasnotes
@@ -276,3 +283,34 @@ week's mix once, let Growth fill it". It adds to the rulings above.
 
 No spending, new connection, automation or account-setting change follows
 from these rulings.
+
+## 13 November 2026: Krish's personal LinkedIn is growth-mindmake's
+
+Ruling (Krish, 2026-11-13; R125; `CHANGES.md`). Asked "Which engine should
+own your personal LinkedIn posts (you still click every post)?", he answered
+"growth-mindmake owns it". It supersedes every LinkedIn line above for this
+engine.
+
+- **Who owns it.** growth-mindmake (`krishanraja/growth-mindmake`) owns
+  Krish's personal LinkedIn posts, Mindmake's published thinking at about
+  three a week, and the replies to everyone who engages with them. Its
+  `docs/GET-GOING.md` step 1.4 is where that work now starts.
+- **He still clicks every post.** LinkedIn stays `human_publish_only` in
+  `social/channels/linkedin.json`; nothing schedules or publishes it.
+- **What this engine stops.** No LinkedIn post, comment, reply, engagement
+  tap, go-live, calendar row, week-spec slot, backlog edition or Buffer pin.
+  The channel record carries `owned_by` and `engine/owners.py` names the
+  same owner; the social route, the pack check, the engagement queue, the
+  Engagement and Publishing engines, the calendar and spec lints and the L0
+  handoff all refuse it with that reason, and its Buffer channel is refused
+  by id (`engine/buffer_channels.py`, `HANDED_OFF_CHANNELS`).
+- **What stays.** Reading LinkedIn is not owning it: research, the radar's
+  trend reading and measuring what other people post there all stay. His X
+  and the publication's own accounts (Instagram, Facebook, YouTube, Substack,
+  Threads, Substack Notes and TikTok) stay with this engine.
+- **The media kit.** The ruling also records that the media kit says the
+  publication should not lean on LinkedIn, so nothing here routes the
+  publication's growth through it.
+
+No spending, new connection, automation or account-setting change follows
+from this ruling.

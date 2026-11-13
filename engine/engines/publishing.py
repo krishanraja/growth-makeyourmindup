@@ -5,13 +5,14 @@ what a reader can see and do: scheduled, public, grid cover, player cover, playa
 and email delivery are separate checks on the same post ID, and an edition is done only when every check
 that applies to its channel and format is closed. Saved settings never close a check; only a readback of the
 public reader view does. A failed route is held with its failure, a date and an explicit recheck condition.
-LinkedIn follows its human publication rule: Krish's click, never scheduled by this engine. Nothing here
-posts, publishes, schedules, sends, spends or writes to Control Center.
+Krish's personal LinkedIn is growth-mindmake's since 13 November 2026 (Ruling, Krish, 2026-11-13;
+engine/owners.py): no edition, check or route hold is recorded for it here. Nothing here posts, publishes,
+schedules, sends, spends or writes to Control Center.
 """
 import re
 from pathlib import Path
 
-from engine import social
+from engine import owners, social
 
 KINDS = ('edition', 'route_hold', 'check')
 STATES = {'edition': ('approved', 'scheduled', 'public', 'repair'), 'route_hold': ('held',),
@@ -30,15 +31,13 @@ EXTRA_CHECKS = {('facebook', 'short-video'): ('grid_cover', 'player_cover'),
                 ('youtube', 'short-video'): ('continuation_link',),
                 ('substack', 'article'): ('playable_video', 'email_delivery')}
 ROUTES = ('buffer', 'native', 'krish_click')
-HUMAN_ONLY = ('linkedin',)
 SHA256 = re.compile(r'^[0-9a-f]{64}$')
 DATE = re.compile(r'\b(\d{4}-\d{2}-\d{2})\b')
 
 
 def applicable_checks(channel, format_id):
-    """The reader-facing checks one destination closes against. LinkedIn is Krish's click, so not scheduled."""
-    base = ('public',) if channel in HUMAN_ONLY else ('scheduled', 'public')
-    return base + EXTRA_CHECKS.get((channel, format_id), ())
+    """The reader-facing checks one destination closes against."""
+    return ('scheduled', 'public') + EXTRA_CHECKS.get((channel, format_id), ())
 
 
 def channel_ids():
@@ -65,6 +64,9 @@ def validate_detail(record):
     errors = []
     if state not in ALLOWED[kind]:
         return [kind + ' state must be one of ' + ', '.join(ALLOWED[kind])]
+    if owners.owner(d.get('channel')):
+        # Another engine's channel: nothing of it is recorded here (Ruling, Krish, 2026-11-13).
+        return ['detail.channel: ' + owners.refusal(d['channel'])]
     if kind in ('edition', 'check') and d.get('channel') not in channel_ids():
         errors.append('detail.channel must be a channel id in social/channels')
     if kind == 'edition':
@@ -73,8 +75,6 @@ def validate_detail(record):
                 errors.append('detail.' + name + ' is required')
         if d.get('route') not in ROUTES:
             errors.append('detail.route must be one of ' + ', '.join(ROUTES))
-        if d.get('channel') in HUMAN_ONLY and (d.get('route') != 'krish_click' or state == 'scheduled'):
-            errors.append('LinkedIn follows its human publication rule: route krish_click, never scheduled here')
         if not (isinstance(d.get('payload_sha256'), str) and SHA256.match(d['payload_sha256'])):
             errors.append('detail.payload_sha256 must be the sha256 of the approved edition')
         if d.get('post_id') is not None and not _text(d['post_id']):
