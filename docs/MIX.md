@@ -16,7 +16,9 @@ channels right now, the faster we learn."
 - the lanes in `mix.json`, which only an interactive session changes;
 - `--ideas FILE`: this week's filler ideas, each with `idea_id`, `lane`,
   `idea`, `claim`, `source_url` and `source_date`;
-- `--mocks FILE`: `{concept_id: {claim, mock_sha256, style_card?}}` once the mocks exist; `style_card` names the
+- `--mocks FILE`: `{concept_id: {claim, mock_sha256, style_card?}}` once the mocks exist (each mock made in a Claude
+  session with the Codex plugin building it, R126; content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel
+  is made", never by a scheduled job); `style_card` names the
   inspiration card Krish ticked as a style to use within a week that the mock was made in (protocol 1.21.0,
   `docs/ENGINE.md`), never part of the hash he approves;
 - `--learn FILE`: last week's `mix learn` output.

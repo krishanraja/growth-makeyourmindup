@@ -2,8 +2,8 @@
   "schema_version": 1,
   "kind": "format",
   "id": "note",
-  "production_owner": "growth-canva",
-  "production_reference": "social/guides/canva.md",
+  "production_owner": "content-engine",
+  "production_reference": "https://github.com/krishanraja/content-engine/blob/main/docs/CAROUSEL-STANDARD.md",
   "channels": [
     "substack-notes"
   ],
@@ -13,9 +13,9 @@
   "snackable": true,
   "delivery_checks": [
     "Native Note copy written for the Notes feed, not a pasted article excerpt; every quote is a literal match to the published piece.",
-    "Any image is an approved Canva export from the brand kit and an approved template, listed in its 4 Growth manifest.",
+    "Any image: made in a Claude session, with the Codex plugin building it (Ruling, Krish, 2026-11-13; content-engine docs/CAROUSEL-STANDARD.md, \"How a carousel is made\"): the session writes the words and the direction, a Codex card of kind notes_image builds the picture in code, and the session verifies it against the brand palette before Krish sees it; never a scheduled job, a headless model run or a template engine. It is filed in its post's 3 Posts folder.",
     "No outside link in a reach Note; verify the subscribe path live.",
-    "Share mechanic: one line a reader would quote or forward to a named person, complete without the article behind it.",
+    "Share mechanic: one line a reader would quote or forward to a named person, complete without the article behind it. It stays a proposal in the brief until content-engine adopts it as a production standard through its own route.",
     "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
     "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
     "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
@@ -30,7 +30,7 @@
   "lessons": [
     "revision-identity",
     "growth-measurement",
-    "canva-lane-boundary",
+    "one-route-for-pictures",
     "notes-threads-in-scope",
     "built-to-be-sent",
     "share-rate-measure"

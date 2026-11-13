@@ -18,7 +18,7 @@ Nothing here may differ from it, and only Krish changes it.
 
 - **Carousels.** Card 1 has no logo at the top. Every card carries the wordmark small in the bottom right. The last
   card is always `templates/carousel-close.html`: the piece's takeaway, Subscribe free and the wordmark. A new piece
-  kit may not ship its own close (`engine/run/artdirect.py` `OWN_CLOSE`).
+  kit may not ship its own close (`engine/run/kits.py` `OWN_CLOSE`).
 - **Memes and Notes images.** No logo at the top, and the wordmark in the bottom right. No close.
 - **Saturday good news.** It keeps Krish's fixed close (`render/pieces/off-sat-goodnews`).
 - **Colour.** butter is Monday's follow.the.money, lilac is Wednesday's under.the.hood and coral is Friday's
@@ -127,10 +127,27 @@ Nothing here may differ from it, and only Krish changes it.
 
 ## Piece kits
 
-Krish ruled on 29 October 2026 that the code renderer makes every post, that Codex art-directs one
-visual idea for each piece, and that Canva is for reference only. The bar is the piece about why
-every country wants its own AI, where one object from that story ran through every card and frame.
-A piece kit is one such idea, written as code the renderer can use.
+Krish ruled on 29 October 2026 that the code renderer makes every post and that Canva is for reference only. The bar
+is the piece about why every country wants its own AI, where one object from that story ran through every card and
+frame. A piece kit is one such idea, written as code the renderer can use.
+
+**How a kit is made (Ruling, Krish, 2026-11-13).** "all the carousels should now be done in Claude, but using the Codex
+plug in as per the other usual workflows", and the same day "memes and Notes images should go the same way". So a kit
+is built only in a Claude session that someone opens, usually from the board item's "Copy prompt for Claude", never by
+a scheduled job, a headless model run or a template engine; the Saturday art-direction run that made kits with Codex
+on an API key is retired. In the session (content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made"):
+
+1. Claude writes the words, the story and the direction. A carousel's deck passes content-engine's
+   `scripts/carousel_check.py` first.
+2. Claude writes one Codex card for the kit with content-engine's `python3 scripts/ve.py card` (kind `carousel`,
+   `meme` or `notes_image`; the day, the inspiration cards Krish ticked and the Control Center booking, `spend_id`),
+   pointing Codex to `render/KIT_RULES.md` and to this file, and puts it in `codex/queue/<id>.md` on its `claude/`
+   branch. The card carries the brand palette for its day and the deck's shape, never its words.
+3. The Codex lane on Krish's home computer builds it through the Codex plugin, in a worktree, and pushes `codex/<id>`
+   with `codex/results/<id>.json` (content-engine `docs/ve/RUNBOOK.md`, S2; `config/codex-lanes.json` there).
+4. Claude verifies it: the card's acceptance again, then renders the real words from a local jobs file with
+   `scripts/render_mocks.mjs`, runs the deck check and the 10/10 judges, and looks at every card, then files the
+   pictures in the post's `3 Posts` folder. Krish approves; release posts it.
 
 ### What a piece kit holds
 
@@ -151,7 +168,7 @@ A render job names a piece template as `piece:<piece_id>/<template>`. The synthe
 - Invent one idea for one piece, true to that story and no other, and use it on every template.
 - Arrange the eight kit colours, the four kit fonts and the brand mark however the idea needs, with
   boxes, borders, gradients, shapes and opacity.
-- Write in the piece's own folder only, with no network. `render/ARTDIRECT_PROMPT.md` is its brief.
+- Write in the piece's own folder only, with no network. `render/KIT_RULES.md` is its brief, and the card says the rest.
 
 ### What Codex may not do
 
@@ -165,24 +182,26 @@ A render job names a piece template as `piece:<piece_id>/<template>`. The synthe
   copy a house template or another piece's kit.
 - Put the piece's title, its claims or a real figure in the kit. Examples are placeholders, as in
   the house file, and the real words are filled in outside this repository.
+- Decide taste: Codex is the visual asset maker (Ruling, Krish, 2026-10-28); the idea it builds is the one the card
+  gives it.
 - Use an em dash, or words a 12 year old could not follow.
 
-### The renderer's checks are the gate
+### The checks a card's acceptance runs
 
-- The static checks: `python growth.py run artdirect check render/pieces/<piece_id>`.
-- Two renders of every template that give the same bytes (`--verify`), and the colours and fonts
-  the page really painted, held to the kit. A page that asks for anything the renderer refuses, such
-  as a remote font or a missing picture, is refused itself.
-- A kit that fails any check is removed, and that piece goes out in the house kit (code
-  `piece_kit_refused`). `tests/test_piece_kits.py` runs the same checks on every kit here, and shows
+- The static checks: `python growth.py run kit check render/pieces/<piece_id>` (with `--words` and the deck or the
+  piece, also refusing its own words in the kit).
+- Two renders of every template that give the same bytes: `python growth.py run kit jobs <kit> --out <jobs>`, then
+  `node scripts/render_mocks.mjs <jobs> --verify --manifest <report>`, then
+  `python growth.py run kit painted <kit> --report <report>` holds the colours and fonts the page really painted to the
+  kit. A page that asks for anything the renderer refuses, such as a remote font or a missing picture, is refused
+  itself.
+- A kit that fails any check is not used. `tests/test_piece_kits.py` runs the same checks on every kit here, and shows
   each one failing on a planted colour outside the kit, a remote font and an image.
-- Codex works on three pieces a week at most unless a run is given another cap, and the run's
-  summary counts the tokens it used. Its log holds counts and codes only.
 
 ### What his approval binds
 
-- Kits reach this repository only through the pull request "Piece kits for week W", which the
-  workflow (`.github/workflows/artdirect.yml`) never merges.
+- A kit reaches this repository only on its card's `codex/<id>` branch and a pull request a Claude session opens after
+  verifying it.
 - His approval of a concept in the week's mix plan binds the exact mock hashes: the images rendered
   from these templates with that concept's words. A kit changed after that makes new mocks, and the
   concept needs his approval again.

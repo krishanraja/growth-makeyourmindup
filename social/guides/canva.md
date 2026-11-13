@@ -1,10 +1,10 @@
 # Canva lane
 
 Ruling: Krish, 27 October 2026 (`CHANGES.md`). Growth makes, in Canva, the
-formats content-engine does not cover: `note`, `meme`, `receipt-card`,
-`quote-card`, `scorecard`, `poll` and `story-frame`, whose `production_owner`
-is `growth-canva`. `engine/run/canva.py` checks each export against
-`social/brand/kit.json`. Content-engine keeps its own formats and
+formats content-engine does not cover: `receipt-card`, `quote-card`,
+`scorecard`, `poll` and `story-frame`, whose `production_owner` is
+`growth-canva`. Memes and Notes images left it on 13 Nov 2026 (R126).
+`engine/run/canva.py` checks each export against `social/brand/kit.json`. Content-engine keeps its own formats and
 standards; this lane applies those standards by reference and never competes.
 
 ## Every design

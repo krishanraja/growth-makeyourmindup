@@ -72,7 +72,7 @@ class NewChannelsTests(unittest.TestCase):
         self.assertIn('notes-threads-in-scope', notes['lessons'])
         self.assertIn('substack-notes-identity', notes['lessons'])
         p = package('substack-notes', notes['account_url'], 'personal', 'note',
-                    owner='growth-canva', due='2026-11-02T13:00:00+00:00')
+                    owner='content-engine', due='2026-11-02T13:00:00+00:00')
         result = preflight(p, '2026-10-27')
         self.assertEqual(result['publication_mode'], 'approved_content_cadence')
         self.assertNotIn('personal_account_human_final_publication_required', result['holds'])
@@ -81,40 +81,46 @@ class NewChannelsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'speaking context'):
             preflight(p, '2026-10-27')
 
-    def test_meme_and_note_are_owned_by_growth_canva(self):
+    def test_meme_and_note_take_the_carousel_route_and_the_cards_stay_in_canva(self):
         records = inventory()
         formats = records['format']
         # 27 Oct evening: the V1 calendar's cards, polls and Story frames join the Canva lane
         # (invariants/boundary.json owners; story artwork itself stays content-engine's).
-        canva = ('note', 'meme', 'receipt-card', 'quote-card', 'scorecard', 'poll', 'story-frame')
+        # 13 Nov (R126): memes and Notes images leave it for the carousel route, in a Claude session with the Codex
+        # plugin building them (content-engine docs/CAROUSEL-STANDARD.md, "How a carousel is made").
+        canva = ('receipt-card', 'quote-card', 'scorecard', 'poll', 'story-frame')
         for name in canva:
             self.assertEqual(formats[name]['production_owner'], 'growth-canva')
             self.assertEqual(formats[name]['production_reference'], 'social/guides/canva.md')
             self.assertIn('canva-lane-boundary', formats[name]['lessons'])
+        for name in ('note', 'meme'):
+            self.assertIn('one-route-for-pictures', formats[name]['lessons'])
+            self.assertNotIn('canva-lane-boundary', formats[name]['lessons'])
         for name, obj in formats.items():
             if name not in canva:
                 self.assertEqual(obj['production_owner'], 'content-engine', name)
         self.assertEqual(set(formats['meme']['channels']), MEME_CHANNELS)
         self.assertEqual(formats['note']['channels'], ['substack-notes'])
-        lesson = records['lesson']['canva-lane-boundary']
-        self.assertEqual((lesson['status'], lesson['evidence']['kind']), ('accepted', 'user_ruling'))
+        for name in ('canva-lane-boundary', 'one-route-for-pictures'):
+            lesson = records['lesson'][name]
+            self.assertEqual((lesson['status'], lesson['evidence']['kind']), ('accepted', 'user_ruling'), name)
         guide = ROOT / 'social' / 'guides' / 'canva.md'
         self.assertLessEqual(len(guide.read_bytes()), 2048)
         text = guide.read_text(encoding='utf-8')
         for phrase in ('brand kit', 'approved template', 'literal match', 'AI label',
                        'real video', 'Never publish', '4 Growth', 'docs/ASSET-STORAGE.md'):
             self.assertIn(phrase, text)
-        # A meme package claiming content-engine ownership is refused.
+        # A meme package still claiming the Canva lane is refused since 13 Nov (R126); the carousel route's passes.
         threads = records['channel']['threads']
-        p = package('threads', threads['account_url'], 'personal', 'meme')
+        p = package('threads', threads['account_url'], 'personal', 'meme', owner='growth-canva')
         with tempfile.TemporaryDirectory() as tmp:
             asset = Path(tmp) / 'meme.bin'
-            asset.write_bytes(b'synthetic meme export, not a real post')
+            asset.write_bytes(b'synthetic meme picture, not a real post')
             p['assets'] = [{'path': str(asset), 'sha256': hashlib.sha256(asset.read_bytes()).hexdigest(),
-                            'alt_text': 'Synthetic meme export.'}]
+                            'alt_text': 'Synthetic meme picture.'}]
             with self.assertRaisesRegex(ValueError, 'production owner'):
                 preflight(p, '2026-10-27')
-            p['production']['owner'] = 'growth-canva'
+            p['production']['owner'] = 'content-engine'
             self.assertTrue(preflight(p, '2026-10-27')['structurally_valid'])
 
     def test_substack_article_has_no_daily_target(self):

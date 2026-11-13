@@ -1523,13 +1523,13 @@
     },
     {
       "id": "R114",
-      "statement": "The code renderer draws every post; Codex only art-directs a piece kit, which the renderer checks (house colours and fonts painted, byte-identical renders, no pictures of people, nothing remote) before any mock of it reaches his approval.",
+      "statement": "The code renderer draws every post; a piece kit is built by Codex only from a card a Claude session writes, through the Codex plugin (Ruling, Krish, 2026-11-13), and the renderer checks it (house colours and fonts painted, byte-identical renders, no pictures of people, nothing remote) before any mock of it reaches his approval.",
       "source_file": "CHANGES.md",
       "quote": "we need to find a way of combining strengths",
       "enforced_by": [
-        "engine/run/artdirect.py:kit_errors",
-        "engine/run/artdirect.py:painted_errors",
-        "engine/run/artdirect.py:gate"
+        "engine/run/kits.py:kit_errors",
+        "engine/run/kits.py:painted_errors",
+        "engine/run/kits.py:main"
       ],
       "tests": [
         "test_an_off_kit_colour",
@@ -1682,6 +1682,20 @@
         "test_a_hash_mismatch_holds_loudly_and_proposes_again",
         "test_a_format_or_a_day_outside_the_mix_never_releases",
         "test_series_go_lives_are_unaffected_by_the_mix"
+      ]
+    },
+    {
+      "id": "R126",
+      "statement": "Every carousel, meme and Notes image is made in a Claude session, with the Codex plugin building it; no workflow, cron or runner here runs Codex, the renderer or the kit checks, and memes and Notes images follow the carousel route, not the Canva lane (content-engine docs/CAROUSEL-STANDARD.md, \"How a carousel is made\").",
+      "source_file": "CHANGES.md",
+      "quote": "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual workflows",
+      "enforced_by": [
+        "process"
+      ],
+      "tests": [
+        "test_no_workflow_makes_one",
+        "test_no_runner_or_lane_runs_codex",
+        "test_memes_and_notes_images_take_the_same_route"
       ]
     }
   ]

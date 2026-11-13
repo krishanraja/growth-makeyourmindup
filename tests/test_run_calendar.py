@@ -105,7 +105,7 @@ class CalendarTests(unittest.TestCase):
         self.assertIn('cap', codes(calendar))
         calendar = v1()
         calendar['weekly'].append(dict(row(calendar, 'meme-instagram-tu'), id='meme-threads-mo', channel='threads',
-                                       weekday='MO', template='meme-square', priority=1))
+                                       weekday='MO', priority=1))
         # Threads takes one a day; a day-0 receipt must never be cut (X takes four since R102).
         self.assertIn('day0_bumped', codes(calendar))
         calendar = v1()

@@ -134,14 +134,29 @@ a deployed handoff, runtime learning capture or automatic posting.
 
 Ruling: Krish, 27 October 2026 (`CHANGES.md`). Growth makes, in Canva, the
 formats content-engine does not cover, for amplification and speed: today
-Substack Notes and memes, whose `production_owner` is `growth-canva` in
-`social/formats/`. For that lane only, this supersedes the line above that
+cards, polls and Story frames, whose `production_owner` is `growth-canva` in
+`social/formats/`. Substack Notes images and memes were here until 13 November
+2026 (below). For that lane only, this supersedes the line above that
 Growth does not run a competing renderer or creative-standard register.
 Content-engine keeps its formats and standards, and the lane applies them by
 reference. Brand kit and approved templates only; every quote matches the
 published piece; Canva never publishes. Approved exports and manifests go to
 the Drive 4 Growth library per `docs/ASSET-STORAGE.md`. Creative acceptance
 stays with Krish. Guide: `social/guides/canva.md`.
+
+## 13 November 2026: carousels, memes and Notes images, one route
+
+Rulings: Krish, 13 November 2026 (`CHANGES.md`, R126): "all the carousels
+should now be done in Claude, but using the Codex plug in as per the other
+usual workflows"; "memes and Notes images should go the same way"; "Off-day
+voiceover shorts should go the same way too". Every carousel, meme and Notes
+image is made in a Claude session, with the Codex plugin building it, and an
+off-day voiceover short on content-engine's ve route from a Claude session;
+never a scheduled job, a headless model run or a template engine. The route
+is content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made"; this engine's part is the piece kit
+Codex builds from the card (`render/KIT.md`, "Piece kits") and the posting.
+Memes and Notes images leave the Canva lane: their format owner is that
+route (`social/formats/meme.json`, `note.json`; `invariants/boundary.json`).
 
 ## 27 October 2026: Notes and Threads in scope
 

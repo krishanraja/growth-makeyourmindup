@@ -13,8 +13,15 @@ the explicit scoped authority in AGENTS.md. Other publication stays gated.
 
 27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
 Growth also produces, in Canva, the formats content-engine does not cover
-(today Substack Notes and memes; `docs/ENGINE-BOUNDARY.md`, "the Canva
+(today cards, polls and Story frames; `docs/ENGINE-BOUNDARY.md`, "the Canva
 lane"). Content-engine keeps every other format and all production standards.
+
+13 November 2026 (`CHANGES.md`, R126): every carousel, meme and Notes image is
+made in a Claude session, with the Codex plugin building it, as in the other
+usual workflows; off-day voiceover shorts the same way, on content-engine's ve
+route. Never a scheduled job, a headless model run or a template engine: the
+Saturday art-direction workflow is retired. The route is
+content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made".
 
 **Current (5 November 2026).** The work runs as four engines, one per
 session: Acquisition, Engagement, Publishing, and Measurement and
@@ -66,8 +73,8 @@ an `instruction_ack` when the session acted on his instruction.
 [docs/LANES.md](docs/LANES.md) says, in plain words, what runs on its own
 (L0 GitHub Actions), what waits for one press in Control Center (L2) and
 what waits for Krish's hands (L3: LinkedIn, the Buffer plan, one-time set-up
-in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs ten
-workflows: control-center, release, measure, keys, handoff, check, artdirect,
+in [docs/SETUP-ONCE.md](docs/SETUP-ONCE.md)). GitHub Actions runs nine
+workflows: control-center, release, measure, keys, handoff, check,
 maker ([docs/MAKER.md](docs/MAKER.md)), ledger and learn
 ([docs/MIX.md](docs/MIX.md), "Learning"). There
 are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct

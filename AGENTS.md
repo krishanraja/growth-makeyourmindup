@@ -227,6 +227,23 @@ TikTok, Instagram and LinkedIn, still prepared only. LinkedIn stays his click.
 (Since 5 November the Engagement engine prepares that queue and Krish enacts
 it in his own Codex sessions: "Outreach for Make Your Mind Up" above.)
 
+## Carousels, memes and Notes images: one route (Rulings, Krish, 2026-11-13)
+
+His words: "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual
+workflows"; then "memes and Notes images should go the same way", and "Off-day voiceover shorts should go the same way
+too". So every carousel, meme and Notes image this engine makes is made in a Claude session that someone opens
+(usually from the board item's "Copy prompt for Claude"), with the Codex plugin building it: the session writes the
+words, the story and the direction, then one Codex card (content-engine's `python3 scripts/ve.py card`, kind
+`carousel`, `meme` or `notes_image`, with its `spend_id`) in `codex/queue/<id>.md` on its `claude/` branch; the Codex
+lane builds the piece kit through the plugin (`render/KIT_RULES.md` is the card's brief, `python growth.py run kit
+check` its acceptance), and the session renders the real words, verifies every card, files them in the post's
+`3 Posts` folder and reports on the board. Off-day voiceover shorts are made on content-engine's ve route from a
+Claude session. Never a scheduled job, a headless model run or a template engine: the Saturday art-direction workflow
+is retired, no workflow here runs Codex or the renderer (R126, `tests/test_piece_kits.py`), and memes and Notes images
+left the Canva lane. The route is content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made". This
+engine's own sessions load the Codex plugin as content-engine's do (`.claude/settings.json`,
+`.claude/hooks/codex-login.sh`). Where an older line below says otherwise, this wins.
+
 Growth strategy is self-contained here. Content-engine supplies production
 assets; Control Center is the eventual unified review surface. Scheduled
 jobs may use the supported growth routes. Interactive work makes no Control
@@ -547,9 +564,9 @@ that day is the daily credits session in `lanes.json` (`claude_sessions`,
 Separately, Control Center wakes `.github/workflows/control-center.yml`
 every morning; that GitHub runner checks the engine offline and reports
 what a clean runner can see. Its numbers are always "measured only in the
-publication workspace". GitHub Actions runs ten workflows, all lane L0
+publication workspace". GitHub Actions runs nine workflows, all lane L0
 (`docs/LANES.md`, `lanes.json`): control-center, release, measure, keys,
-handoff, check, artdirect, maker, ledger and learn. Measure judges each post
+handoff, check, maker, ledger and learn. Measure judges each post
 by the subscribers it brought, and learn turns last judged week's verdicts
 into next week's mix (Ruling, Krish, 2026-11-12: the engine reads
 subscribers every week and judges posts by subscribers, not engagement). The maker (`docs/MAKER.md`) drafts each next day's posts from

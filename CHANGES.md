@@ -1,5 +1,16 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-13: Every carousel, meme and Notes image is made in a Claude session, with the Codex plugin building it.
+  His words, asked whether to retire content-engine's old carousel commands: "all the carousels should now be done in
+  Claude, but using the Codex plug in as per the other usual workflows", then "memes and Notes images should go the
+  same way", and "Off-day voiceover shorts should go the same way too". The Saturday art-direction workflow, which ran
+  Codex on an API key to build piece kits, is retired with its Codex runner and its key; the kit checks stay as
+  `growth.py run kit` (`engine/run/kits.py`), the acceptance of the Codex card a Claude session writes with
+  content-engine's `ve card` and queues in `codex/queue/<id>.md` for the Codex lane, and `render/KIT_RULES.md` is that
+  card's brief. Memes and Notes images leave the Canva lane for the same route (their format owner is content-engine's
+  route, `invariants/boundary.json`, `social/formats/meme.json` and `note.json`); off-day voiceover shorts are made on
+  content-engine's ve route. No workflow, cron or runner here makes any of them. The route is content-engine's
+  `docs/CAROUSEL-STANDARD.md`, "How a carousel is made".
 - 2026-11-12: Nothing on his list is stale; the engine takes back its own asks once their week or window has passed.
   His words: everything must be "not only up to date but impossible to sprawl over time". His list shows one of this
   engine's asks at a time, and nine older asks (the three-part mix plan for the week of 2 November, which is over,

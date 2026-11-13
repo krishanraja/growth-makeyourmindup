@@ -4,12 +4,15 @@
   "id": "canva-lane-boundary",
   "category": "format",
   "scope": [
-    "note",
-    "meme",
-    "canva"
+    "canva",
+    "receipt-card",
+    "quote-card",
+    "scorecard",
+    "poll",
+    "story-frame"
   ],
   "status": "accepted",
-  "finding": "Growth makes, in Canva, the formats content-engine does not cover: Notes and memes are production_owner growth-canva. It uses the brand kit and approved templates only and applies content-engine's standards by reference. Content-engine keeps its formats and standards. Canva never publishes.",
+  "finding": "Growth makes, in Canva, the formats content-engine does not cover: receipt cards, quote cards, scorecards, polls and Story frames are production_owner growth-canva. It uses the brand kit and approved templates only and applies content-engine's standards by reference. Content-engine keeps its formats and standards. Canva never publishes. Notes and memes were in this lane until 13 November 2026, when they moved to the carousel route (lesson one-route-for-pictures).",
   "evidence": {
     "kind": "user_ruling",
     "ref": "CHANGES.md, 2026-10-27 entry: \"Canva: \"yes its important you create a FULL brand kit in Canva for use, You choose whatever the content-engine is not covering, and gives maximum amplification and speed\". For that Canva lane only, this supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line; content-engine keeps its formats and standards.\"",

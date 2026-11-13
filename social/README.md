@@ -22,7 +22,7 @@ creating or uploading a package; keep private evidence out of the shared library
 | Why would one person send it to another? | The package's `share` block, checked against `share.json`; the blind reader is `crew/send-test/` |
 | How is creative made and judged? | Content-engine's production contract; see `docs/ENGINE-BOUNDARY.md` |
 | Where is a brand asset (logo, font, colour, photo, template, sting, music)? | `brand/library.json` (Drive ids), with `docs/BRAND-KIT.md` |
-| How are Notes and memes made? | `guides/canva.md` (format `production_owner` is `growth-canva`) |
+| How are Notes and memes made? | In a Claude session, with the Codex plugin building them: content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made" (Ruling, Krish, 2026-11-13; lesson `one-route-for-pictures`) |
 | What is live right now? | Actual owned native pages and tool readback; private run evidence |
 
 These are typed contracts, not a second queue or publishing orchestrator. They

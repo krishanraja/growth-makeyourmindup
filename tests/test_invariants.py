@@ -389,9 +389,12 @@ class SourceAndBoundaryTests(unittest.TestCase):
         self.assertEqual(data['source_file'], 'CHANGES.md')
         self.assertIn(collapse(data['quote']), collapse((ROOT / 'CHANGES.md').read_text(encoding='utf-8')))
         owners = data['owners']
-        for name in ('article', 'long-video', 'short-video', 'carousel', 'story-artwork', 'cover', 'thumbnail'):
+        # Memes and Note images take the carousel route since 13 Nov 2026 (R126): content-engine's route, in a Claude
+        # session with the Codex plugin building them, no longer the Canva lane.
+        for name in ('article', 'long-video', 'short-video', 'carousel', 'story-artwork', 'cover', 'thumbnail',
+                     'note-image', 'meme'):
             self.assertEqual(owners[name], 'content-engine', name)
-        for name in ('note-image', 'meme', 'receipt-card', 'quote-card', 'scorecard', 'poll-result',
+        for name in ('receipt-card', 'quote-card', 'scorecard', 'poll-result',
                      'profile-art', 'highlight-art', 'platform-resize'):
             self.assertEqual(owners[name], 'growth-canva', name)
         self.assertEqual(owners['note-text'], 'growth-copy')

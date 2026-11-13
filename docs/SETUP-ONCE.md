@@ -65,4 +65,3 @@ never pasted anywhere else.
 | `CONTROL_CENTER_ENGINE_TOKEN` | control-center, keys, measure, release, handoff, maker | Issued by Control Center for this engine alone ([KEY.md](KEY.md)) |
 | `GROWTH_WRITEBACK_TOKEN` | release (the board tick and the mix press), maker, ledger | Set by 1 November 2026, when the first ledger run read the board with it. It must match the value in content-engine's Vercel |
 | `ANTHROPIC_API_KEY` | maker | Without it the maker holds as `anthropic_key_missing` ([MAKER.md](MAKER.md)) |
-| `OPEN_AI_API_KEY` | artdirect | Given to the Codex step only ([LANES.md](LANES.md)) |
