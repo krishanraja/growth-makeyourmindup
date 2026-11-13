@@ -8,6 +8,14 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "Where it is right now":
+
+- The publication's AI answers are AEO-Engine's, the one AI-answers specialist (Ruling, Krish, 2026-11-12): the runner reads the standing from the directive (protocol 1.22.0) and asks AEO to track the real reader questions in config/ai-answer-questions.json, which jobs/answer.md fills; none is on file yet, so nothing is asked. The protocol copy in docs/control-center/ is Control Center's at 36df34bc (protocol 1.22.0). (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "What changed recently":
 
 - 2026-11-12 The full-week organic reading is now measured and recorded; the current week remains unmeasured.
