@@ -1,3 +1,0 @@
-Status: The engine proposes the publication's AI-answer questions for Krish's approval (Ruling, Krish, 2026-11-13). Twenty questions readers type or ask about the three series and Saturday's good news, each with its evidence and best piece (docs/ai-answers/2026-11-13-proposed-questions.md), go to his list once as one strategy ask (config/ai-answer-questions-proposed.json); on his yes, or his amended version, the runner writes exactly those into config/ai-answer-questions.json, asks AEO-Engine to track them and closes the ask, and the control-center workflow commits that one file.
-Next: Krish approves or changes the 20 questions on his list in Control Centre; the next runner run then writes them and asks AEO-Engine to track them.
-North Star check (2026-11-13): holds.
