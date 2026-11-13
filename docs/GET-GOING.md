@@ -1,5 +1,9 @@
 # Get going
 
+**Start with `docs/plans/A1.md` (13 November 2026).** It is the one plan for this engine: it consolidates every open step below, the
+counted-lattice exhibit, NOW.md's waiting items and the briefs, in order. Work it top to bottom; the steps below stay as history and
+as the detail A1 points to.
+
 When Krish opens this repository and says "Get going", this is the work. AGENTS.md says how to use it; this file says what to do. Written 2026-10-19 by Control Center, from this engine's first live reports.
 
 **Current (5 November 2026).** A session Krish opens with "Run Acquisition", "Run Engagement", "Run Publishing" or "Run Measurement" is that engine and follows its job file, not this one (AGENTS.md, "Four engines"). "Get going" still means the build below. Make Your Mind Up outreach is this engine's, never Control Center's (AGENTS.md, "Outreach for Make Your Mind Up"). The dated sections below ("Where things stand (2026-10-19)", "This engine") are the brief as first written.
