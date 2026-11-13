@@ -76,6 +76,30 @@
       "type": "string",
       "minLength": 1
     },
+    "owned_by": {
+      "type": "object",
+      "description": "Optional; present only on a channel this engine no longer owns. The engine that owns it now, the day it was handed over and the ruling, in his words. engine/owners.py must name the same engine and day; a channel with it is never drafted, queued, tapped, scheduled or pinned here.",
+      "properties": {
+        "engine": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "since": {
+          "type": "string",
+          "format": "date"
+        },
+        "ruling": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "engine",
+        "since",
+        "ruling"
+      ],
+      "additionalProperties": false
+    },
     "daily_posts_target": {
       "type": [
         "integer",

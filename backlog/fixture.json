@@ -30,15 +30,6 @@
       ]
     },
     {
-      "channel": "linkedin",
-      "formats": [
-        "carousel",
-        "single-image",
-        "text",
-        "short-video"
-      ]
-    },
-    {
       "channel": "substack-notes",
       "formats": [
         "note"
@@ -82,8 +73,8 @@
     "remaining": 0,
     "partial": 1,
     "covered": 0,
-    "editions_open": 7,
-    "formats_open": 27
+    "editions_open": 6,
+    "formats_open": 23
   },
   "pieces": [
     {
@@ -105,7 +96,6 @@
       "channels_open": [
         "facebook",
         "instagram",
-        "linkedin",
         "substack-notes",
         "threads",
         "tiktok",
@@ -155,22 +145,6 @@
         {
           "channel": "instagram",
           "format": "meme"
-        },
-        {
-          "channel": "linkedin",
-          "format": "carousel"
-        },
-        {
-          "channel": "linkedin",
-          "format": "single-image"
-        },
-        {
-          "channel": "linkedin",
-          "format": "text"
-        },
-        {
-          "channel": "linkedin",
-          "format": "short-video"
         },
         {
           "channel": "substack-notes",

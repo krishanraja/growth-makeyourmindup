@@ -201,8 +201,10 @@ does them for him.
   driving only draft. None of it goes to Control Center; only Mindmake's own
   outreach, visibility, networking, events and partners stay there.
 
-- **LinkedIn.** The engine leaves LinkedIn posts as drafts in Buffer. He
-  presses publish himself.
+- **LinkedIn.** His own posts are his hands: he presses publish himself.
+  Since 13 November 2026 growth-mindmake prepares them, not this engine
+  (Ruling, Krish, 2026-11-13): this engine leaves no LinkedIn draft in
+  Buffer or anywhere else.
 - **The Buffer plan.** Buying, keeping or stopping a paid Buffer plan is
   spending, so it is his.
 - **One-time set-up.** Keys, step by step in

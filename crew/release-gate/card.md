@@ -9,7 +9,7 @@ Owns every release. It checks; it does not judge creative.
 | Krish amended the go-live | His version is what goes out, bound by its recomputed digest | R13 |
 | A slot has no signed go-live | Refuse it; a plan or a session never releases | R12, R60 |
 | A slot was already released | Refuse a second release | R12 |
-| A slot is for LinkedIn | Save an unscheduled draft only; Krish clicks | R39, R62 |
+| A slot is for LinkedIn | Hold it before any Buffer read: growth-mindmake's since 13 Nov 2026; never saved, scheduled or released here | R125, R39 |
 | A slot is a Buffer draft save | saveToDraft with no due time | R03, R30 |
 | A slot would pass its signed frequency (Notes per day as signed, at most two a day) | Hold the slot | P1, R60, R81 |
 | Buffer shows the post as scheduled | It is not live | R38 |

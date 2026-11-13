@@ -14,16 +14,16 @@ GAP = {'week_of': '2026-10-26', 'week_target': 25, 'current': 0, 'as_of': '2026-
 CALM = dict(GAP, current=30, urgency=1, reason="at or above this week's target")
 
 
-def radar(n, url='https://www.linkedin.com/feed/update/urn:li:activity:{}/'):
+def radar(n, url='https://x.com/synthetic_one/status/18500000000000{}', platform='x'):
     items, meta = [], []
     for i in range(n):
-        items.append({'platform': 'linkedin', 'text': 'TEST FIXTURE ONLY. A useful reply number ' + str(i) + '.',
+        items.append({'platform': platform, 'text': 'TEST FIXTURE ONLY. A useful reply number ' + str(i) + '.',
                       'target_url': url.format(i), 'target_name': 'Synthetic author ' + str(i)})
         meta.append({'item_id': 'radar-' + str(i), 'placement': 'comment', 'minutes': 1, 'priority': 1,
                      'evidence_ids': ['ev'], 'expires_at': '2026-10-30T0' + str(i % 10) + ':00:00Z',
                      'why_now': 'Fixture only.', 'success_check': 'Fixture.'})
     envelope = {'pack': {'kind': 'radar', 'items': items}, 'metadata': meta,
-                'evidence': [{'evidence_id': 'ev', 'kind': 'source_thread', 'url': 'https://www.linkedin.com/feed/'}]}
+                'evidence': [{'evidence_id': 'ev', 'kind': 'source_thread', 'url': 'https://x.com/synthetic_one'}]}
     queue = {'items': [{'item_id': m['item_id']} for m in meta], 'deferred': [], 'budget_minutes': 20}
     return envelope, queue
 
@@ -47,7 +47,7 @@ class EngagementTask(unittest.TestCase):
         self.assertEqual((action['version'], action['kind']), (2, 'copy_open'))
         self.assertEqual(len(action['taps']), 4)
         self.assertEqual(set(action['taps'][0]), {'label', 'text', 'url'})
-        self.assertTrue(action['taps'][0]['url'].startswith('https://www.linkedin.com/'))
+        self.assertTrue(action['taps'][0]['url'].startswith('https://x.com/'))
         self.assertEqual(task['expires_at'], '2026-10-30T00:00:00Z', 'the ask expires with its first tap')
         self.assertEqual(task['close_condition']['event'], 'tapped')
 
@@ -184,9 +184,6 @@ class ExactTargets(unittest.TestCase):
                 ('tiktok', 'https://www.tiktok.com/@synthetic.one'): 'profile',
                 ('instagram', 'https://www.instagram.com/reel/SYNTHabc12/'): 'post',
                 ('instagram', 'https://www.instagram.com/synthetic.one/'): 'profile',
-                ('linkedin', 'https://www.linkedin.com/feed/update/urn:li:activity:7250000000000000001/'): 'post',
-                ('linkedin', 'https://www.linkedin.com/posts/synthetic-one_ai-activity-7250000000000000001-AbCd'): 'post',
-                ('linkedin', 'https://www.linkedin.com/in/synthetic-one/'): 'profile',
                 ('youtube', 'https://www.youtube.com/watch?v=synthetic'): 'page'}
         for (platform, url), kind in good.items():
             self.assertEqual(target_kind(platform, url), kind, url)
@@ -194,20 +191,119 @@ class ExactTargets(unittest.TestCase):
                ('x', 'http://x.com/synthetic_one/status/1850000000000000001'),
                ('tiktok', 'https://www.tiktok.com/foryou'), ('tiktok', 'https://vm.tiktok.com/ZMabc/'),
                ('instagram', 'https://www.instagram.com/explore/'), ('instagram', 'https://www.instagram.com/'),
-               ('linkedin', 'https://www.linkedin.com/feed/'), ('linkedin', 'https://lnkd.in/abc'),
-               ('linkedin', 'https://www.linkedin.com/search/results/content/?keywords=ai'),
                ('x', 'https://x.com.evil.example/synthetic_one/status/1850000000000000001')]
         for platform, url in bad:
             self.assertIsNone(target_kind(platform, url), url)
 
     def test_a_tap_that_does_not_open_its_exact_target_is_held_by_name(self):
-        result = report(3, url='https://www.linkedin.com/feed/?n={}')
+        result = report(3, url='https://x.com/home?n={}')
         self.assertEqual(result['proposals'], [])
         details = ' '.join(h['detail'] for h in result['holds'])
         self.assertIn('exact post or profile', details)
 
-    def test_a_linkedin_reply_with_a_link_is_held(self):
-        from engine.engage import tap_errors
-        self.assertEqual(tap_errors('linkedin', 'https://www.linkedin.com/in/synthetic-one/', 'Read www.example.com'),
-                         ['a LinkedIn reply carries no link'])
-        self.assertEqual(tap_errors('x', 'https://x.com/synthetic_one', 'See https://example.com'), [])
+    def test_a_linkedin_tap_is_never_queued(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn, replies included. The queue is
+        # X, TikTok and Instagram; a LinkedIn tap, however exact its page, is refused by its owner's reason.
+        from engine import engage, owners
+        self.assertEqual(engage.QUEUE_PLATFORMS, ('x', 'tiktok', 'instagram'))
+        for url in ('https://www.linkedin.com/feed/update/urn:li:activity:7250000000000000001/',
+                    'https://www.linkedin.com/in/synthetic-one/'):
+            self.assertEqual(engage.tap_errors('linkedin', url, 'A useful reply.'), [owners.refusal('linkedin')])
+        self.assertEqual(engage.tap_errors('x', 'https://x.com/synthetic_one', 'See https://example.com'), [])
+        # A LinkedIn page is LinkedIn's whatever label the tap carries: the page it opens decides.
+        pages = ('https://www.linkedin.com/feed/update/urn:li:activity:7250000000000000001/',
+                 'https://linkedin.com/posts/synthetic-one_activity-7250000000000000002',
+                 'https://uk.linkedin.com/in/synthetic-one', 'https://lnkd.in/synthetic', 'https://LNKD.IN/synthetic')
+        for label in ('threads', 'youtube', 'facebook', 'substack', 'notes', 'reddit', 'x', 'tiktok', 'instagram'):
+            for url in pages:
+                self.assertEqual(engage.tap_errors(label, url, 'A useful reply.'), [owners.refusal('linkedin')],
+                                 label + ' ' + url)
+        for url in ('https://notlinkedin.com/p/1', 'https://linkedin.com.example.org/p/1', 'https://www.threads.net/@a/post/1'):
+            self.assertEqual(engage.tap_errors('threads', url, 'A useful reply.'), [], url)
+        mislabelled = report(3, url='https://www.linkedin.com/feed/update/urn:li:activity:72500000000000{}/',
+                             platform='threads')
+        self.assertEqual(mislabelled['proposals'], [], 'a mislabelled LinkedIn tap never reaches his list')
+        held = [h for h in mislabelled['holds'] if "growth-mindmake's" in h['detail']]
+        self.assertEqual(sorted(h['detail'].split(':')[0] for h in held), ['radar-0', 'radar-1', 'radar-2'])
+        envelope, queue = radar(3, url='https://lnkd.in/synthetic{}', platform='threads')
+        plain = workspace_report('radar', 'makeyourmindup:2026-10-29:radar', NOW, [envelope], queue, rev='fixture',
+                                 root=ROOT, gap=GAP, plain_taps=True)[0]
+        self.assertEqual(plain['proposals'], [], 'nor as the plain ask a Control Center without the task gets')
+        result = report(4, url='https://www.linkedin.com/feed/update/urn:li:activity:72500000000000{}/',
+                        platform='linkedin')
+        self.assertEqual(result['proposals'], [], 'no tap, no plain ask, nothing on his list')
+        held = [h for h in result['holds'] if "growth-mindmake's" in h['detail']]
+        self.assertEqual(sorted(h['detail'].split(':')[0] for h in held), ['radar-0', 'radar-1', 'radar-2', 'radar-3'])
+        # Mixed with X work, only the X taps go.
+        envelope, queue = radar(2)
+        more, extra = radar(2, url='https://www.linkedin.com/in/synthetic-{}/', platform='linkedin')
+        for item, meta in zip(more['pack']['items'], more['metadata']):
+            meta['item_id'] = 'li-' + meta['item_id']
+            envelope['pack']['items'].append(item)
+            envelope['metadata'].append(meta)
+            queue['items'].append({'item_id': meta['item_id']})
+        mixed = workspace_report('radar', 'makeyourmindup:2026-10-29:radar', NOW, [envelope], queue, rev='fixture',
+                                 root=ROOT, gap=GAP)[0]
+        taps = copy_open(mixed['proposals'][0])['taps']
+        self.assertEqual(len(taps), 2)
+        self.assertTrue(all(t['url'].startswith('https://x.com/') for t in taps))
+
+    def test_a_tap_labelled_linkedin_is_refused_by_its_label_whatever_page_it_opens(self):
+        # The label alone decides when the page is not LinkedIn's: R125 names tap_errors as the label's wall too.
+        from engine import engage, owners
+        for label in ('linkedin', 'LinkedIn', 'linkedin-comment'):
+            self.assertEqual(engage.tap_errors(label, 'https://x.com/synthetic_one/status/1', 'A useful reply.'),
+                             [owners.refusal('linkedin')], label)
+
+    def test_a_linkedin_page_in_any_spelling_a_browser_reads_is_refused(self):
+        # Control Center reads a tap's page as a browser does, so a host percent-encoded, in full-width letters,
+        # with backslashes, a user name, a port, a trailing dot, ideographic dots or invisible format characters
+        # (a soft hyphen, a zero-width space, a word joiner, a byte order mark, raw or percent-encoded) is still
+        # linkedin.com.
+        from engine import engage, owners
+        pages = ('https://www.linked%69n.com/feed/update/urn:li:activity:7300000000000000000',
+                 'https://%6C%6E%6B%64.in/synthetic',
+                 'https://www.ｌｉｎｋｅｄｉｎ.com/feed/update/urn:li:activity:1',
+                 'https://WWW.ＬＩＮＫＥＤＩＮ.COM/in/synthetic-one',
+                 'https://www.linkedin.com\\feed\\update\\urn:li:activity:7300000000000000000',
+                 'https://someone:secret@www.linkedin.com:443/in/synthetic-one',
+                 'https://someone@linkedin.com/in/synthetic-one', 'https://u:p@lnkd.in/synthetic',
+                 'https://www.linkedin.com./in/synthetic-one', 'https://www。linkedin。com/in/synthetic-one',
+                 'https://www．linkedin．com/in/synthetic-one', 'https://www.linkedin%2ecom/in/synthetic-one',
+                 'https://www.linked­in.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%C2%ADin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked​in.com/in/synthetic-one', 'https://www.linked%E2%80%8Bin.com/in/synthetic-one',
+                 'https://www.linked⁠in.com/in/synthetic-one', 'https://www.linked%E2%81%A0in.com/in/synthetic-one',
+                 'https://www.linked﻿in.com/in/synthetic-one', 'https://www.linked%EF%BB%BFin.com/in/synthetic-one',
+                 'https://ln​kd.in/synthetic', 'https://ln%C2%ADkd.in/synthetic')
+        for page in pages:
+            self.assertEqual(owners.url_channel(page), 'linkedin', page)
+            for label in ('threads', 'youtube', 'x'):
+                self.assertEqual(engage.tap_errors(label, page, 'A useful reply.'), [owners.refusal('linkedin')],
+                                 label + ' ' + page)
+        # Look-alikes that are not LinkedIn still pass the owner check (and meet the platform's own rule).
+        for page in ('https://linkedin.com.example.org/p/1', 'https://notlinkedin.com/p/1', 'https://linkedin.co/p/1',
+                     'https://lnkd.in.example.org/p/1', 'https://xlnkd.in/p/1', 'https://www.linkedin.com@example.org/p/1',
+                     'https://example.org/https://www.linkedin.com/in/synthetic-one'):
+            self.assertIsNone(owners.url_channel(page), page)
+            self.assertEqual(engage.tap_errors('threads', page, 'A useful reply.'), [], page)
+        self.assertEqual(engage.tap_errors('x', 'https://x.com/synthetic_one/status/1', 'A useful reply.'), [])
+        # A backslash page on X, or one with a port that is not a number, is not an exact page, and never an error a
+        # run cannot read: tap_errors names it rather than raising.
+        self.assertTrue(engage.tap_errors('x', 'https://x.com\\synthetic_one\\status\\1', 'A useful reply.'))
+        for page in ('https://x.com:abc/synthetic_one/status/1', 'https://x.com:99999/synthetic_one/status/1'):
+            self.assertEqual(engage.tap_errors('x', page, 'A useful reply.'),
+                             ['a x tap must open the exact post or profile, not a feed, search or short link'], page)
+
+    def test_the_radar_may_still_use_a_linkedin_page_as_evidence(self):
+        # Reading LinkedIn stays (R125): X taps whose source thread is a LinkedIn post still go, with that page as
+        # their evidence, and nothing is held.
+        page = 'https://www.linkedin.com/feed/update/urn:li:activity:7300000000000000000'
+        envelope, queue = radar(2)
+        envelope['evidence'][0]['url'] = page
+        result = workspace_report('radar', 'makeyourmindup:2026-10-29:radar', NOW, [envelope], queue, rev='fixture',
+                                  root=ROOT, gap=GAP)[0]
+        [task] = result['proposals']
+        self.assertEqual(len(copy_open(task)['taps']), 2)
+        self.assertIn(page, [e['url'] for e in task['evidence']])
+        self.assertFalse([h for h in result['holds'] if "growth-mindmake's" in str(h.get('detail'))])

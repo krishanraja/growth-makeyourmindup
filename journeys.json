@@ -187,6 +187,8 @@
     {
       "journey_id": "linkedin-authority",
       "platform": "linkedin",
+      "handed_to": "growth-mindmake",
+      "handed_to_ruling": "Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn posts and the replies to everyone who engages with them; he still clicks every post. This engine drafts, queues, taps and pins nothing there; it only reads LinkedIn. Kept as the record of the reader journey it hands over.",
       "entry_stage": "curious",
       "steps": [
         "native post or document",

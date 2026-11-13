@@ -20,6 +20,18 @@ _spec.loader.exec_module(release)
 
 NOW = '2026-11-01T12:00:00-05:00'
 THREADS_POST = 'bbbbbbbbbbbbbbbbbbbbbb01'
+# A LinkedIn draft slot as a week signed before 13 Nov 2026 could still carry one. LinkedIn is growth-mindmake's
+# since then (Ruling, Krish, 2026-11-13), so the fixture week no longer has it; tests add it to prove release holds
+# it before any Buffer call.
+LINKEDIN_SLOT = {'slot_id': 'linkedin-1', 'channel': 'linkedin', 'format': 'single-image', 'play': 'P1',
+                 'due_at': '2026-11-03T09:00:00-05:00', 'words': 'Synthetic LinkedIn draft for tests.',
+                 'assets': [{'name': 'frame-4.png',
+                             'sha256': '5a806107f736ece03fb46dba93eb3722bfa5b3a65fc7c44519b8c8fb65858c43',
+                             'url': 'https://example.org/synthetic/frame-4.png', 'bytes': 34}],
+                 'link_placement': None, 'cta': False,
+                 'forward_line': 'A synthetic reader forwards this to a synthetic colleague.', 'experiment_arm': None,
+                 'publish_mode': 'krish_click', 'buffer_draft_id': 'aaaaaaaaaaaaaaaaaaaaaa02', 'meta': None,
+                 'buffer_channel_id': None}
 
 
 def load(name):
@@ -95,6 +107,14 @@ class ReleaseTests(unittest.TestCase):
 
     def holds(self, result):
         return {h['slot_id']: h['hold'] for h in result['holds']}
+
+    def with_linkedin(self):
+        """The fixture week with a signed LinkedIn draft slot added, as a pre-handover week would carry."""
+        spec, decision = copy.deepcopy(self.spec), copy.deepcopy(self.decision)
+        slot = resign(copy.deepcopy(LINKEDIN_SLOT), decision, spec)
+        spec['slots'].append(slot)
+        sign(spec, decision)
+        return spec, decision, slot
 
     def test_fixture_plan_releases_every_signed_slot_once(self):
         result = self.plan()
@@ -258,29 +278,35 @@ class ReleaseTests(unittest.TestCase):
             release.call_arguments(drafted, self.channel('tiktok'), NOW, target)
 
     def test_preview_clear_uses_mutation_not_null(self):
-        slot = self.slots['linkedin-1']
+        # F03 was learned on LinkedIn; the guard is the service's linkAttachment wherever it is stored. LinkedIn
+        # left this engine on 13 Nov 2026, so it is proved on X's signed draft carrying a stale preview.
+        slot = self.slots['x-1']
         hold = release.preview_clear_hold(slot)
         self.assertEqual(hold['hold'], 'preview_clear_needs_introspected_mutation')
         self.assertEqual(hold['route']['tool'], 'execute_mutation')
         self.assertEqual(hold['route']['input_type'], 'EditPostInput!')
         self.assertIn('editPost', hold['route']['mutation'])
         self.assertNotIn('arguments', hold)
-        args = self.by_slot(self.plan())['linkedin-1']['arguments']
+        args = self.by_slot(self.plan())['x-1']['arguments']
         self.assertNotIn('linkAttachment', json.dumps(args))
-        nulled = {'tool': 'edit_post', 'arguments': dict(args, metadata={'linkedin': {'linkAttachment': None}})}
+        nulled = {'tool': 'edit_post', 'arguments': dict(args, metadata={'twitter': {'linkAttachment': None}})}
         self.assertTrue(any('linkAttachment null' in e for e in release.argument_errors(nulled, slot)))
         targets = copy.deepcopy(self.targets)
         stale = {'url': 'https://example.org/synthetic/old', 'title': 'Old', 'text': '', 'thumbnails': []}
-        targets['linkedin-1']['metadata']['linkAttachment'] = stale
-        result = self.plan(targets=targets)
-        self.assertNotIn('linkedin-1', self.by_slot(result))
+        targets['x-1']['metadata']['linkAttachment'] = stale
+        spec, decision = self.signed_for(targets, 'x-1')
+        result = self.plan(spec, decision, targets=targets)
+        self.assertNotIn('x-1', self.by_slot(result))
         self.assertIn(hold, result['holds'])
+        # The readback half of the guard, on a channel this engine still owns: a stored post that still carries a
+        # link preview fails its check, and passes once the preview is cleared.
         ledger = self.plan()['ledger']
-        draft = dict(targets['linkedin-1'])
+        queued = dict(copy.deepcopy(targets['x-1']), status='scheduled', schedulingType='automatic',
+                      dueAt=slot['due_at'])
         with self.assertRaisesRegex(ValueError, 'still carries a link preview'):
-            release.check_readback(slot, draft, 'queued', ledger)
-        draft['metadata'] = {'type': 'post', 'linkAttachment': None}
-        self.assertEqual(release.check_readback(slot, draft, 'queued', ledger)['status'], 'draft')
+            release.check_readback(slot, queued, 'queued', ledger)
+        queued['metadata'] = dict(queued['metadata'], linkAttachment=None)
+        self.assertEqual(release.check_readback(slot, queued, 'queued', ledger)['status'], 'scheduled')
 
     def test_scheduled_is_not_sent(self):
         slot = self.slots['threads-1']
@@ -430,8 +456,7 @@ class ReleaseTests(unittest.TestCase):
         for sid in ('ig-story-1', 'tiktok-photo-1', 'x-1'):
             self.assertEqual(holds[sid], 'creative_not_approved')
             self.assertNotIn(sid, result['ledger']['released'])
-        self.assertEqual(set(self.by_slot(result)), {'notes-1', 'threads-1', 'linkedin-1'},
-                         'slots with no assets, and the krish_click draft Krish posts himself, still plan')
+        self.assertEqual(set(self.by_slot(result)), {'notes-1', 'threads-1'}, 'slots with no assets still plan')
         spec = copy.deepcopy(self.spec)
         files = spec['inputs'][0]['manifest']['files']
         files[:] = [f for f in files if f['name'] != 'frame-3.png']
@@ -644,7 +669,7 @@ class ReleaseTests(unittest.TestCase):
         sign(spec, decision)
         spec['slots'][1]['words'] += ' Edited after signing.'
         resign(spec['slots'][1])
-        x1 = spec['slots'][5]
+        x1 = next(s for s in spec['slots'] if s['slot_id'] == 'x-1')
         x1['link_placement'] = 'first_reply'
         resign(x1, decision, spec)
         result = self.plan(spec, decision)
@@ -672,33 +697,46 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'not signed'):
                 self.plan(unsigned)
 
-    def test_linkedin_release_is_draft_only(self):
-        call = self.by_slot(self.plan())['linkedin-1']
-        args = call['arguments']
-        self.assertEqual(call['tool'], 'edit_post')
-        self.assertIs(args['saveToDraft'], True)
-        for key in ('dueAt', 'mode'):
-            self.assertNotIn(key, args)
-        slot = copy.deepcopy(self.slots['linkedin-1'])
-        slot['publish_mode'] = 'engine'
-        resign(slot)
+    def test_a_signed_linkedin_slot_is_held_by_its_owner_and_never_saved(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn. A LinkedIn slot a week signed
+        # before then still carries is held before anything else is checked, and no call is made for it.
+        spec, decision, slot = self.with_linkedin()
+        result = self.plan(spec, decision)
+        self.assertNotIn('linkedin-1', self.by_slot(result))
+        self.assertEqual(self.holds(result)['linkedin-1'],
+                         release.owners.HOLD + ': ' + release.owners.refusal('linkedin'))
+        self.assertEqual(set(self.by_slot(result)), set(self.slots), "this engine's own slots still release")
+        self.assertNotIn('linkedin-1', result['ledger']['released'])
+        changed = copy.deepcopy(spec)
+        moved = next(s for s in changed['slots'] if s['slot_id'] == 'linkedin-1')
+        moved['due_at'] = None
+        resign(moved, decision, changed)
+        self.assertTrue(self.holds(self.plan(changed, decision))['linkedin-1'].startswith(release.owners.HOLD))
+        moved['publish_mode'] = 'engine'
+        resign(moved, decision, changed)
         with self.assertRaisesRegex(ValueError, 'never released by the engine'):
-            release.check_slot(slot)
-        scheduled = {'tool': 'edit_post', 'arguments': dict(args, saveToDraft=False, mode='customScheduled',
-                                                            dueAt=self.slots['linkedin-1']['due_at'])}
-        self.assertIn('a krish_click slot only ever gets an unscheduled draft',
-                      release.argument_errors(scheduled, self.slots['linkedin-1']))
-        on_linkedin = dict(scheduled, service='linkedin')
+            self.plan(changed, decision)  # a LinkedIn slot in engine mode refuses the whole week, as before
+        # The second wall stays: a LinkedIn slot is never released by the engine, and a call on LinkedIn's
+        # service is never anything but an unscheduled draft.
+        engine_slot = resign(dict(slot, publish_mode='engine'))
+        with self.assertRaisesRegex(ValueError, 'never released by the engine'):
+            release.check_slot(engine_slot)
+        call = self.by_slot(self.plan())['x-1']
+        on_linkedin = dict(call, service='linkedin')
         errors = release.argument_errors(on_linkedin, self.slots['x-1'])
         self.assertIn('LinkedIn is only ever an unscheduled draft; Krish makes the final click', errors)
         self.assertIn('the call is for another service than the slot', errors)
+        linkedin_id = next(c for c, ch in release.HANDED_OFF_CHANNELS.items() if ch == 'linkedin')
+        self.assertTrue(any("growth-mindmake's" in e for e in release.argument_errors(
+            dict(call, channel_id=linkedin_id, arguments=dict(call['arguments'], channelId=linkedin_id)),
+            self.slots['x-1'])))
 
     def test_edit_target_must_be_same_service_draft(self):
-        linkedin_draft = self.slots['linkedin-1']['buffer_draft_id']
+        story_draft = self.slots['ig-story-1']['buffer_draft_id']
         spec = copy.deepcopy(self.spec)
-        spec['slots'][5]['buffer_draft_id'] = linkedin_draft
+        next(s for s in spec['slots'] if s['slot_id'] == 'x-1')['buffer_draft_id'] = story_draft
         targets = copy.deepcopy(self.targets)
-        targets['x-1'] = copy.deepcopy(self.targets['linkedin-1'])
+        targets['x-1'] = copy.deepcopy(self.targets['ig-story-1'])
         result = self.plan(spec, targets=targets)
         self.assertNotIn('x-1', self.by_slot(result))
         self.assertIn('edit target is on another service', self.holds(result)['x-1'])
@@ -712,12 +750,12 @@ class ReleaseTests(unittest.TestCase):
             self.assertIn(reason, self.holds(result)['x-1'])
         missing = self.plan(targets={})
         self.assertEqual({c['slot_id'] for c in missing['calls']}, {'notes-1', 'threads-1', 'tiktok-photo-1'})
-        self.assertIn('was not read back', self.holds(missing)['linkedin-1'])
+        self.assertIn('was not read back', self.holds(missing)['x-1'])
 
     def test_channel_id_bound_to_service(self):
         slot = self.slots['notes-1']
         with self.assertRaisesRegex(ValueError, 'live substack entry'):
-            release.call_arguments(slot, self.channel('linkedin'), NOW)
+            release.call_arguments(slot, self.channel('twitter'), NOW)
         with self.assertRaisesRegex(ValueError, 'live substack entry'):
             release.call_arguments(slot, '6adccba0778b240e2fafc06d', NOW)
         no_x = [c for c in self.channels if c['service'] != 'twitter']
@@ -785,12 +823,16 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(release.BUFFER_CHANNEL_ID, {
             'substack-notes': '6ae09edc2f1f5ed648e9e48c', 'youtube': '6adccf83778b240e2fafe7af',
             'instagram': '6adccb3a778b240e2fafbb63', 'x': '6adccbf5778b240e2fafc457',
-            'tiktok': '6adccbdd778b240e2fafc32e', 'linkedin': '6adccba0778b240e2fafc06d',
+            'tiktok': '6adccbdd778b240e2fafc32e',
             'threads': '6af6cf0f62b70b94b017c3b0', 'facebook': '6adccc1e778b240e2fafc615'})
         self.assertEqual(set(release.DENIED_CHANNELS), {'6ae09bba2f1f5ed648e9cbfc', '6ae096d32f1f5ed648e99e98',
                                                         '6ae0973f2f1f5ed648e9a327', '6ae096872f1f5ed648e99b6d'})
+        # LinkedIn's channel was pinned until 13 Nov 2026; it is growth-mindmake's now and refused by its id.
+        self.assertEqual(release.HANDED_OFF_CHANNELS, {'6adccba0778b240e2fafc06d': 'linkedin'})
         self.assertFalse(set(release.DENIED_CHANNELS) & set(release.BUFFER_CHANNEL_ID.values()))
-        self.assertEqual(len(set(release.BUFFER_CHANNEL_ID.values())), len(release.CHANNELS))
+        self.assertFalse(set(release.HANDED_OFF_CHANNELS) & set(release.BUFFER_CHANNEL_ID.values()))
+        self.assertEqual(len(set(release.BUFFER_CHANNEL_ID.values())),
+                         len([c for c in release.CHANNELS if c not in release.HANDED_OFF_CHANNELS.values()]))
         for channel_id in list(release.DENIED_CHANNELS) + list(release.BUFFER_CHANNEL_ID.values()):
             self.assertRegex(channel_id, release.BUFFER_ID)
         # Every fixture channel this engine owns resolves to its pinned id, never a decoy beside it.

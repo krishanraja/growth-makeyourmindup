@@ -8,6 +8,7 @@ Nothing here posts, comments, sends or writes to Control Center: Krish makes the
 """
 import re
 
+from engine import owners
 from engine.engines import core
 
 KINDS = ('interaction', 'batch', 'question')
@@ -17,15 +18,17 @@ STATES = {'interaction': INTERACTION_STATES, 'batch': ('requested', 'awaiting_kr
           'question': ('open', 'handed_off')}
 CLOSED_STATES = ('handled', 'skipped', 'posted_by_krish', 'returned_to_researcher')
 DIRECTIONS = ('incoming', 'outgoing')
-# Krish's named accounts (AGENTS.md, social/channels/).
-ACCOUNTS = ('linkedin', 'x', 'tiktok', 'instagram', 'threads', 'substack-notes', 'youtube', 'facebook')
+# Krish's named accounts this engine engages from (AGENTS.md, social/channels/). His personal LinkedIn is
+# growth-mindmake's since 13 Nov 2026 (Ruling, Krish, 2026-11-13; engine/owners.py), replies included.
+ACCOUNTS = ('x', 'tiktok', 'instagram', 'threads', 'substack-notes', 'youtube', 'facebook')
 # What Krish adds after reading the post (review section 5). Personal encouragement alone is not a reason.
 CONTRIBUTIONS = ('firsthand_observation', 'practical_test', 'real_question')
 EDITOR_STEPS = ('opened_actual_post', 'filled_native_editor', 'switched_away', 'returned', 'full_text_verified',
                 'tab_left_open', 'recovery_copy_with_url')
-# Typing into a native comment box is permitted only for LinkedIn preparation (BROWSER.md, 2026-10-24).
-# Elsewhere the exact copy sits beside the open post, so the editor steps do not apply.
-NATIVE_PREFILL = ('linkedin',)
+# Typing into a native comment box was permitted only for LinkedIn preparation (BROWSER.md, 2026-10-24).
+# LinkedIn left this engine on 13 Nov 2026 (Ruling, Krish, 2026-11-13), so no account here is prefilled:
+# the exact copy sits beside the open post and the prefill-only editor steps never apply.
+NATIVE_PREFILL = ()
 PREFILL_ONLY_STEPS = ('filled_native_editor', 'switched_away', 'returned')
 NEEDS_CONTRIBUTION = ('drafted', 'ready', 'awaiting_krish', 'posted_by_krish')
 NEEDS_IDENTITY = ('ready', 'awaiting_krish')
@@ -33,6 +36,7 @@ REQUESTERS = ('krish', 'acquisition')
 QUESTION_OWNERS = ('acquisition', 'content-engine')
 SHA256 = re.compile(r'^[0-9a-f]{64}$')
 URL = re.compile(r'https?://', re.I)
+PAGE = re.compile(r'https?://[^\s<>"]+', re.I)
 
 
 def _key(value):
@@ -46,6 +50,46 @@ def required_steps(account):
     return tuple(s for s in EDITOR_STEPS if s not in PREFILL_ONLY_STEPS)
 
 
+def copy_page(detail):
+    """The post URL an interaction's recovery copy carries, or None. The copy is Krish's exact words kept with
+    the post URL (jobs/engagement.md), so it is the URL in the copy equal to post_url when there is one, else the
+    last URL on the copy's last line. A link inside his words is what he says, not the page the item opens."""
+    copy = detail.get('recovery_copy')
+    if not isinstance(copy, str):
+        return None
+    post = detail.get('post_url')
+    if isinstance(post, str) and post.strip() and post.strip() in PAGE.findall(copy):
+        return post.strip()
+    lines = [line for line in copy.splitlines() if line.strip()]
+    found = PAGE.findall(lines[-1]) if lines else []
+    return found[-1] if found else None
+
+
+def opened(detail):
+    """[(field, page)] for each page an interaction opens: its private post_url and the post URL its recovery copy
+    carries (copy_page). Only the merged record (the private overlay over the committed line) carries them."""
+    out = [('post_url', detail['post_url'])] if isinstance(detail.get('post_url'), str) else []
+    page = copy_page(detail)
+    return out + ([('recovery_copy', page)] if page is not None else [])
+
+
+def pages(detail):
+    """Every page an interaction opens (opened), never a link inside Krish's own words."""
+    return [page for _, page in opened(detail)]
+
+
+def owner_error(detail):
+    """Why an interaction is another engine's, naming the field that made it so (its account, or the page its
+    post_url or recovery copy opens), or ''."""
+    if owners.owner(detail.get('account')):
+        return 'detail.account: ' + owners.refusal(detail.get('account'))
+    for field, page in opened(detail):
+        why = owners.page_refusal(None, page)
+        if why:
+            return 'detail.' + field + ': ' + why
+    return ''
+
+
 def validate_detail(record):
     kind, d, state = record['kind'], record['detail'], record['state']
     errors = []
@@ -54,7 +98,10 @@ def validate_detail(record):
             errors.append('detail.direction must be incoming or outgoing')
         if not _key(d.get('parent_post_key')):
             errors.append('detail.parent_post_key must be the sha256 of the post URL (the URL stays private)')
-        if d.get('account') not in ACCOUNTS:
+        handed = owner_error(d)
+        if handed:
+            errors.append(handed)
+        elif d.get('account') not in ACCOUNTS:
             errors.append('detail.account must be one of ' + ', '.join(ACCOUNTS))
         for name in ('author_key', 'draft_digest', 'verified_digest'):
             if d.get(name) is not None and not _key(d[name]):
@@ -64,7 +111,8 @@ def validate_detail(record):
                 or not all(isinstance(v, bool) for v in steps.values()):
             errors.append('detail.editor_verification maps ' + ', '.join(EDITOR_STEPS) + ' to true or false')
         elif d.get('account') not in NATIVE_PREFILL and any(steps.get(s) for s in PREFILL_ONLY_STEPS):
-            errors.append('only LinkedIn comments may be prepared in the native editor (BROWSER.md, 2026-10-24)')
+            errors.append('no comment is prepared in a native editor here: only LinkedIn ever was (BROWSER.md,'
+                          ' 2026-10-24), and it is growth-mindmake\'s since 13 Nov 2026')
         if not isinstance(d.get('identity_checked', False), bool):
             errors.append('detail.identity_checked must be true or false')
         elif d.get('direction') == 'outgoing' and state in NEEDS_IDENTITY and d.get('identity_checked') is not True:
@@ -120,10 +168,12 @@ def _editor_verified(item):
 
 def is_ready(item):
     """True when an open outgoing draft is ready in the correct editor: the account identity was checked,
-    Krish's contribution is named and the draft survived the editor. A cleared editor is not ready."""
+    Krish's contribution is named and the draft survived the editor. A cleared editor is not ready, and nor is
+    an item on a channel another engine owns, by its account or by the page it opens (owner_error, the same
+    owners.page_refusal check): Krish's personal LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13)."""
     d = item['detail']
     return _outgoing(item) and item['state'] not in CLOSED_STATES and d.get('identity_checked') is True \
-        and d.get('contribution') in CONTRIBUTIONS and _editor_verified(item)
+        and d.get('contribution') in CONTRIBUTIONS and _editor_verified(item) and not owner_error(d)
 
 
 def ready_count(items, blocked=()):

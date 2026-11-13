@@ -3,7 +3,7 @@
 Rulings: Krish, 26 October 2026. The latest X/TikTok clarification supersedes
 this day's earlier personal-drafts-only instruction for those two accounts.
 
-**Current as of 5 November 2026.** The sections below are dated, and a later
+**Current as of 13 November 2026.** The sections below are dated, and a later
 one wins where it says so. In short:
 
 - Derived (filler) posts on Instagram, YouTube, TikTok and X release from his
@@ -11,7 +11,9 @@ one wins where it says so. In short:
   other gate (30 October, below).
 - Series (Monday, Wednesday, Friday) posts still need his per-post Control
   Center go-live. Threads, Substack Notes and Facebook still sign post by post.
-- LinkedIn is unscheduled drafts and his own click.
+- Krish's personal LinkedIn is growth-mindmake's, not this engine's
+  (13 November, below). This engine drafts, queues, taps, schedules and pins
+  nothing there; he still clicks every post growth-mindmake prepares.
 - Buffer's TikTok short-video route is held after a provider rejection; the
   alternative is the native TikTok uploader under the applicable approval
   (5 November, below).
@@ -38,6 +40,10 @@ Scheduling proves only a scheduled post. Actual publication needs the native
 URL/content/account and a dated readback. Preserve uncertain outcomes.
 
 ## LinkedIn and unscoped personal identities
+
+Superseded for this engine on 13 November 2026 (below): LinkedIn is
+growth-mindmake's, and this engine prepares nothing there. The lines that
+follow still describe the wall growth-mindmake works inside.
 
 Krish's LinkedIn is unscheduled drafts only. Never queue, schedule, publish,
 submit comments, like, follow or message. He reviews and makes the final click.
@@ -150,7 +156,8 @@ line here says otherwise.
   slot, and both routes wait on their capability checks.
 - **LinkedIn stays click-only.** Unchanged: unscheduled drafts and his
   final click.
-- **Only this engine's eight Buffer channels.** The Buffer organisation is
+- **Only this engine's eight Buffer channels** (seven since 13 November,
+  when LinkedIn's left: below). The Buffer organisation is
   shared with other ventures. Release acts only on a channel whose
   service, name and channelId all match its pinned entry, and refuses the
   fulltime.fm TikTok, the Heartside Facebook Page and both yourdoghasnotes
@@ -276,3 +283,70 @@ week's mix once, let Growth fill it". It adds to the rulings above.
 
 No spending, new connection, automation or account-setting change follows
 from these rulings.
+
+## 13 November 2026: Krish's personal LinkedIn is growth-mindmake's
+
+Ruling (Krish, 2026-11-13; R125; `CHANGES.md`). Asked "Which engine should
+own your personal LinkedIn posts (you still click every post)?", he answered
+"growth-mindmake owns it". It supersedes every LinkedIn line above for this
+engine.
+
+- **Who owns it.** growth-mindmake (`krishanraja/growth-mindmake`) owns
+  Krish's personal LinkedIn posts, Mindmake's published thinking at about
+  three a week, and the replies to everyone who engages with them. Its
+  `docs/GET-GOING.md` step 1.4 is where that work now starts.
+- **He still clicks every post.** LinkedIn stays `human_publish_only` in
+  `social/channels/linkedin.json`; nothing schedules or publishes it.
+- **What this engine stops.** No LinkedIn post, comment, reply, engagement
+  tap, go-live, calendar row, week-spec slot, backlog edition, board tick or
+  Buffer pin. The channel record carries `owned_by` and `engine/owners.py`
+  names the same owner; the social route, the pack check, the engagement
+  tap queue and the Engagement engine's queue (by label or by the page an
+  item opens, linkedin.com or lnkd.in and their subdomains, read as a
+  browser reads the host: percent-encoded, full-width, with backslashes, a
+  user name, a port, a trailing dot or an invisible character such as a soft
+  hyphen or a zero-width space; for an Engagement item, the page it opens is
+  its post URL, never a link inside Krish's own reply words), the Publishing
+  engine, the calendar and spec lints, the L0 handoff (go-lives and week
+  packets) and the board tick all refuse it with that reason, and its Buffer
+  channel is refused by id (`engine/buffer_channels.py`,
+  `HANDED_OFF_CHANNELS`), including by the subscribe gate hook on every
+  Buffer create_post, at every urgency (`engine/subscribe_gate.py`).
+- **Edits go by the post.** Buffer's edit_post names only its post, never a
+  channel, so the gate reads the post's channel from a map: a PostToolUse
+  hook records it after every get_post, list_posts and create_post
+  (`.claude/hooks/buffer-post-channels.py`, `engine/post_channels.py`, kept
+  in the ignored `.scratch/buffer/post-channels.json`), seeded from this
+  engine's own release ledgers. An edit of a post read on his LinkedIn's
+  channel is refused at every urgency; an edit of a post not yet
+  read is refused with "read the post with get_post first, so its channel is
+  known". Once read, an edit on this engine's seven channels is checked as
+  before, and one on another venture's channel passes.
+- **Go-lives already waiting.** Control Center refuses his yes on a whole
+  go-live when any line names a channel this engine no longer lists, so a
+  go-live proposed before the handover with a LinkedIn line would block its
+  other posts. The daily runner proposes each such go-live again without
+  that line, under the same proposal_id, so his list shows that version; one
+  that held only a LinkedIn post is taken back through `withdrawn[]`
+  (`engine/run/handoff.py` `handed_off_golives`). Only the 10 newest reports
+  are looked at: that is the most Control Center serves, and it serves no
+  older page, so a go-live behind ten newer reports is not looked at. When
+  that page is full, the runner's report says so in one line; it is not a
+  hold.
+- **What stays.** Reading LinkedIn is not owning it: research, the radar's
+  trend reading (a LinkedIn page may still be a tap's evidence) and
+  measuring what other people post there all stay. So does reading this
+  engine's own LinkedIn posts from before the handover: the measure job, the
+  learn job and the ledger still read and judge them as history, by the
+  channel's Buffer id in a read map no write route uses
+  (`buffer_channels.read_channel`), with no "Buffer channel not pinned" hold;
+  posts from the day of the handover on are growth-mindmake's and are left
+  out. His X and the publication's own accounts (Instagram, Facebook,
+  YouTube, Substack, Threads, Substack Notes and TikTok) stay with this
+  engine.
+- **The media kit.** The ruling also records that the media kit says the
+  publication should not lean on LinkedIn, so nothing here routes the
+  publication's growth through it.
+
+No spending, new connection, automation or account-setting change follows
+from this ruling.

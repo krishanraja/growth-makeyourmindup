@@ -67,7 +67,7 @@
     },
     {
       "id": "R06",
-      "statement": "A LinkedIn comment carries no link.",
+      "statement": "A LinkedIn comment carries no link. Since 13 Nov 2026 LinkedIn is growth-mindmake's, so this engine prepares nothing there at all (R125).",
       "source_file": "AGENTS.md",
       "quote": "cite their source internally and never invent them. No links in LinkedIn comments.",
       "enforced_by": [
@@ -194,7 +194,7 @@
     },
     {
       "id": "R16",
-      "statement": "LinkedIn stays unscheduled drafts for Krish's own final click, with no daily quota.",
+      "statement": "LinkedIn stays unscheduled drafts for Krish's own final click, with no daily quota. Since 13 Nov 2026 LinkedIn is growth-mindmake's, so this engine prepares nothing there at all (R125).",
       "source_file": "AGENTS.md",
       "quote": "LinkedIn stays unscheduled drafts for Krish's final click, with no daily quota.",
       "enforced_by": [
@@ -326,7 +326,7 @@
     },
     {
       "id": "R28",
-      "statement": "LinkedIn is drafts and recommendations only, during an audit too.",
+      "statement": "LinkedIn is drafts and recommendations only, during an audit too. Since 13 Nov 2026 LinkedIn is growth-mindmake's, so this engine prepares nothing there at all (R125).",
       "source_file": "BROWSER.md",
       "quote": "LinkedIn is drafts and recommendations only, including during an audit: no live post/profile edits and no submitted engagement.",
       "enforced_by": [
@@ -458,7 +458,7 @@
     },
     {
       "id": "R39",
-      "statement": "Krish's LinkedIn is never queued, scheduled or published by the engine, and no engagement is submitted.",
+      "statement": "Krish's LinkedIn is never queued, scheduled or published by the engine, and no engagement is submitted. Since 13 Nov 2026 LinkedIn is growth-mindmake's, so this engine prepares nothing there at all (R125).",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Krish's LinkedIn is unscheduled drafts only. Never queue, schedule, publish, submit comments, like, follow or message.",
       "enforced_by": [
@@ -718,7 +718,7 @@
     },
     {
       "id": "R62",
-      "statement": "LinkedIn stays Krish's own final click under the signed week.",
+      "statement": "LinkedIn stays Krish's own final click under the signed week. Since 13 Nov 2026 LinkedIn is growth-mindmake's, so this engine prepares nothing there at all (R125).",
       "source_file": "CHANGES.md",
       "quote": "pasting or manual asking\". LinkedIn stays his own final click.",
       "enforced_by": [
@@ -1082,7 +1082,7 @@
     },
     {
       "id": "R93",
-      "statement": "Release acts only on this engine's eight Buffer channels, pinned by service, name and channelId, and refuses the other ventures' channels by id in every release step. On the draft path, social preflight refuses a Buffer package that names any channelId but its pinned one and, given the get_post readback of a reused draft with --target, refuses an edit_post target on any other channel, not a draft or imported from the network. That a session runs preflight with --target before each edit_post is process (social/guides/buffer.md); the code cannot see the call.",
+      "statement": "Release acts only on this engine's Buffer channels (seven since LinkedIn's went to growth-mindmake on 13 Nov 2026, R125), pinned by service, name and channelId, and refuses the other ventures' channels and LinkedIn's by id in every release step. On the draft path, social preflight refuses a Buffer package that names any channelId but its pinned one and, given the get_post readback of a reused draft with --target, refuses an edit_post target on any other channel, not a draft or imported from the network. That a session runs preflight with --target before each edit_post is process (social/guides/buffer.md); the code cannot see the call.",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "Release acts only on a channel whose service, name and channelId all match its pinned entry, and refuses the fulltime.fm TikTok, the Heartside Facebook Page and both yourdoghasnotes channels by id, wherever they appear",
       "enforced_by": [
@@ -1163,7 +1163,7 @@
     },
     {
       "id": "R98",
-      "statement": "Engagement is a daily 10-minute queue across X, TikTok, Instagram and LinkedIn with one-click copy and exact links; it stays prepared only and he submits every reply.",
+      "statement": "Engagement is a daily 10-minute queue across X, TikTok and Instagram with one-click copy and exact links; it stays prepared only and he submits every reply. LinkedIn left the queue on 13 Nov 2026 (R125).",
       "source_file": "docs/PUBLISHING-AUTHORITY.md",
       "quote": "The daily queue is drafted here and he submits every reply himself; following and liking stay his.",
       "enforced_by": [
@@ -1450,7 +1450,7 @@
     },
     {
       "id": "R109",
-      "statement": "In the L0 handoff and release LinkedIn stays his own final click: every LinkedIn line goes into a go-live as krish_click, and release never reads or schedules it.",
+      "statement": "In the L0 handoff and release LinkedIn stays his own final click and is never this engine's: since 13 Nov 2026 a LinkedIn slot is held (channel_owned_by_another_engine) before its draft is read (R125), and release never reads or schedules a LinkedIn line a go-live signed before then carries.",
       "source_file": "CHANGES.md",
       "quote": "pasting or manual asking\". LinkedIn stays his own final click.",
       "enforced_by": [
@@ -1458,7 +1458,7 @@
         "engine/run/autorelease.py:slot"
       ],
       "tests": [
-        "test_linkedin_always_goes_in_as_krish_click",
+        "test_a_linkedin_slot_is_held_before_its_draft_is_read",
         "test_linkedin_stays_a_draft_and_is_never_read"
       ]
     },
@@ -1556,7 +1556,7 @@
     },
     {
       "id": "R116",
-      "statement": "Each engagement tap on X, TikTok, Instagram or LinkedIn opens the exact post or profile, never a feed, search or short link, and a LinkedIn reply carries no link.",
+      "statement": "Each engagement tap on X, TikTok or Instagram opens the exact post or profile, never a feed, search or short link; a LinkedIn tap is refused, because LinkedIn is growth-mindmake's since 13 Nov 2026 (R125).",
       "source_file": "CHANGES.md",
       "quote": "make sure everything is one click copiable and the click through goes precisely where i need to engage.",
       "enforced_by": [
@@ -1566,7 +1566,8 @@
       ],
       "tests": [
         "test_each_queue_platform_opens_its_exact_post_or_profile",
-        "test_a_tap_that_does_not_open_its_exact_target_is_held_by_name"
+        "test_a_tap_that_does_not_open_its_exact_target_is_held_by_name",
+        "test_a_linkedin_tap_is_never_queued"
       ]
     },
     {
@@ -1682,6 +1683,88 @@
         "test_a_hash_mismatch_holds_loudly_and_proposes_again",
         "test_a_format_or_a_day_outside_the_mix_never_releases",
         "test_series_go_lives_are_unaffected_by_the_mix"
+      ]
+    },
+    {
+      "id": "R125",
+      "statement": "Krish's personal LinkedIn is growth-mindmake's: its posts (Mindmake's published thinking, about three a week) and the replies to everyone who engages with them; he still clicks every post, so it stays human_publish_only. This engine drafts, queues, taps, schedules and pins nothing there: the channel record's owned_by and engine/owners.py agree, and the social route, the pack check, the Control Center report, the engagement tap queue, the Engagement and Publishing engines, the calendar and spec lints, the L0 handoff (go-lives and week packets), release, the backlog, the board tick, the Buffer channel table and the Buffer subscribe gate hook (its channel id, at every urgency) refuse it with one reason; a tap or an Engagement item is LinkedIn's by its label or by the page it opens (an Engagement item's post URL, never a link in Krish's own words), read as a browser reads its host. An edit names only its post, so the gate goes by the channel the post was read on (a hook records it after get_post, list_posts and create_post): a LinkedIn post's edit is refused, and an unread post's edit waits until it is read. A go-live still waiting from before the handover with a LinkedIn line is proposed again without it, or taken back when that was all it held; only the 10 newest reports, the most Control Center serves, are looked at, and the runner says so in a line when that page is full. Reading LinkedIn (research, trend reading and evidence, measuring what others post, and judging this engine's own posts from before the handover with no hold) stays. His X and the publication's own accounts stay here.",
+      "source_file": "CHANGES.md",
+      "quote": "Asked \"Which engine should own your personal LinkedIn posts (you still click every post)?\", he answered \"growth-mindmake owns it\".",
+      "enforced_by": [
+        "engine/social.py:inventory",
+        "engine/social.py:route",
+        "engine/packs.py:problems",
+        "engine/cc_loop.py:workspace_report",
+        "engine/engage.py:tap_errors",
+        "engine/engines/engagement.py:validate_detail",
+        "engine/engines/publishing.py:validate_detail",
+        "engine/run/calendar.py:_row_errors",
+        "engine/run/spec.py:_slot",
+        "engine/run/handoff.py:rebuild",
+        "engine/run/handoff.py:handoff",
+        "engine/run/release.py:release_plan",
+        "engine/buffer_channels.py:channel_id_errors",
+        "engine/subscribe_gate.py:errors",
+        "engine/backlog.py:channel_matrix",
+        "engine/owners.py:page_refusal",
+        "engine/owners.py:url_channel",
+        "engine/owners.py:page_host",
+        "engine/engines/engagement.py:is_ready",
+        "engine/engines/engagement.py:owner_error",
+        "engine/engines/engagement.py:copy_page",
+        "engine/subscribe_gate.py:_handed_off",
+        "engine/post_channels.py:from_call",
+        "engine/post_channels.py:known",
+        "engine/run/board_tick.py:rows",
+        "engine/run/board_tick.py:piece_row",
+        "engine/buffer_channels.py:read_channel",
+        "engine/run/buffer_reads.py:sent_posts",
+        "engine/ledger.py:normalise_posts",
+        "engine/run/handoff.py:without_handed_off",
+        "engine/run/handoff.py:handed_off_golives",
+        "engine/cc_loop.py:handed_off_golives",
+        "engine/cc_loop.py:runner_report"
+      ],
+      "tests": [
+        "test_the_owner_table_and_the_channel_record_agree",
+        "test_a_record_and_a_table_that_disagree_fail_the_inventory",
+        "test_its_buffer_channel_is_unpinned_and_refused_by_id",
+        "test_the_pack_check_refuses_a_linkedin_draft_in_every_public_kind",
+        "test_reading_linkedin_stays",
+        "test_the_week_spec_refuses_a_linkedin_slot",
+        "test_a_linkedin_draft_never_reaches_his_list",
+        "test_linkedin_is_never_prepared_here",
+        "test_a_linkedin_tap_is_never_queued",
+        "test_linkedin_is_not_an_account_this_engine_engages_from",
+        "test_linkedin_is_growth_mindmakes_and_never_recorded_here",
+        "test_a_row_on_a_channel_another_engine_owns_is_refused",
+        "test_a_linkedin_slot_is_held_before_its_draft_is_read",
+        "test_a_signed_linkedin_slot_is_held_by_its_owner_and_never_saved",
+        "test_linkedin_is_never_open_work_and_a_past_edition_stays_readable",
+        "test_a_week_packet_never_lists_a_linkedin_slot",
+        "test_krish_personal_linkedin_is_refused_at_every_urgency",
+        "test_the_hook_denies_a_linkedin_post_through_claude_code",
+        "test_an_edit_of_a_post_never_read_is_refused",
+        "test_the_hooks_read_a_post_then_refuse_its_edit_through_claude_code",
+        "test_every_allowed_edit_on_its_own_channels_still_passes_once_read",
+        "test_each_answer_shape_gives_its_posts_channels",
+        "test_the_release_ledger_as_release_writes_it_seeds_the_map",
+        "test_a_linkedin_page_is_refused_whatever_account_it_claims",
+        "test_an_x_reply_whose_words_carry_a_linkedin_link_is_still_ready",
+        "test_a_tap_labelled_linkedin_is_refused_by_its_label_whatever_page_it_opens",
+        "test_a_linkedin_page_in_any_spelling_a_browser_reads_is_refused",
+        "test_the_radar_may_still_use_a_linkedin_page_as_evidence",
+        "test_a_linkedin_post_from_before_the_handover_is_still_read_and_judged",
+        "test_the_ledger_keeps_linkedin_history_and_leaves_out_the_new_owners_posts",
+        "test_writing_to_it_stays_refused",
+        "test_the_board_tick_never_ticks_linkedin",
+        "test_a_pending_go_live_with_a_linkedin_line_is_proposed_again_without_it",
+        "test_a_part_of_a_split_go_live_is_rebuilt_with_its_part_number",
+        "test_an_express_go_live_is_rebuilt_as_a_quick_idea",
+        "test_a_go_live_of_only_a_linkedin_line_is_taken_back",
+        "test_the_runner_proposes_again_or_takes_back_each_pending_go_live_with_a_linkedin_line",
+        "test_only_the_ten_newest_reports_are_looked_at_and_the_runner_says_so",
+        "test_the_live_runner_proposes_again_and_takes_back_through_its_report"
       ]
     },
     {

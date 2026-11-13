@@ -3,7 +3,7 @@
 Owner: Growth. Evidence baseline: 26 October 2026. Capability status and review
 interval live in `../tools/buffer.json`; do not duplicate a status table here.
 Publication authority comes from docs/PUBLISHING-AUTHORITY.md. Approved branded
-content has delegated cadence; LinkedIn remains an unscheduled draft; scoped X, TikTok and Threads have delegated cadence.
+content has delegated cadence; scoped X, TikTok and Threads have delegated cadence. Krish's LinkedIn is growth-mindmake's since 13 November 2026 (Ruling, Krish, 2026-11-13): its Buffer channel is no longer pinned here and is refused by id (`engine/buffer_channels.py`, `HANDED_OFF_CHANNELS`); the LinkedIn notes below are dated evidence.
 Buffer TikTok short-video is held (below, "TikTok short video").
 Browser operations use
 only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie export.
@@ -30,6 +30,10 @@ only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie expor
    GET_POST.json`: `edit_post` names no channelId, so preflight refuses a
    draft on any channel but the package's pinned one (never another
    venture's), one that is not a draft and one imported from the network.
+   The Buffer gate hook holds the same order in Claude Code: it refuses an
+   edit of a post not yet read here ("read the post with get_post first, so
+   its channel is known"), and any edit of a post on Krish's personal
+   LinkedIn, growth-mindmake's since 13 November 2026.
    Use create only when no intended draft exists, on the pinned id. Set
    `saveToDraft: true`; do not supply a due time. Never rely on default queue mode.
 5. The verified image asset shape was
@@ -110,7 +114,7 @@ No delete/re-upload workaround, approval bypass or checkpoint advancement.
 ## Scheduling approved branded content
 
 For approved branded content, the current standing permission delegates timing;
-record it separately from creative approval. LinkedIn never enters this scheduling/publication procedure: Krish makes its final publication manually. X, TikTok and Threads are explicitly delegated for approved content.
+record it separately from creative approval. LinkedIn never enters this scheduling/publication procedure, and since 13 November 2026 no LinkedIn draft is made here either: it is growth-mindmake's. X, TikTok and Threads are explicitly delegated for approved content.
 
 Use the authorised delivery route with the exact account, text, media,
 metadata and time. Do not infer permission from this guide or a boolean in a

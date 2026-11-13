@@ -37,7 +37,7 @@ import urllib.error
 import urllib.request
 
 from ..core import instant, ny_time
-from .. import mix as mix_rules
+from .. import mix as mix_rules, owners
 from .buffer_reads import buffer_client, sent_posts
 from .release import load_accounts, native_host
 
@@ -52,8 +52,9 @@ PIECE_ID = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
 CODE = re.compile(r'^[a-z][a-z0-9_]{0,63}$')
 # This engine's channel id -> the board's box names it may fill, first match wins. The piece's
 # vertical cut goes out as a Short, a TikTok and a Reel; X and the rest tick only where the board has a box.
+# LinkedIn's box is growth-mindmake's to tick since 13 Nov 2026 (Ruling, Krish, 2026-11-13; engine/owners.py).
 BOXES = {'youtube': ('shorts', 'youtube'), 'tiktok': ('tiktok',), 'instagram': ('reels', 'instagram'),
-         'linkedin': ('linkedin',), 'x': ('x',), 'threads': ('threads',), 'facebook': ('facebook',),
+         'x': ('x',), 'threads': ('threads',), 'facebook': ('facebook',),
          'substack-notes': ('substack-notes',)}
 
 
@@ -303,7 +304,7 @@ def piece_row(entry, pieces, status_of, sent):
     status_of."""
     post_id = entry.get('buffer_draft_id')
     box = next(iter(BOXES.get(entry.get('channel'), ())), None)
-    if not post_id or box is None or post_id in sent:
+    if not post_id or box is None or post_id in sent or owners.owner(entry.get('channel')):
         return None
     read = status_of(post_id)
     if read is None or read[0] not in LIVE_STATUS:
@@ -434,6 +435,11 @@ def rows(posts, weeks, cfg, accounts=None):
         left[code] = left.get(code, 0) + 1
 
     for post in posts:
+        if owners.owner(post['channel']):
+            # Another engine's channel (Krish's personal LinkedIn, growth-mindmake's since 13 Nov 2026): its box
+            # is that engine's to tick, even for a post this engine sent before the handover.
+            leave(owners.HOLD)
+            continue
         due = post.get('due_at')
         if due is None:
             leave('no_due_at')

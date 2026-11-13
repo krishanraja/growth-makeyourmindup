@@ -93,9 +93,9 @@ format; it is not responsible for finding Growth's opportunities for it.
 4. Execute useful social work every day across the publication and Krish's
    named personal accounts. Brief content-engine for missing creative;
    distribute received assets only under the applicable publishing authority:
-   - LinkedIn: up to three real conversation suggestions, plus a distinct
-     native post when it earns a place. Short human comments, no sales
-     insertion. Open and read actual posts; never invent candidate URLs.
+   - LinkedIn: nothing to prepare. Krish's personal LinkedIn, posts and
+     replies alike, is growth-mindmake's since 13 November 2026 (Ruling,
+     Krish, 2026-11-13); read it for trends and evidence only.
    - Instagram: plan and commission carousel/Reel editions for a specific
      discovery or save/share goal and workable profile/Story continuation.
    - Facebook branded Page: distribute an approved native edition after ownership,
@@ -123,10 +123,8 @@ format; it is not responsible for finding Growth's opportunities for it.
    docs/PUBLISHING-AUTHORITY.md: schedule/publish approved brand content at
    Growth's cadence, aiming for one daily post per branded channel with an
    accepted native edition. Record supply gaps rather than padding the queue.
-   LinkedIn remains unscheduled drafts; Krish publishes manually. Approved X/TikTok content follows delegated cadence with personal voice.
-   Personal X/TikTok may have one daily draft. LinkedIn has no volume quota,
-   and prioritises trusted judgment and relevant professional relationships;
-   reach and publication subscribers are secondary.
+   LinkedIn is growth-mindmake's, so no LinkedIn draft is made here. Approved X/TikTok content follows delegated cadence with personal voice.
+   Personal X/TikTok may have one daily draft.
    27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
    signed exact payloads on X, TikTok, Threads and Notes go out through the
    go-live step; LinkedIn stays his click. Threads has one a day, delegated
@@ -134,12 +132,14 @@ format; it is not responsible for finding Growth's opportunities for it.
    from Krish's Substack profile (`social/channels/substack-notes.json`), as
    he signs.
    Only the specified existing-field metadata repairs have standing authority.
-   LinkedIn preparation never submits a comment, reaction, follow or message.
+   No LinkedIn comment, reaction, follow or message is prepared here.
 6. Progress unfinished live audit ranges, recheck repairs and investigate
    dated continuing attention. Use growth.py audit plan/begin/reconcile for
    autonomous metadata repairs, exact-payload journals for separately
    approved protected edits, and checkpoint only complete accounts.
-   krish_only items (LinkedIn) and approval_required items on held accounts
+   krish_only items (LinkedIn: read only, growth-mindmake's since 13 November
+   2026, so a LinkedIn finding is named in the final message for growth-mindmake
+   and never put on his list from here) and approval_required items on held accounts
    (Threads and Facebook, whose audit authority Krish has not extended) go to
    his list as a described change; the engine never journals or saves either
    (`audit begin` and `reconcile` refuse them).

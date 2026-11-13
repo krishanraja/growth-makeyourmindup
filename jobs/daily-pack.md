@@ -26,10 +26,9 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    headline grid against `hooks.json`, proof hierarchy). Draft a small candidate set, with one next action per placement.
    Write it under Krish's approved voice rules (`.scratch/cc/voice-rules.txt`, "His approved voice rules" in `AGENTS.md`): how it is written only, never what it is about, and never in a score or review.
    Read his inspiration board (`.scratch/cc/inspiration.txt`, docs/ENGINE.md "His inspiration board is the baseline") before choosing: a card he ticked (MUST USE BY its date) is an instruction, so the next fitting carousel, meme or off-day post uses its style and names it as `style_card` in the mocks file (docs/ENGINE.md, "A card he ticked is an instruction"); then a trial he tagged that fits today's piece is the format to try first, rebuilt in our voice and look, never copied.
-   - LinkedIn: a useful first-person analysis, topic early, named stake,
-     sourced finding and matched article link. A document outline is an
-     optional once-weekly asset chosen from pieces already published. Do
-     not promise the week's final winner before Friday.
+   - LinkedIn: none. Krish's personal LinkedIn is growth-mindmake's since
+     13 November 2026 (Ruling, Krish, 2026-11-13); `growth.py check` refuses
+     a LinkedIn draft here.
    - X: four to six short posts separated by blank lines. The opening stands
      alone, evidence pays off the hook, and the final post offers a useful
      continuation. The linter weights URLs; preview complex emoji natively.

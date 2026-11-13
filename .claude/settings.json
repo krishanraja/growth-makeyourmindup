@@ -33,6 +33,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__.*__(get_post|list_posts|create_post)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/buffer-post-channels.py\" 2>/dev/null || python \"$CLAUDE_PROJECT_DIR/.claude/hooks/buffer-post-channels.py\""
+          }
+        ]
+      }
     ]
   },
   "extraKnownMarketplaces": {

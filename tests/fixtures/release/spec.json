@@ -156,31 +156,6 @@
       "payload_sha256": "a0bdc7e1e11218cef9b89241679e23257856596ad1f8e6f0cfc9a88f2fd9c82d"
     },
     {
-      "slot_id": "linkedin-1",
-      "channel": "linkedin",
-      "format": "single-image",
-      "play": "P1",
-      "due_at": "2026-11-03T09:00:00-05:00",
-      "words": "Synthetic LinkedIn draft for tests.",
-      "assets": [
-        {
-          "name": "frame-4.png",
-          "sha256": "5a806107f736ece03fb46dba93eb3722bfa5b3a65fc7c44519b8c8fb65858c43",
-          "url": "https://example.org/synthetic/frame-4.png",
-          "bytes": 34
-        }
-      ],
-      "link_placement": null,
-      "cta": false,
-      "forward_line": "A synthetic reader forwards this to a synthetic colleague.",
-      "experiment_arm": null,
-      "publish_mode": "krish_click",
-      "buffer_draft_id": "aaaaaaaaaaaaaaaaaaaaaa02",
-      "meta": null,
-      "buffer_channel_id": null,
-      "payload_sha256": "14d5e9a01fe019457aae4074577fc6b29405a3af603f9de63a9a6e32c594b90f"
-    },
-    {
       "slot_id": "x-1",
       "channel": "x",
       "format": "single-image",
@@ -218,7 +193,7 @@
   ],
   "signature": {
     "go_live_proposal_id": "synthetic-go-live-1",
-    "decision_digest": "e32c38277022698508566526f60c02186d4d2bd8d262529c870cb6512f0afc06",
+    "decision_digest": "d875adb4d95bab6a2949b28c60f929ebe9bc12095f2129615fca870f3bcd3d66",
     "signed_at": "2026-11-01T10:00:00-05:00"
   }
 }

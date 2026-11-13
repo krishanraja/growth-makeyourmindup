@@ -54,8 +54,9 @@ record) and carry on. Never do the other engine's work in this session.
 
 Post, publish, schedule, send, comment, like or follow. Spend money or credits. Write to Control
 Center. Close a check on a saved setting or an API success. Attempt a held route again before its
-recheck condition changes. Schedule a LinkedIn edition: LinkedIn follows its human publication
-rule, Krish's click. Commit a caption, a post URL or a raw receipt.
+recheck condition changes. Record, schedule or check a LinkedIn edition: Krish's personal
+LinkedIn is growth-mindmake's since 13 November 2026 (Ruling, Krish, 2026-11-13; `engine/owners.py`).
+Commit a caption, a post URL or a raw receipt.
 
 ## The rules for each edition
 
@@ -63,7 +64,7 @@ rule, Krish's click. Commit a caption, a post URL or a raw receipt.
   approved payload by `payload_sha256`. Once it is public it carries its
   provider `post_id`.
 - Each destination closes against separate `check` records on the same
-  post ID: scheduled and public everywhere (public only on LinkedIn),
+  post ID: scheduled and public everywhere,
   plus grid cover and player cover on Facebook Reels, the continuation
   link on a YouTube Short, and playable video and email delivery on
   Substack. `publishing.applicable_checks` is the list.

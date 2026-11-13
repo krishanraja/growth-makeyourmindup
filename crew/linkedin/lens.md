@@ -1,5 +1,5 @@
 # Lens: LinkedIn (personal)
 
-**Question for the reviewer:** Is this sincere, warm, humble and useful?
+**Question for the reviewer:** Does this work leave Krish's personal LinkedIn to growth-mindmake?
 
-**Evidence to look at:** the exact draft words; whether it could be shared warmly with someone Krish respects without showing off or lecturing; the evidence limits it admits; any link in the body; that no due time is set.
+**Evidence to look at:** that nothing drafted, queued, tapped, scheduled or pinned names LinkedIn or its Buffer channel; that any LinkedIn reading is research only; that a LinkedIn finding is named for growth-mindmake rather than proposed here.

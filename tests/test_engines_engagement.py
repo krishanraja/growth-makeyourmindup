@@ -12,11 +12,13 @@ from pathlib import Path
 from engine.engines import core, engagement as eng
 
 ROOT = Path(__file__).resolve().parents[1]
-ALL_STEPS = {s: True for s in eng.EDITOR_STEPS}
+# Every step an X reply needs: no account here is prefilled in a native editor since LinkedIn, the only one
+# that was, went to growth-mindmake on 13 Nov 2026 (Ruling, Krish, 2026-11-13).
+ALL_STEPS = {s: True for s in eng.required_steps('x')}
 DRAFT = core.digest('Would the three models still pick different winners with the brand names hidden?')
 
 
-def item(n, direction='outgoing', state='ready', account='linkedin', links=('batch-one',), **detail):
+def item(n, direction='outgoing', state='ready', account='x', links=('batch-one',), **detail):
     d = {'direction': direction, 'parent_post_key': core.digest('https://example.org/post/' + str(n)),
          'account': account, 'identity_checked': True, 'contribution': 'real_question',
          'draft_digest': DRAFT, 'verified_digest': DRAFT, 'editor_verification': dict(ALL_STEPS)}
@@ -60,6 +62,62 @@ class AcceptanceReplay(unittest.TestCase):
         self.assertEqual(recovered['unanswered_incoming'], ['item-10'])
         self.assertEqual(recovered['ready_for_review']['ready'], 9)
         self.assertEqual(core.check(self.root), [])
+
+    def test_a_linkedin_page_is_refused_whatever_account_it_claims(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn and the replies on it. An item
+        # labelled x (or anything else) whose private post_url or recovery copy opens a LinkedIn page, in any
+        # spelling a browser reads as linkedin.com or lnkd.in, is refused, the same check as a Control Center tap,
+        # and the error names the field that opened it.
+        pages = ('https://www.linkedin.com/feed/update/urn:li:activity:7300000000000000000',
+                 'https://lnkd.in/synthetic', 'https://www.linked%69n.com/feed/update/urn:li:activity:1',
+                 'https://www.\uff4c\uff49\uff4e\uff4b\uff45\uff44\uff49\uff4e.com/feed/update/urn:li:activity:1',
+                 'https://www.linkedin.com\\feed\\update\\urn:li:activity:1',
+                 # Invisible format characters a browser deletes from a host, raw and percent-encoded.
+                 'https://www.linked\u00adin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%C2%ADin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked\u200bin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%E2%80%8Bin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked\u2060in.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%E2%81%A0in.com/feed/update/urn:li:activity:1',
+                 'https://www.linked\ufeffin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%EF%BB%BFin.com/feed/update/urn:li:activity:1')
+        for page in pages:
+            for field, detail in (('post_url', {'post_url': page}),
+                                  ('recovery_copy', {'recovery_copy': 'Copy for the reply. ' + page})):
+                with self.assertRaisesRegex(ValueError, 'detail.' + field + ": Krish's personal LinkedIn is "
+                                                        "growth-mindmake's"):
+                    core.append('engagement', {'id': 'item-1', 'engine': 'engagement', 'detail': detail},
+                                self.root, private=True)
+                self.assertFalse(eng.is_ready(item(1, **detail)), page)
+        self.assertEqual(eng.validate_detail(item(1, account='linkedin'))[:1],
+                         ['detail.account: ' + eng.owners.refusal('linkedin')])
+        self.assertEqual(self.start()['ready_for_review']['ready'], 9, 'nothing on LinkedIn was added')
+        # His own X post keeps its page, and stays ready.
+        core.append('engagement', {'id': 'item-1', 'engine': 'engagement',
+                                   'detail': {'post_url': 'https://x.com/synthetic_one/status/1850000000000000001'}},
+                    self.root, private=True)
+        self.assertTrue(eng.is_ready(core.load('engagement', self.root)['item-1']))
+        self.assertEqual(self.start()['ready_for_review']['ready'], 9)
+
+    def test_an_x_reply_whose_words_carry_a_linkedin_link_is_still_ready(self):
+        # Only the page the item opens decides, exactly as a Control Center tap's page does (engine/engage.py
+        # tap_errors): a LinkedIn link inside Krish's own reply words is what he says, not where the reply goes.
+        post = 'https://x.com/synthetic_one/status/1850000000000000001'
+        words = 'Ran the same test last month and wrote it up here: https://www.linkedin.com/pulse/synthetic-article'
+        for detail in ({'post_url': post, 'recovery_copy': words + '\n' + post},
+                       {'recovery_copy': words + '\n' + post},
+                       {'post_url': post, 'recovery_copy': post + '\n' + words}):
+            self.assertEqual(eng.pages(dict(item(1)['detail'], **detail)), [p for p in (detail.get('post_url'), post)
+                                                                             if p], detail)
+            core.append('engagement', {'id': 'item-1', 'engine': 'engagement', 'detail': detail}, self.root,
+                        private=True)
+            self.assertTrue(eng.is_ready(core.load('engagement', self.root)['item-1']), detail)
+            self.assertEqual(self.start()['ready_for_review']['ready'], 9)
+        # A recovery copy whose post line is LinkedIn's is still refused, by that field.
+        with self.assertRaisesRegex(ValueError, "detail.recovery_copy: Krish's personal LinkedIn"):
+            core.append('engagement', {'id': 'item-2', 'engine': 'engagement',
+                                       'detail': {'recovery_copy': 'A useful reply.\nhttps://lnkd.in/synthetic'}},
+                        self.root, private=True)
 
     def test_a_cleared_editor_reduces_the_ready_count(self):
         core.append('engagement', item(3, editor_verification=dict(ALL_STEPS, full_text_verified=False),
@@ -145,12 +203,22 @@ class Rules(unittest.TestCase):
                          {'incoming': 0, 'outgoing': 10, 'ready': 8})
         self.assertEqual(eng.ready_count([item(1, direction='incoming', state='candidate')])['ready'], 0)
 
-    def test_non_linkedin_accounts_are_ready_without_the_native_editor(self):
+    def test_no_account_is_prefilled_in_a_native_editor(self):
         steps = {s: True for s in eng.required_steps('x')}
         self.assertNotIn('filled_native_editor', steps)
+        self.assertEqual(eng.NATIVE_PREFILL, ())
         self.assertTrue(eng.is_ready(item(1, account='x', editor_verification=steps)))
-        self.assertIn('only LinkedIn comments may be prepared in the native editor (BROWSER.md, 2026-10-24)',
-                      core.validate(item(1, account='x')))
+        prefilled = dict(steps, filled_native_editor=True, switched_away=True, returned=True)
+        self.assertTrue(any(e.startswith('no comment is prepared in a native editor here')
+                            for e in core.validate(item(1, account='instagram', editor_verification=prefilled))))
+
+    def test_linkedin_is_not_an_account_this_engine_engages_from(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn and the replies to everyone who
+        # engages with his posts. No interaction, outgoing or incoming, is recorded here on it.
+        self.assertNotIn('linkedin', eng.ACCOUNTS)
+        for direction, state in (('outgoing', 'ready'), ('incoming', 'candidate')):
+            errors = core.validate(item(1, direction=direction, state=state, account='linkedin'))
+            self.assertTrue(any("growth-mindmake's since 2026-11-13" in e for e in errors), errors)
 
     def test_detail_refusals(self):
         self.assertIn('personal encouragement alone is not a reason to comment',
@@ -169,21 +237,21 @@ class Rules(unittest.TestCase):
         self.assertTrue(core.privacy_errors(item(1, text='the exact comment')))
 
     def test_post_urls_and_exact_words_are_refused_in_committed_records(self):
-        words = 'https://www.linkedin.com/feed/update/urn:li:activity:1 Great point, would the models...'
+        words = 'https://x.com/synthetic_one/status/1 Great point, would the models...'
         for key in ('post_url', 'recovery_copy', 'comment'):
             self.assertTrue(core.validate(item(30, **{key: words})), key)
             self.assertEqual(core.validate(item(30, **{key: words}), private=True), [], key)
         self.assertIn('detail.url: a URL; commit parent_post_key and keep the URL in .scratch/engines/',
                       core.validate(item(30, url=words)))
 
-    def test_linkedin_prefill_keeps_browser_md_limits_and_flags_the_conflict(self):
+    def test_contract_and_job_say_linkedin_is_growth_mindmakes(self):
         contract = core.load_contract('engagement', ROOT)
-        job = (ROOT / 'jobs' / 'engagement.md').read_text(encoding='utf-8')
-        rule = 'one prefilled LinkedIn box at a time; preserve any existing human draft; verify account, exact post'
-        self.assertTrue(any(rule in a for a in contract['permitted_actions']))
-        self.assertIn(rule, ' '.join(job.split()))
-        self.assertIn('BROWSER.md', ' '.join(contract['open_for_krish']))
-        self.assertIn('## Open for Krish', job)
+        job = ' '.join((ROOT / 'jobs' / 'engagement.md').read_text(encoding='utf-8').split())
+        self.assertFalse(any('one prefilled LinkedIn box' in a for a in contract['permitted_actions']))
+        self.assertTrue(any("Krish's personal LinkedIn" in a and "growth-mindmake's" in a
+                            for a in contract['forbidden_actions']))
+        self.assertNotIn('open_for_krish', contract, 'the LinkedIn tab conflict closed with the handover')
+        self.assertIn("growth-mindmake's since 13 November 2026", job)
 
     def test_questions_go_to_acquisition_and_content_engine(self):
         q = dict(batch(), id='question-one', kind='question', state='handed_off', next_owner='acquisition',

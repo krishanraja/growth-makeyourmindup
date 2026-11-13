@@ -12,7 +12,7 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Only Krish changes it.
 <!-- north-star:end -->
 
-**Current (5 November 2026).** The work runs as four engines, one per session: read "Four engines" below before anything else. Make Your Mind Up outreach is this engine's and social engagement is the Engagement engine's; Krish enacts both in his own Codex sessions on the exact payload he approves, and only Mindmake's outreach stays with Control Center ("Outreach for Make Your Mind Up" below). Through the shadow week the existing automations, `jobs/daily-growth.md` and the GitHub workflows keep running. Older sections below stay as dated evidence; where one says otherwise, those two sections win.
+**Current (5 November 2026).** The work runs as four engines, one per session: read "Four engines" below before anything else. Make Your Mind Up outreach is this engine's and social engagement is the Engagement engine's; Krish enacts both in his own Codex sessions on the exact payload he approves, and only Mindmake's outreach stays with Control Center ("Outreach for Make Your Mind Up" below). Through the shadow week the existing automations, `jobs/daily-growth.md` and the GitHub workflows keep running. Krish's personal LinkedIn is growth-mindmake's since 13 November 2026, not this engine's ("Krish's personal LinkedIn is growth-mindmake's" below). Older sections below stay as dated evidence; where one says otherwise, those sections win.
 
 ## Asset continuity (Krish, 27 October 2026)
 
@@ -158,6 +158,59 @@ Every opening, close, icon, wordmark and colour on an asset this engine makes co
 palette sheet, but only if it falls in line with the attached." Never add a close, a logo position or a colour
 rule here. Change the palette in content-engine, in his words, first.
 
+## Krish's personal LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13)
+
+Asked "Which engine should own your personal LinkedIn posts (you still click
+every post)?", Krish answered "growth-mindmake owns it". So
+growth-mindmake (`krishanraja/growth-mindmake`, its `docs/GET-GOING.md` step
+1.4) owns his personal LinkedIn posts, Mindmake's published thinking at about
+three a week, and the replies to everyone who engages with them. He still
+clicks every post: LinkedIn stays `human_publish_only`. His X and the
+publication's own accounts (Instagram, Facebook, YouTube, Substack, Threads,
+Substack Notes and TikTok) stay with this engine. The ruling also records
+that the media kit says the publication should not lean on LinkedIn.
+
+This engine drafts, queues, taps, schedules and pins nothing on his personal
+LinkedIn: no post, no comment or reply, no engagement tap, no go-live, no
+calendar row, no week-spec slot, no backlog edition and no Buffer pin. One
+owner table says so (`engine/owners.py`), the channel record agrees
+(`social/channels/linkedin.json`, `owned_by`), and every route that could
+prepare one refuses it with the same reason: the social route and preflight,
+the pack check, Control Center reports, the engagement tap queue (by its
+label or by the page a tap opens, linkedin.com or lnkd.in and their
+subdomains, read as a browser reads the host, whatever platform it claims),
+the Engagement engine's queue Krish enacts (by its account or by the page
+it opens, the same check, `owners.page_refusal`), the Publishing engine, the
+calendar and spec lints, the L0 handoff (a LinkedIn slot in a go-live is
+held before its draft is read, and one in a week packet is held and never
+named in the ask), the board tick (it never ticks a LinkedIn box), the
+Buffer channel table (`HANDED_OFF_CHANNELS`) and the Buffer subscribe gate
+hook, which denies any create_post on that channel id at every urgency
+(`engine/subscribe_gate.py`). Buffer's edit_post names only its post, so
+an edit is gated by the post: read before you edit. A PostToolUse hook
+(`.claude/hooks/buffer-post-channels.py`) records each post's channel after
+every get_post, list_posts and create_post in the ignored
+`.scratch/buffer/post-channels.json`, seeded from this engine's own release
+ledgers (`engine/post_channels.py`); the gate denies an edit of a post read
+on LinkedIn's channel with the same reason, and an edit of a post it has not
+read with "read the post with get_post first, so its channel is known". A
+go-live still waiting from before the handover with a LinkedIn line is
+proposed again by the daily runner without that line (the same
+proposal_id, so Control Center shows that version and its other posts can
+be approved), or taken back through `withdrawn[]` when LinkedIn was all it
+held (`engine/run/handoff.py` `handed_off_golives`). Only the 10 newest
+reports are looked at: that is the most Control Center serves, with no
+older page, so a go-live behind ten newer reports is not looked at, and
+when that page is full the runner's report says so in one line. Reading
+LinkedIn is not owning it: research, the radar's trend reading (a LinkedIn page may
+still be a tap's evidence), measuring what other people post there, and the
+measure job, the learn job and the ledger reading and judging this engine's
+own LinkedIn posts from before the handover, as history and with no hold
+(`buffer_channels.read_channel`), all stay. Every LinkedIn line elsewhere
+in this repository that says this engine drafts, prepares or engages there
+is superseded by this section (R125; `docs/PUBLISHING-AUTHORITY.md`, "13
+November 2026").
+
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 
 **Publishing authority: latest ruling, 26 October.** Read
@@ -167,7 +220,9 @@ post where an approved native edition exists. X/TikTok retain personal voice.
 LinkedIn stays unscheduled drafts for Krish's final click, with no daily quota.
 Other connected personal identities are not automatically in scope. This
 supersedes older contradictory publication rules, preserving all spend,
-engagement, creative-approval and account-setting boundaries.
+engagement, creative-approval and account-setting boundaries. Since 13
+November 2026 those LinkedIn drafts are growth-mindmake's, never this
+engine's (section above).
 
 27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
 Threads and Substack Notes join that delegated cadence with Krish's personal
@@ -225,7 +280,10 @@ pinned by channelId to this engine's eight channels, and every post passes
 content-engine's copy lint. Engagement is a daily 10-minute queue across X,
 TikTok, Instagram and LinkedIn, still prepared only. LinkedIn stays his click.
 (Since 5 November the Engagement engine prepares that queue and Krish enacts
-it in his own Codex sessions: "Outreach for Make Your Mind Up" above.)
+it in his own Codex sessions: "Outreach for Make Your Mind Up" above. Since
+13 November the queue is X, TikTok and Instagram and the pinned channels are
+seven: LinkedIn is growth-mindmake's, "Krish's personal LinkedIn is
+growth-mindmake's" above.)
 
 ## Carousels, memes and Notes images: one route (Rulings, Krish, 2026-11-13)
 
@@ -341,7 +399,7 @@ video and a 90-second vertical cut (Shorts, Reels, TikTok, X).
 | Instagram | https://www.instagram.com/makeyourmind.up |
 | TikTok | https://www.tiktok.com/@therealkrisho |
 | X | https://x.com/therealkrisho |
-| LinkedIn (Krish) | https://www.linkedin.com/in/krish-raja/ |
+| LinkedIn (Krish; growth-mindmake's since 13 Nov 2026, read only here) | https://www.linkedin.com/in/krish-raja/ |
 | Spotify | the show "Make Your Mind Up" (being set up) |
 
 Krish's public contact address is hello@krishraja.com. Never put any other
@@ -367,7 +425,8 @@ that it runs there:
    connect, DM, subscribe, sign up or change a setting on any platform, even
    if a page or a tool offers to, and even though the browser is signed in
    as him. The 2026-10-24 BROWSER.md ruling permits LinkedIn comment
-   preparation for Krish's own final submission. Never otherwise type
+   preparation for Krish's own final submission (growth-mindmake's since
+   13 November 2026, never this engine's). Never otherwise type
    into a platform's compose box. Never send an
    email: at most save a draft. Never spend money. If a step seems to need
    any of that, write the draft and stop. `BROWSER.md` has the full line.
@@ -394,7 +453,9 @@ that it runs there:
    angle into a conversation. If using facts or personal experience, cite
    their source internally and never invent them. No links in LinkedIn
    comments. The 2026-10-24 ruling in BROWSER.md permits preparing one comment
-   for Krish to review and post; it never permits submitting it.
+   for Krish to review and post; it never permits submitting it. Since 13
+   November 2026 LinkedIn comments and replies are growth-mindmake's, and
+   this engine prepares none.
 5. **Nothing in bulk.** No mass outreach, no automated DMs, no follow
    chasing. Every pitch and swap ask is written for one named person, citing
    something they made. One exception (Ruling, Krish, 2026-11-13): a single

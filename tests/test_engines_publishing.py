@@ -157,14 +157,14 @@ class AcceptanceReplay(unittest.TestCase):
         self.assertEqual([e.split(': ', 1)[1] for e in core.check(self.root)],
                          ['ed-fb: done edition with checks not passed on its post: player_cover'])
         for state in ('released', 'passed', 'not_applicable', 'closed'):
-            line = edition('ed-li', 'linkedin', 'carousel', route='krish_click', state=state, post_id=None,
+            line = edition('ed-ig', 'instagram', 'carousel', route='buffer', state=state, post_id=None,
                            revisit_when=None)
             with self.assertRaisesRegex(ValueError, 'edition state must be one of|is not a state of edition'):
                 core.append('publishing', line, self.root)
 
     def test_channel_is_a_known_channel_id(self):
         with self.assertRaisesRegex(ValueError, 'channel id in social/channels'):
-            core.append('publishing', edition('ed-li', 'LinkedIn', 'carousel', state='scheduled'), self.root)
+            core.append('publishing', edition('ed-ig', 'Instagram', 'carousel', state='scheduled'), self.root)
         with self.assertRaisesRegex(ValueError, 'channel id in social/channels'):
             core.append('publishing', check('ck-x', 'ed-x', 'public', 'Facebook', 'short-video'), self.root)
 
@@ -194,14 +194,16 @@ class AcceptanceReplay(unittest.TestCase):
         works = pub.readback(records['ck-yt-cont'], True, '2026-11-06', 'public Short continuation')
         self.assertEqual((works['state'], works['source']['kind']), ('passed', 'live_readback'))
 
-    def test_linkedin_follows_its_human_publication_rule(self):
-        self.assertEqual(pub.applicable_checks('linkedin', 'carousel'), ('public',))
-        with self.assertRaisesRegex(ValueError, 'human publication rule'):
-            core.append('publishing', edition('ed-li', 'linkedin', 'carousel', state='scheduled'), self.root)
-        core.append('publishing', edition('ed-li', 'linkedin', 'carousel', route='krish_click', state='approved',
-                                          post_id=None), self.root)
-        with self.assertRaisesRegex(ValueError, 'does not apply'):
-            core.append('publishing', check('ck-li', 'ed-li', 'scheduled', 'linkedin', 'carousel'), self.root)
+    def test_linkedin_is_growth_mindmakes_and_never_recorded_here(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn. No edition, check or route hold
+        # is recorded for it here, in any route or state, under any spelling of its id.
+        for line in (edition('ed-li', 'linkedin', 'carousel', state='scheduled'),
+                     edition('ed-li', 'linkedin', 'carousel', route='krish_click', state='approved', post_id=None),
+                     edition('ed-li', 'LinkedIn', 'text', route='krish_click', state='approved', post_id=None),
+                     check('ck-li', 'ed-li', 'public', 'linkedin', 'carousel')):
+            with self.assertRaisesRegex(ValueError, "growth-mindmake's since 2026-11-13"):
+                core.append('publishing', line, self.root)
+        self.assertNotIn('ed-li', core.load('publishing', self.root, private=False))
 
     def test_start_reads_only_and_names_the_first_action(self):
         before = sorted(p for p in self.root.rglob('*'))

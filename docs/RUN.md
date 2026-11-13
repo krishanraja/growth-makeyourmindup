@@ -8,7 +8,7 @@ Read first in every run session (`run pack` puts it atop each pack). Plan:
 A run carries one signed spec (`growth-run-spec/1`) from draft to verdict:
 a `week`, one published `piece` (days 0 to 7) or one `express` idea. Krish
 signs exact payloads, or a concept's idea and mock (R101); the engine releases
-exactly that, reads it back and measures it. LinkedIn stays his click.
+exactly that, reads it back and measures it. LinkedIn is growth-mindmake's.
 Nothing is spent.
 
 A session does one job, then ends at a gate packet:
@@ -74,7 +74,7 @@ recompute; words failing `prose_errors` or content-engine's copy lint
 (eyebrows, asterisks, AI notes, take labels); a snackable slot with no valid
 `share`, a stale `forward_line` or a share ask (`social/share.json`); a
 channel or format unknown or not taken (`social/channels`, `social/formats`);
-`publish_mode` not `krish_click` on LinkedIn or not `engine` elsewhere; a
+any LinkedIn slot (growth-mindmake's, R125); `publish_mode` not `engine`; a
 `krish_click` slot with a `due_at`; `spend_usd` above 0; two experiments on
 one channel; an unregistered arm; an asset hash not 64 lowercase hex; more
 scheduled slots on a New York day than the channel's `daily_posts_target`
@@ -151,7 +151,7 @@ bytes against its signed manifest line; a file in 4 Growth is never trusted.
 
 - `invariants/rules.json`: each rule with its verbatim source quote.
 - `docs/PUBLISHING-AUTHORITY.md`: who may publish where.
-- `docs/ACCOUNT-VOICE.md`: X, TikTok and LinkedIn are his own
+- `docs/ACCOUNT-VOICE.md`: X and TikTok are his own
   accounts; Threads is @makeyourmind.up, in a warm personal register.
 - `AGENTS.md` ("The rules that never bend", "Autonomy", "Outreach for Make
   Your Mind Up"): Krish sends this show's outreach in Codex, never via

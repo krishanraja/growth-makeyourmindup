@@ -147,7 +147,9 @@ observed like the accounts above. Krish extended the 21 Oct audit authority
 to them the same day ("yes extend"), so their existing fields follow the same
 rules as the other accounts and protected fields still need him. LinkedIn
 edits are krish_only: the engine never saves them, not even after approval,
-and the LinkedIn row above is for inspection only. Substack Notes have no
+and the LinkedIn row above is for inspection only. Since 13 November 2026
+LinkedIn is growth-mindmake's since 13 November 2026 (Ruling, Krish, 2026-11-13): a LinkedIn finding is named
+for growth-mindmake, never proposed from here. Substack Notes have no
 audit targets yet. Target hosts match their account with a leading "www."
 removed on both sides (threads.net counts as threads.com); any other host
 fails closed.

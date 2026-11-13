@@ -292,7 +292,9 @@ class ReleaseByConcept(unittest.TestCase):
                 release.stopped_plans(root)
 
     def test_linkedin_and_other_channels_are_never_covered_by_a_concept(self):
-        linked = next(s for s in self.spec['slots'] if s['slot_id'] == 'linkedin-1')
+        # LinkedIn is growth-mindmake's since 13 Nov 2026; a concept never reached it here, before or since.
+        linked = dict(self.slot, slot_id='linkedin-1', channel='linkedin', format='single-image',
+                      publish_mode='krish_click')
         errors = concepts.match_errors(linked, dict(self.concept, placements=[{'channel': 'linkedin',
                                                                                'format': 'single-image'}]))
         self.assertTrue(any('not one of the concept channels' in e for e in errors))

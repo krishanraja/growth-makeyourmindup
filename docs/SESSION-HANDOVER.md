@@ -96,7 +96,7 @@ or publish both copies. Keep the separate Grok/Muse LinkedIn draft untouched.
 
 After reconciling the pilot, execute docs/FOLLOWER-GROWTH.md relentlessly:
 baseline each channel; maintain approved daily supply; use channel-native
-hooks/Stories/search/continuation; bring useful LinkedIn engagement suggestions;
+hooks/Stories/search/continuation (LinkedIn engagement is growth-mindmake's since 13 November 2026, so none here);
 measure follower and attributable subscriber changes; learn and improve daily.
 No manufactured followers, fabricated metrics or filler. Maintain Buffer trial
 evidence and its 31 October / 5-6 November decisions before 7 November expiry.

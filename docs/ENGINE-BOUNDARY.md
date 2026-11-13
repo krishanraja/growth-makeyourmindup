@@ -114,7 +114,9 @@ Automatic posting is the delivery goal; its implementation and permissions
 must be verified. The existing exact-payload go-live rule remains in force.
 This ruling does not approve an unreviewed post or broaden comment, message,
 spend, account-setting or paid-offer permissions. LinkedIn engagement remains
-a safe human handoff. No claim of live auto-posting from this document.
+a safe human handoff, and since 13 November 2026 it is growth-mindmake's, not
+this engine's (Ruling, Krish, 2026-11-13). No claim of live auto-posting from
+this document.
 
 ## Sole production home
 
@@ -230,7 +232,8 @@ I one click green light it puts it in the next available slot".
 **Engagement is a daily 10-minute queue.** "10 min daily queue is fine, add
 Instagram and LinkedIn to this, and make sure everything is one click
 copiable and the click through goes precisely where i need to engage."
-Growth prepares it across X, TikTok, Instagram and LinkedIn: each reply
+Growth prepares it across X, TikTok and Instagram (LinkedIn left on 13
+November 2026: growth-mindmake's since 13 November 2026 (Ruling, Krish, 2026-11-13)): each reply
 drafted with a one-click copy button, each link opening the exact post,
 reply box or profile. Control Center shows it. It stays prepared only: he
 submits every reply, and following and liking stay his.

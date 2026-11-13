@@ -24,13 +24,15 @@ from . import meter
 from .control_center import (ENGAGE_CHANNEL, ENGINE_ID, SLUG, STATE_FIELDS, ProtocolError, _decided_at, action_key,
                              action_errors, build_report, canonical_json, copy_open, engage_action, golive_review, iso,
                              match_decisions, objective, proposal, without_state, _stops)
-from . import engage, engine_state, intensity, stale_asks
+from . import engage, engine_state, intensity, owners, stale_asks
 from .credits import credits_block, credits_lines
 from .copy_lint import copy_lint_errors
 from .core import KINDS, UTC, http_url, instant, locked, ny_time, read_json, today, write_json
 from .operations import aggregate, daily_queue, validate_observation
 # What this engine took back once its week or window was over, carried forward (engine/stale_asks.py).
 from .stale_asks import WITHDREW, WITHDRAWN
+# Its go-lives that still carried a LinkedIn line could not be read back (engine/run/handoff.py handed_off_golives).
+UNREAD_GOLIVES = 'Could not read its own go-lives, so none with a LinkedIn post was taken back or proposed again today'
 
 SECRET_ENV = ('CONTROL_CENTER_ENGINE_TOKEN', 'GROWTH_ENGINE_TOKEN', 'BUFFER_API_KEY', 'GITHUB_TOKEN')
 STATE_DIR = Path('.scratch') / 'cc'
@@ -555,7 +557,8 @@ def backlog_line(backlog):
 
 
 def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None,
-                  backlog=None, gap=None, extra_activity=(), directive=None, seen=False, events=(), weeks=None):
+                  backlog=None, gap=None, extra_activity=(), directive=None, seen=False, events=(), weeks=None,
+                  golives=None):
     """The runner's held report. sent is already_sent(): asks Krish has, answered or pending, are
     never sent again, and None (not read) proposes nothing. backlog is backlog.for_runner():
     (inventory, None) or (None, reason); None means it was not read. extra_activity: lines
@@ -565,7 +568,10 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     proposed AI-answer questions, once written on his yes; engine/ai_answers.py). weeks is
     stale_asks.week_candidates(): (the ended weeks' own asks, None) or ([], why it could not read them); None
     means they were not read (a dry run). Every undecided ask of its own whose week or window is over is taken
-    back (withdrawn), and none is asked again (Ruling, Krish, 2026-11-12: nothing on his list is stale)."""
+    back (withdrawn), and none is asked again (Ruling, Krish, 2026-11-12: nothing on his list is stale).
+    golives is engine/run/handoff.py handed_off_golives()'s (withdraw, code): its undecided go-lives that
+    carried only a LinkedIn post, taken back the same way (Ruling, Krish, 2026-11-13: LinkedIn is
+    growth-mindmake's), or why they could not be read; None means not read (a dry run)."""
     root = Path(root)
     automations = automation_count(root)
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
@@ -617,6 +623,9 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     week_asks, week_error = weeks if weeks is not None else ([], None)
     if week_error:
         holds.append({'reason': stale_asks.UNREAD_WEEKS, 'detail': week_error})
+    handed_asks, golive_error = golives if golives is not None else ([], None)
+    if golive_error:
+        holds.append({'reason': UNREAD_GOLIVES, 'detail': golive_error})
     # The publication's AI-answer questions, proposed for his approval (Ruling, Krish, 2026-11-13).
     from . import ai_answers
     questions, questions_hold = ai_answers.proposal_or_hold(root)
@@ -640,11 +649,17 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
         count_answered = sum(1 for item in asks if sent.get(item['proposal_id'], 'pending') != 'pending')
         if count_answered:
             activity.append({'line': 'Experiment asks Krish has answered: ' + str(count_answered) + '; none sent again'})
-        withdrawn, carried = stale_asks.withdrawals(candidates + list(week_asks), sent,
+        withdrawn, carried = stale_asks.withdrawals(candidates + list(week_asks) + list(handed_asks), sent,
                                                     [p['proposal_id'] for p in proposals])
-        line = stale_asks.activity_line(withdrawn)
+        handed_ids = {pid for pid, _ in handed_asks}
+        line = stale_asks.activity_line([w for w in withdrawn if w['proposal_id'] not in handed_ids])
         if line:
             activity.append({'line': line})
+        handed_out = [w['proposal_id'] for w in withdrawn if w['proposal_id'] in handed_ids]
+        if handed_out:
+            activity.append({'line': 'Withdrew ' + str(len(handed_out)) + ' of its own go-live'
+                             + ('' if len(handed_out) == 1 else 's') + " that held only a LinkedIn post, which is "
+                             "growth-mindmake's since 13 November 2026: " + ', '.join(handed_out)})
         # Each id whole, so tomorrow's runner reads every one back (already_sent).
         holds += id_holds(WAITING, waiting) + id_holds(ANSWERED, answered) + id_holds(WITHDREW, carried)
     pilot_activity, pilot_holds = pilot_lines(root, now)
@@ -889,6 +904,13 @@ def workspace_report(job, run_id, now, envelopes=(), queue=None, observations=No
     selected, deferred, queue = _items(envelopes, queue, now, job)
     gap = gap or intensity.state(root, now)
     proposals, holds, minutes = [], [], 0
+    # A draft for a channel another engine owns is held, never proposed or tapped (Ruling, Krish, 2026-11-13:
+    # growth-mindmake owns his personal LinkedIn, posts and replies). A report's reading about it stays.
+    for item in [i for i in selected if owners.owner(i.get('platform'))
+                 and (i.get('pack_kind') or job) not in ('report', 'numbers')]:
+        selected.remove(item)
+        holds.append({'reason': 'Not this engine\'s channel', 'detail': item.get('item_id', '?') + ': '
+                      + owners.refusal(item['platform'])})
     if job == 'report':
         mixed, held = mix_proposal(root, now)
         proposals += [mixed] if mixed else []
@@ -997,6 +1019,37 @@ def remember(root, report, decisions, read_at):
     matched = match_decisions(decisions or [], known)
     write_json(state_path(root, 'decisions.json'), {'read_at': iso(read_at), 'decisions': matched})
     return matched
+
+
+def older_golives_line(count):
+    """The runner's line when its newest page of reports was full: go-lives older than those were not looked at."""
+    return ('Looked for its go-lives with a LinkedIn post in its ' + str(count) + ' newest reports only, the most'
+            ' Control Center serves: any older go-live was not looked at')
+
+
+def handed_off_golives(client, sent, now, root):
+    """([activity line], (withdraw, code)) for the runner: its pending go-lives that still carry a line on a
+    channel another engine owns (engine/run/handoff.py handed_off_golives). Each that keeps other posts is
+    proposed again now, the same proposal_id without that line, in its own go-live report, so Control Center
+    shows his list that version; each that held nothing else is returned for the runner's withdrawn[]. Only its
+    handoff.RECENT newest reports are looked at (Control Center serves no older page); when that page was full,
+    one line says older go-lives were not. It is a line, not a hold."""
+    from .run import handoff
+    reports, withdraw, code, full = handoff.handed_off_golives(client, sent, now, root)
+    lines = [older_golives_line(handoff.RECENT)] if full else []
+    if not reports:
+        return lines, (withdraw, code)
+    done = {'reports': {'posted': 0, 'readback_matches': 0, 'already_reported': 0}, 'loud': []}
+    try:
+        handoff.deliver_reports(client, reports, done)
+    except ProtocolError as error:
+        return lines, (withdraw, code or 'golive_report_' + error.code)
+    if done['loud']:
+        return lines, (withdraw, code or done['loud'][0])
+    ids = [item['proposal_id'] for report in reports for item in report['proposals']]
+    return ['Proposed again without its LinkedIn post, which is growth-mindmake\'s since 13 November 2026: '
+            + str(len(ids)) + ' go-live' + ('' if len(ids) == 1 else 's') + ' (' + ', '.join(ids) + ')'] + lines, \
+        (withdraw, code)
 
 
 GOLIVE_LEDGER = 'golive-ledger.json'
@@ -1467,13 +1520,19 @@ def cli(args, root, make_client, out=print, checks=None):
             # Krish's instruction (1.20.0): 'received' once, so an earlier report naming it counts.
             state, item = engine_state.instruction(directive)
             told = bool(state == 'open' and engine_state.served(directive) and engine_state.mentioned(client, item['id']))
+            sent = already_sent(client, clock(), directive, args.mode, include_today=bool(wake))
+            # Its go-lives still waiting from before LinkedIn went to growth-mindmake (Ruling, Krish, 2026-11-13):
+            # each is proposed again without its LinkedIn line, or taken back when that was all it held.
+            golives = None
+            if args.mode == 'live':
+                lines_again, golives = handed_off_golives(client, sent, clock(), root)
+                lines += lines_again
             # Its own asks for weeks that are over, read from its own records (engine/stale_asks.py).
             return runner_report(root, run_id, clock(), checks(root), args.mode, True,
-                                 sent=already_sent(client, clock(), directive, args.mode, include_today=bool(wake)),
-                                 backlog=for_runner(root, clock()),
+                                 sent=sent, backlog=for_runner(root, clock()),
                                  gap=intensity.state(root, clock(), directive), extra_activity=lines,
                                  directive=directive, seen=told, events=[event] if event else [],
-                                 weeks=stale_asks.week_candidates(client, clock()))
+                                 weeks=stale_asks.week_candidates(client, clock()), golives=golives)
 
         loop = Loop(client, 'runner', run_id, clock)
         try:

@@ -63,6 +63,11 @@ more than the test establishes? Would it still sound human without emojis,
 hashtags or a compulsory engagement question? A failed answer holds the
 copy for revision. Review any cross-post separately in its account context.
 
+Since 13 November 2026 Krish's personal LinkedIn is growth-mindmake's, posts
+and replies alike (Ruling, Krish, 2026-11-13; PUBLISHING-AUTHORITY.md): this
+engine prepares nothing there, so the LinkedIn lines in this file describe the
+stance growth-mindmake keeps, not work done here.
+
 Publication authority is separate and governed by PUBLISHING-AUTHORITY.md:
 approved branded content plus scoped X, TikTok and Threads have delegated cadence;
 LinkedIn remains unscheduled drafts for Krish's manual publication. Personal LinkedIn has no

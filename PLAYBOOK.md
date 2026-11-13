@@ -48,7 +48,7 @@ briefs; production standards continue to live solely in content-engine.
 |---|---|---|
 | Substack | About, subscribe and welcome fixes, start-here path, referrals, genuine recommendations | read a relevant piece, subscribe, then forward when useful |
 | Website | Promise, series navigation, form friction, search access, original acquisition handoff | matched article or clear subscription |
-| LinkedIn | Native analysis, one useful document outline, thoughtful comments, Featured audit | relevant article or start-here; no links in comments |
+| LinkedIn | None here: Krish's personal LinkedIn is growth-mindmake's since 13 November 2026 (Ruling, Krish, 2026-11-13); read it for trends only | not this engine's |
 | X | Standalone opening, evidence-led thread, useful replies, current pin | matched article; bio and pin agree |
 | YouTube | Pinned comment, community question, related-video path, playlists/end screens audit | Short to related long video to article |
 | Instagram | Story sequence, useful carousel outline, pins/highlights and Collab invitations | save/share, Story link, matched read |

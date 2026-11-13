@@ -9,7 +9,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .. import intensity
+from .. import intensity, owners
 from ..core import TIMEZONE, read_json
 from ..social import inventory, validate
 from .invariants import RULE_SOURCES, class_of, collapse, load_authority, posting_lane
@@ -147,8 +147,10 @@ def _row_errors(at, row, authority, records, calendar, kit):
     if row['lane'] != lane:
         errors.append(finding('lane', at + '.lane', row['id'] + ' is ' + lane + ' under invariants/authority.json, not '
                               + row['lane']))
-    if row['channel'] == 'linkedin' and row['lane'] != 'L3_hands':
-        errors.append(finding('linkedin_not_l3', at + '.lane', 'LinkedIn rows are his hands (L3_hands)'))
+    if channel and channel.get('owned_by'):
+        # Another engine's channel takes no row here (Ruling, Krish, 2026-11-13: growth-mindmake owns his
+        # personal LinkedIn, so the four weekly LinkedIn drafts left this calendar).
+        errors.append(finding('channel_owned_by_another_engine', at + '.channel', owners.refusal(row['channel'])))
     if kind == 'new' and row['lane'] not in ('L2_eyes', 'L3_hands'):
         errors.append(finding('new_format_not_eyes', at + '.lane', row['class'] + ' is a new format: L2_eyes'))
     if (row['at'] == 'draft') != (row['lane'] == 'L3_hands'):
