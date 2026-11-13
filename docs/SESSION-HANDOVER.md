@@ -1,4 +1,4 @@
-13 November profile-link closeout: `.scratch/channel-audit/profile-links-20261113/CLOSEOUT.md`. YouTube, Facebook and X links were saved and independently verified; Krish reports all profile links complete. Threads always targets @makeyourmind.up (CHANGES.md, 13 November), superseding the personal destination below. Buffer still connects only the personal Threads account; release refuses it until the branded connection and channel ID are verified.
+13 November profile-link closeout: `.scratch/channel-audit/profile-links-20261113/CLOSEOUT.md`. YouTube, Facebook and X links were saved and independently verified; Krish reports all profile links complete. Threads always targets @makeyourmind.up (CHANGES.md, 13 November), superseding the personal destination below. The branded @makeyourmind.up Buffer connection was verified on 13 November and its new channel ID is pinned in engine/buffer_channels.py. The old personal channel ID fails release.
 
 # Fresh-session social manager handover
 

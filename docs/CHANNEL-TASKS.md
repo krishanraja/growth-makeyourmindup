@@ -25,7 +25,7 @@ table is the summary.
 | youtube | YouTube Shorts | all but trend-scan and profile-audit | Short-to-long clicks, then subscribers |
 | tiktok | TikTok (personal) | all but profile-audit | Watch time, then profile visits |
 | x | X (personal) | platform-truth, idea-bank (receipts), caption-set, trend-scan, channel-plan | Profile and link clicks at 48 hours |
-| threads | Threads (personal) | platform-truth, idea-bank, caption-set, channel-plan | Replies and follows, baseline for two weeks |
+| threads | Threads (@makeyourmind.up) | platform-truth, idea-bank, caption-set, channel-plan | Replies and follows, baseline for two weeks |
 | linkedin | LinkedIn (his click) | platform-truth, idea-bank, caption-set, channel-plan | Featured clicks and comments from target titles |
 | substack | Substack Notes | platform-truth, idea-bank, caption-set, channel-plan | Subscribes attributed to a Note |
 | channel-auditor | all eight accounts | profile-audit | Every account points to the subscribe path |

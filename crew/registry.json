@@ -157,7 +157,7 @@
     {
       "id": "threads",
       "row": 6,
-      "name": "Threads (personal, new)",
+      "name": "Threads (@makeyourmind.up)",
       "owns": [
         "posts"
       ],

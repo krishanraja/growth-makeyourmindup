@@ -726,7 +726,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('never guess', self.holds(result)['x-1'])
         twice = self.channels + [dict(self.channel('threads'), id='cccccccccccccccccccccc07')]
         self.assertIn('more than one', self.holds(self.plan(channels=twice))['threads-1'])
-        self.assertIn('never guess', self.holds(self.plan(channels={'threads': '6adccb77778b240e2fafbe75'}))['threads-1'])
+        self.assertIn('never guess', self.holds(self.plan(channels={'threads': '6af6cf0f62b70b94b017c3b0'}))['threads-1'])
 
     def test_readback_requires_channel_service(self):
         slot = self.slots['threads-1']
@@ -774,13 +774,19 @@ class ReleaseTests(unittest.TestCase):
             release.resolve_channel({'channel': 'threads'}, [personal])
         self.assertEqual(release.account_hold('threads', {'channel': personal}), 'wrong_account')
 
+    def test_threads_refuses_previous_channel_id_even_with_branded_name(self):
+        previous = {'id': '6adccb77778b240e2fafbe75', 'service': 'threads',
+                    'name': 'makeyourmind.up', 'isDisconnected': False, 'isLocked': False}
+        with self.assertRaisesRegex(ValueError, 'not this engine.*pinned threads'):
+            release.resolve_channel({'channel': 'threads'}, [previous])
+
     def test_channel_ids_are_pinned_and_other_ventures_denied(self):
         # Read back with a read-only list_channels of "My organization" on 28 Oct 2026.
         self.assertEqual(release.BUFFER_CHANNEL_ID, {
             'substack-notes': '6ae09edc2f1f5ed648e9e48c', 'youtube': '6adccf83778b240e2fafe7af',
             'instagram': '6adccb3a778b240e2fafbb63', 'x': '6adccbf5778b240e2fafc457',
             'tiktok': '6adccbdd778b240e2fafc32e', 'linkedin': '6adccba0778b240e2fafc06d',
-            'threads': '6adccb77778b240e2fafbe75', 'facebook': '6adccc1e778b240e2fafc615'})
+            'threads': '6af6cf0f62b70b94b017c3b0', 'facebook': '6adccc1e778b240e2fafc615'})
         self.assertEqual(set(release.DENIED_CHANNELS), {'6ae09bba2f1f5ed648e9cbfc', '6ae096d32f1f5ed648e99e98',
                                                         '6ae0973f2f1f5ed648e9a327', '6ae096872f1f5ed648e99b6d'})
         self.assertFalse(set(release.DENIED_CHANNELS) & set(release.BUFFER_CHANNEL_ID.values()))

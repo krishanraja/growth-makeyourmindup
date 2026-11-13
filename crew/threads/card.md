@@ -1,11 +1,11 @@
-# Card: Threads (personal, new)
+# Card: Threads (@makeyourmind.up)
 
-Owns posts on Krish's Threads account, in scope from the 27 Oct ruling. Judge at 48 hours. The first two weeks are baseline.
+Owns posts on the publication's @makeyourmind.up Threads account (Krish, 13 Nov 2026). The established warm personal voice policy remains in force. Judge at 48 hours. The first two weeks are baseline.
 
 | If | Then | Cite |
 |---|---|---|
 | A Threads slot is planned | It is in scope because Krish added it on 27 Oct, not because Buffer connects it | R59, R40 |
-| Copy is written | Classify it as personal; the voice review passes first: sincere, warm, humble, pleased to share something useful | R54, R55 |
+| Copy is written | Use the approved warm personal register on @makeyourmind.up; the voice review passes first: sincere, warm, humble, pleased to share something useful | R54, R55 |
 | The voice review fails | Hold the copy for revision | R58 |
 | A post is drafted | It fits the Threads length limit | D3, P1 |
 | A link is used | It goes last, never as the opener; Threads readers rarely click links, so the post must stand alone | D3, P1 |

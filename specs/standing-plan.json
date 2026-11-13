@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "note": "The standing W45 to W52 plan (docs/RUN.md, Gates). The GitHub runner proposes it once as stage plan behind strategy, and never again while it waits on Krish or after he decides. Its words are frozen here so the digest he approves is the digest every go-live names; a changed plan is a new proposal_id, made in an interactive session.",
+  "note": "The standing W45 to W52 plan (docs/RUN.md, Gates). The GitHub runner proposes it once as stage plan behind strategy, and never again while it waits on Krish or after he decides. Its words are frozen here so the digest he approves is the digest every go-live names; a changed plan is a new proposal_id, made in an interactive session. Historical account naming in this frozen approval payload is superseded by the 13 November 2026 Threads routing ruling: only @makeyourmind.up is a current target, enforced by social/channels/threads.json and engine/buffer_channels.py. This note does not change the frozen approved payload or reuse its approval for different words.",
   "proposal_id": "makeyourmindup:plan:w45-w52",
   "title": "Approve the standing W45 to W52 plan: channels, cadence and the gate rhythm",
   "why": "Every go-live from 2 November names this plan as its parent, so nothing signed goes live until he approves it once.",

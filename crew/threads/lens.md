@@ -1,4 +1,4 @@
-# Lens: Threads (personal)
+# Lens: Threads (@makeyourmind.up)
 
 **Question for the reviewer:** Does this post start a real conversation?
 

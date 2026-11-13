@@ -211,7 +211,7 @@
       "format": "text",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified. Buffer listed a Threads channel on 27 October 2026; no draft, schedule or publish has been tested.",
+      "evidence_ref": "Not verified for this format. Connection verified on 13 November 2026 for @makeyourmind.up; connection identity alone does not prove draft, schedule or publish capability on the new channel.",
       "verified_operations": []
     },
     {
@@ -219,7 +219,7 @@
       "format": "single-image",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified. Buffer listed a Threads channel on 27 October 2026; no draft, schedule or publish has been tested.",
+      "evidence_ref": "Not verified for this format. Connection verified on 13 November 2026 for @makeyourmind.up; connection identity alone does not prove draft, schedule or publish capability on the new channel.",
       "verified_operations": []
     },
     {
@@ -275,7 +275,7 @@
       "format": "meme",
       "status": "unverified",
       "verified_at": null,
-      "evidence_ref": "Not verified. Buffer listed a Threads channel on 27 October 2026; no draft, schedule or publish has been tested.",
+      "evidence_ref": "Not verified for this format. Connection verified on 13 November 2026 for @makeyourmind.up; connection identity alone does not prove draft, schedule or publish capability on the new channel.",
       "verified_operations": []
     }
   ],

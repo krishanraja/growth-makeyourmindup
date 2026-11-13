@@ -84,7 +84,7 @@ verified repairs, approval requests, meaningful findings, or an access blocker
 when it first appears or changes. One unresolved login is not a weekly alert
 loop. The weekly execution is still required even when the summary is quiet.
 
-## Approved: every profile link points to the tagged subscribe page (Krish, 12 Nov 2026)
+## Approved: every profile link points to the tagged subscribe page (Krish, 12 Nov 2026; resumed 13 Nov)
 
 Krish, 12 Nov 2026: "Happy with your recommendations and yes go for the profile links as well." At the next audit, and every audit after it, each account's
 profile link is set to its tagged subscribe page below, with `link_purpose: align_subscription`
@@ -95,12 +95,14 @@ positioning and pins still need his approval).
 
 | Account | Profile link |
 |---|---|
-| instagram | `https://home.makeyourmindup.ai/subscribe?utm_source=instagram&utm_medium=organic&utm_content=profile` |
-| tiktok | `https://home.makeyourmindup.ai/subscribe?utm_source=tiktok&utm_medium=organic&utm_content=profile` |
-| x | `https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_medium=organic&utm_content=profile` |
-| threads | `https://home.makeyourmindup.ai/subscribe?utm_source=threads&utm_medium=organic&utm_content=profile` |
-| facebook | `https://home.makeyourmindup.ai/subscribe?utm_source=facebook&utm_medium=organic&utm_content=profile` |
-| youtube | `https://home.makeyourmindup.ai/subscribe?utm_source=youtube&utm_medium=organic&utm_content=profile` |
+| instagram | `https://home.makeyourmindup.ai/subscribe?utm_source=instagram&utm_medium=social&utm_content=bio` |
+| tiktok | `https://home.makeyourmindup.ai/subscribe?utm_source=tiktok&utm_medium=social&utm_content=bio` |
+| x | `https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_medium=social&utm_content=bio` |
+| threads | `https://home.makeyourmindup.ai/subscribe?utm_source=threads&utm_medium=social&utm_content=bio` |
+| facebook | `https://home.makeyourmindup.ai/subscribe?utm_source=facebook&utm_medium=social&utm_content=bio` |
+| youtube | `https://home.makeyourmindup.ai/subscribe?utm_source=youtube&utm_medium=social&utm_content=bio` |
+
+The resumed exact-link instruction uses `social/bio` for the six accounts above. Threads always targets @makeyourmind.up; use its verified branded Buffer connection (13 November 2026).
 
 LinkedIn is Krish's alone (`KRISH_ONLY`): the engine never saves it. Put the LinkedIn line,
 `https://home.makeyourmindup.ai/subscribe?utm_source=linkedin&utm_medium=organic&utm_content=profile`, on his list for him to paste himself.

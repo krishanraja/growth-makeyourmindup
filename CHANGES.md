@@ -691,3 +691,7 @@ override this destination. Existing voice and creative approvals are unchanged.
 Buffer must expose the branded account and its verified channel ID before release;
 the old personal connection fails the release name check. No connection change or
 publication was made by this correction.
+
+## 2026-11-13: branded Threads Buffer connection verified
+
+Krish confirmed the correct Threads connection and instructed: "commit all the new updates to the repo, overwriting all old stale material completely". Live Buffer list and detail reads confirmed @makeyourmind.up connected and unlocked. The engine pins the new channel ID and rejects the old one. Current operating labels, channel-audit tracking instructions and handover are reconciled. Frozen approval payloads and dated evidence remain historical; their former account naming cannot override the current branded target. Connection proof does not establish posting capability or delivery.
