@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-13: AEO-Engine's win kits reach Krish through this engine. His ruling, as AEO-Engine's brief records it
+  (`krishanraja/AEO-Engine`, `docs/briefs/2026-11-13-aeo-specialist.md`): AEO's win kits reach him through each
+  venture's own growth engine. Once Control Center serves `features.ai_answers_detail`, `cc start` keeps the kits in
+  the ignored `.scratch/cc/ai-answers.txt` and `jobs/answer.md` reads them first; a kit fix that would put author or
+  Person work under his name is dropped (R100). Kits are read highest priority first, as AEO ranks them. The runner
+  re-asks AEO whenever the request on file carries a digest that differs from `config/ai-answer-questions.json`
+  (flag or none, as Heartside's and Mindmake's engines read it), and, with the detail served, tells AEO of the
+  answer pieces marked shipped there. A day Control Center could not read the standing asks nothing and records nothing.
+  Nothing changes before Control Center serves the digest or the detail.
 - 2026-11-13: Every carousel, meme and Notes image is made in a Claude session, with the Codex plugin building it.
   His words, asked whether to retire content-engine's old carousel commands: "all the carousels should now be done in
   Claude, but using the Codex plug in as per the other usual workflows", then "memes and Notes images should go the
