@@ -893,21 +893,30 @@ def without_handed_off(item, now, root=ROOT):
                                   title.startswith('Your quick idea'), parent)
 
 
+# The most of its newest live reports Control Center serves (protocol 1.10.0 recent_reports, n from 1 to 10), and
+# so the only ones the runner looks through for its go-lives: it has no older page to read.
+RECENT = 10
+
+
 def handed_off_golives(cc, sent, now, root=ROOT):
-    """(reports, withdraw, code) for this engine's pending go-lives, among its newest reports (protocol 1.10.0
-    recent_reports, then each report read back), that still carry a line on a channel another engine owns.
+    """(reports, withdraw, code, full) for this engine's pending go-lives, among its RECENT newest reports (protocol
+    1.10.0 recent_reports, then each report read back), that still carry a line on a channel another engine owns.
 
     reports: one go-live report for each that keeps other posts, the same proposal_id without those lines.
     withdraw: [(proposal_id, reason)] for each that carried nothing else, for the runner's withdrawn[]
     (engine/stale_asks.py withdrawals). sent is engine/cc_loop.py already_sent(): one Krish decided is left as
     it is, and with sent None (not read) nothing is done. code names why the reports could not be read, else
-    None."""
+    None. full is True when the newest page was full (RECENT reports), so any go-live proposed before those was
+    not looked at: Control Center serves no older page, so the runner says so in a line (engine/cc_loop.py)."""
     if sent is None:
-        return [], [], None  # the runner already holds its report as unread; nothing is taken back on a guess
+        return [], [], None, False  # the runner already holds its report as unread; nothing is taken back on a guess
+    full = False
     try:
-        recent = cc.recent_reports(10)
+        recent = cc.recent_reports(RECENT)
+        rows = recent if isinstance(recent, list) else []
+        full = len(rows) >= RECENT
         replacements, withdraw, seen = [], [], set()
-        for row in recent if isinstance(recent, list) else []:
+        for row in rows:
             run_id = row.get('run_id') if isinstance(row, dict) else None
             if not isinstance(run_id, str) or not run_id.startswith(SLUG + ':golive:'):
                 continue
@@ -928,16 +937,16 @@ def handed_off_golives(cc, sent, now, root=ROOT):
                 else:
                     replacements.append(change[1])
     except ProtocolError as error:
-        return [], [], 'golive_reports_' + error.code
+        return [], [], 'golive_reports_' + error.code, full
     except (ValueError, TypeError, KeyError, AttributeError):
-        return [], [], 'golive_reports_unreadable'
+        return [], [], 'golive_reports_unreadable', full
     activity = [{'line': PROPOSED_AGAIN + ', '.join(i['proposal_id'] for i in replacements)},
                 {'line': 'Posted, sent, published and spent nothing'}]
     try:
         reports = reports_for(replacements, Slots(), now, root, activity) if replacements else []
     except (ValueError, TypeError, KeyError):
-        return [], withdraw, 'golive_report_unbuildable'
-    return reports, withdraw, None
+        return [], withdraw, 'golive_report_unbuildable', full
+    return reports, withdraw, None, full
 
 
 # The week packet -----------------------------------------------------------------------

@@ -257,7 +257,9 @@ class ExactTargets(unittest.TestCase):
 
     def test_a_linkedin_page_in_any_spelling_a_browser_reads_is_refused(self):
         # Control Center reads a tap's page as a browser does, so a host percent-encoded, in full-width letters,
-        # with backslashes, a user name, a port, a trailing dot or ideographic dots is still linkedin.com.
+        # with backslashes, a user name, a port, a trailing dot, ideographic dots or invisible format characters
+        # (a soft hyphen, a zero-width space, a word joiner, a byte order mark, raw or percent-encoded) is still
+        # linkedin.com.
         from engine import engage, owners
         pages = ('https://www.linked%69n.com/feed/update/urn:li:activity:7300000000000000000',
                  'https://%6C%6E%6B%64.in/synthetic',
@@ -265,8 +267,15 @@ class ExactTargets(unittest.TestCase):
                  'https://WWW.ＬＩＮＫＥＤＩＮ.COM/in/synthetic-one',
                  'https://www.linkedin.com\\feed\\update\\urn:li:activity:7300000000000000000',
                  'https://someone:secret@www.linkedin.com:443/in/synthetic-one',
+                 'https://someone@linkedin.com/in/synthetic-one', 'https://u:p@lnkd.in/synthetic',
                  'https://www.linkedin.com./in/synthetic-one', 'https://www。linkedin。com/in/synthetic-one',
-                 'https://www．linkedin．com/in/synthetic-one', 'https://www.linkedin%2ecom/in/synthetic-one')
+                 'https://www．linkedin．com/in/synthetic-one', 'https://www.linkedin%2ecom/in/synthetic-one',
+                 'https://www.linked­in.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%C2%ADin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked​in.com/in/synthetic-one', 'https://www.linked%E2%80%8Bin.com/in/synthetic-one',
+                 'https://www.linked⁠in.com/in/synthetic-one', 'https://www.linked%E2%81%A0in.com/in/synthetic-one',
+                 'https://www.linked﻿in.com/in/synthetic-one', 'https://www.linked%EF%BB%BFin.com/in/synthetic-one',
+                 'https://ln​kd.in/synthetic', 'https://ln%C2%ADkd.in/synthetic')
         for page in pages:
             self.assertEqual(owners.url_channel(page), 'linkedin', page)
             for label in ('threads', 'youtube', 'x'):
@@ -279,8 +288,12 @@ class ExactTargets(unittest.TestCase):
             self.assertIsNone(owners.url_channel(page), page)
             self.assertEqual(engage.tap_errors('threads', page, 'A useful reply.'), [], page)
         self.assertEqual(engage.tap_errors('x', 'https://x.com/synthetic_one/status/1', 'A useful reply.'), [])
-        # A backslash page on X is not an exact page, and never an error a run cannot read.
+        # A backslash page on X, or one with a port that is not a number, is not an exact page, and never an error a
+        # run cannot read: tap_errors names it rather than raising.
         self.assertTrue(engage.tap_errors('x', 'https://x.com\\synthetic_one\\status\\1', 'A useful reply.'))
+        for page in ('https://x.com:abc/synthetic_one/status/1', 'https://x.com:99999/synthetic_one/status/1'):
+            self.assertEqual(engage.tap_errors('x', page, 'A useful reply.'),
+                             ['a x tap must open the exact post or profile, not a feed, search or short link'], page)
 
     def test_the_radar_may_still_use_a_linkedin_page_as_evidence(self):
         # Reading LinkedIn stays (R125): X taps whose source thread is a LinkedIn post still go, with that page as

@@ -8,9 +8,11 @@ been read, so the map comes from two places:
 
 - the Claude Code hook .claude/hooks/buffer-post-channels.py, after every Buffer get_post, list_posts and
   create_post, records each post id with its channel id from the call's answer;
-- this engine's own ledgers that already record a Buffer post id with its channel: each release run's ledger
-  (.scratch/runs/<run>/ledger.json, `post_id` with `channel_id`) and the L0 handoff's output
-  (.scratch/cc/handoff-<event>.json, `buffer_draft_id` with `buffer_channel_id`).
+- the one ledger of this engine's own that records a Buffer post id with its channel id as fields: each release
+  run's ledger (.scratch/runs/<run>/ledger.json, `post_id` with `channel_id`, as engine/run/release.py writes it).
+
+The L0 handoff's output is not a seed: it carries a draft's channel id only inside each go-live's exact payload
+text, and the gate fails closed without it, refusing an edit of a post it cannot map until the post is read.
 
 The map is working state, kept in the ignored .scratch/buffer/post-channels.json and never committed. It holds
 ids only: no words, no addresses, no URLs.
@@ -27,9 +29,8 @@ SCHEMA = 'growth-buffer-post-channels/1'
 BUFFER_ID = re.compile(r'^[a-f\d]{24}$')
 # The newest this many posts are kept; an older post's edit is read again first.
 MAX_POSTS = 20000
-# The ledgers that already record a Buffer post id with its channel id: (glob, post id key, channel id key).
-SEEDS = ((Path('.scratch') / 'runs', '*/ledger.json', 'post_id', 'channel_id'),
-         (Path('.scratch') / 'cc', 'handoff-*.json', 'buffer_draft_id', 'buffer_channel_id'))
+# The ledgers that record a Buffer post id with its channel id as fields: (folder, glob, post id key, channel id key).
+SEEDS = ((Path('.scratch') / 'runs', '*/ledger.json', 'post_id', 'channel_id'),)
 TOOLS = ('get_post', 'list_posts', 'create_post')
 
 
@@ -147,7 +148,7 @@ def record(root, found):
 
 
 def seeded(root=ROOT):
-    """{post id: channel id} from this engine's own ledgers (SEEDS). A file that cannot be read adds nothing."""
+    """{post id: channel id} from this engine's release ledgers (SEEDS). A file that cannot be read adds nothing."""
     out = {}
 
     def walk(node, post_key, channel_key):

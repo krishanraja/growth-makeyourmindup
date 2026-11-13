@@ -25,8 +25,8 @@ own metadata, never runs from this repository.
 
 Buffer's edit_post names only its post (postId) and no channel, so an edit is gated by the post: read before
 you edit. The channel of each post read (get_post, list_posts or create_post) is recorded by the hook
-.claude/hooks/buffer-post-channels.py, and this engine's own ledgers that record a post with its channel seed
-the same map (engine/post_channels.py). An edit of a post on a handed-off channel is refused with the same
+.claude/hooks/buffer-post-channels.py, and this engine's release ledgers, which record each released post with
+its channel, seed the same map (engine/post_channels.py). An edit of a post on a handed-off channel is refused with the same
 line; an edit of a post whose channel is not known is refused until the post is read with get_post. Once
 read, an edit on this engine's channels is checked as before, and one on another venture's channel passes.
 """

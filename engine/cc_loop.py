@@ -1021,25 +1021,34 @@ def remember(root, report, decisions, read_at):
     return matched
 
 
+def older_golives_line(count):
+    """The runner's line when its newest page of reports was full: go-lives older than those were not looked at."""
+    return ('Looked for its go-lives with a LinkedIn post in its ' + str(count) + ' newest reports only, the most'
+            ' Control Center serves: any older go-live was not looked at')
+
+
 def handed_off_golives(client, sent, now, root):
     """([activity line], (withdraw, code)) for the runner: its pending go-lives that still carry a line on a
     channel another engine owns (engine/run/handoff.py handed_off_golives). Each that keeps other posts is
     proposed again now, the same proposal_id without that line, in its own go-live report, so Control Center
-    shows his list that version; each that held nothing else is returned for the runner's withdrawn[]."""
+    shows his list that version; each that held nothing else is returned for the runner's withdrawn[]. Only its
+    handoff.RECENT newest reports are looked at (Control Center serves no older page); when that page was full,
+    one line says older go-lives were not. It is a line, not a hold."""
     from .run import handoff
-    reports, withdraw, code = handoff.handed_off_golives(client, sent, now, root)
+    reports, withdraw, code, full = handoff.handed_off_golives(client, sent, now, root)
+    lines = [older_golives_line(handoff.RECENT)] if full else []
     if not reports:
-        return [], (withdraw, code)
+        return lines, (withdraw, code)
     done = {'reports': {'posted': 0, 'readback_matches': 0, 'already_reported': 0}, 'loud': []}
     try:
         handoff.deliver_reports(client, reports, done)
     except ProtocolError as error:
-        return [], (withdraw, code or 'golive_report_' + error.code)
+        return lines, (withdraw, code or 'golive_report_' + error.code)
     if done['loud']:
-        return [], (withdraw, code or done['loud'][0])
+        return lines, (withdraw, code or done['loud'][0])
     ids = [item['proposal_id'] for report in reports for item in report['proposals']]
     return ['Proposed again without its LinkedIn post, which is growth-mindmake\'s since 13 November 2026: '
-            + str(len(ids)) + ' go-live' + ('' if len(ids) == 1 else 's') + ' (' + ', '.join(ids) + ')'], \
+            + str(len(ids)) + ' go-live' + ('' if len(ids) == 1 else 's') + ' (' + ', '.join(ids) + ')'] + lines, \
         (withdraw, code)
 
 

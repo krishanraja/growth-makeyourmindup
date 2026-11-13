@@ -66,17 +66,31 @@ class AcceptanceReplay(unittest.TestCase):
     def test_a_linkedin_page_is_refused_whatever_account_it_claims(self):
         # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn and the replies on it. An item
         # labelled x (or anything else) whose private post_url or recovery copy opens a LinkedIn page, in any
-        # spelling a browser reads as linkedin.com or lnkd.in, is refused, the same check as a Control Center tap.
+        # spelling a browser reads as linkedin.com or lnkd.in, is refused, the same check as a Control Center tap,
+        # and the error names the field that opened it.
         pages = ('https://www.linkedin.com/feed/update/urn:li:activity:7300000000000000000',
                  'https://lnkd.in/synthetic', 'https://www.linked%69n.com/feed/update/urn:li:activity:1',
                  'https://www.\uff4c\uff49\uff4e\uff4b\uff45\uff44\uff49\uff4e.com/feed/update/urn:li:activity:1',
-                 'https://www.linkedin.com\\feed\\update\\urn:li:activity:1')
+                 'https://www.linkedin.com\\feed\\update\\urn:li:activity:1',
+                 # Invisible format characters a browser deletes from a host, raw and percent-encoded.
+                 'https://www.linked\u00adin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%C2%ADin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked\u200bin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%E2%80%8Bin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked\u2060in.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%E2%81%A0in.com/feed/update/urn:li:activity:1',
+                 'https://www.linked\ufeffin.com/feed/update/urn:li:activity:1',
+                 'https://www.linked%EF%BB%BFin.com/feed/update/urn:li:activity:1')
         for page in pages:
-            for detail in ({'post_url': page}, {'recovery_copy': 'Copy for the reply. ' + page}):
-                with self.assertRaisesRegex(ValueError, "Krish's personal LinkedIn is growth-mindmake's"):
+            for field, detail in (('post_url', {'post_url': page}),
+                                  ('recovery_copy', {'recovery_copy': 'Copy for the reply. ' + page})):
+                with self.assertRaisesRegex(ValueError, 'detail.' + field + ": Krish's personal LinkedIn is "
+                                                        "growth-mindmake's"):
                     core.append('engagement', {'id': 'item-1', 'engine': 'engagement', 'detail': detail},
                                 self.root, private=True)
                 self.assertFalse(eng.is_ready(item(1, **detail)), page)
+        self.assertEqual(eng.validate_detail(item(1, account='linkedin'))[:1],
+                         ['detail.account: ' + eng.owners.refusal('linkedin')])
         self.assertEqual(self.start()['ready_for_review']['ready'], 9, 'nothing on LinkedIn was added')
         # His own X post keeps its page, and stays ready.
         core.append('engagement', {'id': 'item-1', 'engine': 'engagement',
@@ -84,6 +98,26 @@ class AcceptanceReplay(unittest.TestCase):
                     self.root, private=True)
         self.assertTrue(eng.is_ready(core.load('engagement', self.root)['item-1']))
         self.assertEqual(self.start()['ready_for_review']['ready'], 9)
+
+    def test_an_x_reply_whose_words_carry_a_linkedin_link_is_still_ready(self):
+        # Only the page the item opens decides, exactly as a Control Center tap's page does (engine/engage.py
+        # tap_errors): a LinkedIn link inside Krish's own reply words is what he says, not where the reply goes.
+        post = 'https://x.com/synthetic_one/status/1850000000000000001'
+        words = 'Ran the same test last month and wrote it up here: https://www.linkedin.com/pulse/synthetic-article'
+        for detail in ({'post_url': post, 'recovery_copy': words + '\n' + post},
+                       {'recovery_copy': words + '\n' + post},
+                       {'post_url': post, 'recovery_copy': post + '\n' + words}):
+            self.assertEqual(eng.pages(dict(item(1)['detail'], **detail)), [p for p in (detail.get('post_url'), post)
+                                                                             if p], detail)
+            core.append('engagement', {'id': 'item-1', 'engine': 'engagement', 'detail': detail}, self.root,
+                        private=True)
+            self.assertTrue(eng.is_ready(core.load('engagement', self.root)['item-1']), detail)
+            self.assertEqual(self.start()['ready_for_review']['ready'], 9)
+        # A recovery copy whose post line is LinkedIn's is still refused, by that field.
+        with self.assertRaisesRegex(ValueError, "detail.recovery_copy: Krish's personal LinkedIn"):
+            core.append('engagement', {'id': 'item-2', 'engine': 'engagement',
+                                       'detail': {'recovery_copy': 'A useful reply.\nhttps://lnkd.in/synthetic'}},
+                        self.root, private=True)
 
     def test_a_cleared_editor_reduces_the_ready_count(self):
         core.append('engagement', item(3, editor_verification=dict(ALL_STEPS, full_text_verified=False),

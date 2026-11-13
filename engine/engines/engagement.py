@@ -50,12 +50,44 @@ def required_steps(account):
     return tuple(s for s in EDITOR_STEPS if s not in PREFILL_ONLY_STEPS)
 
 
-def pages(detail):
-    """Every page an interaction opens: its private post_url and any URL in its recovery copy. Only the merged
-    record (the private overlay over the committed line) carries them."""
-    out = [detail.get('post_url')] if isinstance(detail.get('post_url'), str) else []
+def copy_page(detail):
+    """The post URL an interaction's recovery copy carries, or None. The copy is Krish's exact words kept with
+    the post URL (jobs/engagement.md), so it is the URL in the copy equal to post_url when there is one, else the
+    last URL on the copy's last line. A link inside his words is what he says, not the page the item opens."""
     copy = detail.get('recovery_copy')
-    return out + (PAGE.findall(copy) if isinstance(copy, str) else [])
+    if not isinstance(copy, str):
+        return None
+    post = detail.get('post_url')
+    if isinstance(post, str) and post.strip() and post.strip() in PAGE.findall(copy):
+        return post.strip()
+    lines = [line for line in copy.splitlines() if line.strip()]
+    found = PAGE.findall(lines[-1]) if lines else []
+    return found[-1] if found else None
+
+
+def opened(detail):
+    """[(field, page)] for each page an interaction opens: its private post_url and the post URL its recovery copy
+    carries (copy_page). Only the merged record (the private overlay over the committed line) carries them."""
+    out = [('post_url', detail['post_url'])] if isinstance(detail.get('post_url'), str) else []
+    page = copy_page(detail)
+    return out + ([('recovery_copy', page)] if page is not None else [])
+
+
+def pages(detail):
+    """Every page an interaction opens (opened), never a link inside Krish's own words."""
+    return [page for _, page in opened(detail)]
+
+
+def owner_error(detail):
+    """Why an interaction is another engine's, naming the field that made it so (its account, or the page its
+    post_url or recovery copy opens), or ''."""
+    if owners.owner(detail.get('account')):
+        return 'detail.account: ' + owners.refusal(detail.get('account'))
+    for field, page in opened(detail):
+        why = owners.page_refusal(None, page)
+        if why:
+            return 'detail.' + field + ': ' + why
+    return ''
 
 
 def validate_detail(record):
@@ -66,9 +98,9 @@ def validate_detail(record):
             errors.append('detail.direction must be incoming or outgoing')
         if not _key(d.get('parent_post_key')):
             errors.append('detail.parent_post_key must be the sha256 of the post URL (the URL stays private)')
-        handed = owners.page_refusal(d.get('account'), *pages(d))
+        handed = owner_error(d)
         if handed:
-            errors.append(('detail.account: ' if owners.owner(d.get('account')) else 'detail.post_url: ') + handed)
+            errors.append(handed)
         elif d.get('account') not in ACCOUNTS:
             errors.append('detail.account must be one of ' + ', '.join(ACCOUNTS))
         for name in ('author_key', 'draft_digest', 'verified_digest'):
@@ -137,12 +169,11 @@ def _editor_verified(item):
 def is_ready(item):
     """True when an open outgoing draft is ready in the correct editor: the account identity was checked,
     Krish's contribution is named and the draft survived the editor. A cleared editor is not ready, and nor is
-    an item on a channel another engine owns, by its account or by the page it opens (owners.page_refusal):
-    Krish's personal LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13)."""
+    an item on a channel another engine owns, by its account or by the page it opens (owner_error, the same
+    owners.page_refusal check): Krish's personal LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13)."""
     d = item['detail']
     return _outgoing(item) and item['state'] not in CLOSED_STATES and d.get('identity_checked') is True \
-        and d.get('contribution') in CONTRIBUTIONS and _editor_verified(item) \
-        and not owners.page_refusal(d.get('account'), *pages(d))
+        and d.get('contribution') in CONTRIBUTIONS and _editor_verified(item) and not owner_error(d)
 
 
 def ready_count(items, blocked=()):

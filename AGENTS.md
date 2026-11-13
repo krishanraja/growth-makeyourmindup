@@ -191,15 +191,18 @@ an edit is gated by the post: read before you edit. A PostToolUse hook
 (`.claude/hooks/buffer-post-channels.py`) records each post's channel after
 every get_post, list_posts and create_post in the ignored
 `.scratch/buffer/post-channels.json`, seeded from this engine's own release
-and handoff ledgers (`engine/post_channels.py`); the gate denies an edit of
-a post read on LinkedIn's channel with the same reason, and an edit of a
-post it has not read with "read the post with get_post first, so its
-channel is known". A go-live still waiting from before the handover with a
-LinkedIn line is proposed again by the daily runner without that line (the
-same proposal_id, so Control Center shows that version and its other posts
-can be approved), or taken back through `withdrawn[]` when LinkedIn was all
-it held (`engine/run/handoff.py` `handed_off_golives`). Reading LinkedIn is
-not owning it: research, the radar's trend reading (a LinkedIn page may
+ledgers (`engine/post_channels.py`); the gate denies an edit of a post read
+on LinkedIn's channel with the same reason, and an edit of a post it has not
+read with "read the post with get_post first, so its channel is known". A
+go-live still waiting from before the handover with a LinkedIn line is
+proposed again by the daily runner without that line (the same
+proposal_id, so Control Center shows that version and its other posts can
+be approved), or taken back through `withdrawn[]` when LinkedIn was all it
+held (`engine/run/handoff.py` `handed_off_golives`). Only the 10 newest
+reports are looked at: that is the most Control Center serves, with no
+older page, so a go-live behind ten newer reports is not looked at, and
+when that page is full the runner's report says so in one line. Reading
+LinkedIn is not owning it: research, the radar's trend reading (a LinkedIn page may
 still be a tap's evidence), measuring what other people post there, and the
 measure job, the learn job and the ledger reading and judging this engine's
 own LinkedIn posts from before the handover, as history and with no hold

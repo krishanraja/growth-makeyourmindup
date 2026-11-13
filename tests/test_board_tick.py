@@ -110,8 +110,13 @@ class BoardTickTest(unittest.TestCase):
         self.assertEqual(summary['left'], {owners.HOLD: 1})
         self.assertNotIn('linkedin', board_tick.BOXES)
         entry = {'channel': 'linkedin', 'buffer_draft_id': sent['id'], 'due_at': SLOT}
-        self.assertIsNone(board_tick.piece_row(entry, {MONDAY: (MONDAY, 'mon', PIECE)},
-                                               lambda post_id: ('scheduled', SLOT), set()))
+        pieces, status_of = {MONDAY: (MONDAY, 'mon', PIECE)}, (lambda post_id: ('scheduled', SLOT))
+        self.assertIsNone(board_tick.piece_row(entry, pieces, status_of, set()))
+        # The owner wall stands on its own: even were a LinkedIn box put back, the piece's row is never ticked,
+        # while the same entry on X, which has its box, is.
+        with unittest.mock.patch.dict(board_tick.BOXES, {'linkedin': ('linkedin',)}):
+            self.assertIsNone(board_tick.piece_row(entry, pieces, status_of, set()))
+            self.assertEqual(board_tick.piece_row(dict(entry, channel='x'), pieces, status_of, set())['channel'], 'x')
 
     def test_a_post_without_a_native_url_on_its_own_host_waits(self):
         board, summary = self.run_tick([post(1, 'instagram', SLOT, link=None),

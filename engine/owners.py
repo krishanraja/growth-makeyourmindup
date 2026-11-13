@@ -56,27 +56,23 @@ def page_host(url):
 
     The host is read the way a browser reads it, so a page cannot pass as another site by its spelling:
     a backslash counts as a slash, the user name and port are dropped, the host is percent-decoded and put
-    in its plain form (full-width letters and dots become ASCII), an internationalised (xn--) label is
-    decoded, and a trailing dot is dropped."""
+    in its plain form (full-width letters and dots become ASCII), the invisible format characters a browser
+    deletes from a host (Unicode category Cf: a soft hyphen, a zero-width space, a word joiner, a byte order
+    mark) are deleted, and a trailing dot is dropped. A punycode (xn--) label is left as written: a browser
+    never reads one as an ASCII name, and Node's URL parser, which Control Center uses, refuses one that only
+    spells linkedin in look-alike letters."""
     if not isinstance(url, str):
         return ''
     text = url.strip().replace('\\', '/')
     match = re.match(r'^[A-Za-z][A-Za-z0-9+.-]*:', text)
     rest = text[match.end():] if match else text
     authority = re.split(r'[/?#]', rest.lstrip('/'), maxsplit=1)[0]
-    host = unquote(authority.rpartition('@')[2])
-    host = unicodedata.normalize('NFKC', host).replace('\u3002', '.').lower()
+    host = unicodedata.normalize('NFKC', unquote(authority.rpartition('@')[2]))
+    host = ''.join(c for c in host if unicodedata.category(c) != 'Cf')
+    host = host.replace('\u3002', '.').lower()
     if not host.startswith('['):
         host = re.sub(r':\d*$', '', host)
-    labels = []
-    for label in host.split('.'):
-        if label.startswith('xn--'):
-            try:
-                label = label.encode('ascii').decode('idna')
-            except (UnicodeError, ValueError):
-                pass
-        labels.append(unicodedata.normalize('NFKC', label).lower())
-    return '.'.join(labels).rstrip('.')
+    return host.rstrip('.')
 
 
 def url_channel(url):
