@@ -48,6 +48,33 @@ class SourceClockTests(unittest.TestCase):
         times = [p['sent_at'] for p in value['posts']]
         self.assertEqual(times, sorted(times, reverse=True))
 
+    def test_a_note_that_brought_a_subscriber_is_kept_past_sixty_newer_posts(self):
+        # The 4 November Note and its one free subscription dropped out once about 60 posts followed it, and the line
+        # said no Note was in the lookback (adversarial review, 13 Nov 2026).
+        note = post('a' * 24, 'substack-notes', '2026-11-04T15:00:00Z', impressions=225, freeSubscriptions=1)
+        newer = [post('{:024x}'.format(n), 'x', '2026-11-{:02d}T{:02d}:00:00Z'.format(5 + n // 12, n % 12 + 1),
+                      impressions=100 + n, clicks=2) for n in range(61)]
+        value = source_clock.record([note] + newer, NOW)
+        ids = [p['post_id'] for p in value['posts']]
+        self.assertIn('a' * 24, ids)
+        self.assertEqual((len(ids), value['dropped_oldest']), (source_clock.MAX_POSTS, 2))
+        self.assertEqual(value['totals']['substack-notes']['freeSubscriptions'], 1)
+        times = [p['sent_at'] for p in value['posts']]
+        self.assertEqual(times, sorted(times, reverse=True), 'readers still see newest first')
+        self.assertIn('1 free subscriptions', source_clock.line(value))
+        self.assertIn('2 older posts in the lookback not recorded', source_clock.line(value))
+        bare = source_clock.record(newer, NOW)
+        self.assertIn('no Substack Note with counts in the posts kept', source_clock.line(bare))
+        self.assertIn('1 older posts in the lookback not recorded', source_clock.line(bare))
+
+    def test_a_post_with_no_sent_time_is_left_out_and_a_post_listed_twice_counts_once(self):
+        value = source_clock.record([post('a' * 24, 'substack-notes', None, freeSubscriptions=1)], NOW)
+        self.assertEqual((value['posts'], value['left_out']), ([], 1), 'never stamped with the run time')
+        twice = post('b' * 24, 'substack-notes', '2026-11-04T15:00:00Z', freeSubscriptions=1)
+        value = source_clock.record([twice, dict(twice)], NOW)
+        self.assertEqual((len(value['posts']), value['left_out']), (1, 0))
+        self.assertEqual(value['totals']['substack-notes']['freeSubscriptions'], 1)
+
     def test_the_report_reads_back_whole(self):
         report = source_clock.report([post('a' * 24, 'substack-notes', '2026-11-04T15:00:00Z', freeSubscriptions=1)],
                                      NOW, 'abc1234')

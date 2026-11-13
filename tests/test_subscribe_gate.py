@@ -57,6 +57,65 @@ class Gate(unittest.TestCase):
     def test_other_tools_pass(self):
         self.assertEqual(subscribe_gate.errors('mcp__Buffer__list_posts', {}, 5), [])
 
+    def test_an_x_thread_is_read_under_buffers_twitter_key(self):
+        # Buffer keeps X metadata under twitter (create_post schema: metadata.twitter.thread), never under x.
+        first = 'TEST FIXTURE ONLY. Part one.'
+        routed = post('x', first, twitter={'thread': [{'text': first}, {'text': 'Part two: ' + tagged('x')}]})
+        self.assertEqual(subscribe_gate.errors('mcp__Buffer__create_post', routed, 5), [])
+        bare = post('x', first, twitter={'thread': [{'text': first}, {'text': 'Part two, no link.'}]})
+        self.assertTrue(subscribe_gate.errors('mcp__Buffer__create_post', bare, 5))
+
+    def test_a_threads_link_card_on_a_thread_item_counts_in_buffers_shape(self):
+        card = {'text': 'Part two.', 'metadata': {'threads': {'linkAttachment': {'url': tagged('threads')}}}}
+        call = post('threads', 'TEST FIXTURE ONLY.', threads={'thread': [{'text': 'TEST FIXTURE ONLY.'}, card]})
+        self.assertEqual(subscribe_gate.errors('mcp__Buffer__create_post', call, 5), [])
+
+
+class Edits(unittest.TestCase):
+    """Buffer's edit_post names a postId and never a channelId: the gate stays offline, never blocks another
+    venture's post, and judges this engine's post by the channel the call names, never a default."""
+
+    def edit(self, text, **meta):
+        call = {'postId': 'a' * 24, 'text': text}
+        if meta:
+            call['metadata'] = meta
+        return subscribe_gate.errors('mcp__Buffer__edit_post', call, 5)
+
+    def test_a_routed_edit_passes_on_the_channel_its_route_names(self):
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. New words ' + tagged('x')), [])
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. New words ' + tagged('facebook')), [])
+
+    def test_an_x_thread_edit_is_judged_as_x(self):
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. makeyourmindup', twitter={'thread': [
+            {'text': 'TEST FIXTURE ONLY. makeyourmindup'}, {'text': 'More ' + tagged('x')}]}), [])
+        problems = self.edit('TEST FIXTURE ONLY. makeyourmindup, no link', twitter={})
+        self.assertTrue(problems and 'this x post' in problems[0], problems)
+
+    def test_this_engines_routeless_edit_naming_no_channel_holds(self):
+        problems = self.edit('TEST FIXTURE ONLY. makeyourmindup, new words and no link.')
+        self.assertTrue(problems and problems[0].startswith('subscribe_route_missing:'), problems)
+        self.assertNotIn('threads post', problems[0])
+        below = subscribe_gate.errors('mcp__Buffer__edit_post', {'postId': 'a' * 24,
+                                                                 'text': 'makeyourmindup, no link.'}, 3)
+        self.assertEqual(below, [], 'below the conversion urgency nothing is required')
+
+    def test_an_edit_whose_channel_id_is_null_is_resolved_as_one_with_none(self):
+        # A channelId present but null names no channel, as one left out does (reverifier, 13 Nov 2026: it passed).
+        def edit(text):
+            return subscribe_gate.errors('mcp__Buffer__edit_post', {'postId': 'a' * 24, 'channelId': None,
+                                                                    'text': text}, 5)
+        problems = edit('TEST FIXTURE ONLY. makeyourmindup, new words and no link.')
+        self.assertTrue(problems and problems[0].startswith('subscribe_route_missing:'), problems)
+        self.assertEqual(edit('TEST FIXTURE ONLY. New words ' + tagged('x')), [])
+        self.assertEqual(edit('TEST FIXTURE ONLY. Another venture, new words.'), [])
+
+    def test_another_ventures_edit_is_never_blocked(self):
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. Another venture, new words.'), [])
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. New caption.', instagram={'type': 'post', 'firstComment': ''}), [])
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. makeyourmindup', pinterest={'title': 'Synthetic'}), [])
+        call = {'postId': 'a' * 24, 'channelId': next(iter(DENIED_CHANNELS)), 'text': 'makeyourmindup, no link.'}
+        self.assertEqual(subscribe_gate.errors('mcp__Buffer__edit_post', call, 5), [])
+
     def test_the_hook_denies_through_claude_code(self):
         call = {'tool_name': 'mcp__Buffer__create_post', 'tool_input': post('threads', 'TEST FIXTURE ONLY.')}
         out = subprocess.run([sys.executable, str(ROOT / '.claude' / 'hooks' / 'buffer-subscribe-gate.py')],
@@ -78,6 +137,18 @@ class Gate(unittest.TestCase):
             done = self.hook(stdin)
             self.assertEqual(done.returncode, 2, stdin)
             self.assertIn('refused', done.stderr)
+
+    def test_the_hook_refuses_a_call_whose_tool_or_input_it_cannot_read(self):
+        # 'A call it cannot check is refused': a tool name that is not text, or a create or edit whose input is
+        # not an object, used to pass with exit 0.
+        for call in ({'tool_name': 5}, {'tool_name': None, 'tool_input': {}},
+                     {'tool_name': 'mcp__Buffer__create_post', 'tool_input': 'TEST FIXTURE ONLY.'},
+                     {'tool_name': 'mcp__Buffer__edit_post', 'tool_input': ['TEST FIXTURE ONLY.']}):
+            done = self.hook(json.dumps(call))
+            self.assertEqual(done.returncode, 2, call)
+            self.assertIn('refused', done.stderr)
+        done = self.hook(json.dumps({'tool_name': 'mcp__Buffer__list_posts', 'tool_input': 'anything'}))
+        self.assertEqual((done.returncode, done.stdout), (0, ''))
 
     def test_the_hook_fails_closed_when_the_gate_breaks(self):
         # metadata that is not an object breaks the gate's own reading of an engine post: refused, never passed.

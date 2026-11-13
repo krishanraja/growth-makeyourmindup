@@ -298,7 +298,9 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
         activity.append({'line': "Pulled today's directive before reading any source"})
     posts = posts_read.get('posts') or []
     if 'note' in posts_read:
-        holds.append({'reason': posts_read['note'], 'detail': 'Measured the GA4 part only; set BUFFER_API_KEY for posts'})
+        missing = posts_read['note'] == buffer_reads.NOT_INSTALLED  # a fix to the checkout, not Krish's key
+        holds.append({'reason': posts_read['note'], 'detail': 'Measured the GA4 part only; '
+                      + ('restore engine/run/buffer_api.py' if missing else 'set BUFFER_API_KEY') + ' for posts'})
     if 'error' in posts_read:
         holds.append({'reason': 'Buffer could not be read', 'detail': posts_read['error']})
         work_error = 'buffer_read_failed'
@@ -346,9 +348,10 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
         if found['alarm']:
             holds.append({'reason': 'Posts with no tracked subscribe route',
                           'detail': str(found['alarm_by']['buffer']) + ' made in Buffer and '
-                          + str(found['alarm_by']['native']) + ' made natively since the route check went live; '
-                          'each post needs a four-tag subscribe link (engine/route.py) or, on Instagram and TikTok, '
-                          'words pointing to the profile link'})
+                          + str(found['alarm_by']['native']) + ' made natively since the route check went live, '
+                          + str(found['untracked_alarmed']) + ' of them with a subscribe link GA4 cannot credit '
+                          '(without all four tags, sent from 14 November); each post needs a four-tag subscribe link (engine/route.py) '
+                          'or, on Instagram and TikTok, words pointing to the profile link'})
     lines, hold, joined = ga4_part(block, posts, config)
     activity += [{'line': line} for line in lines]
     if hold:
@@ -365,6 +368,9 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
                           'check BUFFER_API_KEY with growth.py run keys')
     elif posts or joined:
         row = outcome.row('advanced', str(len(posts)) + ' posts measured, ' + str(sum(counts.values())) + ' verdicts')
+    elif 'note' in posts_read and posts_read['note'] == buffer_reads.NOT_INSTALLED:
+        row = outcome.row('blocked', 'buffer_not_read', 'fix queued: engine/run/buffer_api.py is missing from this '
+                          'checkout, so restore it from main; the GA4 part ran without it')
     elif 'note' in posts_read:
         row = outcome.row('blocked', 'buffer_not_read', 'ask queued: BUFFER_API_KEY in the measure workflow\'s '
                           'secrets is Krish\'s to add; the GA4 part ran without it')

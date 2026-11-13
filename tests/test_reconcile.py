@@ -17,7 +17,12 @@ class ReconcileTests(unittest.TestCase):
         self.assertTrue(reconcile.routed(post('instagram', 'TEST FIXTURE ONLY. Subscribe: link in bio.')))
         self.assertFalse(reconcile.routed(post('x', 'TEST FIXTURE ONLY. Subscribe: link in bio.')))
         two_tags = 'https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_content=slot'
-        self.assertFalse(reconcile.routed(post('x', 'TEST FIXTURE ONLY. ' + two_tags)))
+        self.assertTrue(reconcile.routed(post('x', 'TEST FIXTURE ONLY. ' + two_tags)), 'a route GA4 cannot credit')
+        self.assertEqual(reconcile.route_of(post('x', 'TEST FIXTURE ONLY. ' + two_tags)), 'untracked')
+        self.assertFalse(reconcile.routed(post('x', 'TEST FIXTURE ONLY. https://home.makeyourmindup.ai/subscribe'
+                                                     '?utm_source=x&utm_medium=social')))
+        self.assertFalse(reconcile.routed(post('x', 'TEST FIXTURE ONLY. https://evil.example/subscribe'
+                                                     '?utm_source=x&utm_content=slot')))
         self.assertFalse(reconcile.routed(post('threads', 'TEST FIXTURE ONLY. No link.')))
 
     def test_a_route_in_the_first_comment_counts_and_an_article_link_does_not(self):
@@ -41,6 +46,88 @@ class ReconcileTests(unittest.TestCase):
         self.assertEqual(found['alarm'], 2)
         self.assertIn('approval not reconciled yet', found['line'])
         self.assertNotIn('TEST FIXTURE', found['line'])
+
+    def test_the_old_gates_two_tag_link_is_a_route_counted_untracked_by_ga4_never_alarmed(self):
+        # Before the four-tag check merged, the gate passed utm_source and utm_content and its own hint said
+        # utm_medium=organic with no utm_campaign; such a post sent on 13 November raised the alarm for 7 days
+        # (adversarial review, 13 Nov 2026).
+        hint = 'https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_medium=organic&utm_content=slot-old'
+        read = {'listed': 2, 'posts': [post('x', 'TEST FIXTURE ONLY. ' + hint, sent='2026-11-13T10:00:00Z'),
+                                       post('x', 'TEST FIXTURE ONLY. No link.', sent='2026-11-13T11:00:00Z')]}
+        found = reconcile.check(read, '2026-11-15T12:00:00Z')
+        self.assertEqual((found['untracked'], found['routeless']['buffer'], found['alarm']), (1, 1, 1))
+        self.assertIn('untracked by GA4 1', found['line'])
+        self.assertNotIn('slot-old', found['line'])
+
+    def test_a_two_tag_link_sent_from_14_november_raises_the_alarm_as_a_missing_route(self):
+        # The two-tag link is a route only before UNTRACKED_FROM (reverifier, 13 Nov 2026: one sent 25 November
+        # gave no alarm, though GA4 can never credit it). Both sides of the cut-off.
+        two = 'https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_content=slot-late'
+        self.assertEqual(reconcile.UNTRACKED_FROM, '2026-11-14T00:00:00+00:00')
+        before = {'listed': 1, 'posts': [post('x', 'TEST FIXTURE ONLY. ' + two, sent='2026-11-13T23:59:59Z')]}
+        found = reconcile.check(before, '2026-11-15T12:00:00Z')
+        self.assertEqual((found['untracked'], found['untracked_alarmed'], found['alarm']), (1, 0, 0))
+        after = {'listed': 2, 'posts': [post('x', 'TEST FIXTURE ONLY. ' + two, sent='2026-11-14T00:00:00Z')],
+                 'native': [post('youtube', 'TEST FIXTURE ONLY. ' + two.replace('=x', '=youtube'),
+                                 sent='2026-11-19T12:00:00Z')]}
+        found = reconcile.check(after, '2026-11-26T12:00:00Z')
+        self.assertEqual(found['checked'], 1)  # the 14 November post is outside seven days of 26 November
+        self.assertEqual((found['untracked'], found['untracked_alarmed'], found['alarm'], found['alarm_by']),
+                         (1, 1, 1, {'buffer': 0, 'native': 1}))
+        found = reconcile.check(after, '2026-11-20T12:00:00Z')
+        self.assertEqual((found['untracked_alarmed'], found['alarm_by']), (2, {'buffer': 1, 'native': 1}))
+        self.assertIn('untracked by GA4 2', found['line'])
+        self.assertIn('2 sent from 14 November raise the alarm', found['line'])
+        self.assertNotIn('slot-late', found['line'])
+        # A four-tag link sent the same day is tracked and never alarmed.
+        tracked = {'listed': 1, 'posts': [post('x', 'TEST FIXTURE ONLY. ' + route.subscribe_url('x', 'slot-late'),
+                                               sent='2026-11-19T12:00:00Z')]}
+        self.assertEqual(reconcile.check(tracked, '2026-11-20T12:00:00Z')['alarm'], 0)
+
+    def test_the_measure_hold_says_untracked_by_ga4(self):
+        from pathlib import Path
+        from engine.core import instant
+        from engine.run import measure_auto
+        from engine.run.ga4 import load_config
+        root = Path(__file__).resolve().parents[1]
+        late = post('x', 'TEST FIXTURE ONLY. https://home.makeyourmindup.ai/subscribe?utm_source=x&utm_content=s',
+                    sent='2026-11-15T12:00:00Z')
+        late['sent_at'] = instant(late['sent_at'])
+        read = {'listed': 1, 'posts': [], 'native': [late], 'missing': [], 'held': [], 'imported': 1,
+                'get_post_reads': 0}
+        report, _, _ = measure_auto.build(read, None, NOW, root, 'synthetic', load_config(root), False)
+        hold = next(h for h in report['holds'] if h['reason'] == 'Posts with no tracked subscribe route')
+        self.assertIn('1 of them with a subscribe link GA4 cannot credit', hold['detail'])
+        self.assertNotIn('utm_content=s', hold['detail'])
+
+    def test_an_instagram_story_link_sticker_is_a_route(self):
+        from engine.run.buffer_reads import _words
+        url = route.subscribe_url('instagram', 'slot-story')
+        words = _words({'text': 'TEST FIXTURE ONLY. A story.',
+                        'metadata': {'__typename': 'InstagramPostMetadata', 'type': 'story', 'link': url}})
+        self.assertEqual(reconcile.route_of(post('instagram', words)), 'tracked')
+
+    def test_a_thread_whose_later_items_are_not_read_is_unverifiable_never_alarmed(self):
+        # The sent listing selects threadCount, not the thread items, so a route in item two cannot be seen.
+        from engine.run.buffer_reads import _thread_count
+        listed = {'text': 'TEST FIXTURE ONLY. Part one.',
+                  'metadata': {'__typename': 'TwitterPostMetadata', 'type': 'post', 'threadCount': 2}}
+        self.assertEqual(_thread_count(listed), 2)
+        self.assertEqual(_thread_count({'metadata': {'threadCount': True}}), 0)
+        thread = dict(post('x', 'TEST FIXTURE ONLY. Part one.'), thread_count=2)
+        single = post('x', 'TEST FIXTURE ONLY. No link.', pid='b' * 24)
+        found = reconcile.check({'listed': 2, 'posts': [thread, single]}, NOW)
+        self.assertEqual((found['unverified'], found['routeless']['buffer'], found['alarm']), (1, 1, 1))
+        self.assertIn('not verifiable 1', found['line'])
+        # The line and the module say plainly that a thread's later items are not read yet (reverifier, 13 Nov 2026:
+        # a fully routeless thread raises no alarm, a detection gap kept on purpose until the items are read).
+        self.assertIn("a thread's later items are not read yet", found['line'])
+        self.assertIn("A thread's later items are not read yet.", reconcile.__doc__)
+        # From 14 November a two-tag link is no route, so a thread whose first item carries only one is unverified.
+        late = dict(post('x', 'TEST FIXTURE ONLY. https://home.makeyourmindup.ai/subscribe?utm_source=x'
+                              '&utm_content=slot'), thread_count=1)
+        found = reconcile.check({'listed': 1, 'posts': [late]}, NOW)
+        self.assertEqual((found['unverified'], found['untracked'], found['alarm']), (1, 0, 0))
 
     def test_posts_before_the_check_landed_are_counted_never_alarmed(self):
         read = {'listed': 1, 'posts': [post('x', 'TEST FIXTURE ONLY. No link.', sent='2026-11-12T12:00:00Z')]}
@@ -84,6 +171,16 @@ class MeasureReportTests(unittest.TestCase):
         self.assertTrue(any(l.startswith('Outcome: nothing_to_do') for l in lines), lines)
         self.assertTrue(any(l.startswith('Reconciliation over the last 7 days: 1 sent posts') for l in lines))
         self.assertIn('Posts with no tracked subscribe route', [h['reason'] for h in report['holds']])
+        # A checkout with no buffer_api module is a fix to the checkout, never Krish's key to add.
+        from engine.run import buffer_reads
+        for note, way in ((buffer_reads.NOT_INSTALLED, 'buffer_api.py is missing'),
+                          (buffer_reads.NOT_CONFIGURED, 'BUFFER_API_KEY')):
+            report, _, _ = measure_auto.build({'note': note}, None, NOW, root, 'synthetic', load_config(root), False)
+            row = next(a['line'] for a in report['activity'] if a['line'].startswith('Outcome: blocked'))
+            self.assertIn(way, row)
+            detail = next(h['detail'] for h in report['holds'] if h['reason'] == note)
+            self.assertIn('restore engine/run/buffer_api.py' if note == buffer_reads.NOT_INSTALLED
+                          else 'set BUFFER_API_KEY', detail)
         broken = dict(read, error='RuntimeError')
         report, error, _ = measure_auto.build(broken, None, NOW, root, 'synthetic', load_config(root), False)
         self.assertEqual(error, 'buffer_read_failed')
@@ -101,6 +198,30 @@ class ReleaseOutcomeTests(unittest.TestCase):
         blocked = release_outcome(dict(base, error='decisions_unpaged'))
         self.assertEqual(blocked['outcome'], 'blocked')
         self.assertTrue(blocked['way_out'])
+
+
+
+class RoundThreeTests(unittest.TestCase):
+    """What the second reverification found (13 Nov 2026)."""
+
+    def test_link_in_bio_on_instagram_is_a_route_whatever_else_the_words_carry(self):
+        two_tags = 'https://home.makeyourmindup.ai/subscribe?utm_source=instagram&utm_content=x'
+        found = reconcile.check({'listed': 1, 'posts': [post('instagram', 'TEST FIXTURE ONLY. Subscribe: link in bio. '
+                                                              + two_tags, sent='2026-11-19T12:00:00Z')]}, '2026-11-20T12:00:00Z')
+        self.assertEqual(found['alarm'], 0)
+
+    def test_an_adopted_draft_is_measured_without_its_route_line(self):
+        from engine.run import maker
+        url = route.subscribe_url('x', 'slot-9')
+        self.assertEqual(maker.without_route('Words.\nSubscribe: ' + url), 'Words.')
+        self.assertEqual(maker.without_route('Words.\n' + maker.PROFILE_ROUTE), 'Words.')
+        self.assertEqual(maker.without_route('Words with no route.'), 'Words with no route.')
+
+    def test_an_edit_with_an_empty_channel_id_is_resolved_like_none(self):
+        from engine import subscribe_gate
+        call = {'postId': 'a' * 24, 'channelId': '', 'text': 'TEST FIXTURE ONLY. makeyourmindup, no route.'}
+        self.assertEqual(subscribe_gate.errors('mcp__Buffer__edit_post', call, 5),
+                         subscribe_gate.errors('mcp__Buffer__edit_post', dict(call, channelId=None), 5))
 
 
 if __name__ == '__main__':

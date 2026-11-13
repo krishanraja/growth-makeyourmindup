@@ -39,6 +39,15 @@ def subscribe_url(channel, content, campaign=CAMPAIGN, root=intensity.ROOT):
                                    ('utm_content', content)])
 
 
+def content_of(post_id):
+    """A slot or post id as a utm_content subscribe_url takes: lower case, each run of other characters made one -,
+    no leading - or _, at most 64. ValueError when nothing is left."""
+    content = re.sub(r'[^a-z0-9_-]+', '-', str(post_id).strip().lower()).lstrip('-_')[:64]
+    if not CONTENT.match(content):
+        raise ValueError('utm_content needs a slot or post id with a letter or digit')
+    return content
+
+
 def line_errors(line, urgency=None, root=intensity.ROOT):
     """Why a go-live line (engine/run/autorelease.py LINE_KEYS) would send a post with no subscribe route, or [].
 

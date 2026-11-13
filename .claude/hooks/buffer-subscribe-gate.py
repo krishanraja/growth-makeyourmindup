@@ -19,7 +19,12 @@ def main():
         if not isinstance(call, dict):
             raise ValueError('the hook input is not an object')
         from engine import subscribe_gate
-        problems = subscribe_gate.errors(call.get('tool_name', ''), call.get('tool_input') or {}, root=ROOT)
+        name, tool_input = call.get('tool_name'), call.get('tool_input')
+        if not isinstance(name, str):
+            raise ValueError('the hook input names no tool')
+        if name.endswith(subscribe_gate.TOOLS) and tool_input is not None and not isinstance(tool_input, dict):
+            raise ValueError('the tool input is not an object')
+        problems = subscribe_gate.errors(name, tool_input or {}, root=ROOT)
     except Exception as e:  # noqa: BLE001 - any failure to check is a refusal, never a pass
         print('subscribe gate could not check this call, so it is refused: ' + type(e).__name__, file=sys.stderr)
         return 2

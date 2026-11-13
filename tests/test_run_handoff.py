@@ -452,6 +452,45 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(summary['slots'], {'held': 1, 'proposed': 2})
         self.assertNotIn('x-1', ' '.join(p['exact_payload'] for p in self.proposals()))
 
+    def test_his_own_click_routed_in_its_first_comment_is_put_to_him(self):
+        # A LinkedIn line is his own click and its signed meta is None (buffer_api.signed_meta cannot carry it), so
+        # a route in its first comment is invisible to route.line_errors; the Buffer hook passes the same post and
+        # the measure job reconciles the posted one. It was held as subscribe_route_missing (adversarial review,
+        # 13 Nov 2026).
+        meta = {'__typename': 'LinkedInPostMetadata', 'type': 'post', 'linkAttachment': None,
+                'firstComment': 'Subscribe: ' + route.subscribe_url('linkedin', 'fx-li-comment')}
+        self.fix.draft(P_LINKEDIN, 'linkedin', metadata=meta,
+                       words='Synthetic handoff words for the linkedin slot; the route is in the first comment.')
+        self.fix.slots[2] = self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None)
+        self.assertIsNone(self.fix.slots[2].get('meta'))
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual((summary['holds'], summary['slots']), ({}, {'proposed': 3}), summary)
+        lines = {}
+        for item in self.proposals():
+            lines.update(parse_manifest(item['exact_payload'], engine=True))
+        self.assertEqual(lines['linkedin-1']['publish_mode'], 'krish_click')
+
+    def test_a_slot_left_to_his_click_on_any_other_channel_still_needs_a_route(self):
+        # Only LinkedIn skips the go-live route check (its first comment is not in the signed meta). An X slot left
+        # to his own click carries its meta, so with no route it holds as an engine line does (reverifier, 13 Nov
+        # 2026: every krish_click line had been put to him unchecked).
+        self.fix.draft(P_X, 'x', words='Synthetic handoff words for the x slot, with no route.')
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, mode='krish_click', due=None)
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual((summary['holds'], summary['slots']), ({'subscribe_route_missing': 1}, {'held': 1, 'proposed': 2}),
+                         summary)
+        self.assertNotIn('x-1', ' '.join(p['exact_payload'] for p in self.proposals()))
+
+    def test_a_slot_left_to_his_click_with_its_route_is_put_to_him(self):
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, mode='krish_click', due=None)  # the fixture's routed words
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual((code, summary['holds'], summary['slots']), (0, {}, {'proposed': 3}), summary)
+
     def test_a_due_outside_the_run_window_holds(self):
         # The run 2026-11-03:piece ends at New York midnight on 11 November.
         self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, due='2026-11-20T14:00:00Z')

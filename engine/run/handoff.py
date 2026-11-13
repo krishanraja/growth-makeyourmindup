@@ -783,7 +783,12 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
     urgency = intensity.state(root or ROOT, now)['urgency']
     routed = []
     for line, slot in lines:
-        if route.line_errors(line, urgency, root or ROOT):  # his own click (LinkedIn) still needs a route
+        # Only a LinkedIn line skips this check. Its signed meta is None (buffer_api.signed_meta cannot carry a
+        # LinkedIn draft), so a route in its first comment is invisible here and the line would be held although
+        # the Buffer hook passes it; the reconciliation in the measure job reads the posted LinkedIn post, first
+        # comment included, and raises the alarm if it went out with no route. Every other line is checked, a
+        # slot left to his own click (krish_click) on any other channel too: its meta carries its first comment.
+        if line.get('channel') != 'linkedin' and route.line_errors(line, urgency, root or ROOT):
             slots.hold('subscribe_route_missing')
             continue
         routed.append((line, slot))

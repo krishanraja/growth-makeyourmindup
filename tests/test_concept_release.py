@@ -24,7 +24,7 @@ except ImportError:  # run as tests.test_concept_release
     from tests.test_concepts import SHARE, send_test_pass
     from tests.test_mix import WEEK, full_plan, inventory_of
 
-from engine import concepts, mix, offday
+from engine import concepts, mix, offday, route
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.control_center import ProtocolError, amended_digest, proposal
 from engine.run import autorelease, cc_records, decision as decide, handoff, release
@@ -37,7 +37,9 @@ NOW = '2026-11-10T13:00:00Z'  # an hour before: inside the release window
 PLANNED = '2026-11-08T12:00:00Z'
 DECIDED = '2026-11-08T17:00:00Z'
 CLAIM = 'A pilot earns its budget line when one number is agreed on day one.'
-WORDS = CLAIM + ' Synthetic fixture words after the claim, about the pilot budget.'
+# At U4 and U5 every post carries the tagged subscribe route (Ruling, Krish, 2026-11-11), a concept's post too.
+WORDS = (CLAIM + ' Synthetic fixture words after the claim, about the pilot budget. Subscribe: '
+         + route.subscribe_url('x', 'x-derived-1'))
 P_DERIVED, P_OTHER = 'bbbbbbbbbbbbbbbbbbbbbb01', 'bbbbbbbbbbbbbbbbbbbbbb02'
 MOCK, MOCK2, NOT_MOCK = (b'synthetic concept mock bytes one\n', b'synthetic concept mock bytes two\n',
                          b'synthetic bytes that are not the mock\n')
@@ -313,6 +315,21 @@ class ConceptReleaseTests(ReleaseBase):
         self.approved_week()
         summary, _ = self.release()
         self.assertEqual(summary['holds'], {concepts.DEPARTS: 1}, summary)
+
+    def test_a_routeless_derived_post_holds_loudly_at_u4_and_u5(self):
+        # The concept path carries the same route check as Run.slot and the Buffer hook (adversarial review, 13
+        # Nov 2026: a routeless concept draft was scheduled at U4). Reviewed at exactly these words, so only the
+        # missing route can hold it.
+        from engine import intensity
+        state = intensity.state
+        self.buf.posts[P_DERIVED]['text'] = CLAIM + ' Synthetic fixture words after the claim, about the pilot budget.'
+        self.approved_week()
+        for urgency in (4, 5):
+            with mock.patch.object(intensity, 'state', lambda *a, **k: dict(state(*a, **k), urgency=urgency)):
+                summary, code = self.release()
+            self.assertEqual((code, summary['holds']), (1, {'subscribe_route_missing': 1}), summary)
+            self.assertEqual(self.buf.mutations(), [])
+            self.assertEqual(self.buf.posts[P_DERIVED]['status'], 'draft')
 
     def test_a_derived_slot_is_never_a_go_live_and_the_mix_plan_is_no_go_lives_plan(self):
         items = self.approved_week()

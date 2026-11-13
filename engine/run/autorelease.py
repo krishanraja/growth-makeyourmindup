@@ -797,6 +797,11 @@ class Run:
             return self.count('already_' + ('scheduled' if status in ('scheduled', 'sending') else 'sent'))
         if why:
             return self.hold(why.split(':')[0])
+        if route.line_errors(line, self.urgency, self.root or ROOT):
+            # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route, a post made from an
+            # approved concept too. Checked only on the draft about to be scheduled, as Run.slot checks it: a
+            # post already scheduled or sent returned above and is never re-judged.
+            return self.hold('subscribe_route_missing', loud=True)
         if release.copy_errors(slot['words']):
             return self.hold('copy_lint_refused')
         # Every post passes the one voice check before Buffer schedules it (Ruling, Krish, 2026-11-09).

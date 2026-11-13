@@ -8,8 +8,11 @@ Buffer and nowhere in this engine's record.
 
 The measure job now keeps those counts as a record of their own, riding a live report at
 `makeyourmindup:sourceclock:<YYYY-MM-DD>-<HHMMZ>` (engine/run/cc_records.py record_report): no protocol
-change, and `post_metrics` stays schema-valid. Each run's record is the whole lookback (56 days), so the first
-run is the backfill of every post Buffer still lists.
+change, and `post_metrics` stays schema-valid. Each run's record is the newest posts in the lookback (56 days)
+that fit one report: at most 60, and as few as about 33 when every count is large. A post that brought a
+subscriber is always kept ahead of one that did not, so trimming never drops the 4 November Note while newer
+posts with no subscriber remain, and the activity line says how many older posts in the lookback were not
+recorded. A post Buffer lists twice is kept once.
 
 Counts only. A record holds Buffer post ids, this engine's channel names, sent times and whole counts; any
 entry with anything else (an id that is not a plain id, a field not listed here, a count that is not a whole
@@ -26,7 +29,8 @@ SCHEMA = 'growth-source-clock/1'
 # The counts kept, in the order a reader sees them. Substack Notes show the first five.
 COUNTS = ('freeSubscriptions', 'paidSubscriptions', 'reposts', 'impressions', 'reach', 'views', 'clicks',
           'follows', 'shares', 'saves')
-MAX_POSTS = 60  # newest first; older posts drop off before the record outgrows one report
+MAX_POSTS = 60  # posts that brought a subscriber first, then newest; the rest drop off before the record
+# outgrows one report
 POST_ID = re.compile(r'^[A-Za-z0-9_-]{1,64}$')
 ADDRESS = re.compile(r'@|%40|mailto:', re.IGNORECASE)
 NOTES = 'substack-notes'
@@ -57,8 +61,8 @@ def entry(post):
         value = _whole(metrics.get(key))
         if value is not None:
             counts[key] = value
-    if not counts:
-        return None
+    if not counts or post.get('sent_at') is None:
+        return None  # instant(None) would read as now: a post with no sent time is left out, never stamped
     try:
         sent_at = iso(instant(post['sent_at']))
     except (KeyError, TypeError, ValueError, AttributeError):
@@ -77,16 +81,28 @@ def totals(entries):
     return dict(sorted(out.items()))
 
 
+def _brought(item):
+    """True when the post brought a free or paid subscription."""
+    return item['counts'].get('freeSubscriptions', 0) + item['counts'].get('paidSubscriptions', 0) > 0
+
+
 def record(posts, now):
     """The source clock record for these posts (buffer_reads.sent_posts' `posts`), newest first.
 
-    Older posts are dropped until the record fits one report; `dropped` says how many."""
-    kept = [e for e in (entry(p) for p in posts or []) if e]
-    kept.sort(key=lambda e: e['sent_at'], reverse=True)
-    left_out = len(posts or []) - len(kept)
-    kept, dropped = kept[:MAX_POSTS], max(0, len(kept) - MAX_POSTS)
+    When they do not all fit one report, the oldest posts that brought no subscriber are dropped first, then the
+    oldest that did; `dropped_oldest` says how many. A post listed twice is one post."""
+    entries, seen, left_out = [], set(), 0
+    for item in (entry(p) for p in posts or []):
+        if item is None:
+            left_out += 1
+        elif item['post_id'] not in seen:
+            seen.add(item['post_id'])
+            entries.append(item)
+    ranked = sorted(entries, key=lambda e: (_brought(e), e['sent_at']), reverse=True)
+    kept, dropped = ranked[:MAX_POSTS], max(0, len(ranked) - MAX_POSTS)
     while True:
-        value = {'schema': SCHEMA, 'measured_at': iso(instant(now)), 'posts': kept, 'totals': totals(kept),
+        shown = sorted(kept, key=lambda e: e['sent_at'], reverse=True)
+        value = {'schema': SCHEMA, 'measured_at': iso(instant(now)), 'posts': shown, 'totals': totals(shown),
                  'dropped_oldest': dropped, 'left_out': left_out}
         if cc_records.fits(SCHEMA, value) or not kept:
             break
@@ -99,14 +115,16 @@ def record(posts, now):
 def line(value):
     """One counts-only line for the measure report and log."""
     notes = value['totals'].get(NOTES)
+    dropped = value.get('dropped_oldest') or 0
+    tail = '; ' + str(dropped) + ' older posts in the lookback not recorded' if dropped else ''
     if not notes:
-        return 'Source clock: no Substack Note with counts in the lookback; ' + str(len(value['posts'])) \
-            + ' posts kept with their counts (' + SCHEMA + ')'
+        return 'Source clock: no Substack Note with counts in the posts kept; ' + str(len(value['posts'])) \
+            + ' posts kept with their counts (' + SCHEMA + ')' + tail
     return ('Source clock (Buffer per-post counts, ' + SCHEMA + '): ' + str(notes['posts']) + ' Notes, '
             + str(notes.get('impressions', 'not shown')) + ' impressions, '
             + str(notes.get('freeSubscriptions', 'not shown')) + ' free subscriptions, '
             + str(notes.get('reposts', 'not shown')) + ' reposts; ' + str(len(value['posts']))
-            + ' posts kept in all')
+            + ' posts kept in all' + tail)
 
 
 def report(posts, now, revision):
