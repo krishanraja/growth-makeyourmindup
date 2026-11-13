@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-13: All vertical content goes to Instagram, Threads, Facebook, TikTok and X. His words: "saturdays post should
+  be instagram, threads, facebook, tiktok, X - all vertical content should be all those platforms". The carousel,
+  short-video and meme formats now list all five and Threads and X take carousels (Threads takes shorts too);
+  `engine/social.py` refuses a record set where a vertical format misses one of the five, and the run spec warns on a
+  vertical post placed on fewer (`vertical_channels_missing`). YouTube Shorts and Substack Notes stay where the strategy
+  already uses them. No wall moves and no cap changes: the Threads and Facebook copies go out on the week's go-live (his
+  concept approval still covers only Instagram, YouTube, TikTok and X), a held route goes by its alternative, and
+  Threads and Facebook keep one post a day until he raises it (`AGENTS.md`, "Vertical content goes to all five").
 - 2026-11-13: AEO-Engine's win kits reach Krish through this engine. His ruling, as AEO-Engine's brief records it
   (`krishanraja/AEO-Engine`, `docs/briefs/2026-11-13-aeo-specialist.md`): AEO's win kits reach him through each
   venture's own growth engine. Once Control Center serves `features.ai_answers_detail`, `cc start` keeps the kits in

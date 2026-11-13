@@ -10,7 +10,8 @@
     "x",
     "tiktok",
     "youtube",
-    "facebook"
+    "facebook",
+    "threads"
   ],
   "guide": "social/guides/formats.md",
   "min_assets": 1,

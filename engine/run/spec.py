@@ -18,7 +18,7 @@ from .. import intensity, owners
 from ..packs import prose_errors
 from ..share import (compare_send_test, cta_applies, cta_errors, share_errors, share_line,
                      slot_send_test_request, stage_slot_send_test)
-from ..social import inventory, validate
+from ..social import VERTICAL_FORMATS, inventory, validate, vertical_missing
 from .plain import lint_text as plain_lint
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -480,10 +480,33 @@ def lint(spec, records=None, root=ROOT, urgency=None):
             errors.append(finding('posts_per_day', '$.slots', str(len(ids)) + ' scheduled ' + channel + ' slots on '
                                   + day + ' (New York); ' + ('at U' + str(urgency) + ' it takes'
                                   if intensity.raised(urgency, root) else 'its record allows') + ' at most ' + str(cap) + ' a day'))
+    warnings += vertical_warnings(spec['slots'])
     for channel, test in sorted(tests.items()):
         if not any(s['channel'] == channel and s['experiment_arm'] for s in spec['slots']):
             warnings.append(finding('experiment_unused', '$.experiments', 'experiment ' + test['id'] + ' has no slot on an arm'))
     return {'errors': errors, 'warnings': warnings}
+
+
+def vertical_warnings(slots):
+    """One warning per vertical post that misses any of the five vertical channels (Ruling, Krish, 2026-11-13).
+
+    A post is its slots that share a first asset (the cover or the clip); it is vertical when any of them is a
+    vertical format (engine/social.py VERTICAL_FORMATS), so X's four-card cut of a carousel counts as its X post.
+    A warning, not an error: a route that is held (Buffer's TikTok video) goes native, and the day's cap may push
+    a channel's copy to another day; the plan says which."""
+    posts = {}
+    for slot in slots:
+        if slot.get('assets'):
+            posts.setdefault(slot['assets'][0]['sha256'], []).append(slot)
+    out = []
+    for cover, group in sorted(posts.items()):
+        fmt = next((s['format'] for s in group if s['format'] in VERTICAL_FORMATS), None)
+        missing = vertical_missing(fmt, [s['channel'] for s in group]) if fmt else []
+        if missing:
+            out.append(finding('vertical_channels_missing', '$.slots', 'a vertical post goes to Instagram, Threads,'
+                               ' Facebook, TikTok and X (Ruling, Krish, 2026-11-13); this one misses '
+                               + ', '.join(missing), group[0]['slot_id']))
+    return out
 
 
 def lint_report(spec, records=None, root=ROOT, urgency=None):

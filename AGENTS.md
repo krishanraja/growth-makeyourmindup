@@ -353,6 +353,20 @@ carousels, oldest unamplified first, interleaved with memes, positive news and
 level-up advice, with each post's verdict moving the ratio next week (R103,
 `docs/MIX.md`). He approves the ideas and mocks in one press ("Autonomy").
 
+## Vertical content goes to all five (Ruling, Krish, 2026-11-13)
+
+Krish: "saturdays post should be instagram, threads, facebook, tiktok, X - all vertical content should be all those
+platforms". So every vertical post (a portrait carousel, a 9:16 short or a meme) goes to Instagram, Threads,
+Facebook, TikTok and X; YouTube Shorts and Substack Notes stay where the strategy already uses them. The carousel,
+short-video and meme formats each list all five and those channels take them (`social/formats`, `social/channels`),
+`engine/social.py` (`VERTICAL_CHANNELS`, `VERTICAL_FORMATS`) refuses a record set where one does not, and the run spec
+warns on a vertical post that misses any (`vertical_channels_missing`, `engine/run/spec.py`). It moves no wall: each
+post still needs its approval, and a held route (Buffer's TikTok video, lesson `tiktok-buffer-video-hold`) goes by
+its alternative. The week's mix still plans Instagram, YouTube, TikTok and X, where his concept approval is enough;
+the Threads and Facebook copy of a vertical post goes out on the week's go-live, and Threads and Facebook keep their
+one-a-day cap until he raises it. Where an older line here says the off-day lane is Instagram, TikTok and YouTube
+Shorts only, this wins.
+
 ## Outreach for Make Your Mind Up (Ruling, Krish, 2026-11-05)
 
 Krish: "only Outreach for MindMake belongs to Control Center, alongside visibility and networking and events and partners. Anything to do with Make Your Mind Up growth belongs to the Make Your Mind Up engine. I'll be just running Codex sessions, which are connected to all my tools, to enact things like outreach or social engagement rapidly in browser or via the connectors."

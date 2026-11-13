@@ -12,7 +12,9 @@
     "receipt-card",
     "quote-card",
     "scorecard",
-    "poll"
+    "poll",
+    "carousel",
+    "short-video"
   ],
   "guide": "social/guides/other-channels.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",
