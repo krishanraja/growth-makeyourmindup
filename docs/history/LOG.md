@@ -10,6 +10,18 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "What changed recently":
 
+- 2026-11-12 five piece kits had ended five different ways and memes carried the logo at the top; the palette Krish approved on 12 Nov allows one close and no logo at the top.
+
+From "Where it is right now":
+
+- LinkedIn keeps its profile as Krish has it; the channel audit no longer asks him to paste a link there. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
 - 2026-11-12 58 posts went out through Buffer from 2 to 11 November with no subscribe ask, because hand-run drafts skipped preflight; the gate now sits on the path they took.
 
 From "Where it is right now":
