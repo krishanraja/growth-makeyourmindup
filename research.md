@@ -38,7 +38,7 @@ Claude agent runs a job in the cloud and keeps going after the laptop closes. Sc
 2. Each job runs in "ask before acting" mode, never "Skip all approvals".
 3. One approval queue. Everything lands in Control Center's waiting list (https://controlcenter.krishraja.com/#/home?waiting=1), and emails are saved only as Gmail drafts. No new dashboard (North Star: "not a second dashboard").
 4. Every draft is in his voice and passes the house rules: plain words, no em dashes, no slop phrases, no percentages, named facts from his own checked pieces. A comment must say something only he could say.
-5. No mass outreach, no automated DMs and no auto-follow. Platform rules forbid it, and it would spend his name.
+5. No mass outreach, no automated DMs and no auto-follow. Platform rules forbid it, and it would spend his name. One exception (Ruling, Krish, 2026-11-13): a single DM reply to someone who commented the keyword on that post is allowed, through ManyChat, in the words he approved (`docs/plans/2026-11-13-keyword-dm-test.md`). Every other automated DM stays forbidden.
 6. Agent output is observation only. Only what Krish does or says counts as taste (North Star rule 1).
 7. No invented numbers. Each weekly report quotes the platform dashboards he exports or reads out.
 
