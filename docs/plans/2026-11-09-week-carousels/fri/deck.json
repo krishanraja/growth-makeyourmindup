@@ -1,0 +1,118 @@
+{
+ "schema": "carousel-deck/1",
+ "title": "Counting rat tails (derived carousel, carries Fri 13 Nov mind.the.gap, piece f3fcd5e1)",
+ "carries": "f3fcd5e1-573e-4692-a413-db7c5823a10e",
+ "series": "mind_the_gap",
+ "five_whys": [
+  {
+   "q": "Why did Meta and Amazon staff burn AI on nothing?",
+   "a": "They were ranked on leaderboards by how many tokens, the units of AI use, they ran up."
+  },
+  {
+   "q": "Why were they ranked by use?",
+   "a": "Bosses made AI use part of reviews, and use is the cheapest thing to measure."
+  },
+  {
+   "q": "Why does ranking by use go wrong?",
+   "a": "Pay people for a sign of what you want and they make signs: Hanoi paid per rat tail in 1902 and got rat farms."
+  },
+  {
+   "q": "Why is this bigger than two companies?",
+   "a": "A study of a 5,000-person firm found halving its AI-use target cut junk queries and lifted sales 7%, and Meta, Amazon and Duolingo have backed down."
+  },
+  {
+   "q": "Why should an everyday business person care?",
+   "a": "A usage number is the AI bill, not the result; judge people on it and they run up the bill, so judge AI on a number you already track."
+  }
+ ],
+ "arc": {
+  "what": 1,
+  "happened": [
+   1,
+   2
+  ],
+  "why": 3,
+  "so_what": [
+   4,
+   5
+  ],
+  "do": [
+   6,
+   7
+  ]
+ },
+ "explains": {
+  "tokens": "the bits of text an AI reads and writes, each one billed (cover line)",
+  "token": "the bits of text an AI reads and writes, each one billed (cover line)"
+ },
+ "cta": "Follow for more",
+ "cards": [
+  {
+   "headline": "Meta staff were ranked by AI use. They gamed it",
+   "line": "AI use is counted in tokens, the bits of text an AI reads and writes. Each costs money.",
+   "picture": "Cover scene: a podium trophy reading TOKEN LEGEND, a pile of cut rat tails on the top step"
+  },
+  {
+   "headline": "Staff ran pointless AI jobs to climb.",
+   "line": "Meta's board tracked the tokens of 85,000 staff. Amazon staff set AI helpers on needless tasks.",
+   "picture": "A leaderboard, top row TOKEN LEGEND, the token count meter spinning past 60 trillion"
+  },
+  {
+   "headline": "Pay for a number, and people fake it.",
+   "line": "In 1902 Hanoi paid a cent per rat tail. People cut tails off and farmed rats.",
+   "picture": "A live rat with no tail beside a stack of tails and a one-cent coin"
+  },
+  {
+   "headline": "Asking for less AI use lifted sales 7%.",
+   "line": "One firm asked 5,000 staff for half the AI queries. Nine in ten dropped were junk.",
+   "picture": "Two bars: queries down about 30%, sales up 7%, junk queries struck through",
+   "source": "arXiv preprint, Sep 2026, a medical-device firm's AI query target cut from 200 to 100 a month (not yet peer reviewed)"
+  },
+  {
+   "headline": "Three big firms dropped AI-use scores.",
+   "line": "Meta, Amazon and Duolingo. Amazon: no AI help is 'a finding, not a failing.'",
+   "picture": "Three U-turn arrows, one each for Meta, Amazon and Duolingo",
+   "source": "daily.dev (Meta, Sep 2026); CNBC (Amazon memo, Oct 2026); WPXI (Duolingo, Apr 2026)"
+  },
+  {
+   "headline": "Stop scoring AI use.",
+   "line": "Take it out of review forms, dashboards and team charts.",
+   "picture": "A review form with the AI USAGE line crossed out"
+  },
+  {
+   "headline": "Judge AI on results, not use.",
+   "line": "Sales, tickets closed, invoices sent. If it hasn't moved, the AI isn't working yet. Follow for more.",
+   "picture": "One gauge labelled SALES with its needle, Follow for more over the centred wordmark"
+  }
+ ],
+ "read_back": [
+  {
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "answers": {
+    "what": "Meta ranked staff by how much they used AI, and staff gamed the ranking.",
+    "happened": "Employees ran pointless AI jobs to climb the leaderboard, and three big firms then dropped AI-use scores.",
+    "why": "When you pay people for a number, they fake the number instead of doing useful work.",
+    "so_what": "If I score my team by AI use, I will get busywork and no real gain.",
+    "do": "Judge AI by the results it produces, such as sales and quality, not how often it is used."
+   }
+  },
+  {
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "answers": {
+    "what": "Companies judging workers by how much they use AI, and it backfiring.",
+    "happened": "Meta ranked staff on AI use, so people ran pointless AI jobs just to look good.",
+    "why": "When you get ranked on a number, people fake the number instead of doing real work.",
+    "so_what": "Like being graded on hours studied: I would leave the tab open and learn nothing.",
+    "do": "Judge AI by the results it gets, not by how much people use it."
+   }
+  }
+ ],
+ "sources": [
+  "Fortune, 9 Apr 2026, Meta's token dashboard (https://fortune.com/2026/04/09/meta-killed-employee-ai-token-dashboard/)",
+  "CIO on Amazon's KiroRank (via the piece)",
+  "Atlas Obscura, drawing on Michael Vann, the Hanoi rat bounty of 1902 (via the piece)",
+  "arXiv preprint, Sep 2026, halving an AI query target at a medical-device firm (via the piece)",
+  "daily.dev, Sep 2026 (Meta); CNBC, Oct 2026 (Amazon); WPXI, Apr 2026 (Duolingo)"
+ ],
+ "read_back_fixed": "Round 1 stumbled on 'count a sign' (vague), 'backed down' (from what) and 'a number you track' (seemed to contradict card 6); cards 3, 5 and 7 now say pay for a number, dropped AI-use scores, and judge on results. Round 2 stumbled on 'halving the AI target'; card 4 now says asking for less AI use lifted sales."
+}

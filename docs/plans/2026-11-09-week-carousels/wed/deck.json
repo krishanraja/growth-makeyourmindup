@@ -1,0 +1,113 @@
+{
+ "schema": "carousel-deck/1",
+ "title": "AI is already in the music you love (derived carousel, carries Wed 11 Nov under.the.hood, piece 36886e0b)",
+ "carries": "36886e0b-4b32-473b-be72-b0aef31fccef",
+ "series": "under_the_hood",
+ "five_whys": [
+  {
+   "q": "Why is Movin' To The Sun both AI and human?",
+   "a": "An AI app sang a Reiki healer's lyrics first, then a DJ rebuilt it and a dance star sang over a trace of the AI voice."
+  },
+  {
+   "q": "Why did an AI app start it?",
+   "a": "She had lyrics but no studio or training, and an app like Suno turns typed lyrics into a sung demo."
+  },
+  {
+   "q": "Why did a demo become a UK number two?",
+   "a": "Strangers heard it under other people's short videos, went hunting for it, and professionals finished it."
+  },
+  {
+   "q": "Why is this bigger than one song?",
+   "a": "Deezer says AI-made tracks passed half of new uploads a day while getting 1 to 3% of listening: making is cheap, being found is scarce."
+  },
+  {
+   "q": "Why should an everyday business person care?",
+   "a": "Work landing on their desk is made the same way, so 'did AI make this?' tells them nothing; ask who did which bit and make it part of sign-off."
+  }
+ ],
+ "arc": {
+  "what": 1,
+  "happened": [
+   1,
+   2
+  ],
+  "why": 3,
+  "so_what": [
+   4,
+   5
+  ],
+  "do": [
+   6,
+   7
+  ]
+ },
+ "explains": {},
+ "cta": "Follow for more",
+ "cards": [
+  {
+   "headline": "A UK chart hit began in an AI app",
+   "line": "Movin' To The Sun reached number two. AI music apps like Suno turn typed lyrics into a sung song.",
+   "picture": "Cover scene: a record cut open like a cake, its layers showing, a phone with a music app at the bottom layer"
+  },
+  {
+   "headline": "A DJ and a singer finished it.",
+   "line": "HUGEL rebuilt the track. Ultra Naté sang it, with a trace of the AI voice underneath.",
+   "picture": "Four stacked layers: her words, the AI app's first song, the DJ's rebuild, the singer's voice"
+  },
+  {
+   "headline": "An AI app gave a healer her demo.",
+   "line": "Bernadett Gango, a Reiki healer with lyrics but no studio, wrote it. The app sang it first.",
+   "picture": "A closed studio door marked STUDIO, a demo slipping underneath it"
+  },
+  {
+   "headline": "Over half of new uploads are AI.",
+   "line": "At Deezer, every day. Yet they get only 1 to 3% of listening. Being found is hard.",
+   "picture": "Two bars to scale: AI share of new uploads 50%+, AI share of listening 1 to 3%",
+   "source": "Deezer, July 2026 (AI tracks passed 50% of daily new uploads) and April 2026 (1 to 3% of streams)"
+  },
+  {
+   "headline": "Work at your office is part AI too.",
+   "line": "A person's idea, an AI draft, people finishing it. The advert, the deck, the report.",
+   "picture": "A slide deck in three layers: idea, AI draft, human finish"
+  },
+  {
+   "headline": "Ask who did which bit.",
+   "line": "Of any work that lands on your desk: whose idea, what a tool drafted, who checked it.",
+   "picture": "Three labelled rows: IDEA, DRAFTED BY, CHECKED AND SIGNED BY"
+  },
+  {
+   "headline": "Put that on every work sign-off.",
+   "line": "The approval line on a brief or report, so its name is whoever stands behind it. Follow for more.",
+   "picture": "A sign-off form with the three lines filled, Follow for more over the centred wordmark"
+  }
+ ],
+ "read_back": [
+  {
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "answers": {
+    "what": "AI is now behind much of the music being made and much of the work done in offices.",
+    "happened": "A UK chart hit started in an AI app, and a human DJ and singer finished it.",
+    "why": "AI makes starting things cheap, so people need to know who did what.",
+    "so_what": "I need to know which work is genuinely ours and whether staff and suppliers use AI honestly.",
+    "do": "Ask my team who did which part of each job and record it on every work sign-off."
+   }
+  },
+  {
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "answers": {
+    "what": "A song that hit the UK charts started in an AI app, and real people finished it.",
+    "happened": "A DJ and a singer took the AI-made track and polished it into the finished hit.",
+    "why": "AI makes so much stuff that over half of new uploads are AI, and it is in normal jobs too.",
+    "so_what": "What I scroll and what adults work on might be part AI without anyone saying so.",
+    "do": "Ask who did which part of anything I see or make, and say what was AI and what was me."
+   }
+  }
+ ],
+ "sources": [
+  "Official Charts, Movin' To The Sun (HUGEL, Imael Angel, Ultra Naté), peak 2 (via the piece)",
+  "We Rave You on HUGEL's production list (via the piece)",
+  "The Australian, 16 Oct 2026, the Grammys' narrower ruling (via the piece)",
+  "Deezer, July 2026: AI-made tracks passed 50% of daily new uploads; April 2026 report: 1 to 3% of streams"
+ ],
+ "read_back_fixed": "Round 1 stumbled on 'made this way' (what way), 'number two' (which chart) and 'sign-off' (what is that); cards 1, 5 and 7 now say chart hit, part AI, and the line defines sign-off. Round 2 stumbled on 'its writer' (AI or human?); card 3 now says an AI app gave a healer her first demo, and card 6's line says whose work to ask about."
+}

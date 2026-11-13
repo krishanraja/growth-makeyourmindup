@@ -1,0 +1,15 @@
+{
+ "prompt": "2. `wed/devices/cover.png` (the house robot). Use the two reference photos `kit/robot-standing.png` and `kit/robot-theatre.png` as the robot: the same hand-sewn cream felt robot with grey patches, blank dark visor, the unpicked seam and its three hanging threads. Do not invent a different robot. Scene: a small club stage seen from the side, a glamorous singer seen only as a silhouette from behind at the microphone in a lilac (#B7A6FF) spotlight; tucked under the stage lip, half hidden, the little felt robot is humming into its own tiny microphone. Funny and warm. Top half only; lower half fades to dark ink.",
+ "references": [
+  {
+   "file": "kit/robot-standing.png (from makeyourmindup apps/cover/brand/robot-standing-source.webp)",
+   "sha256": "0315292bd39980ffe26814cc7138151f53301ba4c6934a8eb90e1aa5cc2d4661"
+  },
+  {
+   "file": "kit/robot-theatre.png (from theatre-source.webp)",
+   "sha256": "285daa29be920f6670756509f149ef840e169364b9294efc74495d13e27f05e3"
+  }
+ ],
+ "model": "Codex image generation (pending)",
+ "job_id": "pending"
+}

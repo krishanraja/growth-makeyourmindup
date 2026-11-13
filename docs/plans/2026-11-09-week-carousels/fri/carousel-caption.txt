@@ -1,0 +1,9 @@
+Meta and Amazon staff were ranked by how much AI they used. Some ran pointless AI jobs just to climb the board.
+
+In 1902 Hanoi paid a cent per rat tail and got rat farms. Pay for a number and people make the number. One firm that asked for half the AI use saw its sales staff sell 7% more.
+
+Judge AI on a result you already track: sales, tickets closed, invoices sent.
+
+The full story is free at makeyourmindup.ai.
+
+Sources: Fortune, 9 Apr 2026, on Meta's token leaderboard; CIO on Amazon's KiroRank; Atlas Obscura, drawing on historian Michael Vann, on Hanoi's rat bounty; an arXiv preprint, Sep 2026, on a medical-device firm halving its AI query target (not yet peer reviewed); daily.dev (Meta), CNBC (Amazon) and WPXI (Duolingo) on dropping usage scores.
