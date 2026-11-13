@@ -91,6 +91,28 @@ class BoardTickTest(unittest.TestCase):
         self.assertEqual(board.posts, [])
         self.assertEqual(summary['left'], {'no_box_for_channel': 1})
 
+    def test_the_board_tick_never_ticks_linkedin(self):
+        # Ruling (Krish, 2026-11-13): his personal LinkedIn is growth-mindmake's, so its box is that engine's to
+        # tick. A LinkedIn post this engine sent before the handover is still read (judged as history), but at the
+        # piece's own slot on a day whose board has a LinkedIn box it is left, never ticked.
+        from engine import owners
+        from engine.buffer_channels import HANDED_OFF_CHANNELS
+        linkedin = next(cid for cid, channel in HANDED_OFF_CHANNELS.items() if channel == 'linkedin')
+        sent = {'id': '{:024x}'.format(0xb0a0ff), 'status': 'sent', 'via': 'api', 'text': 'TEST FIXTURE ONLY.',
+                'dueAt': SLOT, 'sentAt': SLOT, 'metrics': [],
+                'externalLink': 'https://www.linkedin.com/feed/update/urn:li:activity:7300000000000000000/',
+                'channelId': linkedin, 'channelService': 'linkedin',
+                'channel': {'id': linkedin, 'name': 'krish-raja', 'service': 'linkedin', 'isDisconnected': False,
+                            'isLocked': False}}
+        days = [{'day': 'mon', 'date': MONDAY, 'piece_id': PIECE, 'channels': ['linkedin', 'reels']}]
+        board, summary = self.run_tick([sent, post(1, 'instagram', SLOT)], FakeBoard(days))
+        self.assertEqual([row['channel'] for _, row in board.posts], ['reels'])
+        self.assertEqual(summary['left'], {owners.HOLD: 1})
+        self.assertNotIn('linkedin', board_tick.BOXES)
+        entry = {'channel': 'linkedin', 'buffer_draft_id': sent['id'], 'due_at': SLOT}
+        self.assertIsNone(board_tick.piece_row(entry, {MONDAY: (MONDAY, 'mon', PIECE)},
+                                               lambda post_id: ('scheduled', SLOT), set()))
+
     def test_a_post_without_a_native_url_on_its_own_host_waits(self):
         board, summary = self.run_tick([post(1, 'instagram', SLOT, link=None),
                                         post(2, 'youtube', SLOT, link='https://example.org/not-native')])

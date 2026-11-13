@@ -37,7 +37,7 @@ import urllib.error
 import urllib.request
 
 from ..core import instant, ny_time
-from .. import mix as mix_rules
+from .. import mix as mix_rules, owners
 from .buffer_reads import buffer_client, sent_posts
 from .release import load_accounts, native_host
 
@@ -304,7 +304,7 @@ def piece_row(entry, pieces, status_of, sent):
     status_of."""
     post_id = entry.get('buffer_draft_id')
     box = next(iter(BOXES.get(entry.get('channel'), ())), None)
-    if not post_id or box is None or post_id in sent:
+    if not post_id or box is None or post_id in sent or owners.owner(entry.get('channel')):
         return None
     read = status_of(post_id)
     if read is None or read[0] not in LIVE_STATUS:
@@ -435,6 +435,11 @@ def rows(posts, weeks, cfg, accounts=None):
         left[code] = left.get(code, 0) + 1
 
     for post in posts:
+        if owners.owner(post['channel']):
+            # Another engine's channel (Krish's personal LinkedIn, growth-mindmake's since 13 Nov 2026): its box
+            # is that engine's to tick, even for a post this engine sent before the handover.
+            leave(owners.HOLD)
+            continue
         due = post.get('due_at')
         if due is None:
             leave('no_due_at')

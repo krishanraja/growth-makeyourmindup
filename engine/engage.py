@@ -48,9 +48,10 @@ def target_kind(platform, url):
         return None
     try:
         parts = urlsplit(url)
+        port = parts.port
     except ValueError:
         return None
-    if parts.scheme != 'https' or parts.username or parts.password or parts.port or parts.fragment:
+    if parts.scheme != 'https' or parts.username or parts.password or port or parts.fragment or '\\' in url:
         return None
     host, path = parts.hostname or '', parts.path or ''
     for kind, host_rule, path_rule in TARGETS[platform]:
@@ -64,13 +65,12 @@ def target_kind(platform, url):
 def tap_errors(platform, url, text):
     """Why a queue tap cannot go to Krish: a channel another engine owns, or a page that is not exact.
 
-    The owner is read from the label and from the page the tap opens, so a LinkedIn page labelled threads,
-    youtube or anything else is still LinkedIn's (Ruling, Krish, 2026-11-13)."""
-    if owners.owner(platform):
-        return [owners.refusal(platform)]
-    opens = owners.url_channel(url)
-    if opens:
-        return [owners.refusal(opens)]
+    The owner is read from the label and from the page the tap opens, as a browser reads its host
+    (owners.page_refusal, the same check the Engagement engine's queue makes), so a LinkedIn page labelled
+    threads, youtube or anything else is still LinkedIn's (Ruling, Krish, 2026-11-13)."""
+    why = owners.page_refusal(platform, url)
+    if why:
+        return [why]
     errors = []
     if target_kind(platform, url) is None:
         errors.append('a ' + platform + ' tap must open the exact post or profile, not a feed, search or short link')

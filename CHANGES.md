@@ -20,10 +20,15 @@
   taps, schedules and pins nothing there: one owner table (`engine/owners.py`) and the channel record's `owned_by`
   agree, and the social route, the pack check, Control Center reports, the engagement tap queue, the Engagement and
   Publishing engines, the calendar (its four weekly LinkedIn drafts and LinkedIn cap are gone), the spec lint, the
-  L0 handoff (go-lives and week packets), the backlog, the Buffer channel table and the Buffer subscribe gate hook
-  (its channel id, at every urgency) all refuse it, and a tap is LinkedIn's by its label or by the page it opens.
-  Reading LinkedIn (research, trend reading, what others post) stays (`AGENTS.md`, "Krish's personal LinkedIn is
-  growth-mindmake's"; R125).
+  L0 handoff (go-lives and week packets), the backlog, the board tick, the Buffer channel table and the Buffer
+  subscribe gate hook (its channel id, at every urgency) all refuse it, and a tap, or an item on the Engagement
+  engine's queue, is LinkedIn's by its label or by the page it opens, read as a browser reads its host. Buffer's
+  edit_post names only its post, so the gate goes by the post: a hook records each post's channel when it is read
+  (get_post, list_posts, create_post), an edit of a LinkedIn post is refused, and an edit of a post not yet read is
+  refused until it is read. A go-live still waiting from before the handover with a LinkedIn line is proposed again
+  without it, or taken back when that was all it held. Reading LinkedIn (research, trend reading, what others post,
+  and the measure job, the learn job and the ledger judging this engine's own LinkedIn posts from before the
+  handover, with no hold) stays (`AGENTS.md`, "Krish's personal LinkedIn is growth-mindmake's"; R125).
 - 2026-11-12: Nothing on his list is stale; the engine takes back its own asks once their week or window has passed.
   His words: everything must be "not only up to date but impossible to sprawl over time". His list shows one of this
   engine's asks at a time, and nine older asks (the three-part mix plan for the week of 2 November, which is over,

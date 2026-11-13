@@ -298,20 +298,46 @@ engine.
 - **He still clicks every post.** LinkedIn stays `human_publish_only` in
   `social/channels/linkedin.json`; nothing schedules or publishes it.
 - **What this engine stops.** No LinkedIn post, comment, reply, engagement
-  tap, go-live, calendar row, week-spec slot, backlog edition or Buffer pin.
-  The channel record carries `owned_by` and `engine/owners.py` names the
-  same owner; the social route, the pack check, the engagement queue (by
-  label or by the page a tap opens, linkedin.com or lnkd.in), the
-  Engagement and Publishing engines, the calendar and spec lints and the L0
-  handoff (go-lives and week packets) all refuse it with that reason, and
-  its Buffer channel is refused by id (`engine/buffer_channels.py`,
-  `HANDED_OFF_CHANNELS`), including by the subscribe gate hook on every
-  Buffer create_post and edit_post, at every urgency
+  tap, go-live, calendar row, week-spec slot, backlog edition, board tick or
+  Buffer pin. The channel record carries `owned_by` and `engine/owners.py`
+  names the same owner; the social route, the pack check, the engagement
+  tap queue and the Engagement engine's queue (by label or by the page an
+  item opens, linkedin.com or lnkd.in and their subdomains, read as a
+  browser reads the host: percent-encoded, full-width, with backslashes, a
+  user name, a port or a trailing dot), the Publishing engine, the calendar
+  and spec lints, the L0 handoff (go-lives and week packets) and the board
+  tick all refuse it with that reason, and its Buffer channel is refused by
+  id (`engine/buffer_channels.py`, `HANDED_OFF_CHANNELS`), including by the
+  subscribe gate hook on every Buffer create_post, at every urgency
   (`engine/subscribe_gate.py`).
+- **Edits go by the post.** Buffer's edit_post names only its post, never a
+  channel, so the gate reads the post's channel from a map: a PostToolUse
+  hook records it after every get_post, list_posts and create_post
+  (`.claude/hooks/buffer-post-channels.py`, `engine/post_channels.py`, kept
+  in the ignored `.scratch/buffer/post-channels.json`), seeded from this
+  engine's own release and handoff ledgers. An edit of a post read on his
+  LinkedIn's channel is refused at every urgency; an edit of a post not yet
+  read is refused with "read the post with get_post first, so its channel is
+  known". Once read, an edit on this engine's seven channels is checked as
+  before, and one on another venture's channel passes.
+- **Go-lives already waiting.** Control Center refuses his yes on a whole
+  go-live when any line names a channel this engine no longer lists, so a
+  go-live proposed before the handover with a LinkedIn line would block its
+  other posts. The daily runner proposes each such go-live again without
+  that line, under the same proposal_id, so his list shows that version; one
+  that held only a LinkedIn post is taken back through `withdrawn[]`
+  (`engine/run/handoff.py` `handed_off_golives`).
 - **What stays.** Reading LinkedIn is not owning it: research, the radar's
-  trend reading and measuring what other people post there all stay. His X
-  and the publication's own accounts (Instagram, Facebook, YouTube, Substack,
-  Threads, Substack Notes and TikTok) stay with this engine.
+  trend reading (a LinkedIn page may still be a tap's evidence) and
+  measuring what other people post there all stay. So does reading this
+  engine's own LinkedIn posts from before the handover: the measure job, the
+  learn job and the ledger still read and judge them as history, by the
+  channel's Buffer id in a read map no write route uses
+  (`buffer_channels.read_channel`), with no "Buffer channel not pinned" hold;
+  posts from the day of the handover on are growth-mindmake's and are left
+  out. His X and the publication's own accounts (Instagram, Facebook,
+  YouTube, Substack, Threads, Substack Notes and TikTok) stay with this
+  engine.
 - **The media kit.** The ruling also records that the media kit says the
   publication should not lean on LinkedIn, so nothing here routes the
   publication's growth through it.

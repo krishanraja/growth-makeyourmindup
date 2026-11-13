@@ -298,6 +298,15 @@ class ReleaseTests(unittest.TestCase):
         result = self.plan(spec, decision, targets=targets)
         self.assertNotIn('x-1', self.by_slot(result))
         self.assertIn(hold, result['holds'])
+        # The readback half of the guard, on a channel this engine still owns: a stored post that still carries a
+        # link preview fails its check, and passes once the preview is cleared.
+        ledger = self.plan()['ledger']
+        queued = dict(copy.deepcopy(targets['x-1']), status='scheduled', schedulingType='automatic',
+                      dueAt=slot['due_at'])
+        with self.assertRaisesRegex(ValueError, 'still carries a link preview'):
+            release.check_readback(slot, queued, 'queued', ledger)
+        queued['metadata'] = dict(queued['metadata'], linkAttachment=None)
+        self.assertEqual(release.check_readback(slot, queued, 'queued', ledger)['status'], 'scheduled')
 
     def test_scheduled_is_not_sent(self):
         slot = self.slots['threads-1']

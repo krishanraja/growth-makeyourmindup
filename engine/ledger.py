@@ -28,7 +28,7 @@ import os
 import re
 from pathlib import Path
 
-from .buffer_channels import BUFFER_CHANNEL_ID
+from .buffer_channels import read_channel
 from .core import calendar_date, instant, ny_time, read_json, write_json
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,7 +52,6 @@ PIECE_STATES = {'idea': 2, 'proposed': 2, 'picked': 3, 'locked': 4, 'scripted': 
 BOARD_SECRET = 'GROWTH_WRITEBACK_TOKEN'
 BUFFER_SECRET = 'BUFFER_API_KEY'
 FIXTURES_ENV = 'GROWTH_LEDGER_FIXTURES'
-CHANNEL_OF_ID = {cid: channel for channel, cid in BUFFER_CHANNEL_ID.items()}
 HEX64 = re.compile(r'^[0-9a-f]{64}$')
 UUID = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
 HHMM = re.compile(r'^\d\d:\d\d$')
@@ -112,14 +111,19 @@ def _channel_id(post):
 
 
 def normalise_posts(listed):
-    """This engine's posts (pinned by channelId) as {post_id, channel, status, due_at, sent_at, url}. Pure."""
+    """This engine's posts (pinned by channelId) as {post_id, channel, status, due_at, sent_at, url}. Pure.
+
+    A post on a channel this engine handed to another engine counts only when it was sent (or, unsent, due)
+    before the handover: its history stays readable, and the new owner's posts are left out
+    (buffer_channels.read_channel)."""
     if isinstance(listed, dict):
         listed = listed.get('posts') or [e.get('node') for e in listed.get('edges') or [] if isinstance(e, dict)]
     out = []
     for post in listed if isinstance(listed, list) else []:
         if not isinstance(post, dict) or not isinstance(post.get('id'), str):
             continue
-        channel = CHANNEL_OF_ID.get(_channel_id(post))
+        when = post.get('sentAt') if isinstance(post.get('sentAt'), str) else post.get('dueAt')
+        channel = read_channel(_channel_id(post), when)
         if channel is None or post.get('status') not in ('scheduled', 'sending', 'sent'):
             continue
         if post.get('via') == 'network':  # imported, not this engine's publication (buffer_reads F17)

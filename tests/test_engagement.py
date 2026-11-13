@@ -247,3 +247,50 @@ class ExactTargets(unittest.TestCase):
         taps = copy_open(mixed['proposals'][0])['taps']
         self.assertEqual(len(taps), 2)
         self.assertTrue(all(t['url'].startswith('https://x.com/') for t in taps))
+
+    def test_a_tap_labelled_linkedin_is_refused_by_its_label_whatever_page_it_opens(self):
+        # The label alone decides when the page is not LinkedIn's: R125 names tap_errors as the label's wall too.
+        from engine import engage, owners
+        for label in ('linkedin', 'LinkedIn', 'linkedin-comment'):
+            self.assertEqual(engage.tap_errors(label, 'https://x.com/synthetic_one/status/1', 'A useful reply.'),
+                             [owners.refusal('linkedin')], label)
+
+    def test_a_linkedin_page_in_any_spelling_a_browser_reads_is_refused(self):
+        # Control Center reads a tap's page as a browser does, so a host percent-encoded, in full-width letters,
+        # with backslashes, a user name, a port, a trailing dot or ideographic dots is still linkedin.com.
+        from engine import engage, owners
+        pages = ('https://www.linked%69n.com/feed/update/urn:li:activity:7300000000000000000',
+                 'https://%6C%6E%6B%64.in/synthetic',
+                 'https://www.ｌｉｎｋｅｄｉｎ.com/feed/update/urn:li:activity:1',
+                 'https://WWW.ＬＩＮＫＥＤＩＮ.COM/in/synthetic-one',
+                 'https://www.linkedin.com\\feed\\update\\urn:li:activity:7300000000000000000',
+                 'https://someone:secret@www.linkedin.com:443/in/synthetic-one',
+                 'https://www.linkedin.com./in/synthetic-one', 'https://www。linkedin。com/in/synthetic-one',
+                 'https://www．linkedin．com/in/synthetic-one', 'https://www.linkedin%2ecom/in/synthetic-one')
+        for page in pages:
+            self.assertEqual(owners.url_channel(page), 'linkedin', page)
+            for label in ('threads', 'youtube', 'x'):
+                self.assertEqual(engage.tap_errors(label, page, 'A useful reply.'), [owners.refusal('linkedin')],
+                                 label + ' ' + page)
+        # Look-alikes that are not LinkedIn still pass the owner check (and meet the platform's own rule).
+        for page in ('https://linkedin.com.example.org/p/1', 'https://notlinkedin.com/p/1', 'https://linkedin.co/p/1',
+                     'https://lnkd.in.example.org/p/1', 'https://xlnkd.in/p/1', 'https://www.linkedin.com@example.org/p/1',
+                     'https://example.org/https://www.linkedin.com/in/synthetic-one'):
+            self.assertIsNone(owners.url_channel(page), page)
+            self.assertEqual(engage.tap_errors('threads', page, 'A useful reply.'), [], page)
+        self.assertEqual(engage.tap_errors('x', 'https://x.com/synthetic_one/status/1', 'A useful reply.'), [])
+        # A backslash page on X is not an exact page, and never an error a run cannot read.
+        self.assertTrue(engage.tap_errors('x', 'https://x.com\\synthetic_one\\status\\1', 'A useful reply.'))
+
+    def test_the_radar_may_still_use_a_linkedin_page_as_evidence(self):
+        # Reading LinkedIn stays (R125): X taps whose source thread is a LinkedIn post still go, with that page as
+        # their evidence, and nothing is held.
+        page = 'https://www.linkedin.com/feed/update/urn:li:activity:7300000000000000000'
+        envelope, queue = radar(2)
+        envelope['evidence'][0]['url'] = page
+        result = workspace_report('radar', 'makeyourmindup:2026-10-29:radar', NOW, [envelope], queue, rev='fixture',
+                                  root=ROOT, gap=GAP)[0]
+        [task] = result['proposals']
+        self.assertEqual(len(copy_open(task)['taps']), 2)
+        self.assertIn(page, [e['url'] for e in task['evidence']])
+        self.assertFalse([h for h in result['holds'] if "growth-mindmake's" in str(h.get('detail'))])

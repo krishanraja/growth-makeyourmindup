@@ -2,8 +2,10 @@
 
 Runs on GitHub Actions three times a day (.github/workflows/measure.yml):
 
-1. reads this engine's sent posts on its seven pinned Buffer channels, with
-   Buffer's per-post metrics where present (engine/run/buffer_reads.py);
+1. reads this engine's sent posts on its seven pinned Buffer channels, and its
+   posts on Krish's personal LinkedIn from before it went to growth-mindmake on
+   13 November 2026, judged as history with no hold, with Buffer's per-post
+   metrics where present (engine/run/buffer_reads.py);
 2. reads Control Center's `web_analytics` rows: from the directive it pulls
    itself with --deliver, or from .scratch/cc/web-analytics.json (kept by the
    runner or `cc start`) on a dry run;
@@ -41,7 +43,7 @@ from ..core import instant, ny_time, read_json, today, write_json
 from . import buffer_reads, outcome, reconcile, source_clock
 from .ga4 import days_covered, directive_rows, join_directive, load_config, post_window
 from .measure import SUBSCRIBER_WINDOW_HOURS, judge, judge_subscribers, share_rates
-from .release import BUFFER_NAME
+from ..buffer_channels import BUFFER_CHANNEL_ID
 
 ROOT = Path(__file__).resolve().parents[2]
 VERDICTS = ('works', 'neutral', 'fails', 'insufficient')
@@ -309,10 +311,14 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
     results, channels = verdicts(posts, now, block, config)
     counts = tally(results)
     if 'listed' in posts_read:
-        activity.append({'line': 'Read ' + str(len(posts)) + ' sent posts from Buffer on ' + str(len(channels)) + ' of '
-                         + str(len(BUFFER_NAME)) + ' pinned channels over the last ' + str(LOOKBACK_DAYS) + ' days ('
+        pinned = [c for c in channels if c in BUFFER_CHANNEL_ID]
+        history = posts_read.get('history') or 0
+        activity.append({'line': 'Read ' + str(len(posts)) + ' sent posts from Buffer on ' + str(len(pinned)) + ' of '
+                         + str(len(BUFFER_CHANNEL_ID)) + ' pinned channels over the last ' + str(LOOKBACK_DAYS) + ' days ('
                          + str(posts_read['imported']) + ' imported posts left unjudged, '
-                         + str(posts_read['get_post_reads']) + ' per-post reads)'})
+                         + str(posts_read['get_post_reads']) + ' per-post reads'
+                         + (', ' + str(history) + ' of them from before a channel was handed to another engine, judged'
+                            ' as history' if history else '') + ')'})
         quiet = [m['channel'] for m in posts_read.get('missing', [])]
         if quiet:
             activity.append({'line': 'No sent posts seen on: ' + ', '.join(quiet)})

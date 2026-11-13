@@ -63,6 +63,28 @@ class AcceptanceReplay(unittest.TestCase):
         self.assertEqual(recovered['ready_for_review']['ready'], 9)
         self.assertEqual(core.check(self.root), [])
 
+    def test_a_linkedin_page_is_refused_whatever_account_it_claims(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn and the replies on it. An item
+        # labelled x (or anything else) whose private post_url or recovery copy opens a LinkedIn page, in any
+        # spelling a browser reads as linkedin.com or lnkd.in, is refused, the same check as a Control Center tap.
+        pages = ('https://www.linkedin.com/feed/update/urn:li:activity:7300000000000000000',
+                 'https://lnkd.in/synthetic', 'https://www.linked%69n.com/feed/update/urn:li:activity:1',
+                 'https://www.\uff4c\uff49\uff4e\uff4b\uff45\uff44\uff49\uff4e.com/feed/update/urn:li:activity:1',
+                 'https://www.linkedin.com\\feed\\update\\urn:li:activity:1')
+        for page in pages:
+            for detail in ({'post_url': page}, {'recovery_copy': 'Copy for the reply. ' + page}):
+                with self.assertRaisesRegex(ValueError, "Krish's personal LinkedIn is growth-mindmake's"):
+                    core.append('engagement', {'id': 'item-1', 'engine': 'engagement', 'detail': detail},
+                                self.root, private=True)
+                self.assertFalse(eng.is_ready(item(1, **detail)), page)
+        self.assertEqual(self.start()['ready_for_review']['ready'], 9, 'nothing on LinkedIn was added')
+        # His own X post keeps its page, and stays ready.
+        core.append('engagement', {'id': 'item-1', 'engine': 'engagement',
+                                   'detail': {'post_url': 'https://x.com/synthetic_one/status/1850000000000000001'}},
+                    self.root, private=True)
+        self.assertTrue(eng.is_ready(core.load('engagement', self.root)['item-1']))
+        self.assertEqual(self.start()['ready_for_review']['ready'], 9)
+
     def test_a_cleared_editor_reduces_the_ready_count(self):
         core.append('engagement', item(3, editor_verification=dict(ALL_STEPS, full_text_verified=False),
                                        updated_at='2026-11-06'), self.root)

@@ -36,6 +36,7 @@ REQUESTERS = ('krish', 'acquisition')
 QUESTION_OWNERS = ('acquisition', 'content-engine')
 SHA256 = re.compile(r'^[0-9a-f]{64}$')
 URL = re.compile(r'https?://', re.I)
+PAGE = re.compile(r'https?://[^\s<>"]+', re.I)
 
 
 def _key(value):
@@ -49,6 +50,14 @@ def required_steps(account):
     return tuple(s for s in EDITOR_STEPS if s not in PREFILL_ONLY_STEPS)
 
 
+def pages(detail):
+    """Every page an interaction opens: its private post_url and any URL in its recovery copy. Only the merged
+    record (the private overlay over the committed line) carries them."""
+    out = [detail.get('post_url')] if isinstance(detail.get('post_url'), str) else []
+    copy = detail.get('recovery_copy')
+    return out + (PAGE.findall(copy) if isinstance(copy, str) else [])
+
+
 def validate_detail(record):
     kind, d, state = record['kind'], record['detail'], record['state']
     errors = []
@@ -57,8 +66,9 @@ def validate_detail(record):
             errors.append('detail.direction must be incoming or outgoing')
         if not _key(d.get('parent_post_key')):
             errors.append('detail.parent_post_key must be the sha256 of the post URL (the URL stays private)')
-        if owners.owner(d.get('account')):
-            errors.append('detail.account: ' + owners.refusal(d['account']))
+        handed = owners.page_refusal(d.get('account'), *pages(d))
+        if handed:
+            errors.append(('detail.account: ' if owners.owner(d.get('account')) else 'detail.post_url: ') + handed)
         elif d.get('account') not in ACCOUNTS:
             errors.append('detail.account must be one of ' + ', '.join(ACCOUNTS))
         for name in ('author_key', 'draft_digest', 'verified_digest'):
@@ -126,10 +136,13 @@ def _editor_verified(item):
 
 def is_ready(item):
     """True when an open outgoing draft is ready in the correct editor: the account identity was checked,
-    Krish's contribution is named and the draft survived the editor. A cleared editor is not ready."""
+    Krish's contribution is named and the draft survived the editor. A cleared editor is not ready, and nor is
+    an item on a channel another engine owns, by its account or by the page it opens (owners.page_refusal):
+    Krish's personal LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13)."""
     d = item['detail']
     return _outgoing(item) and item['state'] not in CLOSED_STATES and d.get('identity_checked') is True \
-        and d.get('contribution') in CONTRIBUTIONS and _editor_verified(item)
+        and d.get('contribution') in CONTRIBUTIONS and _editor_verified(item) \
+        and not owners.page_refusal(d.get('account'), *pages(d))
 
 
 def ready_count(items, blocked=()):

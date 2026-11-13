@@ -139,6 +139,66 @@ class Reports(unittest.TestCase):
         self.assertFalse([h for h in report['holds'] if h['reason'] == "Not this engine's channel"])
 
 
+class Reading(unittest.TestCase):
+    """Reading stays and writing goes: the read-only readers still read and judge this engine's LinkedIn posts
+    from before the handover, with no 'Buffer channel not pinned' hold, while every write route refuses it."""
+
+    LINKEDIN = next(cid for cid, channel in HANDED_OFF_CHANNELS.items() if channel == 'linkedin')
+    NOW = '2026-11-15T12:00:00Z'
+
+    def post(self, n, channel_id, name, service, sent_at, status='sent'):
+        return {'id': '{:024x}'.format(0xe00000 + n), 'status': status, 'via': 'api', 'text': WORDS,
+                'sentAt': sent_at if status == 'sent' else None, 'dueAt': sent_at, 'channelId': channel_id,
+                'channelService': service, 'externalLink': None, 'metrics': [],
+                'channel': {'id': channel_id, 'name': name, 'service': service, 'isDisconnected': False,
+                            'isLocked': False}}
+
+    def listed(self):
+        return [self.post(1, BUFFER_CHANNEL_ID['x'], 'TheRealKrisho', 'twitter', '2026-11-10T14:00:00.000Z'),
+                self.post(2, self.LINKEDIN, 'krish-raja', 'linkedin', '2026-11-10T15:00:00.000Z'),  # before
+                self.post(3, self.LINKEDIN, 'krish-raja', 'linkedin', '2026-11-14T15:00:00.000Z')]  # after
+
+    def test_a_linkedin_post_from_before_the_handover_is_still_read_and_judged(self):
+        from engine.run import buffer_reads, measure_auto
+        from engine.run.ga4 import load_config
+        from engine.core import instant
+
+        class Fake:
+            def __init__(self, posts):
+                self.posts = posts
+
+            def list_posts(self, status=None, since=None):
+                return {'edges': [{'node': p} for p in self.posts]}
+
+        read = buffer_reads.sent_posts(Fake(self.listed()), '2026-11-01T00:00:00Z', self.NOW)
+        self.assertEqual([(p['post_id'][-1], p['channel']) for p in read['posts']], [('1', 'x'), ('2', 'linkedin')],
+                         "the post from after the handover is growth-mindmake's, never judged here")
+        self.assertEqual(read['held'], [])
+        self.assertEqual(read['history'], 1)
+        report, _, _ = measure_auto.build(read, None, instant(self.NOW), ROOT, 'synthetic', load_config(ROOT), True)
+        self.assertFalse([h for h in report['holds'] if h['reason'] == 'Buffer channel not pinned'])
+        lines = ' | '.join(a['line'] for a in report['activity'])
+        self.assertIn('Read 2 sent posts from Buffer on 1 of 7 pinned channels', lines)
+        self.assertIn('1 of them from before a channel was handed to another engine, judged as history', lines)
+        self.assertIn('linkedin: 1 post; by subscribers', lines)
+
+    def test_the_ledger_keeps_linkedin_history_and_leaves_out_the_new_owners_posts(self):
+        from engine import ledger
+        scheduled = self.post(4, self.LINKEDIN, 'krish-raja', 'linkedin', '2026-11-16T15:00:00.000Z', 'scheduled')
+        rows = ledger.normalise_posts(self.listed() + [scheduled])
+        self.assertEqual([(r['post_id'][-1], r['channel']) for r in rows], [('1', 'x'), ('2', 'linkedin')])
+
+    def test_writing_to_it_stays_refused(self):
+        from engine.buffer_channels import READ_CHANNEL_ID, read_channel
+        self.assertEqual(READ_CHANNEL_ID['linkedin'], self.LINKEDIN)
+        self.assertEqual(read_channel(self.LINKEDIN, '2026-11-12T23:59:59Z'), 'linkedin')
+        self.assertIsNone(read_channel(self.LINKEDIN, '2026-11-13T00:00:00Z'))
+        self.assertIsNone(read_channel(self.LINKEDIN, None))
+        self.assertEqual(read_channel(BUFFER_CHANNEL_ID['x'], None), 'x')
+        self.assertNotIn('linkedin', BUFFER_CHANNEL_ID)
+        self.assertIn("growth-mindmake's", channel_id_errors('linkedin', self.LINKEDIN)[0])
+
+
 class Docs(unittest.TestCase):
     def test_the_ruling_is_recorded_where_the_rules_live(self):
         agents = ' '.join((ROOT / 'AGENTS.md').read_text(encoding='utf-8').split())

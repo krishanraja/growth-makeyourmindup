@@ -27,7 +27,7 @@
       "id": "F03",
       "title": "A null link attachment does not clear a preview; use the clearing mutation",
       "source": "lesson nullable-preview-clear",
-      "guard": "engine/run/release.py:preview_clear_hold; engine/run/release.py:argument_errors refuses linkAttachment null",
+      "guard": "engine/run/release.py:preview_clear_hold; engine/run/release.py:argument_errors refuses linkAttachment null; engine/run/release.py:check_readback refuses a stored post that still carries a link preview, on every channel",
       "tests": [
         "test_preview_clear_uses_mutation_not_null"
       ],

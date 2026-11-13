@@ -283,7 +283,7 @@ class MeasureJobTests(unittest.TestCase):
                 self.assertNotIn(private, text)
             report = validate_report(read_json(Path(folder) / '.scratch/cc/report-measure.json'))
             lines = ' | '.join(a['line'] for a in report['activity'])
-            self.assertIn('Read 9 sent posts from Buffer on 2 of 8 pinned channels', lines)
+            self.assertIn('Read 9 sent posts from Buffer on 2 of 7 pinned channels', lines)
             self.assertIn('GA4 joined on utm_content: 2 of 9 posts carry a tracked own link; 12 sessions on them; '
                           'sign-ups 3; paid subscriptions 1; coverage incomplete', lines)
             self.assertIn('Cost before this report:', lines)

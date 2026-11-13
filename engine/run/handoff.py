@@ -828,11 +828,7 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
         else:
             numbers['item'] += 1
             pid = base + ':item-' + str(numbers['item'])
-        title, why = golive_words(group, kind, number, parts, day, root, express, on)
-        dues = [instant(line['due_at']) for line in group if line['publish_mode'] == 'engine' and line['due_at']]
-        item = proposal(pid, title, why, 'prepared', 'post', 'published', channel='buffer',
-                        exact_payload=manifest_text(run_id, group), target=None,
-                        expires_at=max(dues) if dues else None, stage='go_live', parent_proposal_id=plan_id)
+        item = golive_item(pid, run_id, group, kind, number, parts, on, day, root, express, plan_id)
         if staged_report_run_id(pid, item['payload_sha256']) is None:
             for _ in group:
                 slots.hold('run_id_too_long')
@@ -843,6 +839,105 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
                 slots.count('own_review')
         out.append(item)
     return out
+
+
+def golive_item(pid, run_id, group, kind, number, parts, on, day, root, express, plan_id):
+    """One go-live proposal for one group of manifest lines: its words say what his yes does."""
+    title, why = golive_words(group, kind, number, parts, day, root, express, on)
+    dues = [instant(line['due_at']) for line in group if line['publish_mode'] == 'engine' and line['due_at']]
+    return proposal(pid, title, why, 'prepared', 'post', 'published', channel='buffer',
+                    exact_payload=manifest_text(run_id, group), target=None,
+                    expires_at=max(dues) if dues else None, stage='go_live', parent_proposal_id=plan_id)
+
+
+# Go-lives proposed before a channel was handed to another engine ---------------------------
+
+PART = re.compile(r'\(part (\d+) of (\d+)\)$')
+HANDED_OFF_ONLY = ("It carried only a post on Krish's personal LinkedIn, which is growth-mindmake's since 13 "
+                   'November 2026 (Ruling, Krish, 2026-11-13), so nothing in it is this engine\'s to ask about.')
+PROPOSED_AGAIN = ("Proposed again without its LinkedIn post, which is growth-mindmake's since 13 November 2026 "
+                  '(Ruling, Krish, 2026-11-13), so its other posts can be approved: ')
+
+
+def without_handed_off(item, now, root=ROOT):
+    """What a pending go-live proposed before the handover becomes once its lines on a channel another engine
+    owns are taken out: None when it has none; ('withdraw', reason) when nothing else is left; ('propose', the
+    same go-live without them) otherwise. Pure.
+
+    Control Center refuses his yes on a whole go-live when any line names a Buffer channel this engine no longer
+    lists (protocol 1.17.0 buffer_channels), so a go-live with a LinkedIn line would block its X, Threads and
+    Notes posts. The same proposal_id with the new payload replaces the old one on his list (its decision goes
+    back to waiting), so no separate withdrawal is needed for it."""
+    if not isinstance(item, dict) or item.get('stage') != 'go_live' or not isinstance(item.get('proposal_id'), str):
+        return None
+    try:
+        manifest = json.loads(item.get('exact_payload') or '')
+    except (TypeError, ValueError):
+        return None
+    lines = manifest.get('slots') if isinstance(manifest, dict) and manifest.get('schema') == MANIFEST_SCHEMA else None
+    if not isinstance(lines, list) or not all(isinstance(line, dict) for line in lines):
+        return None
+    keep = [line for line in lines if not owners.owner(line.get('channel'))]
+    if len(keep) == len(lines):
+        return None
+    if not keep:
+        return 'withdraw', HANDED_OFF_ONLY
+    pid, title = item['proposal_id'], str(item.get('title') or '')
+    kind = 'item' if ':item-' in pid else 'batch'
+    found = PART.search(title)
+    number, parts = (int(found.group(1)), int(found.group(2))) if found else (1, 1)
+    days = sorted(d for d in (post_day(line) for line in keep) if d is not None)
+    on = days[0] if days else None
+    parent = item.get('parent_proposal_id') if isinstance(item.get('parent_proposal_id'), str) else None
+    return 'propose', golive_item(pid, manifest.get('run_id'), keep, kind, number, parts, on, today(now), root,
+                                  title.startswith('Your quick idea'), parent)
+
+
+def handed_off_golives(cc, sent, now, root=ROOT):
+    """(reports, withdraw, code) for this engine's pending go-lives, among its newest reports (protocol 1.10.0
+    recent_reports, then each report read back), that still carry a line on a channel another engine owns.
+
+    reports: one go-live report for each that keeps other posts, the same proposal_id without those lines.
+    withdraw: [(proposal_id, reason)] for each that carried nothing else, for the runner's withdrawn[]
+    (engine/stale_asks.py withdrawals). sent is engine/cc_loop.py already_sent(): one Krish decided is left as
+    it is, and with sent None (not read) nothing is done. code names why the reports could not be read, else
+    None."""
+    if sent is None:
+        return [], [], None  # the runner already holds its report as unread; nothing is taken back on a guess
+    try:
+        recent = cc.recent_reports(10)
+        replacements, withdraw, seen = [], [], set()
+        for row in recent if isinstance(recent, list) else []:
+            run_id = row.get('run_id') if isinstance(row, dict) else None
+            if not isinstance(run_id, str) or not run_id.startswith(SLUG + ':golive:'):
+                continue
+            got = cc.read_report(run_id)
+            report = got.get('report') if isinstance(got, dict) else None
+            for item in (report or {}).get('proposals') or []:
+                pid = item.get('proposal_id') if isinstance(item, dict) else None
+                if not isinstance(pid, str) or pid in seen:
+                    continue
+                seen.add(pid)  # the newest report of a proposal is the one waiting on his list
+                if sent.get(pid) not in (None, 'pending'):
+                    continue
+                change = without_handed_off(item, now, root)
+                if change is None:
+                    continue
+                if change[0] == 'withdraw':
+                    withdraw.append((pid, change[1]))
+                else:
+                    replacements.append(change[1])
+    except ProtocolError as error:
+        return [], [], 'golive_reports_' + error.code
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return [], [], 'golive_reports_unreadable'
+    activity = [{'line': PROPOSED_AGAIN + ', '.join(i['proposal_id'] for i in replacements)},
+                {'line': 'Posted, sent, published and spent nothing'}]
+    try:
+        reports = reports_for(replacements, Slots(), now, root, activity) if replacements else []
+    except (ValueError, TypeError, KeyError):
+        return [], withdraw, 'golive_report_unbuildable'
+    return reports, withdraw, None
 
 
 # The week packet -----------------------------------------------------------------------

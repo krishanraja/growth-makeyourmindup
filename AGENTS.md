@@ -177,17 +177,36 @@ owner table says so (`engine/owners.py`), the channel record agrees
 (`social/channels/linkedin.json`, `owned_by`), and every route that could
 prepare one refuses it with the same reason: the social route and preflight,
 the pack check, Control Center reports, the engagement tap queue (by its
-label or by the page a tap opens, linkedin.com or lnkd.in, whatever platform
-it claims), the Engagement and Publishing engines, the calendar and spec
-lints, the L0 handoff (a LinkedIn slot in a go-live is held before its draft
-is read, and one in a week packet is held and never named in the ask), the
+label or by the page a tap opens, linkedin.com or lnkd.in and their
+subdomains, read as a browser reads the host, whatever platform it claims),
+the Engagement engine's queue Krish enacts (by its account or by the page
+it opens, the same check, `owners.page_refusal`), the Publishing engine, the
+calendar and spec lints, the L0 handoff (a LinkedIn slot in a go-live is
+held before its draft is read, and one in a week packet is held and never
+named in the ask), the board tick (it never ticks a LinkedIn box), the
 Buffer channel table (`HANDED_OFF_CHANNELS`) and the Buffer subscribe gate
-hook, which denies any create_post or edit_post on that channel id at every
-urgency (`engine/subscribe_gate.py`). Reading LinkedIn is not owning it:
-research, the radar's trend reading and measuring what other people post
-there stay. Every LinkedIn line elsewhere in this repository that says this
-engine drafts, prepares or engages there is superseded by this section
-(R125; `docs/PUBLISHING-AUTHORITY.md`, "13 November 2026").
+hook, which denies any create_post on that channel id at every urgency
+(`engine/subscribe_gate.py`). Buffer's edit_post names only its post, so
+an edit is gated by the post: read before you edit. A PostToolUse hook
+(`.claude/hooks/buffer-post-channels.py`) records each post's channel after
+every get_post, list_posts and create_post in the ignored
+`.scratch/buffer/post-channels.json`, seeded from this engine's own release
+and handoff ledgers (`engine/post_channels.py`); the gate denies an edit of
+a post read on LinkedIn's channel with the same reason, and an edit of a
+post it has not read with "read the post with get_post first, so its
+channel is known". A go-live still waiting from before the handover with a
+LinkedIn line is proposed again by the daily runner without that line (the
+same proposal_id, so Control Center shows that version and its other posts
+can be approved), or taken back through `withdrawn[]` when LinkedIn was all
+it held (`engine/run/handoff.py` `handed_off_golives`). Reading LinkedIn is
+not owning it: research, the radar's trend reading (a LinkedIn page may
+still be a tap's evidence), measuring what other people post there, and the
+measure job, the learn job and the ledger reading and judging this engine's
+own LinkedIn posts from before the handover, as history and with no hold
+(`buffer_channels.read_channel`), all stay. Every LinkedIn line elsewhere
+in this repository that says this engine drafts, prepares or engages there
+is superseded by this section (R125; `docs/PUBLISHING-AUTHORITY.md`, "13
+November 2026").
 
 ## Growth ownership (Ruling, Krish, 2026-10-26)
 

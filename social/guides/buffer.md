@@ -30,6 +30,10 @@ only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie expor
    GET_POST.json`: `edit_post` names no channelId, so preflight refuses a
    draft on any channel but the package's pinned one (never another
    venture's), one that is not a draft and one imported from the network.
+   The Buffer gate hook holds the same order in Claude Code: it refuses an
+   edit of a post not yet read here ("read the post with get_post first, so
+   its channel is known"), and any edit of a post on Krish's personal
+   LinkedIn, growth-mindmake's since 13 November 2026.
    Use create only when no intended draft exists, on the pinned id. Set
    `saveToDraft: true`; do not supply a due time. Never rely on default queue mode.
 5. The verified image asset shape was

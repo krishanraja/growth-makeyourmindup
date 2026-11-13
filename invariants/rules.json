@@ -1687,7 +1687,7 @@
     },
     {
       "id": "R125",
-      "statement": "Krish's personal LinkedIn is growth-mindmake's: its posts (Mindmake's published thinking, about three a week) and the replies to everyone who engages with them; he still clicks every post, so it stays human_publish_only. This engine drafts, queues, taps, schedules and pins nothing there: the channel record's owned_by and engine/owners.py agree, and the social route, the pack check, the Control Center report, the engagement tap queue, the Engagement and Publishing engines, the calendar and spec lints, the L0 handoff (go-lives and week packets), release, the backlog, the Buffer channel table and the Buffer subscribe gate hook (its channel id, at every urgency) refuse it with one reason; a tap is LinkedIn's by its label or by the page it opens. Reading LinkedIn (research, trend reading, measuring what others post) stays. His X and the publication's own accounts stay here.",
+      "statement": "Krish's personal LinkedIn is growth-mindmake's: its posts (Mindmake's published thinking, about three a week) and the replies to everyone who engages with them; he still clicks every post, so it stays human_publish_only. This engine drafts, queues, taps, schedules and pins nothing there: the channel record's owned_by and engine/owners.py agree, and the social route, the pack check, the Control Center report, the engagement tap queue, the Engagement and Publishing engines, the calendar and spec lints, the L0 handoff (go-lives and week packets), release, the backlog, the board tick, the Buffer channel table and the Buffer subscribe gate hook (its channel id, at every urgency) refuse it with one reason; a tap or an Engagement item is LinkedIn's by its label or by the page it opens, read as a browser reads its host. An edit names only its post, so the gate goes by the channel the post was read on (a hook records it after get_post, list_posts and create_post): a LinkedIn post's edit is refused, and an unread post's edit waits until it is read. A go-live still waiting from before the handover with a LinkedIn line is proposed again without it, or taken back when that was all it held. Reading LinkedIn (research, trend reading and evidence, measuring what others post, and judging this engine's own posts from before the handover with no hold) stays. His X and the publication's own accounts stay here.",
       "source_file": "CHANGES.md",
       "quote": "Asked \"Which engine should own your personal LinkedIn posts (you still click every post)?\", he answered \"growth-mindmake owns it\".",
       "enforced_by": [
@@ -1705,7 +1705,22 @@
         "engine/run/release.py:release_plan",
         "engine/buffer_channels.py:channel_id_errors",
         "engine/subscribe_gate.py:errors",
-        "engine/backlog.py:channel_matrix"
+        "engine/backlog.py:channel_matrix",
+        "engine/owners.py:page_refusal",
+        "engine/owners.py:url_channel",
+        "engine/engines/engagement.py:is_ready",
+        "engine/subscribe_gate.py:_handed_off",
+        "engine/post_channels.py:from_call",
+        "engine/post_channels.py:known",
+        "engine/run/board_tick.py:rows",
+        "engine/run/board_tick.py:piece_row",
+        "engine/buffer_channels.py:read_channel",
+        "engine/run/buffer_reads.py:sent_posts",
+        "engine/ledger.py:normalise_posts",
+        "engine/run/handoff.py:without_handed_off",
+        "engine/run/handoff.py:handed_off_golives",
+        "engine/cc_loop.py:handed_off_golives",
+        "engine/cc_loop.py:runner_report"
       ],
       "tests": [
         "test_the_owner_table_and_the_channel_record_agree",
@@ -1725,7 +1740,23 @@
         "test_linkedin_is_never_open_work_and_a_past_edition_stays_readable",
         "test_a_week_packet_never_lists_a_linkedin_slot",
         "test_krish_personal_linkedin_is_refused_at_every_urgency",
-        "test_the_hook_denies_a_linkedin_post_through_claude_code"
+        "test_the_hook_denies_a_linkedin_post_through_claude_code",
+        "test_an_edit_of_a_post_never_read_is_refused",
+        "test_the_hooks_read_a_post_then_refuse_its_edit_through_claude_code",
+        "test_every_allowed_edit_on_its_own_channels_still_passes_once_read",
+        "test_each_answer_shape_gives_its_posts_channels",
+        "test_its_own_ledgers_seed_the_map",
+        "test_a_linkedin_page_is_refused_whatever_account_it_claims",
+        "test_a_tap_labelled_linkedin_is_refused_by_its_label_whatever_page_it_opens",
+        "test_a_linkedin_page_in_any_spelling_a_browser_reads_is_refused",
+        "test_the_radar_may_still_use_a_linkedin_page_as_evidence",
+        "test_a_linkedin_post_from_before_the_handover_is_still_read_and_judged",
+        "test_the_ledger_keeps_linkedin_history_and_leaves_out_the_new_owners_posts",
+        "test_writing_to_it_stays_refused",
+        "test_the_board_tick_never_ticks_linkedin",
+        "test_a_pending_go_live_with_a_linkedin_line_is_proposed_again_without_it",
+        "test_a_go_live_of_only_a_linkedin_line_is_taken_back",
+        "test_the_runner_proposes_again_or_takes_back_each_pending_go_live_with_a_linkedin_line"
       ]
     },
     {

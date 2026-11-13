@@ -4,7 +4,9 @@ The Buffer organisation is shared with other ventures, so a service or a name
 alone never identifies this engine's account. Release (engine/run/release.py)
 and social preflight (engine/social.py) both read this one table, so a draft
 prepared by the daily job and a post scheduled by release are held to the same
-ids. Offline only: no network, no credentials.
+ids. The read-only readers (the measure job, the learn job, the ledger) read
+through read_channel instead, which also knows each handed-off channel for its
+history before the handover. Offline only: no network, no credentials.
 """
 from . import owners
 
@@ -25,6 +27,13 @@ BUFFER_CHANNEL_ID = {'substack-notes': '6ae09edc2f1f5ed648e9e48c', 'threads': '6
 # channelId. Never this engine's again: Ruling (Krish, 2026-11-13), growth-mindmake owns Krish's
 # personal LinkedIn, so its Buffer channel (read with list_channels on 2026-10-28) is refused here.
 HANDED_OFF_CHANNELS = {'6adccba0778b240e2fafc06d': 'linkedin'}
+# The read map: every Buffer channel this engine reads, by channelId. Its seven pinned channels, and each
+# channel it handed to another engine, for history only: a post there made before the handover was this
+# engine's, so the read-only readers (the measure job, the learn job and the ledger) still read and judge it;
+# one made from the day of the handover on is the new owner's and is left out, with no hold
+# (read_channel). Reading stays and writing goes: no write route reads this map, and channel_id_errors, which
+# every write route checks, refuses a handed-off id.
+READ_CHANNEL_ID = dict(BUFFER_CHANNEL_ID, **{channel: cid for cid, channel in HANDED_OFF_CHANNELS.items()})
 # The other ventures' channels in the same Buffer organisation. Never this
 # engine's, whatever a readback, a slot, a package or a hand-built call says
 # (plan of 28 Oct 2026, W5: never the Full Time or Heartside channels).
@@ -47,6 +56,18 @@ def channel_id_errors(channel, channel_id):
     if channel_id != BUFFER_CHANNEL_ID.get(channel):
         return ['Buffer channel ' + str(channel_id) + ' is not this engine\'s pinned ' + str(channel) + ' channel']
     return []
+
+
+def read_channel(channel_id, at=None):
+    """The channel a post on Buffer channel channel_id is read as, or None: one of the seven pinned channels
+    whatever its time; a handed-off channel only when at (the post's sentAt, or its dueAt) is before the
+    handover (owners.before_handover). For reading only, never a write."""
+    if not isinstance(channel_id, str):
+        return None
+    if channel_id in HANDED_OFF_CHANNELS:
+        channel = HANDED_OFF_CHANNELS[channel_id]
+        return channel if owners.before_handover(channel, at) else None
+    return next((channel for channel, cid in BUFFER_CHANNEL_ID.items() if cid == channel_id), None)
 
 
 def report_field():

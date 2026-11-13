@@ -8,10 +8,15 @@ the publication's own accounts stay with this engine.
 
 So this engine drafts, queues, taps, schedules and pins nothing on his personal LinkedIn: no post, no
 comment, no engagement tap and no go-live. Reading LinkedIn (research, the radar's trend reading, measuring
-what others post) is not owning the channel, and stays. The channel record says the same
-(social/channels/linkedin.json, owned_by), and engine/social.py:inventory checks that the two agree.
+what others post, and judging this engine's own posts there from before the handover: before_handover) is
+not owning the channel, and stays. The channel record says the same (social/channels/linkedin.json,
+owned_by), and engine/social.py:inventory checks that the two agree. A page is the channel's by the host a
+browser opens (page_host), whatever label an item carries (page_refusal).
 """
-from urllib.parse import urlsplit
+import datetime as dt
+import re
+import unicodedata
+from urllib.parse import unquote
 
 # Channel id -> the engine that owns it now.
 HANDED_OFF = {'linkedin': 'growth-mindmake'}
@@ -46,18 +51,80 @@ def handed_off_channel(channel):
     return next((name for name in HANDED_OFF if key.startswith(name)), None)
 
 
+def page_host(url):
+    """The host a browser opens for url, as Control Center's URL parser reads it, lower case, or ''.
+
+    The host is read the way a browser reads it, so a page cannot pass as another site by its spelling:
+    a backslash counts as a slash, the user name and port are dropped, the host is percent-decoded and put
+    in its plain form (full-width letters and dots become ASCII), an internationalised (xn--) label is
+    decoded, and a trailing dot is dropped."""
+    if not isinstance(url, str):
+        return ''
+    text = url.strip().replace('\\', '/')
+    match = re.match(r'^[A-Za-z][A-Za-z0-9+.-]*:', text)
+    rest = text[match.end():] if match else text
+    authority = re.split(r'[/?#]', rest.lstrip('/'), maxsplit=1)[0]
+    host = unquote(authority.rpartition('@')[2])
+    host = unicodedata.normalize('NFKC', host).replace('\u3002', '.').lower()
+    if not host.startswith('['):
+        host = re.sub(r':\d*$', '', host)
+    labels = []
+    for label in host.split('.'):
+        if label.startswith('xn--'):
+            try:
+                label = label.encode('ascii').decode('idna')
+            except (UnicodeError, ValueError):
+                pass
+        labels.append(unicodedata.normalize('NFKC', label).lower())
+    return '.'.join(labels).rstrip('.')
+
+
 def url_channel(url):
     """The handed-off channel id whose page url opens, else None: read from the host, never the label."""
-    if not isinstance(url, str):
-        return None
-    try:
-        host = (urlsplit(url.strip()).hostname or '').lower().rstrip('.')
-    except ValueError:
-        return None
+    host = page_host(url)
     for name, hosts in HOSTS.items():
         if any(host == h or host.endswith('.' + h) for h in hosts):
             return name
     return None
+
+
+def page_refusal(label, *urls):
+    """Why an item on this label that opens these pages is another engine's, or '': by its label, or by any
+    page it opens (url_channel), whatever label it carries. The one check the engagement tap queue
+    (engine/engage.py) and the Engagement engine's queue (engine/engines/engagement.py) both make."""
+    if owner(label):
+        return refusal(label)
+    for url in urls:
+        opens = url_channel(url)
+        if opens:
+            return refusal(opens)
+    return ''
+
+
+def before_handover(channel, when):
+    """True when when (an ISO 8601 time or date, or a datetime) falls before the day channel was handed over, in UTC.
+
+    A post made then was this engine's, so its readers still read and judge it as history; a post from the
+    day of the handover on is the new owner's. False for a channel still this engine's, and for a time that
+    cannot be read."""
+    name = handed_off_channel(channel)
+    if name is None:
+        return False
+    if isinstance(when, dt.datetime):
+        when = when.isoformat()
+    if not isinstance(when, str) or not when.strip():
+        return False
+    try:
+        if len(when.strip()) == 10:
+            at = dt.datetime.combine(dt.date.fromisoformat(when.strip()), dt.time(0), dt.timezone.utc)
+        else:
+            at = dt.datetime.fromisoformat(when.strip().replace('Z', '+00:00'))
+            if at.tzinfo is None:
+                return False
+    except ValueError:
+        return False
+    since = dt.datetime.combine(dt.date.fromisoformat(SINCE[name]), dt.time(0), dt.timezone.utc)
+    return at < since
 
 
 def refusal(channel):
