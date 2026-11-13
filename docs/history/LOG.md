@@ -10,6 +10,18 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "What changed recently":
 
+- 2026-11-12 **One live publish board (#67).** AGENTS.md says where the live board is and what Growth does on it; each ledger row's board link opens the live board at its week and day (Ruling, Krish, 2026-11-11: one live board, in Control Centre; the old board is a read-only archive).
+
+From "Where it is right now":
+
+- Krish approved pointing every profile link to its tagged subscribe page; jobs/channel-audit.md lists the exact link per account for the weekly browser audit to save and verify, and LinkedIn is his to change by hand. (2026-11-12)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
 - 2026-11-11 **Protocol 1.20.0 (#66).** Krish's instruction reaches the engine in the directive: the runner acks it received by id, a second wake the same day reports under its own run_id, a workspace job acts on it first and acks started, done or blocked, and every report that pulls the directive carries the engine's priorities, obsessions and next steps.
 
 From "Where it is right now":
