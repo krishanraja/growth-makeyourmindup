@@ -8,6 +8,18 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "What changed recently":
+
+- 2026-11-12 Krish, 2026-11-12: "make sure everything's a cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading left in there".
+
+From "Where it is right now":
+
+- The GitHub runner takes back its own undecided asks once their week or window is over (Ruling, Krish, 2026-11-12), through the protocol's withdrawn[] with a one-line reason, and nothing new is asked about a week that has ended; its first run takes back the three parts of the mix plan for the week of 2 November. (2026-11-13) (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "Where it is right now":
 
 - The engine proposes the publication's AI-answer questions for Krish's approval (Ruling, Krish, 2026-11-13). Twenty questions readers type or ask about the three series and Saturday's good news, each with its evidence and best piece (docs/ai-answers/2026-11-13-proposed-questions.md), go to his list once as one strategy ask (config/ai-answer-questions-proposed.json); on his yes, or his amended version, the runner writes exactly those into config/ai-answer-questions.json, asks AEO-Engine to track them and closes the ask, and the control-center workflow commits that one file. (2026-11-13)
