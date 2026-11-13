@@ -49,6 +49,15 @@ Krish-minute, base week 23 November, read weekly.
 
 Stop rule: if these are not merged and running by 23 November, no more code; the 7 December read decides.
 
+## Answered on 13 November
+
+Krish, in an interactive session: "1. yes" to gate 0, the standing W45 to W52 plan amended to four Notes a day and
+Threads at @makeyourmind.up, and "5. yes" to keeping 2,500 by 28 December and backing borrowed audiences. A plan's
+approval reaches the engine only as his press on its card in Control Center (`handoff.open_plan` reads decisions,
+never a chat), so the one step left on gate 0 is that press, with the two amendments typed into the card. The
+borrowed-audience levers come to him next, one at a time: question 3 (the lattice) and question 4 (one
+founder-visible Live co-stream).
+
 ## The questions for Krish (answer each by number, as with `sources.json` on 12 November)
 
 0. **Gate 0. Approve the standing W45 to W52 plan, amended:** four Notes a day (Ruling, 11 Nov) and Threads at
