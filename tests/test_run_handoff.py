@@ -47,7 +47,7 @@ P_THREADS, P_X, P_LINKEDIN, P_CAROUSEL = ('dddddddddddddddddddddd01', 'ddddddddd
 CH = dict(BUFFER_CHANNEL_ID, linkedin=next(cid for cid, ch in HANDED_OFF_CHANNELS.items() if ch == 'linkedin'))
 WORDS = {P_THREADS: 'Synthetic handoff words for the threads slot. Subscribe: ' + route.subscribe_url('threads', 'fx-threads'),
          P_X: 'Synthetic handoff words for the x slot. Subscribe: ' + route.subscribe_url('x', 'fx-x'),
-         P_LINKEDIN: 'Synthetic handoff words for the linkedin slot. Subscribe: ' + route.subscribe_url('linkedin', 'fx-li'),
+         P_LINKEDIN: 'Synthetic handoff words for the linkedin slot.',  # no route: not this engine's channel
          P_CAROUSEL: 'Synthetic handoff words for the carousel slot. Subscribe: link in bio.'}
 IMAGE = b'synthetic handoff image bytes\n'
 SERVICE = {'threads': 'threads', 'x': 'twitter', 'linkedin': 'linkedin', 'instagram': 'instagram'}
@@ -285,11 +285,11 @@ class HandoffTests(unittest.TestCase):
         # A day too long for one approval goes in parts, each titled "(part n of m)". A waiting part with a LinkedIn
         # line is rebuilt with the same part number and count: the title and why the handoff proposes for that part
         # of the same dispatch today.
-        long_words = 'Synthetic long handoff words. ' * 25
+        long_words = 'Synthetic long handoff words. ' * 22
         slots = []
         for index in range(13):
             post_id = 'ffffffffffffffffffffff' + '%02d' % index
-            self.fix.draft(post_id, 'x', words=long_words)
+            self.fix.draft(post_id, 'x', words=long_words + 'Subscribe: ' + route.subscribe_url('x', 'fx-long-%02d' % index))
             slots.append(self.fix.maker('x-%02d' % index, 'x', post_id))
         summary, code = self.run_handoff({'run_id': RUN, 'slots': slots})
         self.assertEqual(code, 0, summary)
@@ -538,7 +538,7 @@ class HandoffTests(unittest.TestCase):
             self.assertNotIn(cc_loop.UNREAD_GOLIVES, [h['reason'] for h in today['holds']])
 
     def test_an_oversize_manifest_splits_into_go_lives_in_order(self):
-        long_words = 'Synthetic long handoff words. ' * 25 + route.subscribe_url('x', 'fx-long')
+        long_words = 'Synthetic long handoff words. ' * 22 + route.subscribe_url('x', 'fx-long')
         slots = []
         for index in range(30):
             post_id = 'ffffffffffffffffffffff' + '%02d' % index
@@ -802,28 +802,23 @@ class HandoffTests(unittest.TestCase):
             summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['holds'], {'subscribe_route_missing': 1})
-        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 2})
+        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 1})
         self.assertNotIn('x-1', ' '.join(p['exact_payload'] for p in self.proposals()))
 
-    def test_his_own_click_routed_in_its_first_comment_is_put_to_him(self):
-        # A LinkedIn line is his own click and its signed meta is None (buffer_api.signed_meta cannot carry it), so
-        # a route in its first comment is invisible to route.line_errors; the Buffer hook passes the same post and
-        # the measure job reconciles the posted one. It was held as subscribe_route_missing (adversarial review,
-        # 13 Nov 2026).
+    def test_a_linkedin_line_routed_in_its_first_comment_is_still_never_put_to_him(self):
+        # Main's 13 Nov fix put a LinkedIn line routed in its first comment to him as his own click. Since the same
+        # day LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13), so a route anywhere never makes it this
+        # engine's: the line is held before its draft is read, whatever its words carry.
         meta = {'__typename': 'LinkedInPostMetadata', 'type': 'post', 'linkAttachment': None,
-                'firstComment': 'Subscribe: ' + route.subscribe_url('linkedin', 'fx-li-comment')}
+                'firstComment': 'Subscribe: https://makeyourmindup.example/subscribe'}
         self.fix.draft(P_LINKEDIN, 'linkedin', metadata=meta,
                        words='Synthetic handoff words for the linkedin slot; the route is in the first comment.')
-        self.fix.slots[2] = self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None)
-        self.assertIsNone(self.fix.slots[2].get('meta'))
+        self.fix.slots.append(self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None))
         with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
             summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
-        self.assertEqual((summary['holds'], summary['slots']), ({}, {'proposed': 3}), summary)
-        lines = {}
-        for item in self.proposals():
-            lines.update(parse_manifest(item['exact_payload'], engine=True))
-        self.assertEqual(lines['linkedin-1']['publish_mode'], 'krish_click')
+        self.assertEqual((summary['holds'], summary['slots']), ({owners.HOLD: 1}, {'held': 1, 'proposed': 2}), summary)
+        self.assertNotIn('linkedin-1', ' '.join(p['exact_payload'] for p in self.proposals()))
 
     def test_a_slot_left_to_his_click_on_any_other_channel_still_needs_a_route(self):
         # Only LinkedIn skips the go-live route check (its first comment is not in the signed meta). An X slot left
@@ -834,7 +829,7 @@ class HandoffTests(unittest.TestCase):
         with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
             summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
-        self.assertEqual((summary['holds'], summary['slots']), ({'subscribe_route_missing': 1}, {'held': 1, 'proposed': 2}),
+        self.assertEqual((summary['holds'], summary['slots']), ({'subscribe_route_missing': 1}, {'held': 1, 'proposed': 1}),
                          summary)
         self.assertNotIn('x-1', ' '.join(p['exact_payload'] for p in self.proposals()))
 
@@ -842,7 +837,7 @@ class HandoffTests(unittest.TestCase):
         self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, mode='krish_click', due=None)  # the fixture's routed words
         with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
             summary, code = self.run_handoff()
-        self.assertEqual((code, summary['holds'], summary['slots']), (0, {}, {'proposed': 3}), summary)
+        self.assertEqual((code, summary['holds'], summary['slots']), (0, {}, {'proposed': 2}), summary)
 
     def test_a_due_outside_the_run_window_holds(self):
         # The run 2026-11-03:piece ends at New York midnight on 11 November.

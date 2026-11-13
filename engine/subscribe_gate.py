@@ -75,44 +75,6 @@ def _source_errors(url, channel):
     return [] if tag in names else ['utm_source=' + (tag or '(none)') + ' does not name the channel ' + channel]
 
 
-def _edit_channel(tool_input, root):
-    """(channel, problems) for an edit_post, which names its post and never its channel (Buffer's edit_post takes a
-    postId). Offline, so it never reads the post.
-
-    The post is this engine's when the words the edit sends (its text, thread and first comment) speak for the
-    publication, as its subscribe page does. Any other post passes untouched, so another venture's post is never
-    blocked, and an edit that changes no words (a reschedule, an asset swap) keeps what was checked. This engine's
-    post is judged on its own channel: the one Buffer's metadata key names (twitter is X), else the one the
-    utm_source of a subscribe URL in its words names; never a default. When neither names one channel it holds."""
-    if 'text' not in tool_input:
-        return None, []
-    meta = tool_input.get('metadata') or {}
-    services = {k: v for k, v in meta.items() if isinstance(v, dict)}
-    said = [str(tool_input.get('text') or '')]
-    for service in services.values():
-        said.append(str(service.get('firstComment') or ''))
-        said += [str(item.get('text') or '') for item in service.get('thread') or [] if isinstance(item, dict)]
-    said = '\n'.join(said)
-    if 'makeyourmindup' not in said.lower():
-        return None, []
-    named = {CHANNEL_BY_SERVICE[k] for k in services if k in CHANNEL_BY_SERVICE}
-    if services and not named:
-        return None, []  # a service none of this engine's channels is on
-    if not named:
-        page = urlsplit(intensity.bounds(root)['conversion']['subscribe_url']).path.rstrip('/')
-        for url in intensity.URL_IN_TEXT.findall(said):
-            parts = urlsplit(url.rstrip('.,;:!?)'))
-            if parts.path.rstrip('/') == page:
-                tag = (parse_qs(parts.query).get('utm_source') or [''])[0].strip().lower()
-                if CHANNEL_BY_SERVICE.get(tag, tag) in BUFFER_CHANNEL_ID:
-                    named.add(CHANNEL_BY_SERVICE.get(tag, tag))
-    if len(named) == 1:
-        return named.pop(), []
-    return None, [HOLD + ': this edit changes the words of a makeyourmindup post but names ' + ('no' if not named else
-                  'more than one') + ' channel, so its subscribe route cannot be checked. Carry the post\'s metadata '
-                  'forward (get_post) or put the tagged subscribe URL for its channel in the words']
-
-
 def _tagged(text, channel, root):
     """The first tagged subscribe URL in text that names this channel, and why each other one fails."""
     page = intensity.bounds(root)['conversion']['subscribe_url']

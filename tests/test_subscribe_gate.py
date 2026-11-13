@@ -174,49 +174,56 @@ class Gate(unittest.TestCase):
 
 
 class Edits(unittest.TestCase):
-    """Buffer's edit_post names a postId and never a channelId: the gate stays offline, never blocks another
-    venture's post, and judges this engine's post by the channel the call names, never a default."""
+    """Buffer's edit_post names a postId and never a channelId: the gate stays offline and judges an edit by the
+    channel its post was read on (engine/post_channels.py); an edit of a post never read is refused, since it may be
+    on Krish's personal LinkedIn (Ruling, Krish, 2026-11-13). It never blocks another venture's post read on its own
+    channel, and judges this engine's post by that channel, never a default."""
 
-    def edit(self, text, **meta):
-        call = {'postId': 'a' * 24, 'text': text}
+    PID = 'a' * 24
+
+    def edit(self, text, read_on=None, urgency=5, **meta):
+        call = {'postId': self.PID, 'text': text}
         if meta:
             call['metadata'] = meta
-        return subscribe_gate.errors('mcp__Buffer__edit_post', call, 5)
+        posts = {self.PID: BUFFER_CHANNEL_ID.get(read_on, read_on)} if read_on else {}
+        return subscribe_gate.errors('mcp__Buffer__edit_post', call, urgency, posts=posts)
 
-    def test_a_routed_edit_passes_on_the_channel_its_route_names(self):
-        self.assertEqual(self.edit('TEST FIXTURE ONLY. New words ' + tagged('x')), [])
-        self.assertEqual(self.edit('TEST FIXTURE ONLY. New words ' + tagged('facebook')), [])
+    def test_a_routed_edit_passes_on_the_channel_it_was_read_on(self):
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. New words ' + tagged('x'), 'x'), [])
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. New words ' + tagged('facebook'), 'facebook'), [])
 
     def test_an_x_thread_edit_is_judged_as_x(self):
-        self.assertEqual(self.edit('TEST FIXTURE ONLY. makeyourmindup', twitter={'thread': [
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. makeyourmindup', 'x', twitter={'thread': [
             {'text': 'TEST FIXTURE ONLY. makeyourmindup'}, {'text': 'More ' + tagged('x')}]}), [])
-        problems = self.edit('TEST FIXTURE ONLY. makeyourmindup, no link', twitter={})
+        problems = self.edit('TEST FIXTURE ONLY. makeyourmindup, no link', 'x', twitter={})
         self.assertTrue(problems and 'this x post' in problems[0], problems)
 
-    def test_this_engines_routeless_edit_naming_no_channel_holds(self):
-        problems = self.edit('TEST FIXTURE ONLY. makeyourmindup, new words and no link.')
+    def test_an_edit_of_a_post_never_read_is_refused_and_a_routeless_one_read_on_its_channel_holds(self):
+        unread = self.edit('TEST FIXTURE ONLY. makeyourmindup, new words and no link.')
+        self.assertTrue(unread and unread[0].startswith(subscribe_gate.UNKNOWN + ':'), unread)
+        self.assertTrue(self.edit('TEST FIXTURE ONLY. makeyourmindup, no link.', urgency=3)[0].startswith(subscribe_gate.UNKNOWN),
+                        'an unread post is refused at any urgency: the wall is whose channel it is, not the route')
+        problems = self.edit('TEST FIXTURE ONLY. makeyourmindup, new words and no link.', 'threads')
         self.assertTrue(problems and problems[0].startswith('subscribe_route_missing:'), problems)
-        self.assertNotIn('threads post', problems[0])
-        below = subscribe_gate.errors('mcp__Buffer__edit_post', {'postId': 'a' * 24,
-                                                                 'text': 'makeyourmindup, no link.'}, 3)
-        self.assertEqual(below, [], 'below the conversion urgency nothing is required')
+        self.assertEqual(self.edit('makeyourmindup, no link.', 'threads', urgency=3), [],
+                         'below the conversion urgency nothing is required')
 
-    def test_an_edit_whose_channel_id_is_null_is_resolved_as_one_with_none(self):
-        # A channelId present but null names no channel, as one left out does (reverifier, 13 Nov 2026: it passed).
-        def edit(text):
-            return subscribe_gate.errors('mcp__Buffer__edit_post', {'postId': 'a' * 24, 'channelId': None,
-                                                                    'text': text}, 5)
-        problems = edit('TEST FIXTURE ONLY. makeyourmindup, new words and no link.')
+    def test_an_edit_whose_channel_id_is_null_goes_by_the_channel_it_was_read_on(self):
+        def edit(text, read_on=None):
+            posts = {self.PID: BUFFER_CHANNEL_ID[read_on]} if read_on else {}
+            return subscribe_gate.errors('mcp__Buffer__edit_post', {'postId': self.PID, 'channelId': None,
+                                                                    'text': text}, 5, posts=posts)
+        problems = edit('TEST FIXTURE ONLY. makeyourmindup, new words and no link.', 'threads')
         self.assertTrue(problems and problems[0].startswith('subscribe_route_missing:'), problems)
-        self.assertEqual(edit('TEST FIXTURE ONLY. New words ' + tagged('x')), [])
-        self.assertEqual(edit('TEST FIXTURE ONLY. Another venture, new words.'), [])
+        self.assertEqual(edit('TEST FIXTURE ONLY. New words ' + tagged('x'), 'x'), [])
+        self.assertTrue(edit('TEST FIXTURE ONLY. Another venture, new words.')[0].startswith(subscribe_gate.UNKNOWN))
 
-    def test_another_ventures_edit_is_never_blocked(self):
-        self.assertEqual(self.edit('TEST FIXTURE ONLY. Another venture, new words.'), [])
-        self.assertEqual(self.edit('TEST FIXTURE ONLY. New caption.', instagram={'type': 'post', 'firstComment': ''}), [])
-        self.assertEqual(self.edit('TEST FIXTURE ONLY. makeyourmindup', pinterest={'title': 'Synthetic'}), [])
-        call = {'postId': 'a' * 24, 'channelId': next(iter(DENIED_CHANNELS)), 'text': 'makeyourmindup, no link.'}
-        self.assertEqual(subscribe_gate.errors('mcp__Buffer__edit_post', call, 5), [])
+    def test_another_ventures_edit_read_on_its_own_channel_is_never_blocked(self):
+        other = next(iter(DENIED_CHANNELS))
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. Another venture, new words.', other), [])
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. makeyourmindup', other, pinterest={'title': 'Synthetic'}), [])
+        self.assertEqual(self.edit('TEST FIXTURE ONLY. New caption.', 'instagram', instagram={'type': 'post', 'firstComment': ''}), [],
+                         'an edit of this engine\'s post that does not speak for the publication keeps what was checked')
 
     def test_the_hook_denies_through_claude_code(self):
         call = {'tool_name': 'mcp__Buffer__create_post', 'tool_input': post('threads', 'TEST FIXTURE ONLY.')}

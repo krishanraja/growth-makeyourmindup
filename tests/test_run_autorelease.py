@@ -50,8 +50,8 @@ WORDS_THREADS = ('Synthetic fixture words for the threads slot. Subscribe: '
                   + route.subscribe_url('threads', 'fixture-threads'))
 WORDS_X = ('Synthetic fixture words for the x slot. Subscribe: '
                   + route.subscribe_url('x', 'fixture-x'))
-WORDS_LINKEDIN = ('Synthetic fixture words for the linkedin slot. Subscribe: '
-                  + route.subscribe_url('linkedin', 'fixture-linkedin'))
+# LinkedIn is no channel of this engine's (growth-mindmake's since 13 Nov 2026), so it has no subscribe route here.
+WORDS_LINKEDIN = 'Synthetic fixture words for the linkedin slot.'
 IMAGE = b'synthetic autorelease image bytes\n'
 
 
