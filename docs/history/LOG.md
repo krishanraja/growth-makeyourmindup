@@ -4,6 +4,18 @@ Newest first. Entries are written by the docs steward (`krishanraja/ai-harness`,
 and by people doing the same job by hand. Nothing in this file describes current behaviour; `NOW.md` and
 `README.md` do. Text moved here from `NOW.md` keeps its wording verbatim.
 
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-11 **One canonical brand kit (#62 to #65).** Everything moved, nothing deleted, except `00_Brand-Assets`, which went to the Drive bin on Krish's instruction once music moved into the kit. The kit's Music and Style references stay as content-engine's mirrors.
+
+From "Where it is right now":
+
+- Krish approved the source classification and the subscriber rule on 12 November ("i approve 3, 4, 5"). `invariants/sources.json` is approved (approved_by Krish, 2026-11-12), so weekly readings count organic subscribers toward the North Star, with the all-source count beside them. The rule that judges a post by subscribers is approved as it stands: one sign-up in its first seven days works, none on at least 30 visits to its own link fails, anything else is insufficient (`FAILS_AT_SESSIONS`, engine/run/measure.py). The YouTube Data API is live in Control Center's gateway for this engine's research (first read: @makeyourmind-up, 20 videos, 707 views, 0 YouTube subscribers). (2026-11-12)
+
 ## 2026-11-12
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).

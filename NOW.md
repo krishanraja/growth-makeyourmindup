@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
-as_of: 2026-11-12
-head: 11c7dbb
+as_of: 2026-11-13
+head: 4ab4695
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -22,7 +22,7 @@ The makeyourmindup growth engine: it plans, schedules, posts and measures the wo
 
 Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
 
-## Where it is right now (as of 2026-11-12)
+## Where it is right now (as of 2026-11-13)
 
 <!-- north-star-state {"week_of": "2026-11-02", "week_target": 86, "current": 1, "current_as_of": "2026-11-08", "current_source": "Substack Growth sources, new subscribers, Custom... (2026-11-02 to 2026-11-08), read 2026-11-12: all sources 1, organic 1", "urgency": 5, "urgency_reason": "1 of 86; under two fifths two weeks running"} --> **North Star number: U5, stalled.** 1 of 86 new publication subscribers in the week of 2 November 2026 from organic posts and shares, the whole week to 8 November 2026.
 
@@ -30,6 +30,7 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
+- Three profile-link updates independently verified; remaining links complete per Krish. Threads routing locally corrected to @makeyourmind.up; Buffer branded connection remains unverified and the personal connection fails release. (2026-11-13)
 - The maker's standing-plan and weekly-ask reports now carry the engine's state (priorities, obsessions, next steps) when the directive serves it, so they no longer blank this engine's state in Control Center as the 12 November W46 ask did (`report_state` in engine/run/maker.py, tests/test_run_maker.py). The protocol copy carries Control Center 212379e1 (the 16 voice-check channels, the publication's caption and substack among them, and the number objective's target read from docs/NORTH_STAR.md), the North Star line names a whole week read after it ended as that week's, never "this week" (state_line in engine/run/measure.py), and the brief, NOW.md and the Cowork brief now say where the target comes from, the whole-week reading of 12 November, the answered per-Note question and the approved profile links. (2026-11-12)
 - `growth.py run board posts` also writes back a day's piece's own posts that Buffer has scheduled, each as the piece's entry with its channel and time (`piece_days`, `piece_row`), so content-engine's board says "Scheduled: Substack Notes, from Fri 13 Nov, 12:40" in place of "Ready to post" (Ruling, Krish, 2026-11-12: the board shows exactly where everything is). (2026-11-12)
 - Krish approved pointing every profile link to its tagged subscribe page; jobs/channel-audit.md lists the exact link per account for the weekly browser audit to save and verify, and LinkedIn is his to change by hand. (2026-11-12)
@@ -37,10 +38,10 @@ Lifecycle: live. The detail is in `README.md`.
 - The 2–8 November capture was generated and validated with the current main subscriber command, then ingested with --write. Commit 937d9753b7be7fe934b5a186a6035a318a358457 records the North Star state and ledger on main; both files passed exact-content readback. Organic count: 1 of 86, U5. The private capture remains outside the public repository. Per-item inspection was partial: subscriber metrics exist for both posts and Notes; the capture contains the two items inspected, not a complete weekly item inventory. Scheduling: Neither Growth: subscribers nor Growth: answer piece was created or changed. Codex project and automation calls failed; the desktop connection subsequently became unavailable. The AGENTS.md Open setup line is retained because scheduling was not verified. No Substack settings, subscriber lists, cookies or passwords were changed. (2026-11-12)
 - Growth's carousel and meme templates follow content-engine's brand palette: one house close for every carousel (takeaway, Subscribe free, wordmark bottom right), the meme mark in the bottom right, lilac as a fourth tone, and the art-direction gate refuses a new piece kit's own close. (2026-11-12)
 - Every Buffer post on the engine's pinned channels must carry the tagged subscribe route at U4 and U5 (Ruling, Krish, 2026-11-12). A PreToolUse hook on the Buffer connector's create_post and edit_post runs `engine/subscribe_gate.py` and refuses a post without it (`subscribe_route_missing`), so hand-run session drafts are held to the same rule as release and preflight. Tests: `tests/test_subscribe_gate.py`. (2026-11-12)
-- Krish approved the source classification and the subscriber rule on 12 November ("i approve 3, 4, 5"). `invariants/sources.json` is approved (approved_by Krish, 2026-11-12), so weekly readings count organic subscribers toward the North Star, with the all-source count beside them. The rule that judges a post by subscribers is approved as it stands: one sign-up in its first seven days works, none on at least 30 visits to its own link fails, anything else is insufficient (`FAILS_AT_SESSIONS`, engine/run/measure.py). The YouTube Data API is live in Control Center's gateway for this engine's research (first read: @makeyourmind-up, 20 videos, 707 views, 0 YouTube subscribers). (2026-11-12)
 
 ## What changed recently
 
+- 2026-11-13 Krish ruled Threads always posts to makeyourmindup. Private receipts stay under ignored .scratch/channel-audit/profile-links-20261113.
 - 2026-11-12 Krish, 2026-11-12: "make sure everything's a cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading left in there".
 - 2026-11-12 The full-week organic reading is now measured and recorded; the current week remains unmeasured.
 - 2026-11-12 five piece kits had ended five different ways and memes carried the logo at the top; the palette Krish approved on 12 Nov allows one close and no logo at the top.
@@ -50,11 +51,10 @@ Lifecycle: live. The detail is in `README.md`.
 - 2026-11-12 **One live publish board (#67).** AGENTS.md says where the live board is and what Growth does on it; each ledger row's board link opens the live board at its week and day (Ruling, Krish, 2026-11-11: one live board, in Control Centre; the old board is a read-only archive).
 - 2026-11-11 **Protocol 1.20.0 (#66).** Krish's instruction reaches the engine in the directive: the runner acks it received by id, a second wake the same day reports under its own run_id, a workspace job acts on it first and acks started, done or blocked, and every report that pulls the directive carries the engine's priorities, obsessions and next steps.
 - 2026-11-11 **The subscriber push (#61).** Ruling (Krish, 2026-11-11): "dial up its urgency in getting me new subscribers to my substack". The Substack half is a Cowork brief, `docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`.
-- 2026-11-11 **One canonical brand kit (#62 to #65).** Everything moved, nothing deleted, except `00_Brand-Assets`, which went to the Drive bin on Krish's instruction once music moved into the kit. The kit's Music and Style references stay as content-engine's mirrors.
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-12): Confirm on the live board after the next release run that Fri 13 reads Scheduled and Tue 10's posts read Live.
+- Next (2026-11-13): Connect and verify @makeyourmind.up in Buffer, then pin its returned channel ID.
 - Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
 - Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
 - Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).
@@ -63,7 +63,7 @@ Lifecycle: live. The detail is in `README.md`.
 - Waiting on Krish (29 October, not re-checked since): six set-up answers. The Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); the Buffer plan purchase, his click; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry.
 - Waiting on Krish (11 November, optional): one instruction from Control Centre's Engine drawer, to prove protocol 1.20.0 live end to end. The runner acks it received, then a workspace job or an engine session acks started, done or blocked.
 - Open elsewhere: the GA4 paid event name (`invariants/ga4.json`; `sign_up` is verified, 12 November), and the Wave 2 fields Control Center was asked to name on 29 October, not re-checked since (`docs/briefs/2026-10-29-wave2-content-engine-and-control-center.md`).
-- North Star check (2026-11-12): holds.
+- North Star check (2026-11-13): holds.
 
 ## Read next
 
