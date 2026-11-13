@@ -151,9 +151,8 @@ bytes against its signed manifest line; a file in 4 Growth is never trusted.
 
 - `invariants/rules.json`: each rule with its verbatim source quote.
 - `docs/PUBLISHING-AUTHORITY.md`: who may publish where.
-- `docs/ACCOUNT-VOICE.md`: X, TikTok and LinkedIn are his personal
-  accounts. Threads always targets @makeyourmind.up; its established warm
-  personal register remains in force (13 November 2026 routing correction).
+- `docs/ACCOUNT-VOICE.md`: X, TikTok and LinkedIn are his own
+  accounts; Threads is @makeyourmind.up, in a warm personal register.
 - `AGENTS.md` ("The rules that never bend", "Autonomy", "Outreach for Make
   Your Mind Up"): Krish sends this show's outreach in Codex, never via
   Control Center.
