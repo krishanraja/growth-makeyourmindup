@@ -54,8 +54,10 @@ html,body{width:1080px;height:1350px;background:%(ink)s;overflow:hidden}
 """ % {'ink': INK, 'cream': CREAM, 'mint': MINT}
 
 
-def headline(text, accent):
+def headline(text, accent, br=None):
     text = html.escape(text)
+    if br and html.escape(br) in text:
+        text = text.replace(html.escape(br), '<br>' + html.escape(br), 1)
     if accent:
         a = html.escape(accent)
         if a in text:
@@ -89,18 +91,18 @@ def main(day):
         if n == 1:
             body = ('<div class="card cover"><img class="scene" src="../devices/cover.png"><div class="fade"></div>'
                     '<div class="stack"><div class="pill">%s</div><div class="head" style="font-size:%dpx">%s</div><div class="line">%s</div></div>'
-                    '<div class="mark"></div></div>') % (html.escape(style['series_name']), L.get('size', 108), headline(card['headline'], acc),
+                    '<div class="mark"></div></div>') % (html.escape(style['series_name']), L.get('size', 108), headline(card['headline'], acc, style.get('br', {}).get(str(n))),
                                                          html.escape(card['line']))
         elif n == len(cards):
             line = card['line'].replace('Follow for more.', '').strip()
             body = ('<div class="card close"><div class="glow"></div><div class="flow"><div class="head" style="font-size:%dpx">%s</div>'
                     '<div class="line">%s</div><div class="pic">%s</div></div>'
                     '<div class="follow">Follow for more</div><div class="bigmark"></div></div>') % (
-                L.get('size', 96), headline(card['headline'], acc), html.escape(line), svg(folder, n))
+                L.get('size', 96), headline(card['headline'], acc, style.get('br', {}).get(str(n))), html.escape(line), svg(folder, n))
         else:
             body = ('<div class="card"><div class="glow"></div><div class="flow"><div class="head" style="font-size:%dpx">%s</div>'
                     '<div class="line">%s</div><div class="pic">%s</div></div><div class="mark"></div></div>') % (
-                L.get('size', 96), headline(card['headline'], acc), html.escape(card['line']), svg(folder, n))
+                L.get('size', 96), headline(card['headline'], acc, style.get('br', {}).get(str(n))), html.escape(card['line']), svg(folder, n))
         (out / ('card-%d.html' % n)).write_text(page(body, colour, '%s card %d' % (day, n)), encoding='utf-8')
     print('%s: %d cards written to %s' % (day, len(cards), out))
 

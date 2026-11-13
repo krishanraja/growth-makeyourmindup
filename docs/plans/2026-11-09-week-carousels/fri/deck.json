@@ -55,7 +55,7 @@
   {
    "headline": "Staff ran pointless AI jobs to climb.",
    "line": "Meta's board tracked the tokens of 85,000 staff. Amazon staff set AI helpers on needless tasks.",
-   "picture": "A leaderboard, top row TOKEN LEGEND, the token count meter spinning past 60 trillion"
+   "picture": "A leaderboard, top row TOKEN LEGEND, a counter reading 60 TRILLION tokens in 30 days (Fortune), the Meta and Amazon logos"
   },
   {
    "headline": "Pay for a number, and people fake it.",
@@ -70,7 +70,7 @@
   },
   {
    "headline": "Three big firms dropped AI-use scores.",
-   "line": "Meta, Amazon and Duolingo. Amazon: no AI help is 'a finding, not a failing.'",
+   "line": "Meta, Amazon and Duolingo. Amazon told staff that AI not helping is a useful finding.",
    "picture": "Three U-turn arrows, one each for Meta, Amazon and Duolingo",
    "source": "daily.dev (Meta, Sep 2026); CNBC (Amazon memo, Oct 2026); WPXI (Duolingo, Apr 2026)"
   },
@@ -80,7 +80,7 @@
    "picture": "A review form with the AI USAGE line crossed out"
   },
   {
-   "headline": "Judge AI on results, not use.",
+   "headline": "Judge AI by the results it gets.",
    "line": "Sales, tickets closed, invoices sent. If it hasn't moved, the AI isn't working yet. Follow for more.",
    "picture": "One gauge labelled SALES with its needle, Follow for more over the centred wordmark"
   }
@@ -114,5 +114,5 @@
   "arXiv preprint, Sep 2026, halving an AI query target at a medical-device firm (via the piece)",
   "daily.dev, Sep 2026 (Meta); CNBC, Oct 2026 (Amazon); WPXI, Apr 2026 (Duolingo)"
  ],
- "read_back_fixed": "Round 1 stumbled on 'count a sign' (vague), 'backed down' (from what) and 'a number you track' (seemed to contradict card 6); cards 3, 5 and 7 now say pay for a number, dropped AI-use scores, and judge on results. Round 2 stumbled on 'halving the AI target'; card 4 now says asking for less AI use lifted sales."
+ "read_back_fixed": "Round 1 stumbled on 'count a sign' (vague), 'backed down' (from what) and 'a number you track' (seemed to contradict card 6); cards 3, 5 and 7 now say pay for a number, dropped AI-use scores, and judge on results. Round 2 stumbled on 'halving the AI target'; card 4 now says asking for less AI use lifted sales. After the judges' copy lint (13 Nov), card 5's line and card 7's headline lose the 'not X, Y' form; same meaning."
 }

@@ -132,18 +132,20 @@ for i, q in enumerate(qs):
     b.append(t(222, y + 47, q, 42, 'Anton', INK, 'start'))
     if i < 3:
         b.append('<line x1="130" y1="%d" x2="790" y2="%d" stroke="%s" stroke-opacity="0.15" stroke-width="2"/>' % (y + 88, y + 88, INK))
-write('mon', 7, ''.join(b))
+# (the checklist card was retired when the judges asked for one action, 13 Nov)
 
-# 8. (last) the spare key on its hook
-b = ['<circle cx="460" cy="60" r="18" fill="none" stroke="%s" stroke-width="8"/>' % CREAM,
-     '<path d="M460 78 L460 118" stroke="%s" stroke-width="8" stroke-linecap="round"/>' % CREAM,
-     '<circle cx="460" cy="200" r="78" fill="none" stroke="%s" stroke-width="26"/>' % B,
-     '<rect x="446" y="272" width="28" height="200" rx="6" fill="%s"/>' % B,
-     '<rect x="474" y="400" width="44" height="22" rx="4" fill="%s"/><rect x="474" y="440" width="30" height="22" rx="4" fill="%s"/>' % (B, B),
-     '<path d="M510 160 L640 230" stroke="%s" stroke-width="3"/>' % CREAM,
-     '<g transform="rotate(14 690 250)"><rect x="620" y="215" width="160" height="78" rx="10" fill="%s"/>' % CREAM,
-     '<circle cx="640" cy="254" r="7" fill="%s"/>' % INK, t(710, 270, 'PLAN B', 42, 'Anton', INK) + '</g>']
-write('mon', 8, ''.join(b), 520)
+# 7. (last) the email to your AI supplier
+b = ['<rect x="130" y="10" width="660" height="470" rx="22" fill="%s"/>' % CREAM,
+     '<rect x="130" y="10" width="660" height="18" rx="9" fill="%s"/>' % B,
+     t(175, 90, 'TO', 26, 'Plex', INK, 'start', 'fill-opacity="0.55"'), t(240, 90, 'YOUR AI SUPPLIER', 34, 'Anton', INK, 'start'),
+     '<line x1="175" y1="115" x2="745" y2="115" stroke="%s" stroke-opacity="0.15" stroke-width="3"/>' % INK,
+     t(175, 175, 'SUBJECT', 26, 'Plex', INK, 'start', 'fill-opacity="0.55"'), t(320, 175, 'IF YOU ARE SOLD', 34, 'Anton', INK, 'start'),
+     '<line x1="175" y1="200" x2="745" y2="200" stroke="%s" stroke-opacity="0.15" stroke-width="3"/>' % INK,
+     t(175, 265, 'What happens to our data,', 38, 'Archivo', INK, 'start', 'font-weight="600"'),
+     t(175, 315, 'and to this tool, if you are', 38, 'Archivo', INK, 'start', 'font-weight="600"'),
+     t(175, 365, 'bought or close?', 38, 'Archivo', INK, 'start', 'font-weight="600"'),
+     '<rect x="560" y="400" width="190" height="56" rx="28" fill="%s"/>' % B, t(655, 438, 'SEND', 32, 'Anton', INK)]
+write('mon', 7, ''.join(b), 520)
 
 # ---------------- wed: under.the.hood (lilac) ----------------
 L = SER['wed']
@@ -295,9 +297,9 @@ b = ['<rect x="120" y="20" width="680" height="580" rx="24" fill="%s"/>' % CREAM
      t(170, 110, 'PERFORMANCE REVIEW', 30, 'Plex', INK, 'start', 'fill-opacity="0.6"')]
 for i, q in enumerate(['QUALITY OF WORK', 'RESULTS', 'AI USAGE', 'TEAMWORK']):
     y = 200 + i * 100
-    b.append(t(170, y, q, 46, 'Anton', INK, 'start', '' if q != 'AI USAGE' else 'fill-opacity="0.55"'))
+    b.append(t(170, y, q, 46, 'Anton', INK, 'start', '' if q != 'AI USAGE' else 'fill-opacity="0.75"'))
     b.append('<line x1="170" y1="%d" x2="750" y2="%d" stroke="%s" stroke-opacity="0.15" stroke-width="3"/>' % (y + 26, y + 26, INK))
-b.append('<path d="M150 388 C320 372 520 392 770 370" stroke="%s" stroke-width="16" fill="none" stroke-linecap="round"/>' % C)
+b.append('<line x1="160" y1="384" x2="560" y2="384" stroke="%s" stroke-width="9" stroke-linecap="round"/>' % C)
 write('fri', 6, ''.join(b))
 
 # 7. (last) the results gauge

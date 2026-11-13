@@ -39,75 +39,67 @@
    5,
    6
   ],
-  "do": [
-   7,
-   8
-  ]
+  "do": 7
  },
  "explains": {},
  "cta": "Follow for more",
  "cards": [
   {
-   "headline": "Millions loved Character.AI. It went bust",
-   "line": "An app for chatting with made-up characters. It filed for bankruptcy on 12 October.",
-   "picture": "Cover scene: a chat app on a phone, alone on an auction block under a spotlight, a lot tag hanging off it"
+   "headline": "Character.AI went bust. Who walked away with what?",
+   "line": "An app for chatting with made-up characters. It went bust in October. Its users got nothing.",
+   "picture": "Cover scene: a phone alone on an auction block under a spotlight, a lot tag on it, paper speech bubbles on the floor"
   },
   {
-   "headline": "Google hired its founders first.",
-   "line": "In 2024 Google reportedly paid $2.7 billion to use its tech and hire its founders. The first warning sign.",
-   "picture": "A timeline: Aug 2024 the founders walk out to Google, Oct 2026 the app goes bust"
+   "headline": "Google hired Character.AI's founders in 2024.",
+   "line": "It reportedly paid $2.7 billion to use the app's tech and hire them. The app kept running.",
+   "picture": "A timeline: Aug 2024 the founders go to Google, Oct 2026 the app goes bust"
   },
   {
-   "headline": "Then Disney's AI video deal died.",
-   "line": "Disney's $1 billion deal put its characters in OpenAI's Sora app. OpenAI shut Sora in March.",
-   "picture": "Disney's characters locked outside a shuttered Sora shopfront"
+   "headline": "OpenAI shut Sora, killing Disney's AI plan.",
+   "line": "Disney had agreed to put $1 billion into OpenAI and its characters into the Sora app.",
+   "picture": "Disney's logo, a struck-through $1B deal line to a closed Sora phone"
   },
   {
-   "headline": "So Disney is hiring Character.AI's team.",
-   "line": "Jobs for 66 staff through the bankruptcy court. The lawsuits stay behind with the shell.",
-   "picture": "66 small figures walking across to Disney, a pile of lawsuits left on the empty floor"
+   "headline": "Now Disney is hiring Character.AI's staff.",
+   "line": "It wants its own AI team. Offers to 66 staff in bankruptcy court; the lawsuits stay behind.",
+   "picture": "66 small figures walking across to Disney, a pile of lawsuits left behind with Character.AI"
   },
   {
-   "headline": "Big firms now own their AI instead of renting.",
-   "line": "Renting is using another firm's AI. Netflix bought an AI film start-up for a reported $587 million.",
-   "picture": "Three buyers, each with a SOLD tag: Disney, Netflix, Warner Music, an arrow from RENT to OWN",
+   "headline": "Big firms now buy AI companies.",
+   "line": "Netflix bought the AI film start-up InterPositive, reported at $587 million. Warner Music bought Sureel AI.",
+   "picture": "RENT to OWN: Disney, Netflix, Warner Music, each with a BOUGHT tag",
    "source": "The Hollywood Reporter on Netflix and InterPositive (2026); also Warner Music Group buying Sureel AI, PR Newswire (June 2026)"
   },
   {
-   "headline": "Your AI could vanish too.",
-   "line": "If its maker is bought or goes bust, users are left with the empty box.",
+   "headline": "Any AI you rent can vanish.",
+   "line": "If its maker is sold or goes bust, the people who used it are left with an empty box.",
    "picture": "An open, empty box with a chat bubble fading out of it"
   },
   {
-   "headline": "Check who makes your AI.",
-   "line": "Founders still there? Your tool its main product? Short of cash? Collecting lawsuits?",
-   "picture": "A four-line checklist, one box per question"
-  },
-  {
-   "headline": "Pick your plan B now.",
-   "line": "If two answers worry you, try another tool on one real task this month. Follow for more.",
-   "picture": "A spare key on a hook, Follow for more over the centred wordmark"
+   "headline": "Ask your AI supplier what happens if it's sold.",
+   "line": "Send the email below and get the answer in writing. Try a backup tool on one task. Follow for more.",
+   "picture": "An email to YOUR AI SUPPLIER asking what happens to our data if you're sold, Follow for more over the centred wordmark"
   }
  ],
  "read_back": [
   {
-   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; 7-card version)",
    "answers": {
-    "what": "An AI company collapsed, and businesses renting AI could lose access to it too.",
-    "happened": "Character.AI, loved by millions, went bust, and Google hired its founders first.",
-    "why": "Its founders went to Google first and its big partner's plans changed, so it was left weak.",
-    "so_what": "If an AI tool I rely on can vanish overnight, my business could lose a key service with no warning.",
-    "do": "Check who makes each AI tool I use and pick a backup option now."
+    "what": "Character.AI, a chatbot app many people loved, stopped working.",
+    "happened": "Google hired its founders in 2024, and OpenAI later shut Sora, which had been Disney's AI plan.",
+    "why": "The AI companies and tools people depend on keep changing hands or disappearing, which breaks plans built on them.",
+    "so_what": "If the AI tool I rely on is sold or shut down, my workflow and my customers' experience could break overnight.",
+    "do": "Ask my AI supplier now what happens to my data and access if they are sold or shut down."
    }
   },
   {
-   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; 7-card version)",
    "answers": {
-    "what": "A popular AI chatbot app called Character.AI ran out of money and collapsed even though millions used it.",
-    "happened": "Google hired the founders first, then OpenAI shut the app Disney relied on, so Disney is hiring the Character.AI team.",
-    "why": "Big companies are now building and owning their own AI instead of paying to use someone else's.",
-    "so_what": "The AI apps I use could disappear suddenly if the company behind them goes under.",
-    "do": "Find out which company makes the AI I use and have a backup option ready."
+    "what": "Character.AI is a chatbot app millions of people used, and it died.",
+    "happened": "Google hired its founders in 2024, then OpenAI shut down Sora, which wrecked Disney's AI plan.",
+    "why": "Big companies grab AI companies, and the tools people rely on can get shut down.",
+    "so_what": "An AI app I like could just disappear one day and I would lose it.",
+    "do": "Ask whoever supplies my AI what happens to it if the company gets sold."
    }
   }
  ],
@@ -119,5 +111,5 @@
   "The Hollywood Reporter, Netflix and InterPositive (https://www.hollywoodreporter.com/business/business-news/netflix-price-ben-affleck-ai-company-revealed-1236651217/)",
   "PR Newswire, Warner Music Group acquires Sureel AI (https://www.prnewswire.com/news-releases/warner-music-group-acquires-sureel-ai-302796705.html)"
  ],
- "read_back_fixed": "Round 1 (Haiku, Sonnet) stumbled on 'Disney's AI partner' (unnamed), 'hiring the team' (which team) and 'buy, not rent'; card 3 now names OpenAI, card 4 names Character.AI's team, card 5 says own instead of renting and its line says what renting is. Round 2 stumbled only on how Sora linked to Disney: card 3 now reads as Disney's own deal dying, its line naming Sora."
+ "read_back_fixed": "The 8-card version passed two read-back rounds, then failed the 10/10 judges (6, then 3, 13 Nov), who asked it to open on what it means for the reader, make every headline stand alone and cut the checklist. Rewritten to 7 cards and read back fresh three times. Readers stumbled on how OpenAI's closure linked to Disney, then on 'who walked away' naming no app, then on 'died' and the 'So' jump; each was fixed in turn. The judges also flagged the Sora line: it now says what the piece says (Disney agreed to put $1 billion into OpenAI and its characters into Sora)."
 }

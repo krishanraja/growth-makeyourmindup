@@ -4,4 +4,10 @@ If your business runs on someone else's AI, four questions about its maker are w
 
 The full story is free at makeyourmindup.ai.
 
-Sources: Character.AI's Chapter 11 filing, Delaware, Oct 2026 (cases.stretto.com); CNBC, Aug 2024, on Google and Character.AI; Disney on its OpenAI Sora agreement, and Deadline, Mar 2026, on Sora closing; Wired and Gizmodo on Disney's offers to 66 staff; The Hollywood Reporter on Netflix buying InterPositive; Warner Music Group on buying Sureel AI (PR Newswire).
+Sources:
+Character.AI's bankruptcy filing, Delaware, Oct 2026: https://cases.stretto.com/public/x936/14939/PLEADINGS/1493910132680000000114.pdf
+Google and Character.AI, CNBC, Aug 2024 (the reported $2.7 billion): https://www.cnbc.com/2024/08/02/ex-google-engineers-from-characterai-re-join-company-with-ai-partnership-.html
+Disney and OpenAI's Sora: https://thewaltdisneycompany.com/news/disney-openai-sora-agreement/ and Sora closing, Deadline, Mar 2026: https://deadline.com/2026/03/sora-shut-down-disney-investment-1236764689/
+Disney's offers to 66 staff and what the bid leaves out: Wired and Gizmodo, Oct 2026, reporting the court filings
+Netflix and InterPositive (a reported $587 million): https://www.hollywoodreporter.com/business/business-news/netflix-price-ben-affleck-ai-company-revealed-1236651217/
+Warner Music Group buys Sureel AI: https://www.prnewswire.com/news-releases/warner-music-group-acquires-sureel-ai-302796705.html

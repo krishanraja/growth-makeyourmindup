@@ -1,0 +1,565 @@
+Reading prompt from stdin...
+OpenAI Codex v0.167.2
+--------
+workdir: /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1d5c9-cb55-7221-b982-134b2795e0eb
+--------
+user
+Follow COVERS.md in this folder exactly. Use your image generation tool for the three covers. The two attached images are kit/robot-standing.png and kit/robot-theatre.png, the house robot references for the Wednesday cover only. Save each PNG at the path COVERS.md gives and write covers.json. Then stop.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+codex
+I’ll read the North Star and COVERS.md, then generate and save the three covers at the specified paths and write covers.json.
+
+exec
+/bin/bash -lc pwd in /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+ succeeded in 300ms:
+/home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+
+exec
+/bin/bash -lc 'cat /home/user/growth-makeyourmindup/docs/NORTH_STAR.md /home/user/growth-makeyourmindup/NOW.md COVERS.md /root/.codex/skills/.system/imagegen/SKILL.md' in /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+ succeeded in 0ms:
+# North Star
+
+Status: Current
+Owner: Krish Raja
+Last verified: 2026-10-18
+
+> By 31 December 2026, the publication grows every week from posts people share because they are useful, with zero paid boosts, and the right leaders make up most of the new subscribers.
+
+Set by Krish on 18 October 2026. It is not reached yet. It is what every session in this repository works toward.
+
+This repository serves [makeyourmindup's North Star](https://github.com/krishanraja/makeyourmindup/blob/main/docs/NORTH_STAR.md). The lines above are this repository's part of it.
+
+## The number
+
+**New publication subscribers a week from organic posts and shares, zero paid**: 2,500 by 28 December 2026, on a front-loaded weekly ladder. Checkpoints: 16 Nov 2026: 271; 14 Dec 2026: 1,312; 28 Dec 2026: 2,500.
+
+```yaml north-star-metric
+metric: "New publication subscribers a week from organic posts and shares, zero paid"
+unit: count
+direction: up
+target: 2500
+deadline: 2026-12-28
+ladder_shape: front-loaded
+source: "Substack subscriber growth by source"
+status: active
+ladder:
+  - [2026-10-26, 25]
+  - [2026-11-02, 86]
+  - [2026-11-09, 162]
+  - [2026-11-16, 271]
+  - [2026-11-23, 424]
+  - [2026-11-30, 636]
+  - [2026-12-07, 925]
+  - [2026-12-14, 1312]
+  - [2026-12-21, 1826]
+  - [2026-12-28, 2500]
+```
+
+Urgency (U1 to U5) is worked out every week from where the number stands against that week's target, by [the harness contract](https://github.com/krishanraja/ai-harness/blob/main/contract/north-star-metric.md). Set by Krish on 23 October 2026.
+
+## How to use it
+
+- Read it before any work, every session.
+- Before you start, say which part of it the task moves. If the task moves nothing toward it, say so first and let Krish decide.
+- Prefer the work that moves it furthest, and close each session by noting what moved.
+- Only Krish changes this file. Record his ruling in the commit body as `Ruling (Krish, YYYY-MM-DD): ...`.
+- When it is reached, say so and ask Krish for the next one.
+---
+repo: krishanraja/growth-makeyourmindup
+product: makeyourmindup growth engine
+as_of: 2026-11-13
+head: 83d7d77
+lifecycle: live
+production_url: none
+state_doc: README.md
+history_log: docs/history/LOG.md
+truth_files: [docs/NORTH_STAR.md]
+authority_order: [docs/NORTH_STAR.md, README.md]
+steward: https://github.com/krishanraja/ai-harness/blob/main/docs/steward/RUNBOOK.md
+---
+
+# makeyourmindup growth engine: where it is right now
+
+## What it is
+
+The makeyourmindup growth engine: it plans, schedules, posts and measures the work that brings new readers to the publication, and drafts its outreach and engagement, with no paid boosts. It runs as four engines, one per session (Acquisition, Engagement, Publishing, and Measurement and Allocation), beside ten GitHub Actions workflows and ten PC automations: nine kept until W46, and the weekly Substack read (`jobs/subscribers.md`), which stands.
+
+## Who it is for and why it matters for Mindmake
+
+Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
+
+## Where it is right now (as of 2026-11-13)
+
+<!-- north-star-state {"week_of": "2026-11-02", "week_target": 86, "current": 1, "current_as_of": "2026-11-08", "current_source": "Substack Growth sources, new subscribers, Custom... (2026-11-02 to 2026-11-08), read 2026-11-12: all sources 1, organic 1", "urgency": 5, "urgency_reason": "1 of 86; under two fifths two weeks running"} --> **North Star number: U5, stalled.** 1 of 86 new publication subscribers in the week of 2 November 2026 from organic posts and shares, the whole week to 8 November 2026.
+
+The last reading is the whole week of 2 November: 1 new subscriber of 86, all sources and organic alike, read from Substack on 12 November (`jobs/subscribers.md`). The week of 9 November (162 on the ladder in `docs/NORTH_STAR.md`) is not measured yet: the engine's own reading of an unmeasured week is U4 (`engine/intensity.py`), raised to U5 by Control Center's directive, so the runs go at U5 and the subscriber push is on. The line above changes only on a measured reading: `growth.py run subscribers ingest` or `growth.py run northstar` from a capture, or Control Center's North Star refresh from this engine's own live report.
+
+Lifecycle: live. The detail is in `README.md`.
+
+- The GitHub runner takes back its own undecided asks once their week or window is over (Ruling, Krish, 2026-11-12), through the protocol's withdrawn[] with a one-line reason, and nothing new is asked about a week that has ended; its first run takes back the three parts of the mix plan for the week of 2 November. (2026-11-13) (2026-11-13)
+- The engine proposes the publication's AI-answer questions for Krish's approval (Ruling, Krish, 2026-11-13). Twenty questions readers type or ask about the three series and Saturday's good news, each with its evidence and best piece (docs/ai-answers/2026-11-13-proposed-questions.md), go to his list once as one strategy ask (config/ai-answer-questions-proposed.json); on his yes, or his amended version, the runner writes exactly those into config/ai-answer-questions.json, asks AEO-Engine to track them and closes the ask, and the control-center workflow commits that one file. (2026-11-13)
+- The publication's AI answers are AEO-Engine's, the one AI-answers specialist (Ruling, Krish, 2026-11-12): the runner reads the standing from the directive (protocol 1.22.0) and asks AEO to track the real reader questions in config/ai-answer-questions.json, which jobs/answer.md fills; none is on file yet, so nothing is asked. The protocol copy in docs/control-center/ is Control Center's at 36df34bc (protocol 1.22.0). (2026-11-13)
+- Krish allowed one DM reply to someone who commented the keyword on that post (Ruling, Krish, 2026-11-13) and chose ManyChat, on a trial, for the keyword-DM test. Rule 5 in AGENTS.md and research.md, invariant R07 and the corpus digest now carry the exception, and the plan carries the setup. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
+- Every carousel and Short the maker makes is judged by content-engine's 10/10 judges first; a fail is never made and holds loudly as judges_failed with the reasons kept privately, a pass is bound to its Buffer post, and the board tick reports every sent post so content-engine counts the judged ones live on its North Star. (2026-11-13)
+- LinkedIn keeps its profile as Krish has it; the channel audit no longer asks him to paste a link there. (2026-11-13)
+- The @adilet.fndr teardown is saved (`docs/research/2026-11-12-adilet-fndr-teardown.md`): eight reels brought about 89% of his net follows and one hook, run three times, 62%; around them, a comment-keyword DM funnel, an email capture and a $67 product. The keyword-DM test is drafted (`docs/plans/2026-11-13-keyword-dm-test.md`) and planned in `experiments.json` as `keyword-dm`, so the engine puts it on Krish's list to decide. It needs his ruling on `research.md` rule 5 (no automated DMs) before anything else, then the DM tool, its spend and the account connection, each his yes. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
+- Buffer branded Threads connection @makeyourmind.up verified connected and unlocked; engine now pins its new channel ID and rejects the previous connection. (2026-11-13)
+
+## What changed recently
+
+- 2026-11-13 An ask about a past week held every live ask behind it on Krish's one list (one ask per engine at a time), so the AI-answer questions and the keyword-DM experiment waited behind a mix plan for a week that was over. engine/stale_asks.py; docs/ENGINE.md, "Nothing stale on his list".
+- 2026-11-13 AGENTS.md, research.md, invariants/rules.json, knowledge/corpus/external-growth-skills.md, experiments.json, docs/plans/2026-11-13-keyword-dm-test.md, docs/GET-GOING.md (Step 0.4).
+- 2026-11-13 Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." engine/run/judges.py, the maker's step 6b, board tick's live report.
+- 2026-11-13 Krish connected the correct account; live provider readback closed the connection hold. No post was created, moved or published.
+- 2026-11-13 Krish ruled Threads always posts to makeyourmindup. Private receipts stay under ignored .scratch/channel-audit/profile-links-20261113.
+- 2026-11-12 Krish, 2026-11-12: "make sure everything's a cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading left in there".
+- 2026-11-12 The full-week organic reading is now measured and recorded; the current week remains unmeasured.
+- 2026-11-12 five piece kits had ended five different ways and memes carried the logo at the top; the palette Krish approved on 12 Nov allows one close and no logo at the top.
+- 2026-11-12 58 posts went out through Buffer from 2 to 11 November with no subscribe ask, because hand-run drafts skipped preflight; the gate now sits on the path they took.
+- 2026-11-12 `engine/cc_loop.py`, `engine/control_center.py`, `engine/mix.py`, the protocol and schema copies in `docs/control-center/`, `docs/ENGINE.md`, `docs/MIX.md`, `jobs/daily-pack.md`, tests.
+
+## What is next and what is waiting on Krish
+
+- Next (2026-11-13): Krish answers the standing W45 to W52 plan, now first in this engine's turn on his list, or the experiment asks behind it.
+- Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
+- Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
+- Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).
+- Waiting on Krish (5 November): his ruling on how many prefilled LinkedIn drafts may be open at once. The engine review keeps every ready draft open in its tab, while BROWSER.md allows one prefilled box at a time; BROWSER.md holds until he rules.
+- Waiting on Krish (30 October): whether a past piece's repurposed carousel belongs in the Sunday mix or goes live per post. Today it is not in the mix, so the derived lane neither makes nor releases it.
+- Waiting on Krish (29 October, not re-checked since): six set-up answers. The Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); the Buffer plan purchase, his click; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry.
+- Waiting on Krish (11 November, optional): one instruction from Control Centre's Engine drawer, to prove protocol 1.20.0 live end to end. The runner acks it received, then a workspace job or an engine session acks started, done or blocked.
+- Open elsewhere: the GA4 paid event name (`invariants/ga4.json`; `sign_up` is verified, 12 November), and the Wave 2 fields Control Center was asked to name on 29 October, not re-checked since (`docs/briefs/2026-10-29-wave2-content-engine-and-control-center.md`).
+- North Star check (2026-11-13): holds.
+
+## Read next
+
+- `docs/NORTH_STAR.md`: the North Star, its number and its weekly ladder.
+- `README.md`: what this repository is and how it runs.
+- `docs/history/LOG.md`: what this page used to say, verbatim.
+
+## Do not trust
+
+Do not treat old draft IDs as immutable creative approvals: the Instagram and LinkedIn pilot revisions supersede their preserved before states. The rejected TikTok image revision and prior X draft remain held. Do not infer completed audit coverage, live automated posting or financial ROI from a prepared review pack. The maker's failed runs from 30 October to 11 November were the loud hold for weeks whose mix plan or slots record never reached Control Center, not a fault in its code; since 12 November a week with no approved mix is drafted from the standing plan instead (`docs/MAKER.md`, "With no approved mix").
+# Codex brief: the three cover scenes
+
+Content-engine `docs/CAROUSEL-STANDARD.md`, "The cover card is a scene, not a slide": card 1 is a full-bleed picture of
+one funny, specific scene that carries the story's idea at a glance. A generated cover shows the house robot or no robot
+at all. Real people are left out. No words, letters or logos in the picture (one prop word at most). House tones: ink
+shadows, with the piece's series colour as the light. Composition: the scene lives in the TOP HALF; the lower half is
+dark, quiet, near-black green-ink (#0C1512), so a headline can sit over it. Nothing important below the middle.
+Photographic, tactile, editorial still life; not a cartoon, not glossy 3D render, not a stock photo.
+
+Make each with your image generation tool, portrait 4:5 (1080 x 1350 or larger at that ratio), and save as PNG:
+
+1. `mon/devices/cover.png`. A smartphone standing upright alone on a small wooden auction block on an
+   empty stage, a paper lot tag tied to it with string, one hard spotlight from above in warm butter-yellow (#FFD84D)
+   light, a few speech-bubble shapes made of paper fallen on the floor around the block like confetti after the party.
+   The phone screen is dark. Mood: the sale of what's left. Top half only; lower half fades to dark ink.
+2. `wed/devices/cover.png` (the house robot). Use the two reference photos `kit/robot-standing.png` and
+   `kit/robot-theatre.png` as the robot: the same hand-sewn cream felt robot with grey patches, blank dark visor, the
+   unpicked seam and its three hanging threads. Do not invent a different robot. Scene: a small club stage seen from
+   the side, a glamorous singer seen only as a silhouette from behind at the microphone in a lilac (#B7A6FF)
+   spotlight; tucked under the stage lip, half hidden, the little felt robot is humming into its own tiny microphone.
+   Funny and warm. Top half only; lower half fades to dark ink.
+3. `fri/devices/cover.png`. A three-step corporate winners' podium on an office carpet under a coral
+   (#FF6A4D) spotlight; on the top step stands a small grey toy rat, proud, with no tail; on the floor in front of the
+   podium, a neat pile of loose cut-off toy rat tails like spent tickets. Deadpan, a little absurd, not gory. Top half
+   only; lower half fades to dark ink.
+
+Also write `covers.json`: for each cover, the prompt you used, the reference image paths (wed only), the model or tool
+name and the output file's sha256. Never: touch any other file, use the network beyond your image tool, run git, publish.
+---
+name: "imagegen"
+description: "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, or derive visual variants from references, and the output should be a bitmap asset rather than repo-native code or vector. Do not use when the task is better handled by editing existing SVG/vector/code-native assets, extending an established icon or logo system, or building the visual directly in HTML/CSS/canvas."
+---
+
+# Image Generation Skill
+
+Generates or edits images for the current project (for example website assets, game assets, UI mockups, product mockups, wireframes, logo design, photorealistic images, or infographics).
+
+## Top-level modes and rules
+
+This skill has exactly two top-level modes:
+
+- **Default built-in tool mode (preferred):** built-in `image_gen` tool for image generation, editing, and transparent-image requests. Does not require `OPENAI_API_KEY`.
+- **Fallback CLI mode:** `scripts/image_gen.py` CLI. Use when the user explicitly asks for or confirms the CLI/API/model path. Requires `OPENAI_API_KEY`.
+
+Within CLI fallback, the CLI exposes three subcommands:
+
+- `generate`
+- `edit`
+- `generate-batch`
+
+Rules:
+- Use the built-in `image_gen` tool by default for normal image generation and editing requests.
+- Do not switch to CLI fallback for ordinary quality, size, or file-path control.
+- For transparent images, ask built-in `image_gen` for a transparent background and preserve the generated alpha.
+- Never silently switch from built-in `image_gen` or CLI `gpt-image-2` to CLI `gpt-image-1.5`; ask the user first unless they explicitly requested `gpt-image-1.5`.
+- The word `batch` by itself does not mean CLI fallback. If the user asks for many assets or says to batch-generate assets without explicitly asking for CLI/API/model controls, stay on the built-in path and issue one built-in call per requested asset or variant.
+- If the built-in tool fails or is unavailable, tell the user the CLI fallback exists and that it requires `OPENAI_API_KEY`. Proceed only if the user explicitly asks for that fallback.
+- If the user explicitly asks for CLI mode, use the bundled `scripts/image_gen.py` workflow. Do not create one-off SDK runners.
+- Never modify `scripts/image_gen.py`. If something is missing, ask the user before doing anything else.
+
+Built-in save-path policy:
+- In built-in tool mode, Codex saves generated images under `$CODEX_HOME/*` by default.
+- Do not describe or rely on OS temp as the default built-in destination.
+- Do not describe or rely on a destination-path argument (if any) on the built-in `image_gen` tool. If a specific location is needed, generate first and then move or copy the selected output from `$CODEX_HOME/generated_images/...`.
+- Save-path precedence in built-in mode:
+  1. If the user names a destination, move or copy the selected output there.
+  2. If the image is meant for the current project, move or copy the final selected image into the workspace before finishing.
+  3. If the image is only for preview or brainstorming, render it inline; the underlying file can remain at the default `$CODEX_HOME/*` path.
+- Never leave a project-referenced asset only at the default `$CODEX_HOME/*` path.
+- Do not overwrite an existing asset unless the user explicitly asked for replacement; otherwise create a sibling versioned filename such as `hero-v2.png` or `item-icon-edited.png`.
+
+Shared prompt guidance for both modes lives in `references/prompting.md` and `references/sample-prompts.md`.
+
+Fallback-only docs/resources for CLI mode:
+- `references/cli.md`
+- `references/image-api.md`
+- `references/codex-network.md`
+- `scripts/image_gen.py`
+
+## When to use
+- Generate a new image (concept art, product shot, cover, website hero)
+- Generate a new image using one or more reference images for style, composition, or mood
+- Edit an existing image (inpainting, lighting or weather transformations, background replacement, object removal, compositing, transparent background)
+- Produce many assets or variants for one task
+
+## When not to use
+- Extending or matching an existing SVG/vector icon set, logo system, or illustration library inside the repo
+- Creating simple shapes, diagrams, wireframes, or icons that are better produced directly in SVG, HTML/CSS, or canvas
+- Making a small project-local asset edit when the source file already exists in an editable native format
+- Any task where the user clearly wants deterministic code-native output instead of a generated bitmap
+
+## Decision tree
+
+Think about two separate questions:
+
+1. **Intent:** is this a new image or an edit of an existing image?
+2. **Execution strategy:** is this one asset or many assets/variants?
+
+Intent:
+- If the user wants to modify an existing image while preserving parts of it, treat the request as **edit**.
+- If the user provides images only as references for style, composition, mood, or subject guidance, treat the request as **generate**.
+- If the user provides no images, treat the request as **generate**.
+
+Built-in edit semantics:
+- Built-in edit mode is for images already visible in the conversation context, such as attached images or images generated earlier in the thread.
+- If the user wants to edit a local image file with the built-in tool, first load it with built-in `view_image` tool so the image is visible in the conversation context, then proceed with the built-in edit flow.
+- Do not promise arbitrary filesystem-path editing through the built-in tool.
+- If a local file still needs direct file-path control, masks, or other explicit CLI-only parameters, use the explicit CLI fallback only when the user asks for it.
+- For edits, preserve invariants aggressively and save non-destructively by default.
+
+Execution strategy:
+- In the built-in default path, produce many assets or variants by issuing one `image_gen` call per requested asset or variant.
+- In the CLI fallback path, use the CLI `generate-batch` subcommand only when the user explicitly chose CLI mode and needs many prompts/assets.
+- For many distinct assets, do not use `n` as a substitute for separate prompts. `n` is for variants of one prompt; distinct assets need distinct built-in calls or distinct CLI `generate-batch` jobs.
+
+Assume the user wants a new image unless they clearly ask to change an existing one.
+
+## Workflow
+1. Decide the top-level mode: built-in by default, including transparent-output requests; fallback CLI only if explicitly requested or confirmed.
+2. Decide the intent: `generate` or `edit`.
+3. Decide whether the output is preview-only or meant to be consumed by the current project.
+4. Decide the execution strategy: single asset vs repeated built-in calls vs CLI `generate-batch`.
+5. Collect inputs up front: prompt(s), exact text (verbatim), constraints/avoid list, and any input images.
+6. For every input image, label its role explicitly:
+   - reference image
+   - edit target
+   - supporting insert/style/compositing input
+7. If the edit target is only on the local filesystem and you are staying on the built-in path, inspect it with `view_image` first so the image is available in conversation context.
+8. If the user asked for a photo, illustration, sprite, product image, banner, or other explicitly raster-style asset, use `image_gen` rather than substituting SVG/HTML/CSS placeholders. If the request is for an icon, logo, or UI graphic that should match existing repo-native SVG/vector/code assets, prefer editing those directly instead.
+9. Augment the prompt based on specificity:
+   - If the user's prompt is already specific and detailed, normalize it into a clear spec without adding creative requirements.
+   - If the user's prompt is generic, add tasteful augmentation only when it materially improves output quality.
+10. Use the built-in `image_gen` tool by default.
+11. For transparent-output requests, ask built-in `image_gen` for a transparent background and preserve the generated alpha channel.
+12. Inspect outputs and validate: subject, style, composition, text accuracy, and invariants/avoid items.
+13. Iterate with a single targeted change, then re-check.
+14. For preview-only work, render the image inline; the underlying file may remain at the default `$CODEX_HOME/generated_images/...` path.
+15. For project-bound work, move or copy the selected artifact into the workspace and update any consuming code or references. Never leave a project-referenced asset only at the default `$CODEX_HOME/generated_images/...` path.
+16. For batches or multi-asset requests, persist every requested deliverable final in the workspace unless the user explicitly asked to keep outputs preview-only. Discarded variants do not need to be kept unless requested.
+17. If the user explicitly chooses or confirms the CLI fallback, then use the fallback-only docs for model, quality, size, `input_fidelity`, masks, output format, output paths, and network setup.
+18. Always report the final saved path(s) for any workspace-bound asset(s), plus the final prompt or prompt set and whether the built-in tool or fallback CLI mode was used.
+
+## Transparent image requests
+
+Ask built-in `image_gen` for a genuinely transparent background and preserve its alpha.
+
+## Prompt augmentation
+
+Reformat user prompts into a structured, production-oriented spec. Make the user's goal clearer and more actionable, but do not blindly add detail.
+
+Treat this as prompt-shaping guidance, not a closed schema. Use only the lines that help, and add a short extra labeled line when it materially improves clarity.
+
+### Specificity policy
+
+Use the user's prompt specificity to decide how much augmentation is appropriate:
+
+- If the prompt is already specific and detailed, preserve that specificity and only normalize/structure it.
+- If the prompt is generic, you may add tasteful augmentation when it will materially improve the result.
+
+Allowed augmentations:
+- composition or framing hints
+- polish level or intended-use hints
+- practical layout guidance
+- reasonable scene concreteness that supports the stated request
+
+Not allowed augmentations:
+- extra characters or objects that are not implied by the request
+- brand names, slogans, palettes, or narrative beats that are not implied
+- arbitrary side-specific placement unless the surrounding layout supports it
+
+## Use-case taxonomy (exact slugs)
+
+Classify each request into one of these buckets and keep the slug consistent across prompts and references.
+
+Generate:
+- photorealistic-natural — candid/editorial lifestyle scenes with real texture and natural lighting.
+- product-mockup — product/packaging shots, catalog imagery, merch concepts.
+- ui-mockup — app/web interface mockups and wireframes; specify the desired fidelity.
+- infographic-diagram — diagrams/infographics with structured layout and text.
+- scientific-educational — classroom explainers, scientific diagrams, and learning visuals with required labels and accuracy constraints.
+- ads-marketing — campaign concepts and ad creatives with audience, brand position, scene, and exact tagline/copy.
+- productivity-visual — slide, chart, workflow, and data-heavy business visuals.
+- logo-brand — logo/mark exploration, vector-friendly.
+- illustration-story — comics, children’s book art, narrative scenes.
+- stylized-concept — style-driven concept art, 3D/stylized renders.
+- historical-scene — period-accurate/world-knowledge scenes.
+
+Edit:
+- text-localization — translate/replace in-image text, preserve layout.
+- identity-preserve — try-on, person-in-scene; lock face/body/pose.
+- precise-object-edit — remove/replace a specific element (including interior swaps).
+- lighting-weather — time-of-day/season/atmosphere changes only.
+- background-extraction — transparent background / clean cutout. Ask built-in `image_gen` for actual transparency.
+- style-transfer — apply reference style while changing subject/scene.
+- compositing — multi-image insert/merge with matched lighting/perspective.
+- sketch-to-render — drawing/line art to photoreal render.
+
+## Shared prompt schema
+
+Use the following labeled spec as shared prompt scaffolding for both top-level modes:
+
+```text
+Use case: <taxonomy slug>
+Asset type: <where the asset will be used>
+Primary request: <user's main prompt>
+Input images: <Image 1: role; Image 2: role> (optional)
+Scene/backdrop: <environment>
+Subject: <main subject>
+Style/medium: <photo/illustration/3D/etc>
+Composition/framing: <wide/close/top-down; placement>
+Lighting/mood: <lighting + mood>
+Color palette: <palette notes>
+Materials/textures: <surface details>
+Text (verbatim): "<exact text>"
+Constraints: <must keep/must avoid>
+Avoid: <negative constraints>
+```
+
+Notes:
+- `Asset type` and `Input images` are prompt scaffolding, not dedicated CLI flags.
+- `Scene/backdrop` refers to the visual setting. It is not the same as the fallback CLI `background` parameter, which controls output transparency behavior.
+- Fallback-only execution notes such as `Quality:`, `Input fidelity:`, masks, output format, and output paths belong in the CLI path only. Do not treat them as built-in `image_gen` tool arguments.
+
+Augmentation rules:
+- Keep it short.
+- Add only the details needed to improve the prompt materially.
+- For edits, explicitly list invariants (`change only X; keep Y unchanged`).
+- If any critical detail is missing and blocks success, ask a question; otherwise proceed.
+
+## Examples
+
+### Generation example (hero image)
+```text
+Use case: product-mockup
+Asset type: landing page hero
+Primary request: a minimal hero image of a ceramic coffee mug
+Style/medium: clean product photography
+Composition/framing: wide composition with usable negative space for page copy if needed
+Lighting/mood: soft studio lighting
+Constraints: no logos, no text, no watermark
+```
+
+### Edit example (invariants)
+```text
+Use case: precise-object-edit
+Asset type: product photo background replacement
+Primary request: replace only the background with a warm sunset gradient
+Constraints: change only the background; keep the product and its edges unchanged; no text; no watermark
+```
+
+## Prompting best practices
+- Structure prompt as scene/backdrop -> subject -> details -> constraints.
+- Include intended use (ad, UI mock, infographic) to set the mode and polish level.
+- Use camera/composition language for photorealism.
+- Only use SVG/vector stand-ins when the user explicitly asked for vector output or a non-image placeholder.
+- Quote exact text and specify typography + placement.
+- For tricky words, spell them letter-by-letter and require verbatim rendering.
+- For multi-image inputs, reference images by index and describe how they should be used.
+- For edits, repeat invariants every iteration to reduce drift.
+- Iterate with single-change follow-ups.
+- If the prompt is generic, add only the extra detail that will materially help.
+- If the prompt is already detailed, normalize it instead of expanding it.
+- For CLI fallback only, see `references/cli.md` and `references/image-api.md` for model, `quality`, `input_fidelity`, masks, output format, and output-path guidance.
+- For transparent images, ask built-in `image_gen` for actual transparency and preserve its alpha.
+
+More principles shared by both modes: `references/prompting.md`.
+Copy/paste specs shared by both modes: `references/sample-prompts.md`.
+
+## Guidance by asset type
+Asset-type templates (website assets, game assets, wireframes, logo) are consolidated in `references/sample-prompts.md`.
+
+## gpt-image-2 guidance for CLI fallback
+
+The fallback CLI defaults to `gpt-image-2`.
+
+- Use `gpt-image-2` for new CLI/API workflows unless the user confirms a different model.
+- CLI `gpt-image-2` does not support `background=transparent`; ask before using `gpt-image-1.5` unless the user explicitly requested that model.
+- `gpt-image-2` always uses high fidelity for image inputs; do not set `input_fidelity` with this model.
+- `gpt-image-2` supports `quality` values `low`, `medium`, `high`, and `auto`.
+- Use `quality low` for fast drafts, thumbnails, and quick iterations. Use `medium`, `high`, or `auto` for final assets, dense text, diagrams, identity-sensitive edits, or high-resolution outputs.
+- Square images are typically fastest to generate. Use `1024x1024` for fast square drafts.
+- If the user asks for 4K-style output, use `3840x2160` for landscape or `2160x3840` for portrait.
+- `gpt-image-2` size may be `auto` or `WIDTHxHEIGHT` if all constraints hold: max edge `<= 3840px`, both edges multiples of `16px`, long-to-short ratio `<= 3:1`, total pixels between `655,360` and `8,294,400`.
+
+Popular `gpt-image-2` sizes:
+- `1024x1024` square
+- `1536x1024` landscape
+- `1024x1536` portrait
+- `2048x2048` 2K square
+- `2048x1152` 2K landscape
+- `3840x2160` 4K landscape
+- `2160x3840` 4K portrait
+- `auto`
+
+## Fallback CLI mode only
+
+### Temp and output conventions
+These conventions apply only to the CLI fallback. They do not describe built-in `image_gen` output behavior.
+- Use `tmp/imagegen/` for intermediate files (for example JSONL batches); delete them when done.
+- Write final artifacts under `output/imagegen/`.
+- Use `--out` or `--out-dir` to control output paths; keep filenames stable and descriptive.
+
+### Dependencies
+Prefer `uv` for dependency management in this repo.
+
+Required Python package:
+```bash
+uv pip install openai
+```
+
+Optional for image inspection and downscaling:
+```bash
+uv pip install pillow
+```
+
+Portability note:
+- If you are using the installed skill outside this repo, install dependencies into that environment with its package manager.
+- In uv-managed environments, `uv pip install ...` remains the preferred path.
+
+### Environment
+- `OPENAI_API_KEY` must be set for live API calls.
+- Do not ask the user for `OPENAI_API_KEY` when using the built-in `image_gen` tool.
+- Never ask the user to paste the full key in chat. Ask them to set it locally and confirm when ready.
+
+If the key is missing, give the user these steps:
+1. Create an API key in the OpenAI platform UI: https://platform.openai.com/api-keys
+2. Set `OPENAI_API_KEY` as an environment variable in their system.
+3. Offer to guide them through setting the environment variable for their OS/shell if needed.
+
+If installation is not possible in this environment, tell the user which dependency is missing and how to install it into their active environment.
+
+### Script-mode notes
+- CLI commands + examples: `references/cli.md`
+- API parameter quick reference: `references/image-api.md`
+- Network approvals / sandbox settings for CLI mode: `references/codex-network.md`
+
+## Reference map
+- `references/prompting.md`: shared prompting principles for both modes.
+- `references/sample-prompts.md`: shared copy/paste prompt recipes for both modes.
+- `references/cli.md`: fallback-only CLI usage via `scripts/image_gen.py`.
+- `references/image-api.md`: fallback-only API/CLI parameter reference.
+- `references/codex-network.md`: fallback-only network/sandbox troubleshooting for CLI mode.
+- `scripts/image_gen.py`: fallback-only CLI implementation. Use only when the user explicitly chooses or confirms CLI mode.
+
+codex
+The latest measured result is 1 of 86 subscribers, U5, short by 85. These covers support the North Star’s organic post and share goal. I’m using the imagegen skill, with the house robot references only for Wednesday.
+
+exec
+/bin/bash -lc 'ls -l kit/robot-standing.png kit/robot-theatre.png' in /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+ succeeded in 0ms:
+-rw-r--r-- 1 root root 1234398 Nov 13 16:28 kit/robot-standing.png
+-rw-r--r-- 1 root root  995951 Nov 13 16:28 kit/robot-theatre.png
+
+codex
+All three covers are generated. I’m checking the composition and dimensions, then saving the PNGs and recording their prompts, references and hashes in covers.json.
+
+exec
+/bin/bash -lc "python -c 'from PIL import Image; from pathlib import Path; p=Path(\"/root/.codex/generated_images/01a1d5c9-cb55-7221-b982-134b2795e0eb\"); print([(x.name,Image.open(x).size) for x in p.glob(\"*.png\")])'" in /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+ succeeded in 0ms:
+[('exec-ade13131-33b4-4ceb-b7fb-69122c9d6f3d.png', (1122, 1402)), ('exec-1920fd0f-70b9-4ce4-8a38-7f76a0f78cab.png', (1122, 1402)), ('exec-e41777d7-6c3c-49aa-bd82-7d35e938131d.png', (1122, 1402))]
+
+exec
+/bin/bash -lc "python -c 'import json, hashlib
+from pathlib import Path
+from PIL import Image
+spec=json.loads(\"{\\\"covers\\\":[{\\\"file\\\":\\\"mon/devices/cover.png\\\",\\\"prompt\\\":\\\"Use case: ads-marketing. Create a photographic, tactile editorial still-life carousel cover, portrait 4:5, 1080x1350 or larger at exactly that ratio. Full bleed. All scene subjects and meaningful props entirely in the TOP HALF, with nothing important below the middle. The entire lower half is dark, quiet, near-black green ink (#0C1512), empty for a headline added later. Ink shadows. Not a cartoon, not glossy 3D, not stock photography. No words, letters, numbers, logos or watermarks anywhere. A smartphone standing upright alone on a small wooden auction block on an empty stage, a blank paper lot tag tied to it with string, one hard spotlight from above in warm butter-yellow (#FFD84D) light, a few speech-bubble shapes made of paper fallen on the floor around the block like confetti after the party. The phone screen is dark. Mood: the sale of what'\\''s left. No robot or people.\\\",\\\"reference_image_paths\\\":[],\\\"tool\\\":\\\"image_gen.imagegen\\\",\\\"source\\\":\\\"/root/.codex/generated_images/01a1d5c9-cb55-7221-b982-134b2795e0eb/exec-ade13131-33b4-4ceb-b7fb-69122c9d6f3d.png\\\"},{\\\"file\\\":\\\"wed/devices/cover.png\\\",\\\"prompt\\\":\\\"Use case: ads-marketing. Create a photographic, tactile editorial still-life carousel cover, portrait 4:5, 1080x1350 or larger at exactly that ratio. Full bleed. All scene subjects and meaningful props entirely in the TOP HALF, with nothing important below the middle. The entire lower half is dark, quiet, near-black green ink (#0C1512), empty for a headline added later. Ink shadows. Not a cartoon, not glossy 3D, not stock photography. No words, letters, numbers, logos or watermarks anywhere. Use the two supplied reference photos solely as identity references for the house robot: the exact same hand-sewn cream felt robot with grey patches, blank dark visor, unpicked chest seam and its three hanging purple, yellow and coral threads. Do not invent a different robot. A small club stage seen from the side, a glamorous singer represented only as an anonymous dark silhouette from behind at the microphone in a lilac (#B7A6FF) spotlight; tucked under the stage lip, half hidden, the little felt robot is humming into its own tiny microphone. Funny and warm. The singer has no visible face or identifiable real-person likeness. Fit singer, stage lip and robot entirely above the midpoint, leaving lower half empty dark ink. Strict layout correction: scale the complete club scene down so the robot, including hands, feet, threads and microphone, ends at 45% of total canvas height. The stage and singer sit above it. Bottom 55% must be empty dark ink. Do not let the robot cross the horizontal midpoint.\\\",\\\"reference_image_paths\\\":[\\\"kit/robot-standing.png\\\",\\\"kit/robot-theatre.png\\\"],\\\"tool\\\":\\\"image_gen.imagegen\\\",\\\"source\\\":\\\"/root/.codex/generated_images/01a1d5c9-cb55-7221-b982-134b2795e0eb/exec-864464ba-dfd0-469d-a5b0-58ef197eea09.png\\\"},{\\\"file\\\":\\\"fri/devices/cover.png\\\",\\\"prompt\\\":\\\"Use case: ads-marketing. Create a photographic, tactile editorial still-life carousel cover, portrait 4:5, 1080x1350 or larger at exactly that ratio. Full bleed. All scene subjects and meaningful props entirely in the TOP HALF, with nothing important below the middle. The entire lower half is dark, quiet, near-black green ink (#0C1512), empty for a headline added later. Ink shadows. Not a cartoon, not glossy 3D, not stock photography. No words, letters, numbers, logos or watermarks anywhere. A three-step corporate winners'\\'' podium on an office carpet under a coral (#FF6A4D) spotlight; on the top step stands a small grey toy rat, proud, with no tail; on the floor in front of the podium, a neat pile of loose cut-off toy rat tails like spent tickets. The tails are clearly toy fabric or rubber props, not flesh. Deadpan, a little absurd, not gory. Podium steps have no numbers or markings. No robot or people.\\\",\\\"reference_image_paths\\\":[],\\\"tool\\\":\\\"image_gen.imagegen\\\",\\\"source\\\":\\\"/root/.codex/generated_images/01a1d5c9-cb55-7221-b982-134b2795e0eb/exec-e41777d7-6c3c-49aa-bd82-7d35e938131d.png\\\"}]}\")
+for item in spec['\\''covers'\\'']:
+    dest=Path(item['\\''file'\\''])
+    dest.parent.mkdir(parents=True,exist_ok=True)
+    with Image.open(item.pop('\\''source'\\'')) as im:
+        im.resize((1080,1350),Image.Resampling.LANCZOS).save(dest,format='\\''PNG'\\'')
+    item['\\''sha256'\\'']=hashlib.sha256(dest.read_bytes()).hexdigest()
+    item['\\''width'\\'']=1080
+    item['\\''height'\\'']=1350
+Path('\\''covers.json'\\'').write_text(json.dumps(spec,indent=2)+'\\''\\n'\\'')
+print(json.dumps([{k:v for k,v in x.items() if k in ('\\''file'\\'','\\''sha256'\\'','\\''width'\\'','\\''height'\\'')} for x in spec['\\''covers'\\'']],indent=2))'" in /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+ succeeded in 1419ms:
+[
+  {
+    "file": "mon/devices/cover.png",
+    "sha256": "cca356bae35503cba677aca564e90e8891a335354eb77308ccc1d043597d0ae7",
+    "width": 1080,
+    "height": 1350
+  },
+  {
+    "file": "wed/devices/cover.png",
+    "sha256": "b129aa5632e7f70920ed5a2dd5c0a29e8c7be503147cb967beeff8c4da70b1fb",
+    "width": 1080,
+    "height": 1350
+  },
+  {
+    "file": "fri/devices/cover.png",
+    "sha256": "4c2b44673a9e3ef9197473bedf93e19efbfcd88dd0026f54ea52227a28650627",
+    "width": 1080,
+    "height": 1350
+  }
+]
+
+codex
+Saved all three generated covers at 1080 × 1350:
+
+- `mon/devices/cover.png`
+- `wed/devices/cover.png`
+- `fri/devices/cover.png`
+
+`covers.json` records the prompts, Wednesday’s reference paths, tool name and SHA-256 hashes. The covers are ready for carousel assembly.
+tokens used
+36,191
+Saved all three generated covers at 1080 × 1350:
+
+- `mon/devices/cover.png`
+- `wed/devices/cover.png`
+- `fri/devices/cover.png`
+
+`covers.json` records the prompts, Wednesday’s reference paths, tool name and SHA-256 hashes. The covers are ready for carousel assembly.

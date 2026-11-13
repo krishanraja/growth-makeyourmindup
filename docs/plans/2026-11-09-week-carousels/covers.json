@@ -1,0 +1,34 @@
+{
+  "covers": [
+    {
+      "file": "mon/devices/cover.png",
+      "prompt": "Use case: ads-marketing. Create a photographic, tactile editorial still-life carousel cover, portrait 4:5, 1080x1350 or larger at exactly that ratio. Full bleed. All scene subjects and meaningful props entirely in the TOP HALF, with nothing important below the middle. The entire lower half is dark, quiet, near-black green ink (#0C1512), empty for a headline added later. Ink shadows. Not a cartoon, not glossy 3D, not stock photography. No words, letters, numbers, logos or watermarks anywhere. A smartphone standing upright alone on a small wooden auction block on an empty stage, a blank paper lot tag tied to it with string, one hard spotlight from above in warm butter-yellow (#FFD84D) light, a few speech-bubble shapes made of paper fallen on the floor around the block like confetti after the party. The phone screen is dark. Mood: the sale of what's left. No robot or people.",
+      "reference_image_paths": [],
+      "tool": "image_gen.imagegen",
+      "sha256": "cca356bae35503cba677aca564e90e8891a335354eb77308ccc1d043597d0ae7",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "wed/devices/cover.png",
+      "prompt": "Use case: ads-marketing. Create a photographic, tactile editorial still-life carousel cover, portrait 4:5, 1080x1350 or larger at exactly that ratio. Full bleed. All scene subjects and meaningful props entirely in the TOP HALF, with nothing important below the middle. The entire lower half is dark, quiet, near-black green ink (#0C1512), empty for a headline added later. Ink shadows. Not a cartoon, not glossy 3D, not stock photography. No words, letters, numbers, logos or watermarks anywhere. Use the two supplied reference photos solely as identity references for the house robot: the exact same hand-sewn cream felt robot with grey patches, blank dark visor, unpicked chest seam and its three hanging purple, yellow and coral threads. Do not invent a different robot. A small club stage seen from the side, a glamorous singer represented only as an anonymous dark silhouette from behind at the microphone in a lilac (#B7A6FF) spotlight; tucked under the stage lip, half hidden, the little felt robot is humming into its own tiny microphone. Funny and warm. The singer has no visible face or identifiable real-person likeness. Fit singer, stage lip and robot entirely above the midpoint, leaving lower half empty dark ink. Strict layout correction: scale the complete club scene down so the robot, including hands, feet, threads and microphone, ends at 45% of total canvas height. The stage and singer sit above it. Bottom 55% must be empty dark ink. Do not let the robot cross the horizontal midpoint.",
+      "reference_image_paths": [
+        "kit/robot-standing.png",
+        "kit/robot-theatre.png"
+      ],
+      "tool": "image_gen.imagegen",
+      "sha256": "b129aa5632e7f70920ed5a2dd5c0a29e8c7be503147cb967beeff8c4da70b1fb",
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "fri/devices/cover.png",
+      "prompt": "Use case: ads-marketing. Create a photographic, tactile editorial still-life carousel cover, portrait 4:5, 1080x1350 or larger at exactly that ratio. Full bleed. All scene subjects and meaningful props entirely in the TOP HALF, with nothing important below the middle. The entire lower half is dark, quiet, near-black green ink (#0C1512), empty for a headline added later. Ink shadows. Not a cartoon, not glossy 3D, not stock photography. No words, letters, numbers, logos or watermarks anywhere. A three-step corporate winners' podium on an office carpet under a coral (#FF6A4D) spotlight; on the top step stands a small grey toy rat, proud, with no tail; on the floor in front of the podium, a neat pile of loose cut-off toy rat tails like spent tickets. The tails are clearly toy fabric or rubber props, not flesh. Deadpan, a little absurd, not gory. Podium steps have no numbers or markings. No robot or people.",
+      "reference_image_paths": [],
+      "tool": "image_gen.imagegen",
+      "sha256": "4c2b44673a9e3ef9197473bedf93e19efbfcd88dd0026f54ea52227a28650627",
+      "width": 1080,
+      "height": 1350
+    }
+  ]
+}

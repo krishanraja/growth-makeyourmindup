@@ -1,0 +1,1704 @@
+Reading prompt from stdin...
+OpenAI Codex v0.167.2
+--------
+workdir: /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1d5c9-cb01-75b2-84d0-21c7be4ca421
+--------
+user
+You are reviewing carousel cards for a layperson swiping in ten seconds. Read BRIEF.md and the three deck.json files here. The attached images are contact sheets of the rendered cards (mon, wed, fri, in that order; card 1 on each is a grey placeholder for a cover made separately, ignore it). For every other card judge: does the picture show the headline's point at a glance at phone size; is anything cramped, misaligned, clipped or overlapping; is any number not to scale or not in the deck. Return a short list: day, card, problem, the concrete fix in devices.py. Only real problems; say fine for cards that are fine. Do not edit files.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+codex
+I’ll read the North Star, brief and deck files, then check each non-cover card for visual clarity, layout and numerical accuracy. This review supports the subscriber goal by checking whether the carousels make sense on a quick swipe. I won’t edit files.
+
+exec
+/bin/bash -lc "pwd; rg --files -g 'BRIEF.md' -g 'deck.json' -g 'devices.py' -g 'NORTH_STAR.md' -g 'NOW.md' -g 'ASSET-STORAGE.md' -g 'SESSION-HANDOVER.md' /home/user/growth-makeyourmindup" in /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+ succeeded in 319ms:
+/home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+/home/user/growth-makeyourmindup/docs/SESSION-HANDOVER.md
+/home/user/growth-makeyourmindup/docs/NORTH_STAR.md
+/home/user/growth-makeyourmindup/docs/ASSET-STORAGE.md
+/home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels/fri/deck.json
+/home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels/mon/deck.json
+/home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels/devices.py
+/home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels/BRIEF.md
+/home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels/wed/deck.json
+/home/user/growth-makeyourmindup/NOW.md
+
+exec
+/bin/bash -lc 'cat /home/user/growth-makeyourmindup/docs/NORTH_STAR.md /home/user/growth-makeyourmindup/NOW.md /home/user/growth-makeyourmindup/docs/ASSET-STORAGE.md /home/user/growth-makeyourmindup/docs/SESSION-HANDOVER.md BRIEF.md mon/deck.json wed/deck.json fri/deck.json devices.py' in /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+ succeeded in 0ms:
+# North Star
+
+Status: Current
+Owner: Krish Raja
+Last verified: 2026-10-18
+
+> By 31 December 2026, the publication grows every week from posts people share because they are useful, with zero paid boosts, and the right leaders make up most of the new subscribers.
+
+Set by Krish on 18 October 2026. It is not reached yet. It is what every session in this repository works toward.
+
+This repository serves [makeyourmindup's North Star](https://github.com/krishanraja/makeyourmindup/blob/main/docs/NORTH_STAR.md). The lines above are this repository's part of it.
+
+## The number
+
+**New publication subscribers a week from organic posts and shares, zero paid**: 2,500 by 28 December 2026, on a front-loaded weekly ladder. Checkpoints: 16 Nov 2026: 271; 14 Dec 2026: 1,312; 28 Dec 2026: 2,500.
+
+```yaml north-star-metric
+metric: "New publication subscribers a week from organic posts and shares, zero paid"
+unit: count
+direction: up
+target: 2500
+deadline: 2026-12-28
+ladder_shape: front-loaded
+source: "Substack subscriber growth by source"
+status: active
+ladder:
+  - [2026-10-26, 25]
+  - [2026-11-02, 86]
+  - [2026-11-09, 162]
+  - [2026-11-16, 271]
+  - [2026-11-23, 424]
+  - [2026-11-30, 636]
+  - [2026-12-07, 925]
+  - [2026-12-14, 1312]
+  - [2026-12-21, 1826]
+  - [2026-12-28, 2500]
+```
+
+Urgency (U1 to U5) is worked out every week from where the number stands against that week's target, by [the harness contract](https://github.com/krishanraja/ai-harness/blob/main/contract/north-star-metric.md). Set by Krish on 23 October 2026.
+
+## How to use it
+
+- Read it before any work, every session.
+- Before you start, say which part of it the task moves. If the task moves nothing toward it, say so first and let Krish decide.
+- Prefer the work that moves it furthest, and close each session by noting what moved.
+- Only Krish changes this file. Record his ruling in the commit body as `Ruling (Krish, YYYY-MM-DD): ...`.
+- When it is reached, say so and ask Krish for the next one.
+---
+repo: krishanraja/growth-makeyourmindup
+product: makeyourmindup growth engine
+as_of: 2026-11-13
+head: 83d7d77
+lifecycle: live
+production_url: none
+state_doc: README.md
+history_log: docs/history/LOG.md
+truth_files: [docs/NORTH_STAR.md]
+authority_order: [docs/NORTH_STAR.md, README.md]
+steward: https://github.com/krishanraja/ai-harness/blob/main/docs/steward/RUNBOOK.md
+---
+
+# makeyourmindup growth engine: where it is right now
+
+## What it is
+
+The makeyourmindup growth engine: it plans, schedules, posts and measures the work that brings new readers to the publication, and drafts its outreach and engagement, with no paid boosts. It runs as four engines, one per session (Acquisition, Engagement, Publishing, and Measurement and Allocation), beside ten GitHub Actions workflows and ten PC automations: nine kept until W46, and the weekly Substack read (`jobs/subscribers.md`), which stands.
+
+## Who it is for and why it matters for Mindmake
+
+Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
+
+## Where it is right now (as of 2026-11-13)
+
+<!-- north-star-state {"week_of": "2026-11-02", "week_target": 86, "current": 1, "current_as_of": "2026-11-08", "current_source": "Substack Growth sources, new subscribers, Custom... (2026-11-02 to 2026-11-08), read 2026-11-12: all sources 1, organic 1", "urgency": 5, "urgency_reason": "1 of 86; under two fifths two weeks running"} --> **North Star number: U5, stalled.** 1 of 86 new publication subscribers in the week of 2 November 2026 from organic posts and shares, the whole week to 8 November 2026.
+
+The last reading is the whole week of 2 November: 1 new subscriber of 86, all sources and organic alike, read from Substack on 12 November (`jobs/subscribers.md`). The week of 9 November (162 on the ladder in `docs/NORTH_STAR.md`) is not measured yet: the engine's own reading of an unmeasured week is U4 (`engine/intensity.py`), raised to U5 by Control Center's directive, so the runs go at U5 and the subscriber push is on. The line above changes only on a measured reading: `growth.py run subscribers ingest` or `growth.py run northstar` from a capture, or Control Center's North Star refresh from this engine's own live report.
+
+Lifecycle: live. The detail is in `README.md`.
+
+- The GitHub runner takes back its own undecided asks once their week or window is over (Ruling, Krish, 2026-11-12), through the protocol's withdrawn[] with a one-line reason, and nothing new is asked about a week that has ended; its first run takes back the three parts of the mix plan for the week of 2 November. (2026-11-13) (2026-11-13)
+- The engine proposes the publication's AI-answer questions for Krish's approval (Ruling, Krish, 2026-11-13). Twenty questions readers type or ask about the three series and Saturday's good news, each with its evidence and best piece (docs/ai-answers/2026-11-13-proposed-questions.md), go to his list once as one strategy ask (config/ai-answer-questions-proposed.json); on his yes, or his amended version, the runner writes exactly those into config/ai-answer-questions.json, asks AEO-Engine to track them and closes the ask, and the control-center workflow commits that one file. (2026-11-13)
+- The publication's AI answers are AEO-Engine's, the one AI-answers specialist (Ruling, Krish, 2026-11-12): the runner reads the standing from the directive (protocol 1.22.0) and asks AEO to track the real reader questions in config/ai-answer-questions.json, which jobs/answer.md fills; none is on file yet, so nothing is asked. The protocol copy in docs/control-center/ is Control Center's at 36df34bc (protocol 1.22.0). (2026-11-13)
+- Krish allowed one DM reply to someone who commented the keyword on that post (Ruling, Krish, 2026-11-13) and chose ManyChat, on a trial, for the keyword-DM test. Rule 5 in AGENTS.md and research.md, invariant R07 and the corpus digest now carry the exception, and the plan carries the setup. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
+- Every carousel and Short the maker makes is judged by content-engine's 10/10 judges first; a fail is never made and holds loudly as judges_failed with the reasons kept privately, a pass is bound to its Buffer post, and the board tick reports every sent post so content-engine counts the judged ones live on its North Star. (2026-11-13)
+- LinkedIn keeps its profile as Krish has it; the channel audit no longer asks him to paste a link there. (2026-11-13)
+- The @adilet.fndr teardown is saved (`docs/research/2026-11-12-adilet-fndr-teardown.md`): eight reels brought about 89% of his net follows and one hook, run three times, 62%; around them, a comment-keyword DM funnel, an email capture and a $67 product. The keyword-DM test is drafted (`docs/plans/2026-11-13-keyword-dm-test.md`) and planned in `experiments.json` as `keyword-dm`, so the engine puts it on Krish's list to decide. It needs his ruling on `research.md` rule 5 (no automated DMs) before anything else, then the DM tool, its spend and the account connection, each his yes. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
+- Buffer branded Threads connection @makeyourmind.up verified connected and unlocked; engine now pins its new channel ID and rejects the previous connection. (2026-11-13)
+
+## What changed recently
+
+- 2026-11-13 An ask about a past week held every live ask behind it on Krish's one list (one ask per engine at a time), so the AI-answer questions and the keyword-DM experiment waited behind a mix plan for a week that was over. engine/stale_asks.py; docs/ENGINE.md, "Nothing stale on his list".
+- 2026-11-13 AGENTS.md, research.md, invariants/rules.json, knowledge/corpus/external-growth-skills.md, experiments.json, docs/plans/2026-11-13-keyword-dm-test.md, docs/GET-GOING.md (Step 0.4).
+- 2026-11-13 Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." engine/run/judges.py, the maker's step 6b, board tick's live report.
+- 2026-11-13 Krish connected the correct account; live provider readback closed the connection hold. No post was created, moved or published.
+- 2026-11-13 Krish ruled Threads always posts to makeyourmindup. Private receipts stay under ignored .scratch/channel-audit/profile-links-20261113.
+- 2026-11-12 Krish, 2026-11-12: "make sure everything's a cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading left in there".
+- 2026-11-12 The full-week organic reading is now measured and recorded; the current week remains unmeasured.
+- 2026-11-12 five piece kits had ended five different ways and memes carried the logo at the top; the palette Krish approved on 12 Nov allows one close and no logo at the top.
+- 2026-11-12 58 posts went out through Buffer from 2 to 11 November with no subscribe ask, because hand-run drafts skipped preflight; the gate now sits on the path they took.
+- 2026-11-12 `engine/cc_loop.py`, `engine/control_center.py`, `engine/mix.py`, the protocol and schema copies in `docs/control-center/`, `docs/ENGINE.md`, `docs/MIX.md`, `jobs/daily-pack.md`, tests.
+
+## What is next and what is waiting on Krish
+
+- Next (2026-11-13): Krish answers the standing W45 to W52 plan, now first in this engine's turn on his list, or the experiment asks behind it.
+- Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
+- Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
+- Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).
+- Waiting on Krish (5 November): his ruling on how many prefilled LinkedIn drafts may be open at once. The engine review keeps every ready draft open in its tab, while BROWSER.md allows one prefilled box at a time; BROWSER.md holds until he rules.
+- Waiting on Krish (30 October): whether a past piece's repurposed carousel belongs in the Sunday mix or goes live per post. Today it is not in the mix, so the derived lane neither makes nor releases it.
+- Waiting on Krish (29 October, not re-checked since): six set-up answers. The Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); the Buffer plan purchase, his click; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry.
+- Waiting on Krish (11 November, optional): one instruction from Control Centre's Engine drawer, to prove protocol 1.20.0 live end to end. The runner acks it received, then a workspace job or an engine session acks started, done or blocked.
+- Open elsewhere: the GA4 paid event name (`invariants/ga4.json`; `sign_up` is verified, 12 November), and the Wave 2 fields Control Center was asked to name on 29 October, not re-checked since (`docs/briefs/2026-10-29-wave2-content-engine-and-control-center.md`).
+- North Star check (2026-11-13): holds.
+
+## Read next
+
+- `docs/NORTH_STAR.md`: the North Star, its number and its weekly ladder.
+- `README.md`: what this repository is and how it runs.
+- `docs/history/LOG.md`: what this page used to say, verbatim.
+
+## Do not trust
+
+Do not treat old draft IDs as immutable creative approvals: the Instagram and LinkedIn pilot revisions supersede their preserved before states. The rejected TikTok image revision and prior X draft remain held. Do not infer completed audit coverage, live automated posting or financial ROI from a prepared review pack. The maker's failed runs from 30 October to 11 November were the loud hold for weeks whose mix plan or slots record never reached Control Center, not a fault in its code; since 12 November a week with no approved mix is drafted from the standing plan instead (`docs/MAKER.md`, "With no approved mix").
+# Growth asset storage and session closeout
+
+Ruling: Krish, 27 October 2026. Preserve session learning and assets in structured
+places every session. This applies to interactive work and scheduled jobs.
+
+## One home per responsibility
+
+- **One Posts folder for the whole week** (Ruling, Krish, 2026-11-03: "Ultimately, the entire week's schedule should
+  just be in one Posts folder, well named. We don't need to pretend that this is two different engines. ... From now
+  on, we should just have Tuesday, Thursday, and Saturday also going into the posts folder with a similar naming
+  convention and contents."). Every finished off-day asset is filed with content-engine's
+  `scripts/post-pack/send.py` into the library's `3 Posts`, as `YYYY-MM-DD Tue off.day - Subject` (Thu and Sat
+  likewise), with the series days' sections (`3 Video`, `4 Social`). The board links that folder.
+- **Brand kit (Krish, 2026-11-11):** one canonical kit, `1 Brand kit (permanent)`. Find any brand asset
+  (logo, colour, font, photo, template, sting, character, music, channel art) through
+  `social/brand/library.json`, by Drive id; why and what moved is in `docs/BRAND-KIT.md`. Never take
+  brand from anywhere else; `00_Brand-Assets` is deleted and music lives in the kit's `Music`.
+- **Older Growth library:** [makeyourmindup / 4 Growth](https://drive.google.com/drive/folders/1Ck0Eulgcs5pFIpS_Ds1vJ6mEAW__Xjwy)
+  holds earlier distribution copies. Do not file new posts there. Its
+  `mocks` folder holds the approved mock files the maker reads
+  (`docs/MAKER.md`).
+- **Production source:** Content Engine retains its existing production folders,
+  manifests, editable sources and standards. Growth references them and stores
+  immutable distribution exports only when needed for delivery. Never move or
+  rename the production originals or make a competing production canon.
+- **Operating rules:** this repository, especially `social/` and its narrow guides.
+- **Private evidence and recovery:** this repository's ignored `.scratch/`
+  directories. Never upload an entire private run or session backup into a shared
+  asset folder. These files must survive worktree/chat cleanup.
+
+The supplied Drive folder was verified on 27 October 2026 as owned by Krish Raja
+and editable by anyone with its link. Preserve sharing settings. Only publication
+assets and sanitized delivery notes belong there under the current permissions.
+Recheck access before uploading sensitive material; do not treat a folder named
+Private as an access boundary. Do not put internal metrics, account inventories,
+raw browser evidence, credentials or operational journals in this library.
+
+## Every campaign
+
+Use `YYYY-MM-DD Day off.day - Topic` beneath `3 Posts` (above). Put the exact approved
+delivery PDF/images/video, exact post copy and separate comment copy there.
+Use explicit revision names such as `approved v3`, never ambiguous `final-final`.
+Keep a concise README explaining asset order, primary continuation and source
+links. Store a manifest with SHA-256, byte size, revision, source identity and
+approval scope. Approval of creative does not imply publication or scheduling.
+
+Keep candidates/rejections and production prompts in their owning private or
+Content Engine archive. They must never appear beside approved files without
+an explicit historical/rejected label. Source filenames and bytes are preserved.
+If an approved file changes, create a new revision and obtain the required review.
+Do not overwrite the approved revision or silently update its approval digest.
+
+Use Drive tools to inspect existing children before writes, prevent duplicates,
+upload to the verified parent, and independently read back names, parents and
+sizes (checksums when exposed). Record returned IDs/URLs privately. A local copy
+or successful upload request alone is not proof of a verified cloud archive.
+If Drive is unavailable, preserve locally and record the exact upload hold.
+
+## Every session closeout
+
+1. Preserve the exact delivery package, candidates and feedback before cleanup.
+   Create a dated private inventory with original paths, sizes and hashes; verify
+   copied bytes. Retain old journals and uncertain-save attempt budgets.
+2. Store reusable distribution lessons in `social/lessons/`, link them from their
+   owning channel/format/tool, and run `python growth.py social check`. Separate
+   user rules, observed tool behaviour and untested performance hypotheses.
+3. Save creative feedback for Content Engine through its existing handoff. Growth
+   records the distribution requirement; Content Engine owns production craft.
+4. Keep `docs/SESSION-HANDOVER.md` and `NOW.md` pointing to the latest dated private
+   closeout. Record exactly what is draft, approved, scheduled, published, held or
+   unknown. Saved IDs are checkpoints; reconcile live state before later action.
+5. Snapshot private run evidence before workspace deletion. Check ZIP integrity
+   and contents, retain an inventory and recovery instructions. A local archive
+   is not an off-device backup; do not describe it as one.
+6. Verify automation ownership/schedule if changed. Update existing jobs, never
+   duplicate them. Ending a chat does not cancel ongoing daily/weekly duties.
+
+## Continuation
+
+The latest closeout is the one `NOW.md` and `docs/SESSION-HANDOVER.md` point
+to (on 5 November 2026, the 1 November Sunday review,
+`.scratch/channel-audit/daily-20261101/SUNDAY-REVIEW.md`). The 27 October
+continuation below is kept as history.
+
+- 27 October private closeout: `.scratch/session-closeout-20261027/CLOSEOUT.md`.
+- Shopping-agent library: [27 October LinkedIn package](https://drive.google.com/drive/folders/1TJwaaZ5nf13CfwsgYVJiM0o5msYCxTl8).
+- Existing pilot receipts remain under
+  `.scratch/channel-audit/first-carousel-experiment-20261026/`.
+- Latest measurements and next production brief: `.scratch/channel-audit/daily-20261027/`.
+
+On 27 October Krish explicitly chose to publish the LinkedIn shopping-agent post
+himself through Buffer. Preserve both saved drafts; no autonomous publication,
+scheduling, engagement or cleanup. After he publishes, reconcile the one live
+post, its next-read URL and background comment before proposing another edition.
+Buffer's saved document preview remains unresolved despite byte-identical PDF
+storage; see `social/lessons/buffer-document-preview-hold.json`.
+13 November profile-link closeout: `.scratch/channel-audit/profile-links-20261113/CLOSEOUT.md`. YouTube, Facebook and X links were saved and independently verified; Krish reports all profile links complete. Threads always targets @makeyourmind.up (CHANGES.md, 13 November), superseding the personal destination below. The branded @makeyourmind.up Buffer connection was verified on 13 November and its new channel ID is pinned in engine/buffer_channels.py. The old personal channel ID fails release.
+
+# Fresh-session social manager handover
+
+Use this prompt in a fresh Codex chat. It deliberately assumes no chat history.
+
+**Current (12 November 2026).** `engine start` now shows Krish's open instruction first (`krish_instruction`; AGENTS.md, "His instruction"), and a session that acts on it closes with `instruction_ack`. A session closes out with one note in `now-notes/`, never an edit to `NOW.md`; the fold on main writes it in (AGENTS.md, "Closeout"). The live publish board is Control Centre's Content tab (AGENTS.md, "The publish board"). The maker has failed every run since 30 October on a loud hold: W45's mix plan reached Control Center without its slots record (`slots_record_missing`), and W44's and W46's never reached it (`mix_plan_not_reported`), so the maker has drafted nothing (`NOW.md`). The rest of this paragraph is from 5 November. Start from AGENTS.md, "Four engines": a session Krish opens with "Run Acquisition", "Run Engagement", "Run Publishing" or "Run Measurement" is that engine only, and its job file's first command (`python growth.py engine start NAME`) recovers its queue, handoffs and learnings. This is the shadow week: this handover, `jobs/daily-growth.md` and the existing automations keep running. Make Your Mind Up outreach is this engine's, owned by Acquisition, and social engagement is Engagement's; Krish enacts both in his own Codex sessions on the exact payload he approves; only Mindmake's outreach stays with Control Center (AGENTS.md, "Outreach for Make Your Mind Up"). Buffer's TikTok short-video route is held; the native TikTok uploader is the alternative (`social/tools/buffer.json`). The latest North Star reading is 1 of 86 for the week of 2 November, read on 5 November (`NOW.md`); the week of 9 November is not measured yet. It supersedes the "30 October" reading named in the notes below. Where the notes or the 26 October prompt below disagree with AGENTS.md, AGENTS.md wins.
+
+The dated notes below run newest first.
+
+1 November Sunday review is in `.scratch/channel-audit/daily-20261101/SUNDAY-REVIEW.md`. The latest 07:16 UTC ledger read the board manifest. Reconcile the 2 November hero against the existing cut review before assigning work from its stage-four row. The lighter-post mix for the 2 November week showed no approval press at capture. Use the publish board under `docs/OPERATING_MODEL.md`. Last native subscriber reading is dated 30 October.
+
+31 October midpoint: read `.scratch/channel-audit/daily-20261031/MIDPOINT.md`. Buffer feed metrics now extend beyond 72h, with unchanged pilot counts and no demonstrated sharing/click-through. Codex in-app browser is absent (inventory exposes only Chrome); do not use an external fallback or infer sign-out. Last native North Star reading is still 30 October, not a fresh zero today. PR 43's eight checks passed. Four unscheduled drafts remain untouched. Next: native source/subscribe-path audit, then the existing Sunday mix review under the 30 October R124 board-approval ruling; do not assume approval or treat the old-piece carousel as part of the derived mix. Keep/purchase and 5–6 November follow-up boundaries remain.
+
+30 October measurement checkpoint: read `.scratch/channel-audit/daily-20261030/REVIEW.md`. Seven-day new subscribers remains zero; native Instagram pilot still has no non-follower views or profile activity at about 86.6 hours. Provider feed metrics still predate 72h. Workspace has 13 channels; use only eight pinned engine IDs. Both LinkedIn drafts and engine-check drafts remain unscheduled and untouched. The daily heartbeat now reflects Krish's 29 October decision to keep Buffer: 31 October progress review, 5 November evidence/current-quote pack, 6 November access/purchase-readiness check before 7 November expiry. Purchase is still his click. This supersedes older keep/downgrade/stop wording below. Private evidence remains local; no new distribution assets were made.
+
+29 October measurement checkpoint: read `.scratch/channel-audit/daily-20261029/REVIEW.md`. Codex native access recovered; Substack source report remains empty for seven days, Instagram pilot has no non-follower views, and the LinkedIn manual post remains unconfirmed. Buffer drafts untouched. Preserve provider metric timestamps; this is a roughly 60-63h sample. Next real route checks follow the newer Monday 2 November transition plan.
+
+28 October operational checkpoint: read
+`.scratch/channel-audit/daily-20261028/REVIEW.md` before acting. Buffer reconciled;
+native metrics/engagement remain blocked by browser timeouts, not proven sign-out.
+Local GA4 directive read lacks engine configuration. Reuse existing evidence,
+preserve the LinkedIn drafts and follow the newer exact-payload release gate.
+
+27 October architecture upgrade: a run session reads `docs/RUN.md` and its pack (`python growth.py run pack SPEC`) instead of the standing docs; the plan is `docs/plans/2026-10-27-engine-architecture.md`. Every earlier instruction below still holds where the rulings recorded in `CHANGES.md` on 27 October do not supersede it.
+
+Lanes (27 October): `docs/LANES.md` says what runs alone (GitHub Actions; there are no Claude routines, Krish, 29 Oct 2026), what waits for one press in Control Center and what waits for Krish's hands; `docs/SETUP-ONCE.md` holds his one-time steps. No session holds the Control Center engine key: the GitHub runner holds it, Codex workspace runs on his PC use the `engine-token` file (`docs/KEY.md`), and a cloud session reads Control Center through the Control Center connector. Never set or read `CONTROL_CENTER_ENGINE_TOKEN` in a cloud session.
+
+27 October closeout takes precedence: read `docs/ASSET-STORAGE.md` and
+`.scratch/session-closeout-20261027/CLOSEOUT.md` first. All session assets and
+private evidence are preserved there. The approved shopping-agent v3 package
+is in the existing Drive 4 Growth library. Krish explicitly chose to publish
+it himself through Buffer. Do not publish, schedule, duplicate or edit either
+LinkedIn draft. Reconcile the eventual native post before further work.
+Read `.scratch/channel-audit/daily-20261027/REVIEW.md` for dated early metrics;
+these are not 24-hour results. Daily and weekly automation ownership continues.
+
+26 October closeout: the fresh manager owns both existing automations. Read
+the private pilot's `fresh-owner/CLOSEOUT.md` before acting: X/TikTok and all
+six Stories are now live. The first-frame repair is complete; the remaining
+Facebook final-frame small-wordmark overlay is recorded for future production.
+The historical first-run instructions below are not a reason to republish.
+
+```text
+Take over daily social management and follower growth for makeyourmindup.
+Work from this repository's own clone, never the profile root; its folder is
+config/studio.json local_roots.repos once Krish's W3.4 consent moves it.
+Read AGENTS.md, NOW.md, BROWSER.md, docs/NORTH_STAR.md,
+docs/PUBLISHING-AUTHORITY.md, docs/ACCOUNT-VOICE.md, social/README.md,
+jobs/daily-growth.md and docs/FOLLOWER-GROWTH.md. Apply the canonical harness.
+
+Then read the PRIVATE operational handover:
+.scratch/channel-audit/first-carousel-experiment-20261026/CURRENT-STATE.md
+and its linked manifests/journals. These files are local and ignored: do not
+delete, publish, commit or lose them in a checkout/worktree cleanup. They include
+accepted assets, rejected candidates, hashes, exact copy, account IDs, attempt
+budgets, screenshots, partial audit coverage and trial evidence. Read current
+state before writing; historical payloads and captions are not current truth.
+
+Your job is amplification ideas, format/channel strategy, social management,
+authorised distribution and measured learning. Content Engine alone owns
+production and all visual/copy production standards for every format. Brief it
+for missing editions. Do not take over Friday video production: its existing
+chat owns shipping those videos. Inspirationhouse and the canonical Instagram
+inspiration corpus inform new ideas; do not merely replicate references.
+
+LATEST AUTHORITY: after Krish sees and approves content, you may faithfully
+package it and choose cadence/publish on branded Instagram, Facebook, YouTube,
+and scoped personal X/TikTok. Aim for one useful daily post per available channel
+with approved native content. X/TikTok retain sincere personal voice. LinkedIn
+is unscheduled drafts only, with Krish making the final click, no volume quota.
+Its goal is trust and relevant professional relationships, not a subscriber
+funnel. Do not publish comments/likes/follows/messages. Other connected accounts
+are not automatically in scope. No spending or live paid-offer changes.
+
+Use ONLY the Codex in-app browser beside this chat for browser work. Never
+Skyvern, Chrome, Stripe, cookie export or credential export. Discover the current
+tabs and reuse signed-in pages. Tab IDs are ephemeral; reopen saved URLs in Codex
+if needed, and check the actual page before diagnosing sign-out. Buffer's MCP
+connector disappeared during tool reload on 26 October; rediscover available
+tools and prefer it when restored, otherwise use the authorised Codex browser.
+The browser session itself remained signed in after reopening Buffer.
+
+Reconcile actual native delivery from the latest private receipts. The eight-card
+IG/FB pilot, X/TikTok editions and six Meta Stories were published on 26 October;
+the first-frame Story repair is complete. Do not recreate or republish them.
+Facebook's final-frame wordmark overlay is feedback for the next production pass.
+Buffer's automatic Instagram Story route did not support the proposed Link sticker;
+never fake a link/poll or add public illustration-generation boilerplate.
+
+The shopping-agent LinkedIn v3 six-page PDF, post text and background comment are
+preserved in the 27 October closeout and Drive library. Buffer stores identical
+bytes but its saved preview is blank; a native LinkedIn draft also contains six
+pages. Krish chooses Buffer and publishes himself. Do not retry uploads blindly
+or publish both copies. Keep the separate Grok/Muse LinkedIn draft untouched.
+
+After reconciling the pilot, execute docs/FOLLOWER-GROWTH.md relentlessly:
+baseline each channel; maintain approved daily supply; use channel-native
+hooks/Stories/search/continuation; bring useful LinkedIn engagement suggestions;
+measure follower and attributable subscriber changes; learn and improve daily.
+No manufactured followers, fabricated metrics or filler. Maintain Buffer trial
+evidence and its 31 October / 5-6 November decisions before 7 November expiry.
+Draft counts and impressions are not financial ROI.
+
+Acquire the local run lock, preserve uncertain-save attempt budgets, reopen
+saved pages independently and release only your own lock. Do not advance partial
+audit checkpoints. No Control Center writes beyond any canonical redacted
+harness-observation exception. Update NOW.md and narrow structured records;
+merge completed engine changes after required checks, as already authorised.
+Do not re-interview Krish or ask again for approved cadence. Execute, show useful
+results, and raise only route-changing decisions or genuinely new access holds.
+
+Daily/weekly automations were transferred to the fresh manager on 26 October.
+Read the private owner-transfer.json receipt, then verify current state if
+ownership changes again. Update the existing entries only; preserve schedules
+and fields. Never duplicate them or archive an owner before continuity is verified.
+```
+# Codex brief: the pictures for three derived carousels (week of 9 November 2026)
+
+Krish, 13 Nov 2026: "build those 3 carousels to world class branded standards using the codex plug in". His standard
+for every carousel (content-engine `docs/CAROUSEL-STANDARD.md`, "The ten-second swipe"): "a complete layperson is
+swiping through these cards at light speed and needs to be able to follow the story within 10 seconds". Every card
+after the cover shows its point as a picture: bars to scale, the thing jammed, the people, the hand-off.
+
+The words are locked. They are in `mon/deck.json`, `wed/deck.json` and `fri/deck.json` (each card's `headline`,
+`line` and `picture`). Do not change any deck. Your job is one picture per card, from card 2 to the last card, as
+the card's `picture` field describes it.
+
+## What you make
+
+For each day folder (`mon`, `wed`, `fri`) and each card N from 2 to the last: `<day>/devices/card-N.svg`.
+
+- One `<svg>` element, `viewBox="0 0 920 620"`, `width="920" height="620"` (the last card: `viewBox="0 0 920 520"`).
+  It is pasted inline into the card page, below the headline and line, above the wordmark. Leave transparent
+  ground; the card is ink.
+- Colours, only these, as hex: ink `#0C1512`, deep ink `#070D0B`, cream `#F4EFE4`, green `#2F6B5C`, mint
+  `#7EF0C0`, and the day's series colour: mon `#FFD84D`, wed `#B7A6FF`, fri `#FF6A4D`. Cream may be faded with
+  `opacity` / `fill-opacity`; no other colour, no gradients except ink-to-transparent or green glow.
+- Fonts, only these family names (the page loads them): `Anton` (big numbers, labels in capitals), `Archivo`
+  (short words), `Plex` (IBM Plex Mono, tiny tags). Words inside a picture are few: a label, a number, a name. At
+  least 26px so they read at phone size. No sentence that repeats the headline or line.
+- Real logos, where a company is named, as `<image href="../devices/<file>.svg" .../>` from the files already in
+  that day's `devices/` folder (mon: Disney, Character.AI, Google, OpenAI, Netflix, Warner Music; wed: Suno,
+  Deezer, Grammys; fri: Meta, Amazon, Duolingo, Shopify). Never redraw or set a logo as type. A dark logo sits on a
+  cream tile. Never draw a tacky outline box around a logo.
+- Numbers to scale: a bar for 50% is exactly half the bar for 100%; 1 to 3% is a sliver. Every number shown must be
+  in the deck's line or picture field, nothing else.
+- The look: flat, bold, editorial, like a Bloomberg or FT explainer drawn for a phone. Thick shapes, generous space,
+  one focal object per card, the series colour on the one thing the eye should land on, mint for the answer, green
+  for structure. Real objects drawn simply (a box, a door, a form, a gauge, a leaderboard). No clipart, no stock
+  icons, no emoji, no cartoon faces, no people with faces (simple silhouettes are fine), no robots, no gimmicks.
+- No card numbers, no "1/8", no page dots, no URL, no source strip, no small print, no em dashes anywhere.
+- The last card's picture is calm and centred: one object, centred on x = 460.
+
+## The per-card pictures (the deck's `picture` field, made concrete)
+
+**mon (follow.the.money, butter #FFD84D)**
+2. A horizontal timeline: "AUG 2024" on the left with the Google logo and three small silhouettes walking off the line
+   towards it, labelled "FOUNDERS"; "OCT 2026" on the right with the Character.AI logo and a butter stamp "BUST".
+3. The Disney logo on a cream tile, a thick line to the OpenAI logo labelled "SORA" in a phone shape, the phone dark with
+   a butter "CLOSED" sign hung across it; "$1B DEAL" over the line, struck through.
+4. 66 small cream silhouettes (count them: 66) in a grid flowing right towards the Disney logo; left behind on the
+   floor, a butter pile of folders labelled "LAWSUITS" beside the Character.AI logo.
+5. Two columns: "RENT" (faded) and "OWN" (butter). Under OWN, the Disney, Netflix and Warner Music logos on cream
+   tiles, each with a small butter "BOUGHT" tag; an arrow from RENT to OWN.
+6. A large open box, empty inside, drawn in cream line and ink, one faint chat bubble drifting up out of it.
+7. A checklist on a cream card: four rows with empty tick boxes: "FOUNDERS STILL THERE?", "YOUR TOOL ITS MAIN
+   PRODUCT?", "SHORT OF CASH?", "COLLECTING LAWSUITS?".
+8. (last, 520 tall) One key on a hook, centred, the key's bow in butter, a small tag on it reading "PLAN B".
+
+**wed (under.the.hood, lilac #B7A6FF)**
+2. Four stacked horizontal layers like a cake slice, bottom to top: "HER WORDS", "AI APP'S FIRST SONG" (no logo: the piece could not confirm whether Suno or Udio made it), "DJ'S REBUILD", "SINGER'S VOICE" (lilac); a thin dashed lilac thread running from the AI layer up through
+   the top one, labelled "AI VOICE, STILL UNDER".
+3. A tall closed studio door labelled "STUDIO" with a lock; under its gap a demo (a cassette or a phone waveform) in
+   lilac slides through to the near side.
+4. Two bars to scale from the same baseline: "NEW UPLOADS" at a bit over 50% filled lilac "50%+"; "LISTENING" at a
+   sliver "1 TO 3%"; the Deezer logo above.
+5. A slide deck seen at an angle, three layers peeled apart: "IDEA" (cream), "AI DRAFT" (lilac), "FINISHED BY
+   PEOPLE" (mint).
+6. Three labelled rows on a cream form: "IDEA:", "DRAFTED BY:", "CHECKED AND SIGNED BY:" with blank lines.
+7. (last, 520 tall) A sign-off form, centred, its three lines filled with simple scribbles and a mint tick by the
+   signature line.
+
+**fri (mind.the.gap, coral #FF6A4D)**
+2. A leaderboard panel with three rows; top row "TOKEN LEGEND" with a coral bar overflowing the panel; a token
+   counter reading "60 TRILLION" (Meta's 30-day total); the Meta and Amazon logos at the top.
+3. A one-cent coin, a stack of rat tails tied with string, and beside it one simple rat silhouette with no tail,
+   walking away. "1902" in Plex. Simple, a little funny, not gory.
+4. Two bars from one baseline: "AI QUERIES" falling (an arrow down, "-30%") and "SALES" rising coral ("+7%"); a small
+   strip of struck-through blocks labelled "JUNK" falling out of the queries bar.
+5. Three U-turn arrows side by side, each with a logo above: Meta, Amazon, Duolingo; under them "USAGE SCORES"
+   struck through.
+6. A cream review form with lines; the line "AI USAGE" crossed out with a thick coral stroke.
+7. (last, 520 tall) One round gauge, centred, labelled "RESULTS", its needle in mint pointing up and right.
+
+## Checks before you stop (every one must pass)
+
+    python3 check_devices.py
+
+It confirms each file exists, parses, uses only the listed colours and fonts, references only existing logo files and
+holds no em dash. Then run `python3 render.py mon && python3 render.py wed && python3 render.py fri` and
+`node shoot.mjs mon` (and wed, fri), open every `*/cards/card-N.png` you made and look at it: nothing overlaps the
+headline, the line or the wordmark, nothing is cut off, every word reads at phone size.
+
+## Never
+
+Touch the decks, the style files, `render.py`, `shoot.mjs`, the kit folder or anything outside this folder; use the
+network; run git; publish, post or upload anything.
+
+## Return
+
+A short list: each file you made, and anything you could not do.
+{
+ "schema": "carousel-deck/1",
+ "title": "Who walks away when a loved AI app goes bust (derived carousel, carries Mon 9 Nov follow.the.money, piece b358e788)",
+ "carries": "b358e788-209f-427b-a84d-1f79a8ebb430",
+ "series": "follow_the_money",
+ "five_whys": [
+  {
+   "q": "Why is Disney hiring Character.AI's staff through a bankruptcy court?",
+   "a": "So it gets the team and the code while the lawsuits stay with what is left of Character.AI."
+  },
+  {
+   "q": "Why does Disney want an AI team at all?",
+   "a": "Its $1 billion plan to put its characters in OpenAI's Sora app died when OpenAI shut Sora in March 2026."
+  },
+  {
+   "q": "Why did that push Disney to buy rather than rent again?",
+   "a": "Renting meant its plans lived on someone else's app, and that app closed without warning."
+  },
+  {
+   "q": "Why is this bigger than Disney?",
+   "a": "Netflix bought an AI film start-up for a reported $587 million and Warner Music bought Sureel AI: big firms are moving from renting AI to owning it."
+  },
+  {
+   "q": "Why should an everyday business person care?",
+   "a": "Most businesses rent their AI; when its maker is bought or goes bust, the users are left with the empty box, so check the maker now and have a plan B."
+  }
+ ],
+ "arc": {
+  "what": 1,
+  "happened": [
+   1,
+   2
+  ],
+  "why": [
+   3,
+   4
+  ],
+  "so_what": [
+   5,
+   6
+  ],
+  "do": [
+   7,
+   8
+  ]
+ },
+ "explains": {},
+ "cta": "Follow for more",
+ "cards": [
+  {
+   "headline": "Millions loved Character.AI. It went bust",
+   "line": "An app for chatting with made-up characters. It filed for bankruptcy on 12 October.",
+   "picture": "Cover scene: a chat app on a phone, alone on an auction block under a spotlight, a lot tag hanging off it"
+  },
+  {
+   "headline": "Google hired its founders first.",
+   "line": "In 2024 Google reportedly paid $2.7 billion to use its tech and hire its founders. The first warning sign.",
+   "picture": "A timeline: Aug 2024 the founders walk out to Google, Oct 2026 the app goes bust"
+  },
+  {
+   "headline": "Then Disney's AI video deal died.",
+   "line": "Disney's $1 billion deal put its characters in OpenAI's Sora app. OpenAI shut Sora in March.",
+   "picture": "Disney's characters locked outside a shuttered Sora shopfront"
+  },
+  {
+   "headline": "So Disney is hiring Character.AI's team.",
+   "line": "Jobs for 66 staff through the bankruptcy court. The lawsuits stay behind with the shell.",
+   "picture": "66 small figures walking across to Disney, a pile of lawsuits left on the empty floor"
+  },
+  {
+   "headline": "Big firms now own their AI instead of renting.",
+   "line": "Renting is using another firm's AI. Netflix bought an AI film start-up for a reported $587 million.",
+   "picture": "Three buyers, each with a SOLD tag: Disney, Netflix, Warner Music, an arrow from RENT to OWN",
+   "source": "The Hollywood Reporter on Netflix and InterPositive (2026); also Warner Music Group buying Sureel AI, PR Newswire (June 2026)"
+  },
+  {
+   "headline": "Your AI could vanish too.",
+   "line": "If its maker is bought or goes bust, users are left with the empty box.",
+   "picture": "An open, empty box with a chat bubble fading out of it"
+  },
+  {
+   "headline": "Check who makes your AI.",
+   "line": "Founders still there? Your tool its main product? Short of cash? Collecting lawsuits?",
+   "picture": "A four-line checklist, one box per question"
+  },
+  {
+   "headline": "Pick your plan B now.",
+   "line": "If two answers worry you, try another tool on one real task this month. Follow for more.",
+   "picture": "A spare key on a hook, Follow for more over the centred wordmark"
+  }
+ ],
+ "read_back": [
+  {
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "answers": {
+    "what": "An AI company collapsed, and businesses renting AI could lose access to it too.",
+    "happened": "Character.AI, loved by millions, went bust, and Google hired its founders first.",
+    "why": "Its founders went to Google first and its big partner's plans changed, so it was left weak.",
+    "so_what": "If an AI tool I rely on can vanish overnight, my business could lose a key service with no warning.",
+    "do": "Check who makes each AI tool I use and pick a backup option now."
+   }
+  },
+  {
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "answers": {
+    "what": "A popular AI chatbot app called Character.AI ran out of money and collapsed even though millions used it.",
+    "happened": "Google hired the founders first, then OpenAI shut the app Disney relied on, so Disney is hiring the Character.AI team.",
+    "why": "Big companies are now building and owning their own AI instead of paying to use someone else's.",
+    "so_what": "The AI apps I use could disappear suddenly if the company behind them goes under.",
+    "do": "Find out which company makes the AI I use and have a backup option ready."
+   }
+  }
+ ],
+ "sources": [
+  "Character.AI Chapter 11 filing and sale motion, Delaware, 12 to 13 Oct 2026 (https://cases.stretto.com/public/x936/14939/PLEADINGS/1493910132680000000114.pdf)",
+  "CNBC, 2 Aug 2024, Google and Character.AI (https://www.cnbc.com/2024/08/02/ex-google-engineers-from-characterai-re-join-company-with-ai-partnership-.html)",
+  "Disney and OpenAI Sora agreement (https://thewaltdisneycompany.com/news/disney-openai-sora-agreement/); Deadline, Mar 2026, Sora shut down (https://deadline.com/2026/03/sora-shut-down-disney-investment-1236764689/)",
+  "Gizmodo and Wired on Disney's offers to 66 staff and the bid's exclusions (via the piece)",
+  "The Hollywood Reporter, Netflix and InterPositive (https://www.hollywoodreporter.com/business/business-news/netflix-price-ben-affleck-ai-company-revealed-1236651217/)",
+  "PR Newswire, Warner Music Group acquires Sureel AI (https://www.prnewswire.com/news-releases/warner-music-group-acquires-sureel-ai-302796705.html)"
+ ],
+ "read_back_fixed": "Round 1 (Haiku, Sonnet) stumbled on 'Disney's AI partner' (unnamed), 'hiring the team' (which team) and 'buy, not rent'; card 3 now names OpenAI, card 4 names Character.AI's team, card 5 says own instead of renting and its line says what renting is. Round 2 stumbled only on how Sora linked to Disney: card 3 now reads as Disney's own deal dying, its line naming Sora."
+}{
+ "schema": "carousel-deck/1",
+ "title": "AI is already in the music you love (derived carousel, carries Wed 11 Nov under.the.hood, piece 36886e0b)",
+ "carries": "36886e0b-4b32-473b-be72-b0aef31fccef",
+ "series": "under_the_hood",
+ "five_whys": [
+  {
+   "q": "Why is Movin' To The Sun both AI and human?",
+   "a": "An AI app sang a Reiki healer's lyrics first, then a DJ rebuilt it and a dance star sang over a trace of the AI voice."
+  },
+  {
+   "q": "Why did an AI app start it?",
+   "a": "She had lyrics but no studio or training, and an app like Suno turns typed lyrics into a sung demo."
+  },
+  {
+   "q": "Why did a demo become a UK number two?",
+   "a": "Strangers heard it under other people's short videos, went hunting for it, and professionals finished it."
+  },
+  {
+   "q": "Why is this bigger than one song?",
+   "a": "Deezer says AI-made tracks passed half of new uploads a day while getting 1 to 3% of listening: making is cheap, being found is scarce."
+  },
+  {
+   "q": "Why should an everyday business person care?",
+   "a": "Work landing on their desk is made the same way, so 'did AI make this?' tells them nothing; ask who did which bit and make it part of sign-off."
+  }
+ ],
+ "arc": {
+  "what": 1,
+  "happened": [
+   1,
+   2
+  ],
+  "why": 3,
+  "so_what": [
+   4,
+   5
+  ],
+  "do": [
+   6,
+   7
+  ]
+ },
+ "explains": {},
+ "cta": "Follow for more",
+ "cards": [
+  {
+   "headline": "A UK chart hit began in an AI app",
+   "line": "Movin' To The Sun reached number two. AI music apps like Suno turn typed lyrics into a sung song.",
+   "picture": "Cover scene: a record cut open like a cake, its layers showing, a phone with a music app at the bottom layer"
+  },
+  {
+   "headline": "A DJ and a singer finished it.",
+   "line": "HUGEL rebuilt the track. Ultra Naté sang it, with a trace of the AI voice underneath.",
+   "picture": "Four stacked layers: her words, the AI app's first song, the DJ's rebuild, the singer's voice"
+  },
+  {
+   "headline": "An AI app gave a healer her demo.",
+   "line": "Bernadett Gango, a Reiki healer with lyrics but no studio, wrote it. The app sang it first.",
+   "picture": "A closed studio door marked STUDIO, a demo slipping underneath it"
+  },
+  {
+   "headline": "Over half of new uploads are AI.",
+   "line": "At Deezer, every day. Yet they get only 1 to 3% of listening. Being found is hard.",
+   "picture": "Two bars to scale: AI share of new uploads 50%+, AI share of listening 1 to 3%",
+   "source": "Deezer, July 2026 (AI tracks passed 50% of daily new uploads) and April 2026 (1 to 3% of streams)"
+  },
+  {
+   "headline": "Work at your office is part AI too.",
+   "line": "A person's idea, an AI draft, people finishing it. The advert, the deck, the report.",
+   "picture": "A slide deck in three layers: idea, AI draft, human finish"
+  },
+  {
+   "headline": "Ask who did which bit.",
+   "line": "Of any work that lands on your desk: whose idea, what a tool drafted, who checked it.",
+   "picture": "Three labelled rows: IDEA, DRAFTED BY, CHECKED AND SIGNED BY"
+  },
+  {
+   "headline": "Put that on every work sign-off.",
+   "line": "The approval line on a brief or report, so its name is whoever stands behind it. Follow for more.",
+   "picture": "A sign-off form with the three lines filled, Follow for more over the centred wordmark"
+  }
+ ],
+ "read_back": [
+  {
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "answers": {
+    "what": "AI is now behind much of the music being made and much of the work done in offices.",
+    "happened": "A UK chart hit started in an AI app, and a human DJ and singer finished it.",
+    "why": "AI makes starting things cheap, so people need to know who did what.",
+    "so_what": "I need to know which work is genuinely ours and whether staff and suppliers use AI honestly.",
+    "do": "Ask my team who did which part of each job and record it on every work sign-off."
+   }
+  },
+  {
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "answers": {
+    "what": "A song that hit the UK charts started in an AI app, and real people finished it.",
+    "happened": "A DJ and a singer took the AI-made track and polished it into the finished hit.",
+    "why": "AI makes so much stuff that over half of new uploads are AI, and it is in normal jobs too.",
+    "so_what": "What I scroll and what adults work on might be part AI without anyone saying so.",
+    "do": "Ask who did which part of anything I see or make, and say what was AI and what was me."
+   }
+  }
+ ],
+ "sources": [
+  "Official Charts, Movin' To The Sun (HUGEL, Imael Angel, Ultra Naté), peak 2 (via the piece)",
+  "We Rave You on HUGEL's production list (via the piece)",
+  "The Australian, 16 Oct 2026, the Grammys' narrower ruling (via the piece)",
+  "Deezer, July 2026: AI-made tracks passed 50% of daily new uploads; April 2026 report: 1 to 3% of streams"
+ ],
+ "read_back_fixed": "Round 1 stumbled on 'made this way' (what way), 'number two' (which chart) and 'sign-off' (what is that); cards 1, 5 and 7 now say chart hit, part AI, and the line defines sign-off. Round 2 stumbled on 'its writer' (AI or human?); card 3 now says an AI app gave a healer her first demo, and card 6's line says whose work to ask about."
+}{
+ "schema": "carousel-deck/1",
+ "title": "Counting rat tails (derived carousel, carries Fri 13 Nov mind.the.gap, piece f3fcd5e1)",
+ "carries": "f3fcd5e1-573e-4692-a413-db7c5823a10e",
+ "series": "mind_the_gap",
+ "five_whys": [
+  {
+   "q": "Why did Meta and Amazon staff burn AI on nothing?",
+   "a": "They were ranked on leaderboards by how many tokens, the units of AI use, they ran up."
+  },
+  {
+   "q": "Why were they ranked by use?",
+   "a": "Bosses made AI use part of reviews, and use is the cheapest thing to measure."
+  },
+  {
+   "q": "Why does ranking by use go wrong?",
+   "a": "Pay people for a sign of what you want and they make signs: Hanoi paid per rat tail in 1902 and got rat farms."
+  },
+  {
+   "q": "Why is this bigger than two companies?",
+   "a": "A study of a 5,000-person firm found halving its AI-use target cut junk queries and lifted sales 7%, and Meta, Amazon and Duolingo have backed down."
+  },
+  {
+   "q": "Why should an everyday business person care?",
+   "a": "A usage number is the AI bill, not the result; judge people on it and they run up the bill, so judge AI on a number you already track."
+  }
+ ],
+ "arc": {
+  "what": 1,
+  "happened": [
+   1,
+   2
+  ],
+  "why": 3,
+  "so_what": [
+   4,
+   5
+  ],
+  "do": [
+   6,
+   7
+  ]
+ },
+ "explains": {
+  "tokens": "the bits of text an AI reads and writes, each one billed (cover line)",
+  "token": "the bits of text an AI reads and writes, each one billed (cover line)"
+ },
+ "cta": "Follow for more",
+ "cards": [
+  {
+   "headline": "Meta staff were ranked by AI use. They gamed it",
+   "line": "AI use is counted in tokens, the bits of text an AI reads and writes. Each costs money.",
+   "picture": "Cover scene: a podium trophy reading TOKEN LEGEND, a pile of cut rat tails on the top step"
+  },
+  {
+   "headline": "Staff ran pointless AI jobs to climb.",
+   "line": "Meta's board tracked the tokens of 85,000 staff. Amazon staff set AI helpers on needless tasks.",
+   "picture": "A leaderboard, top row TOKEN LEGEND, the token count meter spinning past 60 trillion"
+  },
+  {
+   "headline": "Pay for a number, and people fake it.",
+   "line": "In 1902 Hanoi paid a cent per rat tail. People cut tails off and farmed rats.",
+   "picture": "A live rat with no tail beside a stack of tails and a one-cent coin"
+  },
+  {
+   "headline": "Asking for less AI use lifted sales 7%.",
+   "line": "One firm asked 5,000 staff for half the AI queries. Nine in ten dropped were junk.",
+   "picture": "Two bars: queries down about 30%, sales up 7%, junk queries struck through",
+   "source": "arXiv preprint, Sep 2026, a medical-device firm's AI query target cut from 200 to 100 a month (not yet peer reviewed)"
+  },
+  {
+   "headline": "Three big firms dropped AI-use scores.",
+   "line": "Meta, Amazon and Duolingo. Amazon: no AI help is 'a finding, not a failing.'",
+   "picture": "Three U-turn arrows, one each for Meta, Amazon and Duolingo",
+   "source": "daily.dev (Meta, Sep 2026); CNBC (Amazon memo, Oct 2026); WPXI (Duolingo, Apr 2026)"
+  },
+  {
+   "headline": "Stop scoring AI use.",
+   "line": "Take it out of review forms, dashboards and team charts.",
+   "picture": "A review form with the AI USAGE line crossed out"
+  },
+  {
+   "headline": "Judge AI on results, not use.",
+   "line": "Sales, tickets closed, invoices sent. If it hasn't moved, the AI isn't working yet. Follow for more.",
+   "picture": "One gauge labelled SALES with its needle, Follow for more over the centred wordmark"
+  }
+ ],
+ "read_back": [
+  {
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "answers": {
+    "what": "Meta ranked staff by how much they used AI, and staff gamed the ranking.",
+    "happened": "Employees ran pointless AI jobs to climb the leaderboard, and three big firms then dropped AI-use scores.",
+    "why": "When you pay people for a number, they fake the number instead of doing useful work.",
+    "so_what": "If I score my team by AI use, I will get busywork and no real gain.",
+    "do": "Judge AI by the results it produces, such as sales and quality, not how often it is used."
+   }
+  },
+  {
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "answers": {
+    "what": "Companies judging workers by how much they use AI, and it backfiring.",
+    "happened": "Meta ranked staff on AI use, so people ran pointless AI jobs just to look good.",
+    "why": "When you get ranked on a number, people fake the number instead of doing real work.",
+    "so_what": "Like being graded on hours studied: I would leave the tab open and learn nothing.",
+    "do": "Judge AI by the results it gets, not by how much people use it."
+   }
+  }
+ ],
+ "sources": [
+  "Fortune, 9 Apr 2026, Meta's token dashboard (https://fortune.com/2026/04/09/meta-killed-employee-ai-token-dashboard/)",
+  "CIO on Amazon's KiroRank (via the piece)",
+  "Atlas Obscura, drawing on Michael Vann, the Hanoi rat bounty of 1902 (via the piece)",
+  "arXiv preprint, Sep 2026, halving an AI query target at a medical-device firm (via the piece)",
+  "daily.dev, Sep 2026 (Meta); CNBC, Oct 2026 (Amazon); WPXI, Apr 2026 (Duolingo)"
+ ],
+ "read_back_fixed": "Round 1 stumbled on 'count a sign' (vague), 'backed down' (from what) and 'a number you track' (seemed to contradict card 6); cards 3, 5 and 7 now say pay for a number, dropped AI-use scores, and judge on results. Round 2 stumbled on 'halving the AI target'; card 4 now says asking for less AI use lifted sales."
+}#!/usr/bin/env python3
+"""The card pictures (devices/card-N.svg) for the three decks, drawn to BRIEF.md. Kit colours, kit fonts, real logos."""
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+INK, DEEP, CREAM, GREEN, MINT = '#0C1512', '#070D0B', '#F4EFE4', '#2F6B5C', '#7EF0C0'
+SER = {'mon': '#FFD84D', 'wed': '#B7A6FF', 'fri': '#FF6A4D'}
+
+
+def svg(body, h=620):
+    return ('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 920 %d" '
+            'width="920" height="%d">%s</svg>\n' % (h, h, body))
+
+
+def t(x, y, s, size=30, fam='Anton', fill=CREAM, anchor='middle', extra=''):
+    return ('<text x="%s" y="%s" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s>%s</text>'
+            % (x, y, fam, size, fill, anchor, extra, s))
+
+
+def logo(f, x, y, w, h):
+    return '<image href="../devices/%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMid meet"/>' % (f, x, y, w, h)
+
+
+def tile(f, x, y, w, h, pad=18, fill=CREAM):
+    return ('<rect x="%s" y="%s" width="%s" height="%s" rx="18" fill="%s"/>' % (x, y, w, h, fill)
+            + logo(f, x + pad, y + pad, w - 2 * pad, h - 2 * pad))
+
+
+def person(x, y, s=1.0, fill=CREAM, op=1.0):
+    """A plain silhouette (no face): head and shoulders."""
+    return ('<g transform="translate(%s %s) scale(%s)" fill="%s" fill-opacity="%s"><circle cx="0" cy="-34" r="13"/>'
+            '<path d="M-20 0 Q-20 -18 0 -18 Q20 -18 20 0 Z"/></g>' % (x, y, s, fill, op))
+
+
+def write(day, n, body, h=620):
+    (HERE / day / 'devices' / ('card-%d.svg' % n)).write_text(svg(body, h), encoding='utf-8')
+
+
+# ---------------- mon: follow.the.money (butter) ----------------
+B = SER['mon']
+# 2. timeline: the founders leave for Google; two years later the app goes bust
+b = ['<line x1="60" y1="420" x2="860" y2="420" stroke="%s" stroke-width="8" stroke-linecap="round"/>' % GREEN,
+     '<circle cx="190" cy="420" r="20" fill="%s"/>' % CREAM, '<circle cx="730" cy="420" r="20" fill="%s"/>' % B,
+     t(190, 490, 'AUG 2024', 38, 'Plex'), t(730, 490, 'OCT 2026', 38, 'Plex', B),
+     t(460, 405, 'TWO YEARS LATER', 30, 'Plex', CREAM, extra='fill-opacity="0.6"'),
+     '<rect x="100" y="40" width="180" height="180" rx="24" fill="%s"/>' % CREAM, logo('google-g.svg', 132, 72, 116, 116)]
+for i, x in enumerate([130, 190, 250]):
+    b.append(person(x, 350, 1.9, CREAM, 1 - i * 0.12))
+b += ['<path d="M190 300 L190 240" stroke="%s" stroke-width="7" stroke-linecap="round"/>' % B,
+      '<path d="M168 262 L190 236 L212 262" stroke="%s" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % B,
+      t(190, 560, 'FOUNDERS GO TO GOOGLE', 34, 'Anton', CREAM),
+      logo('characterai-cream.svg', 590, 300, 280, 40),
+      '<g transform="rotate(-8 730 170)"><rect x="590" y="100" width="280" height="130" rx="14" fill="none" stroke="%s" stroke-width="9"/>' % B,
+      t(730, 200, 'BUST', 96, 'Anton', B) + '</g>',
+      t(730, 560, 'THE APP GOES BUST', 34, 'Anton', B)]
+write('mon', 2, ''.join(b))
+
+# 3. the Disney deal on OpenAI's Sora app, closed
+b = [tile('disney-script-cream.svg', 40, 200, 250, 150, 24, INK)]
+b[0] = ('<rect x="40" y="200" width="250" height="150" rx="18" fill="%s" stroke="%s" stroke-opacity="0.35" stroke-width="2"/>' % (DEEP, CREAM)
+        + logo('disney-script-cream.svg', 64, 224, 202, 102))
+b += ['<line x1="300" y1="275" x2="560" y2="275" stroke="%s" stroke-width="6" stroke-dasharray="14 12"/>' % CREAM,
+      t(430, 245, '$1B DEAL', 40, 'Anton', CREAM),
+      '<line x1="352" y1="232" x2="508" y2="232" stroke="%s" stroke-width="7"/>' % B]
+# the phone
+b += ['<rect x="590" y="40" width="250" height="480" rx="40" fill="%s" stroke="%s" stroke-width="6"/>' % (DEEP, CREAM),
+      '<rect x="690" y="58" width="50" height="10" rx="5" fill="%s" fill-opacity="0.5"/>' % CREAM,
+      logo('openai-symbol-cream.svg', 665, 120, 100, 100), t(715, 270, 'SORA', 44, 'Anton', CREAM, extra='fill-opacity="0.5"')]
+# closed sign hung across
+b += ['<line x1="640" y1="300" x2="700" y2="352" stroke="%s" stroke-width="4"/><line x1="790" y1="300" x2="730" y2="352" stroke="%s" stroke-width="4"/>' % (CREAM, CREAM),
+      '<g transform="rotate(-6 715 400)"><rect x="590" y="352" width="250" height="96" rx="12" fill="%s"/>' % B,
+      t(715, 420, 'CLOSED', 62, 'Anton', INK) + '</g>',
+      t(715, 560, 'OPENAI SHUT IT, MARCH 2026', 24, 'Plex', CREAM, extra='fill-opacity="0.7"')]
+write('mon', 3, ''.join(b))
+
+# 4. 66 staff walk over to Disney, the lawsuits stay behind
+b = []
+k = 0
+for r in range(6):
+    for c in range(11):
+        if k < 66:
+            b.append(person(70 + c * 46, 140 + r * 56, 0.85, CREAM, 0.95))
+            k += 1
+b += [t(300, 60, '66 STAFF', 44, 'Anton', CREAM)]
+b += ['<path d="M590 300 L680 300 M660 280 L684 300 L660 320" stroke="%s" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % B]
+b += ['<rect x="700" y="210" width="200" height="180" rx="18" fill="%s" stroke="%s" stroke-opacity="0.35" stroke-width="2"/>' % (DEEP, CREAM),
+      logo('disney-script-cream.svg', 720, 240, 160, 120)]
+# lawsuits pile left behind
+for i in range(5):
+    b.append('<rect x="%d" y="%d" width="150" height="26" rx="4" fill="%s" fill-opacity="%s" transform="rotate(%d %d %d)"/>'
+             % (60 + (i % 2) * 8, 590 - i * 22, B, 0.95 - i * 0.08, (-3 if i % 2 else 2), 130, 590 - i * 22))
+b += [t(240, 600, 'LAWSUITS STAY BEHIND', 28, 'Plex', B, 'start')]
+b += [logo('characterai-cream.svg', 240, 528, 220, 34)]
+write('mon', 4, ''.join(b))
+
+# 5. RENT to OWN: Disney, Netflix, Warner Music
+b = ['<rect x="40" y="60" width="250" height="500" rx="22" fill="none" stroke="%s" stroke-opacity="0.35" stroke-width="3" stroke-dasharray="12 10"/>' % CREAM,
+     t(165, 140, 'RENT', 64, 'Anton', CREAM, extra='fill-opacity="0.45"'),
+     t(165, 330, 'SOMEONE', 28, 'Plex', CREAM, extra='fill-opacity="0.45"'), t(165, 368, "ELSE'S AI", 28, 'Plex', CREAM, extra='fill-opacity="0.45"'),
+     '<path d="M310 310 L400 310 M378 288 L404 310 L378 332" stroke="%s" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % B,
+     '<rect x="420" y="40" width="460" height="540" rx="22" fill="%s" fill-opacity="0.10" stroke="%s" stroke-width="4"/>' % (B, B),
+     t(650, 120, 'OWN', 64, 'Anton', B)]
+rows = [('disney-script-cream.svg', DEEP), ('netflix.svg', CREAM), ('warner-music-group-cream.svg', DEEP)]
+for i, (f, bg) in enumerate(rows):
+    y = 160 + i * 135
+    b.append('<rect x="460" y="%d" width="230" height="110" rx="16" fill="%s" stroke="%s" stroke-opacity="0.3" stroke-width="2"/>' % (y, bg, CREAM))
+    b.append(logo(f, 482, y + 18, 186, 74))
+    b.append('<rect x="710" y="%d" width="140" height="50" rx="25" fill="%s"/>' % (y + 30, B))
+    b.append(t(780, y + 66, 'BOUGHT', 28, 'Anton', INK))
+write('mon', 5, ''.join(b))
+
+# 6. the empty box
+b = ['<ellipse cx="460" cy="560" rx="300" ry="26" fill="%s" fill-opacity="0.6"/>' % DEEP,
+     '<path d="M230 330 L460 400 L690 330 L690 530 L460 600 L230 530 Z" fill="%s" stroke="%s" stroke-width="5" stroke-linejoin="round"/>' % (INK, CREAM),
+     '<path d="M460 400 L460 600" stroke="%s" stroke-width="4"/>' % CREAM,
+     '<path d="M230 330 L460 260 L690 330 L460 400 Z" fill="%s" stroke="%s" stroke-width="5" stroke-linejoin="round"/>' % (DEEP, CREAM),
+     '<path d="M230 330 L150 250 L380 190 L460 260 Z" fill="%s" stroke="%s" stroke-width="5" stroke-linejoin="round"/>' % (INK, CREAM),
+     '<path d="M690 330 L770 250 L540 190 L460 260 Z" fill="%s" stroke="%s" stroke-width="5" stroke-linejoin="round"/>' % (INK, CREAM),
+     '<g fill="none" stroke="%s" stroke-width="5" stroke-opacity="0.55"><path d="M420 90 h120 a24 24 0 0 1 24 24 v40 a24 24 0 0 1 -24 24 h-70 l-26 22 v-22 h-24 a24 24 0 0 1 -24 -24 v-40 a24 24 0 0 1 24 -24 z"/></g>' % B,
+     '<g fill="%s" fill-opacity="0.55"><circle cx="452" cy="134" r="7"/><circle cx="480" cy="134" r="7"/><circle cx="508" cy="134" r="7"/></g>' % B,
+     ]
+write('mon', 6, ''.join(b))
+
+# 7. the checklist
+qs = ['FOUNDERS STILL THERE?', 'YOUR TOOL ITS MAIN PRODUCT?', 'SHORT OF CASH?', 'COLLECTING LAWSUITS?']
+b = ['<rect x="80" y="20" width="760" height="580" rx="24" fill="%s"/>' % CREAM,
+     '<rect x="80" y="20" width="760" height="20" rx="10" fill="%s"/>' % B,
+     t(130, 110, 'ABOUT THE MAKER OF YOUR AI', 30, 'Plex', INK, 'start', 'fill-opacity="0.6"')]
+for i, q in enumerate(qs):
+    y = 170 + i * 108
+    b.append('<rect x="130" y="%d" width="62" height="62" rx="10" fill="none" stroke="%s" stroke-width="5"/>' % (y, INK))
+    b.append(t(222, y + 47, q, 42, 'Anton', INK, 'start'))
+    if i < 3:
+        b.append('<line x1="130" y1="%d" x2="790" y2="%d" stroke="%s" stroke-opacity="0.15" stroke-width="2"/>' % (y + 88, y + 88, INK))
+write('mon', 7, ''.join(b))
+
+# 8. (last) the spare key on its hook
+b = ['<circle cx="460" cy="60" r="18" fill="none" stroke="%s" stroke-width="8"/>' % CREAM,
+     '<path d="M460 78 L460 118" stroke="%s" stroke-width="8" stroke-linecap="round"/>' % CREAM,
+     '<circle cx="460" cy="200" r="78" fill="none" stroke="%s" stroke-width="26"/>' % B,
+     '<rect x="446" y="272" width="28" height="200" rx="6" fill="%s"/>' % B,
+     '<rect x="474" y="400" width="44" height="22" rx="4" fill="%s"/><rect x="474" y="440" width="30" height="22" rx="4" fill="%s"/>' % (B, B),
+     '<path d="M510 160 L640 230" stroke="%s" stroke-width="3"/>' % CREAM,
+     '<g transform="rotate(14 690 250)"><rect x="620" y="215" width="160" height="78" rx="10" fill="%s"/>' % CREAM,
+     '<circle cx="640" cy="254" r="7" fill="%s"/>' % INK, t(710, 270, 'PLAN B', 42, 'Anton', INK) + '</g>']
+write('mon', 8, ''.join(b), 520)
+
+# ---------------- wed: under.the.hood (lilac) ----------------
+L = SER['wed']
+# 2. the layers of the song
+layers = [("SINGER'S VOICE", L, INK), ("DJ'S REBUILD", GREEN, CREAM), ("AI APP'S FIRST SONG", DEEP, CREAM), ('HER WORDS', CREAM, INK)]
+b = []
+for i, (lab, fill, ink) in enumerate(layers):
+    y = 40 + i * 132
+    b.append('<rect x="20" y="%d" width="600" height="112" rx="18" fill="%s" stroke="%s" stroke-opacity="0.35" stroke-width="2"/>' % (y, fill, CREAM))
+    b.append(t(56, y + 72, lab, 46, 'Anton', ink, 'start'))
+b.append('<path d="M570 360 L570 70" stroke="%s" stroke-width="6" stroke-dasharray="4 14" stroke-linecap="round"/>' % L)
+b.append('<circle cx="570" cy="360" r="12" fill="%s"/>' % L)
+b += [t(660, 300, 'A TRACE OF', 28, 'Plex', L, 'start'), t(660, 338, 'THE AI VOICE,', 28, 'Plex', L, 'start'),
+      t(660, 376, 'STILL UNDER', 28, 'Plex', L, 'start'),
+      '<path d="M652 330 L590 345" stroke="%s" stroke-width="3"/>' % L]
+write('wed', 2, ''.join(b))
+
+# 3. the studio door, the demo slides under it
+b = ['<rect x="300" y="20" width="320" height="520" rx="8" fill="%s" stroke="%s" stroke-width="6"/>' % (DEEP, CREAM),
+     '<rect x="340" y="60" width="240" height="190" rx="6" fill="none" stroke="%s" stroke-opacity="0.35" stroke-width="3"/>' % CREAM,
+     '<rect x="340" y="290" width="240" height="210" rx="6" fill="none" stroke="%s" stroke-opacity="0.35" stroke-width="3"/>' % CREAM,
+     '<rect x="372" y="120" width="176" height="64" rx="8" fill="%s"/>' % CREAM, t(460, 167, 'STUDIO', 44, 'Anton', INK),
+     '<circle cx="580" cy="300" r="12" fill="%s"/>' % CREAM,
+     '<rect x="566" y="320" width="28" height="34" rx="5" fill="%s"/>' % CREAM,
+     '<path d="M572 320 v-12 a8 8 0 0 1 16 0 v12" stroke="%s" stroke-width="5" fill="none"/>' % CREAM,
+     '<line x1="120" y1="560" x2="800" y2="560" stroke="%s" stroke-width="4"/>' % GREEN]
+# phone with waveform sliding out under the door
+b += ['<g transform="translate(470 520) rotate(-4)"><rect x="0" y="-8" width="300" height="56" rx="14" fill="%s"/>' % L]
+for i, hh in enumerate([10, 22, 36, 18, 30, 40, 24, 14, 32, 20, 38, 16, 26, 12]):
+    b.append('<rect x="%d" y="%d" width="10" height="%d" rx="5" fill="%s"/>' % (24 + i * 19, 20 - hh // 2, hh, INK))
+b.append('</g>')
+b += [t(660, 610, 'HER DEMO', 28, 'Plex', L)]
+write('wed', 3, ''.join(b))
+
+# 4. uploads vs listening, to scale
+full = 680
+b = [logo('deezer.svg', 60, 20, 220, 62),
+     t(60, 160, 'NEW SONGS UPLOADED EACH DAY', 28, 'Plex', CREAM, 'start', 'fill-opacity="0.8"'),
+     '<rect x="60" y="180" width="%d" height="110" rx="12" fill="%s" fill-opacity="0.12"/>' % (full, CREAM),
+     '<rect x="60" y="180" width="%d" height="110" rx="12" fill="%s"/>' % (int(full * 0.52), L),
+     t(60 + int(full * 0.52) + 24, 258, '50%+ AI', 56, 'Anton', L, 'start'),
+     t(60, 400, 'WHAT PEOPLE LISTEN TO', 28, 'Plex', CREAM, 'start', 'fill-opacity="0.8"'),
+     '<rect x="60" y="420" width="%d" height="110" rx="12" fill="%s" fill-opacity="0.12"/>' % (full, CREAM),
+     '<rect x="60" y="420" width="%d" height="110" rx="4" fill="%s"/>' % (int(full * 0.03), L),
+     t(60 + int(full * 0.03) + 24, 498, '1 TO 3% AI', 56, 'Anton', L, 'start')]
+write('wed', 4, ''.join(b))
+
+# 5. the deck in three layers
+b = []
+for i, (lab, fill, ink) in enumerate([('FINISHED BY PEOPLE', MINT, INK), ('AI DRAFT', L, INK), ('IDEA', CREAM, INK)]):
+    x, y = 150 + i * 70, 60 + i * 120
+    b.append('<rect x="%d" y="%d" width="560" height="320" rx="16" fill="%s" stroke="%s" stroke-width="4"/>' % (x, y, fill, INK))
+    b.append(t(x + 40, y + 70, lab, 46, 'Anton', ink, 'start'))
+    for j in range(3):
+        b.append('<rect x="%d" y="%d" width="%d" height="16" rx="8" fill="%s" fill-opacity="0.25"/>' % (x + 40, y + 120 + j * 40, 420 - j * 90, INK))
+write('wed', 5, ''.join(b))
+
+# 6. three questions on a form
+b = ['<rect x="80" y="20" width="760" height="580" rx="24" fill="%s"/>' % CREAM,
+     '<rect x="80" y="20" width="760" height="20" rx="10" fill="%s"/>' % L]
+for i, q in enumerate(['WHOSE IDEA?', 'DRAFTED BY?', 'CHECKED AND SIGNED BY?']):
+    y = 160 + i * 150
+    b.append(t(130, y, q, 52, 'Anton', INK, 'start'))
+    b.append('<line x1="130" y1="%d" x2="790" y2="%d" stroke="%s" stroke-width="4" stroke-opacity="0.35" stroke-dasharray="2 12" stroke-linecap="round"/>' % (y + 60, y + 60, INK))
+write('wed', 6, ''.join(b))
+
+# 7. (last) the filled sign-off
+b = ['<rect x="210" y="10" width="500" height="490" rx="22" fill="%s"/>' % CREAM,
+     '<rect x="210" y="10" width="500" height="18" rx="9" fill="%s"/>' % L]
+for i, (q, w) in enumerate([('IDEA', 'M380 0 c20 -18 40 18 60 0 s40 -18 60 0 s30 14 50 0'),
+                            ('DRAFT', 'M380 0 c14 -14 30 14 44 0 s28 -14 44 0 s34 16 60 0'),
+                            ('SIGNED', 'M380 0 c10 -30 30 26 46 -6 s22 -22 40 4 s30 10 70 -8')]):
+    y = 130 + i * 130
+    b.append(t(250, y, q, 40, 'Anton', INK, 'start'))
+    b.append('<path d="%s" transform="translate(-10 %d)" stroke="%s" stroke-width="5" fill="none" stroke-linecap="round"/>' % (w, y - 12, INK))
+    b.append('<line x1="370" y1="%d" x2="660" y2="%d" stroke="%s" stroke-opacity="0.25" stroke-width="3"/>' % (y + 14, y + 14, INK))
+b.append('<circle cx="640" cy="440" r="40" fill="%s"/><path d="M620 440 L636 456 L664 424" stroke="%s" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % (MINT, INK))
+write('wed', 7, ''.join(b), 520)
+
+# ---------------- fri: mind.the.gap (coral) ----------------
+C = SER['fri']
+# 2. the leaderboard
+b = ['<rect x="40" y="20" width="840" height="580" rx="24" fill="%s" stroke="%s" stroke-opacity="0.3" stroke-width="2"/>' % (DEEP, CREAM),
+     logo('meta-cream.svg', 80, 50, 150, 64), logo('amazon-cream.svg', 250, 46, 72, 72),
+     t(840, 98, 'AI USE LEADERBOARD', 28, 'Plex', CREAM, 'end', 'fill-opacity="0.7"')]
+rows = [('TOKEN LEGEND', 1.18, C), ('CACHE WIZARD', 0.62, CREAM), ('', 0.40, CREAM)]
+for i, (name, w, fill) in enumerate(rows):
+    y = 160 + i * 110
+    b.append(t(80, y + 56, str(i + 1), 52, 'Anton', fill, 'start'))
+    b.append('<rect x="140" y="%d" width="%d" height="76" rx="12" fill="%s" fill-opacity="%s"/>' % (y, int(620 * w), fill, 1 if i == 0 else 0.25))
+    if name:
+        b.append(t(170, y + 54, name, 40, 'Anton', INK if i == 0 else CREAM, 'start'))
+b += ['<rect x="80" y="490" width="760" height="80" rx="14" fill="%s" fill-opacity="0.08"/>' % CREAM,
+      t(110, 545, 'TOKENS IN 30 DAYS', 30, 'Plex', CREAM, 'start', 'fill-opacity="0.8"'),
+      t(810, 550, '60 TRILLION', 50, 'Anton', C, 'end')]
+write('fri', 2, ''.join(b))
+
+# 3. a cent a tail, and the rat that walked away
+b = ['<line x1="40" y1="520" x2="880" y2="520" stroke="%s" stroke-width="4"/>' % GREEN,
+     t(140, 120, '1902, HANOI', 34, 'Plex', CREAM, 'start', 'fill-opacity="0.7"'),
+     # coin
+     '<circle cx="220" cy="300" r="96" fill="%s"/><circle cx="220" cy="300" r="78" fill="none" stroke="%s" stroke-width="4" stroke-opacity="0.5"/>' % (C, INK),
+     t(220, 330, '1¢', 86, 'Anton', INK),
+     t(220, 450, 'PER TAIL', 34, 'Anton', CREAM)]
+for i in range(7):  # bundle of tails
+    b.append('<path d="M400 %d q60 -40 120 -10 t110 -20" stroke="%s" stroke-width="7" fill="none" stroke-linecap="round"/>' % (440 + i * 9, CREAM))
+b.append('<rect x="452" y="418" width="16" height="80" rx="4" fill="%s"/>' % C)
+# rat with no tail, walking right
+b += ['<g transform="translate(700 470)" fill="%s"><ellipse cx="0" cy="0" rx="90" ry="48"/><ellipse cx="86" cy="-18" rx="40" ry="30"/>' % CREAM,
+      '<circle cx="78" cy="-50" r="18"/><circle cx="104" cy="-22" r="5" fill="%s"/>' % INK,
+      '<rect x="-56" y="34" width="16" height="22" rx="6"/><rect x="40" y="34" width="16" height="22" rx="6"/></g>',
+      '<path d="M606 462 l-14 0" stroke="%s" stroke-width="6" stroke-linecap="round"/>' % C,
+      t(700, 580, 'NO TAIL, STILL BREEDING', 26, 'Plex', C)]
+write('fri', 3, ''.join(b))
+
+# 4. queries down, sales up
+b = ['<line x1="80" y1="520" x2="840" y2="520" stroke="%s" stroke-width="4"/>' % GREEN,
+     '<rect x="140" y="140" width="220" height="380" rx="10" fill="%s" fill-opacity="0.18"/>' % CREAM,
+     '<rect x="140" y="254" width="220" height="266" rx="10" fill="%s"/>' % CREAM,
+     t(250, 116, 'AI QUERIES', 36, 'Anton', CREAM),
+     '<path d="M250 160 L250 230 M228 208 L250 232 L272 208" stroke="%s" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % INK,
+     t(250, 580, 'ABOUT -30%', 40, 'Anton', CREAM)]
+for i in range(4):
+    b.append('<rect x="%d" y="%d" width="60" height="26" rx="4" fill="%s" fill-opacity="0.5" transform="rotate(%d %d %d)"/>' % (390, 150 + i * 40, CREAM, 12 + i * 8, 420, 160 + i * 40))
+b += [t(470, 140, 'JUNK, GONE', 26, 'Plex', CREAM, 'start', 'fill-opacity="0.7"'),
+      '<line x1="390" y1="170" x2="460" y2="300" stroke="%s" stroke-width="5"/>' % C,
+      '<rect x="580" y="231" width="220" height="289" rx="10" fill="%s"/>' % C,
+      '<line x1="566" y1="250" x2="814" y2="250" stroke="%s" stroke-width="4" stroke-dasharray="10 8"/>' % CREAM,
+      t(822, 258, 'BEFORE', 24, 'Plex', CREAM, 'start', 'fill-opacity="0.8"'),
+      t(690, 206, 'SALES', 36, 'Anton', C),
+      '<path d="M690 470 L690 300 M666 324 L690 298 L714 324" stroke="%s" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % INK,
+      t(690, 580, '+7%', 56, 'Anton', C)]
+write('fri', 4, ''.join(b))
+
+# 5. three U-turns
+b = []
+for i, (f, w, h) in enumerate([('meta-cream.svg', 170, 74), ('amazon-cream.svg', 90, 90), ('duolingo-light.svg', 200, 48)]):
+    cx = 160 + i * 300
+    b.append(logo(f, cx - w // 2, 60 + (90 - h) // 2, w, h))
+    b.append('<path d="M%d 480 L%d 290 A70 70 0 0 1 %d 290 L%d 400" stroke="%s" stroke-width="16" fill="none" stroke-linecap="round"/>' % (cx - 70, cx - 70, cx + 70, cx + 70, C))
+    b.append('<path d="M%d 380 L%d 430 L%d 380" stroke="%s" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % (cx + 40, cx + 70, cx + 100, C))
+b += [t(460, 580, 'AI-USE SCORES', 52, 'Anton', CREAM),
+      '<line x1="290" y1="562" x2="630" y2="562" stroke="%s" stroke-width="8"/>' % C]
+write('fri', 5, ''.join(b))
+
+# 6. the review form, AI usage struck out
+b = ['<rect x="120" y="20" width="680" height="580" rx="24" fill="%s"/>' % CREAM,
+     '<rect x="120" y="20" width="680" height="20" rx="10" fill="%s"/>' % GREEN,
+     t(170, 110, 'PERFORMANCE REVIEW', 30, 'Plex', INK, 'start', 'fill-opacity="0.6"')]
+for i, q in enumerate(['QUALITY OF WORK', 'RESULTS', 'AI USAGE', 'TEAMWORK']):
+    y = 200 + i * 100
+    b.append(t(170, y, q, 46, 'Anton', INK, 'start', '' if q != 'AI USAGE' else 'fill-opacity="0.55"'))
+    b.append('<line x1="170" y1="%d" x2="750" y2="%d" stroke="%s" stroke-opacity="0.15" stroke-width="3"/>' % (y + 26, y + 26, INK))
+b.append('<path d="M150 388 C320 372 520 392 770 370" stroke="%s" stroke-width="16" fill="none" stroke-linecap="round"/>' % C)
+write('fri', 6, ''.join(b))
+
+# 7. (last) the results gauge
+b = ['<path d="M200 420 A260 260 0 0 1 720 420" stroke="%s" stroke-opacity="0.2" stroke-width="40" fill="none" stroke-linecap="round"/>' % CREAM,
+     '<path d="M460 160 A260 260 0 0 1 720 420" stroke="%s" stroke-width="40" fill="none" stroke-linecap="round"/>' % MINT,
+     '<line x1="460" y1="420" x2="640" y2="250" stroke="%s" stroke-width="14" stroke-linecap="round"/>' % MINT,
+     '<circle cx="460" cy="420" r="28" fill="%s"/>' % CREAM,
+     t(460, 500, 'RESULTS', 56, 'Anton', CREAM)]
+write('fri', 7, ''.join(b), 520)
+print('devices drawn')
+
+exec
+/bin/bash -lc "cat BRIEF.md mon/deck.json wed/deck.json fri/deck.json; sed -n '1,100p' devices.py" in /home/user/growth-makeyourmindup/docs/plans/2026-11-09-week-carousels
+ succeeded in 0ms:
+# Codex brief: the pictures for three derived carousels (week of 9 November 2026)
+
+Krish, 13 Nov 2026: "build those 3 carousels to world class branded standards using the codex plug in". His standard
+for every carousel (content-engine `docs/CAROUSEL-STANDARD.md`, "The ten-second swipe"): "a complete layperson is
+swiping through these cards at light speed and needs to be able to follow the story within 10 seconds". Every card
+after the cover shows its point as a picture: bars to scale, the thing jammed, the people, the hand-off.
+
+The words are locked. They are in `mon/deck.json`, `wed/deck.json` and `fri/deck.json` (each card's `headline`,
+`line` and `picture`). Do not change any deck. Your job is one picture per card, from card 2 to the last card, as
+the card's `picture` field describes it.
+
+## What you make
+
+For each day folder (`mon`, `wed`, `fri`) and each card N from 2 to the last: `<day>/devices/card-N.svg`.
+
+- One `<svg>` element, `viewBox="0 0 920 620"`, `width="920" height="620"` (the last card: `viewBox="0 0 920 520"`).
+  It is pasted inline into the card page, below the headline and line, above the wordmark. Leave transparent
+  ground; the card is ink.
+- Colours, only these, as hex: ink `#0C1512`, deep ink `#070D0B`, cream `#F4EFE4`, green `#2F6B5C`, mint
+  `#7EF0C0`, and the day's series colour: mon `#FFD84D`, wed `#B7A6FF`, fri `#FF6A4D`. Cream may be faded with
+  `opacity` / `fill-opacity`; no other colour, no gradients except ink-to-transparent or green glow.
+- Fonts, only these family names (the page loads them): `Anton` (big numbers, labels in capitals), `Archivo`
+  (short words), `Plex` (IBM Plex Mono, tiny tags). Words inside a picture are few: a label, a number, a name. At
+  least 26px so they read at phone size. No sentence that repeats the headline or line.
+- Real logos, where a company is named, as `<image href="../devices/<file>.svg" .../>` from the files already in
+  that day's `devices/` folder (mon: Disney, Character.AI, Google, OpenAI, Netflix, Warner Music; wed: Suno,
+  Deezer, Grammys; fri: Meta, Amazon, Duolingo, Shopify). Never redraw or set a logo as type. A dark logo sits on a
+  cream tile. Never draw a tacky outline box around a logo.
+- Numbers to scale: a bar for 50% is exactly half the bar for 100%; 1 to 3% is a sliver. Every number shown must be
+  in the deck's line or picture field, nothing else.
+- The look: flat, bold, editorial, like a Bloomberg or FT explainer drawn for a phone. Thick shapes, generous space,
+  one focal object per card, the series colour on the one thing the eye should land on, mint for the answer, green
+  for structure. Real objects drawn simply (a box, a door, a form, a gauge, a leaderboard). No clipart, no stock
+  icons, no emoji, no cartoon faces, no people with faces (simple silhouettes are fine), no robots, no gimmicks.
+- No card numbers, no "1/8", no page dots, no URL, no source strip, no small print, no em dashes anywhere.
+- The last card's picture is calm and centred: one object, centred on x = 460.
+
+## The per-card pictures (the deck's `picture` field, made concrete)
+
+**mon (follow.the.money, butter #FFD84D)**
+2. A horizontal timeline: "AUG 2024" on the left with the Google logo and three small silhouettes walking off the line
+   towards it, labelled "FOUNDERS"; "OCT 2026" on the right with the Character.AI logo and a butter stamp "BUST".
+3. The Disney logo on a cream tile, a thick line to the OpenAI logo labelled "SORA" in a phone shape, the phone dark with
+   a butter "CLOSED" sign hung across it; "$1B DEAL" over the line, struck through.
+4. 66 small cream silhouettes (count them: 66) in a grid flowing right towards the Disney logo; left behind on the
+   floor, a butter pile of folders labelled "LAWSUITS" beside the Character.AI logo.
+5. Two columns: "RENT" (faded) and "OWN" (butter). Under OWN, the Disney, Netflix and Warner Music logos on cream
+   tiles, each with a small butter "BOUGHT" tag; an arrow from RENT to OWN.
+6. A large open box, empty inside, drawn in cream line and ink, one faint chat bubble drifting up out of it.
+7. A checklist on a cream card: four rows with empty tick boxes: "FOUNDERS STILL THERE?", "YOUR TOOL ITS MAIN
+   PRODUCT?", "SHORT OF CASH?", "COLLECTING LAWSUITS?".
+8. (last, 520 tall) One key on a hook, centred, the key's bow in butter, a small tag on it reading "PLAN B".
+
+**wed (under.the.hood, lilac #B7A6FF)**
+2. Four stacked horizontal layers like a cake slice, bottom to top: "HER WORDS", "AI APP'S FIRST SONG" (no logo: the piece could not confirm whether Suno or Udio made it), "DJ'S REBUILD", "SINGER'S VOICE" (lilac); a thin dashed lilac thread running from the AI layer up through
+   the top one, labelled "AI VOICE, STILL UNDER".
+3. A tall closed studio door labelled "STUDIO" with a lock; under its gap a demo (a cassette or a phone waveform) in
+   lilac slides through to the near side.
+4. Two bars to scale from the same baseline: "NEW UPLOADS" at a bit over 50% filled lilac "50%+"; "LISTENING" at a
+   sliver "1 TO 3%"; the Deezer logo above.
+5. A slide deck seen at an angle, three layers peeled apart: "IDEA" (cream), "AI DRAFT" (lilac), "FINISHED BY
+   PEOPLE" (mint).
+6. Three labelled rows on a cream form: "IDEA:", "DRAFTED BY:", "CHECKED AND SIGNED BY:" with blank lines.
+7. (last, 520 tall) A sign-off form, centred, its three lines filled with simple scribbles and a mint tick by the
+   signature line.
+
+**fri (mind.the.gap, coral #FF6A4D)**
+2. A leaderboard panel with three rows; top row "TOKEN LEGEND" with a coral bar overflowing the panel; a token
+   counter reading "60 TRILLION" (Meta's 30-day total); the Meta and Amazon logos at the top.
+3. A one-cent coin, a stack of rat tails tied with string, and beside it one simple rat silhouette with no tail,
+   walking away. "1902" in Plex. Simple, a little funny, not gory.
+4. Two bars from one baseline: "AI QUERIES" falling (an arrow down, "-30%") and "SALES" rising coral ("+7%"); a small
+   strip of struck-through blocks labelled "JUNK" falling out of the queries bar.
+5. Three U-turn arrows side by side, each with a logo above: Meta, Amazon, Duolingo; under them "USAGE SCORES"
+   struck through.
+6. A cream review form with lines; the line "AI USAGE" crossed out with a thick coral stroke.
+7. (last, 520 tall) One round gauge, centred, labelled "RESULTS", its needle in mint pointing up and right.
+
+## Checks before you stop (every one must pass)
+
+    python3 check_devices.py
+
+It confirms each file exists, parses, uses only the listed colours and fonts, references only existing logo files and
+holds no em dash. Then run `python3 render.py mon && python3 render.py wed && python3 render.py fri` and
+`node shoot.mjs mon` (and wed, fri), open every `*/cards/card-N.png` you made and look at it: nothing overlaps the
+headline, the line or the wordmark, nothing is cut off, every word reads at phone size.
+
+## Never
+
+Touch the decks, the style files, `render.py`, `shoot.mjs`, the kit folder or anything outside this folder; use the
+network; run git; publish, post or upload anything.
+
+## Return
+
+A short list: each file you made, and anything you could not do.
+{
+ "schema": "carousel-deck/1",
+ "title": "Who walks away when a loved AI app goes bust (derived carousel, carries Mon 9 Nov follow.the.money, piece b358e788)",
+ "carries": "b358e788-209f-427b-a84d-1f79a8ebb430",
+ "series": "follow_the_money",
+ "five_whys": [
+  {
+   "q": "Why is Disney hiring Character.AI's staff through a bankruptcy court?",
+   "a": "So it gets the team and the code while the lawsuits stay with what is left of Character.AI."
+  },
+  {
+   "q": "Why does Disney want an AI team at all?",
+   "a": "Its $1 billion plan to put its characters in OpenAI's Sora app died when OpenAI shut Sora in March 2026."
+  },
+  {
+   "q": "Why did that push Disney to buy rather than rent again?",
+   "a": "Renting meant its plans lived on someone else's app, and that app closed without warning."
+  },
+  {
+   "q": "Why is this bigger than Disney?",
+   "a": "Netflix bought an AI film start-up for a reported $587 million and Warner Music bought Sureel AI: big firms are moving from renting AI to owning it."
+  },
+  {
+   "q": "Why should an everyday business person care?",
+   "a": "Most businesses rent their AI; when its maker is bought or goes bust, the users are left with the empty box, so check the maker now and have a plan B."
+  }
+ ],
+ "arc": {
+  "what": 1,
+  "happened": [
+   1,
+   2
+  ],
+  "why": [
+   3,
+   4
+  ],
+  "so_what": [
+   5,
+   6
+  ],
+  "do": [
+   7,
+   8
+  ]
+ },
+ "explains": {},
+ "cta": "Follow for more",
+ "cards": [
+  {
+   "headline": "Millions loved Character.AI. It went bust",
+   "line": "An app for chatting with made-up characters. It filed for bankruptcy on 12 October.",
+   "picture": "Cover scene: a chat app on a phone, alone on an auction block under a spotlight, a lot tag hanging off it"
+  },
+  {
+   "headline": "Google hired its founders first.",
+   "line": "In 2024 Google reportedly paid $2.7 billion to use its tech and hire its founders. The first warning sign.",
+   "picture": "A timeline: Aug 2024 the founders walk out to Google, Oct 2026 the app goes bust"
+  },
+  {
+   "headline": "Then Disney's AI video deal died.",
+   "line": "Disney's $1 billion deal put its characters in OpenAI's Sora app. OpenAI shut Sora in March.",
+   "picture": "Disney's characters locked outside a shuttered Sora shopfront"
+  },
+  {
+   "headline": "So Disney is hiring Character.AI's team.",
+   "line": "Jobs for 66 staff through the bankruptcy court. The lawsuits stay behind with the shell.",
+   "picture": "66 small figures walking across to Disney, a pile of lawsuits left on the empty floor"
+  },
+  {
+   "headline": "Big firms now own their AI instead of renting.",
+   "line": "Renting is using another firm's AI. Netflix bought an AI film start-up for a reported $587 million.",
+   "picture": "Three buyers, each with a SOLD tag: Disney, Netflix, Warner Music, an arrow from RENT to OWN",
+   "source": "The Hollywood Reporter on Netflix and InterPositive (2026); also Warner Music Group buying Sureel AI, PR Newswire (June 2026)"
+  },
+  {
+   "headline": "Your AI could vanish too.",
+   "line": "If its maker is bought or goes bust, users are left with the empty box.",
+   "picture": "An open, empty box with a chat bubble fading out of it"
+  },
+  {
+   "headline": "Check who makes your AI.",
+   "line": "Founders still there? Your tool its main product? Short of cash? Collecting lawsuits?",
+   "picture": "A four-line checklist, one box per question"
+  },
+  {
+   "headline": "Pick your plan B now.",
+   "line": "If two answers worry you, try another tool on one real task this month. Follow for more.",
+   "picture": "A spare key on a hook, Follow for more over the centred wordmark"
+  }
+ ],
+ "read_back": [
+  {
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "answers": {
+    "what": "An AI company collapsed, and businesses renting AI could lose access to it too.",
+    "happened": "Character.AI, loved by millions, went bust, and Google hired its founders first.",
+    "why": "Its founders went to Google first and its big partner's plans changed, so it was left weak.",
+    "so_what": "If an AI tool I rely on can vanish overnight, my business could lose a key service with no warning.",
+    "do": "Check who makes each AI tool I use and pick a backup option now."
+   }
+  },
+  {
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "answers": {
+    "what": "A popular AI chatbot app called Character.AI ran out of money and collapsed even though millions used it.",
+    "happened": "Google hired the founders first, then OpenAI shut the app Disney relied on, so Disney is hiring the Character.AI team.",
+    "why": "Big companies are now building and owning their own AI instead of paying to use someone else's.",
+    "so_what": "The AI apps I use could disappear suddenly if the company behind them goes under.",
+    "do": "Find out which company makes the AI I use and have a backup option ready."
+   }
+  }
+ ],
+ "sources": [
+  "Character.AI Chapter 11 filing and sale motion, Delaware, 12 to 13 Oct 2026 (https://cases.stretto.com/public/x936/14939/PLEADINGS/1493910132680000000114.pdf)",
+  "CNBC, 2 Aug 2024, Google and Character.AI (https://www.cnbc.com/2024/08/02/ex-google-engineers-from-characterai-re-join-company-with-ai-partnership-.html)",
+  "Disney and OpenAI Sora agreement (https://thewaltdisneycompany.com/news/disney-openai-sora-agreement/); Deadline, Mar 2026, Sora shut down (https://deadline.com/2026/03/sora-shut-down-disney-investment-1236764689/)",
+  "Gizmodo and Wired on Disney's offers to 66 staff and the bid's exclusions (via the piece)",
+  "The Hollywood Reporter, Netflix and InterPositive (https://www.hollywoodreporter.com/business/business-news/netflix-price-ben-affleck-ai-company-revealed-1236651217/)",
+  "PR Newswire, Warner Music Group acquires Sureel AI (https://www.prnewswire.com/news-releases/warner-music-group-acquires-sureel-ai-302796705.html)"
+ ],
+ "read_back_fixed": "Round 1 (Haiku, Sonnet) stumbled on 'Disney's AI partner' (unnamed), 'hiring the team' (which team) and 'buy, not rent'; card 3 now names OpenAI, card 4 names Character.AI's team, card 5 says own instead of renting and its line says what renting is. Round 2 stumbled only on how Sora linked to Disney: card 3 now reads as Disney's own deal dying, its line naming Sora."
+}{
+ "schema": "carousel-deck/1",
+ "title": "AI is already in the music you love (derived carousel, carries Wed 11 Nov under.the.hood, piece 36886e0b)",
+ "carries": "36886e0b-4b32-473b-be72-b0aef31fccef",
+ "series": "under_the_hood",
+ "five_whys": [
+  {
+   "q": "Why is Movin' To The Sun both AI and human?",
+   "a": "An AI app sang a Reiki healer's lyrics first, then a DJ rebuilt it and a dance star sang over a trace of the AI voice."
+  },
+  {
+   "q": "Why did an AI app start it?",
+   "a": "She had lyrics but no studio or training, and an app like Suno turns typed lyrics into a sung demo."
+  },
+  {
+   "q": "Why did a demo become a UK number two?",
+   "a": "Strangers heard it under other people's short videos, went hunting for it, and professionals finished it."
+  },
+  {
+   "q": "Why is this bigger than one song?",
+   "a": "Deezer says AI-made tracks passed half of new uploads a day while getting 1 to 3% of listening: making is cheap, being found is scarce."
+  },
+  {
+   "q": "Why should an everyday business person care?",
+   "a": "Work landing on their desk is made the same way, so 'did AI make this?' tells them nothing; ask who did which bit and make it part of sign-off."
+  }
+ ],
+ "arc": {
+  "what": 1,
+  "happened": [
+   1,
+   2
+  ],
+  "why": 3,
+  "so_what": [
+   4,
+   5
+  ],
+  "do": [
+   6,
+   7
+  ]
+ },
+ "explains": {},
+ "cta": "Follow for more",
+ "cards": [
+  {
+   "headline": "A UK chart hit began in an AI app",
+   "line": "Movin' To The Sun reached number two. AI music apps like Suno turn typed lyrics into a sung song.",
+   "picture": "Cover scene: a record cut open like a cake, its layers showing, a phone with a music app at the bottom layer"
+  },
+  {
+   "headline": "A DJ and a singer finished it.",
+   "line": "HUGEL rebuilt the track. Ultra Naté sang it, with a trace of the AI voice underneath.",
+   "picture": "Four stacked layers: her words, the AI app's first song, the DJ's rebuild, the singer's voice"
+  },
+  {
+   "headline": "An AI app gave a healer her demo.",
+   "line": "Bernadett Gango, a Reiki healer with lyrics but no studio, wrote it. The app sang it first.",
+   "picture": "A closed studio door marked STUDIO, a demo slipping underneath it"
+  },
+  {
+   "headline": "Over half of new uploads are AI.",
+   "line": "At Deezer, every day. Yet they get only 1 to 3% of listening. Being found is hard.",
+   "picture": "Two bars to scale: AI share of new uploads 50%+, AI share of listening 1 to 3%",
+   "source": "Deezer, July 2026 (AI tracks passed 50% of daily new uploads) and April 2026 (1 to 3% of streams)"
+  },
+  {
+   "headline": "Work at your office is part AI too.",
+   "line": "A person's idea, an AI draft, people finishing it. The advert, the deck, the report.",
+   "picture": "A slide deck in three layers: idea, AI draft, human finish"
+  },
+  {
+   "headline": "Ask who did which bit.",
+   "line": "Of any work that lands on your desk: whose idea, what a tool drafted, who checked it.",
+   "picture": "Three labelled rows: IDEA, DRAFTED BY, CHECKED AND SIGNED BY"
+  },
+  {
+   "headline": "Put that on every work sign-off.",
+   "line": "The approval line on a brief or report, so its name is whoever stands behind it. Follow for more.",
+   "picture": "A sign-off form with the three lines filled, Follow for more over the centred wordmark"
+  }
+ ],
+ "read_back": [
+  {
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "answers": {
+    "what": "AI is now behind much of the music being made and much of the work done in offices.",
+    "happened": "A UK chart hit started in an AI app, and a human DJ and singer finished it.",
+    "why": "AI makes starting things cheap, so people need to know who did what.",
+    "so_what": "I need to know which work is genuinely ours and whether staff and suppliers use AI honestly.",
+    "do": "Ask my team who did which part of each job and record it on every work sign-off."
+   }
+  },
+  {
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "answers": {
+    "what": "A song that hit the UK charts started in an AI app, and real people finished it.",
+    "happened": "A DJ and a singer took the AI-made track and polished it into the finished hit.",
+    "why": "AI makes so much stuff that over half of new uploads are AI, and it is in normal jobs too.",
+    "so_what": "What I scroll and what adults work on might be part AI without anyone saying so.",
+    "do": "Ask who did which part of anything I see or make, and say what was AI and what was me."
+   }
+  }
+ ],
+ "sources": [
+  "Official Charts, Movin' To The Sun (HUGEL, Imael Angel, Ultra Naté), peak 2 (via the piece)",
+  "We Rave You on HUGEL's production list (via the piece)",
+  "The Australian, 16 Oct 2026, the Grammys' narrower ruling (via the piece)",
+  "Deezer, July 2026: AI-made tracks passed 50% of daily new uploads; April 2026 report: 1 to 3% of streams"
+ ],
+ "read_back_fixed": "Round 1 stumbled on 'made this way' (what way), 'number two' (which chart) and 'sign-off' (what is that); cards 1, 5 and 7 now say chart hit, part AI, and the line defines sign-off. Round 2 stumbled on 'its writer' (AI or human?); card 3 now says an AI app gave a healer her first demo, and card 6's line says whose work to ask about."
+}{
+ "schema": "carousel-deck/1",
+ "title": "Counting rat tails (derived carousel, carries Fri 13 Nov mind.the.gap, piece f3fcd5e1)",
+ "carries": "f3fcd5e1-573e-4692-a413-db7c5823a10e",
+ "series": "mind_the_gap",
+ "five_whys": [
+  {
+   "q": "Why did Meta and Amazon staff burn AI on nothing?",
+   "a": "They were ranked on leaderboards by how many tokens, the units of AI use, they ran up."
+  },
+  {
+   "q": "Why were they ranked by use?",
+   "a": "Bosses made AI use part of reviews, and use is the cheapest thing to measure."
+  },
+  {
+   "q": "Why does ranking by use go wrong?",
+   "a": "Pay people for a sign of what you want and they make signs: Hanoi paid per rat tail in 1902 and got rat farms."
+  },
+  {
+   "q": "Why is this bigger than two companies?",
+   "a": "A study of a 5,000-person firm found halving its AI-use target cut junk queries and lifted sales 7%, and Meta, Amazon and Duolingo have backed down."
+  },
+  {
+   "q": "Why should an everyday business person care?",
+   "a": "A usage number is the AI bill, not the result; judge people on it and they run up the bill, so judge AI on a number you already track."
+  }
+ ],
+ "arc": {
+  "what": 1,
+  "happened": [
+   1,
+   2
+  ],
+  "why": 3,
+  "so_what": [
+   4,
+   5
+  ],
+  "do": [
+   6,
+   7
+  ]
+ },
+ "explains": {
+  "tokens": "the bits of text an AI reads and writes, each one billed (cover line)",
+  "token": "the bits of text an AI reads and writes, each one billed (cover line)"
+ },
+ "cta": "Follow for more",
+ "cards": [
+  {
+   "headline": "Meta staff were ranked by AI use. They gamed it",
+   "line": "AI use is counted in tokens, the bits of text an AI reads and writes. Each costs money.",
+   "picture": "Cover scene: a podium trophy reading TOKEN LEGEND, a pile of cut rat tails on the top step"
+  },
+  {
+   "headline": "Staff ran pointless AI jobs to climb.",
+   "line": "Meta's board tracked the tokens of 85,000 staff. Amazon staff set AI helpers on needless tasks.",
+   "picture": "A leaderboard, top row TOKEN LEGEND, the token count meter spinning past 60 trillion"
+  },
+  {
+   "headline": "Pay for a number, and people fake it.",
+   "line": "In 1902 Hanoi paid a cent per rat tail. People cut tails off and farmed rats.",
+   "picture": "A live rat with no tail beside a stack of tails and a one-cent coin"
+  },
+  {
+   "headline": "Asking for less AI use lifted sales 7%.",
+   "line": "One firm asked 5,000 staff for half the AI queries. Nine in ten dropped were junk.",
+   "picture": "Two bars: queries down about 30%, sales up 7%, junk queries struck through",
+   "source": "arXiv preprint, Sep 2026, a medical-device firm's AI query target cut from 200 to 100 a month (not yet peer reviewed)"
+  },
+  {
+   "headline": "Three big firms dropped AI-use scores.",
+   "line": "Meta, Amazon and Duolingo. Amazon: no AI help is 'a finding, not a failing.'",
+   "picture": "Three U-turn arrows, one each for Meta, Amazon and Duolingo",
+   "source": "daily.dev (Meta, Sep 2026); CNBC (Amazon memo, Oct 2026); WPXI (Duolingo, Apr 2026)"
+  },
+  {
+   "headline": "Stop scoring AI use.",
+   "line": "Take it out of review forms, dashboards and team charts.",
+   "picture": "A review form with the AI USAGE line crossed out"
+  },
+  {
+   "headline": "Judge AI on results, not use.",
+   "line": "Sales, tickets closed, invoices sent. If it hasn't moved, the AI isn't working yet. Follow for more.",
+   "picture": "One gauge labelled SALES with its needle, Follow for more over the centred wordmark"
+  }
+ ],
+ "read_back": [
+  {
+   "reader": "Fresh reader A (Haiku, a small-business owner, headlines only, once; round 2)",
+   "answers": {
+    "what": "Meta ranked staff by how much they used AI, and staff gamed the ranking.",
+    "happened": "Employees ran pointless AI jobs to climb the leaderboard, and three big firms then dropped AI-use scores.",
+    "why": "When you pay people for a number, they fake the number instead of doing useful work.",
+    "so_what": "If I score my team by AI use, I will get busywork and no real gain.",
+    "do": "Judge AI by the results it produces, such as sales and quality, not how often it is used."
+   }
+  },
+  {
+   "reader": "Fresh reader B (Sonnet, a 15-year-old, headlines only, once; round 2)",
+   "answers": {
+    "what": "Companies judging workers by how much they use AI, and it backfiring.",
+    "happened": "Meta ranked staff on AI use, so people ran pointless AI jobs just to look good.",
+    "why": "When you get ranked on a number, people fake the number instead of doing real work.",
+    "so_what": "Like being graded on hours studied: I would leave the tab open and learn nothing.",
+    "do": "Judge AI by the results it gets, not by how much people use it."
+   }
+  }
+ ],
+ "sources": [
+  "Fortune, 9 Apr 2026, Meta's token dashboard (https://fortune.com/2026/04/09/meta-killed-employee-ai-token-dashboard/)",
+  "CIO on Amazon's KiroRank (via the piece)",
+  "Atlas Obscura, drawing on Michael Vann, the Hanoi rat bounty of 1902 (via the piece)",
+  "arXiv preprint, Sep 2026, halving an AI query target at a medical-device firm (via the piece)",
+  "daily.dev, Sep 2026 (Meta); CNBC, Oct 2026 (Amazon); WPXI, Apr 2026 (Duolingo)"
+ ],
+ "read_back_fixed": "Round 1 stumbled on 'count a sign' (vague), 'backed down' (from what) and 'a number you track' (seemed to contradict card 6); cards 3, 5 and 7 now say pay for a number, dropped AI-use scores, and judge on results. Round 2 stumbled on 'halving the AI target'; card 4 now says asking for less AI use lifted sales."
+}#!/usr/bin/env python3
+"""The card pictures (devices/card-N.svg) for the three decks, drawn to BRIEF.md. Kit colours, kit fonts, real logos."""
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+INK, DEEP, CREAM, GREEN, MINT = '#0C1512', '#070D0B', '#F4EFE4', '#2F6B5C', '#7EF0C0'
+SER = {'mon': '#FFD84D', 'wed': '#B7A6FF', 'fri': '#FF6A4D'}
+
+
+def svg(body, h=620):
+    return ('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 920 %d" '
+            'width="920" height="%d">%s</svg>\n' % (h, h, body))
+
+
+def t(x, y, s, size=30, fam='Anton', fill=CREAM, anchor='middle', extra=''):
+    return ('<text x="%s" y="%s" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s>%s</text>'
+            % (x, y, fam, size, fill, anchor, extra, s))
+
+
+def logo(f, x, y, w, h):
+    return '<image href="../devices/%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMid meet"/>' % (f, x, y, w, h)
+
+
+def tile(f, x, y, w, h, pad=18, fill=CREAM):
+    return ('<rect x="%s" y="%s" width="%s" height="%s" rx="18" fill="%s"/>' % (x, y, w, h, fill)
+            + logo(f, x + pad, y + pad, w - 2 * pad, h - 2 * pad))
+
+
+def person(x, y, s=1.0, fill=CREAM, op=1.0):
+    """A plain silhouette (no face): head and shoulders."""
+    return ('<g transform="translate(%s %s) scale(%s)" fill="%s" fill-opacity="%s"><circle cx="0" cy="-34" r="13"/>'
+            '<path d="M-20 0 Q-20 -18 0 -18 Q20 -18 20 0 Z"/></g>' % (x, y, s, fill, op))
+
+
+def write(day, n, body, h=620):
+    (HERE / day / 'devices' / ('card-%d.svg' % n)).write_text(svg(body, h), encoding='utf-8')
+
+
+# ---------------- mon: follow.the.money (butter) ----------------
+B = SER['mon']
+# 2. timeline: the founders leave for Google; two years later the app goes bust
+b = ['<line x1="60" y1="420" x2="860" y2="420" stroke="%s" stroke-width="8" stroke-linecap="round"/>' % GREEN,
+     '<circle cx="190" cy="420" r="20" fill="%s"/>' % CREAM, '<circle cx="730" cy="420" r="20" fill="%s"/>' % B,
+     t(190, 490, 'AUG 2024', 38, 'Plex'), t(730, 490, 'OCT 2026', 38, 'Plex', B),
+     t(460, 405, 'TWO YEARS LATER', 30, 'Plex', CREAM, extra='fill-opacity="0.6"'),
+     '<rect x="100" y="40" width="180" height="180" rx="24" fill="%s"/>' % CREAM, logo('google-g.svg', 132, 72, 116, 116)]
+for i, x in enumerate([130, 190, 250]):
+    b.append(person(x, 350, 1.9, CREAM, 1 - i * 0.12))
+b += ['<path d="M190 300 L190 240" stroke="%s" stroke-width="7" stroke-linecap="round"/>' % B,
+      '<path d="M168 262 L190 236 L212 262" stroke="%s" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % B,
+      t(190, 560, 'FOUNDERS GO TO GOOGLE', 34, 'Anton', CREAM),
+      logo('characterai-cream.svg', 590, 300, 280, 40),
+      '<g transform="rotate(-8 730 170)"><rect x="590" y="100" width="280" height="130" rx="14" fill="none" stroke="%s" stroke-width="9"/>' % B,
+      t(730, 200, 'BUST', 96, 'Anton', B) + '</g>',
+      t(730, 560, 'THE APP GOES BUST', 34, 'Anton', B)]
+write('mon', 2, ''.join(b))
+
+# 3. the Disney deal on OpenAI's Sora app, closed
+b = [tile('disney-script-cream.svg', 40, 200, 250, 150, 24, INK)]
+b[0] = ('<rect x="40" y="200" width="250" height="150" rx="18" fill="%s" stroke="%s" stroke-opacity="0.35" stroke-width="2"/>' % (DEEP, CREAM)
+        + logo('disney-script-cream.svg', 64, 224, 202, 102))
+b += ['<line x1="300" y1="275" x2="560" y2="275" stroke="%s" stroke-width="6" stroke-dasharray="14 12"/>' % CREAM,
+      t(430, 245, '$1B DEAL', 40, 'Anton', CREAM),
+      '<line x1="352" y1="232" x2="508" y2="232" stroke="%s" stroke-width="7"/>' % B]
+# the phone
+b += ['<rect x="590" y="40" width="250" height="480" rx="40" fill="%s" stroke="%s" stroke-width="6"/>' % (DEEP, CREAM),
+      '<rect x="690" y="58" width="50" height="10" rx="5" fill="%s" fill-opacity="0.5"/>' % CREAM,
+      logo('openai-symbol-cream.svg', 665, 120, 100, 100), t(715, 270, 'SORA', 44, 'Anton', CREAM, extra='fill-opacity="0.5"')]
+# closed sign hung across
+b += ['<line x1="640" y1="300" x2="700" y2="352" stroke="%s" stroke-width="4"/><line x1="790" y1="300" x2="730" y2="352" stroke="%s" stroke-width="4"/>' % (CREAM, CREAM),
+      '<g transform="rotate(-6 715 400)"><rect x="590" y="352" width="250" height="96" rx="12" fill="%s"/>' % B,
+      t(715, 420, 'CLOSED', 62, 'Anton', INK) + '</g>',
+      t(715, 560, 'OPENAI SHUT IT, MARCH 2026', 24, 'Plex', CREAM, extra='fill-opacity="0.7"')]
+write('mon', 3, ''.join(b))
+
+# 4. 66 staff walk over to Disney, the lawsuits stay behind
+b = []
+k = 0
+for r in range(6):
+    for c in range(11):
+        if k < 66:
+            b.append(person(70 + c * 46, 140 + r * 56, 0.85, CREAM, 0.95))
+            k += 1
+b += [t(300, 60, '66 STAFF', 44, 'Anton', CREAM)]
+b += ['<path d="M590 300 L680 300 M660 280 L684 300 L660 320" stroke="%s" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % B]
+b += ['<rect x="700" y="210" width="200" height="180" rx="18" fill="%s" stroke="%s" stroke-opacity="0.35" stroke-width="2"/>' % (DEEP, CREAM),
+      logo('disney-script-cream.svg', 720, 240, 160, 120)]
+# lawsuits pile left behind
+for i in range(5):
+    b.append('<rect x="%d" y="%d" width="150" height="26" rx="4" fill="%s" fill-opacity="%s" transform="rotate(%d %d %d)"/>'
+             % (60 + (i % 2) * 8, 590 - i * 22, B, 0.95 - i * 0.08, (-3 if i % 2 else 2), 130, 590 - i * 22))
+b += [t(240, 600, 'LAWSUITS STAY BEHIND', 28, 'Plex', B, 'start')]
+b += [logo('characterai-cream.svg', 240, 528, 220, 34)]
+write('mon', 4, ''.join(b))
+
+# 5. RENT to OWN: Disney, Netflix, Warner Music
+b = ['<rect x="40" y="60" width="250" height="500" rx="22" fill="none" stroke="%s" stroke-opacity="0.35" stroke-width="3" stroke-dasharray="12 10"/>' % CREAM,
+     t(165, 140, 'RENT', 64, 'Anton', CREAM, extra='fill-opacity="0.45"'),
+     t(165, 330, 'SOMEONE', 28, 'Plex', CREAM, extra='fill-opacity="0.45"'), t(165, 368, "ELSE'S AI", 28, 'Plex', CREAM, extra='fill-opacity="0.45"'),
+     '<path d="M310 310 L400 310 M378 288 L404 310 L378 332" stroke="%s" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % B,
+
+codex
+Card numbers include the ignored cover. Fixes below refer to `devices.py`.
+
+| Day | Card | Problem | Concrete fix |
+|---|---:|---|---|
+| Wed | 2 | The right-hand annotation clips “VOICE”; it cannot be read cleanly. | Replace its three text lines with `AI VOICE` / `STILL UNDER`, at x=650, size 28, keeping both inside x=900. |
+| Fri | 2 | `TOKENS IN 30 DAYS` adds a period absent from the deck’s line/picture fields. | Change the counter label to `TOKENS`; retain `60 TRILLION`. |
+| Fri | 4 | Queries show −30% correctly, but the sales increase has no visible starting level in the supplied render, so +7% cannot be judged visually. | Show a distinct sales “before” bar of height 270 and “after” height 288.9 from y=520. Keep the dashed before line at y=250 and its `BEFORE` label visible. The current code contains that line; verify it survives rendering. |
+
+**Fine:** Mon 2–8; Wed 3–7; Fri 3, 5–7.
+
+The 66-person grid counts correctly. No other visible clipping, collisions or misleading scales found. No files edited; the review identifies three fixes supporting clearer, shareable posts.
+tokens used
+44,523
+Card numbers include the ignored cover. Fixes below refer to `devices.py`.
+
+| Day | Card | Problem | Concrete fix |
+|---|---:|---|---|
+| Wed | 2 | The right-hand annotation clips “VOICE”; it cannot be read cleanly. | Replace its three text lines with `AI VOICE` / `STILL UNDER`, at x=650, size 28, keeping both inside x=900. |
+| Fri | 2 | `TOKENS IN 30 DAYS` adds a period absent from the deck’s line/picture fields. | Change the counter label to `TOKENS`; retain `60 TRILLION`. |
+| Fri | 4 | Queries show −30% correctly, but the sales increase has no visible starting level in the supplied render, so +7% cannot be judged visually. | Show a distinct sales “before” bar of height 270 and “after” height 288.9 from y=520. Keep the dashed before line at y=250 and its `BEFORE` label visible. The current code contains that line; verify it survives rendering. |
+
+**Fine:** Mon 2–8; Wed 3–7; Fri 3, 5–7.
+
+The 66-person grid counts correctly. No other visible clipping, collisions or misleading scales found. No files edited; the review identifies three fixes supporting clearer, shareable posts.
