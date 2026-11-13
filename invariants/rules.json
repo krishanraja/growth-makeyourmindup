@@ -1211,7 +1211,7 @@
     },
     {
       "id": "R100",
-      "statement": "No public word names Krish: content-engine's copy lint no_name pattern, vendored unchanged, refuses his name, its spellings and handles in run lint, preflight captions and alt text, release words, carried alt text and titles, autonomous audit repairs, drafted pack replies and the post drafts the Control Center loop proposes. No override, another Krish included; first person stays on his personal accounts.",
+      "statement": "No public word names Krish: content-engine's copy lint no_name pattern, vendored unchanged, refuses his name, its spellings and handles in run lint, preflight captions and alt text, release words, carried alt text and titles, autonomous audit repairs, drafted pack replies and the post drafts the Control Center loop proposes. No override, another Krish included; first person stays on his personal accounts. AEO-Engine's win kits never bring author, Person or E-E-A-T work under his name: the consumer drops any kit site fix or off-site move that asks for it or names him, and counts it.",
       "source_file": "CHANGES.md",
       "quote": "Remember, no content refers to Krish, ever. I still see that popping up from time to time. Even articles written are not authored by Krish. My face only, for assets and the video format.",
       "enforced_by": [
@@ -1223,7 +1223,8 @@
         "engine/channel_audit.py:repair_plan",
         "engine/packs.py:problems",
         "engine/cc_loop.py:item_proposal",
-        "engine/run/buffer_api.py:edit_input"
+        "engine/run/buffer_api.py:edit_input",
+        "engine/ai_answers.py:read_kits"
       ],
       "tests": [
         "test_his_name_is_refused_on_every_public_surface_the_article_body_too",
@@ -1237,7 +1238,8 @@
         "test_copy_lint_is_a_lint_error_on_slot_words",
         "test_a_draft_that_names_him_is_held_not_proposed",
         "test_a_word_failing_main_copy_lint_holds_before_any_edit",
-        "test_carried_titles_and_first_comments_run_the_copy_lint"
+        "test_carried_titles_and_first_comments_run_the_copy_lint",
+        "test_a_kit_fix_for_author_or_person_work_under_his_name_is_dropped_and_counted"
       ]
     },
     {

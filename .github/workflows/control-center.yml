@@ -23,8 +23,8 @@ name: control-center
 # One write to this repository (Ruling, Krish, 2026-11-13: Make Your Mind Up's
 # growth engine proposes its AI-answer questions for his approval). When the
 # runner wrote the questions Krish approved into config/ai-answer-questions.json,
-# or recorded the AEO ask for them, it hands that one file to the commit job as
-# a job output. The commit job holds no secret and runs no engine code: it
+# or recorded an AEO ask or the shipped answer pieces it told AEO of, it hands
+# that one file to the commit job as a job output. The commit job holds no secret and runs no engine code: it
 # checks the file is JSON and commits it, alone, to main. The loop keeps
 # read-only contents and no git credential.
 run-name: ${{ github.event.client_payload.instruction_id && 'control-center instruction wake' || 'control-center' }}
@@ -89,7 +89,7 @@ jobs:
           else
             python growth.py cc runner --deliver
           fi
-      - name: Hand on the AI-answer questions Krish approved
+      - name: Hand on the AI-answer questions file
         id: questions
         if: always() && steps.backup.outputs.skip != 'true'
         run: |
@@ -102,7 +102,8 @@ jobs:
           fi
 
   commit:
-    # Commits only config/ai-answer-questions.json, as the loop wrote it from Krish's decision.
+    # Commits only config/ai-answer-questions.json, as the loop wrote it: the questions Krish approved, the record
+    # of an AEO ask, or the shipped answer pieces told to AEO. The message names no decision of his.
     needs: loop
     if: always() && needs.loop.outputs.questions != ''
     runs-on: ubuntu-latest
@@ -114,7 +115,7 @@ jobs:
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Commit the AI-answer questions Krish approved
+      - name: Commit the AI-answer questions file
         env:
           QUESTIONS_B64: ${{ needs.loop.outputs.questions }}
         run: |
@@ -129,7 +130,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- "$file"
-          git commit -q -m "config: the AI-answer questions Krish approved, for AEO-Engine" -m "Written by growth.py cc runner (engine/ai_answers.py) from his decision in Control Centre."
+          git commit -q -m "config: AI-answer questions file, updated by the cc runner" -m "Written by growth.py cc runner (engine/ai_answers.py): the questions Krish approved in Control Centre, the record of an AEO-Engine ask, or the shipped answer pieces told to AEO-Engine. Which one is in the diff."
           for attempt in 1 2 3; do
             if git pull -q --rebase origin main && git push -q origin HEAD:main; then
               echo "ai-answer questions: committed"

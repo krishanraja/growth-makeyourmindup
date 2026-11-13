@@ -305,8 +305,9 @@ evidence (the published piece plus the record of the question).
 
 Only real ones, each with a record: public comments and replies on the
 pieces (Substack, YouTube, LinkedIn, X), the AEO-Engine's list of buyer
-questions makeyourmindup is missing from (read in Control Center), Search
-Console queries Krish shares, and questions a human verified. Keep the
+questions makeyourmindup is missing from (read in Control Center) and its
+win kits, read first once Control Center serves them (`jobs/answer.md`),
+Search Console queries Krish shares, and questions a human verified. Keep the
 reader's wording. No invented questions, no keyword permutations, no page
 per variant of the same question. A question the published work does not
 answer goes to Krish as a topic; the engine does not write the answer.

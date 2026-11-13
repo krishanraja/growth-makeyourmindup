@@ -1053,6 +1053,8 @@ def decisions_since(root, now):
 
 VOICE_RULES_FILE = 'voice-rules.txt'
 INSPIRATION_FILE = 'inspiration.txt'
+# AEO-Engine's win kits and misses for the answer job (proposed 1.23.0); local and ignored, never a public log.
+AI_ANSWERS_FILE = 'ai-answers.txt'
 WEB_ANALYTICS_FILE = 'web-analytics.json'
 
 
@@ -1350,6 +1352,10 @@ def describe(directive, ledger=None):
     lines.append('inspiration board: ' + ('could not be read today' if state == 'absent' else
                  str(sum(1 for i in items if i['trials'])) + ' tagged trials, ' + str(len(items)) + ' suggestions in '
                  + state_label(INSPIRATION_FILE)))
+    from . import ai_answers
+    if ai_answers.detail_served(directive):
+        n = len(ai_answers.kits(ai_answers.standing(directive)))
+        lines.append('AI-answer kits: ' + str(n) + ' from AEO-Engine in ' + state_label(AI_ANSWERS_FILE))
     return lines + voice_block(directive)
 
 
@@ -1514,6 +1520,9 @@ def cli(args, root, make_client, out=print, checks=None):
         inspiration_file = state_path(root, INSPIRATION_FILE)
         if inspiration_file.exists():
             inspiration_file.unlink()  # And today's board.
+        answers_file = state_path(root, AI_ANSWERS_FILE)
+        if answers_file.exists():
+            answers_file.unlink()  # And today's AI-answer kits.
         try:
             write_json(saved, loop.start())
         except ProtocolError as error:
@@ -1525,6 +1534,10 @@ def cli(args, root, make_client, out=print, checks=None):
         voice_file.write_text('\n'.join(voice_block(loop.directive)) + '\n', encoding='utf-8')
         # His inspiration board (1.15.0), the baseline for what the plan schedules; local and ignored like the rules.
         inspiration_file.write_text('\n'.join(inspiration_block(loop.directive)) + '\n', encoding='utf-8')
+        # AEO-Engine's win kits and misses (Ruling, Krish, 2026-11-13), which the answer job reads first; local and
+        # ignored like the rules, since they hold question and kit words.
+        from . import ai_answers
+        answers_file.write_text('\n'.join(ai_answers.block(loop.directive)) + '\n', encoding='utf-8')
         # His instruction (1.20.0), which the job acts on first; local and ignored, never a public log.
         ledger = engine_state.read_ledger(ledger_file)
         instruction_file.write_text('\n'.join(engine_state.block(loop.directive, ledger)) + '\n', encoding='utf-8')
