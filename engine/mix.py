@@ -36,7 +36,7 @@ import re
 import sys
 
 from . import concepts as concept_rules
-from . import intensity
+from . import intensity, stale_asks
 from .control_center import proposal
 from .core import TIMEZONE, calendar_date, http_url, ny_time, read_json, write_json
 from .social import inventory as social_inventory, max_daily_posts
@@ -539,11 +539,12 @@ def plan_proposal(mix, cfg):
                     ' out on Instagram, YouTube, TikTok and X, each still reviewed, at most '
                     + _caps_line(mix, cfg['channels']) + ' a day.',
                     'advice', 'strategy', 'plan_approved', exact_payload=text, reference='docs/MIX.md',
-                    stage='plan')
+                    expires_at=stale_asks.week_ends(mix['week_of']), stage='plan')
 
 
 def part_proposals(mix, cfg, fits=None, links=None):
-    """([proposal], [concepts]) for each part of the week in order (payload_parts), each behind strategy at stage plan.
+    """([proposal], [concepts]) for each part of the week in order (payload_parts), each behind strategy at stage plan,
+    each expiring when its week ends (engine/stale_asks.py), so Control Center drops it even on a day nothing runs.
 
     One part is plan_proposal's own words. links maps concept_id to its mock view
     links (https); a part's evidence carries the first link of each of its concepts,
@@ -566,7 +567,7 @@ def part_proposals(mix, cfg, fits=None, links=None):
                             + (' This week comes in ' + str(len(parts)) + ' parts, one at a time.' if len(parts) > 1
                                else ''),
                             'advice', 'strategy', 'plan_approved', exact_payload=text, reference='docs/MIX.md',
-                            stage='plan', evidence=evidence))
+                            expires_at=stale_asks.week_ends(mix['week_of']), stage='plan', evidence=evidence))
     return out, [group for _, group in parts]
 
 

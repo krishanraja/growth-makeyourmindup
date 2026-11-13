@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-12: Nothing on his list is stale; the engine takes back its own asks once their week or window has passed.
+  His words: everything must be "not only up to date but impossible to sprawl over time". His list shows one of this
+  engine's asks at a time, and nine older asks (the three-part mix plan for the week of 2 November, which is over,
+  the standing plan, four October experiment asks and this week's mix ask) sat ahead of the new AI-answer questions.
+  The runner now withdraws, through the protocol's own `withdrawn[]` with a one-line reason, each of its own
+  undecided asks whose week or window is over (a past week's mix plan parts and mix ask, the standing plan after
+  27 December, an experiment after its `end` day), carries what it took back forward, and never touches an ask he
+  decided or one still live; the handoff refuses a mix plan for an ended week, the maker asks nothing about one,
+  and every week's mix plan expires with its week (`engine/stale_asks.py`).
 - 2026-11-13: The engine proposes the publication's AI-answer questions for his approval. His words, to the offer to
   propose the 20 questions readers most likely ask an AI assistant: "propose them". The 20, found from typed search
   questions with volume (AnswerThePublic), public threads and the 14 published pieces, are in

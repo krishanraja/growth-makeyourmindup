@@ -131,7 +131,10 @@ On GitHub Actions (L0) the plan goes to Control Center through the handoff
 longer, and `engine/run/autorelease.py` reads his decision and the plan back
 from Control Center by digest each run, with the same rules
 (`docs/CONCEPT-MANIFEST.md`, On GitHub Actions). Built and tested, not yet
-activated: no post has gone out this way.
+activated: no post has gone out this way. Every part expires when its week
+ends, a plan for a week that is already over is refused whole (`week_over`),
+and the runner takes back any part still waiting on him once the week is
+over (Ruling, Krish, 2026-11-12; `engine/stale_asks.py`).
 
 ## Learning
 
