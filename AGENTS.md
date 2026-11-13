@@ -378,7 +378,11 @@ that it runs there:
    for Krish to review and post; it never permits submitting it.
 5. **Nothing in bulk.** No mass outreach, no automated DMs, no follow
    chasing. Every pitch and swap ask is written for one named person, citing
-   something they made.
+   something they made. One exception (Ruling, Krish, 2026-11-13): a single
+   DM reply to someone who commented the keyword on that post is allowed,
+   through ManyChat, in the words he approved
+   (`docs/plans/2026-11-13-keyword-dm-test.md`). Every other automated DM
+   stays forbidden.
 6. **Only real numbers.** A number in a report is one you read on a page
    today, with where you read it. Missing means "not shown", never a guess.
 7. **Stay in this repository.** Never change Control Center, the content

@@ -31,7 +31,7 @@ A number in a pack is still one read on a page today, with where it was read.
 | Account farms, sockpuppet comments, astroturfing on Reddit | Rule 5: nothing in bulk, and no voice that is not the publication's or Krish's own. |
 | Clipping other people's content | Rights, and editorial belongs to Krish and the content engine. |
 | AI customers or invented testimonials | Rule 2 and the copy doctrine: no invented proof. |
-| "Comment and I'll DM you" funnels and mass-touch prospecting | Rule 1 and rule 5: no DMs, no automated outreach, one named person at a time. |
+| "Comment and I'll DM you" funnels and mass-touch prospecting | Rule 1 and rule 5: no automated outreach, one named person at a time. The one exception is the keyword-DM test's single reply to someone who commented the keyword, through ManyChat (Ruling, Krish, 2026-11-13; `docs/plans/2026-11-13-keyword-dm-test.md`). |
 | Multi-step cold sequences with follow-ups by default | Rule 5, "no follow chasing". Whether one honest follow-up is allowed is an open ask for Krish. |
 | Secondary sending domains and warmed mailboxes | Outreach goes from Krish's own address, one note at a time; nothing here sends at volume. |
 | A link in the first LinkedIn comment | Rule 4: no links in LinkedIn comments. |

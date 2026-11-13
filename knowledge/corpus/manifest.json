@@ -57,8 +57,8 @@
     {
       "original_filename": "external-growth-skills.md",
       "repository_path": "knowledge/corpus/external-growth-skills.md",
-      "bytes": 6264,
-      "sha256": "96bba0c34091c538b149271a97590544cba10e54875a7e24857b0c37979ac4a6",
+      "bytes": 6440,
+      "sha256": "799f6dedd062fe25e6873ae5133d9187fd26af59c50281d5181c8741dd410d3b",
       "storage": "engine_written_digest",
       "received_on": "2026-11-10",
       "note": "Written in this repository, not an upload: a digest of giulioco/skills, coreyhaines31/marketingskills and clairelily2020/workflow-skills with commit, path, licence and an Adapted from line per source. Reference material; growth.py check enforces its do-not-quote list."

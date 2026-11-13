@@ -57,7 +57,7 @@
     {
       "experiment_id": "keyword-dm",
       "status": "planned",
-      "hypothesis": "On @makeyourmind.up Reels, a Comment BRIEF call to action that replies with one DM carrying the piece's three things to do tomorrow and the tagged subscribe link brings at least twice the new subscribers per 1,000 views of pointing to the link in bio. Plan: docs/plans/2026-11-13-keyword-dm-test.md. It needs Krish's ruling on research.md rule 5 (no automated DMs) first.",
+      "hypothesis": "On @makeyourmind.up Reels, a Comment BRIEF call to action that replies with one DM carrying the piece's three things to do tomorrow and the tagged subscribe link brings at least twice the new subscribers per 1,000 views of pointing to the link in bio. Plan: docs/plans/2026-11-13-keyword-dm-test.md. Krish allowed the single keyword reply on 13 November (rule 5) and chose ManyChat; it starts once the setup in the plan is verified.",
       "primary_metric": "new_free",
       "guardrail": "One DM only to someone who commented the keyword on that Reel, never a follow-up; unsubscribes within 14 days, reports and account restrictions watched",
       "decision_rule": "Alternate the two calls to action Reel by Reel in the same series for two weeks; keep the keyword route only if it brings at least twice the subscribers per 1,000 views with no rise in unsubscribes, reports or restrictions.",
