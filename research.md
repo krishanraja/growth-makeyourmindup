@@ -1,5 +1,7 @@
 # Growth research (14 October 2026)
 
+Competitor teardowns are kept beside this file in `docs/research/`: @adilet.fndr on Instagram, 12 November 2026 (`docs/research/2026-11-12-adilet-fndr-teardown.md`), with its keyword-DM test plan in `docs/plans/2026-11-13-keyword-dm-test.md`.
+
 Carried over from the content engine on 14 October 2026, so this engine stands alone. Internal file references at the end point to the old home and are history only.
 
 ## Part B. The agent growth plan: agents do the legwork, Krish approves
