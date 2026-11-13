@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-11-13
-head: 95eb395
+head: 88aacc8
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -30,6 +30,7 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
+- Every carousel and Short the maker makes is judged by content-engine's 10/10 judges first; a fail is never made and holds loudly as judges_failed with the reasons kept privately, a pass is bound to its Buffer post, and the board tick reports every sent post so content-engine counts the judged ones live on its North Star. (2026-11-13)
 - LinkedIn keeps its profile as Krish has it; the channel audit no longer asks him to paste a link there. (2026-11-13)
 - The @adilet.fndr teardown is saved (`docs/research/2026-11-12-adilet-fndr-teardown.md`): eight reels brought about 89% of his net follows and one hook, run three times, 62%; around them, a comment-keyword DM funnel, an email capture and a $67 product. The keyword-DM test is drafted (`docs/plans/2026-11-13-keyword-dm-test.md`) and planned in `experiments.json` as `keyword-dm`, so the engine puts it on Krish's list to decide. It needs his ruling on `research.md` rule 5 (no automated DMs) before anything else, then the DM tool, its spend and the account connection, each his yes. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
 - Buffer branded Threads connection @makeyourmind.up verified connected and unlocked; engine now pins its new channel ID and rejects the previous connection. (2026-11-13)
@@ -37,10 +38,10 @@ Lifecycle: live. The detail is in `README.md`.
 - The maker's standing-plan and weekly-ask reports now carry the engine's state (priorities, obsessions, next steps) when the directive serves it, so they no longer blank this engine's state in Control Center as the 12 November W46 ask did (`report_state` in engine/run/maker.py, tests/test_run_maker.py). The protocol copy carries Control Center 212379e1 (the 16 voice-check channels, the publication's caption and substack among them, and the number objective's target read from docs/NORTH_STAR.md), the North Star line names a whole week read after it ended as that week's, never "this week" (state_line in engine/run/measure.py), and the brief, NOW.md and the Cowork brief now say where the target comes from, the whole-week reading of 12 November, the answered per-Note question and the approved profile links. (2026-11-12)
 - `growth.py run board posts` also writes back a day's piece's own posts that Buffer has scheduled, each as the piece's entry with its channel and time (`piece_days`, `piece_row`), so content-engine's board says "Scheduled: Substack Notes, from Fri 13 Nov, 12:40" in place of "Ready to post" (Ruling, Krish, 2026-11-12: the board shows exactly where everything is). (2026-11-12)
 - Krish approved pointing every profile link to its tagged subscribe page; jobs/channel-audit.md lists the exact link per account for the weekly browser audit to save and verify, and LinkedIn is his to change by hand. (2026-11-12)
-- A Growth render job wears a series colour only on that series' day or when it carries the series piece; a job with no tone is mint (`scripts/render_mocks.mjs`, `tests/test_render_templates.py` ToneFollowsTheDay). (2026-11-12)
 
 ## What changed recently
 
+- 2026-11-13 Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." engine/run/judges.py, the maker's step 6b, board tick's live report.
 - 2026-11-13 Krish connected the correct account; live provider readback closed the connection hold. No post was created, moved or published.
 - 2026-11-13 Krish ruled Threads always posts to makeyourmindup. Private receipts stay under ignored .scratch/channel-audit/profile-links-20261113.
 - 2026-11-12 Krish, 2026-11-12: "make sure everything's a cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading left in there".
@@ -50,11 +51,10 @@ Lifecycle: live. The detail is in `README.md`.
 - 2026-11-12 `engine/cc_loop.py`, `engine/control_center.py`, `engine/mix.py`, the protocol and schema copies in `docs/control-center/`, `docs/ENGINE.md`, `docs/MIX.md`, `jobs/daily-pack.md`, tests.
 - 2026-11-12 **Docs audit and the closeout fold.** The 32 waiting notes and NOW.md's old lines moved verbatim to `docs/history/LOG.md`; `next_steps` also sends NOW.md's "Waiting on Krish" items.
 - 2026-11-12 **One live publish board (#67).** AGENTS.md says where the live board is and what Growth does on it; each ledger row's board link opens the live board at its week and day (Ruling, Krish, 2026-11-11: one live board, in Control Centre; the old board is a read-only archive).
-- 2026-11-11 **Protocol 1.20.0 (#66).** Krish's instruction reaches the engine in the directive: the runner acks it received by id, a second wake the same day reports under its own run_id, a workspace job acts on it first and acks started, done or blocked, and every report that pulls the directive carries the engine's priorities, obsessions and next steps.
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-13): the weekly browser audit saves the six approved profile links and reopens each page to verify.
+- Next (2026-11-13): Watch the next maker run's judges counts (summary judges) and rewrite any judges_failed slot from .scratch/judges/.
 - Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
 - Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
 - Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).

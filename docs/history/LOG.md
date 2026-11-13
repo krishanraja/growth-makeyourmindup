@@ -8,6 +8,18 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "What changed recently":
+
+- 2026-11-11 **Protocol 1.20.0 (#66).** Krish's instruction reaches the engine in the directive: the runner acks it received by id, a second wake the same day reports under its own run_id, a workspace job acts on it first and acks started, done or blocked, and every report that pulls the directive carries the engine's priorities, obsessions and next steps.
+
+From "Where it is right now":
+
+- A Growth render job wears a series colour only on that series' day or when it carries the series piece; a job with no tone is mint (`scripts/render_mocks.mjs`, `tests/test_render_templates.py` ToneFollowsTheDay). (2026-11-12)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "Where it is right now":
 
 - The 2–8 November capture was generated and validated with the current main subscriber command, then ingested with --write. Commit 937d9753b7be7fe934b5a186a6035a318a358457 records the North Star state and ledger on main; both files passed exact-content readback. Organic count: 1 of 86, U5. The private capture remains outside the public repository. Per-item inspection was partial: subscriber metrics exist for both posts and Notes; the capture contains the two items inspected, not a complete weekly item inventory. Scheduling: Neither Growth: subscribers nor Growth: answer piece was created or changed. Codex project and automation calls failed; the desktop connection subsequently became unavailable. The AGENTS.md Open setup line is retained because scheduling was not verified. No Substack settings, subscriber lists, cookies or passwords were changed. (2026-11-12)
