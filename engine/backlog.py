@@ -37,10 +37,15 @@ STATUSES = ('unamplified', 'partial', 'covered')
 FEED_DAYS = 366
 
 
-def channel_matrix(root=ROOT):
-    """{channel: [formats]} for every channel a piece can be amplified on, from the social records."""
+def channel_matrix(root=ROOT, open_only=False):
+    """{channel: [formats]} for every channel a piece can be amplified on, from the social records.
+
+    open_only leaves out a channel another engine owns (social/channels owned_by; Ruling, Krish, 2026-11-13:
+    growth-mindmake owns his personal LinkedIn): an edition made there before stays readable as history,
+    but it is never open work here."""
     records = social_inventory(Path(root))['channel']
-    return {cid: list(rec['formats']) for cid, rec in sorted(records.items()) if cid not in HOME_CHANNELS}
+    return {cid: list(rec['formats']) for cid, rec in sorted(records.items())
+            if cid not in HOME_CHANNELS and not (open_only and rec.get('owned_by'))}
 
 
 def _edition(entry, matrix, source, at):
@@ -116,7 +121,7 @@ def build(rows, catalog=None, editions=None, root=ROOT, now=None, feed_days=FEED
 
     A video post with an explicit published link to its article is folded into
     that article (catalog.discover's verified pairs); similar titles never pair."""
-    matrix = channel_matrix(root)
+    matrix = channel_matrix(root, open_only=True)
     editions = editions if editions is not None else {}
     state = discover(rows, catalog, now)
     entries = state['pieces']

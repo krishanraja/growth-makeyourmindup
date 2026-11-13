@@ -58,6 +58,14 @@ WAITS_ON = ('engine', 'krish', 'other')
 INSTRUCTION_ID = re.compile(r'^ki_[0-9a-f]{24}$')
 # An activity line naming one of his instructions, by id only (never his words).
 INSTRUCTION_LINE = re.compile(r"Krish's instruction ki_[0-9a-f]{24}")
+# 1.10.0 adds withdrawn, an engine taking back its own undecided proposals, each with why (Ruling, Krish,
+# 2026-11-12: nothing on his list is stale; engine/stale_asks.py). Sent only when Control Center's capabilities
+# say features.withdrawn, and raised only when a report carries it.
+WITHDRAWN_VERSION = '1.10.0'
+WITHDRAWN_FEATURE = 'withdrawn'
+WITHDRAWN_MAX = 40
+WITHDRAWN_REASON_MAX = 300
+PROPOSAL_ID_TEXT = re.compile(r'^[A-Za-z0-9][A-Za-z0-9:._-]{0,119}$')
 # 1.21.0 adds the used-cards field: the cards Krish ticked on his board as a style to use within a week that an asset
 # this engine made used, each with what it made in words, which close his tick in Control Center (Ruling, Krish,
 # 2026-11-12: a card he ticks is an instruction that jumps the queue). Sent only when the served directive says so in
@@ -420,11 +428,11 @@ def copy_open_errors(item):
     return errors
 
 
-def report_version(proposals, credits_spent=None, v17=False, state=False, used=False):
+def report_version(proposals, credits_spent=None, v17=False, state=False, used=False, withdrawn=False):
     """1.21.0 when the report carries the used-cards field, 1.20.0 when it carries priorities, obsessions,
     next_steps or instruction_acks, 1.17.0 when it carries buffer_channels, post_metrics or offdays, 1.16.0
-    when it carries credits_spent, 1.14.0 when a proposal is an engagement task, 1.1.0 when one uses a 1.1.0
-    field, else 1.0.0."""
+    when it carries credits_spent, 1.14.0 when a proposal is an engagement task, 1.10.0 when it takes back its
+    own proposals (withdrawn), 1.1.0 when one uses a 1.1.0 field, else 1.0.0."""
     if used:
         return USED_VERSION
     if state:
@@ -436,6 +444,8 @@ def report_version(proposals, credits_spent=None, v17=False, state=False, used=F
     proposals = [item for item in proposals or [] if isinstance(item, dict)]
     if any(copy_open(item) for item in proposals):
         return ENGAGE_VERSION
+    if withdrawn:
+        return WITHDRAWN_VERSION
     used = any(key in item for item in proposals for key in AUTONOMY_FIELDS)
     return AUTONOMY_VERSION if used else SCHEMA_VERSION
 
@@ -561,6 +571,33 @@ def used_errors(used):
     return errors
 
 
+def withdrawn_errors(withdrawn, proposals):
+    """The 1.10.0 rules for withdrawn (Control Center's parseWithdrawn): 1 to 40 of this engine's own proposal ids,
+    each once, each with why in words (at most 300 characters, never an address), and none also proposed here."""
+    if not isinstance(withdrawn, list) or not withdrawn or len(withdrawn) > WITHDRAWN_MAX:
+        return ['withdrawn must be a list of 1 to ' + str(WITHDRAWN_MAX)]
+    errors, seen = [], set()
+    proposed = {p.get('proposal_id') for p in proposals or [] if isinstance(p, dict)}
+    for index, item in enumerate(withdrawn):
+        where = 'withdrawn[' + str(index) + ']'
+        if not isinstance(item, dict) or set(item) != {'proposal_id', 'reason'}:
+            errors.append(where + ' is { proposal_id, reason }')
+            continue
+        pid, reason = item['proposal_id'], item['reason']
+        if not isinstance(pid, str) or not PROPOSAL_ID_TEXT.match(pid) or not pid.startswith(SLUG + ':'):
+            errors.append(where + '.proposal_id must be one of this engine\'s own proposal ids')
+        elif pid in seen:
+            errors.append(where + '.proposal_id is withdrawn twice')
+        elif pid in proposed:
+            errors.append(where + '.proposal_id is both proposed and withdrawn in one report')
+        seen.add(pid)
+        if not isinstance(reason, str) or not reason.strip() or len(reason) > WITHDRAWN_REASON_MAX \
+                or CONTROL_CHAR.search(reason) or EMAIL.search(reason):
+            errors.append(where + '.reason must say why in words, at most ' + str(WITHDRAWN_REASON_MAX)
+                          + ' characters, never an address')
+    return errors
+
+
 def without_state(report):
     """The same report without its 1.20.0 fields, or its activity lines naming one of his instructions, resealed.
 
@@ -569,7 +606,8 @@ def without_state(report):
     plain = {key: value for key, value in report.items() if key not in STATE_FIELDS + (USED_FEATURE, 'payload_sha256')}
     plain['activity'] = [a for a in report.get('activity', []) if not INSTRUCTION_LINE.search(str(a.get('line')))]
     plain['schema_version'] = report_version(plain.get('proposals') or [], plain.get('credits_spent'),
-                                             any(k in plain for k in V17_FIELDS))
+                                             any(k in plain for k in V17_FIELDS),
+                                             withdrawn=WITHDRAWN_FEATURE in plain)
     plain['payload_sha256'] = report_digest(plain)
     return validate_report(plain)
 
@@ -578,9 +616,12 @@ def validate_report(report):
     errors = schema_errors(report, load_schema())
     expected = report_version(report.get('proposals') if isinstance(report.get('proposals'), list) else [],
                               report.get('credits_spent'), any(k in report for k in V17_FIELDS),
-                              any(k in report for k in STATE_FIELDS), USED_FEATURE in report)
+                              any(k in report for k in STATE_FIELDS), USED_FEATURE in report,
+                              WITHDRAWN_FEATURE in report)
     if report.get('schema_version') != expected:
         errors.append('schema_version must be ' + expected + ': raise it only for a field the report uses')
+    if WITHDRAWN_FEATURE in report:
+        errors += withdrawn_errors(report[WITHDRAWN_FEATURE], report.get('proposals'))
     if 'credits_spent' in report:
         errors += spent_errors(report['credits_spent'])
     errors += v17_errors(report)
@@ -618,10 +659,11 @@ def validate_report(report):
 
 def build_report(run_id, mode, observed_at, revision, captured_at, status, objectives=(),
                  activity=(), proposals=(), events=(), holds=(), credits_spent=None, buffer_channels=None,
-                 post_metrics=None, offdays=None, state=None, inspiration_used=None):
+                 post_metrics=None, offdays=None, state=None, inspiration_used=None, withdrawn=None):
     """state: the 1.20.0 fields ({priorities, obsessions, next_steps, instruction_acks}); each is sent only
     when it holds an entry, so a report without them is unchanged. The 1.21.0 used-cards list is sent only when
-    it holds an entry."""
+    it holds an entry. withdrawn: the 1.10.0 list of this engine's own undecided proposals it takes back
+    ([{proposal_id, reason}], engine/stale_asks.py), sent only when it holds an entry."""
     proposals = list(proposals)
     credits_spent = list(credits_spent or [])
     extra = {k: v for k, v in (('buffer_channels', buffer_channels), ('post_metrics', post_metrics or None),
@@ -631,7 +673,8 @@ def build_report(run_id, mode, observed_at, revision, captured_at, status, objec
         raise ValueError('not a 1.20.0 state field: ' + ', '.join(sorted(unknown)))
     lists = {key: list(value) for key, value in (state or {}).items() if value}
     report = whole({
-        'schema_version': report_version(proposals, credits_spent, bool(extra), bool(lists), bool(inspiration_used)),
+        'schema_version': report_version(proposals, credits_spent, bool(extra), bool(lists), bool(inspiration_used),
+                                         bool(withdrawn)),
         'engine_id': ENGINE_ID, 'product_slug': PRODUCT_SLUG,
         'run_id': run_id, 'mode': mode, 'observed_at': iso(observed_at),
         'source': {'revision': clip(revision, 128), 'captured_at': iso(captured_at)},
@@ -650,6 +693,8 @@ def build_report(run_id, mode, observed_at, revision, captured_at, status, objec
             report[key] = whole(lists[key])
     if inspiration_used:
         report[USED_FEATURE] = whole(list(inspiration_used))
+    if withdrawn:
+        report[WITHDRAWN_FEATURE] = whole([{'proposal_id': w['proposal_id'], 'reason': w['reason']} for w in withdrawn])
     report['payload_sha256'] = report_digest(report)
     return validate_report(report)
 
@@ -722,9 +767,9 @@ class Client:
     def capabilities(self):
         return self._request('GET', 'capabilities')
 
-    def confirm_version(self, version, feature=None):
+    def confirm_version(self, version, *features):
         """A report above 1.0.0 goes only where capabilities list its version
-        (and, for a feature it uses, where that flag is true). Fails closed,
+        (and, for each feature it uses, where that flag is true). Fails closed,
         never downgrades by itself: the report is not sent."""
         try:
             served = self.capabilities()
@@ -733,9 +778,10 @@ class Client:
         offered = served.get('schema_versions')
         if not isinstance(offered, list) or version not in offered:
             raise ProtocolError('schema_version_unsupported')
-        features = served.get('features') if isinstance(served.get('features'), dict) else {}
-        if feature and features.get(feature) is not True:
-            raise ProtocolError(feature + '_unsupported')
+        flags = served.get('features') if isinstance(served.get('features'), dict) else {}
+        for feature in features:
+            if feature and flags.get(feature) is not True:
+                raise ProtocolError(feature + '_unsupported')
         return version
 
     def attempt(self, record):
@@ -792,8 +838,10 @@ class Client:
         if report['schema_version'] != SCHEMA_VERSION:
             feature = {ENGAGE_VERSION: ENGAGE_KIND, CREDITS_VERSION: CREDITS_FEATURE,
                        STATE_VERSION: STATE_FEATURE}.get(report['schema_version'])
-            # 1.17.0 names no feature flag: its version in capabilities is the whole check.
-            self.confirm_version(report['schema_version'], feature)
+            # 1.17.0 names no feature flag: its version in capabilities is the whole check. A report that takes
+            # back its own proposals also needs features.withdrawn, at whatever version it goes.
+            withdrawn = WITHDRAWN_FEATURE if WITHDRAWN_FEATURE in report else None
+            self.confirm_version(report['schema_version'], *[f for f in (feature, withdrawn) if f])
         ours = report['payload_sha256']
         try:
             result = self._request('POST', 'reports', report, idempotency_key=report['run_id'])

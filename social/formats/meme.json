@@ -2,8 +2,8 @@
   "schema_version": 1,
   "kind": "format",
   "id": "meme",
-  "production_owner": "growth-canva",
-  "production_reference": "social/guides/canva.md",
+  "production_owner": "content-engine",
+  "production_reference": "https://github.com/krishanraja/content-engine/blob/main/docs/CAROUSEL-STANDARD.md",
   "channels": [
     "instagram",
     "facebook",
@@ -18,10 +18,10 @@
   "snackable": true,
   "delivery_checks": [
     "An ad-hoc idea from Krish is built, shown to him, and queued only after he approves the exact payload.",
-    "Brand kit and an approved template only; every quote is a literal match to the published piece.",
+    "Made in a Claude session, with the Codex plugin building it (Ruling, Krish, 2026-11-13; content-engine docs/CAROUSEL-STANDARD.md, \"How a carousel is made\"): the session writes the words and the direction, a Codex card of kind meme builds the picture in code, and the session verifies it against the brand palette before Krish sees it; never a scheduled job, a headless model run or a template engine. Every quote is a literal match to the published piece.",
     "Where realistic synthetic media is present, apply the native AI label where the destination supports it; never add illustration boilerplate to public copy.",
     "On YouTube a meme is a real video file, never a still posing as video.",
-    "Share mechanic: recognition of one specific situation the receiver is in, so the sender's message is that this is them; the share block names that situation as its moment.",
+    "Share mechanic: recognition of one specific situation the receiver is in, so the sender's message is that this is them; the share block names that situation as its moment. It stays a proposal in the brief until content-engine adopts it as a production standard through its own route.",
     "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
     "Bind publication approval to the exact account, caption, ordered asset hashes, metadata and proposed time.",
     "After a save, wait and independently reopen; reconcile uncertain outcomes before retrying."
@@ -35,7 +35,7 @@
   "lessons": [
     "revision-identity",
     "growth-measurement",
-    "canva-lane-boundary",
+    "one-route-for-pictures",
     "built-to-be-sent",
     "share-rate-measure"
   ]

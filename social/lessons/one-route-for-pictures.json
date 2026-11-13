@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "one-route-for-pictures",
+  "category": "format",
+  "scope": [
+    "carousel",
+    "meme",
+    "note"
+  ],
+  "status": "accepted",
+  "finding": "Every carousel, meme and Notes image is made in a Claude session, with the Codex plugin building it: the session writes the words and the direction, a Codex card (content-engine's ve card, kind carousel, meme or notes_image) builds the pictures in code through the Codex lane, and the session verifies them. Never a scheduled job, a headless model run or a template engine, and memes and Notes images are no longer made in Canva. Content-engine's docs/CAROUSEL-STANDARD.md, \"How a carousel is made\", is the route.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "CHANGES.md, 2026-11-13 entry: \"all the carousels should now be done in Claude, but using the Codex plug in as per the other usual workflows\", then \"memes and Notes images should go the same way\".",
+    "observed_at": "2026-11-13",
+    "result": "the art-direction workflow retired; meme.json and note.json owned by content-engine's route; invariants/boundary.json and rule R126 updated."
+  },
+  "revisit_when": "Krish changes how carousels, memes or Notes images are made.",
+  "supersedes": null
+}

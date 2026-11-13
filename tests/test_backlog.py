@@ -42,7 +42,7 @@ class Backlog(unittest.TestCase):
         self.assertNotIn('substack', [c['channel'] for c in result['channels']], 'the home is never an open edition')
 
     def test_editions_move_a_piece_to_partial_then_covered_and_behind_unamplified(self):
-        matrix = channel_matrix(ROOT)
+        matrix = channel_matrix(ROOT, open_only=True)
         one = {ARTICLE: [{'channel': 'x', 'format': 'text', 'source': 'ledger', 'native_url': 'https://x.com/i/1'}]}
         result = build(rows(), OLD, one, ROOT, NOW)
         statuses = [p['status'] for p in result['pieces']]
@@ -59,6 +59,24 @@ class Backlog(unittest.TestCase):
         self.assertEqual((covered['status'], covered['channels_open']), ('covered', []))
         self.assertEqual(len(covered['formats_open']), sum(len(f) for f in matrix.values()),
                          'an edition with no format closes no format')
+
+    def test_linkedin_is_never_open_work_and_a_past_edition_stays_readable(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn. No piece lists it as open, and
+        # a LinkedIn edition recorded before the handover still reads as history without failing the backlog.
+        self.assertIn('linkedin', channel_matrix(ROOT))
+        self.assertNotIn('linkedin', channel_matrix(ROOT, open_only=True))
+        past = {ARTICLE: [{'channel': 'linkedin', 'format': 'text', 'source': 'ledger',
+                           'native_url': 'https://www.linkedin.com/feed/update/urn:li:activity:1/'}]}
+        result = build(rows(), OLD, past, ROOT, NOW)
+        self.assertNotIn('linkedin', [c['channel'] for c in result['channels']])
+        for piece in result['pieces']:
+            self.assertNotIn('linkedin', piece['channels_open'])
+            self.assertFalse([f for f in piece['formats_open'] if f['channel'] == 'linkedin'])
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'amplified.json'
+            entry = {k: v for k, v in past[ARTICLE][0].items() if k != 'source'}
+            write_json(path, {'schema_version': 1, 'editions': [dict(entry, piece_url=ARTICLE, at=NOW)]})
+            self.assertEqual(list(read_ledger(path, channel_matrix(ROOT))), [ARTICLE])
 
     def test_a_video_post_with_an_explicit_link_folds_into_its_article(self):
         result = build(rows(), None, {VIDEO: [{'channel': 'youtube', 'format': 'short-video', 'source': 'ledger',

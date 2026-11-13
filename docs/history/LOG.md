@@ -10,6 +10,82 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "Where it is right now":
 
+- The publication's AI answers are AEO-Engine's, the one AI-answers specialist (Ruling, Krish, 2026-11-12): the runner reads the standing from the directive (protocol 1.22.0) and asks AEO to track the real reader questions in config/ai-answer-questions.json, which jobs/answer.md fills; none is on file yet, so nothing is asked. The protocol copy in docs/control-center/ is Control Center's at 36df34bc (protocol 1.22.0). (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-12 The full-week organic reading is now measured and recorded; the current week remains unmeasured.
+
+From "Where it is right now":
+
+- Krish allowed one DM reply to someone who commented the keyword on that post (Ruling, Krish, 2026-11-13) and chose ManyChat, on a trial, for the keyword-DM test. Rule 5 in AGENTS.md and research.md, invariant R07 and the corpus digest now carry the exception, and the plan carries the setup. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
+- Every carousel and Short the maker makes is judged by content-engine's 10/10 judges first; a fail is never made and holds loudly as judges_failed with the reasons kept privately, a pass is bound to its Buffer post, and the board tick reports every sent post so content-engine counts the judged ones live on its North Star. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-12 five piece kits had ended five different ways and memes carried the logo at the top; the palette Krish approved on 12 Nov allows one close and no logo at the top.
+
+From "Where it is right now":
+
+- LinkedIn keeps its profile as Krish has it; the channel audit no longer asks him to paste a link there. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-12 58 posts went out through Buffer from 2 to 11 November with no subscribe ask, because hand-run drafts skipped preflight; the gate now sits on the path they took.
+
+From "Where it is right now":
+
+- The @adilet.fndr teardown is saved (`docs/research/2026-11-12-adilet-fndr-teardown.md`): eight reels brought about 89% of his net follows and one hook, run three times, 62%; around them, a comment-keyword DM funnel, an email capture and a $67 product. The keyword-DM test is drafted (`docs/plans/2026-11-13-keyword-dm-test.md`) and planned in `experiments.json` as `keyword-dm`, so the engine puts it on Krish's list to decide. It needs his ruling on `research.md` rule 5 (no automated DMs) before anything else, then the DM tool, its spend and the account connection, each his yes. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-12 `engine/cc_loop.py`, `engine/control_center.py`, `engine/mix.py`, the protocol and schema copies in `docs/control-center/`, `docs/ENGINE.md`, `docs/MIX.md`, `jobs/daily-pack.md`, tests.
+
+From "Where it is right now":
+
+- Buffer branded Threads connection @makeyourmind.up verified connected and unlocked; engine now pins its new channel ID and rejects the previous connection. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-12 **Docs audit and the closeout fold.** The 32 waiting notes and NOW.md's old lines moved verbatim to `docs/history/LOG.md`; `next_steps` also sends NOW.md's "Waiting on Krish" items.
+
+From "Where it is right now":
+
+- Three profile-link updates independently verified; remaining links complete per Krish. Threads routing and its new Buffer channel ID are verified for @makeyourmind.up; the branded connection is connected and unlocked, and the previous channel ID fails release. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
 - The maker's standing-plan and weekly-ask reports now carry the engine's state (priorities, obsessions, next steps) when the directive serves it, so they no longer blank this engine's state in Control Center as the 12 November W46 ask did (`report_state` in engine/run/maker.py, tests/test_run_maker.py). The protocol copy carries Control Center 212379e1 (the 16 voice-check channels, the publication's caption and substack among them, and the number objective's target read from docs/NORTH_STAR.md), the North Star line names a whole week read after it ended as that week's, never "this week" (state_line in engine/run/measure.py), and the brief, NOW.md and the Cowork brief now say where the target comes from, the whole-week reading of 12 November, the answered per-Note question and the approved profile links. (2026-11-12)
 
 ## 2026-11-13

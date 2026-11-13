@@ -7,7 +7,8 @@ module is the one check on the path every post takes, the Buffer connector's cre
 Claude Code hook in .claude/hooks/buffer-subscribe-gate.py calls it before the connector runs.
 
 A post on one of this engine's pinned channels (engine/buffer_channels.py) needs the tagged subscribe page
-(intensity.json conversion.subscribe_url, with its source tags and utm_source naming the channel):
+(intensity.json conversion.subscribe_url, with all four UTM tags GA4 credits it by, engine/route.py, and
+utm_source naming the channel):
 
 - in the post's own words, on a channel whose posts carry a clickable link;
 - or in the first comment (Buffer's firstComment), the first reply;
@@ -16,16 +17,33 @@ A post on one of this engine's pinned channels (engine/buffer_channels.py) needs
 
 Below the conversion urgency nothing is required, as everywhere else. Other ventures' channels in the shared
 Buffer organisation are never this engine's and pass untouched. Offline only: no network, no credentials.
+
+A channel this engine handed to another engine is refused outright, at every urgency, before any subscribe
+check (owners.HOLD): Krish's personal LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13), so a
+create_post on its Buffer channel id (buffer_channels.HANDED_OFF_CHANNELS), or a call that carries LinkedIn's
+own metadata, never runs from this repository.
+
+Buffer's edit_post names only its post (postId) and no channel, so an edit is gated by the post: read before
+you edit. The channel of each post read (get_post, list_posts or create_post) is recorded by the hook
+.claude/hooks/buffer-post-channels.py, and this engine's release ledgers, which record each released post with
+its channel, seed the same map (engine/post_channels.py). An edit of a post on a handed-off channel is refused with the same
+line; an edit of a post whose channel is not known is refused until the post is read with get_post. Once
+read, an edit on this engine's channels is checked as before, and one on another venture's channel passes.
 """
 from urllib.parse import parse_qs, urlsplit
 
-from . import intensity
-from .buffer_channels import BUFFER_CHANNEL_ID
+from . import intensity, owners, post_channels
+from .buffer_channels import BUFFER_CHANNEL_ID, HANDED_OFF_CHANNELS
 
 HOLD = 'subscribe_route_missing'
+UNKNOWN = 'post_channel_unknown'
+UNREAD_POST = 'read the post with get_post first, so its channel is known'
 CHANNEL_BY_ID = {v: k for k, v in BUFFER_CHANNEL_ID.items()}
-# Buffer's metadata key for each channel, where it differs from the channel name.
-SERVICE = {'substack-notes': 'substack'}
+# Buffer's metadata key for each channel, where it differs from the channel name: Buffer keeps an X post's
+# metadata (its thread among it) under twitter, as its create_post schema names it.
+SERVICE = {'substack-notes': 'substack', 'x': 'twitter'}
+# The channel each of Buffer's metadata keys belongs to, the inverse of SERVICE (an edit names no channel).
+CHANNEL_BY_SERVICE = {SERVICE.get(channel, channel): channel for channel in BUFFER_CHANNEL_ID}
 TOOLS = ('create_post', 'edit_post')
 
 
@@ -33,12 +51,16 @@ def _texts(tool_input, channel):
     """(words, first_comment, other_links): the post's own words (thread items included), its first comment
     and any link Buffer attaches outside the words (link card, story link sticker)."""
     meta = (tool_input.get('metadata') or {})
-    service = meta.get(SERVICE.get(channel, channel)) or {}
+    key = SERVICE.get(channel, channel)
+    service = meta.get(key) or {}
+    thread = list(service.get('thread') or [])
     words = [tool_input.get('text') or '']
-    for item in service.get('thread') or []:
+    for item in thread:
         words.append(item.get('text') or '')
     links = []
-    for holder in [service] + list(service.get('thread') or []):
+    # A link card sits on the post or on a thread item, on the item itself or in Buffer's documented shape for a
+    # thread item (thread[i].metadata.<service>.linkAttachment).
+    for holder in [service] + thread + [(item.get('metadata') or {}).get(key) or {} for item in thread]:
         card = (holder.get('linkAttachment') or {}) if isinstance(holder, dict) else {}
         if card.get('url'):
             links.append(card['url'])
@@ -69,29 +91,61 @@ def _tagged(text, channel, root):
     return None, why
 
 
-def errors(tool_name, tool_input, urgency=None, root=intensity.ROOT):
-    """Why this Buffer call would send a post with no subscribe route, or [].
+def _handed_off(tool_input, channel_id=None):
+    """Why this call acts on a channel another engine owns, or '': its Buffer channel id (the call's own, or, for
+    an edit, the one its post was read on), or a metadata key that is that channel's own (Ruling, Krish,
+    2026-11-13)."""
+    channel_id = tool_input.get('channelId') if channel_id is None else channel_id
+    if isinstance(channel_id, str) and channel_id in HANDED_OFF_CHANNELS:
+        return 'Buffer channel ' + channel_id + ': ' + owners.refusal(HANDED_OFF_CHANNELS[channel_id])
+    meta = tool_input.get('metadata')
+    for key in (meta if isinstance(meta, dict) else {}):
+        if owners.handed_off_channel(key):
+            return 'a ' + str(key) + ' post: ' + owners.refusal(key)
+    return ''
+
+
+def errors(tool_name, tool_input, urgency=None, root=intensity.ROOT, posts=None):
+    """Why this Buffer call would send a post with no subscribe route, or on a channel another engine owns, or [].
 
     tool_name is the connector tool's name (anything ending create_post or edit_post); tool_input its input.
-    urgency is the North Star urgency (intensity.state); None reads it."""
+    urgency is the North Star urgency (intensity.state); None reads it. posts is {post id: channel id} for the
+    posts already read (engine/post_channels.py); None reads the map under root."""
     if not str(tool_name).endswith(TOOLS) or not isinstance(tool_input, dict):
         return []
-    channel = CHANNEL_BY_ID.get(tool_input.get('channelId'))
-    if str(tool_name).endswith('edit_post') and channel is None:
-        # An edit names only its post. It is this engine's when its words or first comment speak for the
-        # publication; an edit that changes no words (a reschedule, an asset swap) keeps what was checked.
+    edit = str(tool_name).endswith('edit_post')
+    read_on = None
+    if edit:
+        posts = post_channels.known(root) if posts is None else posts
+        read_on = posts.get(tool_input.get('postId')) if isinstance(tool_input.get('postId'), str) else None
+    handed = _handed_off(tool_input, read_on)
+    if handed:
+        return [owners.HOLD + ': ' + handed]
+    unnamed = []  # main's offline channel inference is replaced by the channel the post was read on
+    if edit and read_on is None:
+        return [UNKNOWN + ': ' + UNREAD_POST + '. An edit names only its post, and Buffer post '
+                + str(tool_input.get('postId')) + ' has not been read here, so it may be on Krish\'s personal '
+                'LinkedIn, which is growth-mindmake\'s (Ruling, Krish, 2026-11-13)']
+    if edit and read_on not in CHANNEL_BY_ID:
+        return []  # another venture's channel: never this engine's, passes untouched
+    channel = CHANNEL_BY_ID.get(read_on if edit else tool_input.get('channelId'))
+    if edit:
+        # An edit of a post on this engine's channel, read on that channel. It is checked when its words or first
+        # comment speak for the publication; an edit that changes no words (a reschedule, an asset swap) keeps
+        # what was checked.
         meta = tool_input.get('metadata') or {}
         service = next((k for k, v in meta.items() if isinstance(v, dict) and ('firstComment' in v or 'thread' in v)), None)
         said = (tool_input.get('text') or '') + ' ' + str((meta.get(service) or {}).get('firstComment') or '')
         if 'text' not in tool_input or 'makeyourmindup' not in said.lower():
             return []
-        channel = {'substack': 'substack-notes'}.get(service, service) or 'threads'
     if channel is None:
         return []
     if urgency is None:
         urgency = intensity.state(root)['urgency']
     if not intensity.subscribe_required(urgency, root):
         return []
+    if unnamed:
+        return unnamed
     words, first, links = _texts(tool_input, channel)
     url, why = _tagged(words + '\n' + '\n'.join(links), channel, root)
     if url:
@@ -102,12 +156,13 @@ def errors(tool_name, tool_input, urgency=None, root=intensity.ROOT):
     conversion = intensity.bounds(root)['conversion']
     if channel in conversion['profile_link_channels']:
         if not intensity.subscribe_errors({'url': conversion['subscribe_url'] + '?utm_source=' + channel
-                                           + '&utm_content=profile', 'placement': 'profile_link'},
+                                           + '&utm_medium=social&utm_content=bio',
+                                           'placement': 'profile_link'},
                                           channel, words, None, urgency, root):
             return []
     page = conversion['subscribe_url']
     where = ('in the first comment, or words that point to the profile link'
              if channel in conversion['profile_link_channels'] else 'in the words or the first comment')
     return [HOLD + ': this ' + channel + ' post carries no subscribe route at U' + str(urgency) + '. Put '
-            + page + '?utm_source=' + SERVICE.get(channel, channel) + '&utm_medium=organic&utm_content=<post or slot id> '
+            + page + '?utm_source=' + channel + '&utm_medium=social&utm_campaign=growth&utm_content=<post or slot id> '
             + where + ' (intensity.json conversion; Ruling, Krish, 2026-11-12)'] + why + why_first

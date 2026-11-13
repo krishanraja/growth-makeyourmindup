@@ -14,7 +14,7 @@ from .. import concepts as concept_rules
 from ..control_center import sha256_hex
 from ..copy_lint import copy_lint_errors
 from ..core import TIMEZONE, UTC, calendar_date, canonical, http_url, instant, ny_time, read_json, write_json
-from .. import intensity
+from .. import intensity, owners
 from ..packs import prose_errors
 from ..share import (compare_send_test, cta_applies, cta_errors, share_errors, share_line,
                      slot_send_test_request, stage_slot_send_test)
@@ -202,7 +202,7 @@ def social_records(root=ROOT):
 def daily_cap(record, urgency=None, root=ROOT):
     """Scheduled posts a channel takes per New York day, from its record; None means no engine cap.
 
-    A human-only channel (LinkedIn) records null: its slots are unscheduled drafts.
+    A human-only channel records null: its slots are unscheduled drafts.
     At U3 to U5 the cap rises only to the channel's own policy bound in
     engine/social.py (engine/intensity.py).
     """
@@ -292,6 +292,10 @@ def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urg
     if channel and fmt and (slot['format'] not in channel['formats'] or slot['channel'] not in fmt['channels']):
         errors.append(finding('format_not_allowed', at + '.format',
                               slot['format'] + ' is not a format of ' + slot['channel'], sid))
+    if channel and channel.get('owned_by'):
+        # Another engine's channel takes no slot here (Ruling, Krish, 2026-11-13: growth-mindmake owns his
+        # personal LinkedIn; engine/owners.py).
+        errors.append(finding('channel_owned_by_another_engine', at + '.channel', owners.refusal(slot['channel']), sid))
     if channel:
         expected = 'krish_click' if channel['publication_mode'] == 'human_publish_only' else 'engine'
         if slot['publish_mode'] != expected:

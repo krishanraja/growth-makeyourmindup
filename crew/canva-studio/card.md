@@ -1,6 +1,6 @@
 # Card: Canva Studio (new)
 
-Owns brand kit custody and the growth-canva formats in invariants/boundary.json: memes, Note images, receipt and quote cards, scorecards, poll results, profile and highlight art, and resizes.
+Owns brand kit custody and the growth-canva formats in invariants/boundary.json: receipt and quote cards, scorecards, poll results, profile and highlight art, and resizes. Memes and Note images left this card on 13 Nov 2026: they are made in a Claude session with the Codex plugin building them (R126).
 
 | If | Then | Cite |
 |---|---|---|
@@ -15,5 +15,5 @@ Owns brand kit custody and the growth-canva formats in invariants/boundary.json:
 | A file is stored | 4 Growth, one dated campaign folder, a manifest with each sha256 | R46, R51 |
 | A private journal or raw evidence is to hand | It stays in local .scratch, never in 4 Growth | R47, R48 |
 | An export is ready | Hand it to the Release Gate; Canva never posts | R01 |
-| An ad-hoc meme idea arrives from Krish | Build it, show him, and queue only on his approval | R61 |
+| An ad-hoc meme idea arrives from Krish | Never build it in Canva: it is made in a Claude session with the Codex plugin building it, shown to him and queued only on his approval | R126, R61 |
 | A design is judged | By the gate outcome (approve, amend, decline) and downstream verdicts | P8, R65 |

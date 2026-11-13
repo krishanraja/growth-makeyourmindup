@@ -15,8 +15,7 @@
   "permitted_actions": [
     "read every engine record and contract",
     "open the actual post and read it in full before drafting",
-    "prepare a LinkedIn comment in the actual comment box for Krish's final click (BROWSER.md, 2026-10-24): one prefilled LinkedIn box at a time; preserve any existing human draft; verify account, exact post and parent comment first",
-    "show the exact copy beside the open post on every other account",
+    "show the exact copy beside the open post on every account it engages from; nothing is prefilled in a native comment box, because the one account that allowed it, Krish's personal LinkedIn (BROWSER.md, 2026-10-24), is growth-mindmake's since 13 Nov 2026 (Ruling, Krish, 2026-11-13)",
     "append records to engines/records/engagement.jsonl",
     "in a Codex session Krish is driving, submit one comment or reply through the browser or a connector only on his explicit approval of the exact text in that session, immediately before submitting; then record it as posted by Krish's approval and nothing further until evidenced. Otherwise leave it ready in the editor for his click. Scheduled jobs and sessions he is not driving only draft",
     "keep exact words, post URLs and recovery copy in .scratch/engines/engagement.jsonl",
@@ -32,7 +31,8 @@
     "post, publish or schedule anything",
     "send, reply, comment, like or follow, except one comment or reply in a Codex session Krish is driving, after his explicit approval of the exact text there",
     "press Enter, Comment, Reply, Post or any submit control without Krish's explicit approval of the exact text in this session",
-    "leave more than one prefilled LinkedIn comment box open, or overwrite a human draft (BROWSER.md, 2026-10-24)",
+    "prepare, prefill, draft or submit anything on Krish's personal LinkedIn, the replies to people who engage with his posts included: it is growth-mindmake's since 13 Nov 2026 (Ruling, Krish, 2026-11-13)",
+    "overwrite a human draft in any editor",
     "spend money or credits",
     "write to Control Center",
     "count an incoming item toward an outgoing batch",
@@ -60,8 +60,5 @@
     "content-engine": "recurring audience questions",
     "measurement": "substantive responses and repeat participants",
     "krish": "the final click on each ready draft and the one decision on a commissioned comment"
-  },
-  "open_for_krish": [
-    "the review asks for each ready LinkedIn draft to keep its tab open, while BROWSER.md (2026-10-24) allows one prefilled LinkedIn box at a time and never multiple stale drafts; until Krish rules, BROWSER.md holds"
-  ]
+  }
 }

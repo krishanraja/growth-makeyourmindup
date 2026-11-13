@@ -16,7 +16,10 @@ Channel pinning reuses engine/run/release.py: a post counts for this engine
 only when its channel is the one release.BUFFER_NAME names for that service
 (release.resolve_channel), because the Buffer organisation is shared with
 other ventures. Imported posts (via "network") are not this engine's
-publications (F17) and are counted, never judged.
+publications (F17) and are counted, never judged. A channel this engine
+handed to another engine is read by its Buffer id for history only
+(engine/buffer_channels.py read_channel): its posts from before the handover
+are judged, later ones are the new owner's and are left out, with no hold.
 
 Read-only: nothing here creates, edits or deletes anything in Buffer.
 """
@@ -24,8 +27,9 @@ import importlib
 import math
 import os
 
+from ..buffer_channels import BUFFER_CHANNEL_ID, HANDED_OFF_CHANNELS, read_channel
 from ..core import instant
-from .release import BUFFER_NAME, CHANNELS, resolve_channel
+from .release import CHANNELS, resolve_channel
 
 KEY_ENV = 'BUFFER_API_KEY'
 NOT_CONFIGURED = 'Buffer not configured'
@@ -126,17 +130,32 @@ def metric_values(metrics):
 
 
 def _words(post):
-    """The post's text plus any link attachment, so a tracked link in either is joined."""
+    """The post's text, any link attachment and its first comment, so a tracked link in any is joined."""
     words = post.get('text') if isinstance(post.get('text'), str) else ''
     meta = post.get('metadata') if isinstance(post.get('metadata'), dict) else {}
     link = meta.get('linkAttachment') if isinstance(meta.get('linkAttachment'), dict) else {}
     if isinstance(link.get('url'), str):
         words += ' ' + link['url']
+    if isinstance(meta.get('firstComment'), str):
+        words += ' ' + meta['firstComment']  # a route in the first comment counts, as the gate allows it
+    if isinstance(meta.get('link'), str):
+        words += ' ' + meta['link']  # an Instagram story's link sticker, as engine/subscribe_gate.py _texts allows it
     return words
 
 
+def _thread_count(post):
+    """How many items follow an X or Threads post in its thread (metadata.threadCount), else 0. The listing
+    selects the count only, never the items, so a route in a later item cannot be read here."""
+    meta = post.get('metadata') if isinstance(post.get('metadata'), dict) else {}
+    count = meta.get('threadCount')
+    return count if isinstance(count, int) and not isinstance(count, bool) and count > 0 else 0
+
+
 def sent_posts(client, since, now=None):
-    """This engine's sent posts on its eight pinned channels, with per-post metrics where present."""
+    """This engine's sent posts on its seven pinned channels, with per-post metrics where present, and its
+    posts from before a handover on a channel it handed to another engine (read_channel: Krish's personal
+    LinkedIn, growth-mindmake's since 13 Nov 2026), read and judged as history. A later post on a handed-off
+    channel is the new owner's: left out, with no hold, for that channel is not this engine's to pin."""
     since, now = instant(since), instant(now)
     listed = _posts(client.list_posts(status='sent', since=since.isoformat()))[:MAX_POSTS]
     seen = {}
@@ -145,15 +164,17 @@ def sent_posts(client, since, now=None):
         if isinstance(channel['id'], str):
             seen.setdefault(channel['id'], channel)
     pinned, missing, held = {}, [], []
-    for cid in BUFFER_NAME:
+    for cid in BUFFER_CHANNEL_ID:
         try:
             pinned[resolve_channel({'channel': cid}, list(seen.values()))['id']] = cid
         except ValueError as exc:
             (missing if str(exc).startswith('no Buffer channel') else held).append(
                 {'channel': cid, 'reason': str(exc)})
-    posts, imported, reads = [], 0, 0
+    posts, imported, reads, native, history = [], 0, 0, [], 0
     for post in listed:
-        cid = pinned.get(_channel_of(post)['id'])
+        channel_id = _channel_of(post)['id']
+        handed = isinstance(channel_id, str) and channel_id in HANDED_OFF_CHANNELS
+        cid = HANDED_OFF_CHANNELS[channel_id] if handed else pinned.get(channel_id)
         if cid is None or post.get('status') != 'sent':
             continue
         if not isinstance(post.get('sentAt'), str):
@@ -164,10 +185,16 @@ def sent_posts(client, since, now=None):
             continue
         if not since <= sent_at <= now:
             continue
+        if handed and read_channel(channel_id, sent_at) is None:
+            continue  # the new owner's post, never this engine's to judge
+        pid = post.get('id')
         if post.get('via') == 'network':
             imported += 1
+            if isinstance(pid, str) and 0 < len(pid) <= 64:
+                # Never judged (F17), but reconciled: a native post needs a route too (engine/run/reconcile.py).
+                native.append({'post_id': pid, 'channel': cid, 'sent_at': sent_at, 'words': _words(post),
+                               'thread_count': _thread_count(post)})
             continue
-        pid = post.get('id')
         if not isinstance(pid, str) or not pid or len(pid) > 64:
             continue
         if 'metrics' in post:
@@ -176,10 +203,13 @@ def sent_posts(client, since, now=None):
             detail = client.get_post(pid)
             reads += 1
             metrics = detail.get('metrics') if isinstance(detail, dict) else None
+        history += int(handed)
         posts.append({'post_id': pid, 'channel': cid, 'service': CHANNELS[cid][0], 'sent_at': sent_at,
-                      'due_at': post.get('dueAt'), 'external_link': post.get('externalLink'), 'words': _words(post), 'metrics': metric_values(metrics) if metrics is not None else None})
+                      'due_at': post.get('dueAt'), 'external_link': post.get('externalLink'), 'words': _words(post),
+                      'thread_count': _thread_count(post),
+                      'metrics': metric_values(metrics) if metrics is not None else None})
     return {'posts': posts, 'missing': missing, 'held': held, 'imported': imported, 'get_post_reads': reads,
-            'listed': len(listed)}
+            'listed': len(listed), 'native': native, 'history': history}
 
 
 def account_check(client):

@@ -8,6 +8,7 @@ import re
 import unicodedata
 from urllib.parse import parse_qsl, urlsplit
 
+from . import owners
 from .copy_lint import copy_lint_errors
 from .core import KINDS, OWN_HOSTS, PLATFORMS, calendar_date, canonical, http_url, identity, instant
 
@@ -74,6 +75,11 @@ def problems(item, kind=None):
         return ['has no text']
     if item.get('platform') not in PLATFORMS:
         errors.append('unknown platform')
+    elif kind not in INTERNAL_KINDS and owners.owner(item['platform']):
+        # A draft for a channel another engine owns is never made here: a post, a comment or a reply
+        # (Ruling, Krish, 2026-11-13: growth-mindmake owns his personal LinkedIn). A report or numbers
+        # row about it is a reading, and stays.
+        errors.append(owners.refusal(item['platform']))
     errors += prose_errors(text)
     # The draft is public once he pastes it (Krish, 28 Oct 2026: no eyebrows,
     # asterisks, AI notes or take labels); an unreadable lint refuses the pack.

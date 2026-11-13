@@ -20,6 +20,12 @@ def codes(calendar):
     return {e['code'] for e in lint(calendar)['errors']}
 
 
+# A weekly cap for the cap machinery's tests. Its quote is the one the corpus still holds for the cap that
+# left with LinkedIn, set here on Threads, which takes seven a week under its record's one a day.
+SYNTHETIC_CAP = {'channel': 'threads', 'per': 'week', 'max': 7,
+                 'source_file': 'docs/plans/2026-10-27-engine-architecture.md', 'quote': 'LinkedIn at most four a week'}
+
+
 def row(calendar, row_id):
     return next(r for r in calendar['wave'] + calendar['weekly'] if r['id'] == row_id)
 
@@ -39,7 +45,8 @@ class CalendarTests(unittest.TestCase):
             self.assertEqual(counts['substack-notes'], 2, day)
             self.assertGreaterEqual(counts['threads'], 1, day)
             self.assertGreaterEqual(counts['x'], 1, day)
-        self.assertEqual(sum(c.get('linkedin', 0) for c in result['week'].values()), 4)
+        # The four weekly LinkedIn drafts left with LinkedIn (Ruling, Krish, 2026-11-13: growth-mindmake's).
+        self.assertEqual(sum(c.get('linkedin', 0) for c in result['week'].values()), 0)
         # Threads takes 1 a day under its record, so the calendar's "up to 2" is held for Krish. X takes
         # four a day since main's 29 Oct ruling (R102), so its "up to 2" fits and is not held.
         self.assertEqual(len(result['held']), 1)
@@ -50,8 +57,7 @@ class CalendarTests(unittest.TestCase):
         calendar = v1()
         everything = calendar['wave'] + calendar['weekly']
         for r in everything:
-            if r['channel'] == 'linkedin':
-                self.assertEqual((r['lane'], r['at'], r['producer']), ('L3_hands', 'draft', 'words'))
+            self.assertNotEqual(r['channel'], 'linkedin', r['id'])
             if r['class'] in ('carousel', 'meme', 'scorecard', 'poll'):
                 self.assertEqual(r['lane'], 'L2_eyes', r['id'])
         self.assertEqual({row(calendar, i)['lane'] for i in ('note-quote', 'receipt-x', 'short-tiktok',
@@ -61,9 +67,7 @@ class CalendarTests(unittest.TestCase):
             self.assertEqual(row(calendar, 'carousel-' + channel)['days'], [0, 0])
 
     def test_a_wrong_lane_is_refused(self):
-        for row_id, lane, expected in (('linkedin-mo', 'L0_code', {'lane', 'linkedin_not_l3', 'draft_timing',
-                                                                   'new_format_not_eyes'}),
-                                       ('carousel-instagram', 'L0_code', {'lane', 'new_format_not_eyes'}),
+        for row_id, lane, expected in (('carousel-instagram', 'L0_code', {'lane', 'new_format_not_eyes'}),
                                        ('meme-tiktok-tu', 'L0_code', {'lane', 'new_format_not_eyes'}),
                                        ('receipt-x', 'L2_eyes', {'lane'}),
                                        # No L1: there are no Claude routines (Krish, 29 Oct 2026).
@@ -71,6 +75,21 @@ class CalendarTests(unittest.TestCase):
             calendar = v1()
             row(calendar, row_id)['lane'] = lane
             self.assertEqual(codes(calendar), expected, row_id)
+
+    def test_a_row_on_a_channel_another_engine_owns_is_refused(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn. A LinkedIn row is refused in
+        # whatever lane it claims, even the draft-only hands lane it once had.
+        for lane, at in (('L3_hands', 'draft'), ('L2_eyes', '09:00'), ('L0_code', '09:00')):
+            calendar = v1()
+            calendar['weekly'].append({'id': 'linkedin-mo', 'weekday': 'MO', 'at': at, 'channel': 'linkedin',
+                                       'format': 'text', 'class': 'linkedin-draft', 'template': None,
+                                       'producer': 'words', 'lane': lane, 'priority': 1, 'requires': None,
+                                       'link': 'none'})
+            result = lint(calendar)
+            self.assertFalse(result['valid'], lane)
+            refused = [e for e in result['errors'] if e['code'] == 'channel_owned_by_another_engine']
+            self.assertEqual(len(refused), 1, lane)
+            self.assertIn("growth-mindmake's", refused[0]['message'])
 
     def test_formats_producers_and_templates_must_exist(self):
         calendar = v1()
@@ -100,12 +119,14 @@ class CalendarTests(unittest.TestCase):
         calendar['wave'] = [r for r in calendar['wave'] if r['id'] != 'recut-x']
         self.assertIn('x has 0 on TU, below its floor of 1', [e['message'] for e in lint(calendar)['errors']])
         calendar = v1()
-        extra = dict(row(calendar, 'linkedin-mo'), id='linkedin-th', weekday='TH')
-        calendar['weekly'].append(extra)
+        # No channel carries a weekly cap since LinkedIn's left (13 Nov 2026); a synthetic one proves the check.
+        calendar['caps'] = [dict(SYNTHETIC_CAP, max=6)]
         self.assertIn('cap', codes(calendar))
+        calendar['caps'] = [SYNTHETIC_CAP]
+        self.assertNotIn('cap', codes(calendar))
         calendar = v1()
         calendar['weekly'].append(dict(row(calendar, 'meme-instagram-tu'), id='meme-threads-mo', channel='threads',
-                                       weekday='MO', template='meme-square', priority=1))
+                                       weekday='MO', priority=1))
         # Threads takes one a day; a day-0 receipt must never be cut (X takes four since R102).
         self.assertIn('day0_bumped', codes(calendar))
         calendar = v1()
@@ -120,8 +141,9 @@ class CalendarTests(unittest.TestCase):
 
     def test_caps_are_quoted_from_the_corpus(self):
         calendar = v1()
-        sources = {c['channel']: c['source_file'] for c in calendar['caps']}
-        self.assertEqual(sources['linkedin'], 'docs/plans/2026-10-27-engine-architecture.md')
+        self.assertEqual(calendar['caps'], [], "LinkedIn's weekly cap left with LinkedIn (13 Nov 2026)")
+        calendar['caps'] = [dict(SYNTHETIC_CAP)]
+        self.assertNotIn('cap_quote', codes(calendar))
         records = inventory()['channel']
         for name in ('threads', 'facebook'):
             self.assertEqual(records[name]['daily_posts_target'], 1, name)
@@ -131,7 +153,7 @@ class CalendarTests(unittest.TestCase):
         calendar['caps'][0]['quote'] = 'LinkedIn at most nine a week'
         self.assertIn('cap_quote', codes(calendar))
         calendar = v1()
-        calendar['caps'][0]['source_file'] = '../outside.md'
+        calendar['caps'] = [dict(SYNTHETIC_CAP, source_file='../outside.md')]
         self.assertIn('cap_source', codes(calendar))
 
     def test_daily_caps_come_only_from_the_channel_records_and_intensity(self):

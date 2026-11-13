@@ -130,7 +130,9 @@ class HandoffWithManifest(unittest.TestCase):
     def test_drafts_that_match_the_manifest_are_proposed(self):
         summary, code = self.run_handoff(encoded(manifest()))
         self.assertEqual(code, 0, summary)
-        self.assertEqual(summary['slots'], {'proposed': 3})
+        # The board's manifest may still carry LinkedIn words (growth-mindmake's since 13 Nov 2026): no slot here
+        # names LinkedIn, so only the two of this engine's posts are proposed.
+        self.assertEqual(summary['slots'], {'proposed': 2})
 
     def test_a_draft_edited_away_from_the_manifest_is_held(self):
         value = manifest()
@@ -143,13 +145,13 @@ class HandoffWithManifest(unittest.TestCase):
     def test_a_manifest_that_is_not_passed_holds_every_slot(self):
         data, digest = encoded(manifest(qa={'state': 'failed', 'checked_at': '2026-11-02T10:00:00Z'}))
         summary, _ = self.run_handoff((data, digest))
-        self.assertEqual(summary['holds'], {'manifest_qa_not_passed': 3})
+        self.assertEqual(summary['holds'], {'manifest_qa_not_passed': 2})
         self.assertEqual(self.golives(), [])
 
     def test_a_manifest_that_does_not_hash_to_its_sha_holds_every_slot(self):
         data, digest = encoded(manifest())
         summary, _ = self.run_handoff((data + b' ', digest))
-        self.assertEqual(summary['holds'], {'manifest_sha_mismatch': 3})
+        self.assertEqual(summary['holds'], {'manifest_sha_mismatch': 2})
 
     def test_a_bad_manifest_reference_is_refused_before_any_call(self):
         payload = self.fix.payload(piece_manifest={'url': 'http://insecure.example.invalid/m', 'sha256': 'a' * 64})
@@ -163,9 +165,9 @@ class HandoffWithManifest(unittest.TestCase):
             slot['per_item_review'] = True
         summary, code = self.run_handoff(encoded(manifest()))
         self.assertEqual(code, 0, summary)
-        self.assertEqual(summary['proposals'], {'go_live': 3})
+        self.assertEqual(summary['proposals'], {'go_live': 2})
         by_slot = {next(iter(parse_manifest(p['exact_payload']))): p for p in self.golives()}
-        self.assertEqual(sorted(by_slot), ['linkedin-1', 'threads-1', 'x-1'])
+        self.assertEqual(sorted(by_slot), ['threads-1', 'x-1'])
         for slot_id, item in by_slot.items():
             verdict = 'declined' if slot_id == 'x-1' else 'approved'
             self.cc.decisions.append(self.fix.decision(item, '2026-11-03T14:30:00Z', decision=verdict))
@@ -174,7 +176,7 @@ class HandoffWithManifest(unittest.TestCase):
         self.assertEqual(code, 0, released)
         self.assertEqual(self.buf.posts[P_THREADS]['status'], 'scheduled')
         self.assertEqual(self.buf.posts[P_X]['status'], 'draft', 'his No pulled this one post')
-        self.assertEqual(self.buf.posts[P_LINKEDIN]['status'], 'draft', 'LinkedIn stays his click')
+        self.assertEqual(self.buf.posts[P_LINKEDIN]['status'], 'draft', 'LinkedIn is never touched here')
 
     def test_a_pull_after_the_post_is_scheduled_is_loud_and_never_unscheduled(self):
         for slot in self.fix.slots:

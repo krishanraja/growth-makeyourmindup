@@ -30,7 +30,10 @@ Four event types, each with a closed client_payload (unknown keys refused):
   The why Krish reads names, in plain words, the day, and the alt text,
   first comment, titles, privacy, location, AI label and tagged accounts
   that go out with each post.
-  LinkedIn always goes in as krish_click. The slots that pass become the
+  A slot on a channel another engine owns (Krish's personal LinkedIn, growth-
+  mindmake's since 13 November 2026: Ruling, Krish, 2026-11-13) is held
+  (`channel_owned_by_another_engine`) before its draft is read, and never
+  goes in at all (engine/owners.py). The slots that pass become the
   `growth-golive-manifest/1` exact_payload autorelease reads, each go-live a
   `post` wall with target null under the newest open plan Krish approved,
   reported in its own report whose run_id is
@@ -60,6 +63,9 @@ Four event types, each with a closed client_payload (unknown keys refused):
   cc_loop.plan_proposals: one plan proposal behind strategy, or, when a week
   passes 8,000 characters, parts in order (`makeyourmindup:mix:<week>`, then
   `:p2`, ...), one ask at a time, each part's concepts in its own report.
+  Each part expires when its week ends, and a plan for a week that is already
+  over is refused whole (`week_over`, engine/stale_asks.py): nothing is asked
+  about a week he can no longer use.
   A version record (`makeyourmindup:mixplan:<week>:<n>`) names the parts in
   force. Each mock's first view link rides as the ask's evidence. Beside the
   parts, never inside them, the runner records the week's slots
@@ -84,7 +90,11 @@ Four event types, each with a closed client_payload (unknown keys refused):
 - `growth-week-packet` (whoever plans the week): {"run_id", "week",
   "spec_sha256", "slots": [{"slot", "channel", "payload_sha256"}]}. Proposed
   as a `check_in` on the open plan ("On track?"), or as a `plan` when no
-  plan is open. One proposal per packet: one ask at a time.
+  plan is open. One proposal per packet: one ask at a time. A slot on a
+  channel another engine owns (Krish's personal LinkedIn: Ruling, Krish,
+  2026-11-13) is held (`channel_owned_by_another_engine`) and never named
+  in the ask, which lists only what is left; a packet with nothing left is
+  one held report and no proposal.
 - `growth-make-piece` (a publish board Krish approved): {"piece_id"}. Nothing
   to propose: it is recorded and counted.
 
@@ -100,7 +110,7 @@ from pathlib import Path
 import re
 import sys
 
-from engine import buffer_channels, concepts as concept_rules, mix as mix_rules
+from engine import buffer_channels, concepts as concept_rules, intensity, mix as mix_rules, owners, route, stale_asks
 from engine.cc_loop import NO_SPEND, decisions_paged, plan_proposals, revision
 from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _plan_open, _stops,
                                    build_report, canonical_json, objective, proposal, sha256_hex)
@@ -543,6 +553,8 @@ class Slots:
 def rebuild(buffer, slot, fetch, now, window=None):
     """(manifest line, None) for one slot whose draft matches, or (None, hold code).
     window is the (start, end) of the run the run_id names, when it names one."""
+    if owners.owner(slot['channel']):
+        return None, owners.HOLD  # Another engine's channel: its draft is never read (Ruling, Krish, 2026-11-13).
     due = None
     if slot['due_at'] is not None:
         due = due_instant(slot['due_at'])
@@ -580,7 +592,7 @@ def rebuild(buffer, slot, fetch, now, window=None):
     if not isinstance(line['words'], str) or not line['words'].strip():
         return None, 'no_words'
     if slot['channel'] in KRISH_CLICK_ONLY and line['publish_mode'] != 'krish_click':
-        # LinkedIn is always his own click: the line goes in as krish_click, with its own digest.
+        # A channel that is only ever his click goes in as krish_click, with its own digest.
         line['publish_mode'] = 'krish_click'
         line['payload_sha256'] = line_digest(line)
     if line['publish_mode'] == 'engine':
@@ -732,8 +744,7 @@ def golive_words(lines, kind, part, parts, day, root, express, on=None):
                 + ('Nothing on another day: each day comes to you as its own go-live. ' if on else '')
                 + 'A yes schedules each post about an hour before it is due. Until then, No stops it. ')
     if clicks:
-        why += (_posts(clicks) + (' stays' if clicks == 1 else ' stay') + ' a draft in Buffer for you to publish yourself'
-                + (', as LinkedIn always does. ' if any(line['channel'] in KRISH_CLICK_ONLY for line in lines) else '. '))
+        why += _posts(clicks) + (' stays' if clicks == 1 else ' stay') + ' a draft in Buffer for you to publish yourself. '
     if day <= show_before_post_until(root):
         why += 'Until ' + _long_date(show_before_post_until(root)) + ' you see every batch before it goes out. '
     details = [text for text in (meta_words(line) for line in lines) if text]
@@ -775,6 +786,21 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
     on its own, so one press never authorises more than one day's posts."""
     run_id, express = manifest['run_id'], bool(manifest.get('express'))
     base = SLUG + ':golive:' + _rest(run_id)
+    # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route. A line without one is
+    # never put to him; it holds here, as the Buffer hook holds a hand-made call (engine/route.py).
+    urgency = intensity.state(root or ROOT, now)['urgency']
+    routed = []
+    for line, slot in lines:
+        # Only a LinkedIn line skips this check. Its signed meta is None (buffer_api.signed_meta cannot carry a
+        # LinkedIn draft), so a route in its first comment is invisible here and the line would be held although
+        # the Buffer hook passes it; the reconciliation in the measure job reads the posted LinkedIn post, first
+        # comment included, and raises the alarm if it went out with no route. Every other line is checked, a
+        # slot left to his own click (krish_click) on any other channel too: its meta carries its first comment.
+        if line.get('channel') != 'linkedin' and route.line_errors(line, urgency, root or ROOT):
+            slots.hold('subscribe_route_missing')
+            continue
+        routed.append((line, slot))
+    lines = routed
     review = {line['slot_id'] for line, slot in lines if needs_own_review(slot, formats)}
     batch = [line for line, _ in lines if line['slot_id'] not in review]
     items = [line for line, _ in lines if line['slot_id'] in review]
@@ -802,11 +828,7 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
         else:
             numbers['item'] += 1
             pid = base + ':item-' + str(numbers['item'])
-        title, why = golive_words(group, kind, number, parts, day, root, express, on)
-        dues = [instant(line['due_at']) for line in group if line['publish_mode'] == 'engine' and line['due_at']]
-        item = proposal(pid, title, why, 'prepared', 'post', 'published', channel='buffer',
-                        exact_payload=manifest_text(run_id, group), target=None,
-                        expires_at=max(dues) if dues else None, stage='go_live', parent_proposal_id=plan_id)
+        item = golive_item(pid, run_id, group, kind, number, parts, on, day, root, express, plan_id)
         if staged_report_run_id(pid, item['payload_sha256']) is None:
             for _ in group:
                 slots.hold('run_id_too_long')
@@ -817,6 +839,114 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
                 slots.count('own_review')
         out.append(item)
     return out
+
+
+def golive_item(pid, run_id, group, kind, number, parts, on, day, root, express, plan_id):
+    """One go-live proposal for one group of manifest lines: its words say what his yes does."""
+    title, why = golive_words(group, kind, number, parts, day, root, express, on)
+    dues = [instant(line['due_at']) for line in group if line['publish_mode'] == 'engine' and line['due_at']]
+    return proposal(pid, title, why, 'prepared', 'post', 'published', channel='buffer',
+                    exact_payload=manifest_text(run_id, group), target=None,
+                    expires_at=max(dues) if dues else None, stage='go_live', parent_proposal_id=plan_id)
+
+
+# Go-lives proposed before a channel was handed to another engine ---------------------------
+
+PART = re.compile(r'\(part (\d+) of (\d+)\)$')
+HANDED_OFF_ONLY = ("It carried only a post on Krish's personal LinkedIn, which is growth-mindmake's since 13 "
+                   'November 2026 (Ruling, Krish, 2026-11-13), so nothing in it is this engine\'s to ask about.')
+PROPOSED_AGAIN = ("Proposed again without its LinkedIn post, which is growth-mindmake's since 13 November 2026 "
+                  '(Ruling, Krish, 2026-11-13), so its other posts can be approved: ')
+
+
+def without_handed_off(item, now, root=ROOT):
+    """What a pending go-live proposed before the handover becomes once its lines on a channel another engine
+    owns are taken out: None when it has none; ('withdraw', reason) when nothing else is left; ('propose', the
+    same go-live without them) otherwise. Pure.
+
+    Control Center refuses his yes on a whole go-live when any line names a Buffer channel this engine no longer
+    lists (protocol 1.17.0 buffer_channels), so a go-live with a LinkedIn line would block its X, Threads and
+    Notes posts. The same proposal_id with the new payload replaces the old one on his list (its decision goes
+    back to waiting), so no separate withdrawal is needed for it."""
+    if not isinstance(item, dict) or item.get('stage') != 'go_live' or not isinstance(item.get('proposal_id'), str):
+        return None
+    try:
+        manifest = json.loads(item.get('exact_payload') or '')
+    except (TypeError, ValueError):
+        return None
+    lines = manifest.get('slots') if isinstance(manifest, dict) and manifest.get('schema') == MANIFEST_SCHEMA else None
+    if not isinstance(lines, list) or not all(isinstance(line, dict) for line in lines):
+        return None
+    keep = [line for line in lines if not owners.owner(line.get('channel'))]
+    if len(keep) == len(lines):
+        return None
+    if not keep:
+        return 'withdraw', HANDED_OFF_ONLY
+    pid, title = item['proposal_id'], str(item.get('title') or '')
+    kind = 'item' if ':item-' in pid else 'batch'
+    found = PART.search(title)
+    number, parts = (int(found.group(1)), int(found.group(2))) if found else (1, 1)
+    days = sorted(d for d in (post_day(line) for line in keep) if d is not None)
+    on = days[0] if days else None
+    parent = item.get('parent_proposal_id') if isinstance(item.get('parent_proposal_id'), str) else None
+    return 'propose', golive_item(pid, manifest.get('run_id'), keep, kind, number, parts, on, today(now), root,
+                                  title.startswith('Your quick idea'), parent)
+
+
+# The most of its newest live reports Control Center serves (protocol 1.10.0 recent_reports, n from 1 to 10), and
+# so the only ones the runner looks through for its go-lives: it has no older page to read.
+RECENT = 10
+
+
+def handed_off_golives(cc, sent, now, root=ROOT):
+    """(reports, withdraw, code, full) for this engine's pending go-lives, among its RECENT newest reports (protocol
+    1.10.0 recent_reports, then each report read back), that still carry a line on a channel another engine owns.
+
+    reports: one go-live report for each that keeps other posts, the same proposal_id without those lines.
+    withdraw: [(proposal_id, reason)] for each that carried nothing else, for the runner's withdrawn[]
+    (engine/stale_asks.py withdrawals). sent is engine/cc_loop.py already_sent(): one Krish decided is left as
+    it is, and with sent None (not read) nothing is done. code names why the reports could not be read, else
+    None. full is True when the newest page was full (RECENT reports), so any go-live proposed before those was
+    not looked at: Control Center serves no older page, so the runner says so in a line (engine/cc_loop.py)."""
+    if sent is None:
+        return [], [], None, False  # the runner already holds its report as unread; nothing is taken back on a guess
+    full = False
+    try:
+        recent = cc.recent_reports(RECENT)
+        rows = recent if isinstance(recent, list) else []
+        full = len(rows) >= RECENT
+        replacements, withdraw, seen = [], [], set()
+        for row in rows:
+            run_id = row.get('run_id') if isinstance(row, dict) else None
+            if not isinstance(run_id, str) or not run_id.startswith(SLUG + ':golive:'):
+                continue
+            got = cc.read_report(run_id)
+            report = got.get('report') if isinstance(got, dict) else None
+            for item in (report or {}).get('proposals') or []:
+                pid = item.get('proposal_id') if isinstance(item, dict) else None
+                if not isinstance(pid, str) or pid in seen:
+                    continue
+                seen.add(pid)  # the newest report of a proposal is the one waiting on his list
+                if sent.get(pid) not in (None, 'pending'):
+                    continue
+                change = without_handed_off(item, now, root)
+                if change is None:
+                    continue
+                if change[0] == 'withdraw':
+                    withdraw.append((pid, change[1]))
+                else:
+                    replacements.append(change[1])
+    except ProtocolError as error:
+        return [], [], 'golive_reports_' + error.code, full
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return [], [], 'golive_reports_unreadable', full
+    activity = [{'line': PROPOSED_AGAIN + ', '.join(i['proposal_id'] for i in replacements)},
+                {'line': 'Posted, sent, published and spent nothing'}]
+    try:
+        reports = reports_for(replacements, Slots(), now, root, activity) if replacements else []
+    except (ValueError, TypeError, KeyError):
+        return [], withdraw, 'golive_report_unbuildable', full
+    return reports, withdraw, None, full
 
 
 # The week packet -----------------------------------------------------------------------
@@ -1157,6 +1287,9 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             raise PayloadRejected('unknown_event')
         if event == MIX_PLAN:
             mix, links, cfg = validate_mix_plan(payload, root)
+            if stale_asks.week_over(mix['week_of'], now):
+                # Nothing is asked about a week that is over (Ruling, Krish, 2026-11-12; engine/stale_asks.py).
+                raise PayloadRejected('week_over')
             files, missing = validate_mock_files(payload.get('mock_files'), mix)
             records_only = payload.get('records_only', False)
             if not isinstance(records_only, bool):
@@ -1217,7 +1350,10 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                 except (BufferError, CarryHold):
                     piece_hold = 'manifest_unreadable'
             for slot in payload['slots']:
-                if 'concept_id' in slot:
+                if owners.owner(slot['channel']):
+                    # Another engine's channel (Ruling, Krish, 2026-11-13): held before its draft is read.
+                    slots.hold(owners.HOLD)
+                elif 'concept_id' in slot:
                     # Made from a concept he approved in the mix plan: its review, never a go-live.
                     record, code = derived_record(buffer, slot, fetch, now, window)
                     if code:
@@ -1234,8 +1370,6 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                     if code:
                         slots.hold(code)
                     else:
-                        if slot['channel'] in KRISH_CLICK_ONLY and slot['publish_mode'] != 'krish_click':
-                            slots.count('linkedin_to_krish_click')
                         lines.append((line, slot))
                 else:
                     slots.hold(reason)
@@ -1248,8 +1382,20 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             derived, days = derived_reports(records, now, root) if records else ([], {})
             summary['proposals'] = {'go_live': len(items)} if items else {}
         else:
-            item = packet_proposal(payload, plan) if reason in (None, 'no_open_plan') else None
-            if item is None:
+            # A slot on a channel another engine owns (Ruling, Krish, 2026-11-13) is held, never listed in the
+            # ask; the ask is built from what is left, and nothing is asked when nothing is left.
+            kept = []
+            for slot in payload['slots']:
+                if owners.owner(slot['channel']):
+                    slots.hold(owners.HOLD)
+                else:
+                    kept.append(slot)
+            item = None
+            if kept and reason in (None, 'no_open_plan'):
+                item = packet_proposal(dict(payload, slots=kept), plan)
+            if not kept:
+                reports = [held_report(event, payload['run_id'], slots, now, root)]
+            elif item is None:
                 reports = [held_report(event, payload['run_id'], slots, now, root,
                                        reason if reason == 'stop_unresolved' else 'packet_over_payload_cap')]
                 summary['holds'][reason if reason == 'stop_unresolved' else 'packet_over_payload_cap'] = 1

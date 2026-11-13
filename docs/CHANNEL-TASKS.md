@@ -26,14 +26,14 @@ table is the summary.
 | tiktok | TikTok (personal) | all but profile-audit | Watch time, then profile visits |
 | x | X (personal) | platform-truth, idea-bank (receipts), caption-set, trend-scan, channel-plan | Profile and link clicks at 48 hours |
 | threads | Threads (@makeyourmind.up) | platform-truth, idea-bank, caption-set, channel-plan | Replies and follows, baseline for two weeks |
-| linkedin | LinkedIn (his click) | platform-truth, idea-bank, caption-set, channel-plan | Featured clicks and comments from target titles |
+| linkedin | LinkedIn (his click; growth-mindmake's since 13 November 2026, so no task runs here) | none here (Ruling, Krish, 2026-11-13) | Read only |
 | substack | Substack Notes | platform-truth, idea-bank, caption-set, channel-plan | Subscribes attributed to a Note |
-| channel-auditor | all eight accounts | profile-audit | Every account points to the subscribe path |
+| channel-auditor | seven accounts (LinkedIn read only since 13 November 2026) | profile-audit | Every account points to the subscribe path |
 
 Dropped on purpose:
 - trend-scan on YouTube, because Shorts are cut from the week's full videos;
 - trend-scan on Threads, because its first two weeks are a baseline;
-- trend-scan on LinkedIn, because those posts are his own click with no quota;
+- every task on LinkedIn since 13 November 2026, because its posts and replies are growth-mindmake's;
 - trend-scan on Substack, because Notes name published work.
 
 Ideas here come from published pieces, because every claim must come from one.

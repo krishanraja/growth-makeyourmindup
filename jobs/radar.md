@@ -12,16 +12,20 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    the signed-in browser read-only when available. Find as many live threads
    less than 12 hours old as clear the bar, where Krish can contribute naturally to the
    actual conversation. A sourced finding is useful when relevant; a
-   specific observation or question can stand on its own. Check LinkedIn,
-   X, relevant YouTube/Substack discussions
+   specific observation or question can stand on its own. Check X,
+   relevant YouTube/Substack discussions
    and communities whose rules permit the contribution. Skip blocked access.
+   LinkedIn is read for trends and evidence only: Krish's personal LinkedIn,
+   replies included, is growth-mindmake's since 13 November 2026 (Ruling,
+   Krish, 2026-11-13), so no draft or tap is made for it here, and
+   `growth.py check` and `cc finish` refuse one (`engine/owners.py`).
 2. Save the thread URL, author, creation time, literal excerpt, observation
    time and any community rule. Cite the published piece as well when adding
    its facts. Never use follower estimates as evidence of quality. Rank by
    fit, usefulness, freshness and a genuine partner relationship.
 3. Draft up to the day's engagement cap, each at most 60 words: 5 at U1
    and U2, raised at U3 to U5 to the bound in `intensity.json` (the `cc
-   finish` report says today's number). LinkedIn first, then the other
+   finish` report says today's number). X first, then the other
    channels. Default to one
    or two short sentences, with an optional question when genuinely useful.
    Do not force a content hook, published fact, product mention or sales
@@ -33,9 +37,8 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    (`.scratch/cc/voice-rules.txt`, "His approved voice rules" in AGENTS.md)
    to how the draft is written, never what it is about. Score separately
    on the short rubric; voice rules never inform the score.
-   LinkedIn comments have no links, even when `kind_hint` is absent. On
-   Reddit, disclose authorship if linking and follow the particular rules.
-4. Set `kind_hint: comment` for LinkedIn. Give every candidate `expires_at`
+   On Reddit, disclose authorship if linking and follow the particular rules.
+4. Give every candidate `expires_at`
    no later than 12 hours after the thread's creation, with thread evidence,
    source evidence and a success check. If already expired, do not queue it.
    A fresh replacement requires rereading the conversation for context.

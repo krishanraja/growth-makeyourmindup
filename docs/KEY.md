@@ -61,8 +61,7 @@ other copy is the file on Krish's PC for Codex workspace runs:
   automation that saved drafts wakes it) and `maker.yml` (04:30 UTC). All
   but the first also read the `BUFFER_API_KEY` secret. The other L0
   workflows read no engine key: `ledger.yml` reads `BUFFER_API_KEY` and
-  `GROWTH_WRITEBACK_TOKEN`, `artdirect.yml` reads `OPEN_AI_API_KEY`, and
-  `check.yml` reads none. The key check, measure (which checks first) and
+  `GROWTH_WRITEBACK_TOKEN`, and `check.yml` reads none. The key check, measure (which checks first) and
   release fail the run on a refused key with `cc_token_refused` or
   `buffer_key_refused`, so GitHub emails Krish. A Claude session's
   proposals reach Control Center only through this runner

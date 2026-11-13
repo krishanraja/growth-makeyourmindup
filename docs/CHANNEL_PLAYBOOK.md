@@ -146,6 +146,10 @@ experience. Pick the live source first; do not publish a placeholder.
 
 ## LinkedIn: authority to a useful read
 
+Not this engine's work since 13 November 2026: Krish's personal LinkedIn is
+growth-mindmake's since 13 November 2026 (Ruling, Krish, 2026-11-13). The notes below stay as reference for
+growth-mindmake; nothing in them is prepared here.
+
 1. Audit headline, banner crop, About opening and Featured links for the
    promise and current start. Use one relevant destination before a link list.
 2. A native post starts with topic and stake, then one useful sourced finding.

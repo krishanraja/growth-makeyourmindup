@@ -9,6 +9,44 @@
   (flag or none, as Heartside's and Mindmake's engines read it), and, with the detail served, tells AEO of the
   answer pieces marked shipped there. A day Control Center could not read the standing asks nothing and records nothing.
   Nothing changes before Control Center serves the digest or the detail.
+- 2026-11-13: Every carousel, meme and Notes image is made in a Claude session, with the Codex plugin building it.
+  His words, asked whether to retire content-engine's old carousel commands: "all the carousels should now be done in
+  Claude, but using the Codex plug in as per the other usual workflows", then "memes and Notes images should go the
+  same way", and "Off-day voiceover shorts should go the same way too". The Saturday art-direction workflow, which ran
+  Codex on an API key to build piece kits, is retired with its Codex runner and its key; the kit checks stay as
+  `growth.py run kit` (`engine/run/kits.py`), the acceptance of the Codex card a Claude session writes with
+  content-engine's `ve card` and queues in `codex/queue/<id>.md` for the Codex lane, and `render/KIT_RULES.md` is that
+  card's brief. Memes and Notes images leave the Canva lane for the same route (their format owner is content-engine's
+  route, `invariants/boundary.json`, `social/formats/meme.json` and `note.json`); off-day voiceover shorts are made on
+  content-engine's ve route. No workflow, cron or runner here makes any of them. The route is content-engine's
+  `docs/CAROUSEL-STANDARD.md`, "How a carousel is made".
+- 2026-11-13: Krish's personal LinkedIn is growth-mindmake's, not this engine's. Asked "Which engine should own your
+  personal LinkedIn posts (you still click every post)?", he answered "growth-mindmake owns it". growth-mindmake
+  owns his personal LinkedIn posts (Mindmake's published thinking, about three a week) and replies to everyone who
+  engages with them; he still clicks every post, so LinkedIn stays `human_publish_only`. His X and the publication's
+  own accounts (Instagram, Facebook, YouTube, Substack, Threads, Substack Notes and TikTok) stay here. The ruling
+  also records that the media kit says the publication should not lean on LinkedIn. This engine now drafts, queues,
+  taps, schedules and pins nothing there: one owner table (`engine/owners.py`) and the channel record's `owned_by`
+  agree, and the social route, the pack check, Control Center reports, the engagement tap queue, the Engagement and
+  Publishing engines, the calendar (its four weekly LinkedIn drafts and LinkedIn cap are gone), the spec lint, the
+  L0 handoff (go-lives and week packets), the backlog, the board tick, the Buffer channel table and the Buffer
+  subscribe gate hook (its channel id, at every urgency) all refuse it, and a tap, or an item on the Engagement
+  engine's queue, is LinkedIn's by its label or by the page it opens, read as a browser reads its host. Buffer's
+  edit_post names only its post, so the gate goes by the post: a hook records each post's channel when it is read
+  (get_post, list_posts, create_post), an edit of a LinkedIn post is refused, and an edit of a post not yet read is
+  refused until it is read. A go-live still waiting from before the handover with a LinkedIn line is proposed again
+  without it, or taken back when that was all it held. Reading LinkedIn (research, trend reading, what others post,
+  and the measure job, the learn job and the ledger judging this engine's own LinkedIn posts from before the
+  handover, with no hold) stays (`AGENTS.md`, "Krish's personal LinkedIn is growth-mindmake's"; R125).
+- 2026-11-12: Nothing on his list is stale; the engine takes back its own asks once their week or window has passed.
+  His words: everything must be "not only up to date but impossible to sprawl over time". His list shows one of this
+  engine's asks at a time, and nine older asks (the three-part mix plan for the week of 2 November, which is over,
+  the standing plan, four October experiment asks and this week's mix ask) sat ahead of the new AI-answer questions.
+  The runner now withdraws, through the protocol's own `withdrawn[]` with a one-line reason, each of its own
+  undecided asks whose week or window is over (a past week's mix plan parts and mix ask, the standing plan after
+  27 December, an experiment after its `end` day), carries what it took back forward, and never touches an ask he
+  decided or one still live; the handoff refuses a mix plan for an ended week, the maker asks nothing about one,
+  and every week's mix plan expires with its week (`engine/stale_asks.py`).
 - 2026-11-13: The engine proposes the publication's AI-answer questions for his approval. His words, to the offer to
   propose the 20 questions readers most likely ask an AI assistant: "propose them". The 20, found from typed search
   questions with volume (AnswerThePublic), public threads and the 14 published pieces, are in

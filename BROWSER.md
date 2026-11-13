@@ -1,15 +1,22 @@
 # Browser access: inspect and make only authorised audit repairs
 
-**Current (5 November 2026).** In a Codex session Krish is driving, one
+**Current (13 November 2026).** Krish's personal LinkedIn is
+growth-mindmake's, posts and replies alike (Ruling, Krish, 2026-11-13;
+`AGENTS.md`, "Krish's personal LinkedIn is growth-mindmake's"): this engine
+only reads it, and never types, prefills or prepares anything there. Every
+LinkedIn preparation permission below is growth-mindmake's now, not this
+engine's.
+
+**5 November 2026.** In a Codex session Krish is driving, one
 outreach send (Acquisition) or one comment or reply (Engagement) may be
 submitted in this browser or through a connector, only after he approves
 that exact payload in that session, immediately before it goes
 (`AGENTS.md`, "Outreach for Make Your Mind Up"; `engines/acquisition.json`,
 `engines/engagement.json`). Scheduled jobs and sessions he is not driving
-stay under "The line you never cross" below. Open conflict: the 5 November
-review keeps every ready LinkedIn draft open in its tab, while the
-2026-10-24 ruling below allows one prefilled LinkedIn box at a time; this
-file holds until Krish rules. Buffer's TikTok short-video route is held
+stay under "The line you never cross" below. The open conflict over
+LinkedIn draft tabs (the 5 November review against the 2026-10-24 ruling
+below) is no longer this engine's: LinkedIn went to growth-mindmake on
+13 November. Buffer's TikTok short-video route is held
 (`social/tools/buffer.json`); the native TikTok uploader is the alternative
 under the applicable approval.
 
@@ -55,6 +62,8 @@ press Enter, Comment, Reply, Post or any shortcut that submits. Load one
 candidate at a time when handing it over; never leave multiple stale drafts.
 If safe prefill is unavailable, show the exact copy beside the open post.
 This exception permits draft preparation only, never automatic engagement.
+Since 13 November 2026 it is growth-mindmake's, not this engine's (Ruling,
+Krish, 2026-11-13): this engine prepares no LinkedIn comment at all.
 
 ## Buffer draft operations (Ruling, Krish, 2026-10-26)
 
@@ -84,7 +93,8 @@ the explicit Buffer draft authority, LinkedIn preparation and the approved
 send or comment in a session Krish is driving (top of this file), you may **never**:
 
 - type into a post, comment, reply, message, note or chat box, except the
-  explicitly authorised LinkedIn comment preparation above;
+  explicitly authorised LinkedIn comment preparation above (growth-mindmake's
+  since 13 November 2026, never this engine's);
 - press Post, Publish, Send, Reply, Like, Repost, Restack, Follow, Connect,
   Subscribe, Join, Save, Schedule, Boost, Promote or Pay;
 - change a setting, a profile, a bio, a link, a welcome page, an email, a
@@ -119,7 +129,9 @@ If a channel shows you signed out, don't sign in. Note "signed out of
 
 For finding conversations (the radar): his LinkedIn feed and search, X
 search and lists, Substack's reader feed, YouTube's search. The same rules
-apply: read, never act.
+apply: read, never act. Since 13 November 2026 LinkedIn is read for trends
+and evidence only: a conversation found there is never drafted for here,
+because his LinkedIn replies are growth-mindmake's.
 
 ## If no signed-in browser is available
 

@@ -183,9 +183,9 @@
     {
       "id": "linkedin",
       "row": 7,
-      "name": "LinkedIn (personal)",
+      "name": "LinkedIn (personal, growth-mindmake's)",
       "owns": [
-        "unscheduled drafts"
+        "nothing here since 13 Nov 2026: Krish's personal LinkedIn is growth-mindmake's (R125)"
       ],
       "channels": [
         "linkedin"
@@ -195,12 +195,6 @@
         "carousel",
         "text"
       ],
-      "tasks": {
-        "platform-truth": "Official LinkedIn guidance on body links, documents and comments, recommended to Krish and never edited live",
-        "idea-bank": "Posts for Krish's own click that leaders with target titles would comment on, the subscribe link left to Featured",
-        "caption-set": "Five unscheduled drafts in Krish's personal voice with no link in the body, document carousels at ten slides at most",
-        "channel-plan": "Two to four posts a week proposed, never a quota, judged on Featured clicks and comments from target titles"
-      },
       "lint": "engine/run/spec.py:lint_linkedin",
       "check": "engine/run/measure.py:check_linkedin",
       "card": "crew/linkedin/card.md",
@@ -255,7 +249,6 @@
         "Krish's reply list"
       ],
       "channels": [
-        "linkedin",
         "x",
         "threads",
         "substack-notes"
@@ -309,8 +302,7 @@
         "facebook",
         "youtube",
         "tiktok",
-        "x",
-        "linkedin"
+        "x"
       ],
       "formats": [
         "all"
@@ -334,7 +326,6 @@
         "instagram",
         "tiktok",
         "x",
-        "linkedin",
         "facebook",
         "threads"
       ],
@@ -343,7 +334,7 @@
         "post"
       ],
       "tasks": {
-        "profile-audit": "Every one of the eight accounts points to the subscribe path and the current positioning, repaired within the allowlist, with bios and LinkedIn recommended only"
+        "profile-audit": "Every one of the seven accounts points to the subscribe path and the current positioning, repaired within the allowlist, with bios recommended only"
       },
       "lint": "engine/channel_audit.py:repair_plan",
       "check": "engine/channel_audit.py:reconcile",

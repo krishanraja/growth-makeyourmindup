@@ -27,7 +27,7 @@
   ],
   "any_other_class": "needs_eyes",
   "krish_hands": [
-    {"id": "linkedin-posting", "what": "Posting on his personal LinkedIn; the engine only drafts", "channels": ["linkedin"]},
+    {"id": "linkedin-posting", "what": "Posting on his personal LinkedIn; growth-mindmake drafts it since 13 Nov 2026 (Ruling, Krish, 2026-11-13), and this engine drafts nothing there", "channels": ["linkedin"]},
     {"id": "plan-purchase", "what": "Buying or upgrading a plan, such as Buffer's", "channels": []},
     {"id": "credential-creation", "what": "Creating, rotating or placing a key or password", "channels": []},
     {"id": "account-connection", "what": "Connecting an account to a tool, such as a channel in Buffer", "channels": []}

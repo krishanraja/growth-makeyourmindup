@@ -168,7 +168,9 @@ is doing instead and how to switch (approve the week's mix on the publish
 board). It expires when the week ends. A run raises it only when that
 address is still empty, so every other run that week says nothing about
 it (`already_raised`), and an address it cannot read counts as raised, so
-it is never asked twice. It carries the engine's state as the day's report
+it is never asked twice. A week that is already over gets no ask
+(`week_over`), and the runner takes back one still waiting on him once its
+week ends (`engine/stale_asks.py`). It carries the engine's state as the day's report
 does. A dry run says `would_raise` and writes nothing.
 
 **Switching to his plan.** Every run reads the week's authority first. Once

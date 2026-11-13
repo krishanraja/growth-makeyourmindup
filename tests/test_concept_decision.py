@@ -287,7 +287,7 @@ class ConceptOnlyRelease(unittest.TestCase):
         result = self.plan()
         self.assertEqual([c['slot_id'] for c in result['calls']], ['tiktok-photo-1'])
         holds = self.holds(result)
-        for sid in ('notes-1', 'threads-1', 'ig-story-1', 'x-1', 'linkedin-1'):
+        for sid in ('notes-1', 'threads-1', 'ig-story-1', 'x-1'):
             self.assertEqual(holds[sid], 'unsigned_or_changed_since_signing', sid)
 
     def test_a_concept_only_decision_that_signs_a_slot_is_refused(self):

@@ -22,7 +22,7 @@ creating or uploading a package; keep private evidence out of the shared library
 | Why would one person send it to another? | The package's `share` block, checked against `share.json`; the blind reader is `crew/send-test/` |
 | How is creative made and judged? | Content-engine's production contract; see `docs/ENGINE-BOUNDARY.md` |
 | Where is a brand asset (logo, font, colour, photo, template, sting, music)? | `brand/library.json` (Drive ids), with `docs/BRAND-KIT.md` |
-| How are Notes and memes made? | `guides/canva.md` (format `production_owner` is `growth-canva`) |
+| How are Notes and memes made? | In a Claude session, with the Codex plugin building them: content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made" (Ruling, Krish, 2026-11-13; lesson `one-route-for-pictures`) |
 | What is live right now? | Actual owned native pages and tool readback; private run evidence |
 
 These are typed contracts, not a second queue or publishing orchestrator. They
@@ -42,7 +42,6 @@ From the repository, with no token or network:
 ```powershell
 python growth.py social check
 python growth.py social route instagram carousel
-python growth.py social route linkedin single-image
 python growth.py social route threads text
 python growth.py social preflight .scratch/my-post/package.json
 python growth.py social send-test .scratch/my-post/package.json
@@ -61,8 +60,10 @@ bytes and any stored exact-payload digest. A Buffer package names its
 `buffer_channel_id`, which must be this engine's pinned channel in
 `engine/buffer_channels.py`; another venture's id is refused. Read docs/PUBLISHING-AUTHORITY.md:
 approved brand content and scoped X, TikTok and Threads have delegated
-cadence. LinkedIn remains an unscheduled draft for Krish's manual final
-publication.
+cadence. Krish's personal LinkedIn is growth-mindmake's since 13 November
+2026 (Ruling, Krish, 2026-11-13): `social route linkedin ...` and preflight
+refuse it with that reason (`engine/owners.py`, the record's `owned_by`), and
+its Buffer channel is refused by id. Reading LinkedIn stays.
 Every snackable package (its format profile says `"snackable": true`) carries a
 `share` block, and its copy never asks for the share (Krish, 28 October 2026;
 `guides/formats.md`, "Built to be sent"). Preflight holds it until a blind

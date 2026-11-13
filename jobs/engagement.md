@@ -6,6 +6,12 @@ for. The other three engines (Acquisition, Publishing, Measurement) run as their
 do their work here. The contract is `engines/engagement.json`; the review that set it is
 `docs/reviews/2026-11-05-growth-engine-review.md`, sections 4 and 5.
 
+Krish's personal LinkedIn is growth-mindmake's since 13 November 2026, the replies to everyone who
+engages with his posts included (Ruling, Krish, 2026-11-13; `AGENTS.md`, "Krish's personal LinkedIn
+is growth-mindmake's"). This engine engages from X, TikTok, Instagram, Threads, Substack Notes,
+YouTube and Facebook only; a LinkedIn item is refused (`engine/owners.py`). Someone engaging with
+a LinkedIn post of his goes to growth-mindmake, never into this queue.
+
 ## This session
 
 One engine per session: this one. Run `git pull` and the first command below, then take
@@ -44,10 +50,8 @@ the linked record) and carry on. Never do the other engine's work in this sessio
 - Read every engine's records and contracts.
 - Open the actual post and read it in full before drafting.
 - Draft a reply or comment in Krish's voice that says something real, and pass it through Control Center's one voice check before it reaches his comment box or his screen (`check_voice` with channel `comment`, or `Client.voice_check(words, 'comment')`; Ruling, Krish, 2026-11-09). Rewrite once on a hard fail; if it still fails, hold it and say why.
-- Prepare a LinkedIn comment in the actual comment box for his final click (BROWSER.md,
-  2026-10-24): one prefilled LinkedIn box at a time; preserve any existing human draft; verify
-  account, exact post and parent comment first. On every other account, show the exact copy
-  beside the open post.
+- Show the exact copy beside the open post. Nothing is prefilled in a native comment box: the one
+  account that allowed it (LinkedIn, BROWSER.md, 2026-10-24) is growth-mindmake's.
 - Append records to `engines/records/engagement.jsonl` and keep exact words, post URLs and
   recovery copy in `.scratch/engines/engagement.jsonl`.
 
@@ -56,8 +60,8 @@ the linked record) and carry on. Never do the other engine's work in this sessio
 Post, publish, schedule, like or follow. Send, comment, reply or press any submit control except
 under the rule below. Spend money or credits. Write to Control Center. Commit a post URL, exact
 words, an address or a raw receipt. Count an incoming item toward an outgoing batch. Pad a batch
-with a weak candidate. Leave more than one prefilled LinkedIn comment box open, or overwrite a
-human draft.
+with a weak candidate. Prepare, prefill or submit anything on Krish's personal LinkedIn, or
+overwrite a human draft in any editor.
 
 ## Social engagement in Krish's session (Ruling, Krish, 2026-11-05)
 
@@ -68,23 +72,16 @@ submitting, then record it as posted on his approval and nothing further until e
 Otherwise the draft stays ready in the editor for his click. Scheduled jobs and sessions he is not
 driving only draft.
 
-## Open for Krish
-
-The review asks that each ready LinkedIn draft keep its tab open, so a batch of nine would leave
-nine prefilled boxes. BROWSER.md (2026-10-24) allows one prefilled box at a time and never
-multiple stale drafts. These conflict. Until Krish rules, BROWSER.md holds: hand over one
-prefilled box at a time and raise the conflict with him in the final message.
-
 ## The rules for each item
 
 - Every interaction records its direction (incoming or outgoing), the parent post (committed as
   `parent_post_key`, the sha256 of its URL), the intended account and its state.
 - An outgoing draft names what Krish adds after reading: a firsthand observation, a practical
   test or a real question. Personal encouragement alone is refused.
-- An outgoing draft is ready only when the actual post was opened, the editor filled (LinkedIn
-  only), you switched away and returned, the full text was read back and matches the draft
-  digest, the tab is left open and recovery copy with the post URL is kept privately. A cleared
-  editor is not ready. If 8 of 10 survive, report 8 ready.
+- An outgoing draft is ready only when the actual post was opened, the full text was read back
+  and matches the draft digest, the tab is left open and recovery copy with the post URL is kept
+  privately. (The editor fill, switch away and return steps were LinkedIn's only, and LinkedIn
+  left on 13 November 2026.) A cleared editor is not ready. If 8 of 10 survive, report 8 ready.
 - A replacement qualifies only after its post, contribution, account identity and retained text
   are checked, and only if it is neither privately excluded nor already handled. A weak
   candidate goes back to the researcher (`returned_to_researcher`).

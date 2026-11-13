@@ -23,12 +23,13 @@ try:
 except ImportError:  # run as tests.test_run_autorelease
     from tests.test_control_center import TOKEN, StandIn
 
+from engine import route
 from engine.control_center import amended_digest, build_report, objective, proposal
 from engine.run import autorelease, buffer_api
 from engine.run.autorelease import (line_digest, may_release, parse_manifest, show_before_post_until,
                                     staged_report_run_id, standing_derivative_allowed)
 from engine.run.buffer_api import Buffer, BufferAuthError, BufferError, CarryHold
-from engine.buffer_channels import BUFFER_CHANNEL_ID
+from engine.buffer_channels import BUFFER_CHANNEL_ID, HANDED_OFF_CHANNELS
 from engine.run.release import BUFFER_NAME, CHANNELS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,11 +40,17 @@ PLAN = 'makeyourmindup:plan:w45-w52'
 GOLIVE = 'makeyourmindup:golive:2026-W45:week'
 P_THREADS, P_X, P_LINKEDIN, P_UNSIGNED = ('aaaaaaaaaaaaaaaaaaaaaa01', 'aaaaaaaaaaaaaaaaaaaaaa02',
                                           'aaaaaaaaaaaaaaaaaaaaaa03', 'aaaaaaaaaaaaaaaaaaaaaa09')
-# The pinned Buffer channelIds (engine/buffer_channels.py): main's channel lock refuses any other.
-CH_THREADS, CH_X, CH_LINKEDIN = (BUFFER_CHANNEL_ID['threads'], BUFFER_CHANNEL_ID['x'], BUFFER_CHANNEL_ID['linkedin'])
+# The pinned Buffer channelIds (engine/buffer_channels.py): main's channel lock refuses any other. LinkedIn's
+# channel is no longer pinned (growth-mindmake's since 13 Nov 2026), but a go-live signed before then may still
+# name a LinkedIn line, so the fixture keeps one to prove release never reads it.
+CH_THREADS, CH_X = (BUFFER_CHANNEL_ID['threads'], BUFFER_CHANNEL_ID['x'])
+CH_LINKEDIN = next(cid for cid, channel in HANDED_OFF_CHANNELS.items() if channel == 'linkedin')
 CH_FOR = {'threads': CH_THREADS, 'x': CH_X, 'linkedin': CH_LINKEDIN}
-WORDS_THREADS = 'Synthetic fixture words for the threads slot.'
-WORDS_X = 'Synthetic fixture words for the x slot.'
+WORDS_THREADS = ('Synthetic fixture words for the threads slot. Subscribe: '
+                  + route.subscribe_url('threads', 'fixture-threads'))
+WORDS_X = ('Synthetic fixture words for the x slot. Subscribe: '
+                  + route.subscribe_url('x', 'fixture-x'))
+# LinkedIn is no channel of this engine's (growth-mindmake's since 13 Nov 2026), so it has no subscribe route here.
 WORDS_LINKEDIN = 'Synthetic fixture words for the linkedin slot.'
 IMAGE = b'synthetic autorelease image bytes\n'
 
@@ -347,7 +354,7 @@ class AutoreleaseTests(unittest.TestCase):
     def test_a_word_failing_main_copy_lint_holds_before_any_edit(self):
         # Krish, 28 Oct 2026: "Remember, no content refers to Krish, ever." L0 release runs the same
         # copy lint as `run release` on every word it would schedule, even one he signed.
-        self.buf.posts[P_X]['text'] = 'Synthetic words: Krish Raja on the chip money.'
+        self.buf.posts[P_X]['text'] = 'Synthetic words: Krish Raja on the chip money. ' + route.subscribe_url('x', 'fixture-x')
         self.buf.posts[P_THREADS]['assets'][0]['image']['altText'] = 'Krish Raja holding the chart.'
         self.resign()
         summary, code = self.run_once()
@@ -461,7 +468,7 @@ class AutoreleaseTests(unittest.TestCase):
 
     def test_an_amended_decision_posts_his_version(self):
         # His words never name him (no_name, Krish, 28 Oct 2026), even in a fixture.
-        his_words = 'Synthetic words he amended for the threads slot.'
+        his_words = 'Synthetic words he amended for the threads slot. ' + route.subscribe_url('threads', 'fixture-his')
         amended = [dict(self.fix.lines[0], words=his_words), self.fix.lines[2]]  # he also dropped x-1
         text = manifest(amended)
         self.cc.decisions[-1] = Fixture.decision(self.fix.golive, '2026-11-03T14:00:00Z', amended=True,

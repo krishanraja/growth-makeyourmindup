@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from engine.run import artdirect
+from engine.run import kits
 
 ROOT = Path(__file__).resolve().parent.parent
 SIZES = {(1080, 1350)}
@@ -19,12 +19,12 @@ def spec(fields, required, example):
 
 class PhotoField(unittest.TestCase):
     def test_a_photo_template_needs_no_credit_on_the_card(self):
-        good = artdirect.spec_errors('item', spec({'photo': 'photo', 'headline': 'text'}, ['photo', 'headline'],
+        good = kits.spec_errors('item', spec({'photo': 'photo', 'headline': 'text'}, ['photo', 'headline'],
                                                   {'photo': 'The story photo', 'headline': 'The headline'}), SIZES)
         self.assertEqual(good, [])
 
     def test_placeholder_reads_the_photo_kind(self):
-        self.assertEqual(artdirect.PLACEHOLDER.findall('{{photo:photo}} {{credit}}'), [('photo', 'photo'), ('', 'credit')])
+        self.assertEqual(kits.PLACEHOLDER.findall('{{photo:photo}} {{credit}}'), [('photo', 'photo'), ('', 'credit')])
 
     def test_filler_takes_a_local_file_and_refuses_an_address(self):
         with tempfile.TemporaryDirectory() as tmp:

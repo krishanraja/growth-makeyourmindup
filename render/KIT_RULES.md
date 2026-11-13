@@ -1,17 +1,13 @@
-# Art direction for one piece
+# The rules for a piece kit Codex builds from a card
 
-You are the art director for Make Your Mind Up, a publication that takes one AI story apart three
-times a week: who gets paid, what is real, and where it leads. Your job is to invent ONE visual idea
-for the piece below, and build it as a piece kit: a few HTML templates that a code renderer turns
-into the post's images.
-
-## The piece
-
-- Piece: {{piece_id}}
-- Lane: {{lane}}
-- Title: {{title}}
-- Claims it makes:
-{{claims}}
+Since the ruling of 13 November 2026, every carousel is made in a Claude session, with the Codex plugin building it,
+as in the other usual workflows; memes and Notes images go the same way (content-engine's docs/CAROUSEL-STANDARD.md, "How a
+carousel is made"). A Claude session writes the words and the direction, then a Codex card (content-engine's
+`ve card`, kind carousel, meme or notes_image) that points here. This is the card's brief for the kit itself: Make Your
+Mind Up is a publication that takes one AI story apart three times a week (who gets paid, what is real, and where it
+leads), and the kit is ONE visual idea for the piece the card names, built as a few HTML templates that the code
+renderer (`scripts/render_mocks.mjs`) turns into the post's images. The card names the piece, its folder, the brand
+palette for its day and the inspiration cards ticked for it; it never carries the real words.
 
 ## The bar
 
@@ -28,7 +24,7 @@ every template in the kit.
 
 ## What you build
 
-You are working in an empty folder, `render/pieces/{{piece_id}}/`. Write exactly these files and
+You are working in the folder the card names, `render/pieces/<piece_id>/`. Write exactly these files and
 nothing else:
 
 1. `idea.md`: one paragraph in plain English that names the visual idea and how each template uses
@@ -47,9 +43,10 @@ Never change any file outside your folder.
 
 ## The rules the renderer checks
 
-A kit that breaks any of these is thrown away and the piece goes out in the house kit instead.
+A kit that breaks any of these fails the card's acceptance (`python growth.py run kit check`, then the two renders
+and `python growth.py run kit painted`) and is not used.
 
-- `templates.json` is `{"schema_version": 1, "kind": "piece_kit", "piece_id": "{{piece_id}}",
+- `templates.json` is `{"schema_version": 1, "kind": "piece_kit", "piece_id": "<piece_id>",
   "about": "...", "templates": {...}}`. Each template entry has `file`, `width`, `height`, `fields`,
   `required` and `example`, and may have `choices`, `note` and `safe`, exactly as in the house file.
   A field is `text`, `rows`, `options` or `photo`, and each one appears in the template as `{{name}}`,
@@ -87,4 +84,4 @@ A kit that breaks any of these is thrown away and the piece goes out in the hous
   words are filled in later, outside this repository.
 - Every template must render the same pixels every time: no randomness, no clock, no animation.
 
-When you are done, reply with one line: the idea in under 15 words.
+When you are done, reply as the card's Return section says, and put the idea in under 15 words in it.

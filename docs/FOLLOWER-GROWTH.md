@@ -26,10 +26,9 @@ today Substack Notes and memes; Content Engine owns every other format.
    through the native uploader while Buffer TikTok video is held, lesson
    `tiktok-buffer-video-hold`). Test distribution
    ideas against actual performance rather than declaring universal best times.
-5. On LinkedIn, find a small number of relevant, publicly active professional
-   voices and source-verified posts. Offer a sincere, non-salesy response worth
-   Krish's time, safely prepared for his own final click. No automatic engagement.
-   The Engagement engine owns this (`jobs/engagement.md`).
+5. LinkedIn is not this engine's: Krish's personal LinkedIn, posts and replies,
+   is growth-mindmake's since 13 November 2026 (Ruling, Krish, 2026-11-13).
+   Read it for trends and evidence only; prepare nothing there.
 6. Improve discoverability and follow/subscribe continuation with authorised
    metadata/link repairs. Bio, pin, positioning and creative changes still need
    approval. Propose collaborations and other relationship work as exact drafts;

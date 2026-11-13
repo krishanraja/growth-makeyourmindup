@@ -16,7 +16,9 @@ channels right now, the faster we learn."
 - the lanes in `mix.json`, which only an interactive session changes;
 - `--ideas FILE`: this week's filler ideas, each with `idea_id`, `lane`,
   `idea`, `claim`, `source_url` and `source_date`;
-- `--mocks FILE`: `{concept_id: {claim, mock_sha256, style_card?}}` once the mocks exist; `style_card` names the
+- `--mocks FILE`: `{concept_id: {claim, mock_sha256, style_card?}}` once the mocks exist (each mock made in a Claude
+  session with the Codex plugin building it, R126; content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel
+  is made", never by a scheduled job); `style_card` names the
   inspiration card Krish ticked as a style to use within a week that the mock was made in (protocol 1.21.0,
   `docs/ENGINE.md`), never part of the hash he approves;
 - `--learn FILE`: last week's `mix learn` output.
@@ -131,7 +133,10 @@ On GitHub Actions (L0) the plan goes to Control Center through the handoff
 longer, and `engine/run/autorelease.py` reads his decision and the plan back
 from Control Center by digest each run, with the same rules
 (`docs/CONCEPT-MANIFEST.md`, On GitHub Actions). Built and tested, not yet
-activated: no post has gone out this way.
+activated: no post has gone out this way. Every part expires when its week
+ends, a plan for a week that is already over is refused whole (`week_over`),
+and the runner takes back any part still waiting on him once the week is
+over (Ruling, Krish, 2026-11-12; `engine/stale_asks.py`).
 
 ## Learning
 

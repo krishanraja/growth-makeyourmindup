@@ -4,7 +4,7 @@
   "id": "linkedin",
   "account_url": "https://www.linkedin.com/in/krish-raja/",
   "account_context": "personal",
-  "mission": "Build trusted commercial-AI judgment and relevant professional relationships first. Reach and publication subscribers are secondary. No daily volume quota; Krish reviews and manually publishes.",
+  "mission": "Growth-mindmake's since 13 November 2026 (owned_by): Mindmake's published thinking, about three posts a week, and the replies to everyone who engages with them, which Krish reviews and publishes himself. This engine drafts, queues, taps and pins nothing here; it only reads LinkedIn (research, trend reading, measuring what others post).",
   "formats": [
     "carousel",
     "single-image",
@@ -31,6 +31,11 @@
   ],
   "publication_mode": "human_publish_only",
   "authority_ref": "docs/PUBLISHING-AUTHORITY.md",
+  "owned_by": {
+    "engine": "growth-mindmake",
+    "since": "2026-11-13",
+    "ruling": "Ruling (Krish, 2026-11-13): asked \"Which engine should own your personal LinkedIn posts (you still click every post)?\", he answered \"growth-mindmake owns it\". Growth-mindmake owns his personal LinkedIn posts and the replies to everyone who engages with them; he still clicks every post."
+  },
   "daily_posts_target": null,
   "daily_drafts_max": null
 }

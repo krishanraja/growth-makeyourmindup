@@ -44,7 +44,7 @@ One metadata object, in matching order, is required for each item:
 ```json
 {
   "asset_id": "piece_actual-stable-id",
-  "placement": "linkedin-native-post",
+  "placement": "x-native-post",
   "variant": "a",
   "evidence_ids": ["evidence_actual-id"],
   "priority": 1,
@@ -551,6 +551,29 @@ is reported by its verdict path, never as a proposal: its recorded verdict,
 or a hold saying it awaits measurement (or a verdict), when its judge window
 ends and what closes it.
 
+**Nothing stale on his list** (Ruling, Krish, 2026-11-12: nothing on his list
+is stale; an engine withdraws its own asks once their week or window has
+passed). His list shows one of this engine's asks at a time, so an ask about a
+week that is over holds every live one behind it. Each runner report takes
+back its own undecided asks whose subject has passed through the protocol's
+own route (1.10.0 `withdrawn[]`, sent only where capabilities say
+`features.withdrawn`), each with a one-line reason Control Center keeps beside
+it: every part of a week's mix plan (as that week's `mixplan` version records
+name them) and the week's mix ask, once the week has ended in New York (it
+reads back the eight ended weeks before this one, from 2 November); the
+standing plan once its last week has ended; an experiment's ask once the
+`end` day experiments.json gives it has passed. It never deletes a row, never
+answers for him, and never touches one he decided (Control Center leaves those
+as they are) or one still live. What it took back is carried in a "Taken back
+by this engine: its week or window is over" hold and read back like the
+waiting hold, so it is never taken back twice. If its own week records cannot
+be read, nothing is taken back and a hold says so. Nothing new is asked about
+a week that is over: the runner proposes neither an ended plan nor a closed
+experiment, the handoff refuses a mix plan for an ended week (`week_over`),
+the maker raises no mix ask for one, and a week's mix plan expires when its
+week ends, so Control Center drops it even on a day nothing runs
+(`engine/stale_asks.py`, `tests/test_stale_asks.py`).
+
 **Errors.** 401 `unauthorized`, 403 `forbidden`, 409 `report_conflict` or
 `engine_inactive`, 413 `payload_too_large`, 429 `rate_limited`, 5xx
 `server_error`, a redirect `redirect_refused`, no answer `unreachable` or
@@ -682,7 +705,8 @@ stopped, and in date. Holds fail closed: an undated decision on it or its plan
 (`stop_unresolved`, every go-live), an expiry with no `now`
 (`expiry_unchecked`) or unreadable (`bad_expiry`). A declined check-in or plan
 stops the plan for good, even a later changed version. Spends and LinkedIn are
-always held. Reports carry no `target`, so a go-live built with one is held.
+always held (LinkedIn is growth-mindmake's since 13 November 2026, R125, so no
+LinkedIn go-live is ever made here; this hold is the second wall). Reports carry no `target`, so a go-live built with one is held.
 
 **The ledger.** `claim_golives(root, ...)` reads the clock when given no
 `now`, merges the staged proposals `remember()` kept, and claims each go-live

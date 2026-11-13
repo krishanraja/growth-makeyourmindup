@@ -14,6 +14,7 @@ import re
 import tempfile
 import unittest
 from unittest import mock
+from urllib.parse import parse_qs, urlsplit
 
 try:
     from test_autonomy import CapableStandIn
@@ -22,11 +23,13 @@ except ImportError:  # run as tests.test_run_handoff
     from tests.test_autonomy import CapableStandIn
     from tests.test_run_autorelease import BufferStandIn, fetch, sha, staged_report
 
+from engine import route
 from engine.control_center import proposal
 from engine.run import autorelease, buffer_api, handoff
 from engine.run.autorelease import line_digest, parse_manifest, staged_report_run_id
 from engine.run.handoff import GO_LIVE, MAKE_PIECE, OFFDAY_TOPUP, PAYLOAD_CAP, WEEK_PACKET
-from engine.buffer_channels import BUFFER_CHANNEL_ID
+from engine.buffer_channels import BUFFER_CHANNEL_ID, HANDED_OFF_CHANNELS
+from engine import buffer_channels, owners
 from engine.run.release import BUFFER_NAME, CHANNELS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,10 +42,13 @@ PLAN = 'makeyourmindup:plan:w45-w52'
 P_THREADS, P_X, P_LINKEDIN, P_CAROUSEL = ('dddddddddddddddddddddd01', 'dddddddddddddddddddddd02',
                                           'dddddddddddddddddddddd03', 'dddddddddddddddddddddd04')
 # Each channel's pinned Buffer channelId (engine/buffer_channels.py): main's channel lock refuses any other.
-CH = BUFFER_CHANNEL_ID
-WORDS = {P_THREADS: 'Synthetic handoff words for the threads slot.', P_X: 'Synthetic handoff words for the x slot.',
-         P_LINKEDIN: 'Synthetic handoff words for the linkedin slot.',
-         P_CAROUSEL: 'Synthetic handoff words for the carousel slot.'}
+# LinkedIn's is no longer pinned (growth-mindmake's since 13 Nov 2026); its old draft stays in the stand-in
+# Buffer so a stale LinkedIn slot can be shown to be held before that draft is read.
+CH = dict(BUFFER_CHANNEL_ID, linkedin=next(cid for cid, ch in HANDED_OFF_CHANNELS.items() if ch == 'linkedin'))
+WORDS = {P_THREADS: 'Synthetic handoff words for the threads slot. Subscribe: ' + route.subscribe_url('threads', 'fx-threads'),
+         P_X: 'Synthetic handoff words for the x slot. Subscribe: ' + route.subscribe_url('x', 'fx-x'),
+         P_LINKEDIN: 'Synthetic handoff words for the linkedin slot.',  # no route: not this engine's channel
+         P_CAROUSEL: 'Synthetic handoff words for the carousel slot. Subscribe: link in bio.'}
 IMAGE = b'synthetic handoff image bytes\n'
 SERVICE = {'threads': 'threads', 'x': 'twitter', 'linkedin': 'linkedin', 'instagram': 'instagram'}
 METADATA = {'threads': {'__typename': 'ThreadsPostMetadata', 'type': 'post', 'threadCount': 0, 'linkAttachment': None},
@@ -66,7 +72,9 @@ def maker_slot(slot_id, channel, draft, words, assets=(), mode='engine', due=DUE
 
 
 class Fixture:
-    """One approved standing plan, Buffer drafts for three slots and the maker's manifest."""
+    """One approved standing plan, Buffer drafts for three posts and the maker's manifest of two slots: the
+    maker dispatches no LinkedIn slot since 13 Nov 2026 (Ruling, Krish, 2026-11-13), so the old LinkedIn draft
+    sits in Buffer undispatched."""
 
     def __init__(self, cc, buf):
         self.cc, self.buf = cc, buf
@@ -77,8 +85,7 @@ class Fixture:
         self.draft(P_X, 'x')
         self.draft(P_LINKEDIN, 'linkedin')
         self.slots = [self.maker('threads-1', 'threads', P_THREADS, [sha(IMAGE)]),
-                      self.maker('x-1', 'x', P_X),
-                      self.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None)]
+                      self.maker('x-1', 'x', P_X)]
         self.plan = proposal(PLAN, 'Synthetic standing plan', 'Synthetic why', 'advice', 'strategy', 'reviewed',
                              exact_payload='Synthetic standing plan words.', stage='plan')
         report = staged_report(self.plan)
@@ -143,7 +150,7 @@ class HandoffTests(unittest.TestCase):
     def test_a_matching_manifest_is_proposed_and_autorelease_releases_it(self):
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
-        self.assertEqual(summary['slots'], {'proposed': 3})
+        self.assertEqual(summary['slots'], {'proposed': 2})
         self.assertEqual(summary['proposals'], {'go_live': 1})
         self.assertEqual(summary['reports']['posted'], 1)
         self.assertEqual(summary['reports']['readback_matches'], 1)
@@ -154,7 +161,7 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual((item['stage'], item['parent_proposal_id'], item['wall']), ('go_live', PLAN, 'post'))
         self.assertLessEqual(len(item['exact_payload']), PAYLOAD_CAP)
         lines = parse_manifest(item['exact_payload'], engine=True)
-        self.assertEqual(sorted(lines), ['linkedin-1', 'threads-1', 'x-1'])
+        self.assertEqual(sorted(lines), ['threads-1', 'x-1'])
         for slot in self.fix.slots:
             # The dispatch carries the run-spec digest; the line is signed under the go-live domain (F105).
             self.assertEqual(autorelease.spec_digest(lines[slot['slot']]), slot['payload_sha256'])
@@ -165,7 +172,7 @@ class HandoffTests(unittest.TestCase):
         self.assertIn('Yes schedules these 2 exact posts in Buffer', item['why'])
         self.assertIn('A yes schedules each post about an hour before it is due. Until then, No stops it.', item['why'])
         self.assertIn('Until 29 November 2026 you see every batch', item['why'])
-        self.assertIn('LinkedIn', item['why'])
+        self.assertNotIn('LinkedIn', item['why'])
         # Nothing was scheduled by the handoff.
         self.assertEqual(self.buf.mutations(), [])
         # Krish approves; autorelease finds that exact go-live and schedules it once.
@@ -178,9 +185,10 @@ class HandoffTests(unittest.TestCase):
         with mock.patch.object(autorelease, 'route_holds', lambda slot, as_of: ([], True, '2026-11-02')):
             released, code = autorelease.autorelease(self.cc.client(), self.buf.client(), RELEASE_NOW, True, fetch)
         self.assertEqual(code, 0, released)
-        self.assertEqual(released['slots'], {'krish_click': 1, 'scheduled': 2})
+        self.assertEqual(released['slots'], {'scheduled': 2})
         self.assertEqual(self.buf.posts[P_X]['status'], 'scheduled')
         self.assertEqual(self.buf.posts[P_LINKEDIN]['status'], 'draft')
+        self.assertEqual(self.buf.touched(P_LINKEDIN), [])
 
     def test_a_second_handoff_of_the_same_manifest_reports_nothing_new(self):
         self.run_handoff()
@@ -196,7 +204,7 @@ class HandoffTests(unittest.TestCase):
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['holds'], {'handoff_digest_mismatch': 1})
-        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 2})
+        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 1})
         [item] = self.proposals()
         self.assertNotIn('x-1', parse_manifest(item['exact_payload']))
         report = self.cc.reports[staged_report_run_id(item['proposal_id'], item['payload_sha256'])]
@@ -208,17 +216,329 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(summary['holds'], {'not_a_draft': 1})
         self.assertNotIn('x-1', parse_manifest(self.proposals()[0]['exact_payload']))
 
-    def test_linkedin_always_goes_in_as_krish_click(self):
-        self.fix.slots[2] = self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='engine')
+    def test_a_linkedin_slot_is_held_before_its_draft_is_read(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn. A stale LinkedIn slot, in
+        # either publish mode, is held by its owner's code and never goes in; its draft is never read.
+        for mode, due in (('krish_click', None), ('engine', DUE)):
+            self.setUp()
+            self.fix.slots.append(self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode=mode, due=due))
+            summary, code = self.run_handoff()
+            self.assertEqual(code, 0, summary)
+            self.assertEqual(summary['holds'], {owners.HOLD: 1}, mode)
+            self.assertEqual(summary['slots'], {'held': 1, 'proposed': 2}, mode)
+            [item] = self.proposals()
+            self.assertEqual(sorted(parse_manifest(item['exact_payload'], engine=True)), ['threads-1', 'x-1'])
+            self.assertEqual(self.buf.touched(P_LINKEDIN), [], 'the LinkedIn draft is never read')
+            report = self.cc.reports[staged_report_run_id(item['proposal_id'], item['payload_sha256'])]
+            self.assertEqual([h['reason'] for h in report['holds']], [owners.HOLD])
+            self.tmp.cleanup()
+        # A slot naming LinkedIn alone proposes nothing at all.
+        self.setUp()
+        self.fix.slots = [self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None)]
         summary, code = self.run_handoff()
+        self.assertEqual(summary['holds'], {owners.HOLD: 1})
+        self.assertEqual(self.proposals(), [])
+        self.assertEqual(self.buf.touched(P_LINKEDIN), [])
+
+    @staticmethod
+    def with_linkedin(fresh, number=1, parts=1, express=False):
+        """fresh as it was proposed before 13 Nov 2026: the same go-live (the same part of its dispatch, in the same
+        words) with Krish's LinkedIn draft as a krish_click line beside its own lines."""
+        lines = json.loads(fresh['exact_payload'])['slots']
+        x = next(line for line in lines if line['channel'] == 'x')
+        linkedin = dict(x, slot_id='linkedin-1', channel='linkedin', publish_mode='krish_click', due_at=None,
+                        buffer_draft_id=P_LINKEDIN, buffer_channel_id=CH['linkedin'], words=WORDS[P_LINKEDIN],
+                        meta=None)
+        linkedin['payload_sha256'] = line_digest(linkedin)
+        return handoff.golive_item(fresh['proposal_id'], RUN, [linkedin] + lines, 'batch', number, parts,
+                                   handoff.post_day(x), handoff.today(NOW), ROOT, express, PLAN)
+
+    def pending_mixed(self):
+        """(fresh, mixed): the go-live the handoff proposes today for the fixture's dispatch, and the same go-live as
+        it was proposed before 13 Nov 2026 with Krish's LinkedIn draft as a krish_click line beside it."""
+        self.run_handoff()
+        [fresh] = self.proposals()
+        return fresh, self.with_linkedin(fresh)
+
+    @staticmethod
+    def refused_by_control_center(item):
+        """Control Center's rule on his yes (goliveChannelRefusal): every line names exactly this engine's channel."""
+        allowed = buffer_channels.report_field()['allowed']
+        return any(allowed.get(line['channel']) != line['buffer_channel_id']
+                   for line in json.loads(item['exact_payload'])['slots'])
+
+    def test_a_pending_go_live_with_a_linkedin_line_is_proposed_again_without_it(self):
+        # A go-live proposed before the handover with a LinkedIn line can no longer be approved: Control Center
+        # refuses the whole of it, so its Threads and X posts would wait for nothing. It is proposed again, the
+        # same proposal_id without that line: exactly the go-live the handoff proposes for the same dispatch now.
+        fresh, mixed = self.pending_mixed()
+        self.assertTrue(self.refused_by_control_center(mixed))
+        self.assertIn('LinkedIn', mixed['title'])
+        change, again = handoff.without_handed_off(mixed, NOW, ROOT)
+        self.assertEqual(change, 'propose')
+        self.assertEqual(again, fresh)
+        self.assertFalse(self.refused_by_control_center(again))
+        self.assertNotIn('LinkedIn', again['title'] + again['why'])
+        self.assertIsNone(handoff.without_handed_off(fresh, NOW, ROOT), 'one with no LinkedIn line is left alone')
+
+    def test_a_part_of_a_split_go_live_is_rebuilt_with_its_part_number(self):
+        # A day too long for one approval goes in parts, each titled "(part n of m)". A waiting part with a LinkedIn
+        # line is rebuilt with the same part number and count: the title and why the handoff proposes for that part
+        # of the same dispatch today.
+        long_words = 'Synthetic long handoff words. ' * 22
+        slots = []
+        for index in range(13):
+            post_id = 'ffffffffffffffffffffff' + '%02d' % index
+            self.fix.draft(post_id, 'x', words=long_words + 'Subscribe: ' + route.subscribe_url('x', 'fx-long-%02d' % index))
+            slots.append(self.fix.maker('x-%02d' % index, 'x', post_id))
+        summary, code = self.run_handoff({'run_id': RUN, 'slots': slots})
         self.assertEqual(code, 0, summary)
-        self.assertEqual(summary['slots'], {'linkedin_to_krish_click': 1, 'proposed': 3})
-        line = parse_manifest(self.proposals()[0]['exact_payload'], engine=True)['linkedin-1']
-        self.assertEqual(line['publish_mode'], 'krish_click')
-        self.assertEqual(line['payload_sha256'], line_digest(line))
+        by_id = {p['proposal_id']: p for p in self.proposals()}
+        self.assertEqual(sorted(by_id), [GOLIVE + ':p1', GOLIVE + ':p2', GOLIVE + ':p3'])
+        fresh = by_id[GOLIVE + ':p2']
+        self.assertTrue(fresh['title'].endswith('(part 2 of 3)'), fresh['title'])
+        self.assertIn('so it comes in 3 parts, one after another', fresh['why'])
+        mixed = self.with_linkedin(fresh, 2, 3)
+        self.assertTrue(self.refused_by_control_center(mixed))
+        self.assertIn('LinkedIn', mixed['title'])
+        change, again = handoff.without_handed_off(mixed, NOW, ROOT)
+        self.assertEqual(change, 'propose')
+        self.assertEqual((again['title'], again['why']), (fresh['title'], fresh['why']))
+        self.assertEqual(again, fresh)
+        self.assertFalse(self.refused_by_control_center(again))
+
+    def test_an_express_go_live_is_rebuilt_as_a_quick_idea(self):
+        # A go-live built from an idea he added in Buffer Ideas ("express") is titled and explained as his quick
+        # idea. Rebuilt without its LinkedIn line, it keeps those words: what the handoff proposes for it today.
+        summary, code = self.run_handoff(self.fix.payload(express=True))
+        self.assertEqual(code, 0, summary)
+        [fresh] = self.proposals()
+        self.assertTrue(fresh['title'].startswith('Your quick idea, ready to go'), fresh['title'])
+        self.assertTrue(fresh['why'].startswith('Built from the idea you added in Buffer Ideas.'), fresh['why'])
+        mixed = self.with_linkedin(fresh, express=True)
+        self.assertTrue(self.refused_by_control_center(mixed))
+        change, again = handoff.without_handed_off(mixed, NOW, ROOT)
+        self.assertEqual(change, 'propose')
+        self.assertEqual((again['title'], again['why']), (fresh['title'], fresh['why']))
+        self.assertEqual(again, fresh)
+
+    def test_a_go_live_of_only_a_linkedin_line_is_taken_back(self):
+        _, mixed = self.pending_mixed()
+        only = json.loads(mixed['exact_payload'])['slots'][:1]
+        item = handoff.golive_item(GOLIVE + ':item-1', RUN, only, 'item', 1, 1, None, handoff.today(NOW), ROOT, False,
+                                   PLAN)
+        self.assertEqual(handoff.without_handed_off(item, NOW, ROOT), ('withdraw', handoff.HANDED_OFF_ONLY))
+
+    def test_the_runner_proposes_again_or_takes_back_each_pending_go_live_with_a_linkedin_line(self):
+        from engine import cc_loop, stale_asks
+        from engine.control_center import ProtocolError, validate_report
+        from test_control_center import checks
+        _, mixed = self.pending_mixed()
+        only = handoff.golive_item(GOLIVE + ':item-1', RUN, json.loads(mixed['exact_payload'])['slots'][:1], 'item',
+                                   1, 1, None, handoff.today(NOW), ROOT, False, PLAN)
+        decided = dict(mixed, proposal_id=GOLIVE + ':2026-11-05')
+        stored = {}
+        for item in (mixed, only, decided):
+            [report] = handoff.reports_for([item], handoff.Slots(), NOW, ROOT, [{'line': 'Fixture.'}])
+            stored[report['run_id']] = report
+
+        class Ledger:
+            posted = []
+
+            def recent_reports(self, count=10):
+                return [{'run_id': rid} for rid in ['makeyourmindup:2026-11-03:runner'] + list(stored)][:count]
+
+            def read_report(self, run_id):
+                if run_id not in stored:
+                    raise ProtocolError('not_found')
+                return {'report': stored[run_id], 'mode': 'live', 'payload_sha256': stored[run_id]['payload_sha256']}
+
+            def post_report(self, report):
+                self.posted.append(report)
+                stored[report['run_id']] = report
+                return {'accepted': True, 'readback_matches': True}
+
+        sent = {decided['proposal_id']: 'approved'}
+        lines, golives = cc_loop.handed_off_golives(Ledger(), sent, NOW, ROOT)
+        [posted] = Ledger.posted
+        validate_report(posted)
+        [again] = posted['proposals']
+        self.assertEqual(again['proposal_id'], GOLIVE)
+        self.assertFalse(self.refused_by_control_center(again))
+        self.assertEqual(posted['buffer_channels'], buffer_channels.report_field())
+        self.assertEqual(golives, ([(only['proposal_id'], handoff.HANDED_OFF_ONLY)], None))
+        self.assertIn(GOLIVE, lines[0])
+        self.assertNotIn(decided['proposal_id'], lines[0], 'one he decided is left as it is')
+        report = cc_loop.runner_report(ROOT, 'makeyourmindup:2026-11-03:runner', NOW, checks(), 'synthetic', True,
+                                       'fixture', sent=sent, golives=golives)[0]
+        validate_report(report)
+        self.assertEqual(report['withdrawn'], [{'proposal_id': only['proposal_id'], 'reason': handoff.HANDED_OFF_ONLY}])
+        self.assertTrue(any(a['line'].startswith('Withdrew 1 of its own go-live that held only a LinkedIn post')
+                            for a in report['activity']))
+        self.assertFalse(any('week or window is over' in a['line'] for a in report['activity']))
+        self.assertIn(only['proposal_id'], [h['detail'] for h in report['holds'] if h['reason'] == stale_asks.WITHDREW][0])
+        self.assertNotIn(cc_loop.older_golives_line(handoff.RECENT), lines,
+                         'a page short of ten is every report there is')
+        # Unread decisions do nothing on a guess, and an unreadable list is held by name.
+        self.assertEqual(handoff.handed_off_golives(Ledger(), None, NOW, ROOT), ([], [], None, False))
+
+        class Broken(Ledger):
+            def recent_reports(self, count=10):
+                raise ProtocolError('unsupported_feature')
+
+        self.assertEqual(cc_loop.handed_off_golives(Broken(), sent, NOW, ROOT),
+                         ([], ([], 'golive_reports_unsupported_feature')))
+        held = cc_loop.runner_report(ROOT, 'makeyourmindup:2026-11-03:runner', NOW, checks(), 'synthetic', True,
+                                     'fixture', sent=sent, golives=([], 'golive_reports_unsupported_feature'))[0]
+        self.assertIn(cc_loop.UNREAD_GOLIVES, [h['reason'] for h in held['holds']])
+
+    def stored_golives(self):
+        """{run_id: report}, oldest first: a waiting go-live with a LinkedIn line beside its other posts, and a
+        waiting go-live of only a LinkedIn post, each in its own report as the handoff posted it."""
+        _, mixed = self.pending_mixed()
+        only = handoff.golive_item(GOLIVE + ':item-1', RUN, json.loads(mixed['exact_payload'])['slots'][:1], 'item',
+                                   1, 1, None, handoff.today(NOW), ROOT, False, PLAN)
+        stored = {}
+        for item in (mixed, only):
+            [report] = handoff.reports_for([item], handoff.Slots(), NOW, ROOT, [{'line': 'Fixture.'}])
+            stored[report['run_id']] = report
+        return stored, mixed, only
+
+    def test_only_the_ten_newest_reports_are_looked_at_and_the_runner_says_so(self):
+        # Control Center serves at most the 10 newest live reports and no older page (protocol 1.10.0), so a go-live
+        # behind ten newer reports is not looked at. The runner says so in one line, and holds nothing.
+        from engine import cc_loop
+        try:
+            from test_control_center import checks
+        except ImportError:  # run as tests.test_run_handoff
+            from tests.test_control_center import checks
+        from engine.control_center import ProtocolError
+        stored, mixed, only = self.stored_golives()
+        older = cc_loop.older_golives_line(handoff.RECENT)
+        self.assertEqual(handoff.RECENT, 10)
+
+        def ledger(newer):
+            reports = dict(stored)
+            reports.update(('makeyourmindup:2026-11-0' + str(1 + n % 3) + ':measure-' + str(n), {}) for n in range(newer))
+
+            class Capped:
+                posted = []
+
+                def recent_reports(self, count=10):
+                    self.asked = count
+                    return [{'run_id': rid} for rid in reversed(list(reports))][:min(10, count)]
+
+                def read_report(self, run_id):
+                    if run_id not in stored:
+                        raise ProtocolError('not_found')
+                    return {'report': stored[run_id], 'mode': 'live', 'payload_sha256': stored[run_id]['payload_sha256']}
+
+                def post_report(self, report):
+                    self.posted.append(report)
+                    return {'accepted': True, 'readback_matches': True}
+            return Capped()
+
+        # Eight newer reports: both go-lives are in the page of ten, which is full, so the line goes too.
+        client = ledger(8)
+        lines, golives = cc_loop.handed_off_golives(client, {}, NOW, ROOT)
+        self.assertEqual(client.asked, handoff.RECENT)
+        self.assertEqual([p['proposal_id'] for r in client.posted for p in r['proposals']], [GOLIVE])
+        self.assertEqual(golives, ([(only['proposal_id'], handoff.HANDED_OFF_ONLY)], None))
+        self.assertEqual(lines[1:], [older])
+        # Ten newer reports: neither is looked at, nothing is posted or taken back, and the line says why.
+        client = ledger(10)
+        lines, golives = cc_loop.handed_off_golives(client, {}, NOW, ROOT)
+        self.assertEqual((client.posted, lines, golives), ([], [older], ([], None)))
+        report = cc_loop.runner_report(ROOT, 'makeyourmindup:2026-11-03:runner', NOW, checks(), 'synthetic', True,
+                                       'fixture', sent={}, golives=golives, extra_activity=lines)[0]
+        self.assertIn(older, [a['line'] for a in report['activity']])
+        self.assertNotIn(cc_loop.UNREAD_GOLIVES, [h['reason'] for h in report['holds']])
+        self.assertNotIn('withdrawn', report)
+
+    def test_the_live_runner_proposes_again_and_takes_back_through_its_report(self):
+        # Through the command the daily dispatch runs (growth.py cc runner --deliver, live), against a stand-in for
+        # Control Center that serves its newest reports as the real route does: the waiting go-live with a LinkedIn
+        # line is posted again without it, and the one that held only a LinkedIn post is in the runner's withdrawn[].
+        import growth
+        from engine import backlog, cc_loop
+        from engine.cc_loop import run_id_for
+        from engine.control_center import (AUTONOMY_VERSION, CHANNELS_VERSION, SCHEMA_VERSION, WITHDRAWN_FEATURE,
+                                           WITHDRAWN_VERSION, validate_report)
+        from engine.core import instant
+        try:
+            from test_control_center import PREFIX, TOKEN, StandIn, checks
+            from test_runner_dedup import workspace
+        except ImportError:  # run as tests.test_run_handoff
+            from tests.test_control_center import PREFIX, TOKEN, StandIn, checks
+            from tests.test_runner_dedup import workspace
+
+        class Recent(StandIn):
+            """The stand-in, also serving GET reports?recent=n: the newest live reports first, at most 10."""
+
+            def __init__(self):
+                super().__init__()
+                stand, base = self, self.server.RequestHandlerClass
+
+                class Handler(base):
+                    def handle_any(self, method):
+                        parts = urlsplit(self.path)
+                        query = parse_qs(parts.query)
+                        if method == 'GET' and parts.path == PREFIX + 'reports' and 'recent' in query:
+                            stand.calls.append({'method': method, 'path': parts.path, 'query': parts.query,
+                                                'key': None, 'body': None, 'auth': self.headers.get('Authorization')})
+                            if self.headers.get('Authorization') != 'Bearer ' + stand.token:
+                                return self.reply(401, {'error': 'unauthorized'})
+                            count = int(query['recent'][0])
+                            if not 1 <= count <= 10:
+                                return self.reply(400, {'error': 'bad_request'})
+                            rows = [{'run_id': r['run_id'], 'accepted_at': NOW, 'status': r['status'],
+                                     'activity': r['activity']} for r in reversed(list(stand.reports.values()))
+                                    if r['mode'] == 'live']
+                            return self.reply(200, {'ok': True, 'reports': rows[:count]})
+                        return base.handle_any(self, method)
+
+                self.server.RequestHandlerClass = Handler
+
+        stored, mixed, only = self.stored_golives()
+        with Recent() as stand, tempfile.TemporaryDirectory() as folder:
+            workspace(folder)
+            stand.capabilities = {'schema_versions': [SCHEMA_VERSION, AUTONOMY_VERSION, WITHDRAWN_VERSION,
+                                                      CHANNELS_VERSION], 'features': {WITHDRAWN_FEATURE: True}}
+            stand.reports.update(stored)
+            out = io.StringIO()
+            with mock.patch.object(growth, 'engine_client', lambda: stand.client()), \
+                    mock.patch.object(growth, 'ROOT', Path(folder)), \
+                    mock.patch.object(cc_loop, 'runner_checks', lambda r: checks()), \
+                    mock.patch.object(backlog, 'read_feed', side_effect=OSError('offline test')), \
+                    mock.patch.dict('os.environ', {'CONTROL_CENTER_ENGINE_TOKEN': TOKEN}), \
+                    contextlib.redirect_stdout(out):
+                code = growth.main(['cc', 'runner', '--deliver', '--mode', 'live', '--now', NOW])
+            self.assertEqual(code, 0, out.getvalue())
+            self.assertIn(('GET', PREFIX + 'reports', 'recent=10'),
+                          [(c['method'], c['path'], c['query']) for c in stand.calls])
+            # The go-live, posted again without its LinkedIn line, in its own new report.
+            again = [r for rid, r in stand.reports.items() if rid not in stored and rid.startswith('makeyourmindup:golive:')]
+            [posted] = again
+            validate_report(posted)
+            [item] = posted['proposals']
+            self.assertEqual(item['proposal_id'], GOLIVE)
+            self.assertEqual(sorted(parse_manifest(item['exact_payload'], engine=True)), ['threads-1', 'x-1'])
+            self.assertFalse(self.refused_by_control_center(item))
+            self.assertTrue(self.refused_by_control_center(mixed))
+            # The runner's report takes back the go-live of only a LinkedIn post, and names the one posted again.
+            today = stand.reports[run_id_for('runner', instant(NOW))]
+            validate_report(today)
+            self.assertEqual(today['mode'], 'live')
+            self.assertEqual(today['withdrawn'], [{'proposal_id': only['proposal_id'],
+                                                   'reason': handoff.HANDED_OFF_ONLY}])
+            lines = [a['line'] for a in today['activity']]
+            self.assertTrue(any(line.startswith('Proposed again without its LinkedIn post') and GOLIVE in line
+                                for line in lines), lines)
+            self.assertNotIn(cc_loop.older_golives_line(handoff.RECENT), lines)
+            self.assertNotIn(cc_loop.UNREAD_GOLIVES, [h['reason'] for h in today['holds']])
 
     def test_an_oversize_manifest_splits_into_go_lives_in_order(self):
-        long_words = 'Synthetic long handoff words. ' * 25
+        long_words = 'Synthetic long handoff words. ' * 22 + route.subscribe_url('x', 'fx-long')
         slots = []
         for index in range(30):
             post_id = 'ffffffffffffffffffffff' + '%02d' % index
@@ -249,7 +569,7 @@ class HandoffTests(unittest.TestCase):
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['proposals'], {'go_live': 2})
-        self.assertEqual(summary['slots'], {'own_review': 1, 'proposed': 4})
+        self.assertEqual(summary['slots'], {'own_review': 1, 'proposed': 3})
         by_id = {p['proposal_id']: p for p in self.proposals()}
         self.assertEqual(sorted(parse_manifest(by_id[GOLIVE + ':item-1']['exact_payload'])), ['ig-1'])
         self.assertIn('New kind of post', by_id[GOLIVE + ':item-1']['title'])
@@ -262,7 +582,7 @@ class HandoffTests(unittest.TestCase):
             (root / 'invariants' / 'authority.json').write_text(json.dumps(
                 {'show_before_post_until': '2026-11-01', 'derivative_formats': [{'class': 'quote-card', 'formats': ['quote-card']}]}), encoding='utf-8')
             summary, _ = self.run_handoff(root=root)
-        self.assertEqual(summary['proposals'], {'go_live': 3})
+        self.assertEqual(summary['proposals'], {'go_live': 2})
         self.assertTrue(all('you see every batch' not in p['why'] for p in self.proposals()))
 
     def test_per_item_review_from_the_dispatch_is_honoured(self):
@@ -274,7 +594,7 @@ class HandoffTests(unittest.TestCase):
         self.cc.decisions = []
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
-        self.assertEqual(summary['holds'], {'no_open_plan': 3})
+        self.assertEqual(summary['holds'], {'no_open_plan': 2})
         self.assertEqual(self.proposals(), [])
         self.assertEqual([r['status'] for r in self.cc.reports.values() if not r['proposals']], ['held'])
 
@@ -316,6 +636,41 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(summary['proposals'], {'plan': 1})
         for bad in (dict(packet, week='46'), dict(packet, extra=1), dict(packet, slots=[dict(packet['slots'][0], x=1)])):
             self.assertEqual(self.run_handoff(bad, WEEK_PACKET)[1], 1)
+
+    def test_a_week_packet_never_lists_a_linkedin_slot(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn. A packet that still names a
+        # LinkedIn slot has it held by its owner's code; the ask lists only the rest, and never says LinkedIn.
+        def slot(s):
+            return {'slot': s['slot'], 'channel': s['channel'], 'payload_sha256': s['payload_sha256']}
+        linkedin = {'slot': 'linkedin-1', 'channel': 'linkedin', 'payload_sha256': 'cd' * 32}
+        packet = {'run_id': 'makeyourmindup:2026-W46:week', 'week': 'W46', 'spec_sha256': 'ab' * 32,
+                  'slots': [slot(s) for s in self.fix.slots] + [linkedin]}
+        for stage in ('check_in', 'plan'):
+            summary, code = self.run_handoff(packet, WEEK_PACKET)
+            self.assertEqual(code, 0, summary)
+            self.assertEqual(summary['proposals'], {stage: 1})
+            self.assertEqual(summary['holds'], {owners.HOLD: 1})
+            [item] = [p for r in self.cc.reports.values() for p in r['proposals'] if p.get('stage') == stage]
+            self.assertNotIn('linkedin', item['exact_payload'].lower())
+            self.assertNotIn('linkedin', json.dumps(item).lower())
+            self.assertIn('2 posts planned', item['exact_payload'])
+            report = self.cc.reports[staged_report_run_id(item['proposal_id'], item['payload_sha256'])]
+            self.assertEqual([h['reason'] for h in report['holds']], [owners.HOLD])
+            self.cc.reports, self.cc.decisions = {}, []
+        # A packet of LinkedIn alone asks nothing: one held report, no proposal on his list.
+        for label in ('linkedin', 'LinkedIn'):
+            self.cc.reports = {}
+            only = dict(packet, slots=[dict(linkedin, channel=label)])
+            if label != 'linkedin':
+                self.assertEqual(self.run_handoff(only, WEEK_PACKET)[1], 1, 'an unknown label is refused')
+                continue
+            summary, code = self.run_handoff(only, WEEK_PACKET)
+            self.assertEqual(code, 0, summary)
+            self.assertEqual(summary['holds'], {owners.HOLD: 1})
+            self.assertNotIn('proposals', {k: v for k, v in summary.items() if v})
+            self.assertEqual([p for r in self.cc.reports.values() for p in r['proposals']], [])
+            [held] = self.cc.reports.values()
+            self.assertEqual([h['reason'] for h in held['holds']], [owners.HOLD])
 
     def test_make_piece_is_recorded_and_proposes_nothing(self):
         summary, code = handoff.handoff(MAKE_PIECE, {'piece_id': 'synthetic-piece-1'}, None, None, NOW, True,
@@ -437,7 +792,52 @@ class HandoffTests(unittest.TestCase):
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
         self.assertEqual(summary['holds'], {'bad_due_at': 1})
-        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 2})
+        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 1})
+
+    def test_a_line_with_no_subscribe_route_is_never_put_to_him(self):
+        # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route (engine/route.py).
+        self.fix.draft(P_X, 'x', words='Synthetic handoff words for the x slot, with no route.')
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X)
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'subscribe_route_missing': 1})
+        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 1})
+        self.assertNotIn('x-1', ' '.join(p['exact_payload'] for p in self.proposals()))
+
+    def test_a_linkedin_line_routed_in_its_first_comment_is_still_never_put_to_him(self):
+        # Main's 13 Nov fix put a LinkedIn line routed in its first comment to him as his own click. Since the same
+        # day LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13), so a route anywhere never makes it this
+        # engine's: the line is held before its draft is read, whatever its words carry.
+        meta = {'__typename': 'LinkedInPostMetadata', 'type': 'post', 'linkAttachment': None,
+                'firstComment': 'Subscribe: https://makeyourmindup.example/subscribe'}
+        self.fix.draft(P_LINKEDIN, 'linkedin', metadata=meta,
+                       words='Synthetic handoff words for the linkedin slot; the route is in the first comment.')
+        self.fix.slots.append(self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None))
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual((summary['holds'], summary['slots']), ({owners.HOLD: 1}, {'held': 1, 'proposed': 2}), summary)
+        self.assertNotIn('linkedin-1', ' '.join(p['exact_payload'] for p in self.proposals()))
+
+    def test_a_slot_left_to_his_click_on_any_other_channel_still_needs_a_route(self):
+        # Only LinkedIn skips the go-live route check (its first comment is not in the signed meta). An X slot left
+        # to his own click carries its meta, so with no route it holds as an engine line does (reverifier, 13 Nov
+        # 2026: every krish_click line had been put to him unchecked).
+        self.fix.draft(P_X, 'x', words='Synthetic handoff words for the x slot, with no route.')
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, mode='krish_click', due=None)
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual((summary['holds'], summary['slots']), ({'subscribe_route_missing': 1}, {'held': 1, 'proposed': 1}),
+                         summary)
+        self.assertNotIn('x-1', ' '.join(p['exact_payload'] for p in self.proposals()))
+
+    def test_a_slot_left_to_his_click_with_its_route_is_put_to_him(self):
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, mode='krish_click', due=None)  # the fixture's routed words
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual((code, summary['holds'], summary['slots']), (0, {}, {'proposed': 2}), summary)
 
     def test_a_due_outside_the_run_window_holds(self):
         # The run 2026-11-03:piece ends at New York midnight on 11 November.
@@ -457,7 +857,7 @@ class HandoffTests(unittest.TestCase):
         self.cc.decisions += filler + [self.fix.decision(self.fix.plan, '2026-11-02T12:00:00Z', decision='declined')]
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
-        self.assertEqual(summary['holds'], {'no_open_plan': 3})
+        self.assertEqual(summary['holds'], {'no_open_plan': 2})
         self.assertEqual(self.proposals(), [])
         # A route that never pages out fails closed and loud.
         self.cc.honour_since = False
@@ -484,7 +884,7 @@ class HandoffTests(unittest.TestCase):
         # R94, F106: approving a day authorises exactly that day's posts. 03:30 UTC on 5 November
         # is 22:30 on Wednesday 4 November in New York, so it rides with that day.
         self.fix.slots[0] = self.fix.maker('threads-1', 'threads', P_THREADS, [sha(IMAGE)], due='2026-11-05T03:30:00Z')
-        self.fix.draft(P_CAROUSEL, 'x')
+        self.fix.draft(P_CAROUSEL, 'x', words='Synthetic handoff words for the second x slot. ' + route.subscribe_url('x', 'fx-x2'))
         self.fix.slots.append(self.fix.maker('x-2', 'x', P_CAROUSEL, due='2026-11-05T14:00:00Z'))
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)
@@ -492,7 +892,7 @@ class HandoffTests(unittest.TestCase):
         by_id = {p['proposal_id']: p for p in self.proposals()}
         self.assertEqual(sorted(by_id), [GOLIVE + ':2026-11-04', GOLIVE + ':2026-11-05'])
         first, second = by_id[GOLIVE + ':2026-11-04'], by_id[GOLIVE + ':2026-11-05']
-        self.assertEqual(sorted(parse_manifest(first['exact_payload'])), ['linkedin-1', 'threads-1', 'x-1'])
+        self.assertEqual(sorted(parse_manifest(first['exact_payload'])), ['threads-1', 'x-1'])
         self.assertEqual(sorted(parse_manifest(second['exact_payload'])), ['x-2'])
         self.assertIn('Wednesday 4 November', first['title'])
         self.assertIn('Thursday 5 November', second['title'])

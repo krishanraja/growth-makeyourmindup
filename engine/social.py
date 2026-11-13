@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import re
 
+from . import owners
 from .buffer_channels import channel_id_errors
 from .copy_lint import copy_lint_errors
 from .share import (StaleSendTest, compare_send_test, cta_applies, cta_errors, load_rules as load_share_rules,
@@ -146,6 +147,14 @@ def inventory(root=ROOT):
             raise ValueError('account context cannot expand publication authority')
         if expected_mode == 'human_publish_only' and obj['daily_posts_target'] is not None:
             raise ValueError('human-only accounts have no automatic posting quota')
+        # A channel this engine no longer owns says so in its record and in engine/owners.py, both or
+        # neither (Ruling, Krish, 2026-11-13: growth-mindmake owns his personal LinkedIn).
+        owned = obj.get('owned_by') or {}
+        if (owned.get('engine'), owned.get('since')) != (owners.HANDED_OFF.get(obj['id']), owners.SINCE.get(obj['id'])):
+            raise ValueError('a channel owned by another engine says so in its record (owned_by) and in'
+                             ' engine/owners.py, with the same engine and day: ' + obj['id'])
+        if owned and obj['daily_posts_target'] is not None:
+            raise ValueError('a channel owned by another engine takes no posting quota here: ' + obj['id'])
         # Notes post from Krish's own Substack profile at up to four a day as he
         # signs (27 Oct, raised 11 Nov); Instagram, YouTube, TikTok and X up to four (29 Oct);
         # every other account stays at one a day.
@@ -207,6 +216,9 @@ def route(channel, format_id, tool='buffer', as_of=None, root=ROOT):
     c = records['channel'][channel]
     f = records['format'][format_id]
     t = records['tool'][tool]
+    if c.get('owned_by'):
+        # Nothing is routed, prepared or saved on a channel another engine owns (Ruling, Krish, 2026-11-13).
+        raise ValueError(owners.refusal(channel))
     if format_id not in c['formats']:
         raise ValueError('format is not routed for this channel')
     now = date.fromisoformat(as_of) if as_of else datetime.now(timezone.utc).date()
