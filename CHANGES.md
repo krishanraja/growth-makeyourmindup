@@ -1,5 +1,8 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-13: LinkedIn keeps its profile as it is. His words: "LinkedIn won't let me add that link as a feature, so
+  I'm just going to keep it as it is." `jobs/channel-audit.md` no longer asks him to paste a LinkedIn link, and the
+  audit never reports its absence.
 - 2026-11-12: Every carousel and Short goes through content-engine's 10/10 judges before it is made. His words:
   "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." The maker asks the judges (POST /api/board/<Monday>/judge on
   GROWTH_WRITEBACK_TOKEN, `engine/run/judges.py`) before a carousel or a Short is saved in Buffer or handed off; a
