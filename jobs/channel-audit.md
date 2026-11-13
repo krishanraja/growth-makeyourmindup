@@ -104,6 +104,7 @@ positioning and pins still need his approval).
 
 The resumed exact-link instruction uses `social/bio` for the six accounts above. Threads always targets @makeyourmind.up; use its verified branded Buffer connection (13 November 2026).
 
-LinkedIn is Krish's alone (`KRISH_ONLY`): the engine never saves it. Put the LinkedIn line,
-`https://home.makeyourmindup.ai/subscribe?utm_source=linkedin&utm_medium=organic&utm_content=profile`, on his list for him to paste himself.
+LinkedIn is Krish's alone (`KRISH_ONLY`): the engine never saves it, and it keeps the profile as it is. Krish, 13 November
+2026: "LinkedIn won't let me add that link as a feature, so I'm just going to keep it as it is." Never list a LinkedIn
+profile link for him again, and never report its missing link as an alignment problem.
 Substack has no profile link target: its subscribe button is the publication's own.

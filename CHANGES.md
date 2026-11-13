@@ -1,5 +1,8 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-13: LinkedIn keeps its profile as it is. His words: "LinkedIn won't let me add that link as a feature, so
+  I'm just going to keep it as it is." `jobs/channel-audit.md` no longer asks him to paste a LinkedIn link, and the
+  audit never reports its absence.
 - 2026-11-12: Every live report the maker sends carries the engine's state. His words: "make sure everything's a
   cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading
   left in there". Control Center shows the newest live report's priorities, obsessions and next steps on every place,
