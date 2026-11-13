@@ -1,0 +1,3 @@
+Status: The publication's AI answers are AEO-Engine's, the one AI-answers specialist (Ruling, Krish, 2026-11-12): the runner reads the standing from the directive (protocol 1.22.0) and asks AEO to track the real reader questions in config/ai-answer-questions.json, which jobs/answer.md fills; none is on file yet, so nothing is asked. The protocol copy in docs/control-center/ is Control Center's at 36df34bc (protocol 1.22.0).
+Next: When jobs/answer.md next finds a real reader question, add it to config/ai-answer-questions.json so the runner asks AEO to track it.
+North Star check (2026-11-13): holds.

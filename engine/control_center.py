@@ -771,6 +771,13 @@ class Client:
     def read_report(self, run_id):
         return self._request('GET', 'reports/' + quote(run_id, safe=''))
 
+    def answers_request(self, body):
+        """1.22.0 (features.ai_answers): ask AEO-Engine, the one AI-answers specialist, to track this product's questions."""
+        result = self._request('POST', 'answers', body)
+        if result.get('ok') is not True or not isinstance(result.get('request_id'), str):
+            raise ProtocolError('answers_not_recorded')
+        return result
+
     def recent_reports(self, count=10):
         """This engine's own latest live reports, newest first: run_id, accepted_at, status and activity only
         (protocol 1.10.0, features.recent_reports). Never the proposals or the payload."""
