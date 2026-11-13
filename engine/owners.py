@@ -1,4 +1,4 @@
-"""Channels this engine no longer owns, and the engine that owns each now. No imports, no I/O.
+"""Channels this engine no longer owns, and the engine that owns each now. Standard library only, no I/O.
 
 Ruling (Krish, 2026-11-13), asked "Which engine should own your personal LinkedIn posts (you still click
 every post)?" and answered "growth-mindmake owns it": growth-mindmake (krishanraja/growth-mindmake) owns
@@ -11,11 +11,15 @@ comment, no engagement tap and no go-live. Reading LinkedIn (research, the radar
 what others post) is not owning the channel, and stays. The channel record says the same
 (social/channels/linkedin.json, owned_by), and engine/social.py:inventory checks that the two agree.
 """
+from urllib.parse import urlsplit
 
 # Channel id -> the engine that owns it now.
 HANDED_OFF = {'linkedin': 'growth-mindmake'}
 # Channel id -> the day the ruling handed it over.
 SINCE = {'linkedin': '2026-11-13'}
+# Channel id -> the web hosts that open it, so a page on it is known whatever label a draft carries
+# (a host matches itself and any subdomain: www.linkedin.com, uk.linkedin.com; lnkd.in is its short link).
+HOSTS = {'linkedin': ('linkedin.com', 'lnkd.in')}
 # The hold code every refusal carries, so Control Center and the reports name one reason.
 HOLD = 'channel_owned_by_another_engine'
 
@@ -40,6 +44,20 @@ def handed_off_channel(channel):
         return None
     key = channel.strip().lower()
     return next((name for name in HANDED_OFF if key.startswith(name)), None)
+
+
+def url_channel(url):
+    """The handed-off channel id whose page url opens, else None: read from the host, never the label."""
+    if not isinstance(url, str):
+        return None
+    try:
+        host = (urlsplit(url.strip()).hostname or '').lower().rstrip('.')
+    except ValueError:
+        return None
+    for name, hosts in HOSTS.items():
+        if any(host == h or host.endswith('.' + h) for h in hosts):
+            return name
+    return None
 
 
 def refusal(channel):

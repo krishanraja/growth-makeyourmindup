@@ -90,7 +90,11 @@ Four event types, each with a closed client_payload (unknown keys refused):
 - `growth-week-packet` (whoever plans the week): {"run_id", "week",
   "spec_sha256", "slots": [{"slot", "channel", "payload_sha256"}]}. Proposed
   as a `check_in` on the open plan ("On track?"), or as a `plan` when no
-  plan is open. One proposal per packet: one ask at a time.
+  plan is open. One proposal per packet: one ask at a time. A slot on a
+  channel another engine owns (Krish's personal LinkedIn: Ruling, Krish,
+  2026-11-13) is held (`channel_owned_by_another_engine`) and never named
+  in the ask, which lists only what is left; a packet with nothing left is
+  one held report and no proposal.
 - `growth-make-piece` (a publish board Krish approved): {"piece_id"}. Nothing
   to propose: it is recorded and counted.
 
@@ -1274,8 +1278,20 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
             derived, days = derived_reports(records, now, root) if records else ([], {})
             summary['proposals'] = {'go_live': len(items)} if items else {}
         else:
-            item = packet_proposal(payload, plan) if reason in (None, 'no_open_plan') else None
-            if item is None:
+            # A slot on a channel another engine owns (Ruling, Krish, 2026-11-13) is held, never listed in the
+            # ask; the ask is built from what is left, and nothing is asked when nothing is left.
+            kept = []
+            for slot in payload['slots']:
+                if owners.owner(slot['channel']):
+                    slots.hold(owners.HOLD)
+                else:
+                    kept.append(slot)
+            item = None
+            if kept and reason in (None, 'no_open_plan'):
+                item = packet_proposal(dict(payload, slots=kept), plan)
+            if not kept:
+                reports = [held_report(event, payload['run_id'], slots, now, root)]
+            elif item is None:
                 reports = [held_report(event, payload['run_id'], slots, now, root,
                                        reason if reason == 'stop_unresolved' else 'packet_over_payload_cap')]
                 summary['holds'][reason if reason == 'stop_unresolved' else 'packet_over_payload_cap'] = 1

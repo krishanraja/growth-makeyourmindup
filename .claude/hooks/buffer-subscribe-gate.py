@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """PreToolUse hook: refuse a Buffer create_post or edit_post on this engine's channels that carries no subscribe
-route (engine/subscribe_gate.py; Ruling, Krish, 2026-11-12). Silent when the call passes; a call it cannot
-check is refused (exit 2), so it fails closed."""
+route (engine/subscribe_gate.py; Ruling, Krish, 2026-11-12), and any on a channel another engine owns, Krish's
+personal LinkedIn (Ruling, Krish, 2026-11-13). Silent when the call passes; a call it cannot check is refused
+(exit 2), so it fails closed."""
 import json
 import os
 import sys

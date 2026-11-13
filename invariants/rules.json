@@ -1687,7 +1687,7 @@
     },
     {
       "id": "R125",
-      "statement": "Krish's personal LinkedIn is growth-mindmake's: its posts (Mindmake's published thinking, about three a week) and the replies to everyone who engages with them; he still clicks every post, so it stays human_publish_only. This engine drafts, queues, taps, schedules and pins nothing there: the channel record's owned_by and engine/owners.py agree, and the social route, the pack check, the Control Center report, the engagement tap queue, the Engagement and Publishing engines, the calendar and spec lints, the L0 handoff, release, the backlog and the Buffer channel table refuse it with one reason. Reading LinkedIn (research, trend reading, measuring what others post) stays. His X and the publication's own accounts stay here.",
+      "statement": "Krish's personal LinkedIn is growth-mindmake's: its posts (Mindmake's published thinking, about three a week) and the replies to everyone who engages with them; he still clicks every post, so it stays human_publish_only. This engine drafts, queues, taps, schedules and pins nothing there: the channel record's owned_by and engine/owners.py agree, and the social route, the pack check, the Control Center report, the engagement tap queue, the Engagement and Publishing engines, the calendar and spec lints, the L0 handoff (go-lives and week packets), release, the backlog, the Buffer channel table and the Buffer subscribe gate hook (its channel id, at every urgency) refuse it with one reason; a tap is LinkedIn's by its label or by the page it opens. Reading LinkedIn (research, trend reading, measuring what others post) stays. His X and the publication's own accounts stay here.",
       "source_file": "CHANGES.md",
       "quote": "Asked \"Which engine should own your personal LinkedIn posts (you still click every post)?\", he answered \"growth-mindmake owns it\".",
       "enforced_by": [
@@ -1701,8 +1701,10 @@
         "engine/run/calendar.py:_row_errors",
         "engine/run/spec.py:_slot",
         "engine/run/handoff.py:rebuild",
+        "engine/run/handoff.py:handoff",
         "engine/run/release.py:release_plan",
         "engine/buffer_channels.py:channel_id_errors",
+        "engine/subscribe_gate.py:errors",
         "engine/backlog.py:channel_matrix"
       ],
       "tests": [
@@ -1720,7 +1722,10 @@
         "test_a_row_on_a_channel_another_engine_owns_is_refused",
         "test_a_linkedin_slot_is_held_before_its_draft_is_read",
         "test_a_signed_linkedin_slot_is_held_by_its_owner_and_never_saved",
-        "test_linkedin_is_never_open_work_and_a_past_edition_stays_readable"
+        "test_linkedin_is_never_open_work_and_a_past_edition_stays_readable",
+        "test_a_week_packet_never_lists_a_linkedin_slot",
+        "test_krish_personal_linkedin_is_refused_at_every_urgency",
+        "test_the_hook_denies_a_linkedin_post_through_claude_code"
       ]
     },
     {

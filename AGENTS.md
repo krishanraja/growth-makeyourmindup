@@ -176,10 +176,14 @@ calendar row, no week-spec slot, no backlog edition and no Buffer pin. One
 owner table says so (`engine/owners.py`), the channel record agrees
 (`social/channels/linkedin.json`, `owned_by`), and every route that could
 prepare one refuses it with the same reason: the social route and preflight,
-the pack check, Control Center reports, the engagement tap queue, the
-Engagement and Publishing engines, the calendar and spec lints, the L0
-handoff (a LinkedIn slot is held before its draft is read) and the Buffer
-channel table (`HANDED_OFF_CHANNELS`). Reading LinkedIn is not owning it:
+the pack check, Control Center reports, the engagement tap queue (by its
+label or by the page a tap opens, linkedin.com or lnkd.in, whatever platform
+it claims), the Engagement and Publishing engines, the calendar and spec
+lints, the L0 handoff (a LinkedIn slot in a go-live is held before its draft
+is read, and one in a week packet is held and never named in the ask), the
+Buffer channel table (`HANDED_OFF_CHANNELS`) and the Buffer subscribe gate
+hook, which denies any create_post or edit_post on that channel id at every
+urgency (`engine/subscribe_gate.py`). Reading LinkedIn is not owning it:
 research, the radar's trend reading and measuring what other people post
 there stay. Every LinkedIn line elsewhere in this repository that says this
 engine drafts, prepares or engages there is superseded by this section

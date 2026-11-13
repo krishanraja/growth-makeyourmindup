@@ -300,10 +300,14 @@ engine.
 - **What this engine stops.** No LinkedIn post, comment, reply, engagement
   tap, go-live, calendar row, week-spec slot, backlog edition or Buffer pin.
   The channel record carries `owned_by` and `engine/owners.py` names the
-  same owner; the social route, the pack check, the engagement queue, the
+  same owner; the social route, the pack check, the engagement queue (by
+  label or by the page a tap opens, linkedin.com or lnkd.in), the
   Engagement and Publishing engines, the calendar and spec lints and the L0
-  handoff all refuse it with that reason, and its Buffer channel is refused
-  by id (`engine/buffer_channels.py`, `HANDED_OFF_CHANNELS`).
+  handoff (go-lives and week packets) all refuse it with that reason, and
+  its Buffer channel is refused by id (`engine/buffer_channels.py`,
+  `HANDED_OFF_CHANNELS`), including by the subscribe gate hook on every
+  Buffer create_post and edit_post, at every urgency
+  (`engine/subscribe_gate.py`).
 - **What stays.** Reading LinkedIn is not owning it: research, the radar's
   trend reading and measuring what other people post there all stay. His X
   and the publication's own accounts (Instagram, Facebook, YouTube, Substack,

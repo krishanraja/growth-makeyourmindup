@@ -9,7 +9,9 @@ Control Center's general public-page check only.
 
 LinkedIn left the queue on 13 November 2026 (Ruling, Krish, 2026-11-13):
 growth-mindmake owns his personal LinkedIn posts and the replies to everyone
-who engages with them, so a LinkedIn tap is refused here (engine/owners.py).
+who engages with them, so a LinkedIn tap is refused here (engine/owners.py),
+by its label or by the page it opens (linkedin.com or lnkd.in), whichever
+platform it claims.
 """
 import re
 from urllib.parse import urlsplit
@@ -60,9 +62,15 @@ def target_kind(platform, url):
 
 
 def tap_errors(platform, url, text):
-    """Why a queue tap cannot go to Krish: a channel another engine owns, or a page that is not exact."""
+    """Why a queue tap cannot go to Krish: a channel another engine owns, or a page that is not exact.
+
+    The owner is read from the label and from the page the tap opens, so a LinkedIn page labelled threads,
+    youtube or anything else is still LinkedIn's (Ruling, Krish, 2026-11-13)."""
     if owners.owner(platform):
         return [owners.refusal(platform)]
+    opens = owners.url_channel(url)
+    if opens:
+        return [owners.refusal(opens)]
     errors = []
     if target_kind(platform, url) is None:
         errors.append('a ' + platform + ' tap must open the exact post or profile, not a feed, search or short link')

@@ -339,6 +339,41 @@ class HandoffTests(unittest.TestCase):
         for bad in (dict(packet, week='46'), dict(packet, extra=1), dict(packet, slots=[dict(packet['slots'][0], x=1)])):
             self.assertEqual(self.run_handoff(bad, WEEK_PACKET)[1], 1)
 
+    def test_a_week_packet_never_lists_a_linkedin_slot(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn. A packet that still names a
+        # LinkedIn slot has it held by its owner's code; the ask lists only the rest, and never says LinkedIn.
+        def slot(s):
+            return {'slot': s['slot'], 'channel': s['channel'], 'payload_sha256': s['payload_sha256']}
+        linkedin = {'slot': 'linkedin-1', 'channel': 'linkedin', 'payload_sha256': 'cd' * 32}
+        packet = {'run_id': 'makeyourmindup:2026-W46:week', 'week': 'W46', 'spec_sha256': 'ab' * 32,
+                  'slots': [slot(s) for s in self.fix.slots] + [linkedin]}
+        for stage in ('check_in', 'plan'):
+            summary, code = self.run_handoff(packet, WEEK_PACKET)
+            self.assertEqual(code, 0, summary)
+            self.assertEqual(summary['proposals'], {stage: 1})
+            self.assertEqual(summary['holds'], {owners.HOLD: 1})
+            [item] = [p for r in self.cc.reports.values() for p in r['proposals'] if p.get('stage') == stage]
+            self.assertNotIn('linkedin', item['exact_payload'].lower())
+            self.assertNotIn('linkedin', json.dumps(item).lower())
+            self.assertIn('2 posts planned', item['exact_payload'])
+            report = self.cc.reports[staged_report_run_id(item['proposal_id'], item['payload_sha256'])]
+            self.assertEqual([h['reason'] for h in report['holds']], [owners.HOLD])
+            self.cc.reports, self.cc.decisions = {}, []
+        # A packet of LinkedIn alone asks nothing: one held report, no proposal on his list.
+        for label in ('linkedin', 'LinkedIn'):
+            self.cc.reports = {}
+            only = dict(packet, slots=[dict(linkedin, channel=label)])
+            if label != 'linkedin':
+                self.assertEqual(self.run_handoff(only, WEEK_PACKET)[1], 1, 'an unknown label is refused')
+                continue
+            summary, code = self.run_handoff(only, WEEK_PACKET)
+            self.assertEqual(code, 0, summary)
+            self.assertEqual(summary['holds'], {owners.HOLD: 1})
+            self.assertNotIn('proposals', {k: v for k, v in summary.items() if v})
+            self.assertEqual([p for r in self.cc.reports.values() for p in r['proposals']], [])
+            [held] = self.cc.reports.values()
+            self.assertEqual([h['reason'] for h in held['holds']], [owners.HOLD])
+
     def test_make_piece_is_recorded_and_proposes_nothing(self):
         summary, code = handoff.handoff(MAKE_PIECE, {'piece_id': 'synthetic-piece-1'}, None, None, NOW, True,
                                         out_path=self.out)

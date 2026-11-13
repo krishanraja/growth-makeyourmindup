@@ -17,11 +17,16 @@ utm_source naming the channel):
 
 Below the conversion urgency nothing is required, as everywhere else. Other ventures' channels in the shared
 Buffer organisation are never this engine's and pass untouched. Offline only: no network, no credentials.
+
+A channel this engine handed to another engine is refused outright, at every urgency, before any subscribe
+check (owners.HOLD): Krish's personal LinkedIn is growth-mindmake's (Ruling, Krish, 2026-11-13), so a
+create_post or edit_post on its Buffer channel id (buffer_channels.HANDED_OFF_CHANNELS), or an edit that
+carries LinkedIn's own metadata, never runs from this repository.
 """
 from urllib.parse import parse_qs, urlsplit
 
-from . import intensity
-from .buffer_channels import BUFFER_CHANNEL_ID
+from . import intensity, owners
+from .buffer_channels import BUFFER_CHANNEL_ID, HANDED_OFF_CHANNELS
 
 HOLD = 'subscribe_route_missing'
 CHANNEL_BY_ID = {v: k for k, v in BUFFER_CHANNEL_ID.items()}
@@ -115,13 +120,29 @@ def _tagged(text, channel, root):
     return None, why
 
 
+def _handed_off(tool_input):
+    """Why this call acts on a channel another engine owns, or '': its Buffer channel id, or, for an edit that
+    names only its post, a metadata key that is that channel's own (Ruling, Krish, 2026-11-13)."""
+    channel_id = tool_input.get('channelId')
+    if isinstance(channel_id, str) and channel_id in HANDED_OFF_CHANNELS:
+        return 'Buffer channel ' + channel_id + ': ' + owners.refusal(HANDED_OFF_CHANNELS[channel_id])
+    meta = tool_input.get('metadata')
+    for key in (meta if isinstance(meta, dict) else {}):
+        if owners.handed_off_channel(key):
+            return 'a ' + str(key) + ' post: ' + owners.refusal(key)
+    return ''
+
+
 def errors(tool_name, tool_input, urgency=None, root=intensity.ROOT):
-    """Why this Buffer call would send a post with no subscribe route, or [].
+    """Why this Buffer call would send a post with no subscribe route, or on a channel another engine owns, or [].
 
     tool_name is the connector tool's name (anything ending create_post or edit_post); tool_input its input.
     urgency is the North Star urgency (intensity.state); None reads it."""
     if not str(tool_name).endswith(TOOLS) or not isinstance(tool_input, dict):
         return []
+    handed = _handed_off(tool_input)
+    if handed:
+        return [owners.HOLD + ': ' + handed]
     channel = CHANNEL_BY_ID.get(tool_input.get('channelId'))
     unnamed = []
     if str(tool_name).endswith('edit_post') and not tool_input.get('channelId'):  # absent, null or empty

@@ -210,6 +210,25 @@ class ExactTargets(unittest.TestCase):
                     'https://www.linkedin.com/in/synthetic-one/'):
             self.assertEqual(engage.tap_errors('linkedin', url, 'A useful reply.'), [owners.refusal('linkedin')])
         self.assertEqual(engage.tap_errors('x', 'https://x.com/synthetic_one', 'See https://example.com'), [])
+        # A LinkedIn page is LinkedIn's whatever label the tap carries: the page it opens decides.
+        pages = ('https://www.linkedin.com/feed/update/urn:li:activity:7250000000000000001/',
+                 'https://linkedin.com/posts/synthetic-one_activity-7250000000000000002',
+                 'https://uk.linkedin.com/in/synthetic-one', 'https://lnkd.in/synthetic', 'https://LNKD.IN/synthetic')
+        for label in ('threads', 'youtube', 'facebook', 'substack', 'notes', 'reddit', 'x', 'tiktok', 'instagram'):
+            for url in pages:
+                self.assertEqual(engage.tap_errors(label, url, 'A useful reply.'), [owners.refusal('linkedin')],
+                                 label + ' ' + url)
+        for url in ('https://notlinkedin.com/p/1', 'https://linkedin.com.example.org/p/1', 'https://www.threads.net/@a/post/1'):
+            self.assertEqual(engage.tap_errors('threads', url, 'A useful reply.'), [], url)
+        mislabelled = report(3, url='https://www.linkedin.com/feed/update/urn:li:activity:72500000000000{}/',
+                             platform='threads')
+        self.assertEqual(mislabelled['proposals'], [], 'a mislabelled LinkedIn tap never reaches his list')
+        held = [h for h in mislabelled['holds'] if "growth-mindmake's" in h['detail']]
+        self.assertEqual(sorted(h['detail'].split(':')[0] for h in held), ['radar-0', 'radar-1', 'radar-2'])
+        envelope, queue = radar(3, url='https://lnkd.in/synthetic{}', platform='threads')
+        plain = workspace_report('radar', 'makeyourmindup:2026-10-29:radar', NOW, [envelope], queue, rev='fixture',
+                                 root=ROOT, gap=GAP, plain_taps=True)[0]
+        self.assertEqual(plain['proposals'], [], 'nor as the plain ask a Control Center without the task gets')
         result = report(4, url='https://www.linkedin.com/feed/update/urn:li:activity:72500000000000{}/',
                         platform='linkedin')
         self.assertEqual(result['proposals'], [], 'no tap, no plain ask, nothing on his list')

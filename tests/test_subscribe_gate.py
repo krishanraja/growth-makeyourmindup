@@ -5,8 +5,8 @@ import subprocess
 import sys
 import unittest
 
-from engine import subscribe_gate
-from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS
+from engine import owners, subscribe_gate
+from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, HANDED_OFF_CHANNELS
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGE = 'https://home.makeyourmindup.ai/subscribe'
@@ -50,6 +50,35 @@ class Gate(unittest.TestCase):
     def test_other_ventures_channels_pass_untouched(self):
         call = {'channelId': next(iter(DENIED_CHANNELS)), 'schedulingType': 'automatic', 'text': 'Another venture.'}
         self.assertEqual(subscribe_gate.errors('mcp__Buffer__create_post', call, 5), [])
+
+    def test_krish_personal_linkedin_is_refused_at_every_urgency(self):
+        # Ruling (Krish, 2026-11-13): growth-mindmake owns his personal LinkedIn. Its Buffer channel id is
+        # refused outright, a tagged link or not, and an edit carrying LinkedIn's metadata is refused too.
+        linkedin = next(cid for cid, channel in HANDED_OFF_CHANNELS.items() if channel == 'linkedin')
+        for tool in ('mcp__Buffer__create_post', 'mcp__Buffer__edit_post'):
+            for urgency in (1, 3, 5, None):
+                for text in ('TEST FIXTURE ONLY.', 'Read it: ' + tagged('linkedin')):
+                    call = {'channelId': linkedin, 'schedulingType': 'automatic', 'text': text}
+                    [problem] = subscribe_gate.errors(tool, call, urgency)
+                    self.assertTrue(problem.startswith(owners.HOLD + ': Buffer channel ' + linkedin + ': '), problem)
+                    self.assertIn(owners.refusal('linkedin'), problem)
+            edit = {'postId': 'a' * 24, 'text': 'TEST FIXTURE ONLY.',
+                    'metadata': {'linkedin': {'firstComment': 'More soon.'}}}
+            [problem] = subscribe_gate.errors(tool, edit, 1)
+            self.assertIn(owners.refusal('linkedin'), problem)
+        # His X and the publication's own channels keep the subscribe check alone.
+        self.assertEqual(subscribe_gate.errors('mcp__Buffer__create_post', post('x', 'Read it: ' + tagged('x')), 5), [])
+
+    def test_the_hook_denies_a_linkedin_post_through_claude_code(self):
+        linkedin = next(cid for cid, channel in HANDED_OFF_CHANNELS.items() if channel == 'linkedin')
+        call = {'tool_name': 'mcp__Buffer__create_post',
+                'tool_input': {'channelId': linkedin, 'schedulingType': 'automatic',
+                               'text': 'TEST FIXTURE ONLY. Read it: ' + tagged('linkedin')}}
+        out = subprocess.run([sys.executable, str(ROOT / '.claude' / 'hooks' / 'buffer-subscribe-gate.py')],
+                             input=json.dumps(call), capture_output=True, text=True, cwd=ROOT, check=True).stdout
+        decision = json.loads(out)['hookSpecificOutput']  # denied whatever the live urgency
+        self.assertEqual(decision['permissionDecision'], 'deny')
+        self.assertIn("growth-mindmake's", decision['permissionDecisionReason'])
 
     def test_an_edit_that_changes_no_words_passes(self):
         self.assertEqual(subscribe_gate.errors('mcp__Buffer__edit_post', {'postId': 'a' * 24, 'mode': 'shareNext'}, 5), [])
