@@ -13,7 +13,7 @@ PAGE = 'https://home.makeyourmindup.ai/subscribe'
 
 
 def tagged(source):
-    return PAGE + '?utm_source=' + source + '&utm_medium=organic&utm_content=test-slot'
+    return PAGE + '?utm_source=' + source + '&utm_medium=social&utm_campaign=growth&utm_content=test-slot'
 
 
 def post(channel, text, **meta):

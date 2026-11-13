@@ -7,7 +7,8 @@ module is the one check on the path every post takes, the Buffer connector's cre
 Claude Code hook in .claude/hooks/buffer-subscribe-gate.py calls it before the connector runs.
 
 A post on one of this engine's pinned channels (engine/buffer_channels.py) needs the tagged subscribe page
-(intensity.json conversion.subscribe_url, with its source tags and utm_source naming the channel):
+(intensity.json conversion.subscribe_url, with all four UTM tags GA4 credits it by, engine/route.py, and
+utm_source naming the channel):
 
 - in the post's own words, on a channel whose posts carry a clickable link;
 - or in the first comment (Buffer's firstComment), the first reply;
@@ -102,12 +103,13 @@ def errors(tool_name, tool_input, urgency=None, root=intensity.ROOT):
     conversion = intensity.bounds(root)['conversion']
     if channel in conversion['profile_link_channels']:
         if not intensity.subscribe_errors({'url': conversion['subscribe_url'] + '?utm_source=' + channel
-                                           + '&utm_content=profile', 'placement': 'profile_link'},
+                                           + '&utm_medium=social&utm_campaign=profile&utm_content=bio',
+                                           'placement': 'profile_link'},
                                           channel, words, None, urgency, root):
             return []
     page = conversion['subscribe_url']
     where = ('in the first comment, or words that point to the profile link'
              if channel in conversion['profile_link_channels'] else 'in the words or the first comment')
     return [HOLD + ': this ' + channel + ' post carries no subscribe route at U' + str(urgency) + '. Put '
-            + page + '?utm_source=' + SERVICE.get(channel, channel) + '&utm_medium=organic&utm_content=<post or slot id> '
+            + page + '?utm_source=' + channel + '&utm_medium=social&utm_campaign=growth&utm_content=<post or slot id> '
             + where + ' (intensity.json conversion; Ruling, Krish, 2026-11-12)'] + why + why_first

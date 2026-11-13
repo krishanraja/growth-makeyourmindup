@@ -1,0 +1,53 @@
+"""One subscribe route, built one way and checked one way, so every gate and GA4 agree (13 November 2026).
+
+Before this, three places disagreed about what a tracked subscribe link is: the subscribe gate needed two
+tags (utm_source and utm_content, engine/intensity.py), the GA4 join needed four (engine/run/ga4.py
+own_links: utm_source, utm_medium, utm_campaign and utm_content), and the gate's own hint suggested
+utm_medium=organic while the profile links Krish approved use utm_medium=social (jobs/channel-audit.md). A link
+could pass the gate and still never be credited by GA4, so its post could only ever read "insufficient".
+
+subscribe_url builds the one route: the subscribe page with all four tags, utm_medium=social (his approved
+scheme), utm_campaign=growth and a unique utm_content per post or slot. intensity.subscribe_errors, the
+subscribe gate and GA4 all read links by the same four tags. line_errors checks a go-live line (its words and
+its first comment) the way the Buffer hook checks a hand-made call, so the engine's own path carries the same
+gate as a session's (engine/run/handoff.py and engine/run/autorelease.py).
+
+Offline only: no network, no credentials. Nothing here posts, sends, publishes or spends.
+"""
+import re
+from urllib.parse import urlencode
+
+from . import intensity, subscribe_gate
+
+UTMS = ('utm_source', 'utm_medium', 'utm_campaign', 'utm_content')
+MEDIUM = 'social'
+CAMPAIGN = 'growth'
+CONTENT = re.compile(r'^[a-z0-9][a-z0-9_-]{0,63}$')
+
+
+def subscribe_url(channel, content, campaign=CAMPAIGN, root=intensity.ROOT):
+    """The tagged subscribe page for one post on one channel: all four UTMs, utm_content unique to the post."""
+    if channel not in subscribe_gate.CHANNEL_BY_ID.values():
+        raise ValueError('not one of this engine\'s pinned channels: ' + str(channel))
+    content = str(content).strip().lower()
+    if not CONTENT.match(content):
+        raise ValueError('utm_content must be a post or slot id: lower case letters, digits, - and _, at most 64')
+    if not CONTENT.match(campaign):
+        raise ValueError('utm_campaign must be lower case letters, digits, - and _')
+    page = intensity.bounds(root)['conversion']['subscribe_url']
+    return page + '?' + urlencode([('utm_source', channel), ('utm_medium', MEDIUM), ('utm_campaign', campaign),
+                                   ('utm_content', content)])
+
+
+def line_errors(line, urgency=None, root=intensity.ROOT):
+    """Why a go-live line (engine/run/autorelease.py LINE_KEYS) would send a post with no subscribe route, or [].
+
+    The same check the Buffer hook makes on a hand-made call (engine/subscribe_gate.py), on the line's words
+    and its first comment. Below the conversion urgency nothing is required; another venture's channel is
+    never this engine's and passes."""
+    if not isinstance(line, dict):
+        return ['subscribe_route_missing: the go-live line is unreadable']
+    meta = line.get('meta') if isinstance(line.get('meta'), dict) else {}
+    call = {'channelId': line.get('buffer_channel_id'), 'text': line.get('words') or '',
+            'metadata': meta.get('metadata') if isinstance(meta.get('metadata'), dict) else {}}
+    return subscribe_gate.errors('create_post', call, urgency, root)

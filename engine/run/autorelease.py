@@ -107,7 +107,7 @@ import re
 import sys
 import tempfile
 
-from engine import concepts as concept_rules, intensity, mix as mix_rules, voice as voice_check
+from engine import concepts as concept_rules, intensity, mix as mix_rules, route, voice as voice_check
 from engine.cc_loop import (GOLIVE_LEDGER, claim_golives, decisions_paged, decisions_since, golive_ledger,
                             record_stops, revision, state_path)
 from engine.control_center import (APPROVED_ORIGIN, RUN_ID, TIMEZONE, Client, ProtocolError, _decided_at, _latest,
@@ -485,6 +485,7 @@ class Run:
         self.alarm_checked = set()
         self.organizations = []
         self.caps = {}  # channel -> posts a New York day (release.concept_caps)
+        self.urgency = None  # the North Star urgency, read once a run (intensity.state)
         self.per_day = {}  # (channel, New York day) -> posts scheduled on it, read from Buffer (F117)
 
     def count(self, outcome):
@@ -593,6 +594,10 @@ class Run:
             return self.hold('route_not_verified')
         if share_ask_errors(signed, signed['words']):
             return self.hold('share_ask_refused')
+        if route.line_errors(signed, self.urgency, self.root or ROOT):
+            # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route; the go-live path
+            # checks it as the Buffer hook does a hand-made call (engine/route.py), never only in concept_post_hold.
+            return self.hold('subscribe_route_missing', loud=True)
         post, code = self._read(signed['buffer_draft_id'])
         if code:
             return self.hold(code)
@@ -1520,7 +1525,8 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
     try:
         organizations = buffer.account_check().get('organization_ids') or []
         run.organizations = organizations
-        run.caps = release.concept_caps(intensity.state(root or ROOT, now)['urgency'], root or ROOT)
+        run.urgency = intensity.state(root or ROOT, now)['urgency']
+        run.caps = release.concept_caps(run.urgency, root or ROOT)
         if state_root is None:
             folder = tempfile.TemporaryDirectory()
             state_root = folder.name

@@ -21,7 +21,9 @@ from .social import max_daily_posts
 ROOT = Path(__file__).resolve().parents[1]
 BOUNDS = 'intensity.json'
 PLACEMENTS = ('in_post', 'first_reply', 'profile_link')
-SOURCE_TAGS = ('utm_source', 'utm_content')
+# The four tags GA4 credits a link by (engine/run/ga4.py UTMS; engine/route.py builds them): a link with fewer
+# passes no gate, because its post could never be judged by the subscribers it brought.
+SOURCE_TAGS = ('utm_source', 'utm_medium', 'utm_campaign', 'utm_content')
 OUTREACH_MAX = 10
 
 
