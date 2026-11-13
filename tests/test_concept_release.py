@@ -90,6 +90,23 @@ class BoardStandIn:
                          for key, opts in kept.items() for o in opts if only is None or o['concept_id'] in only]
         return self.approved
 
+    def judge(self, monday, body):
+        """content-engine's 10/10 judges (POST .../judge), synthetic: a pass unless self.verdict says otherwise."""
+        self.judge_calls = getattr(self, 'judge_calls', []) + [(monday, copy.deepcopy(body))]
+        if body.get('op') == 'judge':
+            from engine.run import judges
+            slot = {'format': body['format'], 'channel': body['channel']}
+            verdict = getattr(self, 'verdict', 'pass')
+            if verdict == 'error':
+                from engine.run.board_tick import BoardError
+                raise BoardError('board_unreachable')
+            return {'verdict': verdict, 'score': 8 if verdict == 'pass' else 4, 'band': 'ready' if verdict == 'pass' else 'weak',
+                    'reasons': [] if verdict == 'pass' else [{'judge': 'reader', 'score': 4, 'fix': 'Synthetic: say the claim in slide one.'}],
+                    'artifact_sha256': judges.artifact_sha256(slot, body['words'], body['assets'])}
+        if body.get('op') == 'live':
+            return {'marked': len(body.get('posts') or [])}
+        return {'ok': True}
+
     def press(self, plan, approved=True, days=None, digest=None):
         """His one press on the mix the board shows from Growth's own Off-days file (growth.py mix offdays)."""
         shown, shown_sha = offday.proposed_mix(offday.options(plan), plan['week_of'])

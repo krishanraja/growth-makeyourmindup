@@ -107,6 +107,7 @@ from engine.run.anthropic_api import CALL_WORST, GAVE_UP, KEY_ENV, Anthropic, An
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
 from engine.run.buffer_drafts import DraftBuffer
 from engine.run.spec import ny_midnight, review_reason
+from engine.run import judges
 from engine.share import JOBS, StaleSendTest, compare_send_test, share_errors, slot_send_test_request
 from engine.social import inventory
 
@@ -652,6 +653,8 @@ class Maker:
         self.organizations, self.listed, self.downloads = [], {}, {}
         self.since = self.created_since = None
         self.handed = {'recorded': 0, 'holds': {}, 'error': None}
+        # content-engine's judges on each carousel and Short (Ruling, Krish, 2026-11-12): passed, bound to its post.
+        self.judges = {}
         self.profile = None  # voice_profile.read() for the run; None drafts from the account rules alone
         self.board = None  # the board client whose mix press approves the week (autorelease.mix_binding)
         # With no approved weekly mix (Ruling, Krish, 2026-11-12): the standing plan, the published pieces (read once,
@@ -723,6 +726,7 @@ class Maker:
         answer = review_words(self.anthropic, slot, words, share, assets)
         if not self.deliver:
             return None
+        verdict = self.judged(slot, concept, words, assets, monday)
         channel = slot['channel']
         pinned = BUFFER_CHANNEL_ID[channel]
         body = [{release.MEDIA['.' + ext]: {'url': drive_url(manifest[sha])}} for sha, ext in files]
@@ -745,7 +749,21 @@ class Maker:
             raise Stop('draft_not_a_draft')
         if post.get('channelId') != pinned or post.get('text') != words or len(post.get('assets') or []) != len(files):
             raise Held('draft_readback_differs', loud=True)
-        return self.hand(slot, concept, post, files, assets, share, answer, monday)
+        return self.hand(slot, concept, post, files, assets, share, answer, monday, verdict)
+
+    def judged(self, slot, concept, words, assets, monday):
+        """content-engine's 10/10 judges on a carousel or a Short, before it is made or handed off (Ruling, Krish,
+        2026-11-12: "Every Growth carousel goes through the same 10/10 judges"); None for any other format. A fail
+        or no answer holds the slot loudly; the reasons stay on content-engine's record and in .scratch/judges/."""
+        if not judges.judged(slot):
+            return None
+        try:
+            day = monday.isoformat() if hasattr(monday, 'isoformat') else str(monday)
+            verdict = judges.judge(self.board, day, slot, concept, words, assets, self.root)
+        except judges.JudgesHeld as held:
+            raise Held(held.code, loud=True) from None
+        self.judges['passed'] = self.judges.get('passed', 0) + 1
+        return verdict
 
     def adopt(self, slot, concept, voice, manifest, monday, found, note=None):
         """A draft saved by an earlier run but never handed off, made good: read back, its words checked, its share
@@ -772,11 +790,12 @@ class Maker:
             answer = review_words(self.anthropic, slot, words, share, assets)
             if not self.deliver:
                 return None
-            return self.hand(slot, concept, post, files, assets, share, answer, monday)
+            verdict = self.judged(slot, concept, words, assets, monday)
+            return self.hand(slot, concept, post, files, assets, share, answer, monday, verdict)
         except Held as hold:
             raise Held(hold.code, loud=True) from None
 
-    def hand(self, slot, concept, post, files, assets, share, answer, monday):
+    def hand(self, slot, concept, post, files, assets, share, answer, monday, verdict=None):
         """Rebuild one saved draft as release will, judge its review at its own digest, and hand it off now."""
         channel = slot['channel']
         fields = {'slot_id': slot['slot_id'], 'format': slot['format'], 'due_at': slot['due_at'],
@@ -803,6 +822,11 @@ class Maker:
                           'payload_sha256': payload, 'reader_answer': answer, 'share': share,
                           'asset_names': [a['name'] for a in assets]}}
         self.hand_off(one, monday)
+        if verdict is not None:
+            # The judges' pass, tied to the saved post, so it counts on the North Star once it goes live.
+            day = monday.isoformat() if hasattr(monday, 'isoformat') else str(monday)
+            key = 'bound' if judges.bind(self.board, day, verdict, post['id'], payload, slot['slot_id']) else 'bind_failed'
+            self.judges[key] = self.judges.get(key, 0) + 1
         return one
 
     def hand_off(self, one, monday):
@@ -1090,6 +1114,7 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
         folder.cleanup()
     if work.handed['recorded'] or work.handed['error'] or work.handed['holds']:
         summary['handoff'] = work.handed
+        summary['judges'] = work.judges
     summary.update(drafted_from=dict(sorted(work.drafted_from.items())), skipped_weeks=dict(sorted(work.skipped.items())),
                    standing={label: dict(sorted(c.items())) for label, c in sorted(work.standing.items())})
     return _finish(summary, tally, buffer)

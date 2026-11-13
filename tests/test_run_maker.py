@@ -263,6 +263,50 @@ class MakerTests(unittest.TestCase):
         summary, code = self.release()
         self.assertEqual((code, summary['slots']), (0, {'scheduled': 4}), summary)
 
+    # content-engine's 10/10 judges (Ruling, Krish, 2026-11-12: "Judge them; count passes. Every Growth carousel goes
+    # through the same 10/10 judges, and each one that passes and goes live counts.") -----------------------------
+
+    def judged_slots(self):
+        return [b for _, b in getattr(self.board, 'judge_calls', []) if b.get('op') == 'judge']
+
+    def test_every_carousel_and_short_is_judged_before_it_is_made_and_its_pass_is_bound_to_the_post(self):
+        self.approved()
+        summary, code = self.make()
+        self.assertEqual(code, 0, summary)
+        asked = self.judged_slots()
+        self.assertTrue(asked, 'a carousel or a Short was made without the judges')
+        self.assertTrue(all(b['format'] in maker.judges.JUDGED_FORMATS for b in asked))
+        self.assertTrue(all(b['words'] and b['assets'] for b in asked))
+        made = [p for p in self.buf.posts.values()]
+        bound = [b for _, b in self.board.judge_calls if b.get('op') == 'bind']
+        self.assertEqual(sorted(b['buffer_post_id'] for b in bound), sorted(
+            p['id'] for p in made if any(b['buffer_post_id'] == p['id'] for b in bound)))
+        self.assertEqual(summary['judges'], {'passed': len(asked), 'bound': len(asked)})
+        self.assertEqual(len(bound), len(asked))
+
+    def test_a_post_the_judges_fail_is_never_made_and_holds_loudly_with_their_reasons_kept(self):
+        self.approved()
+        self.board.verdict = 'fail'
+        summary, code = self.make()
+        asked = self.judged_slots()
+        self.assertTrue(asked)
+        self.assertEqual(summary['holds'].get('judges_failed'), len(asked), summary)
+        self.assertIn('judges_failed', summary['loud'])
+        self.assertEqual(code, 1, 'a fail is loud, never silent')
+        # Nothing the judges failed reached Buffer; the other formats were made as before.
+        formats = {c['variables']['input']['channelId'] for c in self.creates()}
+        self.assertEqual(len(self.creates()), 4 - len(asked), formats)
+        kept = list((Path(ROOT) / '.scratch' / 'judges').glob('*.json'))
+        self.assertTrue(any(json.loads(k.read_text())['reasons'] for k in kept), 'the judges\' reasons are kept for the rewrite')
+        self.assertNotIn('Synthetic: say the claim', json.dumps(summary), 'the public log carries codes, never the reasons')
+
+    def test_with_no_board_key_a_judged_format_holds_and_is_never_made_unjudged(self):
+        self.approved()
+        self.board.verdict = 'error'
+        summary, code = self.make()
+        self.assertEqual(summary['holds'].get('judges_unavailable'), len(self.judged_slots()), summary)
+        self.assertEqual(code, 1)
+
     def test_drafts_are_saved_to_draft_with_no_due_time_and_never_published(self):
         self.approved()
         self.make()

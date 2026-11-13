@@ -144,5 +144,33 @@ class BoardTickTest(unittest.TestCase):
         self.assertTrue(lines[0].startswith(board_tick.NOT_CONFIGURED))
 
 
+
+class JudgedLiveTest(unittest.TestCase):
+    """Each sent post goes to content-engine's judges as live, so each carousel or Short they passed counts once it
+    goes out (Ruling, Krish, 2026-11-12: "each one that passes and goes live counts"), the mix posts included."""
+
+    class JudgingBoard(FakeBoard):
+        def __init__(self):
+            super().__init__()
+            self.judged = []
+
+        def judge(self, monday, body):
+            self.judged.append((monday, body))
+            return {'marked': len(body.get('posts') or [])}
+
+    def test_every_sent_post_with_its_native_link_is_reported_live_even_one_the_board_does_not_tick(self):
+        board = self.JudgingBoard()
+        mix = post(1, 'instagram', '2026-11-02T08:30:00-05:00')
+        summary = board_tick.tick(board, FakeBuffer([mix, post(2, 'youtube', SLOT), post(3, 'x', SLOT, link=None)]), now=NOW, deliver=True)
+        self.assertEqual(summary['judged_live'], 2, summary)
+        (monday, body), = board.judged
+        self.assertEqual((monday, body['op']), (MONDAY, 'live'))
+        self.assertEqual([p['buffer_post_id'] for p in body['posts']], ['{:024x}'.format(0xb0a001), '{:024x}'.format(0xb0a002)])
+        self.assertEqual(body['posts'][0]['url'], URLS['instagram'])
+
+    def test_a_board_with_no_judges_route_reports_none(self):
+        _, summary = BoardTickTest.run_tick(BoardTickTest(), [post(1, 'instagram', SLOT)])
+        self.assertEqual(summary['judged_live'], 0)
+
 if __name__ == '__main__':
     unittest.main()
