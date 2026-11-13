@@ -20,3 +20,12 @@ its rejection floor and its copy lint. The standard still lives only in
 content-engine: read it there before making a carousel, and send a gap in
 it back to content-engine rather than writing a rule here. This file still
 holds no production rules. See ENGINE-BOUNDARY.md, "28 October 2026".
+
+## 13 November 2026: how one is made
+
+Ruling: Krish, 13 November 2026: "all the carousels should now be done in
+Claude, but using the Codex plug in as per the other usual workflows".
+Every carousel (and, the same day, every meme and Notes image) is made in a
+Claude session, with the Codex plugin building it, by the route in
+content-engine's standard, "How a carousel is made". Read it there; the
+Saturday art-direction workflow that made piece kits here is retired.

@@ -335,11 +335,11 @@ class FollowsThePalette(unittest.TestCase):
         self.assertIn('.tone-lilac .accent { color: var(--lilac); }', css)
 
     def test_a_new_piece_kit_may_not_close_on_its_own_slide(self):
-        from engine.run import artdirect
+        from engine.run import kits
         for name in ('close', 'socket-close', 'machine-takeaway', 'end-card', 'cta'):
-            self.assertTrue(artdirect.OWN_CLOSE.search(name), name)
+            self.assertTrue(kits.OWN_CLOSE.search(name), name)
         for name in ('cover', 'detail', 'log-entry', 'tape-items', 'recent'):
-            self.assertFalse(artdirect.OWN_CLOSE.search(name), name)
+            self.assertFalse(kits.OWN_CLOSE.search(name), name)
 
 
 class ToneFollowsTheDay(unittest.TestCase):

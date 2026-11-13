@@ -1,0 +1,4 @@
+Status: Every carousel, meme and Notes image this engine makes is made in a Claude session with the Codex plugin building it (a ve card queued in codex/queue/ for the Codex lane, held to the brand palette and the references Krish ticked), and off-day voiceover shorts on content-engine's ve route; the Saturday art-direction workflow and its Codex runner are retired, the kit checks stay as growth.py run kit, and memes and Notes images left the Canva lane (R126).
+Changed: Rulings (Krish, 2026-11-13): "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual workflows"; "memes and Notes images should go the same way"; "Off-day voiceover shorts should go the same way too".
+Next: Remove the OPEN_AI_API_KEY repository secret, which nothing reads now that the art-direction workflow is gone (Krish, in GitHub settings).
+North Star check (2026-11-13): holds.

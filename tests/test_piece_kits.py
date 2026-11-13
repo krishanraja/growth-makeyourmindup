@@ -2,8 +2,9 @@
 
 Every kit renders the same bytes twice, paints only kit colours and fonts, carries no picture of anyone,
 reaches nothing remote (fonts only from render/fonts) and has no em dash. Each check is shown to fail on a
-planted kit: an off-kit colour, a remote font and an <img>. Then engine/run/artdirect.py: Codex through a
-stub runner, the spend cap, the token count, and the fall back to the house kit (piece_kit_refused).
+planted kit: an off-kit colour, a remote font and an <img>. Then the commands a Codex card's acceptance runs
+(engine/run/kit_checks.py), and the route: a kit is built only in a Claude session, with the Codex plugin building it
+(Ruling, Krish, 2026-11-13), so no workflow here runs Codex or the renderer, and the art-direction run is gone.
 
 Static checks are stdlib only. The classes that render run scripts/render_mocks.mjs as a separate process
 and skip when Node or Playwright's Chromium is missing; the engine never runs the renderer itself.
@@ -20,7 +21,7 @@ import subprocess
 import tempfile
 import unittest
 
-from engine.run import artdirect
+from engine.run import kits as kit_checks
 from engine.run.cli import ROUTES
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,7 +93,7 @@ class TheExampleKit(unittest.TestCase):
         self.assertIn('synthetic', (EXAMPLE / 'idea.md').read_text(encoding='utf-8').lower())
         self.assertTrue(kits())
         for kit in kits():
-            self.assertEqual(artdirect.kit_errors(kit), [], kit.name)
+            self.assertEqual(kit_checks.kit_errors(kit), [], kit.name)
 
     def test_the_contract_files(self):
         for kit in kits():
@@ -106,18 +107,16 @@ class TheExampleKit(unittest.TestCase):
             idea = (kit / 'idea.md').read_text(encoding='utf-8').strip()
             self.assertNotIn('\n\n', idea)
 
-    def test_the_route_and_the_prompt(self):
-        self.assertEqual(ROUTES['artdirect'], 'artdirect')
-        prompt = artdirect.PROMPT.read_text(encoding='utf-8')
-        for needle in ('{{piece_id}}', '{{title}}', '{{claims}}', '{{lane}}', 'passport', 'no person', 'plain English',
-                       'var(--ink)', 'piece_kit', 'house kit'):
-            self.assertIn(needle.lower(), prompt.lower(), needle)
-        self.assertNotIn('—', prompt)
-        self.assertNotIn('krish', prompt.lower(), 'the prompt never names him')
-        filled = artdirect.build_prompt({'piece_id': 'synthetic-a', 'title': 'A synthetic title', 'claims': ['One'],
-                                         'lane': 'meme'})
-        self.assertNotRegex(filled, r'\{\{(?:piece_id|title|claims|lane)\}\}')
-        self.assertIn('{{rows:name}}', filled, 'only the four piece placeholders are filled')
+    def test_the_route_and_the_rules(self):
+        self.assertEqual(ROUTES['kit'], 'kits')
+        self.assertNotIn('artdirect', ROUTES)
+        rules = kit_checks.RULES.read_text(encoding='utf-8')
+        for needle in ('Claude session', 'Codex plugin', 've card', 'passport', 'no person', 'plain English',
+                       'var(--ink)', 'piece_kit', "the card's acceptance", 'growth.py run kit check'):
+            self.assertIn(needle.lower(), rules.lower(), needle)
+        self.assertNotIn('—', rules)
+        self.assertNotIn('krish', rules.lower(), 'the brief never names him')
+        self.assertNotRegex(rules, r'\{\{(?:piece_id|title|claims|lane)\}\}', 'a card names the piece; the brief has no slots')
 
 
 class StaticChecksCanFail(unittest.TestCase):
@@ -128,10 +127,10 @@ class StaticChecksCanFail(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
 
     def errors(self, kind):
-        return artdirect.kit_errors(plant(copy_kit(self.tmp.name), kind))
+        return kit_checks.kit_errors(plant(copy_kit(self.tmp.name), kind))
 
     def test_the_copy_passes_before_anything_is_planted(self):
-        self.assertEqual(artdirect.kit_errors(copy_kit(self.tmp.name)), [])
+        self.assertEqual(kit_checks.kit_errors(copy_kit(self.tmp.name)), [])
 
     def test_an_off_kit_colour(self):
         self.assertTrue(any('hex colour' in e for e in self.errors('colour')))
@@ -157,44 +156,44 @@ class StaticChecksCanFail(unittest.TestCase):
             kit = copy_kit(self.tmp.name, 'synthetic-' + hashlib.sha256(decl.encode()).hexdigest()[:8])
             css = kit / 'piece.css'
             css.write_text(css.read_text(encoding='utf-8') + '\n.tape { ' + decl + ' }\n', encoding='utf-8')
-            self.assertTrue(any(needle in e for e in artdirect.kit_errors(kit)), decl)
+            self.assertTrue(any(needle in e for e in kit_checks.kit_errors(kit)), decl)
 
     def test_the_wordmark_a_person_a_secret_and_a_stray_file(self):
         kit = copy_kit(self.tmp.name, 'synthetic-wordmark')
         css = kit / 'piece.css'
         css.write_text(css.read_text(encoding='utf-8') + '\n.brandmark { opacity: 0.5; }\n', encoding='utf-8')
-        self.assertTrue(any('restyles the brand mark' in e for e in artdirect.kit_errors(kit)))
+        self.assertTrue(any('restyles the brand mark' in e for e in kit_checks.kit_errors(kit)))
         # Ruling (Krish, 2026-11-03): "You've fabricated my brand logo." A wordmark set as type is refused.
         kit = copy_kit(self.tmp.name, 'synthetic-drawn')
         page = next((kit / 'templates').glob('*.html'))
         page.write_text(page.read_text(encoding='utf-8').replace('<div class="frame', '<div class="wordmark">MAKE YOUR MIND/</div><div class="frame', 1),
                         encoding='utf-8')
-        self.assertTrue(any('a wordmark set as type' in e for e in artdirect.kit_errors(kit)))
+        self.assertTrue(any('a wordmark set as type' in e for e in kit_checks.kit_errors(kit)))
         kit = copy_kit(self.tmp.name, 'synthetic-named')
         (kit / 'idea.md').write_text('A picture of Krish holding a passport, drawn on a till receipt.\n',
                                      encoding='utf-8')
-        found = artdirect.kit_errors(kit)
+        found = kit_checks.kit_errors(kit)
         self.assertTrue(any('passports idea' in e for e in found) and any('never names anyone' in e for e in found))
         kit = copy_kit(self.tmp.name, 'synthetic-key')
         (kit / 'idea.md').write_text((kit / 'idea.md').read_text(encoding='utf-8').strip() + ' synthetic0key0value\n',
                                      encoding='utf-8')
-        self.assertTrue(any('shaped like a key' in e for e in artdirect.kit_errors(kit, secrets=('synthetic0key0value',))))
+        self.assertTrue(any('shaped like a key' in e for e in kit_checks.kit_errors(kit, secrets=('synthetic0key0value',))))
         kit = copy_kit(self.tmp.name, 'synthetic-stray')
         (kit / 'face.png').write_bytes(b'\x89PNG\r\n\x1a\n')
-        self.assertTrue(any('face.png: a file a kit does not have' in e for e in artdirect.kit_errors(kit)))
+        self.assertTrue(any('face.png: a file a kit does not have' in e for e in kit_checks.kit_errors(kit)))
 
     def test_a_kit_is_never_a_copy(self):
         twin = copy_kit(self.tmp.name, 'synthetic-twin')
         copy_kit(self.tmp.name, 'synthetic-original')
-        self.assertTrue(any('another piece kit' in e for e in artdirect.kit_errors(twin)))
+        self.assertTrue(any('another piece kit' in e for e in kit_checks.kit_errors(twin)))
         house = copy_kit(self.tmp.name + '/house', 'synthetic-house')
         shutil.copy(str(RENDER / 'templates' / 'story-frame.html'), str(house / 'templates' / 'tape-cover.html'))
-        self.assertTrue(any('a copy of a house template' in e for e in artdirect.kit_errors(house)))
+        self.assertTrue(any('a copy of a house template' in e for e in kit_checks.kit_errors(house)))
 
     def test_the_piece_words_stay_out_of_the_kit(self):
         kit = copy_kit(self.tmp.name)
         piece = {'piece_id': kit.name, 'title': 'For one made-up answer', 'claims': [], 'lane': 'x'}
-        self.assertEqual(artdirect.words_errors(kit, piece), ['the piece\'s title is in the kit; examples are '
+        self.assertEqual(kit_checks.words_errors(kit, piece), ['the piece\'s title is in the kit; examples are '
                                                               'placeholders'])
 
 
@@ -206,7 +205,7 @@ class RendersTheSameAndInTheKit(unittest.TestCase):
         if not renderer_available():
             raise unittest.SkipTest('Node is not installed here')
         cls.tmp = tempfile.TemporaryDirectory()
-        jobs = [dict(job, out=kit.name + '/' + job['out']) for kit in kits() for job in artdirect.render_jobs(kit)]
+        jobs = [dict(job, out=kit.name + '/' + job['out']) for kit in kits() for job in kit_checks.render_jobs(kit)]
         cls.runs = []
         for run in ('first', 'second'):
             code, results, err = render(jobs, Path(cls.tmp.name) / run, PIECES)
@@ -228,7 +227,7 @@ class RendersTheSameAndInTheKit(unittest.TestCase):
     def test_only_kit_colours_and_fonts_at_the_declared_sizes(self):
         results = self.runs[0][1]
         for kit in kits():
-            self.assertEqual(artdirect.painted_errors(kit, results), [], kit.name)
+            self.assertEqual(kit_checks.painted_errors(kit, results), [], kit.name)
         for r in results:
             self.assertLessEqual(set(r['colours']), KIT_COLOURS, r['out'])
             self.assertLessEqual(set(r['fonts']), KIT_FONTS, r['out'])
@@ -249,14 +248,14 @@ class RenderChecksCanFail(unittest.TestCase):
 
     def render_planted(self, kind):
         kit = plant(copy_kit(self.pieces), kind)
-        return kit, render(artdirect.render_jobs(kit), Path(self.tmp.name) / ('out-' + kind), self.pieces,
+        return kit, render(kit_checks.render_jobs(kit), Path(self.tmp.name) / ('out-' + kind), self.pieces,
                            verify=False)
 
     def test_an_off_kit_colour_is_painted_and_refused(self):
         kit, (code, results, err) = self.render_planted('colour')
         self.assertEqual(code, 0, err)
         self.assertTrue(any(OFF_KIT in r['colours'] for r in results))
-        self.assertTrue(any('outside the kit' in e and OFF_KIT in e for e in artdirect.painted_errors(kit, results)))
+        self.assertTrue(any('outside the kit' in e and OFF_KIT in e for e in kit_checks.painted_errors(kit, results)))
 
     def test_a_remote_font_is_refused(self):
         _, (code, _, err) = self.render_planted('font')
@@ -275,229 +274,110 @@ class RenderChecksCanFail(unittest.TestCase):
 
     def test_the_clean_copy_renders(self):
         kit = copy_kit(self.pieces)
-        code, results, err = render(artdirect.render_jobs(kit), Path(self.tmp.name) / 'clean', self.pieces,
+        code, results, err = render(kit_checks.render_jobs(kit), Path(self.tmp.name) / 'clean', self.pieces,
                                     verify=False)
         self.assertEqual(code, 0, err)
-        self.assertEqual(artdirect.painted_errors(kit, results), [])
+        self.assertEqual(kit_checks.painted_errors(kit, results), [])
 
 
-def events(*usages, failed=False):
-    lines = [json.dumps({'type': 'thread.started', 'thread_id': 'synthetic'})]
-    for u in usages:
-        lines.append(json.dumps({'type': 'turn.completed', 'usage': u}))
-    if failed:
-        lines.append(json.dumps({'type': 'turn.failed', 'error': {'message': 'synthetic'}}))
-    return '\n'.join(lines) + '\n'
+class TheCommands(unittest.TestCase):
+    """What a Codex card's acceptance runs, and what the session that verifies it runs again."""
 
-
-USAGE = {'input_tokens': 1000, 'cached_input_tokens': 200, 'output_tokens': 300, 'reasoning_output_tokens': 50}
-
-
-class StubCodex:
-    """Stands in for codex exec: writes a kit into the folder it is given (a clean copy, or one with a defect)."""
-
-    def __init__(self, behaviours):
-        self.behaviours = list(behaviours)
-        self.calls = []
-
-    def __call__(self, cmd, prompt, cwd, env):
-        self.calls.append({'cmd': cmd, 'prompt': prompt, 'env': env})
-        kit = Path(cmd[cmd.index('-C') + 1])
-        behaviour = self.behaviours.pop(0)
-        if behaviour == 'exit':
-            (kit / 'idea.md').write_text('half done', encoding='utf-8')
-            return 1, events(USAGE)
-        for item in EXAMPLE.rglob('*'):
-            target = kit / item.relative_to(EXAMPLE)
-            if item.is_dir():
-                target.mkdir(parents=True, exist_ok=True)
-            else:
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy(str(item), str(target))
-        data = json.loads((kit / 'templates.json').read_text(encoding='utf-8'))
-        data['piece_id'] = kit.name
-        (kit / 'templates.json').write_text(json.dumps(data, indent=2), encoding='utf-8')
-        # Make each kit its own (the reuse check refuses a byte-for-byte twin of another kit).
-        for path in [kit / 'idea.md', kit / 'piece.css'] + sorted((kit / 'templates').glob('*.html')):
-            marker = ('\n<!-- ' + kit.name + ' -->\n') if path.suffix == '.html' else (
-                '\n/* ' + kit.name + ' */\n' if path.suffix == '.css' else '')
-            if marker:
-                path.write_text(path.read_text(encoding='utf-8') + marker, encoding='utf-8')
-            else:
-                path.write_text(path.read_text(encoding='utf-8').strip() + ' It is made for ' + kit.name.replace('-', ' ')
-                                + '.\n', encoding='utf-8')
-        if behaviour != 'clean':
-            plant(kit, behaviour)
-        return 0, events(USAGE)
-
-
-def pieces(n):
-    return [{'piece_id': 'synthetic-piece-%d' % i, 'title': 'A synthetic piece number %d' % i,
-             'claims': ['A synthetic claim that is never copied into a kit'], 'lane': 'repurposed_carousel'}
-            for i in range(1, n + 1)]
-
-
-class ArtDirectRun(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.pieces = Path(self.tmp.name) / 'pieces'
-        self.pieces.mkdir()
-        self.out = Path(self.tmp.name) / 'out'
 
-    def make(self, stub, items, **kw):
-        return artdirect.make(items, '2026-11-02', self.out, runner=stub, pieces_dir=self.pieces, changes=None,
-                              environ={'OPENAI_API_KEY': 'synthetic-not-a-key', 'GITHUB_TOKEN': 'synthetic'}, **kw)
+    def run_main(self, argv):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = kit_checks.main(argv)
+        return code, out.getvalue()
 
-    def test_cap_codes_tokens_and_fall_back(self):
-        stub = StubCodex(['clean', 'colour', 'exit'])
-        summary = self.make(stub, pieces(5))
-        self.assertEqual(len(stub.calls), 3, 'the spend cap stops after --max-pieces')
-        rows = {r['piece_id']: r for r in summary['pieces']}
-        self.assertEqual(rows['synthetic-piece-1']['kit'], 'awaiting_render')
-        self.assertEqual((rows['synthetic-piece-2']['kit'], rows['synthetic-piece-2']['code']), ('house', 'piece_kit_refused'))
-        self.assertEqual((rows['synthetic-piece-3']['kit'], rows['synthetic-piece-3']['code']), ('house', 'codex_failed'))
-        self.assertEqual([rows['synthetic-piece-%d' % i]['code'] for i in (4, 5)], ['not_attempted_cap'] * 2)
-        self.assertTrue((self.pieces / 'synthetic-piece-1').is_dir())
-        self.assertFalse((self.pieces / 'synthetic-piece-2').exists(), 'a refused kit is removed')
-        self.assertFalse((self.pieces / 'synthetic-piece-3').exists())
-        self.assertEqual(summary['codex_tokens'], {k: v * 3 for k, v in USAGE.items()})
-        jobs = json.loads((self.out / 'jobs' / 'synthetic-piece-1.json').read_text(encoding='utf-8'))
-        self.assertEqual({j['template'].split('/')[0] for j in jobs}, {'piece:synthetic-piece-1'})
+    def test_check_command(self):
+        code, out = self.run_main(['kit', 'check', str(EXAMPLE)])
+        self.assertEqual(code, 0, out)
+        self.assertIn('passes the static checks', out)
 
-    def test_the_codex_command_has_no_network_and_no_inherited_secret(self):
-        stub = StubCodex(['clean'])
-        self.make(stub, pieces(1))
-        call = stub.calls[0]
-        cmd = call['cmd']
-        self.assertEqual(cmd[:6], ['codex', 'exec', '--json', '--skip-git-repo-check', '-s', 'workspace-write'])
-        self.assertEqual(cmd[cmd.index('-C') + 1], str(self.pieces / 'synthetic-piece-1'))
-        self.assertEqual(cmd[-1], '-')
-        self.assertIn('sandbox_workspace_write.network_access=false', cmd)
-        self.assertEqual(set(call['env']), {'OPENAI_API_KEY'})
-        self.assertIn('A synthetic piece number 1', call['prompt'])
-        self.assertIn('A synthetic claim', call['prompt'])
+    def test_check_refuses_the_decks_own_words_in_the_kit(self):
+        kit = copy_kit(self.pieces)
+        deck = Path(self.tmp.name) / 'deck.json'
+        deck.write_text(json.dumps({'schema': 'carousel-deck/1', 'title': 'A synthetic deck',
+                                    'cards': [{'headline': 'For one made-up answer'}]}), encoding='utf-8')
+        code, out = self.run_main(['kit', 'check', str(kit), '--words', str(deck)])
+        self.assertEqual(code, 1, out)
+        self.assertIn("the piece's claim is in the kit; examples are placeholders", out)
 
-    def test_a_kit_holding_the_key_or_the_claim_is_refused(self):
-        class Leaky(StubCodex):
-            def __call__(self, cmd, prompt, cwd, env):
-                code, out = super().__call__(cmd, prompt, cwd, env)
-                kit = Path(cmd[cmd.index('-C') + 1])
-                (kit / 'idea.md').write_text((kit / 'idea.md').read_text(encoding='utf-8').strip() + ' '
-                                             + self.extra + '\n', encoding='utf-8')
-                return code, out
-        stub = Leaky(['clean'])
-        stub.extra = 'synthetic-not-a-key'
-        row = self.make(stub, pieces(1))['pieces'][0]
-        self.assertEqual(row['code'], 'piece_kit_refused')
-        self.assertTrue(any('shaped like a key' in r for r in row['reasons']))
-        stub = Leaky(['clean'])
-        stub.extra = 'A synthetic claim that is never copied into a kit.'
-        row = self.make(stub, pieces(2)[1:])['pieces'][0]
-        self.assertEqual(row['code'], 'piece_kit_refused')
-        self.assertIn("the piece's claim is in the kit; examples are placeholders", row['reasons'])
-
-    def test_an_existing_kit_is_kept_and_not_counted(self):
-        copy_kit(self.pieces, 'synthetic-piece-1')
-        stub = StubCodex(['clean'])
-        summary = self.make(stub, pieces(2), max_pieces=1)
-        self.assertEqual([r['code'] for r in summary['pieces']], ['kit_exists', None])
-        self.assertEqual(len(stub.calls), 1)
-
-    def test_codex_writing_outside_its_folder_is_refused(self):
-        seen = iter([set(), {'engine/core.py'}])
-        summary = artdirect.make(pieces(1), '2026-11-02', self.out, runner=StubCodex(['clean']),
-                                 pieces_dir=self.pieces, changes=lambda root: next(seen), environ={})
-        row = summary['pieces'][0]
-        self.assertEqual(row['code'], 'piece_kit_refused')
-        self.assertIn('wrote outside its folder', row['reasons'])
-
-    def test_the_gate_holds_the_render_report_and_prints_counts_only(self):
-        summary = self.make(StubCodex(['clean', 'clean']), pieces(2))
-        self.assertEqual([r['kit'] for r in summary['pieces']], ['awaiting_render'] * 2)
-        (self.out / 'rendered').mkdir()
-        good = []
-        for job in json.loads((self.out / 'jobs' / 'synthetic-piece-1.json').read_text(encoding='utf-8')):
-            spec = json.loads((self.pieces / 'synthetic-piece-1' / 'templates.json').read_text(encoding='utf-8'))
-            tid = job['template'].split('/')[1]
-            good.append({'template': job['template'], 'width': spec['templates'][tid]['width'],
-                         'height': spec['templates'][tid]['height'], 'colours': ['#0C1512', '#F4EFE4'],
-                         'fonts': ['Anton']})
-        (self.out / 'rendered' / 'synthetic-piece-1.json').write_text(json.dumps(good), encoding='utf-8')
-        # synthetic-piece-2 has no render report: the renderer refused it.
-        gated = artdirect.gate(self.out, self.pieces)
-        self.assertEqual([(r['kit'], r['code']) for r in gated['pieces']],
-                         [('piece', None), ('house', 'piece_kit_refused')])
-        self.assertFalse((self.pieces / 'synthetic-piece-2').exists())
-        self.assertEqual((self.out / 'passed.txt').read_text(encoding='utf-8'), 'synthetic-piece-1\n')
-        text = '\n'.join(artdirect.summary_lines(gated))
-        self.assertNotIn('synthetic-piece', text)
-        self.assertNotIn('A synthetic', text)
-        self.assertIn('piece_kit_refused 1', text)
-        self.assertIn('Codex tokens: 2000 input (400 cached), 600 output (100 reasoning), 2600 in all', text)
+    def test_jobs_and_painted(self):
+        kit = copy_kit(self.pieces)
+        jobs = Path(self.tmp.name) / 'jobs.json'
+        code, out = self.run_main(['kit', 'jobs', str(kit), '--out', str(jobs)])
+        self.assertEqual(code, 0, out)
+        written = json.loads(jobs.read_text(encoding='utf-8'))
+        self.assertEqual(written, kit_checks.render_jobs(kit))
+        spec = json.loads((kit / 'templates.json').read_text(encoding='utf-8'))['templates']
+        good = [{'template': j['template'], 'width': spec[j['template'].split('/')[1]]['width'],
+                 'height': spec[j['template'].split('/')[1]]['height'], 'colours': ['#0C1512'], 'fonts': ['Anton']}
+                for j in written]
+        report = Path(self.tmp.name) / 'report.json'
+        report.write_text(json.dumps(good), encoding='utf-8')
+        self.assertEqual(self.run_main(['kit', 'painted', str(kit), '--report', str(report)])[0], 0)
+        good[0]['colours'].append(OFF_KIT)
+        report.write_text(json.dumps(good), encoding='utf-8')
+        code, out = self.run_main(['kit', 'painted', str(kit), '--report', str(report)])
+        self.assertEqual(code, 1)
+        self.assertIn(OFF_KIT, out)
+        self.assertEqual(self.run_main(['kit', 'painted', str(kit), '--report', str(report) + '.missing'])[0], 1)
 
     def test_painted_errors_catch_a_colour_a_font_and_a_size(self):
         kit = copy_kit(self.pieces)
         results = [dict(j, width=1080, height=1350, colours=['#0C1512'], fonts=['Anton']) for j in
-                   artdirect.render_jobs(kit)]
+                   kit_checks.render_jobs(kit)]
         results[0]['colours'].append(OFF_KIT)
         results[1]['fonts'].append('Remote Sans')
         results[2]['height'] = 1350
-        found = artdirect.painted_errors(kit, results)
+        found = kit_checks.painted_errors(kit, results)
         self.assertTrue(any(OFF_KIT in e for e in found))
         self.assertTrue(any('Remote Sans' in e for e in found))
         self.assertTrue(any('another size' in e for e in found))
 
 
-class TheWeekAndTheCommand(unittest.TestCase):
-    def test_pieces_from_the_mix_in_the_order_they_are_due(self):
-        mix = {'slots': [{'concept_id': 'carousel-b', 'due_at': '2026-11-02T09:00:00-05:00'},
-                         {'concept_id': 'meme-a', 'due_at': '2026-11-03T09:00:00-05:00'},
-                         {'concept_id': 'carousel-b', 'due_at': '2026-11-05T09:00:00-05:00'},
-                         {'concept_id': None, 'due_at': '2026-11-01T09:00:00-05:00'}],
-               'concepts': [{'concept_id': 'meme-a', 'lane': 'meme', 'idea': 'A synthetic meme idea', 'claim': 'X',
-                             'piece_id': None},
-                            {'concept_id': 'carousel-b', 'lane': 'repurposed_carousel', 'idea': 'A carousel of "T"',
-                             'claim': None, 'piece_id': 'piece_b'}]}
-        inventory = {'pieces': [{'piece_id': 'piece_b', 'title': 'A synthetic title'}]}
-        self.assertEqual(artdirect.pieces_from_mix(mix, inventory),
-                         [{'piece_id': 'carousel-b', 'title': 'A synthetic title', 'claims': [],
-                           'lane': 'repurposed_carousel'},
-                          {'piece_id': 'meme-a', 'title': 'A synthetic meme idea', 'claims': ['X'], 'lane': 'meme'}])
+class OnlyInAClaudeSession(unittest.TestCase):
+    """Ruling (Krish, 2026-11-13): "all the carousels should now be done in Claude, but using the Codex plug in as per
+    the other usual workflows"; "memes and Notes images should go the same way". No workflow, cron or runner here makes
+    a carousel, a meme or a Notes image: none runs Codex, the renderer or the kit checks, and the art-direction run, its
+    Codex runner and its key are gone."""
 
-    def test_the_coming_week_from_the_backlog_fixture(self):
-        inventory = json.loads((ROOT / 'backlog' / 'fixture.json').read_text(encoding='utf-8'))
-        found = artdirect.week_pieces('2026-11-02', inventory)
-        self.assertTrue(found)
-        for piece in found:
-            self.assertIsNone(artdirect.piece_errors(piece), piece)
-        self.assertEqual(artdirect.coming_monday('2026-10-31T12:00:00+00:00').isoformat(), '2026-11-02')
-        self.assertEqual(artdirect.coming_monday('2026-11-02T15:00:00+00:00').isoformat(), '2026-11-09')
-        self.assertEqual(artdirect.week_label('2026-11-02'), '2026-W45')
+    HEADLESS = re.compile(r'codex exec|@openai/codex|codex login|OPEN_AI_API_KEY|OPENAI_API_KEY|render_mocks|'
+                          r'growth\.py run kit|\bartdirect\b', re.I)
 
-    def test_check_command(self):
-        out = io.StringIO()
-        with redirect_stdout(out):
-            code = artdirect.main(['artdirect', 'check', str(EXAMPLE)])
-        self.assertEqual(code, 0, out.getvalue())
-        self.assertIn('passes the static checks', out.getvalue())
+    def test_no_workflow_makes_one(self):
+        flows = sorted((ROOT / '.github' / 'workflows').glob('*.yml'))
+        self.assertTrue(flows)
+        self.assertFalse((ROOT / '.github' / 'workflows' / 'artdirect.yml').exists())
+        for flow in flows:
+            self.assertIsNone(self.HEADLESS.search(flow.read_text(encoding='utf-8')), flow.name)
 
+    def test_no_runner_or_lane_runs_codex(self):
+        source = (ROOT / 'engine' / 'run' / 'kits.py').read_text(encoding='utf-8')
+        for gone in ('def make(', 'def run_codex(', 'def codex_command(', 'def gate(', 'subprocess'):
+            self.assertNotIn(gone, source, gone)
+        lanes = json.loads((ROOT / 'lanes.json').read_text(encoding='utf-8'))
+        self.assertNotIn('artdirect', json.dumps(lanes))
+        self.assertNotIn('OPEN_AI_API_KEY', json.dumps(lanes))
 
-class TheWorkflow(unittest.TestCase):
-    def setUp(self):
-        self.text = (ROOT / '.github' / 'workflows' / 'artdirect.yml').read_text(encoding='utf-8')
-
-    def test_schedule_secret_pin_and_pull_request(self):
-        for needle in ("cron: '0 7 * * 6'", 'workflow_dispatch', 'contents: write', 'pull-requests: write',
-                       '@openai/codex@0.165.0', 'OPENAI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}',
-                       'python growth.py run artdirect make', 'python growth.py run artdirect gate',
-                       'Piece kits for week', '--verify', 'persist-credentials: false'):
-            self.assertIn(needle, self.text, needle)
-        self.assertEqual(set(re.findall(r'secrets\.([A-Za-z0-9_]+)', self.text)), {'OPEN_AI_API_KEY'})
-        self.assertEqual(self.text.count('secrets.OPEN_AI_API_KEY'), 1, 'the key reaches one step only')
-        self.assertNotIn('upload-artifact', self.text)
-        self.assertNotRegex(self.text, r'gh pr merge|--auto|merge_pull_request')
-        self.assertNotIn('—', self.text)
+    def test_memes_and_notes_images_take_the_same_route(self):
+        boundary = json.loads((ROOT / 'invariants' / 'boundary.json').read_text(encoding='utf-8'))['owners']
+        for name in ('carousel', 'meme', 'note-image'):
+            self.assertEqual(boundary[name], 'content-engine', name)
+        for name in ('meme', 'note'):
+            fmt = json.loads((ROOT / 'social' / 'formats' / (name + '.json')).read_text(encoding='utf-8'))
+            self.assertEqual(fmt['production_owner'], 'content-engine', name)
+            self.assertIn('CAROUSEL-STANDARD.md', fmt['production_reference'], name)
+            checks = ' '.join(fmt['delivery_checks'])
+            self.assertIn('Claude session', checks, name)
+            self.assertIn('Codex plugin', checks, name)
+            self.assertNotIn('Canva', checks, name)
 
 
 if __name__ == '__main__':
