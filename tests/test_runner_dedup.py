@@ -30,6 +30,8 @@ PLAN_ID = 'makeyourmindup:plan:w45-w52'
 EXPERIMENTS = ['makeyourmindup:experiment:' + e['experiment_id']
                for e in read_json(Path(__file__).resolve().parents[1] / 'experiments.json')['experiments']]
 ROOT = Path(__file__).resolve().parents[1]
+# The proposed AI-answer questions, one more standing ask (Ruling, Krish, 2026-11-13).
+QUESTIONS_ID = 'makeyourmindup:ai-answer-questions:2026-11-13'
 YESTERDAY = run_id_for('runner', instant(NOW).replace(day=16))
 
 
@@ -133,7 +135,7 @@ class AlreadySentTests(unittest.TestCase):
         # No report on the 16th; the 17th still finds every ask in the 15th's waiting hold.
         known = already_sent(FakeClient(reports={'makeyourmindup:2026-10-15:runner': day_two}), instant(NOW),
                              mode='synthetic')
-        self.assertEqual({pid for pid, state in known.items() if state == 'pending'}, {PLAN_ID, *EXPERIMENTS})
+        self.assertEqual({pid for pid, state in known.items() if state == 'pending'}, {PLAN_ID, *EXPERIMENTS, QUESTIONS_ID})
 
     def test_an_unread_day_is_passed_over_so_nothing_is_sent_again(self):
         # Day one sends the plan and the experiments; day two cannot read its ledger.
@@ -144,7 +146,7 @@ class AlreadySentTests(unittest.TestCase):
         client = FakeClient(reports={'makeyourmindup:2026-10-15:runner': day_one,
                                      'makeyourmindup:2026-10-16:runner': day_two})
         known = already_sent(client, instant(NOW), mode='synthetic')
-        self.assertEqual({pid for pid, state in known.items() if state == 'pending'}, {PLAN_ID, *EXPERIMENTS})
+        self.assertEqual({pid for pid, state in known.items() if state == 'pending'}, {PLAN_ID, *EXPERIMENTS, QUESTIONS_ID})
         day_three = runner_report(ROOT, YESTERDAY, NOW, checks(), 'synthetic', True, 'fixture', sent=known)[0]
         self.assertEqual(day_three['proposals'], [])
 
@@ -202,14 +204,14 @@ class RunnerDedupTests(unittest.TestCase):
                              sent=sent)[0]
 
     def test_first_run_proposes_the_plan_once(self):
-        report = self.report({EXPERIMENTS[i]: 'pending' for i in range(len(EXPERIMENTS))})
+        report = self.report({**{EXPERIMENTS[i]: 'pending' for i in range(len(EXPERIMENTS))}, QUESTIONS_ID: 'pending'})
         self.assertEqual(ids(report), [PLAN_ID])
         self.assertEqual(report['schema_version'], '1.1.0')
-        self.assertEqual(holds(report, cc_loop.WAITING), [', '.join(EXPERIMENTS)])
+        self.assertEqual(holds(report, cc_loop.WAITING), [', '.join(EXPERIMENTS + [QUESTIONS_ID])])
         self.assertEqual(holds(report, cc_loop.ANSWERED), [])
 
     def test_pending_plan_is_not_sent_again(self):
-        report = self.report({PLAN_ID: 'pending', **{e: 'pending' for e in EXPERIMENTS}})
+        report = self.report({PLAN_ID: 'pending', **{e: 'pending' for e in EXPERIMENTS}, QUESTIONS_ID: 'pending'})
         self.assertEqual(report['proposals'], [])
         self.assertIn(PLAN_ID, holds(report, cc_loop.WAITING)[0])
 
@@ -224,7 +226,7 @@ class RunnerDedupTests(unittest.TestCase):
     def test_answered_experiments_are_never_sent_again(self):
         sent = {PLAN_ID: 'pending', EXPERIMENTS[0]: 'declined', EXPERIMENTS[1]: 'approved'}
         report = self.report(sent)
-        self.assertEqual(ids(report), EXPERIMENTS[2:])
+        self.assertEqual(ids(report), EXPERIMENTS[2:] + [QUESTIONS_ID])
         self.assertIn('Experiment asks Krish has answered: 2; none sent again', [a['line'] for a in report['activity']])
 
     def test_unread_ledger_proposes_nothing(self):

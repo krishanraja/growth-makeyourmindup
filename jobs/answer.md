@@ -23,7 +23,14 @@ AEO-Engine is the one AI-answers specialist (Ruling, Krish, 2026-11-12):
 it asks the AI assistants, never this engine. The runner reads the
 publication's standing from the directive (`ai_answers`, `engine/ai_answers.py`)
 and asks AEO to track the real reader questions on file in
-`config/ai-answer-questions.json`.
+`config/ai-answer-questions.json`. The engine also proposes its questions to
+Krish (Ruling, Krish, 2026-11-13): the set in
+`config/ai-answer-questions-proposed.json` goes to his list once, as one
+strategy ask whose exact words are the questions, with its evidence in
+`docs/ai-answers/`; on his yes the runner writes exactly his version into
+`config/ai-answer-questions.json` (marked `krish_approved`) and asks AEO for
+them. Never add an unapproved question to the proposed set's file once it is
+sent: a new set is a new file and a new `proposal_id`.
 
 1. **Find the real question.** Read this week's public questions about
    makeyourmindup's pieces: Substack and YouTube comments, LinkedIn and X

@@ -546,13 +546,14 @@ def backlog_line(backlog):
 
 
 def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None,
-                  backlog=None, gap=None, extra_activity=(), directive=None, seen=False):
+                  backlog=None, gap=None, extra_activity=(), directive=None, seen=False, events=()):
     """The runner's held report. sent is already_sent(): asks Krish has, answered or pending, are
     never sent again, and None (not read) proposes nothing. backlog is backlog.for_runner():
     (inventory, None) or (None, reason); None means it was not read. extra_activity: lines
     the runner adds (the web_analytics shape it kept, its own cost so far). directive: today's, for
     Krish's instruction and the 1.20.0 state (engine/engine_state.py); seen: an earlier report already
-    named his open instruction, so 'received' is not sent again."""
+    named his open instruction, so 'received' is not sent again. events: what this run closed (the
+    proposed AI-answer questions, once written on his yes; engine/ai_answers.py)."""
     root = Path(root)
     automations = automation_count(root)
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
@@ -597,11 +598,16 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     if failed:
         holds.append({'reason': 'Offline checks failed on the runner', 'detail': ', '.join(failed)})
     proposals, plan, asks = [], standing_plan(root), experiment_proposals(root)
+    # The publication's AI-answer questions, proposed for his approval (Ruling, Krish, 2026-11-13).
+    from . import ai_answers
+    questions, questions_hold = ai_answers.proposal_or_hold(root)
+    if questions_hold:
+        holds.append(questions_hold)
     if sent is None:
         holds.append({'reason': UNREAD, 'detail': 'decisions or earlier runner reports could not be read'})
     else:
         waiting, answered = [], []
-        for item in ([plan] if plan else []) + asks:
+        for item in ([plan] if plan else []) + asks + ([questions] if questions else []):
             pid = item['proposal_id']
             if pid not in sent:
                 proposals.append(item)
@@ -623,7 +629,7 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
         objective('new_subscribers', reason=WORKSPACE_ONLY + '; a GitHub runner cannot read the Substack dashboard'),
         objective('paid_boosts_usd', reason=WORKSPACE_ONLY + '; ' + NO_SPEND)]
     report = build_report(run_id, mode, now, rev or revision(root), now, 'degraded' if failed else 'held',
-                          objectives, activity, proposals, [], holds,
+                          objectives, activity, proposals, list(events), holds,
                           state=engine_state.fields(root, gap, directive, acks))
     return report, ('offline_checks_failed' if failed else None)
 
@@ -1422,8 +1428,15 @@ def cli(args, root, make_client, out=print, checks=None):
             # The share of each prepaid pool (1.16.0); the runner spends none of it (docs/CREDITS.md is how a session does).
             lines += credits_lines(credits_block(directive)) + [meter.cost_line('before this report')]
             # AI answers are AEO-Engine's (protocol 1.22.0; Ruling, Krish, 2026-11-12): one line, and real reader questions to AEO.
+            # His yes on the proposed questions is written first, so the same run asks AEO for them (Ruling, Krish, 2026-11-13).
             from . import ai_answers
-            lines += ai_answers.sync(client, directive, root)
+            try:
+                decided = _decisions_until(client, clock())
+            except ProtocolError:
+                decided = None
+            written, event = ai_answers.approved_write(root, decided, clock())
+            lines += written
+            lines += ai_answers.sync(client, directive, root, clock())
             # Krish's instruction (1.20.0): 'received' once, so an earlier report naming it counts.
             state, item = engine_state.instruction(directive)
             told = bool(state == 'open' and engine_state.served(directive) and engine_state.mentioned(client, item['id']))
@@ -1431,7 +1444,7 @@ def cli(args, root, make_client, out=print, checks=None):
                                  sent=already_sent(client, clock(), directive, args.mode, include_today=bool(wake)),
                                  backlog=for_runner(root, clock()),
                                  gap=intensity.state(root, clock(), directive), extra_activity=lines,
-                                 directive=directive, seen=told)
+                                 directive=directive, seen=told, events=[event] if event else [])
 
         loop = Loop(client, 'runner', run_id, clock)
         try:
