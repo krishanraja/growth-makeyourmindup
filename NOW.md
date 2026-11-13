@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-11-13
-head: 72ac8de
+head: b6e246f
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -30,6 +30,7 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
+- The engine reads AEO-Engine's win kits for the publication once Control Center serves them (features.ai_answers_detail, proposed protocol 1.23.0; Ruling, Krish, 2026-11-13: AEO's win kits reach him through each venture's own growth engine), and is a no-op until then. `cc start` keeps up to five kits, best priority first, in the ignored .scratch/cc/ai-answers.txt, and the weekly answer piece reads them before any other source (jobs/answer.md); reports carry counts only. A kit fix or off-site move that would put author, Person or E-E-A-T work under Krish's name is dropped and counted (R100). The runner asks AEO again, once per list, when the request on file's digest differs from config/ai-answer-questions.json's questions, and tells AEO of the answer pieces a session marked shipped there, once each time that list changes. (2026-11-13)
 - docs/plans/A1.md, the one plan for this engine, now matches the LinkedIn handover to growth-mindmake (#92): his LinkedIn post per piece moves there, and the open-drafts question closes here. (2026-11-13)
 - Krish's personal LinkedIn is growth-mindmake's, not this engine's (Ruling, Krish, 2026-11-13: "growth-mindmake owns it"): this engine drafts, queues, taps, schedules and pins nothing there, and every route that could prepare a LinkedIn post, comment, reply, tap or go-live refuses it with one reason (engine/owners.py, social/channels/linkedin.json owned_by). His X and the publication's own accounts stay here; reading LinkedIn stays. (2026-11-13) (2026-11-13)
 - One plan now holds everything lined up for this engine: docs/plans/A1.md consolidates NOW.md's waiting items, GET-GOING's open steps, the counted-lattice exhibit, the keyword-DM plan, the briefs, experiments.json, lanes.json and failures.json, with duplicates merged, stale items closed, and the build steps that lived only in a session's plan file (first go-live, Note Press, release loop, lattice ledger) written in. GET-GOING points to it. (2026-11-13)
@@ -37,7 +38,6 @@ Lifecycle: live. The detail is in `README.md`.
 - The Counted Lattice plan is built in its first three steps (branch claude/sharp-knuth-2qb0jp): the source clock keeps every post's Buffer counts, each Note's free subscriptions among them (the 4 November Note reads 1 over 208 impressions); the subscribe hook fails closed; one four-tag route is checked on the engine's own go-live path; every post, Buffer-made or native, is reconciled for a route; and each run ends with one outcome row. The U5 exhibit, its five numbered questions and the test cards are in docs/plans/2026-11-13-counted-lattice.md. (2026-11-13)
 - Every carousel, meme and Notes image this engine makes is made in a Claude session with the Codex plugin building it (a ve card queued in codex/queue/ for the Codex lane, held to the brand palette and the references Krish ticked), and off-day voiceover shorts on content-engine's ve route; the Saturday art-direction workflow and its Codex runner are retired, the kit checks stay as growth.py run kit, and memes and Notes images left the Canva lane (R126). (2026-11-13)
 - The GitHub runner takes back its own undecided asks once their week or window is over (Ruling, Krish, 2026-11-12), through the protocol's withdrawn[] with a one-line reason, and nothing new is asked about a week that has ended; its first run takes back the three parts of the mix plan for the week of 2 November. (2026-11-13) (2026-11-13)
-- The engine proposes the publication's AI-answer questions for Krish's approval (Ruling, Krish, 2026-11-13). Twenty questions readers type or ask about the three series and Saturday's good news, each with its evidence and best piece (docs/ai-answers/2026-11-13-proposed-questions.md), go to his list once as one strategy ask (config/ai-answer-questions-proposed.json); on his yes, or his amended version, the runner writes exactly those into config/ai-answer-questions.json, asks AEO-Engine to track them and closes the ask, and the control-center workflow commits that one file. (2026-11-13)
 
 ## What changed recently
 
@@ -54,7 +54,7 @@ Lifecycle: live. The detail is in `README.md`.
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-13): Krish presses Yes on the standing W45 to W52 plan card in Control Center, typing in four Notes a day and Threads at @makeyourmind.up (A1.1 in docs/plans/A1.md); then the Growth: subscribers automation is scheduled before Monday 16 November (A1.2).
+- Next (2026-11-13): Control Center ships features.ai_answers_detail; the first runner run after it reads the kits, and the next Saturday answer piece drafts from the best one.
 - Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
 - Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
 - Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).
@@ -63,7 +63,7 @@ Lifecycle: live. The detail is in `README.md`.
 - Waiting on Krish (29 October, not re-checked since): six set-up answers. The Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); the Buffer plan purchase, his click; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry.
 - Waiting on Krish (11 November, optional): one instruction from Control Centre's Engine drawer, to prove protocol 1.20.0 live end to end. The runner acks it received, then a workspace job or an engine session acks started, done or blocked.
 - Open elsewhere: the GA4 paid event name (`invariants/ga4.json`; `sign_up` is verified, 12 November), and the Wave 2 fields Control Center was asked to name on 29 October, not re-checked since (`docs/briefs/2026-10-29-wave2-content-engine-and-control-center.md`).
-- North Star check (2026-11-13): recalibration proposed. Central on measured rates is about 42 subscribers from 16 November to 28 December against a 7,894 ladder; Krish kept 2,500 and backed borrowed audiences, so D1 (one founder-visible Live co-stream) and D2 (the lattice) are the next asks.
+- North Star check (2026-11-13): holds.
 
 ## Read next
 

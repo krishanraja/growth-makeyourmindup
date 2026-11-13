@@ -10,6 +10,14 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "Where it is right now":
 
+- The engine proposes the publication's AI-answer questions for Krish's approval (Ruling, Krish, 2026-11-13). Twenty questions readers type or ask about the three series and Saturday's good news, each with its evidence and best piece (docs/ai-answers/2026-11-13-proposed-questions.md), go to his list once as one strategy ask (config/ai-answer-questions-proposed.json); on his yes, or his amended version, the runner writes exactly those into config/ai-answer-questions.json, asks AEO-Engine to track them and closes the ask, and the control-center workflow commits that one file. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
 - The publication's AI answers are AEO-Engine's, the one AI-answers specialist (Ruling, Krish, 2026-11-12): the runner reads the standing from the directive (protocol 1.22.0) and asks AEO to track the real reader questions in config/ai-answer-questions.json, which jobs/answer.md fills; none is on file yet, so nothing is asked. The protocol copy in docs/control-center/ is Control Center's at 36df34bc (protocol 1.22.0). (2026-11-13)
 
 ## 2026-11-13
