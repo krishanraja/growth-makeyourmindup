@@ -69,6 +69,40 @@ class Gate(unittest.TestCase):
         commands = [h['command'] for m in s['hooks'].get('PreToolUse', []) for h in m['hooks']]
         self.assertTrue(any('buffer-subscribe-gate.py' in c for c in commands))
 
+    def hook(self, stdin):
+        return subprocess.run([sys.executable, str(ROOT / '.claude' / 'hooks' / 'buffer-subscribe-gate.py')],
+                              input=stdin, capture_output=True, text=True, cwd=ROOT)
+
+    def test_the_hook_fails_closed_on_input_it_cannot_read(self):
+        for stdin in ('', 'not json', '[1, 2]', '"text"'):
+            done = self.hook(stdin)
+            self.assertEqual(done.returncode, 2, stdin)
+            self.assertIn('refused', done.stderr)
+
+    def test_the_hook_fails_closed_when_the_gate_breaks(self):
+        # metadata that is not an object breaks the gate's own reading of an engine post: refused, never passed.
+        call = post('threads', 'TEST FIXTURE ONLY.')
+        call['metadata'] = 'not an object'
+        from engine import intensity
+        done = self.hook(json.dumps({'tool_name': 'mcp__Buffer__create_post', 'tool_input': call}))
+        if intensity.subscribe_required(intensity.state()['urgency']):
+            self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+            self.assertIn('AttributeError', done.stderr)
+        else:  # below U4 nothing is read, so nothing can break
+            self.assertEqual((done.returncode, done.stdout), (0, ''))
+
+    def test_the_registered_command_fails_closed_with_no_python(self):
+        s = json.loads((ROOT / '.claude' / 'settings.json').read_text(encoding='utf-8'))
+        command = next(h['command'] for m in s['hooks'].get('PreToolUse', []) for h in m['hooks']
+                       if 'buffer-subscribe-gate.py' in h['command'])
+        self.assertTrue(command.rstrip().endswith('|| exit 2'), command)
+        bash = next((p for p in ('/bin/bash', '/usr/bin/bash') if Path(p).exists()), None)
+        if bash is None:
+            self.skipTest('no bash here')
+        done = subprocess.run([bash, '--noprofile', '--norc', '-c', command], input='{}', capture_output=True,
+                              text=True, env={'PATH': '/nonexistent', 'CLAUDE_PROJECT_DIR': str(ROOT)})
+        self.assertEqual(done.returncode, 2)
+
 
 if __name__ == '__main__':
     unittest.main()

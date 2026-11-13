@@ -48,9 +48,11 @@ class CrewTests(unittest.TestCase):
                        'growth.py social send-test', 'R99'):
             self.assertIn(phrase, card)
 
-    def test_what_works_card_makes_share_rates_the_snackable_measure(self):
+    def test_what_works_card_judges_by_subscribers_with_share_rates_supporting(self):
+        # Ruling, Krish, 2026-11-12: posts are judged by the subscribers they bring; share rates support only.
         text = collapse((ROOT / 'crew' / 'what-works' / 'card.md').read_text(encoding='utf-8'))
-        for phrase in ('sends (native shares) per reach and saves per reach', 'share_rates',
+        for phrase in ('Its verdict is the subscribers it brought', 'as supporting evidence only',
+                       'sends (native shares) per reach and saves per reach', 'share_rates',
                        "a house hypothesis until MYMU's own dated data confirms it", 'never zero'):
             self.assertIn(phrase, text)
 

@@ -354,6 +354,30 @@ class MeasureJobTests(unittest.TestCase):
             # The directive's block is kept for the next local step too.
             self.assertTrue((Path(folder) / '.scratch/cc/web-analytics.json').is_file())
 
+    def test_deliver_keeps_the_source_clock_after_the_measure_report(self):
+        from engine.run import cc_records, source_clock
+        with StandIn() as stand, tempfile.TemporaryDirectory() as folder:
+            self.workspace(folder, block=False)
+            stand.capabilities = {'schema_versions': ['1.0.0', CHANNELS_VERSION]}
+            note = post(900, 'substack-notes', 9)
+            note['metrics'] = [{'type': 'impressions', 'value': 208.0, 'unit': 'count'},
+                               {'type': 'freeSubscriptions', 'value': 1.0, 'unit': 'count'},
+                               {'type': 'reposts', 'value': 2.0, 'unit': 'count'}]
+            code, text = self.run_main(['--now', NOW, '--deliver', '--mode', 'synthetic'], folder,
+                                       (FakeBuffer(self.posts() + [note]), None), make_client=lambda: stand.client())
+            self.assertEqual(code, 0, text)
+            bodies = [c['body'] for c in stand.posts('reports')]
+            self.assertTrue(bodies[0]['run_id'].endswith('measure-1300Z'))
+            clock = [b for b in bodies if ':sourceclock:' in b['run_id']]
+            self.assertEqual(len(clock), 1)
+            value = cc_records.record_of(clock[0], source_clock.SCHEMA)
+            mine = next(e for e in value['posts'] if e['post_id'] == note['id'])
+            self.assertEqual(mine['counts'], {'freeSubscriptions': 1, 'reposts': 2, 'impressions': 208})
+            self.assertEqual(value['totals']['substack-notes']['freeSubscriptions'], 1)
+            self.assertIn('1 free subscriptions', ' '.join(a['line'] for a in bodies[0]['activity']))
+            self.assertIn('source clock: recorded', text)
+            self.assertNotIn('@', json.dumps(clock[0]))
+
     def test_existing_measure_commands_still_route(self):
         with patch.object(measure_auto, 'main', return_value=7) as auto:
             self.assertEqual(measure.main(['measure', 'auto', '--deliver']), 7)

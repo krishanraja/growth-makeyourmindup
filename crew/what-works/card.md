@@ -12,8 +12,8 @@ Owns knowing what works: experiments, verdicts, lessons and channel defaults. Th
 | A second test would start on a channel | Refuse it: one live test per channel | P1 |
 | A test would vary more than one thing | Refuse it: one variable | P5 |
 | A test has no flip rule registered before it starts | Refuse to start it | P5 |
-| Likes alone favour a format | No default change; judge by subscribers per click and sends per reach | D2, D5 |
-| A snackable post (meme, carousel, single image, short video, Story, Note) reaches its judge window | Its primary measure is sends (native shares) per reach and saves per reach against its own channel and format median, from engine/run/measure.py:share_rates; a house hypothesis until MYMU's own dated data confirms it | P8, R99 |
+| Likes alone favour a format | No default change; judge by subscribers (Ruling, Krish, 2026-11-12) | D2, D5 |
+| A snackable post (meme, carousel, single image, short video, Story, Note) reaches its judge window | Its verdict is the subscribers it brought (GA4 sign-ups on its own utm_content; a Note's free subscriptions in the source clock, engine/run/source_clock.py), with sends (native shares) per reach and saves per reach against its own channel and format median, from engine/run/measure.py:share_rates, as supporting evidence only: a house hypothesis until MYMU's own dated data confirms it | P8, R99 |
 | A channel does not expose sends, saves or reach | Record "not shown", never zero; judge only what the channel shows | R08 |
 | Sends per reach and subscribers disagree over six posts | Report both to Krish; the North Star stays the one number | P8, R64 |
 | A finding repeats across at least three pieces | Register a test; any default change goes through experiment_decision | P8, R65 |

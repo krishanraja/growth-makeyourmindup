@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/buffer-subscribe-gate.py\" 2>/dev/null || python \"$CLAUDE_PROJECT_DIR/.claude/hooks/buffer-subscribe-gate.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/buffer-subscribe-gate.py\" 2>/dev/null || python \"$CLAUDE_PROJECT_DIR/.claude/hooks/buffer-subscribe-gate.py\" || exit 2"
           }
         ]
       }
