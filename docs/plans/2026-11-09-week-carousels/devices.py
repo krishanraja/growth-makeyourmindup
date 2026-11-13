@@ -42,7 +42,7 @@ B = SER['mon']
 b = ['<line x1="60" y1="420" x2="860" y2="420" stroke="%s" stroke-width="8" stroke-linecap="round"/>' % GREEN,
      '<circle cx="190" cy="420" r="20" fill="%s"/>' % CREAM, '<circle cx="730" cy="420" r="20" fill="%s"/>' % B,
      t(190, 490, 'AUG 2024', 38, 'Plex'), t(730, 490, 'OCT 2026', 38, 'Plex', B),
-     t(460, 405, 'TWO YEARS LATER', 30, 'Plex', CREAM, extra='fill-opacity="0.6"'),
+     t(325, 405, 'TWO YEARS', 26, 'Plex', CREAM, extra='fill-opacity="0.6"'),
      '<rect x="100" y="40" width="180" height="180" rx="24" fill="%s"/>' % CREAM, logo('google-g.svg', 132, 72, 116, 116)]
 for i, x in enumerate([130, 190, 250]):
     b.append(person(x, 350, 1.9, CREAM, 1 - i * 0.12))
@@ -52,8 +52,9 @@ b += ['<path d="M190 300 L190 240" stroke="%s" stroke-width="7" stroke-linecap="
       logo('characterai-cream.svg', 590, 300, 280, 40),
       '<g transform="rotate(-8 730 170)"><rect x="590" y="100" width="280" height="130" rx="14" fill="none" stroke="%s" stroke-width="9"/>' % B,
       t(730, 200, 'BUST', 96, 'Anton', B) + '</g>',
-      t(730, 560, 'THE APP GOES BUST', 34, 'Anton', B)]
-write('mon', 2, ''.join(b))
+      t(730, 560, 'THE APP GOES BUST', 34, 'Anton', B),
+      '<circle cx="460" cy="420" r="14" fill="%s"/>' % B, t(460, 490, 'LAWSUITS', 34, 'Anton', B)]
+write('mon', 4, ''.join(b))
 
 # 3. the Disney deal on OpenAI's Sora app, closed
 b = [tile('disney-script-cream.svg', 40, 200, 250, 150, 24, INK)]
@@ -71,7 +72,7 @@ b += ['<line x1="640" y1="300" x2="700" y2="352" stroke="%s" stroke-width="4"/><
       '<g transform="rotate(-6 715 400)"><rect x="590" y="352" width="250" height="96" rx="12" fill="%s"/>' % B,
       t(715, 420, 'CLOSED', 62, 'Anton', INK) + '</g>',
       t(715, 560, 'OPENAI SHUT IT, MARCH 2026', 24, 'Plex', CREAM, extra='fill-opacity="0.7"')]
-write('mon', 3, ''.join(b))
+# (the Sora card was retired in the 13 Nov rebuild)
 
 # 4. 66 staff walk over to Disney, the lawsuits stay behind
 b = []
@@ -90,8 +91,11 @@ for i in range(5):
     b.append('<rect x="%d" y="%d" width="150" height="26" rx="4" fill="%s" fill-opacity="%s" transform="rotate(%d %d %d)"/>'
              % (60 + (i % 2) * 8, 590 - i * 22, B, 0.95 - i * 0.08, (-3 if i % 2 else 2), 130, 590 - i * 22))
 b += [t(240, 600, 'LAWSUITS STAY BEHIND', 28, 'Plex', B, 'start')]
-b += [logo('characterai-cream.svg', 240, 528, 220, 34)]
-write('mon', 4, ''.join(b))
+b += [logo('characterai-cream.svg', 240, 528, 220, 34),
+      '<rect x="680" y="420" width="240" height="64" rx="32" fill="%s"/>' % B, t(800, 463, '$20M OPENING BID', 32, 'Anton', INK),
+      '<rect x="700" y="110" width="200" height="70" rx="10" fill="%s" stroke="%s" stroke-opacity="0.4" stroke-width="2"/>' % (DEEP, CREAM),
+      t(800, 156, 'THE CODE', 30, 'Plex', CREAM)]
+write('mon', 2, ''.join(b))
 
 # 5. RENT to OWN: Disney, Netflix, Warner Music
 b = ['<rect x="40" y="60" width="250" height="500" rx="22" fill="none" stroke="%s" stroke-opacity="0.35" stroke-width="3" stroke-dasharray="12 10"/>' % CREAM,
@@ -118,7 +122,23 @@ b = ['<ellipse cx="460" cy="560" rx="300" ry="26" fill="%s" fill-opacity="0.6"/>
      '<path d="M690 330 L770 250 L540 190 L460 260 Z" fill="%s" stroke="%s" stroke-width="5" stroke-linejoin="round"/>' % (INK, CREAM),
      '<g fill="none" stroke="%s" stroke-width="5" stroke-opacity="0.55"><path d="M420 90 h120 a24 24 0 0 1 24 24 v40 a24 24 0 0 1 -24 24 h-70 l-26 22 v-22 h-24 a24 24 0 0 1 -24 -24 v-40 a24 24 0 0 1 24 -24 z"/></g>' % B,
      '<g fill="%s" fill-opacity="0.55"><circle cx="452" cy="134" r="7"/><circle cx="480" cy="134" r="7"/><circle cx="508" cy="134" r="7"/></g>' % B,
+     '<g transform="rotate(-4 760 470)"><rect x="620" y="430" width="290" height="88" rx="10" fill="%s"/>' % B,
+     t(765, 466, "USERS' DATA", 30, 'Anton', INK), t(765, 502, 'NOT IN THE BID', 26, 'Plex', INK) + '</g>',
      ]
+write('mon', 3, ''.join(b))
+
+# 6. your business plugged into someone else's AI
+b = ['<rect x="40" y="200" width="300" height="220" rx="22" fill="%s"/>' % CREAM,
+     t(190, 290, 'YOUR', 44, 'Anton', INK), t(190, 345, 'BUSINESS', 44, 'Anton', INK),
+     '<path d="M340 310 C420 310 430 310 500 310" stroke="%s" stroke-width="14" fill="none" stroke-linecap="round"/>' % CREAM,
+     '<rect x="500" y="282" width="60" height="56" rx="8" fill="%s"/>' % CREAM,
+     '<rect x="560" y="292" width="34" height="10" rx="3" fill="%s"/><rect x="560" y="318" width="34" height="10" rx="3" fill="%s"/>' % (CREAM, CREAM),
+     '<rect x="610" y="150" width="270" height="320" rx="22" fill="%s" stroke="%s" stroke-width="5"/>' % (DEEP, B),
+     t(745, 230, 'THEIR AI', 44, 'Anton', B),
+     '<rect x="700" y="280" width="90" height="70" rx="10" fill="%s"/>' % INK,
+     '<rect x="722" y="300" width="12" height="30" rx="3" fill="%s"/><rect x="756" y="300" width="12" height="30" rx="3" fill="%s"/>' % (CREAM, CREAM),
+     '<g transform="rotate(-6 745 420)"><rect x="650" y="395" width="190" height="50" rx="25" fill="%s"/>' % B,
+     t(745, 430, 'SOLD? BUST?', 28, 'Anton', INK) + '</g>']
 write('mon', 6, ''.join(b))
 
 # 7. the checklist

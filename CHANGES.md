@@ -1,5 +1,10 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-13: LinkedIn is left out of everything this engine makes and plans, for now. His words: "I am going to
+  create a separate linkedin strategy so always exclude linkedin for now". Derived carousels are judged and readied
+  for the other channels (the judges are asked with `channel: instagram`); no LinkedIn copy, slot or post is made
+  until his separate LinkedIn strategy lands. Recorded here first: the maker's channel lists are not yet changed in
+  code, so a session that makes or plans posts reads this line and leaves LinkedIn out.
 - 2026-11-12: Nothing on his list is stale; the engine takes back its own asks once their week or window has passed.
   His words: everything must be "not only up to date but impossible to sprawl over time". His list shows one of this
   engine's asks at a time, and nine older asks (the three-part mix plan for the week of 2 November, which is over,

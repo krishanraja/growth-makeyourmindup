@@ -1,13 +1,14 @@
-Millions of people loved Character.AI. It went bust in October. Its founders left for Google in 2024, and now Disney is hiring most of its staff while the lawsuits stay behind.
+Your AI app can vanish. Character.AI's users found out in October: Disney is bidding for its staff and code, and the bid leaves out their data and the app.
 
-If your business runs on someone else's AI, four questions about its maker are worth asking this week: are the founders still there, is your tool its main product, is it short of cash, and is it collecting lawsuits?
+The warning signs were there two years early: the founders left for Google in 2024, then came lawsuits and a shrinking cash reserve.
+
+If your business runs on someone else's AI, ask your supplier this week what happens to your data and access if it is sold. Get the answer in writing.
 
 The full story is free at makeyourmindup.ai.
 
 Sources:
-Character.AI's bankruptcy filing, Delaware, Oct 2026: https://cases.stretto.com/public/x936/14939/PLEADINGS/1493910132680000000114.pdf
-Google and Character.AI, CNBC, Aug 2024 (the reported $2.7 billion): https://www.cnbc.com/2024/08/02/ex-google-engineers-from-characterai-re-join-company-with-ai-partnership-.html
-Disney and OpenAI's Sora: https://thewaltdisneycompany.com/news/disney-openai-sora-agreement/ and Sora closing, Deadline, Mar 2026: https://deadline.com/2026/03/sora-shut-down-disney-investment-1236764689/
-Disney's offers to 66 staff and what the bid leaves out: Wired and Gizmodo, Oct 2026, reporting the court filings
-Netflix and InterPositive (a reported $587 million): https://www.hollywoodreporter.com/business/business-news/netflix-price-ben-affleck-ai-company-revealed-1236651217/
-Warner Music Group buys Sureel AI: https://www.prnewswire.com/news-releases/warner-music-group-acquires-sureel-ai-302796705.html
+Character.AI's bankruptcy filing, Delaware, 12 to 13 Oct 2026 (the sale to Disney's opening $20 million bid, and the "diminishing cash reserve and significant litigation and regulatory risks"): https://cases.stretto.com/public/x936/14939/PLEADINGS/1493910132680000000114.pdf
+Disney's job offers to 66 staff: Gizmodo, Oct 2026, reporting the filings. What the bid leaves out (users' data): Wired, Oct 2026.
+Google and Character.AI, CNBC, 2 Aug 2024 (licence of the tech, founders hired; reported at $2.7 billion): https://www.cnbc.com/2024/08/02/ex-google-engineers-from-characterai-re-join-company-with-ai-partnership-.html
+Netflix and InterPositive, reported at $587 million, The Hollywood Reporter: https://www.hollywoodreporter.com/business/business-news/netflix-price-ben-affleck-ai-company-revealed-1236651217/
+Warner Music Group acquires Sureel AI, PR Newswire, June 2026: https://www.prnewswire.com/news-releases/warner-music-group-acquires-sureel-ai-302796705.html
