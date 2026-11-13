@@ -27,16 +27,20 @@
       "workflow": "control-center.yml",
       "trigger": "repository_dispatch cc-growth-directive from Control Center, 05:10 UTC daily; a 05:40 UTC backup that runs only when no dispatch run succeeded today; or by hand",
       "may_write": [
-        "Control Center engine reports and attempt journal entries, read back by digest"
+        "Control Center engine reports and attempt journal entries, read back by digest",
+        "a request to AEO-Engine to track the publication's AI-answer questions (POST answers, protocol 1.22.0)",
+        "config/ai-answer-questions.json on main: only the questions Krish approved on his list, word for word in his version, and the AEO ask made for them, committed by its commit job (Ruling, Krish, 2026-11-13)"
       ],
       "never": [
         "post, send, publish or spend",
-        "upload an artifact or log a figure from this public repository"
+        "upload an artifact or log a figure from this public repository",
+        "write a question Krish has not approved, or commit any file but config/ai-answer-questions.json"
       ],
       "actions": [
         "read-directive",
         "report-to-control-center",
-        "read-decisions"
+        "read-decisions",
+        "write-approved-questions"
       ],
       "secrets": [
         "CONTROL_CENTER_ENGINE_TOKEN"

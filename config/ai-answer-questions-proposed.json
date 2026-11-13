@@ -1,0 +1,36 @@
+{
+  "_about": "The AI-answer questions this engine proposes to Krish (Ruling, Krish, 2026-11-13: Make Your Mind Up's growth engine proposes its AI-answer questions for his approval). The runner sends them once as one strategy proposal, the questions as its exact words, so his one list in Control Centre shows them and he can change any line before he approves. Only on his yes, on exactly these words or his version of them, does the runner write them into config/ai-answer-questions.json and ask AEO-Engine to track them (engine/ai_answers.py). A new set is a new proposal_id; never edit a sent set in place. The evidence for each question is in evidence_doc.",
+  "proposal_id": "makeyourmindup:ai-answer-questions:2026-11-13",
+  "proposed_on": "2026-11-13",
+  "evidence_doc": "docs/ai-answers/2026-11-13-proposed-questions.md",
+  "evidence": [
+    {"label": "Each question, why it is worth winning and the piece that answers it best", "url": "https://github.com/krishanraja/growth-makeyourmindup/blob/main/docs/ai-answers/2026-11-13-proposed-questions.md"},
+    {"label": "AnswerThePublic, US questions typed about AI with monthly search volume, collected 2 Nov 2026", "url": "https://answerthepublic.com/en/research/on/ai"},
+    {"label": "AnswerThePublic, US questions typed about ChatGPT, collected 2 Nov 2026", "url": "https://answerthepublic.com/en/research/on/chatgpt"},
+    {"label": "Reddit: When will the ai bubble pop, and what is it?", "url": "https://www.reddit.com/r/NoStupidQuestions/comments/1vupye9/when_will_the_ai_bubble_pop_and_what_is_it/"},
+    {"label": "Reddit: How do AI companies make money?", "url": "https://www.reddit.com/r/NoStupidQuestions/comments/1torn0c/how_do_ai_companies_make_money/"},
+    {"label": "Reddit: How can you tell if a song is AI?", "url": "https://www.reddit.com/r/reggae/comments/1trmqq9/how_can_you_tell_if_a_song_is_ai/"}
+  ],
+  "questions": [
+    {"question": "Is the AI bubble going to burst?", "series": "follow.the.money", "best_piece": null},
+    {"question": "How do AI companies make money?", "series": "follow.the.money", "best_piece": "https://home.makeyourmindup.ai/p/higgsfield-taken-apart-the-1bn-ai"},
+    {"question": "Why is AI getting more expensive?", "series": "follow.the.money", "best_piece": "https://home.makeyourmindup.ai/p/why-google-openai-and-anthropic-keep"},
+    {"question": "Why is Amazon blocking AI shopping agents?", "series": "follow.the.money", "best_piece": "https://home.makeyourmindup.ai/p/muse-dot-and-the-next-wave-of-agents"},
+    {"question": "Do artists get paid when AI music is trained on their songs?", "series": "follow.the.money", "best_piece": "https://home.makeyourmindup.ai/p/warner-sued-suno-now-it-takes-a-cut"},
+    {"question": "Which is best for business, ChatGPT, Claude or Gemini?", "series": "under.the.hood", "best_piece": "https://home.makeyourmindup.ai/p/why-claude-and-chatgpt-model-launches"},
+    {"question": "Does it matter which ChatGPT model I use?", "series": "under.the.hood", "best_piece": "https://home.makeyourmindup.ai/p/why-claude-and-chatgpt-model-launches"},
+    {"question": "What is the difference between an AI agent and a chatbot?", "series": "under.the.hood", "best_piece": "https://home.makeyourmindup.ai/p/amazon-locked-metas-new-ai-out-walmart"},
+    {"question": "Can an AI assistant actually manage my email and calendar?", "series": "under.the.hood", "best_piece": "https://home.makeyourmindup.ai/p/can-metas-muse-or-grok-bot-run-my"},
+    {"question": "How can you tell if a song is AI?", "series": "under.the.hood", "best_piece": "https://home.makeyourmindup.ai/p/a-reiki-master-wrote-a-uk-number"},
+    {"question": "Is it safe to put company data into ChatGPT?", "series": "under.the.hood", "best_piece": null},
+    {"question": "Is it safe to use Chinese AI models like DeepSeek for work?", "series": "under.the.hood", "best_piece": "https://home.makeyourmindup.ai/p/why-every-country-wants-its-own-ai"},
+    {"question": "Will AI take my job?", "series": "mind.the.gap", "best_piece": "https://home.makeyourmindup.ai/p/claudes-ai-is-eating-the-jobs-of"},
+    {"question": "Is AI replacing entry-level jobs?", "series": "mind.the.gap", "best_piece": "https://home.makeyourmindup.ai/p/claudes-ai-is-eating-the-jobs-of"},
+    {"question": "Why does every country want its own AI?", "series": "mind.the.gap", "best_piece": "https://home.makeyourmindup.ai/p/why-every-country-wants-its-own-ai"},
+    {"question": "What happens to my business if the AI company we rely on goes bust?", "series": "mind.the.gap", "best_piece": "https://home.makeyourmindup.ai/p/why-is-disney-eating-the-scraps-of"},
+    {"question": "How will AI change the world in the next 10 years?", "series": "mind.the.gap", "best_piece": null},
+    {"question": "Will AI cure cancer?", "series": "good news", "best_piece": null},
+    {"question": "Is there any good news about AI?", "series": "good news", "best_piece": null},
+    {"question": "Where can I find positive AI news?", "series": "good news", "best_piece": null}
+  ]
+}

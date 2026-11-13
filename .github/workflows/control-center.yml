@@ -19,6 +19,14 @@ name: control-center
 # same loop under its own run_id. A run woken by Krish's instruction is named
 # "control-center instruction wake" (run-name below) and never counts as the
 # morning push (engine/run/backup.py WAKE_TITLE).
+#
+# One write to this repository (Ruling, Krish, 2026-11-13: Make Your Mind Up's
+# growth engine proposes its AI-answer questions for his approval). When the
+# runner wrote the questions Krish approved into config/ai-answer-questions.json,
+# or recorded the AEO ask for them, it hands that one file to the commit job as
+# a job output. The commit job holds no secret and runs no engine code: it
+# checks the file is JSON and commits it, alone, to main. The loop keeps
+# read-only contents and no git credential.
 run-name: ${{ github.event.client_payload.instruction_id && 'control-center instruction wake' || 'control-center' }}
 on:
   repository_dispatch:
@@ -39,6 +47,8 @@ jobs:
   loop:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      questions: ${{ steps.questions.outputs.file }}
     steps:
       - name: Start the run clock
         run: echo "GROWTH_RUN_STARTED=$(date +%s)" >> "$GITHUB_ENV"
@@ -79,3 +89,53 @@ jobs:
           else
             python growth.py cc runner --deliver
           fi
+      - name: Hand on the AI-answer questions Krish approved
+        id: questions
+        if: always() && steps.backup.outputs.skip != 'true'
+        run: |
+          file=config/ai-answer-questions.json
+          if git diff --quiet -- "$file"; then
+            echo "ai-answer questions: unchanged"
+          else
+            echo "file=$(base64 -w0 "$file")" >> "$GITHUB_OUTPUT"
+            echo "ai-answer questions: changed, handed to the commit job"
+          fi
+
+  commit:
+    # Commits only config/ai-answer-questions.json, as the loop wrote it from Krish's decision.
+    needs: loop
+    if: always() && needs.loop.outputs.questions != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    concurrency:
+      group: ai-answer-questions
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Commit the AI-answer questions Krish approved
+        env:
+          QUESTIONS_B64: ${{ needs.loop.outputs.questions }}
+        run: |
+          file=config/ai-answer-questions.json
+          printf '%s' "$QUESTIONS_B64" | base64 -d > "$file.new"
+          python3 -I -c 'import json, sys; d = json.load(open(sys.argv[1], encoding="utf-8")); assert isinstance(d, dict) and isinstance(d.get("questions"), list)' "$file.new"
+          mv "$file.new" "$file"
+          if git diff --quiet -- "$file"; then
+            echo "ai-answer questions: already on main"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$file"
+          git commit -q -m "config: the AI-answer questions Krish approved, for AEO-Engine" -m "Written by growth.py cc runner (engine/ai_answers.py) from his decision in Control Centre."
+          for attempt in 1 2 3; do
+            if git pull -q --rebase origin main && git push -q origin HEAD:main; then
+              echo "ai-answer questions: committed"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "ai-answer questions: push_failed; the next run writes them again"
+          exit 1

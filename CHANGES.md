@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-13: The engine proposes the publication's AI-answer questions for his approval. His words, to the offer to
+  propose the 20 questions readers most likely ask an AI assistant: "propose them". The 20, found from typed search
+  questions with volume (AnswerThePublic), public threads and the 14 published pieces, are in
+  `config/ai-answer-questions-proposed.json` with their evidence in `docs/ai-answers/2026-11-13-proposed-questions.md`.
+  The runner sends them once as one strategy ask, the questions as its exact words, so he can change any line; on his
+  yes, on those words or his amended version (digest checked), it writes exactly the approved questions into
+  `config/ai-answer-questions.json`, asks AEO-Engine to track them and reports the ask done, and the control-center
+  workflow's commit job commits that one file to main. A question he has not approved is never written.
 - 2026-11-13: LinkedIn keeps its profile as it is. His words: "LinkedIn won't let me add that link as a feature, so
   I'm just going to keep it as it is." `jobs/channel-audit.md` no longer asks him to paste a LinkedIn link, and the
   audit never reports its absence.

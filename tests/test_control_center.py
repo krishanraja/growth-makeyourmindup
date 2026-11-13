@@ -380,10 +380,12 @@ class ReportTests(unittest.TestCase):
             self.assertEqual((item['value'], item['availability']), (None, 'missing'))
             self.assertTrue(item['reason'].startswith('Measured only in the publication workspace'))
         self.assertEqual({p['wall'] for p in report['proposals']}, {'strategy'})
-        # With nothing sent before: the standing plan once, and one strategy proposal per planned template.
+        # With nothing sent before: the standing plan once, one strategy proposal per planned template, and the
+        # proposed AI-answer questions once (Ruling, Krish, 2026-11-13).
         planned = json.loads((ROOT / 'experiments.json').read_text(encoding='utf-8'))['experiments']
-        self.assertEqual(len(report['proposals']), 1 + sum(e['status'] == 'planned' for e in planned))
+        self.assertEqual(len(report['proposals']), 1 + sum(e['status'] == 'planned' for e in planned) + 1)
         self.assertIn('makeyourmindup:experiment:answer-first-pieces', {p['proposal_id'] for p in report['proposals']})
+        self.assertIn('makeyourmindup:ai-answer-questions:2026-11-13', {p['proposal_id'] for p in report['proposals']})
         # Unread, it proposes nothing rather than risk sending an ask twice.
         unread = runner_report(ROOT, 'r1', NOW, checks(), 'synthetic', True, 'fixture')[0]
         self.assertEqual(unread['proposals'], [])
