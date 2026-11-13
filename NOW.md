@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-11-13
-head: 06d8413
+head: d2dc787
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -30,6 +30,7 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
+- The Counted Lattice plan is built in its first three steps (branch claude/sharp-knuth-2qb0jp): the source clock keeps every post's Buffer counts, each Note's free subscriptions among them (the 4 November Note reads 1 over 208 impressions); the subscribe hook fails closed; one four-tag route is checked on the engine's own go-live path; every post, Buffer-made or native, is reconciled for a route; and each run ends with one outcome row. The U5 exhibit, its five numbered questions and the test cards are in docs/plans/2026-11-13-counted-lattice.md. (2026-11-13)
 - Every carousel, meme and Notes image this engine makes is made in a Claude session with the Codex plugin building it (a ve card queued in codex/queue/ for the Codex lane, held to the brand palette and the references Krish ticked), and off-day voiceover shorts on content-engine's ve route; the Saturday art-direction workflow and its Codex runner are retired, the kit checks stay as growth.py run kit, and memes and Notes images left the Canva lane (R126). (2026-11-13)
 - The GitHub runner takes back its own undecided asks once their week or window is over (Ruling, Krish, 2026-11-12), through the protocol's withdrawn[] with a one-line reason, and nothing new is asked about a week that has ended; its first run takes back the three parts of the mix plan for the week of 2 November. (2026-11-13) (2026-11-13)
 - The engine proposes the publication's AI-answer questions for Krish's approval (Ruling, Krish, 2026-11-13). Twenty questions readers type or ask about the three series and Saturday's good news, each with its evidence and best piece (docs/ai-answers/2026-11-13-proposed-questions.md), go to his list once as one strategy ask (config/ai-answer-questions-proposed.json); on his yes, or his amended version, the runner writes exactly those into config/ai-answer-questions.json, asks AEO-Engine to track them and closes the ask, and the control-center workflow commits that one file. (2026-11-13)
@@ -37,10 +38,10 @@ Lifecycle: live. The detail is in `README.md`.
 - Krish allowed one DM reply to someone who commented the keyword on that post (Ruling, Krish, 2026-11-13) and chose ManyChat, on a trial, for the keyword-DM test. Rule 5 in AGENTS.md and research.md, invariant R07 and the corpus digest now carry the exception, and the plan carries the setup. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
 - Every carousel and Short the maker makes is judged by content-engine's 10/10 judges first; a fail is never made and holds loudly as judges_failed with the reasons kept privately, a pass is bound to its Buffer post, and the board tick reports every sent post so content-engine counts the judged ones live on its North Star. (2026-11-13)
 - LinkedIn keeps its profile as Krish has it; the channel audit no longer asks him to paste a link there. (2026-11-13)
-- The @adilet.fndr teardown is saved (`docs/research/2026-11-12-adilet-fndr-teardown.md`): eight reels brought about 89% of his net follows and one hook, run three times, 62%; around them, a comment-keyword DM funnel, an email capture and a $67 product. The keyword-DM test is drafted (`docs/plans/2026-11-13-keyword-dm-test.md`) and planned in `experiments.json` as `keyword-dm`, so the engine puts it on Krish's list to decide. It needs his ruling on `research.md` rule 5 (no automated DMs) before anything else, then the DM tool, its spend and the account connection, each his yes. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
 
 ## What changed recently
 
+- 2026-11-13 Krish approved the plan as the build on 13 November 2026. The engine had shipped nothing on its automatic path, and no post carried a subscribe route, so the first steps make every unit attributable before any volume.
 - 2026-11-13 Rulings (Krish, 2026-11-13): "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual workflows"; "memes and Notes images should go the same way"; "Off-day voiceover shorts should go the same way too".
 - 2026-11-13 An ask about a past week held every live ask behind it on Krish's one list (one ask per engine at a time), so the AI-answer questions and the keyword-DM experiment waited behind a mix plan for a week that was over. engine/stale_asks.py; docs/ENGINE.md, "Nothing stale on his list".
 - 2026-11-13 AGENTS.md, research.md, invariants/rules.json, knowledge/corpus/external-growth-skills.md, experiments.json, docs/plans/2026-11-13-keyword-dm-test.md, docs/GET-GOING.md (Step 0.4).
@@ -50,11 +51,10 @@ Lifecycle: live. The detail is in `README.md`.
 - 2026-11-12 Krish, 2026-11-12: "make sure everything's a cohesive system and that the project documentation is 100% up to date with absolutely nothing old or misleading left in there".
 - 2026-11-12 The full-week organic reading is now measured and recorded; the current week remains unmeasured.
 - 2026-11-12 five piece kits had ended five different ways and memes carried the logo at the top; the palette Krish approved on 12 Nov allows one close and no logo at the top.
-- 2026-11-12 58 posts went out through Buffer from 2 to 11 November with no subscribe ask, because hand-run drafts skipped preflight; the gate now sits on the path they took.
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-13): Remove the OPEN_AI_API_KEY repository secret, which nothing reads now that the art-direction workflow is gone (Krish, in GitHub settings).
+- Next (2026-11-13): Krish presses Yes on the standing W45 to W52 plan card in Control Center, amended to four Notes a day and Threads at @makeyourmind.up; he said yes in chat on 13 November, and the engine reads only the press.
 - Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
 - Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
 - Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).
@@ -63,7 +63,7 @@ Lifecycle: live. The detail is in `README.md`.
 - Waiting on Krish (29 October, not re-checked since): six set-up answers. The Canva Cowork prompt; the Substack handle (@mindmake belongs to another profile named Mindmake); the Buffer plan purchase, his click; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry.
 - Waiting on Krish (11 November, optional): one instruction from Control Centre's Engine drawer, to prove protocol 1.20.0 live end to end. The runner acks it received, then a workspace job or an engine session acks started, done or blocked.
 - Open elsewhere: the GA4 paid event name (`invariants/ga4.json`; `sign_up` is verified, 12 November), and the Wave 2 fields Control Center was asked to name on 29 October, not re-checked since (`docs/briefs/2026-10-29-wave2-content-engine-and-control-center.md`).
-- North Star check (2026-11-13): holds.
+- North Star check (2026-11-13): recalibration proposed. On measured rates the Central case is about 42 subscribers from 16 November to 28 December against a 7,894 ladder; 2,500 a week needs about 563,000 counted impressions a week, which only borrowed audiences could bring, so question 1 (keep the target and back borrowed audience, or rebase) goes to Krish from Sunday 15 November.
 
 ## Read next
 

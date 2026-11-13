@@ -10,6 +10,18 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "What changed recently":
 
+- 2026-11-12 58 posts went out through Buffer from 2 to 11 November with no subscribe ask, because hand-run drafts skipped preflight; the gate now sits on the path they took.
+
+From "Where it is right now":
+
+- The @adilet.fndr teardown is saved (`docs/research/2026-11-12-adilet-fndr-teardown.md`): eight reels brought about 89% of his net follows and one hook, run three times, 62%; around them, a comment-keyword DM funnel, an email capture and a $67 product. The keyword-DM test is drafted (`docs/plans/2026-11-13-keyword-dm-test.md`) and planned in `experiments.json` as `keyword-dm`, so the engine puts it on Krish's list to decide. It needs his ruling on `research.md` rule 5 (no automated DMs) before anything else, then the DM tool, its spend and the account connection, each his yes. Nothing was posted, sent, spent or changed on any account. (2026-11-13)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
 - 2026-11-12 `engine/cc_loop.py`, `engine/control_center.py`, `engine/mix.py`, the protocol and schema copies in `docs/control-center/`, `docs/ENGINE.md`, `docs/MIX.md`, `jobs/daily-pack.md`, tests.
 
 From "Where it is right now":
