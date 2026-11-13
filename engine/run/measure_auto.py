@@ -38,7 +38,7 @@ from ..cc_loop import (STATE_DIR, count, WEB_ANALYTICS_FILE, keep_web_analytics,
                        web_analytics_activity, web_analytics_block, web_analytics_summary)
 from ..control_center import SLUG, build_report, iso, objective
 from ..core import instant, ny_time, read_json, today, write_json
-from . import buffer_reads, source_clock
+from . import buffer_reads, outcome, reconcile, source_clock
 from .ga4 import days_covered, directive_rows, join_directive, load_config, post_window
 from .measure import SUBSCRIBER_WINDOW_HOURS, judge, judge_subscribers, share_rates
 from .release import BUFFER_NAME
@@ -340,6 +340,15 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
     activity += [{'line': line} for line in share_part(posts)[0]]
     if posts:
         activity.append({'line': source_clock.line(source_clock.record(posts, now))})
+    if 'listed' in posts_read:
+        found = reconcile.check(posts_read, now, root)
+        activity.append({'line': found['line']})
+        if found['alarm']:
+            holds.append({'reason': 'Posts with no tracked subscribe route',
+                          'detail': str(found['alarm_by']['buffer']) + ' made in Buffer and '
+                          + str(found['alarm_by']['native']) + ' made natively since the route check went live; '
+                          'each post needs a four-tag subscribe link (engine/route.py) or, on Instagram and TikTok, '
+                          'words pointing to the profile link'})
     lines, hold, joined = ga4_part(block, posts, config)
     activity += [{'line': line} for line in lines]
     if hold:
@@ -351,6 +360,15 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
     status = 'degraded' if work_error or hold else ('ready' if posts or joined else 'held')
     if status == 'held' and not holds:
         holds.append({'reason': 'Nothing to measure this run', 'detail': None})
+    if work_error:
+        row = outcome.row('blocked', work_error, 'lookup filed: the next run reads Buffer again; if it fails twice, '
+                          'check BUFFER_API_KEY with growth.py run keys')
+    elif posts or joined:
+        row = outcome.row('advanced', str(len(posts)) + ' posts measured, ' + str(sum(counts.values())) + ' verdicts')
+    else:
+        row = outcome.row('nothing_to_do', 'no sent post on the pinned channels in ' + str(LOOKBACK_DAYS)
+                          + ' days and no GA4 rows joined')
+    activity.append({'line': outcome.line(row)})
     # 1.20.0: the engine's state rides on this report too (engine/engine_state.py), so the newest live report
     # always carries it; acks are the runner's and the workspace jobs'.
     report = build_report(run_id(now), mode, now, revision(root), now, status, objectives, activity, [], [], holds,

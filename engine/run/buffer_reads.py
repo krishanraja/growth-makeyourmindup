@@ -151,7 +151,7 @@ def sent_posts(client, since, now=None):
         except ValueError as exc:
             (missing if str(exc).startswith('no Buffer channel') else held).append(
                 {'channel': cid, 'reason': str(exc)})
-    posts, imported, reads = [], 0, 0
+    posts, imported, reads, native = [], 0, 0, []
     for post in listed:
         cid = pinned.get(_channel_of(post)['id'])
         if cid is None or post.get('status') != 'sent':
@@ -164,10 +164,13 @@ def sent_posts(client, since, now=None):
             continue
         if not since <= sent_at <= now:
             continue
+        pid = post.get('id')
         if post.get('via') == 'network':
             imported += 1
+            if isinstance(pid, str) and 0 < len(pid) <= 64:
+                # Never judged (F17), but reconciled: a native post needs a route too (engine/run/reconcile.py).
+                native.append({'post_id': pid, 'channel': cid, 'sent_at': sent_at, 'words': _words(post)})
             continue
-        pid = post.get('id')
         if not isinstance(pid, str) or not pid or len(pid) > 64:
             continue
         if 'metrics' in post:
@@ -179,7 +182,7 @@ def sent_posts(client, since, now=None):
         posts.append({'post_id': pid, 'channel': cid, 'service': CHANNELS[cid][0], 'sent_at': sent_at,
                       'due_at': post.get('dueAt'), 'external_link': post.get('externalLink'), 'words': _words(post), 'metrics': metric_values(metrics) if metrics is not None else None})
     return {'posts': posts, 'missing': missing, 'held': held, 'imported': imported, 'get_post_reads': reads,
-            'listed': len(listed)}
+            'listed': len(listed), 'native': native}
 
 
 def account_check(client):

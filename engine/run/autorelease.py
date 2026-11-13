@@ -1590,9 +1590,24 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
     summary.update(slots=dict(sorted(run.slots.items())), holds=dict(sorted(run.holds.items())),
                    mutations=buffer.mutations, loud=sorted(set(run.loud)))
     summary['golives']['held'] = dict(sorted(summary['golives']['held'].items()))
+    summary['outcome'] = release_outcome(summary)
     code = 1 if summary['error'] or summary['loud'] else 0
     summary['exit'] = code
     return summary, code
+
+
+def release_outcome(summary):
+    """This run's outcome row (engine/run/outcome.py): codes and counts only."""
+    from engine.run import outcome
+    if summary['error']:
+        return outcome.row('blocked', summary['error'], 'the next run retries in 30 minutes; the failed run already '
+                           'emails Krish through GitHub, and a second names the same code')
+    if summary['mutations']:
+        return outcome.row('advanced', str(summary['mutations']) + ' Buffer changes, each a line Krish signed')
+    if summary['holds']:
+        top = sorted(summary['holds'].items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+        return outcome.row('held_below_bar', ', '.join(k + ' ' + str(v) for k, v in top))
+    return outcome.row('nothing_to_do', str(summary['decisions_read']) + ' decisions read, no signed line due')
 
 
 CC_TOKEN_ENV = 'CONTROL_CENTER_ENGINE_TOKEN'
