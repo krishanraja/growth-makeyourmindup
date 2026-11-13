@@ -8,6 +8,14 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "Where it is right now":
+
+- `growth.py run board posts` also writes back a day's piece's own posts that Buffer has scheduled, each as the piece's entry with its channel and time (`piece_days`, `piece_row`), so content-engine's board says "Scheduled: Substack Notes, from Fri 13 Nov, 12:40" in place of "Ready to post" (Ruling, Krish, 2026-11-12: the board shows exactly where everything is). (2026-11-12)
+
+## 2026-11-13
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "What changed recently":
 
 - 2026-11-12 **One live publish board (#67).** AGENTS.md says where the live board is and what Growth does on it; each ledger row's board link opens the live board at its week and day (Ruling, Krish, 2026-11-11: one live board, in Control Centre; the old board is a read-only archive).
