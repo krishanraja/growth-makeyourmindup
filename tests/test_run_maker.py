@@ -32,7 +32,7 @@ except ImportError:  # run as tests.test_run_maker
     from tests.test_mix import WEEK, inventory_of
     from tests.test_concept_release import BoardStandIn
 
-from engine import catalog, concepts, mix
+from engine import catalog, concepts, mix, route
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.run import anthropic_api, autorelease, buffer_api, buffer_drafts, cc_records, handoff, maker
 from engine.run.buffer_api import BufferError
@@ -159,6 +159,21 @@ class Words:
         return dict(self.answer)
 
 
+class Routed(Words):
+    """The writer's answer carrying its channel's subscribe route, which every post carries at U4 and U5 (Ruling,
+    Krish, 2026-11-11): the tagged subscribe page on X and YouTube, the profile link on Instagram and TikTok.
+    The maker adds the route itself when the words carry none (maker.with_route); with this stub it adds none."""
+
+    def json_message(self, system, user, schema, max_tokens=None):
+        got = Words.json_message(self, system, user, schema, max_tokens)
+        if schema is maker.WRITE_SCHEMA:
+            name = re.search(r'^Channel: ([^,\n]+)', user, re.M).group(1)
+            channel = {v: k for k, v in maker.NAMES.items()}[name]
+            got['words'] += ' ' + ('Subscribe free: link in bio.' if channel in ('instagram', 'tiktok')
+                                   else 'Subscribe: ' + route.subscribe_url(channel, 'maker-' + channel))
+        return got
+
+
 class MakerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -235,6 +250,7 @@ class MakerTests(unittest.TestCase):
 
     def test_end_to_end_the_maker_drafts_tomorrow_and_release_schedules_each_post(self):
         self.approved()
+        self.words = Routed()
         summary, code = self.make()
         self.assertEqual(code, 0, summary)
         self.assertEqual((summary['days'], summary['slots'].get('made'), summary['handoff']['recorded']),
@@ -262,6 +278,77 @@ class MakerTests(unittest.TestCase):
         # Release reads them back from Control Center and schedules each, under every gate.
         summary, code = self.release()
         self.assertEqual((code, summary['slots']), (0, {'scheduled': 4}), summary)
+
+    def test_the_maker_writes_the_subscribe_route_itself_and_release_schedules_each_post(self):
+        # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route. The writer's words here carry
+        # none; the maker adds it itself, deterministically, after the writer and its checks (with_route), so release
+        # schedules each post where it held all four as subscribe_route_missing (reverifier, 13 Nov 2026).
+        from engine import intensity
+        state = intensity.state
+        self.approved()
+        summary, code = self.make()
+        self.assertEqual((code, summary['slots'].get('made'), summary['handoff']['recorded']), (0, 4, 4), summary)
+        writes = [c for c in self.words.calls if c['schema'] is maker.WRITE_SCHEMA]
+        self.assertTrue(writes)
+        for call in writes:  # never by asking the model
+            self.assertNotIn('subscribe', (call['system'] + call['user']).lower())
+        by_service = {p['channelService']: p for p in self.buf.posts.values()}
+        slot_of = {}
+        for entry in autorelease.week_entries(self.cc.client(), WEEK, {}):
+            record = cc_records.read_record(self.cc.client(), cc_records.review_run_id(entry['payload_sha256']),
+                                            cc_records.REVIEW)
+            slot_of[record['slot']['channel']] = record['slot']['slot_id']
+        for service, channel in (('twitter', 'x'), ('youtube', 'youtube')):
+            text = by_service[service]['text']
+            self.assertEqual(text, WORDS + '\nSubscribe: ' + route.subscribe_url(channel, slot_of[channel]))
+        for service in ('instagram', 'tiktok'):
+            self.assertEqual(by_service[service]['text'], WORDS + '\nSubscribe: link in bio.')
+        for post in by_service.values():
+            self.assertTrue(concepts.carries(CLAIM, post['text']), 'the claim, word for word')
+            self.assertEqual(post['text'].count('Subscribe:'), 1)
+        self.assertNotIn('utm_', json.dumps(summary), 'the summary carries codes, never words or URLs')
+        with mock.patch.object(intensity, 'state', lambda *a, **k: dict(state(*a, **k), urgency=5)):
+            summary, code = self.release()
+        self.assertEqual((code, summary['slots'], summary['holds']), (0, {'scheduled': 4}, {}), summary)
+
+    def test_words_that_carry_a_route_get_none_added(self):
+        # Never twice: the Routed writer puts the route in its own words, and the maker leaves them exactly so.
+        self.approved()
+        self.words = Routed()
+        summary, code = self.make()
+        self.assertEqual((code, summary['slots'].get('made')), (0, 4), summary)
+        for post in self.buf.posts.values():
+            self.assertEqual(post['text'].count('Subscribe'), 1, post['channelService'])
+            self.assertTrue(post['text'].startswith(WORDS + ' Subscribe'))
+
+    def test_a_route_that_would_pass_the_channels_limit_holds_the_slot_and_never_cuts_words(self):
+        # X takes 280 weighted characters, a link as 23 (engine/packs.py x_weight): words of 260 pass the writer's
+        # 270 but leave no room for the route line (35 weighted), so the X slot holds and the others are made.
+        long_words = CLAIM + ' ' + ('Synthetic padding words. ' * 20)[:260 - len(CLAIM) - 1].rstrip() + '.'
+        self.assertLessEqual(len(long_words), maker.WORDS_MAX['x'])
+        self.approved()
+        self.words = Words(words=long_words)
+        summary, code = self.make()
+        self.assertEqual((summary['slots'].get('made'), summary['holds']), (3, {'subscribe_route_too_long': 1}),
+                         summary)
+        self.assertNotIn('twitter', [p['channelService'] for p in self.buf.posts.values()])
+        for post in self.buf.posts.values():
+            self.assertTrue(post['text'].startswith(long_words), 'the words are never cut')
+
+    def test_with_route_by_channel(self):
+        words = CLAIM + ' Synthetic fixture words.'
+        x = maker.with_route({'channel': 'x', 'slot_id': 'X-2026-11-10-0830'}, words)
+        self.assertEqual(x, words + '\nSubscribe: ' + route.subscribe_url('x', 'x-2026-11-10-0830'))
+        self.assertEqual(maker.with_route({'channel': 'x', 'slot_id': 'x-1'}, x), x, 'never twice')
+        self.assertEqual(maker.with_route({'channel': 'tiktok', 'slot_id': 't-1'}, words),
+                         words + '\nSubscribe: link in bio.')
+        self.assertEqual(maker.with_route({'channel': 'linkedin', 'slot_id': 'li-1'}, words), words, 'his click')
+        # A link for another channel is no route here: X gets its own.
+        other = words + ' ' + route.subscribe_url('youtube', 'yt-1')
+        self.assertIn('utm_source=x', maker.with_route({'channel': 'x', 'slot_id': 'x-1'}, other))
+        self.assertEqual(route.content_of('X.2026 11 10/0830'), 'x-2026-11-10-0830')
+        with self.assertRaises(ValueError):
+            route.content_of('...')
 
     # content-engine's 10/10 judges (Ruling, Krish, 2026-11-12: "Judge them; count passes. Every Growth carousel goes
     # through the same 10/10 judges, and each one that passes and goes live counts.") -----------------------------
@@ -332,6 +419,7 @@ class MakerTests(unittest.TestCase):
         # Review finding 2: a handoff that fails stops the run at once, and the next run adopts the draft it
         # stranded (rebuilt from Buffer, its share declared, reviewed blind, handed off) and makes the rest.
         self.approved()
+        self.words = Routed()
         failed = ({'slots': {}, 'holds': {}, 'error': 'synthetic'}, 1)
         with mock.patch.object(handoff, 'handoff', return_value=failed):
             summary, code = self.make()
@@ -762,11 +850,13 @@ class MakerTests(unittest.TestCase):
         self.assertTrue(lines[0].startswith('Drafted from the standing plan (specs/standing-plan.json): no approved mix'
                                             ' for 2026-W46 (mix_plan_not_reported). These are drafts only'), lines[0])
         draft = next(a for a in report['activity'] if a['line'].startswith('Draft, X, Tuesday 10 November 2026, not approved'))
-        self.assertTrue(draft['line'].endswith(WORDS), draft)
+        # The maker adds the subscribe route to a standing draft too (with_route), from its slot id.
+        url = route.subscribe_url('x', 'x-2026-11-10-standing')
+        self.assertTrue(draft['line'].endswith(WORDS + ' Subscribe: ' + url), draft)
         self.assertTrue(draft['evidence_url'].startswith('https://home.makeyourmindup.ai/p/test-fixture-piece-'))
         record = cc_records.record_of(report, maker.STANDING_SCHEMA)
         self.assertEqual(([d['channel'] for d in record['drafts']], [d['format'] for d in record['drafts']],
-                          record['drafts'][0]['words']), (['x'], ['text'], WORDS))
+                          record['drafts'][0]['words']), (['x'], ['text'], WORDS + '\nSubscribe: ' + url))
         # The words come only from one piece already published, then a blind review: two calls.
         writes = [c for c in self.words.calls if c['schema'] is maker.WRITE_SCHEMA]
         self.assertEqual([c['system'] for c in writes], [maker.STANDING_SYSTEM])
@@ -1016,9 +1106,9 @@ class MakerTests(unittest.TestCase):
         for brief in briefs:
             self.assertIn("Editor's direction (follow it, never quote it): Make it drier. Caption", brief)
             self.assertIn('Already on the picture or video, exactly: ' + json.dumps("WHEN YOUR AI MEETS\nYOUR CUSTOMER'S AI"), brief)
-        # The words are still the writer's, and still carry the claim.
+        # The words are still the writer's, and still carry the claim; the maker adds only the subscribe route.
         for post in self.buf.posts.values():
-            self.assertEqual(post['text'], WORDS)
+            self.assertEqual(post['text'].split('\nSubscribe: ')[0], WORDS)
 
     def test_a_quote_that_reads_as_what_not_to_say_holds_for_him(self):
         self.noted('don\'t say "game changer"')

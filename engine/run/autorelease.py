@@ -107,7 +107,7 @@ import re
 import sys
 import tempfile
 
-from engine import concepts as concept_rules, intensity, mix as mix_rules, voice as voice_check
+from engine import concepts as concept_rules, intensity, mix as mix_rules, route, voice as voice_check
 from engine.cc_loop import (GOLIVE_LEDGER, claim_golives, decisions_paged, decisions_since, golive_ledger,
                             record_stops, revision, state_path)
 from engine.control_center import (APPROVED_ORIGIN, RUN_ID, TIMEZONE, Client, ProtocolError, _decided_at, _latest,
@@ -485,6 +485,7 @@ class Run:
         self.alarm_checked = set()
         self.organizations = []
         self.caps = {}  # channel -> posts a New York day (release.concept_caps)
+        self.urgency = None  # the North Star urgency, read once a run (intensity.state)
         self.per_day = {}  # (channel, New York day) -> posts scheduled on it, read from Buffer (F117)
 
     def count(self, outcome):
@@ -619,6 +620,11 @@ class Run:
                               'needs_approval': 'needs_approval'}.get(status, 'unknown_status'))
         if acted:
             return self.hold('acted_once_now_a_draft')  # a go-live acts once: never scheduled a second time
+        if route.line_errors(signed, self.urgency, self.root or ROOT):
+            # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route. Checked only on the
+            # draft about to be scheduled, as the Buffer hook checks a hand-made call (engine/route.py): a post
+            # already scheduled or sent is never re-judged here, so older go-lives never alarm on every run.
+            return self.hold('subscribe_route_missing', loud=True)
         if due - self.clock() <= DUE_MARGIN:
             return self.hold('due_time_passed', loud=True)
         try:
@@ -791,6 +797,11 @@ class Run:
             return self.count('already_' + ('scheduled' if status in ('scheduled', 'sending') else 'sent'))
         if why:
             return self.hold(why.split(':')[0])
+        if route.line_errors(line, self.urgency, self.root or ROOT):
+            # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route, a post made from an
+            # approved concept too. Checked only on the draft about to be scheduled, as Run.slot checks it: a
+            # post already scheduled or sent returned above and is never re-judged.
+            return self.hold('subscribe_route_missing', loud=True)
         if release.copy_errors(slot['words']):
             return self.hold('copy_lint_refused')
         # Every post passes the one voice check before Buffer schedules it (Ruling, Krish, 2026-11-09).
@@ -1520,7 +1531,8 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
     try:
         organizations = buffer.account_check().get('organization_ids') or []
         run.organizations = organizations
-        run.caps = release.concept_caps(intensity.state(root or ROOT, now)['urgency'], root or ROOT)
+        run.urgency = intensity.state(root or ROOT, now)['urgency']
+        run.caps = release.concept_caps(run.urgency, root or ROOT)
         if state_root is None:
             folder = tempfile.TemporaryDirectory()
             state_root = folder.name
@@ -1584,9 +1596,30 @@ def autorelease(cc, buffer, now=None, deliver=False, fetch=None, state_root=None
     summary.update(slots=dict(sorted(run.slots.items())), holds=dict(sorted(run.holds.items())),
                    mutations=buffer.mutations, loud=sorted(set(run.loud)))
     summary['golives']['held'] = dict(sorted(summary['golives']['held'].items()))
+    summary['outcome'] = release_outcome(summary)
     code = 1 if summary['error'] or summary['loud'] else 0
     summary['exit'] = code
     return summary, code
+
+
+def release_outcome(summary):
+    """This run's outcome row (engine/run/outcome.py): codes and counts only."""
+    from engine.run import outcome
+    if summary['error']:
+        return outcome.row('blocked', summary['error'], 'the next run retries in 30 minutes; the failed run already '
+                           'emails Krish through GitHub, and a second names the same code')
+    if summary.get('loud'):
+        return outcome.row('blocked', 'loud: ' + ', '.join(summary['loud'][:3]),
+                           'each loud hold is named in this run summary and the failed run emails Krish')
+    if summary['mutations']:
+        return outcome.row('advanced', str(summary['mutations']) + ' Buffer changes, each a line Krish signed')
+    held = dict(summary['holds'])
+    for code, count in ((summary.get('golives') or {}).get('held') or {}).items():
+        held['golive_' + code] = held.get('golive_' + code, 0) + count
+    if held:
+        top = sorted(held.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+        return outcome.row('held_below_bar', ', '.join(k + ' ' + str(v) for k, v in top))
+    return outcome.row('nothing_to_do', str(summary['decisions_read']) + ' decisions read, no signed line due')
 
 
 CC_TOKEN_ENV = 'CONTROL_CENTER_ENGINE_TOKEN'

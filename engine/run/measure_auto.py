@@ -18,7 +18,10 @@ Runs on GitHub Actions three times a day (.github/workflows/measure.yml):
    first 14 days) stays beside it as supporting evidence only;
 5. reports the aggregates to Control Center by the existing report path
    (engine/cc_loop.py run: attempt, directive, report and readback,
-   decisions, attempt end).
+   decisions, attempt end);
+6. then keeps every post's own counts, each Note's free subscriptions among
+   them, as the source clock record (engine/run/source_clock.py), a report of
+   its own, so post_metrics stays schema-valid.
 
 The numbers go only into the Control Center report and the ignored local
 copy. The log carries counts per verdict, notes and the cost line. Without
@@ -35,7 +38,7 @@ from ..cc_loop import (STATE_DIR, count, WEB_ANALYTICS_FILE, keep_web_analytics,
                        web_analytics_activity, web_analytics_block, web_analytics_summary)
 from ..control_center import SLUG, build_report, iso, objective
 from ..core import instant, ny_time, read_json, today, write_json
-from . import buffer_reads
+from . import buffer_reads, outcome, reconcile, source_clock
 from .ga4 import days_covered, directive_rows, join_directive, load_config, post_window
 from .measure import SUBSCRIBER_WINDOW_HOURS, judge, judge_subscribers, share_rates
 from .release import BUFFER_NAME
@@ -295,7 +298,9 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
         activity.append({'line': "Pulled today's directive before reading any source"})
     posts = posts_read.get('posts') or []
     if 'note' in posts_read:
-        holds.append({'reason': posts_read['note'], 'detail': 'Measured the GA4 part only; set BUFFER_API_KEY for posts'})
+        missing = posts_read['note'] == buffer_reads.NOT_INSTALLED  # a fix to the checkout, not Krish's key
+        holds.append({'reason': posts_read['note'], 'detail': 'Measured the GA4 part only; '
+                      + ('restore engine/run/buffer_api.py' if missing else 'set BUFFER_API_KEY') + ' for posts'})
     if 'error' in posts_read:
         holds.append({'reason': 'Buffer could not be read', 'detail': posts_read['error']})
         work_error = 'buffer_read_failed'
@@ -335,6 +340,18 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
     activity.append({'line': 'Engagement against each post\'s own channel median, supporting evidence only: '
                      + ', '.join(k + ' ' + str(v) for k, v in engaged.items())})
     activity += [{'line': line} for line in share_part(posts)[0]]
+    if posts:
+        activity.append({'line': source_clock.line(source_clock.record(posts, now))})
+    if 'listed' in posts_read:
+        found = reconcile.check(posts_read, now, root)
+        activity.append({'line': found['line']})
+        if found['alarm']:
+            holds.append({'reason': 'Posts with no tracked subscribe route',
+                          'detail': str(found['alarm_by']['buffer']) + ' made in Buffer and '
+                          + str(found['alarm_by']['native']) + ' made natively since the route check went live, '
+                          + str(found['untracked_alarmed']) + ' of them with a subscribe link GA4 cannot credit '
+                          '(without all four tags, sent from 14 November); each post needs a four-tag subscribe link (engine/route.py) '
+                          'or, on Instagram and TikTok, words pointing to the profile link'})
     lines, hold, joined = ga4_part(block, posts, config)
     activity += [{'line': line} for line in lines]
     if hold:
@@ -346,6 +363,21 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
     status = 'degraded' if work_error or hold else ('ready' if posts or joined else 'held')
     if status == 'held' and not holds:
         holds.append({'reason': 'Nothing to measure this run', 'detail': None})
+    if work_error:
+        row = outcome.row('blocked', work_error, 'lookup filed: the next run reads Buffer again; if it fails twice, '
+                          'check BUFFER_API_KEY with growth.py run keys')
+    elif posts or joined:
+        row = outcome.row('advanced', str(len(posts)) + ' posts measured, ' + str(sum(counts.values())) + ' verdicts')
+    elif 'note' in posts_read and posts_read['note'] == buffer_reads.NOT_INSTALLED:
+        row = outcome.row('blocked', 'buffer_not_read', 'fix queued: engine/run/buffer_api.py is missing from this '
+                          'checkout, so restore it from main; the GA4 part ran without it')
+    elif 'note' in posts_read:
+        row = outcome.row('blocked', 'buffer_not_read', 'ask queued: BUFFER_API_KEY in the measure workflow\'s '
+                          'secrets is Krish\'s to add; the GA4 part ran without it')
+    else:
+        row = outcome.row('nothing_to_do', 'no sent post on the pinned channels in ' + str(LOOKBACK_DAYS)
+                          + ' days and no GA4 rows joined')
+    activity.append({'line': outcome.line(row)})
     # 1.20.0: the engine's state rides on this report too (engine/engine_state.py), so the newest live report
     # always carries it; acks are the runner's and the workspace jobs'.
     report = build_report(run_id(now), mode, now, revision(root), now, status, objectives, activity, [], [], holds,
@@ -385,14 +417,17 @@ def main(argv=None, make_client=None, buffer=None, out=print, root=ROOT, environ
         if pulled:
             keep_web_analytics(root, directive)
         state = engine_state.fields(root, intensity.state(root, clock(), directive), directive) if pulled else None
-        report, error, counts = build(read_buffer(client, note, clock()), block, clock(), root, args.mode, config, pulled,
-                                      state)
+        posts_read = read_buffer(client, note, clock())
+        seen['posts'] = posts_read.get('posts') or []
+        report, error, counts = build(posts_read, block, clock(), root, args.mode, config, pulled, state)
         seen['counts'] = counts
         return report, error
 
     if not args.deliver:
         report, error = work(None, False)
         write_json(root / STATE_DIR / 'report-measure.json', report)
+        if seen['posts']:
+            write_json(root / STATE_DIR / 'source-clock.json', source_clock.record(seen['posts'], now))
         out(_counts_line(seen['counts']))
         out('Dry run: report ' + report['status'] + ', payload_sha256 ' + report['payload_sha256'] + '; written to '
             + str(STATE_DIR / 'report-measure.json') + '; no Control Center call')
@@ -405,12 +440,34 @@ def main(argv=None, make_client=None, buffer=None, out=print, root=ROOT, environ
     outcome = run(cc, COMMAND, run_id(now), lambda d: work(d, True), now - dt.timedelta(days=7), clock)
     if outcome.get('report'):
         write_json(root / STATE_DIR / 'report-measure.json', outcome['report'])
+    if outcome['status'] == 'succeeded':
+        _post_source_clock(cc, seen.get('posts'), now, root, out)  # logged; the next run retries, never fails this one
     if 'counts' in seen:
         out(_counts_line(seen['counts']))
     for line in summary(outcome, public=True):
         out(line)
     out(meter.cost_line('in all'))
     return int(outcome['status'] != 'succeeded')
+
+
+def _post_source_clock(cc, posts, now, root, out):
+    """Post this run's source clock record after the measure report (a record report carries no state, so it
+    never blanks the engine's state). Returns an error code, or None. Counts and codes only in the log."""
+    if not posts:
+        return None
+    try:
+        report = source_clock.report(posts, now, revision(root))
+        if report is None:
+            return None
+        posted = cc.post_report(report)
+    except Exception as exc:  # an outside call: keep only its name
+        out('source clock: not recorded (' + type(exc).__name__ + ')')
+        return 'source_clock_failed'
+    if not posted.get('accepted'):
+        out('source clock: not accepted')
+        return 'source_clock_refused'
+    out('source clock: recorded ' + str(len(source_clock.record(posts, now)['posts'])) + ' posts')
+    return None
 
 
 def _local_block(root):

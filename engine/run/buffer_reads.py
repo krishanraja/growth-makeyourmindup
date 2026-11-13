@@ -126,13 +126,25 @@ def metric_values(metrics):
 
 
 def _words(post):
-    """The post's text plus any link attachment, so a tracked link in either is joined."""
+    """The post's text, any link attachment and its first comment, so a tracked link in any is joined."""
     words = post.get('text') if isinstance(post.get('text'), str) else ''
     meta = post.get('metadata') if isinstance(post.get('metadata'), dict) else {}
     link = meta.get('linkAttachment') if isinstance(meta.get('linkAttachment'), dict) else {}
     if isinstance(link.get('url'), str):
         words += ' ' + link['url']
+    if isinstance(meta.get('firstComment'), str):
+        words += ' ' + meta['firstComment']  # a route in the first comment counts, as the gate allows it
+    if isinstance(meta.get('link'), str):
+        words += ' ' + meta['link']  # an Instagram story's link sticker, as engine/subscribe_gate.py _texts allows it
     return words
+
+
+def _thread_count(post):
+    """How many items follow an X or Threads post in its thread (metadata.threadCount), else 0. The listing
+    selects the count only, never the items, so a route in a later item cannot be read here."""
+    meta = post.get('metadata') if isinstance(post.get('metadata'), dict) else {}
+    count = meta.get('threadCount')
+    return count if isinstance(count, int) and not isinstance(count, bool) and count > 0 else 0
 
 
 def sent_posts(client, since, now=None):
@@ -151,7 +163,7 @@ def sent_posts(client, since, now=None):
         except ValueError as exc:
             (missing if str(exc).startswith('no Buffer channel') else held).append(
                 {'channel': cid, 'reason': str(exc)})
-    posts, imported, reads = [], 0, 0
+    posts, imported, reads, native = [], 0, 0, []
     for post in listed:
         cid = pinned.get(_channel_of(post)['id'])
         if cid is None or post.get('status') != 'sent':
@@ -164,10 +176,14 @@ def sent_posts(client, since, now=None):
             continue
         if not since <= sent_at <= now:
             continue
+        pid = post.get('id')
         if post.get('via') == 'network':
             imported += 1
+            if isinstance(pid, str) and 0 < len(pid) <= 64:
+                # Never judged (F17), but reconciled: a native post needs a route too (engine/run/reconcile.py).
+                native.append({'post_id': pid, 'channel': cid, 'sent_at': sent_at, 'words': _words(post),
+                               'thread_count': _thread_count(post)})
             continue
-        pid = post.get('id')
         if not isinstance(pid, str) or not pid or len(pid) > 64:
             continue
         if 'metrics' in post:
@@ -177,9 +193,11 @@ def sent_posts(client, since, now=None):
             reads += 1
             metrics = detail.get('metrics') if isinstance(detail, dict) else None
         posts.append({'post_id': pid, 'channel': cid, 'service': CHANNELS[cid][0], 'sent_at': sent_at,
-                      'due_at': post.get('dueAt'), 'external_link': post.get('externalLink'), 'words': _words(post), 'metrics': metric_values(metrics) if metrics is not None else None})
+                      'due_at': post.get('dueAt'), 'external_link': post.get('externalLink'), 'words': _words(post),
+                      'thread_count': _thread_count(post),
+                      'metrics': metric_values(metrics) if metrics is not None else None})
     return {'posts': posts, 'missing': missing, 'held': held, 'imported': imported, 'get_post_reads': reads,
-            'listed': len(listed)}
+            'listed': len(listed), 'native': native}
 
 
 def account_check(client):

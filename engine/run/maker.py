@@ -41,7 +41,14 @@ plan. For each week, in order:
    the concept's idea and claim only, in the account's voice (docs/ACCOUNT-VOICE.md). They
    must carry the claim word for word (concepts.carries), pass content-engine's copy lint
    (release.copy_errors) and the share rule (release.share_ask_errors), and declare a share
-   block (share.share_errors). One rewrite with the reasons, then it holds.
+   block (share.share_errors). One rewrite with the reasons, then it holds. Then the maker
+   writes the subscribe route itself, never the model (with_route; Ruling, Krish, 2026-11-11:
+   at U4 and U5 every post carries one): when the words carry none, a last line
+   "Subscribe: " and the tagged subscribe page (route.subscribe_url, utm_content the slot id)
+   on X and YouTube, "Subscribe: link in bio." on Instagram and TikTok. Never twice, never on
+   LinkedIn, and never past the channel's own limit (CHANNEL_LIMIT): a route that does not fit
+   holds the slot as subscribe_route_too_long, and the words are never cut. These are the
+   final words: the review, the judges, Buffer and release all see exactly them.
 6. The review: a separate Anthropic call that sees only the post's format, its words and
    its files' blind names, under the blind send-test lens (social/share.json). Its answer
    is compared with the declared share block (share.compare_send_test) and judged again,
@@ -96,12 +103,13 @@ import sys
 import tempfile
 import time
 
-from engine import (backlog, catalog, concepts as concept_rules, engine_state, intensity, mix as mix_rules,
-                    stale_asks, voice as voice_check)
+from engine import (backlog, catalog, concepts as concept_rules, engine_state, intensity, mix as mix_rules, route,
+                    stale_asks, subscribe_gate, voice as voice_check)
 from engine.buffer_channels import BUFFER_CHANNEL_ID
 from engine.cc_loop import decisions_paged, revision
 from engine.control_center import SLUG, ProtocolError, build_report, proposal
 from engine.core import instant, ny_time, read_json
+from engine.packs import x_weight
 from engine.run import autorelease, buffer_api, cc_records, handoff, release, voice_profile
 from engine.run.anthropic_api import CALL_WORST, GAVE_UP, KEY_ENV, Anthropic, AnthropicAuthError, AnthropicError
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
@@ -120,6 +128,11 @@ JOB_LIMIT = 30 * 60  # seconds: maker.yml timeout-minutes
 RUN_BUDGET = 20 * 60  # seconds after the start: no Anthropic call reaches past it and no slot starts after it
 DRAFT_LOOKBACK = dt.timedelta(days=7)  # drafts listed from the week's Monday less this, by when they were created
 WORDS_MAX = {'x': 270, 'instagram': 600, 'tiktok': 600, 'youtube': 600}
+# Each maker channel's own post limit, which the subscribe route the maker adds never takes a post past: X counts 280
+# weighted characters, a link as 23 (engine/packs.py x_weight); an Instagram or TikTok caption takes 2,200 and a
+# YouTube description 5,000 characters.
+CHANNEL_LIMIT = {'x': 280, 'instagram': 2200, 'tiktok': 2200, 'youtube': 5000}
+PROFILE_ROUTE = 'Subscribe: link in bio.'  # Instagram and TikTok: the profile link is the tagged subscribe page
 TITLE_MAX = 90
 YOUTUBE_CATEGORY = '28'  # Science and Technology
 NAMES = {'x': 'X', 'instagram': 'Instagram', 'tiktok': 'TikTok', 'youtube': 'YouTube Shorts'}
@@ -395,7 +408,8 @@ def word_checks(slot, concept, words, title, voice_found=None, claim=True):
     return [(name, found) for name, found in (
         ('words_missing_claim', [] if not claim or concept_rules.carries(concept['claim'], words)
          else ['the claim is not in the words exactly as given']),
-        ('words_too_long', [] if len(words) <= WORDS_MAX[channel]
+        ('words_too_long', [] if len(without_route(words)) <= WORDS_MAX[channel]
+         and post_length(channel, words) <= CHANNEL_LIMIT[channel]
          else ['the words are longer than ' + str(WORDS_MAX[channel]) + ' characters']),
         ('copy_lint_refused', release.copy_errors(words)),
         ('share_ask_refused', release.share_ask_errors({'format': fmt}, words)),
@@ -409,11 +423,55 @@ def share_block(share):
     return dict({k: share.get(k) for k in ('sender', 'receiver', 'job', 'dm_line', 'moment')}, standalone=True)
 
 
-def write_words(anthropic, slot, concept, voice, files, profile=None, note=None, voice_check=None):
-    """(words, title, share) that carry the claim and pass every check, or Held. One rewrite with the reasons.
-    voice_check(words) gives the hard krish-voice rules the words break (voice_reasons), checked like the copy lint."""
+def post_length(channel, text):
+    """The text's length as its channel counts it against CHANNEL_LIMIT: X weighs each link as 23."""
+    return x_weight(text) if channel == 'x' else len(text)
+
+
+def without_route(words):
+    """The words without the route line with_route adds, so a saved draft's own words are measured as the writer
+    wrote them (Maker.adopt reads back words that already end with the route)."""
+    head, sep, last = (words or '').rpartition('\n')
+    if sep and (last == PROFILE_ROUTE or (last.startswith('Subscribe: ') and '/subscribe?' in last)):
+        return head
+    return words
+
+
+def with_route(slot, words, root=ROOT):
+    """The draft's final words: words with the channel's subscribe route as a last line when they carry none
+    (Ruling, Krish, 2026-11-11: at U4 and U5 every post carries a subscribe route). Written here, deterministically,
+    never by asking the model: "Subscribe: " and the tagged subscribe page (route.subscribe_url, utm_content the slot
+    id) on a channel whose posts carry a link, "Subscribe: link in bio." on Instagram and TikTok (intensity.json
+    conversion profile_link_channels). Words the Buffer hook already passes are returned as they are, so a route is
+    never added twice; LinkedIn, his own click, is never touched. Held (subscribe_route_too_long) when the route would
+    take the post past its channel's limit (CHANNEL_LIMIT): the words are never cut."""
+    channel = slot['channel']
+    if channel in release.KRISH_CLICK_ONLY:
+        return words
+    call = {'channelId': BUFFER_CHANNEL_ID[channel], 'text': words}
+    if not subscribe_gate.errors('create_post', call, 5, root):
+        return words  # it carries a route already
+    if channel in intensity.bounds(root)['conversion']['profile_link_channels']:
+        line = PROFILE_ROUTE
+    else:
+        try:
+            line = 'Subscribe: ' + route.subscribe_url(channel, route.content_of(slot['slot_id']), root=root)
+        except ValueError:
+            raise Held(subscribe_gate.HOLD) from None
+    final = words + '\n' + line
+    if post_length(channel, final) > CHANNEL_LIMIT[channel]:
+        if not intensity.subscribe_required(intensity.state(root)['urgency'], root):
+            return words  # below the conversion urgency the route is not required, so a long post keeps its words
+        raise Held('subscribe_route_too_long')
+    return final
+
+
+def write_words(anthropic, slot, concept, voice, files, profile=None, note=None, voice_check=None, root=ROOT):
+    """(words, title, share) that carry the claim and pass every check, with the subscribe route (with_route), or
+    Held. One rewrite with the reasons. voice_check(words) gives the hard krish-voice rules the words break
+    (voice_reasons), checked like the copy lint."""
     return _written(anthropic, WRITER_SYSTEM, brief_of(slot, concept, voice, files, profile, note), slot, concept,
-                    voice_check, claim=True)
+                    voice_check, claim=True, root=root)
 
 
 def standing_brief(channel, voice, piece, profile=None):
@@ -426,14 +484,14 @@ def standing_brief(channel, voice, piece, profile=None):
             + '\nThe piece as published:\n' + piece['text'][:PIECE_TEXT_MAX])
 
 
-def write_standing(anthropic, slot, voice, piece, profile=None, voice_check=None):
+def write_standing(anthropic, slot, voice, piece, profile=None, voice_check=None, root=ROOT):
     """(words, title, share) of a standing-plan draft from one published piece, passing every check but the claim
-    (it has none), or Held. One rewrite with the reasons."""
+    (it has none), with the subscribe route (with_route), or Held. One rewrite with the reasons."""
     return _written(anthropic, STANDING_SYSTEM, standing_brief(slot['channel'], voice, piece, profile), slot, None,
-                    voice_check, claim=False)
+                    voice_check, claim=False, root=root)
 
 
-def _written(anthropic, system, brief, slot, concept, voice_check, claim):
+def _written(anthropic, system, brief, slot, concept, voice_check, claim, root=ROOT):
     reasons, code = [], None
     for _ in range(MAX_WRITES):
         user = brief + ('\nYour last draft was held. Write it again so none of these applies: ' + '; '.join(reasons)
@@ -455,7 +513,9 @@ def _written(anthropic, system, brief, slot, concept, voice_check, claim):
             code = code or name
             reasons += found
         if code is None:
-            return words, title.strip(), share
+            # The one point a draft's words are fixed: the route is added here, after the writer and its checks and
+            # before the review, the judges, the digest and Buffer, so each of them sees exactly these words.
+            return with_route(slot, words, root), title.strip(), share
     raise Held(code)
 
 
@@ -722,7 +782,8 @@ class Maker:
         """The handoff slot for one draft made and handed off (or None in a dry run), Held, or Stop."""
         files, assets = self.prepare(slot, concept, manifest)
         words, title, share = write_words(self.anthropic, slot, concept, voice, files, self.profile, note,
-                                          voice_check=lambda w: self.voice_found(voice, slot['channel'], w))
+                                          voice_check=lambda w: self.voice_found(voice, slot['channel'], w),
+                                          root=self.root)
         answer = review_words(self.anthropic, slot, words, share, assets)
         if not self.deliver:
             return None
@@ -899,7 +960,7 @@ def standing_week(work, monday, days, why, voices):
             try:
                 words, title, share = write_standing(
                     work.anthropic, slot, voices[channel], piece, work.profile,
-                    voice_check=lambda w, c=channel: work.voice_found(voices[c], c, w))
+                    voice_check=lambda w, c=channel: work.voice_found(voices[c], c, w), root=work.root)
                 review_words(work.anthropic, slot, words, share, [])
             except Held as held:
                 hold(held.code)

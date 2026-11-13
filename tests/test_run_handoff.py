@@ -22,6 +22,7 @@ except ImportError:  # run as tests.test_run_handoff
     from tests.test_autonomy import CapableStandIn
     from tests.test_run_autorelease import BufferStandIn, fetch, sha, staged_report
 
+from engine import route
 from engine.control_center import proposal
 from engine.run import autorelease, buffer_api, handoff
 from engine.run.autorelease import line_digest, parse_manifest, staged_report_run_id
@@ -40,9 +41,10 @@ P_THREADS, P_X, P_LINKEDIN, P_CAROUSEL = ('dddddddddddddddddddddd01', 'ddddddddd
                                           'dddddddddddddddddddddd03', 'dddddddddddddddddddddd04')
 # Each channel's pinned Buffer channelId (engine/buffer_channels.py): main's channel lock refuses any other.
 CH = BUFFER_CHANNEL_ID
-WORDS = {P_THREADS: 'Synthetic handoff words for the threads slot.', P_X: 'Synthetic handoff words for the x slot.',
-         P_LINKEDIN: 'Synthetic handoff words for the linkedin slot.',
-         P_CAROUSEL: 'Synthetic handoff words for the carousel slot.'}
+WORDS = {P_THREADS: 'Synthetic handoff words for the threads slot. Subscribe: ' + route.subscribe_url('threads', 'fx-threads'),
+         P_X: 'Synthetic handoff words for the x slot. Subscribe: ' + route.subscribe_url('x', 'fx-x'),
+         P_LINKEDIN: 'Synthetic handoff words for the linkedin slot. Subscribe: ' + route.subscribe_url('linkedin', 'fx-li'),
+         P_CAROUSEL: 'Synthetic handoff words for the carousel slot. Subscribe: link in bio.'}
 IMAGE = b'synthetic handoff image bytes\n'
 SERVICE = {'threads': 'threads', 'x': 'twitter', 'linkedin': 'linkedin', 'instagram': 'instagram'}
 METADATA = {'threads': {'__typename': 'ThreadsPostMetadata', 'type': 'post', 'threadCount': 0, 'linkAttachment': None},
@@ -218,7 +220,7 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(line['payload_sha256'], line_digest(line))
 
     def test_an_oversize_manifest_splits_into_go_lives_in_order(self):
-        long_words = 'Synthetic long handoff words. ' * 25
+        long_words = 'Synthetic long handoff words. ' * 25 + route.subscribe_url('x', 'fx-long')
         slots = []
         for index in range(30):
             post_id = 'ffffffffffffffffffffff' + '%02d' % index
@@ -439,6 +441,56 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(summary['holds'], {'bad_due_at': 1})
         self.assertEqual(summary['slots'], {'held': 1, 'proposed': 2})
 
+    def test_a_line_with_no_subscribe_route_is_never_put_to_him(self):
+        # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route (engine/route.py).
+        self.fix.draft(P_X, 'x', words='Synthetic handoff words for the x slot, with no route.')
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X)
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual(summary['holds'], {'subscribe_route_missing': 1})
+        self.assertEqual(summary['slots'], {'held': 1, 'proposed': 2})
+        self.assertNotIn('x-1', ' '.join(p['exact_payload'] for p in self.proposals()))
+
+    def test_his_own_click_routed_in_its_first_comment_is_put_to_him(self):
+        # A LinkedIn line is his own click and its signed meta is None (buffer_api.signed_meta cannot carry it), so
+        # a route in its first comment is invisible to route.line_errors; the Buffer hook passes the same post and
+        # the measure job reconciles the posted one. It was held as subscribe_route_missing (adversarial review,
+        # 13 Nov 2026).
+        meta = {'__typename': 'LinkedInPostMetadata', 'type': 'post', 'linkAttachment': None,
+                'firstComment': 'Subscribe: ' + route.subscribe_url('linkedin', 'fx-li-comment')}
+        self.fix.draft(P_LINKEDIN, 'linkedin', metadata=meta,
+                       words='Synthetic handoff words for the linkedin slot; the route is in the first comment.')
+        self.fix.slots[2] = self.fix.maker('linkedin-1', 'linkedin', P_LINKEDIN, mode='krish_click', due=None)
+        self.assertIsNone(self.fix.slots[2].get('meta'))
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual((summary['holds'], summary['slots']), ({}, {'proposed': 3}), summary)
+        lines = {}
+        for item in self.proposals():
+            lines.update(parse_manifest(item['exact_payload'], engine=True))
+        self.assertEqual(lines['linkedin-1']['publish_mode'], 'krish_click')
+
+    def test_a_slot_left_to_his_click_on_any_other_channel_still_needs_a_route(self):
+        # Only LinkedIn skips the go-live route check (its first comment is not in the signed meta). An X slot left
+        # to his own click carries its meta, so with no route it holds as an engine line does (reverifier, 13 Nov
+        # 2026: every krish_click line had been put to him unchecked).
+        self.fix.draft(P_X, 'x', words='Synthetic handoff words for the x slot, with no route.')
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, mode='krish_click', due=None)
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual(code, 0, summary)
+        self.assertEqual((summary['holds'], summary['slots']), ({'subscribe_route_missing': 1}, {'held': 1, 'proposed': 2}),
+                         summary)
+        self.assertNotIn('x-1', ' '.join(p['exact_payload'] for p in self.proposals()))
+
+    def test_a_slot_left_to_his_click_with_its_route_is_put_to_him(self):
+        self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, mode='krish_click', due=None)  # the fixture's routed words
+        with mock.patch.object(handoff.intensity, 'state', return_value={'urgency': 5}):
+            summary, code = self.run_handoff()
+        self.assertEqual((code, summary['holds'], summary['slots']), (0, {}, {'proposed': 3}), summary)
+
     def test_a_due_outside_the_run_window_holds(self):
         # The run 2026-11-03:piece ends at New York midnight on 11 November.
         self.fix.slots[1] = self.fix.maker('x-1', 'x', P_X, due='2026-11-20T14:00:00Z')
@@ -484,7 +536,7 @@ class HandoffTests(unittest.TestCase):
         # R94, F106: approving a day authorises exactly that day's posts. 03:30 UTC on 5 November
         # is 22:30 on Wednesday 4 November in New York, so it rides with that day.
         self.fix.slots[0] = self.fix.maker('threads-1', 'threads', P_THREADS, [sha(IMAGE)], due='2026-11-05T03:30:00Z')
-        self.fix.draft(P_CAROUSEL, 'x')
+        self.fix.draft(P_CAROUSEL, 'x', words='Synthetic handoff words for the second x slot. ' + route.subscribe_url('x', 'fx-x2'))
         self.fix.slots.append(self.fix.maker('x-2', 'x', P_CAROUSEL, due='2026-11-05T14:00:00Z'))
         summary, code = self.run_handoff()
         self.assertEqual(code, 0, summary)

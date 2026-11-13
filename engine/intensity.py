@@ -21,7 +21,10 @@ from .social import max_daily_posts
 ROOT = Path(__file__).resolve().parents[1]
 BOUNDS = 'intensity.json'
 PLACEMENTS = ('in_post', 'first_reply', 'profile_link')
-SOURCE_TAGS = ('utm_source', 'utm_content')
+# The four tags GA4 credits a link by (engine/run/ga4.py UTMS; engine/route.py builds them): a link with fewer
+# passes no gate, because its post could never be judged by the subscribers it brought.
+SOURCE_TAGS = ('utm_source', 'utm_medium', 'utm_campaign', 'utm_content')
+PROFILE_TAGS = ('utm_source', 'utm_content')
 OUTREACH_MAX = 10
 
 
@@ -180,7 +183,10 @@ def subscribe_errors(cta, channel, words, link_placement=None, urgency=None, roo
     if (parts.hostname or '').lower() != page.hostname or parts.path.rstrip('/') != page.path.rstrip('/'):
         return [url + ' is not the subscribe page ' + conversion['subscribe_url']]
     query = parse_qs(parts.query)
-    missing = [t for t in SOURCE_TAGS if not (query.get(t) or [''])[0].strip()]
+    # The profile links are the exact URLs Krish approved (jobs/channel-audit.md: source, medium and content);
+    # a link in a post or a reply carries all four tags GA4 credits a post by.
+    needed = PROFILE_TAGS if placement == 'profile_link' else SOURCE_TAGS
+    missing = [t for t in needed if not (query.get(t) or [''])[0].strip()]
     if missing:
         return ['the subscribe URL needs its source tags (' + ', '.join(missing) + ') so Measurement can credit it']
     if placement not in conversion['placements']:

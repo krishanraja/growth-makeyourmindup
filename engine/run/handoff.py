@@ -103,7 +103,7 @@ from pathlib import Path
 import re
 import sys
 
-from engine import buffer_channels, concepts as concept_rules, mix as mix_rules, stale_asks
+from engine import buffer_channels, concepts as concept_rules, intensity, mix as mix_rules, route, stale_asks
 from engine.cc_loop import NO_SPEND, decisions_paged, plan_proposals, revision
 from engine.control_center import (SLUG, ProtocolError, _expiry_hold, _latest, _plan_open, _stops,
                                    build_report, canonical_json, objective, proposal, sha256_hex)
@@ -778,6 +778,21 @@ def golive_proposals(manifest, lines, formats, plan_id, now, root, slots):
     on its own, so one press never authorises more than one day's posts."""
     run_id, express = manifest['run_id'], bool(manifest.get('express'))
     base = SLUG + ':golive:' + _rest(run_id)
+    # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route. A line without one is
+    # never put to him; it holds here, as the Buffer hook holds a hand-made call (engine/route.py).
+    urgency = intensity.state(root or ROOT, now)['urgency']
+    routed = []
+    for line, slot in lines:
+        # Only a LinkedIn line skips this check. Its signed meta is None (buffer_api.signed_meta cannot carry a
+        # LinkedIn draft), so a route in its first comment is invisible here and the line would be held although
+        # the Buffer hook passes it; the reconciliation in the measure job reads the posted LinkedIn post, first
+        # comment included, and raises the alarm if it went out with no route. Every other line is checked, a
+        # slot left to his own click (krish_click) on any other channel too: its meta carries its first comment.
+        if line.get('channel') != 'linkedin' and route.line_errors(line, urgency, root or ROOT):
+            slots.hold('subscribe_route_missing')
+            continue
+        routed.append((line, slot))
+    lines = routed
     review = {line['slot_id'] for line, slot in lines if needs_own_review(slot, formats)}
     batch = [line for line, _ in lines if line['slot_id'] not in review]
     items = [line for line, _ in lines if line['slot_id'] in review]
