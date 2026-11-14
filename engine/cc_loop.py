@@ -1165,7 +1165,7 @@ def keep_web_analytics(root, directive):
 
 SUBSCRIBERS_FILE = 'subscribers.json'
 SUBSCRIBERS_FEATURE = 'subscriber_sources'
-SUBSCRIBER_COUNTS = ('total', 'organic', 'paid', 'this_week_so_far')
+SUBSCRIBER_COUNTS = ('total', 'organic', 'paid')
 
 
 def _count(value):
@@ -1192,21 +1192,34 @@ def subscribers_block(directive):
     week = block.get('week_of')
     if not isinstance(week, str) or not re.match(r'^\d{4}-\d{2}-\d{2}$', week):
         return None
-    raw = block.get('by_source')
-    pairs = raw.items() if isinstance(raw, dict) else [
-        (r.get('source'), r.get('count')) for r in raw if isinstance(r, dict)] if isinstance(raw, list) else []
-    by_source = {}
-    for label, count in pairs:
-        label = _wa_text(label, 80)
-        if label and _count(count) is not None:
-            by_source[label] = by_source.get(label, 0) + count
+    by_source = _by_source(block.get('by_source'))
     unclassified = [u for u in (block.get('unclassified') or []) if isinstance(block.get('unclassified'), list)
                     and isinstance(u, (str, dict))]
-    out = {'week_of': week, 'by_source': dict(sorted(by_source.items())), 'unclassified_n': len(unclassified),
+    out = {'week_of': week, 'by_source': by_source, 'unclassified_n': len(unclassified),
            'rule': _wa_text(block.get('rule'), 300),
            'read_on': block.get('read_on') if isinstance(block.get('read_on'), str) else None}
     out.update({key: _count(block.get(key)) for key in SUBSCRIBER_COUNTS})
+    # The week so far: { total, organic, by_source } as lane C serves it (a bare count is read as its total).
+    so_far = block.get('this_week_so_far')
+    if isinstance(so_far, dict):
+        out['this_week_so_far'] = {'total': _count(so_far.get('total')), 'organic': _count(so_far.get('organic')),
+                                   'by_source': _by_source(so_far.get('by_source'))}
+    else:
+        out['this_week_so_far'] = {'total': _count(so_far), 'organic': None, 'by_source': {}} \
+            if _count(so_far) is not None else None
     return out
+
+
+def _by_source(raw):
+    """{Substack source label: count} from a map or [{source, count}]; malformed rows left out, labels plain."""
+    pairs = raw.items() if isinstance(raw, dict) else [
+        (r.get('source'), r.get('count')) for r in raw if isinstance(r, dict)] if isinstance(raw, list) else []
+    out = {}
+    for label, count in pairs:
+        label = _wa_text(label, 80)
+        if label and _count(count) is not None:
+            out[label] = out.get(label, 0) + count
+    return dict(sorted(out.items()))
 
 
 def keep_subscribers(root, directive):
