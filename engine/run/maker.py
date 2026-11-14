@@ -456,7 +456,10 @@ def with_route(slot, words, root=ROOT):
         line = PROFILE_ROUTE
     else:
         try:
-            line = 'Subscribe: ' + route.subscribe_url(channel, route.content_of(slot['slot_id']), root=root)
+            # A post that is a board item carries content_of(<item>-<channel>), so Control Center binds it to its item
+            # (Maker.item_route); any other post its slot id.
+            content = slot.get('route_content') or route.content_of(slot['slot_id'])
+            line = 'Subscribe: ' + route.subscribe_url(channel, content, root=root)
         except ValueError:
             raise Held(subscribe_gate.HOLD) from None
     final = words + '\n' + line
@@ -762,7 +765,29 @@ class Maker:
         self.state_read, self.state_fields = False, None
         # Today's directive, read once a run (read_directive): the engine's state and his taste come from it.
         self.directive_read, self.directive = False, None
+        self.board_items = {}  # {board week: {option id: board item id}} for item_route, read once a week a run
         self.taste = 'absent'  # what this run read of his taste: read, none or absent (taste_state)
+
+    def item_route(self, slot, concept, monday):
+        """utm_content for a slot whose concept is an off-day option he approved on the board: content_of(<the board's
+        item id>-<channel>) (route.item_content; audit 2026-11-14, I-09), so Control Center's sweep binds the sent post
+        to its item by id. None (the slot id is used) with no board key, a board that cannot be read, or no item."""
+        if self.board is None or not isinstance(concept, dict):
+            return None
+        week = monday.isoformat() if hasattr(monday, 'isoformat') else str(monday)
+        if week not in self.board_items:
+            from engine.run.board_tick import BoardError  # noqa: PLC0415
+            try:
+                offdays = self.board.approvals(week)[1]
+                self.board_items[week] = {row['option_id']: row['item'] for row in offdays
+                                          if isinstance(row, dict) and isinstance(row.get('item'), str) and row['item']}
+            except (BoardError, AttributeError, KeyError, TypeError, IndexError):
+                self.board_items[week] = {}  # no item is ever guessed: the slot id stands
+        item = self.board_items[week].get(concept.get('concept_id'))
+        try:
+            return route.item_content(item, slot['channel']) if item else None
+        except ValueError:
+            return None
 
     def floor(self, fmt):
         """His approved voice rules and the floor standards for this format, for the writer only."""
@@ -825,7 +850,9 @@ class Maker:
         """The handoff slot for one draft made and handed off (or None in a dry run), Held, or Stop."""
         files, assets = self.prepare(slot, concept, manifest)
         floor = self.floor(slot['format'])
-        words, title, share = write_words(self.anthropic, slot, concept, voice, files, self.profile, note,
+        routed = self.item_route(slot, concept, monday)
+        words, title, share = write_words(self.anthropic, dict(slot, route_content=routed) if routed else slot,
+                                          concept, voice, files, self.profile, note,
                                           voice_check=lambda w: self.voice_found(voice, slot['channel'], w),
                                           root=self.root, floor=floor)
         answer = review_words(self.anthropic, slot, words, share, assets)
