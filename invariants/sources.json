@@ -2,7 +2,7 @@
   "approved": true,
   "approved_by": "Krish",
   "approved_at": "2026-11-12",
-  "note": "Approved by Krish on 2026-11-12 (\"i approve 3, 4, 5\"): organic counts now count toward the North Star; all-source counts stay beside them",
+  "note": "Approved by Krish on 2026-11-12 (\"i approve 3, 4, 5\"): organic counts now count toward the North Star; all-source counts stay beside them. Krish added krishraja.com (with and without www) as an organic source on 2026-11-14, decision 5.12 (\"I agree with everything else until Batch 6\"): its two subscribe links carry the publication's tracking tags",
   "basis": "Approved by Krish, 2026-11-12. Follows jobs/numbers.md step 4: native recommendations, app, partner, reader referral and external placement are attributed; Direct stays unattributed and is never assigned to owned social. Email and imports are not traceable to an organic post, so they stay unattributed. Any paid placement is paid and never counts toward the zero-paid North Star.",
   "categories": {
     "substack notes": "organic",
@@ -33,6 +33,8 @@
     "bing": "organic",
     "duckduckgo": "organic",
     "search": "organic",
+    "krishraja.com": "organic",
+    "www.krishraja.com": "organic",
     "direct": "unattributed",
     "email": "unattributed",
     "import": "unattributed",
