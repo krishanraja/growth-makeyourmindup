@@ -75,7 +75,8 @@ class EngineCoreTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 core.append('acquisition', bad, self.root)
         self.assertFalse((self.root / 'engines' / 'records' / 'acquisition.jsonl').exists())
-        fine = record(title='Reply to hello@krishraja.com',
+        self.assertEqual(core.privacy_errors(record(title='Reply to hello@krishraja.com')), [], 'still his')
+        fine = record(title='Reply to krish@mindmake.co',
                       source={'kind': 'private_file', 'ref': 'D:/Users/someone/work/.scratch/a.md',
                               'observed_at': '2026-11-05'},
                       detail={'route': 'x', 'evidence_ref': 'D:\\work\\.scratch\\receipt.json'})

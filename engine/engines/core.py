@@ -73,7 +73,11 @@ CONTRACT_KEYS = ('schema_version', 'kind', 'id', 'name', 'entry_request', 'job',
                  'forbidden_actions', 'done', 'recover_first', 'hands_off_to')
 ID = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 EMAIL = re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
-ALLOWED_EMAIL = 'hello@krishraja.com'
+# His public contact address, the only one a committed record may carry (Ruling, Krish, 2026-11-14:
+# everything uses krish@mindmake.co). hello@krishraja.com is still his, so a record that quotes it is not
+# refused as an outside address; it is never the one written.
+ALLOWED_EMAIL = 'krish@mindmake.co'
+OWN_EMAILS = (ALLOWED_EMAIL, 'hello@krishraja.com')
 PRIVATE_KEYS = ('body', 'text', 'message', 'email', 'recipient_address', 'comment', 'post_url',
                 'recovery_copy')
 DRIVE_PATH = re.compile(r'(?<![A-Za-z])[A-Za-z]:[\\/]')
@@ -116,7 +120,7 @@ def privacy_errors(record):
                 walk(v, where + str(i) + '.', key)
         elif isinstance(value, str):
             for found in EMAIL.findall(value):
-                if found.lower() != ALLOWED_EMAIL:
+                if found.lower() not in OWN_EMAILS:
                     errors.append(where.rstrip('.') + ': email address; keep it in ' + PRIVATE_DIR.as_posix())
             is_ref = isinstance(key, str) and (key == 'ref' or key.endswith('_ref'))
             if DRIVE_PATH.search(value) and not is_ref:
