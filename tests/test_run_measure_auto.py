@@ -278,7 +278,10 @@ class MeasureJobTests(unittest.TestCase):
             self.assertIn('no Control Center call', text)
             # Numbers stay in the report: no metric, session or sign-up figure reaches the log.
             # A figure is matched as a whole number: the report's sha256 is hex and may hold the digits by chance.
-            self.assertIsNone(re.search(r'\b400\b', text))
+            # The cost line counts seconds of run time, which on a slow runner can itself read 400 (Windows CI,
+            # 14 Nov 2026), so it is left out of this search.
+            counted = '\n'.join(l for l in text.split('\n') if not l.startswith('Cost '))
+            self.assertIsNone(re.search(r'\b400\b', counted))
             for private in ('impressions', 'sessions', 'placement_'):
                 self.assertNotIn(private, text)
             report = validate_report(read_json(Path(folder) / '.scratch/cc/report-measure.json'))
