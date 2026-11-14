@@ -12,6 +12,11 @@ subscribe gate and GA4 all read links by the same four tags. line_errors checks 
 its first comment) the way the Buffer hook checks a hand-made call, so the engine's own path carries the same
 gate as a session's (engine/run/handoff.py and engine/run/autorelease.py).
 
+The route's shape is also written down once, for every repository that builds a subscribe link
+(content-engine's kit, krishraja.com): specs/subscribe-route.json (mymu-subscribe-route/1, audit 2026-11-14,
+I-09). tests/test_subscribe_route_spec.py fails when this module, engine/intensity.py, the gate or GA4's reader
+stops equalling it, so change the spec and the code in one pull request.
+
 Offline only: no network, no credentials. Nothing here posts, sends, publishes or spends.
 """
 import re
