@@ -54,3 +54,9 @@ class SubscribeRouteSpecTests(unittest.TestCase):
             self.assertTrue(all(query.get(t) for t in SPEC['profile_tags']), link)
             for key, value in SPEC['profile_link'].items():
                 self.assertEqual(query.get(key), value, link)
+
+    def test_a_board_items_utm_content_is_the_rule_the_spec_states(self):
+        self.assertIn('engine-2026-11-09-gitbroke-threads', SPEC['utm_content_rule'])
+        content = route.item_content('engine:2026-11-09:gitbroke', 'threads')
+        self.assertEqual(content, 'engine-2026-11-09-gitbroke-threads')
+        self.assertRegex(content, SPEC['utm_content_pattern'])

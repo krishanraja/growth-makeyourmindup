@@ -53,6 +53,19 @@ def content_of(post_id):
     return content
 
 
+def item_content(item, channel):
+    """utm_content for a post that is a board item: content_of(<board item id>-<channel>), the rule agreed with
+    Control Center (audit 2026-11-14, I-09; its buffer_sent sweep binds a post whose utm_content equals this, or the
+    bare content_of(item), never a prefix). Unique per post, since one item goes out on several channels. ValueError
+    for a channel that is not pinned or an id that leaves nothing."""
+    if channel not in subscribe_gate.CHANNEL_BY_ID.values():
+        raise ValueError('not one of this engine\'s pinned channels: ' + str(channel))
+    content = content_of(str(item) + '-' + channel)
+    if not content.endswith('-' + channel):
+        raise ValueError('a board item id that long would lose its channel: at most 64 characters in all')
+    return content
+
+
 def line_errors(line, urgency=None, root=intensity.ROOT):
     """Why a go-live line (engine/run/autorelease.py LINE_KEYS) would send a post with no subscribe route, or [].
 

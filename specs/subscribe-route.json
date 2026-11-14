@@ -23,7 +23,7 @@
     "tiktok"
   ],
   "utm_content_pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
-  "utm_content_rule": "lower case, unique to the post or slot and its channel: a piece or slot id, then the channel where one piece has several posts",
+  "utm_content_rule": "lower case, unique to the post and its channel. A post that is a publish-board item: content_of(<board item id> + '-' + <channel>), for example engine:2026-11-09:gitbroke on threads is engine-2026-11-09-gitbroke-threads (engine/route.py item_content; Control Center binds a sent post to its item by this, exact only, never a prefix). Any other post: its slot or post id through content_of.",
   "sources": {
     "substack-notes": [
       "substack",
@@ -49,5 +49,6 @@
       "youtube"
     ]
   },
-  "sources_rule": "Each key is a pinned channel and the utm_source a new link is built with; its list is every utm_source the subscribe gate accepts for that channel (Buffer's own service name included)."
+  "sources_rule": "Each key is a pinned channel and the utm_source a new link is built with; its list is every utm_source the subscribe gate accepts for that channel (Buffer's own service name included).",
+  "content_of": "lower case; each run of characters outside a-z, 0-9, _ and - becomes one -; no leading - or _; at most 64 (engine/route.py content_of)"
 }

@@ -282,6 +282,32 @@ class MakerTests(unittest.TestCase):
         summary, code = self.release()
         self.assertEqual((code, summary['slots']), (0, {'scheduled': 4}), summary)
 
+    def test_a_post_that_is_a_board_item_carries_its_item_and_channel_as_utm_content(self):
+        # Audit 2026-11-14, I-09: Control Center's sweep binds a sent post to its board item when its utm_content is
+        # content_of(<item>-<channel>) (agreed with lane C; control-center #848). The board serves each approved
+        # option's item; a post of one carries it, and the release gate still passes it.
+        self.approved()
+        for row in self.board.approve(self.plan):
+            row['item'] = 'engine:' + WEEK + ':' + row['option_id']
+        items = {row['option_id']: row['item'] for row in self.board.approved}
+        self.assertTrue(items)
+        summary, code = self.make()
+        self.assertEqual((code, summary['slots'].get('made')), (0, 4), summary)
+        by_service = {p['channelService']: p for p in self.buf.posts.values()}
+        for service, channel in (('twitter', 'x'), ('youtube', 'youtube')):
+            text = by_service[service]['text']
+            expected = [route.subscribe_url(channel, route.item_content(item, channel)) for item in items.values()]
+            self.assertTrue(any(text.endswith('Subscribe: ' + url) for url in expected), text)
+            self.assertIn('utm_content=engine-' + WEEK + '-', text)
+            self.assertTrue(text.endswith('-' + channel), text)
+
+    def test_item_content_is_the_agreed_form(self):
+        self.assertEqual(route.item_content('engine:2026-11-09:gitbroke', 'threads'), 'engine-2026-11-09-gitbroke-threads')
+        with self.assertRaises(ValueError):
+            route.item_content('engine:2026-11-09:gitbroke', 'linkedin')
+        with self.assertRaises(ValueError):
+            route.item_content('x' * 70, 'threads')
+
     def test_the_maker_writes_the_subscribe_route_itself_and_release_schedules_each_post(self):
         # Ruling (Krish, 2026-11-11): at U4 and U5 every post carries a subscribe route. The writer's words here carry
         # none; the maker adds it itself, deterministically, after the writer and its checks (with_route), so release
