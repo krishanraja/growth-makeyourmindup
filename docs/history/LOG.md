@@ -10,6 +10,14 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "Where it is right now":
 
+- Krish's personal LinkedIn is growth-mindmake's, not this engine's (Ruling, Krish, 2026-11-13: "growth-mindmake owns it"): this engine drafts, queues, taps, schedules and pins nothing there, and every route that could prepare a LinkedIn post, comment, reply, tap or go-live refuses it with one reason (engine/owners.py, social/channels/linkedin.json owned_by). His X and the publication's own accounts stay here; reading LinkedIn stays. (2026-11-13) (2026-11-13)
+
+## 2026-11-14
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
 - One plan now holds everything lined up for this engine: docs/plans/A1.md consolidates NOW.md's waiting items, GET-GOING's open steps, the counted-lattice exhibit, the keyword-DM plan, the briefs, experiments.json, lanes.json and failures.json, with duplicates merged, stale items closed, and the build steps that lived only in a session's plan file (first go-live, Note Press, release loop, lattice ledger) written in. GET-GOING points to it. (2026-11-13)
 
 ## 2026-11-14
