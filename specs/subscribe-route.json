@@ -1,0 +1,53 @@
+{
+  "schema": "mymu-subscribe-route/1",
+  "note": "The one subscribe route for Make Your Mind Up (audit 2026-11-14, I-09). engine/route.py, engine/intensity.py, engine/subscribe_gate.py and engine/run/ga4.py must equal it (tests/test_subscribe_route_spec.py). Other repositories vendor this file with its sha256 and build every subscribe link from it; change it here first, then in the code, in one pull request.",
+  "page": "https://home.makeyourmindup.ai/subscribe",
+  "medium": "social",
+  "campaign": "growth",
+  "post_tags": [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content"
+  ],
+  "profile_tags": [
+    "utm_source",
+    "utm_content"
+  ],
+  "profile_link": {
+    "utm_medium": "social",
+    "utm_content": "bio"
+  },
+  "profile_link_channels": [
+    "instagram",
+    "tiktok"
+  ],
+  "utm_content_pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+  "utm_content_rule": "lower case, unique to the post or slot and its channel: a piece or slot id, then the channel where one piece has several posts",
+  "sources": {
+    "substack-notes": [
+      "substack",
+      "substack-notes"
+    ],
+    "threads": [
+      "threads"
+    ],
+    "x": [
+      "twitter",
+      "x"
+    ],
+    "instagram": [
+      "instagram"
+    ],
+    "facebook": [
+      "facebook"
+    ],
+    "tiktok": [
+      "tiktok"
+    ],
+    "youtube": [
+      "youtube"
+    ]
+  },
+  "sources_rule": "Each key is a pinned channel and the utm_source a new link is built with; its list is every utm_source the subscribe gate accepts for that channel (Buffer's own service name included)."
+}
