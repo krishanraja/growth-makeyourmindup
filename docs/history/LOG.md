@@ -4,6 +4,18 @@ Newest first. Entries are written by the docs steward (`krishanraja/ai-harness`,
 and by people doing the same job by hand. Nothing in this file describes current behaviour; `NOW.md` and
 `README.md` do. Text moved here from `NOW.md` keeps its wording verbatim.
 
+## 2026-11-14
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-13 Krish ruled Threads always posts to makeyourmindup. Private receipts stay under ignored .scratch/channel-audit/profile-links-20261113.
+
+From "Where it is right now":
+
+- Every carousel, meme and Notes image this engine makes is made in a Claude session with the Codex plugin building it (a ve card queued in codex/queue/ for the Codex lane, held to the brand palette and the references Krish ticked), and off-day voiceover shorts on content-engine's ve route; the Saturday art-direction workflow and its Codex runner are retired, the kit checks stay as growth.py run kit, and memes and Notes images left the Canva lane (R126). (2026-11-13)
+
 ## 2026-11-13
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
