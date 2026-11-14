@@ -10,6 +10,18 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "What changed recently":
 
+- 2026-11-13 Krish connected the correct account; live provider readback closed the connection hold. No post was created, moved or published.
+
+From "Where it is right now":
+
+- The Counted Lattice plan is built in its first three steps (branch claude/sharp-knuth-2qb0jp): the source clock keeps every post's Buffer counts, each Note's free subscriptions among them (the 4 November Note reads 1 over 208 impressions); the subscribe hook fails closed; one four-tag route is checked on the engine's own go-live path; every post, Buffer-made or native, is reconciled for a route; and each run ends with one outcome row. The U5 exhibit, its five numbered questions and the test cards are in docs/plans/2026-11-13-counted-lattice.md. (2026-11-13)
+
+## 2026-11-14
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
 - 2026-11-13 Krish ruled Threads always posts to makeyourmindup. Private receipts stay under ignored .scratch/channel-audit/profile-links-20261113.
 
 From "Where it is right now":
