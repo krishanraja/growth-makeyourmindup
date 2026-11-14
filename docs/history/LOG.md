@@ -10,6 +10,14 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "Where it is right now":
 
+- One plan now holds everything lined up for this engine: docs/plans/A1.md consolidates NOW.md's waiting items, GET-GOING's open steps, the counted-lattice exhibit, the keyword-DM plan, the briefs, experiments.json, lanes.json and failures.json, with duplicates merged, stale items closed, and the build steps that lived only in a session's plan file (first go-live, Note Press, release loop, lattice ledger) written in. GET-GOING points to it. (2026-11-13)
+
+## 2026-11-14
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
 - Saturday 14 Nov's explainer carousel "AI is fixing what we got wrong" is made, at nine cards with a realistic scene on every card. It passes the ten-second swipe at 50 headline words and content-engine's 10/10 judges at 9 (ready). It is filed with send.py to 3 Posts/2026-11-14 Sat off.day - Five good things AI did for people/4 Social as "AI fixing what we got wrong v2" and read back with every hash matching; v1 is in the Drive bin on Krish's yes. Nothing is posted or scheduled. (2026-11-13)
 
 ## 2026-11-14
