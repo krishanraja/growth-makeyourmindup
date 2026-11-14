@@ -11,7 +11,8 @@ from engine.run import learn
 
 BLOCK = {'rule': 'TEST FIXTURE ONLY. Counted from Substack new-subscriber notices.', 'week_of': '2026-11-09',
          'total': 7, 'organic': 5, 'paid': 0, 'by_source': {'Substack Notes': 3, 'instagram': 2, 'Direct': 2},
-         'unclassified': ['TEST FIXTURE ONLY'], 'this_week_so_far': 2, 'read_on': '2026-11-14T05:10:00Z'}
+         'unclassified': ['TEST FIXTURE ONLY'], 'read_on': '2026-11-14T05:10:00Z',
+         'this_week_so_far': {'total': 2, 'organic': 2, 'by_source': {'Substack Notes': 2}}}
 
 
 def directive(block=BLOCK, flag=True):
@@ -34,6 +35,14 @@ class SubscribersBlockTests(unittest.TestCase):
         del block['this_week_so_far']
         got = cc_loop.subscribers_block(directive(block))
         self.assertEqual((got['total'], got['paid'], got['organic'], got['this_week_so_far']), (None, None, None, None))
+
+    def test_the_week_so_far_is_an_object_as_lane_c_serves_it(self):
+        got = cc_loop.subscribers_block(directive())['this_week_so_far']
+        self.assertEqual(got, {'total': 2, 'organic': 2, 'by_source': {'Substack Notes': 2}})
+        bare = cc_loop.subscribers_block(directive(dict(BLOCK, this_week_so_far=3)))['this_week_so_far']
+        self.assertEqual(bare, {'total': 3, 'organic': None, 'by_source': {}})
+        odd = cc_loop.subscribers_block(directive(dict(BLOCK, this_week_so_far={'total': 'x'})))['this_week_so_far']
+        self.assertEqual(odd, {'total': None, 'organic': None, 'by_source': {}})
 
     def test_by_source_as_a_list_and_malformed_rows_are_left_out(self):
         rows = [{'source': 'Substack Notes', 'count': 3}, {'source': 'x', 'count': 'two'}, {'count': 1}, 'junk',
