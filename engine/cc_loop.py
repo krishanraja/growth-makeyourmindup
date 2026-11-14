@@ -1335,6 +1335,21 @@ def voice_rules(directive):
 FLOOR_FEATURE = 'taste_floor'
 FLOOR_STANDING = ('approved', 'reworded')
 FLOOR_MAX = 40
+# The names Control Center gives this venture on the floor: the registry's product_slug and the taste ledger's
+# venture key ('publication'; lane D, control-center #815), or this engine's slug.
+FLOOR_VENTURES = ('publication', SLUG)
+# The taste ledger's own format words (control-center ENGINE_FLOOR_FORMATS) each of this engine's formats reads, beside
+# 'all'. The maker writes the words, so every format also reads captions and title.
+WORDS = ('captions', 'title')
+STILL = ('card', 'cover') + WORDS
+FLOOR_FORMATS = {
+    'carousel': ('carousel',) + STILL,
+    'short-video': ('short_video', 'motion', 'thumbnail', 'audio') + WORDS,
+    'long-video': ('motion', 'thumbnail', 'audio') + WORDS,
+    'single-image': STILL, 'meme': STILL, 'quote-card': STILL, 'receipt-card': STILL, 'scorecard': STILL,
+    'story': STILL, 'story-frame': STILL,
+    'text': WORDS, 'note': WORDS, 'article': WORDS, 'poll': WORDS,
+}
 
 
 def taste_floor(directive):
@@ -1356,7 +1371,7 @@ def taste_floor(directive):
             or not isinstance(floor.get('standards'), list):
         return 'absent', None, []
     venture = floor.get('venture')
-    if venture is not None and venture != SLUG:
+    if venture is not None and venture not in FLOOR_VENTURES:
         return 'absent', None, []
     rule = floor.get('rule') if isinstance(floor.get('rule'), str) and floor['rule'].strip() else None
     standards = []
@@ -1369,7 +1384,8 @@ def taste_floor(directive):
         formats = item.get('formats') if isinstance(item.get('formats'), list) else []
         standards.append({'id': item.get('id') if isinstance(item.get('id'), str) else None,
                           'statement': ' '.join(statement.split()),
-                          'formats': sorted({f.strip().lower() for f in formats if isinstance(f, str) and f.strip()})})
+                          'formats': sorted({f.strip().lower().replace('-', '_') for f in formats
+                                             if isinstance(f, str) and f.strip()})})
         if len(standards) == FLOOR_MAX:
             break
     return ('standards' if standards else 'none'), rule, standards
@@ -1386,13 +1402,15 @@ def taste_state(directive):
 
 
 def never_beneath(directive, fmt):
-    """The lines a headless writer gets: his approved voice rules and the floor standards for this format, form only
+    """The lines a headless writer gets: his approved voice rules and the floor standards for this format (one whose
+    ledger formats include 'all', or one FLOOR_FORMATS maps this format to), form only
     (never his words), or [] when none reached the run. Never a judge or reviewer: judges never read taste."""
     fmt = str(fmt or '').strip().lower()
+    reads = {'all', fmt.replace('-', '_')} | set(FLOOR_FORMATS.get(fmt, WORDS))
     _, _, rules = voice_rules(directive)
     _, _, standards = taste_floor(directive)
     lines = [' '.join(r['rule'].split()) for r in rules]
-    lines += [s['statement'] for s in standards if not s['formats'] or fmt in s['formats']]
+    lines += [s['statement'] for s in standards if not s['formats'] or reads & set(s['formats'])]
     return lines
 
 

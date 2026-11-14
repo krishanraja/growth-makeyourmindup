@@ -11,7 +11,7 @@ def std(n, standing='approved', formats=(), statement=None):
             'how_to_check': None, 'his_words': None, 'standing': standing, 'support_n': 1}
 
 
-def directive(standards, flag=True, venture='makeyourmindup', voice=None):
+def directive(standards, flag=True, venture='publication', voice=None):
     taste = {'floor': {'rule': 'TEST FIXTURE ONLY.', 'venture': venture, 'as_of': '2026-11-14', 'standards': standards}}
     if voice is not None:
         taste['approved_voice_rules'] = voice
@@ -20,6 +20,9 @@ def directive(standards, flag=True, venture='makeyourmindup', voice=None):
 
 class TasteFloorTests(unittest.TestCase):
     def test_only_behind_its_flag_and_only_this_venture(self):
+        # Control Center names this venture 'publication' (lane D, control-center #815); the slug is accepted too.
+        self.assertEqual(cc_loop.taste_floor(directive([std(1)], venture='makeyourmindup'))[0], 'standards')
+        self.assertEqual(cc_loop.taste_floor(directive([std(1)], venture=None))[0], 'standards')
         self.assertEqual(cc_loop.taste_floor(directive([std(1)], flag=False))[0], 'absent')
         self.assertEqual(cc_loop.taste_floor(directive([std(1)], venture='heartside'))[0], 'absent')
         self.assertEqual(cc_loop.taste_floor(directive([std(1)]))[0], 'standards')
@@ -30,6 +33,16 @@ class TasteFloorTests(unittest.TestCase):
         state, _, standards = cc_loop.taste_floor(directive(rows))
         self.assertEqual((state, len(standards), standards[0]['id']), ('standards', cc_loop.FLOOR_MAX, 's3'))
         self.assertEqual(cc_loop.taste_floor(directive([std(1, standing='draft')]))[0], 'none')
+
+    def test_the_ledger_formats_map_onto_the_makers_formats(self):
+        d = directive([std(1, formats=['carousel']), std(2, formats=['card']), std(3, formats=['short_video']),
+                       std(4, formats=['all']), std(5, formats=['captions']), std(6, formats=['thumbnail'])])
+        def ids(fmt):
+            return [line[-1] for line in cc_loop.never_beneath(d, fmt)]
+        self.assertEqual(ids('carousel'), ['1', '2', '4', '5'])
+        self.assertEqual(ids('short-video'), ['3', '4', '5', '6'])
+        self.assertEqual(ids('text'), ['4', '5'])
+        self.assertEqual(ids('a-format-nobody-knows'), ['4', '5'])
 
     def test_never_beneath_matches_the_format_and_carries_the_voice_rules(self):
         d = directive([std(1, formats=['Carousel']), std(2, formats=['short']), std(3)],
