@@ -4,3 +4,6 @@ knowledge/*.docx binary
 # Vendored files are pinned by sha256 and the run doc by byte size: keep LF on every platform.
 vendor/** -text
 docs/RUN.md text eol=lf
+
+# Control Center's protocol bundle is kept byte for byte (its hash test and ai-harness pins/bytes); never convert it.
+docs/control-center/** -text
