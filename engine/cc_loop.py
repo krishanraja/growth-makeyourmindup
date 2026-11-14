@@ -1319,6 +1319,70 @@ def voice_rules(directive):
     return ('rules' if rules else 'none'), rule, rules
 
 
+FLOOR_FEATURE = 'taste_floor'
+FLOOR_STANDING = ('approved', 'reworded')
+FLOOR_MAX = 40
+
+
+def taste_floor(directive):
+    """His approved floor from the directive's `taste.floor` (audit 2026-11-14, I-14), served behind
+    features.taste_floor: `{ rule, venture, as_of, standards: [{ id, layer, formats, statement, how_to_check,
+    his_words, standing, support_n }] }`.
+
+    Returns (state, rule, standards): 'absent' when it is not served or not readable, or names another venture
+    (no venture receives another's rows); 'none' when served with no standard approved yet; 'standards' otherwise.
+    Only approved or reworded standards are kept (a draft standard never reaches a headless maker), at most
+    FLOOR_MAX, each with its statement and the formats it applies to (none listed means every format). Malformed
+    entries are dropped, never repaired or invented."""
+    body = directive.get('directive', {}) if isinstance(directive, dict) else {}
+    body = body if isinstance(body, dict) else {}
+    features = body.get('features') if isinstance(body.get('features'), dict) else {}
+    taste = body.get('taste') if isinstance(body.get('taste'), dict) else {}
+    floor = taste.get('floor')
+    if features.get(FLOOR_FEATURE) is not True or not isinstance(floor, dict) \
+            or not isinstance(floor.get('standards'), list):
+        return 'absent', None, []
+    venture = floor.get('venture')
+    if venture is not None and venture != SLUG:
+        return 'absent', None, []
+    rule = floor.get('rule') if isinstance(floor.get('rule'), str) and floor['rule'].strip() else None
+    standards = []
+    for item in floor['standards']:
+        if not isinstance(item, dict) or item.get('standing') not in FLOOR_STANDING:
+            continue
+        statement = item.get('statement')
+        if not isinstance(statement, str) or not statement.strip():
+            continue
+        formats = item.get('formats') if isinstance(item.get('formats'), list) else []
+        standards.append({'id': item.get('id') if isinstance(item.get('id'), str) else None,
+                          'statement': ' '.join(statement.split()),
+                          'formats': sorted({f.strip().lower() for f in formats if isinstance(f, str) and f.strip()})})
+        if len(standards) == FLOOR_MAX:
+            break
+    return ('standards' if standards else 'none'), rule, standards
+
+
+def taste_state(directive):
+    """What the maker says it read of his taste: 'read' (a voice rule or a floor standard reached it), 'none'
+    (served, nothing approved yet) or 'absent' (neither served or readable: taste_unavailable)."""
+    voice, _, rules = voice_rules(directive)
+    floor, _, standards = taste_floor(directive)
+    if rules or standards:
+        return 'read'
+    return 'absent' if voice == 'absent' and floor == 'absent' else 'none'
+
+
+def never_beneath(directive, fmt):
+    """The lines a headless writer gets: his approved voice rules and the floor standards for this format, form only
+    (never his words), or [] when none reached the run. Never a judge or reviewer: judges never read taste."""
+    fmt = str(fmt or '').strip().lower()
+    _, _, rules = voice_rules(directive)
+    _, _, standards = taste_floor(directive)
+    lines = [' '.join(r['rule'].split()) for r in rules]
+    lines += [s['statement'] for s in standards if not s['formats'] or fmt in s['formats']]
+    return lines
+
+
 def voice_block(directive):
     """The labelled block a drafting step reads. Local only, never a public log."""
     state, rule, rules = voice_rules(directive)

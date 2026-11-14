@@ -257,7 +257,7 @@ class MakerTests(unittest.TestCase):
         self.assertEqual(code, 0, summary)
         self.assertEqual((summary['days'], summary['slots'].get('made'), summary['handoff']['recorded']),
                          (['2026-11-10'], 4, 4), summary)
-        self.assertEqual(summary['taste'], 'taste_unavailable')
+        self.assertEqual(summary['taste'], 'absent')  # nothing of his taste served (I-14)
         self.assertEqual(summary['run_holds'], ['taste_unavailable'])  # said, never silent (gmymu-4)
         posts = [p for p in self.buf.posts.values()]
         self.assertEqual(sorted(p['channelService'] for p in posts), ['instagram', 'tiktok', 'twitter', 'youtube'])
@@ -1012,6 +1012,50 @@ class MakerTests(unittest.TestCase):
             self.assertNotIn('instruction_acks', report, 'the maker acks nothing')
         directives = [c for c in self.cc.calls if c['method'] == 'GET' and c['path'].endswith('/directive')]
         self.assertEqual(len(directives), 1, 'the directive is read once a run')
+
+    def test_his_approved_floor_reaches_the_writer_never_the_reviewer_and_taste_says_read(self):
+        # Audit 2026-11-14, I-14: the maker reads his approved floor and voice rules from the directive and passes
+        # them, form only, to the writer; a draft standard, another format's standard, another venture's floor and his
+        # own words never reach it, and the blind reviewer never reads taste (judges never read taste).
+        saved = self.cc.directive_extra
+        self.addCleanup(lambda: setattr(self.cc, 'directive_extra', saved))
+        floor = {'rule': 'TEST FIXTURE ONLY.', 'venture': 'makeyourmindup', 'as_of': '2026-11-14', 'standards': [
+            {'id': 's1', 'layer': 'copy', 'formats': [], 'statement': 'TEST FIXTURE ONLY floor for every format.',
+             'how_to_check': None, 'his_words': 'TEST FIXTURE ONLY his words', 'standing': 'approved', 'support_n': 3},
+            {'id': 's2', 'layer': 'copy', 'formats': ['no-such-format'], 'statement': 'TEST FIXTURE ONLY other format.',
+             'how_to_check': None, 'his_words': None, 'standing': 'approved', 'support_n': 1},
+            {'id': 's3', 'layer': 'copy', 'formats': [], 'statement': 'TEST FIXTURE ONLY draft standard.',
+             'how_to_check': None, 'his_words': None, 'standing': 'draft', 'support_n': 1}]}
+        self.cc.directive_extra = {'features': {'taste_floor': True}, 'taste': {
+            'rule': 'TEST FIXTURE ONLY.', 'approved_voice_rules': [{'layer': 'copy', 'rule': 'TEST FIXTURE ONLY voice rule.',
+                                                                    'his_words': 'TEST FIXTURE ONLY voice words'}],
+            'floor': floor}}
+        summary, code = self.make()
+        self.assertEqual((summary['taste'], 'run_holds' in summary), ('read', False), summary)
+        writes = [c for c in self.words.calls if c['schema'] is maker.WRITE_SCHEMA]
+        reviews = [c for c in self.words.calls if c['schema'] is maker.REVIEW_SCHEMA]
+        self.assertTrue(writes and reviews)
+        for call in reviews:
+            self.assertNotIn('TEST FIXTURE ONLY floor', call['user'])
+            self.assertNotIn('TEST FIXTURE ONLY voice rule', call['user'])
+        for call in writes:
+            self.assertIn('TEST FIXTURE ONLY floor for every format.', call['user'])
+            self.assertIn('TEST FIXTURE ONLY voice rule.', call['user'])
+            for never in ('other format', 'draft standard', 'his words', 'voice words'):
+                self.assertNotIn(never, call['user'])
+        self.assertIn(maker.TASTE_READ_LINE, json.dumps(self.standing_reports()))
+        # Another venture's floor is never read; with no voice rule either, taste is absent and said as a hold.
+        self.cc.directive_extra = {'features': {'taste_floor': True}, 'taste': {'floor': dict(floor, venture='heartside')}}
+        self.cc.reports, self.words.calls = {}, []
+        summary, code = self.make()
+        self.assertEqual((summary['taste'], summary.get('run_holds')), ('absent', ['taste_unavailable']), summary)
+        self.assertFalse(any('TEST FIXTURE ONLY floor' in c['user'] for c in self.words.calls))
+        # Served with nothing approved: none, and no hold.
+        self.cc.directive_extra = {'features': {'taste_floor': True}, 'taste': {'approved_voice_rules': [],
+                                                                               'floor': dict(floor, standards=[])}}
+        self.cc.reports, self.words.calls = {}, []
+        summary, code = self.make()
+        self.assertEqual((summary['taste'], 'run_holds' in summary), ('none', False), summary)
 
     def test_his_no_on_the_standing_plan_means_no_standing_drafts(self):
         self.cc.decisions.append({'proposal_id': 'makeyourmindup:plan:w45-w52', 'decision': 'declined',

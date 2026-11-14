@@ -32,7 +32,8 @@ class TasteWiringTests(unittest.TestCase):
         self.assertLessEqual(len(raw), 6 * 1024)
         body = ' '.join(raw.decode('utf-8').split())
         self.assertFalse(EM_DASH.search(body))
-        for needle in ('get_approved_taste', 'get_production_examples', 'report_to_taste_engine',
+        self.assertNotIn('get_production_examples', body)  # never built (audit 2026-11-14, I-14)
+        for needle in ('get_approved_taste', 'report_to_taste_engine', 'Judges never read taste',
                        'taste_unavailable', 'Taste never blocks a slot', 'ids only',
                        'Never take a subject from them', 'never invent one', 'character for character',
                        'never answer a card or approve a rule', 'At most one a week', 'krishanraja/inspirationhouse',

@@ -277,11 +277,14 @@ point at a file he approved.
 
 ## Taste and cost, said every run
 
-- **Taste is a hold, never silent.** The taste ledger is read only in a
-  session (`docs/TASTE.md`), so this job never has it. Every run lists
+- **Taste is read from the directive, and said either way.** His approved
+  voice rules, and his floor for each format behind `features.taste_floor`
+  (audit 2026-11-14, I-14), go to the writer as "never beneath" lines, form
+  only; the blind reviewer never reads taste. The summary says `taste: read`,
+  `none` (served, nothing approved yet) or `absent`. Absent lists
   `taste_unavailable` in `run_holds`, on the job page and on each standing
-  report it keeps in Control Center. It is not loud: the drafts still follow
-  the account rules and the voice profile.
+  report it keeps in Control Center; it is not loud, and the drafts still
+  follow the account rules and the voice profile.
 - **Every paid call is metered.** The client counts the tokens each
   answered call used (a refused or truncated answer is billed, so it
   counts). The run's summary carries them as `model_usage`, and the run

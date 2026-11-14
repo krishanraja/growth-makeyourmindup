@@ -106,7 +106,7 @@ import time
 from engine import (backlog, catalog, concepts as concept_rules, engine_state, intensity, mix as mix_rules, route,
                     stale_asks, subscribe_gate, voice as voice_check)
 from engine.buffer_channels import BUFFER_CHANNEL_ID
-from engine.cc_loop import decisions_paged, revision
+from engine.cc_loop import decisions_paged, never_beneath, revision, taste_state
 from engine.control_center import SLUG, ProtocolError, build_report, proposal
 from engine.core import instant, ny_time, read_json
 from engine.packs import x_weight
@@ -467,12 +467,22 @@ def with_route(slot, words, root=ROOT):
     return final
 
 
-def write_words(anthropic, slot, concept, voice, files, profile=None, note=None, voice_check=None, root=ROOT):
+def floor_brief(floor):
+    """His approved floor for the writer, never the blind reviewer (audit 2026-11-14, I-14): his approved voice rules and
+    the floor standards for the slot's format (cc_loop.never_beneath), form only, or '' when none reached the run."""
+    if not floor:
+        return ''
+    return ('\nHis approved floor. Never write beneath any of these, and never quote them:\n'
+            + '\n'.join('- ' + line for line in floor))
+
+
+def write_words(anthropic, slot, concept, voice, files, profile=None, note=None, voice_check=None, root=ROOT,
+                floor=None):
     """(words, title, share) that carry the claim and pass every check, with the subscribe route (with_route), or
     Held. One rewrite with the reasons. voice_check(words) gives the hard krish-voice rules the words break
     (voice_reasons), checked like the copy lint."""
-    return _written(anthropic, WRITER_SYSTEM, brief_of(slot, concept, voice, files, profile, note), slot, concept,
-                    voice_check, claim=True, root=root)
+    return _written(anthropic, WRITER_SYSTEM, brief_of(slot, concept, voice, files, profile, note) + floor_brief(floor),
+                    slot, concept, voice_check, claim=True, root=root)
 
 
 def standing_brief(channel, voice, piece, profile=None):
@@ -485,11 +495,11 @@ def standing_brief(channel, voice, piece, profile=None):
             + '\nThe piece as published:\n' + piece['text'][:PIECE_TEXT_MAX])
 
 
-def write_standing(anthropic, slot, voice, piece, profile=None, voice_check=None, root=ROOT):
+def write_standing(anthropic, slot, voice, piece, profile=None, voice_check=None, root=ROOT, floor=None):
     """(words, title, share) of a standing-plan draft from one published piece, passing every check but the claim
     (it has none), with the subscribe route (with_route), or Held. One rewrite with the reasons."""
-    return _written(anthropic, STANDING_SYSTEM, standing_brief(slot['channel'], voice, piece, profile), slot, None,
-                    voice_check, claim=False, root=root)
+    return _written(anthropic, STANDING_SYSTEM, standing_brief(slot['channel'], voice, piece, profile) + floor_brief(floor),
+                    slot, None, voice_check, claim=False, root=root)
 
 
 def _written(anthropic, system, brief, slot, concept, voice_check, claim, root=ROOT):
@@ -520,9 +530,9 @@ def _written(anthropic, system, brief, slot, concept, voice_check, claim, root=R
     raise Held(code)
 
 
-def declare_share(anthropic, slot, concept, voice, files, words, profile=None, note=None):
+def declare_share(anthropic, slot, concept, voice, files, words, profile=None, note=None, floor=None):
     """The share block of words already saved (an adopted draft), or Held. The words are never rewritten."""
-    user = (brief_of(slot, concept, voice, files, profile, note) + '\nThe words, exactly as saved: '
+    user = (brief_of(slot, concept, voice, files, profile, note) + floor_brief(floor) + '\nThe words, exactly as saved: '
             + json.dumps(words, ensure_ascii=False))
     got = anthropic.json_message(DECLARE_SYSTEM, user, SHARE_SCHEMA)
     share = got.get('share') if isinstance(got, dict) else None
@@ -535,7 +545,9 @@ def declare_share(anthropic, slot, concept, voice, files, words, profile=None, n
 
 
 def review_words(anthropic, slot, words, share, assets):
-    """The blind reader's answer to the post's exact words, compared with its share block, or Held."""
+    """The blind reader's answer to the post's exact words, compared with its share block, or Held. It never reads
+    his taste: judges never read taste (inspirationhouse docs/TWO_WAY.md; cc_loop.voice_rules), so his floor goes to
+    the writer only."""
     request = slot_send_test_request({'format': slot['format'], 'words': words, 'assets': assets})
     user = ('The post, as JSON. Its pictures or video are not shown; judge it from its format, its file names and'
             ' its words.\n' + json.dumps(request['post'], ensure_ascii=False, sort_keys=True))
@@ -642,8 +654,15 @@ def _long_day(day):
 
 
 TASTE_HOLD = 'taste_unavailable'
-TASTE_LINE = ("The taste ledger is read only in a session (docs/TASTE.md), so these drafts follow the account rules and "
-              "the voice profile alone.")
+TASTE_LINE = ("His taste did not reach this run (the directive served neither his approved voice rules nor his floor), "
+              "so these drafts follow the account rules and the voice profile alone.")
+TASTE_READ_LINE = 'Drafted inside his approved floor and voice rules, as today\'s directive served them.'
+TASTE_NONE_LINE = 'His taste was served with nothing approved yet, so these drafts follow the account rules and the voice profile.'
+
+
+def taste_line(taste):
+    """The standing report's line for what this run read of his taste (summary['taste'])."""
+    return {'read': TASTE_READ_LINE, 'none': TASTE_NONE_LINE}.get(taste, 'Held: ' + TASTE_HOLD + '. ' + TASTE_LINE)
 
 
 def report_state(work):
@@ -653,16 +672,26 @@ def report_state(work):
     directive pulled now; nothing when it is not served or cannot be read (the report then goes as before)."""
     if not work.state_read:
         work.state_read = True
-        try:
-            directive = work.cc.directive()
-        except ProtocolError:
+        directive = read_directive(work)
+        if directive is None:
             return None
         work.state_fields = engine_state.fields(work.root, intensity.state(work.root, work.now, directive),
                                                 directive) or None
     return work.state_fields
 
 
-def standing_report(day, monday, why, drafts, now, root, state=None):
+def read_directive(work):
+    """Today's directive, read once a run (the engine's state and his taste both come from it), or None."""
+    if not work.directive_read:
+        work.directive_read = True
+        try:
+            work.directive = work.cc.directive()
+        except ProtocolError:
+            work.directive = None
+    return work.directive
+
+
+def standing_report(day, monday, why, drafts, now, root, state=None, taste='absent'):
     """One New York day's standing-plan drafts, kept in Control Center as one live report: each draft's words in a
     plain line marked as a draft, its piece as the line's link, and the whole in a record. No proposal: nothing on
     his list, and no address release reads (cc_records). state: report_state's fields, so the engine's state rides
@@ -673,7 +702,7 @@ def standing_report(day, monday, why, drafts, now, root, state=None):
               ' reads them.'}]
     lines += [{'line': 'Draft, ' + NAMES[d['channel']] + ', ' + _long_day(day) + ', not approved, from a piece published '
                + d['published'] + ': ' + d['words'], 'evidence_url': d['piece_url']} for d in drafts]
-    lines.append({'line': 'Held: ' + TASTE_HOLD + '. ' + TASTE_LINE})
+    lines.append({'line': taste_line(taste)})
     lines.append({'line': 'Posted, sent, published and spent nothing'})
     record = {'schema': STANDING_SCHEMA, 'day': day.isoformat(), 'week_of': monday, 'why': why,
               'drafts': [{k: d[k] for k in ('channel', 'format', 'piece_url', 'words', 'title', 'share')} for d in drafts]}
@@ -731,6 +760,13 @@ class Maker:
         self.drafted_from, self.standing, self.skipped = {}, {}, {}
         # The engine's 1.20.0 state for the live reports this run posts (report_state): read once, on first need.
         self.state_read, self.state_fields = False, None
+        # Today's directive, read once a run (read_directive): the engine's state and his taste come from it.
+        self.directive_read, self.directive = False, None
+        self.taste = 'absent'  # what this run read of his taste: read, none or absent (taste_state)
+
+    def floor(self, fmt):
+        """His approved voice rules and the floor standards for this format, for the writer only."""
+        return never_beneath(self.directive, fmt) if self.directive else []
 
     def out_of_time(self):
         return self.deadline is not None and self.clock() >= self.deadline
@@ -788,9 +824,10 @@ class Maker:
     def make(self, slot, concept, voice, manifest, monday, note=None):
         """The handoff slot for one draft made and handed off (or None in a dry run), Held, or Stop."""
         files, assets = self.prepare(slot, concept, manifest)
+        floor = self.floor(slot['format'])
         words, title, share = write_words(self.anthropic, slot, concept, voice, files, self.profile, note,
                                           voice_check=lambda w: self.voice_found(voice, slot['channel'], w),
-                                          root=self.root)
+                                          root=self.root, floor=floor)
         answer = review_words(self.anthropic, slot, words, share, assets)
         if not self.deliver:
             return None
@@ -854,7 +891,8 @@ class Maker:
             failed = word_checks(slot, concept, words, title, self.voice_found(voice, slot['channel'], words))
             if failed:
                 raise Held(failed[0][0])
-            share = declare_share(self.anthropic, slot, concept, voice, files, words, self.profile, note)
+            floor = self.floor(slot['format'])
+            share = declare_share(self.anthropic, slot, concept, voice, files, words, self.profile, note, floor)
             answer = review_words(self.anthropic, slot, words, share, assets)
             if not self.deliver:
                 return None
@@ -965,9 +1003,10 @@ def standing_week(work, monday, days, why, voices):
                 raise Stop('maker_out_of_time')
             slot = {'slot_id': channel + '-' + day.isoformat() + '-standing', 'channel': channel, 'format': fmt}
             try:
+                floor = work.floor(fmt)
                 words, title, share = write_standing(
                     work.anthropic, slot, voices[channel], piece, work.profile,
-                    voice_check=lambda w, c=channel: work.voice_found(voices[c], c, w), root=work.root)
+                    voice_check=lambda w, c=channel: work.voice_found(voices[c], c, w), root=work.root, floor=floor)
                 review_words(work.anthropic, slot, words, share, [])
             except Held as held:
                 hold(held.code)
@@ -987,7 +1026,7 @@ def standing_week(work, monday, days, why, voices):
             count('would_draft', len(drafts))
             continue
         posted = work.cc.post_report(standing_report(day, monday, why, drafts, work.now, work.root,
-                                                     report_state(work)))
+                                                     report_state(work), work.taste))
         if posted['accepted']:
             count('drafted', len(drafts))
         else:
@@ -1132,7 +1171,7 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
     mondays = sorted({(d - dt.timedelta(days=d.weekday())).isoformat() for d in days})
     summary = {'lane': 'L0', 'command': 'maker', 'deliver': bool(deliver), 'days': [d.isoformat() for d in days],
                'weeks': [autorelease._week_label(m) for m in mondays], 'slots': {}, 'holds': {}, 'mutations': 0,
-               'handoff': None, 'taste': 'taste_unavailable', 'loud': [], 'error': None,
+               'handoff': None, 'taste': 'absent', 'loud': [], 'error': None,
                'voice_profile': 'read' if profile else 'voice_profile_unavailable', 'drafted_from': {},
                'standing': {}, 'skipped_weeks': {}}
     work = Maker(cc, buffer, anthropic, now, deliver, fetch or buffer_api.download_facts, root, out_path,
@@ -1148,10 +1187,14 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
         return _finish(summary, tally, buffer)
     if callable(getattr(anthropic, 'set_deadline', None)):
         anthropic.set_deadline(started + RUN_BUDGET)
-    # The taste ledger is read only in a session (docs/TASTE.md, get_approved_taste), never in this job, so every
-    # run here is without it: a hold the summary, the job page and its Control Center report say, never silent
-    # (gmymu-4, audit of 14 Nov 2026). It is not loud: the drafts still follow the account rules and voice profile.
-    summary['run_holds'] = [TASTE_HOLD]
+    # His taste reaches this job through the directive (audit 2026-11-14, I-14): his approved voice rules and, behind
+    # features.taste_floor, the floor for each format, passed to the writer as never-beneath lines (never to the blind
+    # reviewer: judges never read taste). The summary says what was read: read, none (served, nothing approved yet) or absent. Absent is
+    # taste_unavailable, a hold the job page and its Control Center reports say, never silent and never loud: the
+    # slots still run on the account rules and the voice profile.
+    summary['taste'] = work.taste = taste_state(read_directive(work))
+    if summary['taste'] == 'absent':
+        summary['run_holds'] = [TASTE_HOLD]
     first = ny_midnight(dt.date.fromisoformat(mondays[0]))
     work.since, work.created_since = first.isoformat(), (first - DRAFT_LOOKBACK).isoformat()
     folder = tempfile.TemporaryDirectory()
