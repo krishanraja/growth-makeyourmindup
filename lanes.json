@@ -344,6 +344,24 @@
         "CONTROL_CENTER_ENGINE_TOKEN",
         "BUFFER_API_KEY"
       ]
+    },
+    {
+      "id": "auto-merge",
+      "lane": "L0_code",
+      "workflow": "auto-merge.yml",
+      "trigger": "each completed check run on a pull request (Ruling, Krish, 2026-11-14, decision 1.11)",
+      "may_write": [
+        "a squash merge of our own ready pull request at the commit whose check runs all passed, and the deletion of its branch"
+      ],
+      "never": [
+        "merge a fork, a draft, a stranger's pull request or a commit other than the one that passed",
+        "read a key",
+        "post, send, publish or spend"
+      ],
+      "actions": [
+        "merge-own-green-pull-request"
+      ],
+      "secrets": []
     }
   ],
   "automations": [
