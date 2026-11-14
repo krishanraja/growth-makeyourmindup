@@ -358,6 +358,13 @@ def build(posts_read, block, now, root, mode, config, directive_pulled, state=No
                           + str(found['untracked_alarmed']) + ' of them with a subscribe link GA4 cannot credit '
                           '(without all four tags, sent from 14 November); each post needs a four-tag subscribe link (engine/route.py) '
                           'or, on Instagram and TikTok, words pointing to the profile link'})
+    if 'scheduled' in posts_read:
+        early = reconcile.presend(posts_read['scheduled'], intensity.state(root, now)['urgency'], root)
+        activity.append({'line': early['line']})
+        holds += reconcile.presend_holds(early)
+    elif posts_read.get('scheduled_error'):
+        holds.append({'reason': 'Scheduled posts not checked for a subscribe route',
+                      'detail': posts_read['scheduled_error'] + '; the next run reads them again'})
     lines, hold, joined = ga4_part(block, posts, config)
     activity += [{'line': line} for line in lines]
     if hold:
@@ -395,10 +402,19 @@ def read_buffer(client, note, now):
     if client is None:
         return {'note': note}
     try:
-        return buffer_reads.sent_posts(client, instant(now) - dt.timedelta(days=LOOKBACK_DAYS), now)
+        read = buffer_reads.sent_posts(client, instant(now) - dt.timedelta(days=LOOKBACK_DAYS), now)
     except Exception as exc:  # an outside module: keep only its name or code, never its words
-        code = getattr(exc, 'code', None)
-        return {'error': (code if isinstance(code, str) and code.isidentifier() else type(exc).__name__)}
+        return {'error': _code(exc)}
+    try:  # before it goes out: whoever scheduled it (engine/run/reconcile.py presend)
+        read['scheduled'] = buffer_reads.scheduled_posts(client, now)
+    except Exception as exc:
+        read['scheduled_error'] = _code(exc)
+    return read
+
+
+def _code(exc):
+    code = getattr(exc, 'code', None)
+    return code if isinstance(code, str) and code.isidentifier() else type(exc).__name__
 
 
 def main(argv=None, make_client=None, buffer=None, out=print, root=ROOT, environ=None):

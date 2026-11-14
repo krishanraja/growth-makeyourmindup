@@ -3,7 +3,7 @@
 The measure job needs only two calls from a Buffer client, so any client with
 these methods works (engine/run/buffer_api.py in production, a fake in tests):
 
-    client.list_posts(status='sent', since=ISO8601) -> posts
+    client.list_posts(status='sent' or 'scheduled', since=ISO8601) -> posts
         a list of Post objects, or {'posts': [...]}, or a GraphQL connection
         {'edges': [{'node': Post}]}; each Post as Buffer's schema names it:
         id, status, via, sentAt, text, channelId, channelService,
@@ -23,6 +23,7 @@ are judged, later ones are the new owner's and are left out, with no hold.
 
 Read-only: nothing here creates, edits or deletes anything in Buffer.
 """
+import datetime as dt
 import importlib
 import math
 import os
@@ -35,6 +36,9 @@ KEY_ENV = 'BUFFER_API_KEY'
 NOT_CONFIGURED = 'Buffer not configured'
 NOT_INSTALLED = 'buffer_api not installed'
 MAX_POSTS = 500
+# How far ahead the pre-send check reads Buffer's scheduled posts: two days, so a routeless post is held on Krish's
+# list at least one measure run before it goes out.
+PRESEND_HOURS = 48
 
 
 BUFFER_MODULE = 'engine.run.buffer_api'
@@ -210,6 +214,46 @@ def sent_posts(client, since, now=None):
                       'metrics': metric_values(metrics) if metrics is not None else None})
     return {'posts': posts, 'missing': missing, 'held': held, 'imported': imported, 'get_post_reads': reads,
             'listed': len(listed), 'native': native, 'history': history}
+
+
+def scheduled_posts(client, now, hours=PRESEND_HOURS):
+    """This engine's posts Buffer has scheduled on its seven pinned channels, due from now to `hours` ahead,
+    whoever scheduled them (engine/run/reconcile.py presend checks each for a subscribe route before it goes out).
+
+    Each is {'post_id', 'channel', 'due_at', 'text', 'metadata', 'thread_count'}: its own words and Buffer's
+    metadata as read (first comment, link card, story link sticker), never rewritten. A post on a channel another
+    engine owns (HANDED_OFF_CHANNELS) is never this engine's to check, and another venture's channel is left out."""
+    now = instant(now)
+    until = now + dt.timedelta(hours=hours)
+    listed = _posts(client.list_posts(status='scheduled', since=now.isoformat()))[:MAX_POSTS]
+    seen = {}
+    for post in listed:
+        channel = _channel_of(post)
+        if isinstance(channel['id'], str) and channel['id'] not in HANDED_OFF_CHANNELS:
+            seen.setdefault(channel['id'], channel)
+    pinned = {}
+    for cid in BUFFER_CHANNEL_ID:
+        try:
+            pinned[resolve_channel({'channel': cid}, list(seen.values()))['id']] = cid
+        except ValueError:
+            continue  # no scheduled post on it, or a lock the sent read already reports
+    out = []
+    for post in listed:
+        cid = pinned.get(_channel_of(post)['id'])
+        if cid is None or post.get('status') != 'scheduled' or not isinstance(post.get('dueAt'), str):
+            continue
+        try:
+            due = instant(post['dueAt'])
+        except (TypeError, ValueError, AttributeError):
+            continue
+        pid = post.get('id')
+        if not now <= due <= until or not isinstance(pid, str) or not 0 < len(pid) <= 64:
+            continue
+        out.append({'post_id': pid, 'channel': cid, 'due_at': due,
+                    'text': post.get('text') if isinstance(post.get('text'), str) else '',
+                    'metadata': post.get('metadata') if isinstance(post.get('metadata'), dict) else {},
+                    'thread_count': _thread_count(post)})
+    return sorted(out, key=lambda p: p['due_at'])
 
 
 def account_check(client):

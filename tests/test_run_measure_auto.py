@@ -294,7 +294,34 @@ class MeasureJobTests(unittest.TestCase):
                           'neutral 7, fails 0, insufficient 1', lines)
             self.assertEqual(report['status'], 'ready')
             self.assertEqual(report['run_id'], 'makeyourmindup:2026-11-05:measure-1300Z')
-            self.assertEqual([c[0] for c in fake.calls], ['list_posts'])
+            # The sent posts, then the scheduled ones (before they go out, engine/run/reconcile.py presend).
+            self.assertEqual([c[:2] for c in fake.calls], [('list_posts', 'sent'), ('list_posts', 'scheduled')])
+
+    def test_a_scheduled_post_with_no_route_is_held_before_it_goes_out(self):
+        # gmymu-1 and gmymu-2 (audit, 14 Nov 2026): a session outside this repository scheduled X and Threads posts
+        # with no route; the measure report holds each one, by channel and due time, before it goes out.
+        scheduled = []
+        for n, (cid, text) in enumerate((('x', 'TEST FIXTURE ONLY. No link.'),
+                                         ('threads', 'TEST FIXTURE ONLY. ' + LINK.format(src='threads', content='s1')
+                                          .replace('/p/synthetic-piece', '/subscribe').replace('organic', 'social')))):
+            item = post(900 + n, cid, 0, with_metrics=False, text=text)
+            item.update(status='scheduled', dueAt='2026-11-05T20:00:00.000Z')
+            scheduled.append(item)
+        with tempfile.TemporaryDirectory() as folder:
+            self.workspace(folder)
+            (Path(folder) / 'docs').mkdir()
+            shutil.copy(ROOT / 'docs' / 'NORTH_STAR.md', Path(folder) / 'docs' / 'NORTH_STAR.md')
+            shutil.copy(ROOT / 'intensity.json', Path(folder) / 'intensity.json')
+            code, text = self.run_main(['--now', NOW, '--mode', 'synthetic'], folder,
+                                       (FakeBuffer(self.posts() + scheduled), None))
+            self.assertEqual(code, 0, text)
+            report = validate_report(read_json(Path(folder) / '.scratch/cc/report-measure.json'))
+            held = [h for h in report['holds'] if h['reason'].startswith('Scheduled post with no tracked')]
+            self.assertEqual(len(held), 1, report['holds'])
+            self.assertIn('x post due Thu 05 Nov 15:00 New York (20:00 UTC)', held[0]['detail'])
+            lines = ' | '.join(a['line'] for a in report['activity'])
+            self.assertIn('Before it goes out: 2 posts Buffer has scheduled', lines)
+            self.assertNotIn('TEST FIXTURE', json.dumps(report['holds']))
 
     def test_without_buffer_it_still_runs_the_ga4_part(self):
         with tempfile.TemporaryDirectory() as folder:
