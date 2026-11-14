@@ -18,18 +18,18 @@ detail on why I like something in there."
 
 1. `get_approved_taste` with lane `production`, then lane `voice`. Follow every
    rule it returns when you fill a Canva template or write words. Empty means
-   none is approved yet: never invent one.
-2. `get_production_examples` for the slot's platform and format: the cards
-   Krish routed to "study the style" with his own words, and his form signals
-   (Ruling, Krish, 27 Oct 2026: a maker may read them as context for making,
-   never a rule, never to judge). Follow the craft his words and signals
-   point to (for example `graphics.visuals_carry_meaning`,
-   `packaging.plain_title`, `structure.one_idea`) inside the kit and template.
-   Never take a subject from them: subjects come only from the approved piece.
-3. A card he routed to "make a piece" is content-engine's, never yours.
-4. Either tool missing, signed out, failing or empty: carry on with the kit
+   none is approved yet: never invent one. Never take a subject from them:
+   subjects come only from the approved piece.
+2. A card he routed to "make a piece" is content-engine's, never yours.
+3. The tool missing, signed out, failing or empty: carry on with the kit
    and the calendar, and count it as `taste_unavailable` in your summary.
    Taste never blocks a slot.
+4. The headless maker (`maker.yml`) has no connector: it reads the same
+   approved voice rules, and his floor for each format, from the directive's
+   `taste` block (the floor behind `features.taste_floor`; audit 2026-11-14,
+   I-14), and gives them to its writer only, form only. Its summary says
+   `taste: read`, `none` or `absent`, and absent is `taste_unavailable`.
+   Judges never read taste: its blind reviewer does not either.
 5. Record the card ids an asset drew on, ids only: in the Buffer draft's note
    if Buffer offers one, and in your summary. Never copy his words into this
    repository, a commit, a Buffer post or a log.
