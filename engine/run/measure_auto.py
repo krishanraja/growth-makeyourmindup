@@ -36,7 +36,7 @@ from pathlib import Path
 import sys
 
 from .. import engine_state, intensity, meter
-from ..cc_loop import (STATE_DIR, count, WEB_ANALYTICS_FILE, keep_web_analytics, revision, run, summary,
+from ..cc_loop import (STATE_DIR, count, WEB_ANALYTICS_FILE, keep_subscribers, keep_web_analytics, revision, run, summary,
                        web_analytics_activity, web_analytics_block, web_analytics_summary)
 from ..control_center import SLUG, build_report, iso, objective
 from ..core import instant, ny_time, read_json, today, write_json
@@ -438,6 +438,7 @@ def main(argv=None, make_client=None, buffer=None, out=print, root=ROOT, environ
         block = web_analytics_block(directive) if pulled else _local_block(root)
         if pulled:
             keep_web_analytics(root, directive)
+            keep_subscribers(root, directive)
         state = engine_state.fields(root, intensity.state(root, clock(), directive), directive) if pulled else None
         posts_read = read_buffer(client, note, clock())
         seen['posts'] = posts_read.get('posts') or []

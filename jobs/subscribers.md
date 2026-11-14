@@ -32,7 +32,12 @@ Run each command on its own line in PowerShell (`python`, or `py` if that is mis
    code, whenever a later step cannot be done: `browser_unavailable`, `substack_unreachable`,
    `page_changed`, `not_settled` or `window_unavailable`, and put back `growth_sources` null and `items`
    empty, so nothing half read is recorded.
-4. **New subscribers by source.** Open the view that shows new subscribers by source (Substack calls it
+4. **New subscribers by source.** First check `.scratch/cc/subscribers.json` (kept by the runner and the measure
+   job from today's directive when Control Center serves `features.subscriber_sources`; audit 2026-11-14, I-09).
+   When it holds last week's `week_of`, Control Center has already counted last week by source from Substack's own
+   notices, so this step is a cross-check: read the view below and fill the capture as written, then name in
+   your final message each source whose count differs from the file's (its name only, never a count). When the file is missing or names another week, this
+   step is the reading, as before. Open the view that shows new subscribers by source (Substack calls it
    growth by source or growth sources). Choose the window **Monday to Sunday of last week**, the dates in
    the file's `week_of` and the six days after it: a custom range if the page offers one; otherwise the
    preset whose dates the page shows as exactly those days; otherwise "Last 7 days". Wait until the
