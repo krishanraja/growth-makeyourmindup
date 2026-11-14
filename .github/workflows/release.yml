@@ -1,5 +1,5 @@
 name: release
-# Lane L0. Every 30 minutes the engine reads Krish's signed go-lives, and the
+# Lane L0. Every 30 minutes (Control Center's clock, GitHub's schedule as backup) the engine reads Krish's signed go-lives, and the
 # ideas and mocks he approved in the week's mix plan, from Control Center and
 # schedules in Buffer exactly what he signed, once, at the signed time, each draft about an hour before it is due (until then a No
 # stops it; one still scheduled after a No fails this run, so GitHub emails
@@ -9,8 +9,20 @@ name: release
 # ids or keys, and nothing is uploaded.
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '7,37 * * * *'
+  # Control Center's clock knocks this workflow (gmymu-3, gha-1 of the 14 Nov 2026 audit: GitHub starts its schedules
+  # about four times a day). Either route works, with no payload read: a repository_dispatch of type growth-mymu-release, or
+  # api/_watchdogClock.ts knockWorkflow (a workflow_dispatch with trigger control-center-clock). The schedule stays as
+  # the backup, off :00 and :30, where GitHub's queue is longest.
+  repository_dispatch:
+    types: [growth-mymu-release]
   workflow_dispatch:
+    inputs:
+      trigger:
+        description: 'Who started it (Control Center sends control-center-clock); nothing reads it'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
