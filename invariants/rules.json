@@ -1782,6 +1782,23 @@
         "test_no_runner_or_lane_runs_codex",
         "test_memes_and_notes_images_take_the_same_route"
       ]
+    },
+    {
+      "id": "R127",
+      "statement": "Every post Buffer has scheduled on this engine's pinned channels in the next two days, whoever scheduled it, is checked before it goes out with the subscribe gate's own rule (subscribe_gate.errors, no second checker), and each one with no tracked subscribe route is its own hold in the measure report, by channel and due time; nothing here edits or moves the post.",
+      "source_file": "CHANGES.md",
+      "quote": "Every post on the engine's Buffer channels carries the subscribe route, whoever drafts it. His words: \"I think the point is that you fix that moving forward.\"",
+      "enforced_by": [
+        "engine/run/reconcile.py:presend",
+        "engine/run/buffer_reads.py:scheduled_posts",
+        "engine/subscribe_gate.py:errors"
+      ],
+      "tests": [
+        "test_a_routeless_post_is_held_and_a_routed_one_passes",
+        "test_the_gates_rule_is_used_a_link_naming_another_channel_is_held",
+        "test_buffer_reads_lists_only_scheduled_posts_on_pinned_channels_within_two_days",
+        "test_a_scheduled_post_with_no_route_is_held_before_it_goes_out"
+      ]
     }
   ]
 }

@@ -20,6 +20,16 @@ Any other post with no route sent since the go-live check landed raises the alar
 which Control Center shows on this engine every day. It does not fail the run, because a post already sent stays
 sent and a failed run three times a day would only repeat the same email.
 
+Before it goes out (presend, gmymu-1 and gmymu-2 of the 14 November 2026 audit): the gate above runs only inside
+this repository's own Claude sessions, so a post another session schedules (content-engine, Cowork, claude.ai)
+passes it, and the sent check above sees it only after it has gone out. The measure job therefore also reads
+every post Buffer has scheduled on the pinned channels for the next two days (buffer_reads.scheduled_posts),
+whoever scheduled it, and checks each with the gate's own rule (subscribe_gate.errors on the post as Buffer holds
+it: words, link card, story link sticker, first comment; no second checker). Each routeless one raises its own
+hold in the measure report, naming its channel and due time, so Control Center shows it hours before it goes
+out. It never edits or moves the post: a Buffer write is a post, and that is Krish's. A thread whose first item
+carries no route is counted as not verifiable, as above.
+
 What is not checked here yet: whether each post matches a go-live he approved. That needs the go-live claim
 ledger (growth-golive-claim/1) read in the measure run, and is said as "approval not reconciled" rather than
 guessed. Counts and codes only: the log and the report carry no words, ids or URLs.
@@ -28,8 +38,9 @@ import datetime as dt
 import re
 from urllib.parse import parse_qsl, urlsplit
 
-from .. import intensity
-from ..core import instant
+from .. import intensity, subscribe_gate
+from ..buffer_channels import BUFFER_CHANNEL_ID
+from ..core import instant, ny_time
 from .ga4 import OWN_HOST, own_links
 
 # The go-live route check landed on 13 November 2026; earlier posts are history, counted but never alarmed.
@@ -114,3 +125,52 @@ def check(posts_read, now, root=intensity.ROOT):
             'are not read yet); approval not reconciled yet (go-live claim ledger)')
     return {'checked': checked, 'routeless': routeless, 'untracked': untracked, 'untracked_alarmed': untracked_alarmed,
             'unverified': unverified, 'alarm': sum(alarm.values()), 'alarm_by': alarm, 'line': line, 'host': OWN_HOST}
+
+
+def presend(scheduled, urgency=None, root=intensity.ROOT):
+    """{'checked', 'held': [{'channel', 'due_at', 'post_id', 'why'}], 'unverified', 'line'} over Buffer's scheduled
+    posts on the pinned channels (buffer_reads.scheduled_posts). A post fails when the subscribe gate would refuse
+    it as a new post now (subscribe_gate.errors): the same rule, at the same urgency, on the post as Buffer holds
+    it. Below the conversion urgency the gate requires nothing, so nothing is held."""
+    if urgency is None:
+        urgency = intensity.state(root)['urgency']
+    held, unverified = [], 0
+    for post in scheduled:
+        channel = post['channel']
+        tool_input = {'channelId': BUFFER_CHANNEL_ID.get(channel), 'text': post.get('text') or '',
+                      'metadata': {subscribe_gate.SERVICE.get(channel, channel): dict(post.get('metadata') or {})}}
+        why = [w for w in subscribe_gate.errors('create_post', tool_input, urgency, root)
+               if w.startswith(subscribe_gate.HOLD)]
+        if not why:
+            continue
+        if post.get('thread_count'):
+            unverified += 1  # a later thread item is not read, so a route there is not seen
+            continue
+        held.append({'channel': channel, 'due_at': instant(post['due_at']), 'post_id': post['post_id'],
+                     'why': subscribe_gate.HOLD})
+    line = ('Before it goes out: ' + str(len(scheduled)) + ' posts Buffer has scheduled on the pinned channels in the '
+            'next two days, whoever scheduled them; ' + str(len(held)) + ' with no tracked subscribe route, each held '
+            'below; not verifiable ' + str(unverified) + ' (threads whose first item carries no route)')
+    return {'checked': len(scheduled), 'held': held, 'unverified': unverified, 'line': line}
+
+
+# The report takes at most 40 holds (engine-report.schema.json); the pre-send ones take no more than this, and say
+# how many more there are in one further hold.
+PRESEND_HOLDS_MAX = 25
+
+
+def presend_holds(found, limit=PRESEND_HOLDS_MAX):
+    """One measure-report hold per scheduled post with no route, soonest first: its channel and when it goes out,
+    New York time and UTC. No words, ids or URLs, as everywhere in this report."""
+    holds = []
+    for item in found['held'][:limit]:
+        due = item['due_at']
+        holds.append({'reason': 'Scheduled post with no tracked subscribe route, before it goes out',
+                      'detail': item['channel'] + ' post due ' + ny_time(due).strftime('%a %d %b %H:%M') + ' New York ('
+                      + due.strftime('%H:%M') + ' UTC): add the four-tag subscribe link (engine/route.py, utm_source '
+                      + item['channel'] + ') to its words or first comment, or on Instagram and TikTok words pointing '
+                      'to the profile link, before it goes out; nothing here edits it (a Buffer write is a post)'})
+    if len(found['held']) > limit:
+        holds.append({'reason': 'More scheduled posts with no tracked subscribe route',
+                      'detail': str(len(found['held']) - limit) + ' more after these, due later; the next run lists them'})
+    return holds

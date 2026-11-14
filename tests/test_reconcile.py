@@ -226,3 +226,77 @@ class RoundThreeTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PresendTests(unittest.TestCase):
+    """Before it goes out (gmymu-1 and gmymu-2, audit of 14 Nov 2026): Buffer's scheduled posts, whoever scheduled
+    them, checked with the subscribe gate's own rule. Synthetic posts only."""
+
+    def scheduled(self, channel, text, metadata=None, due='2026-11-16T15:00:00Z', thread=0, pid='b' * 24):
+        from engine.core import instant
+        return {'post_id': pid, 'channel': channel, 'due_at': instant(due), 'text': text,
+                'metadata': metadata or {}, 'thread_count': thread}
+
+    def test_a_routeless_post_is_held_and_a_routed_one_passes(self):
+        posts = [self.scheduled('x', 'TEST FIXTURE ONLY. No link.'),
+                 self.scheduled('threads', 'TEST FIXTURE ONLY. ' + route.subscribe_url('threads', 'slot-1')),
+                 self.scheduled('facebook', 'TEST FIXTURE ONLY. No link in words.',
+                                {'firstComment': 'Subscribe: ' + route.subscribe_url('facebook', 'slot-2')}),
+                 self.scheduled('instagram', 'TEST FIXTURE ONLY. Subscribe: link in bio.')]
+        found = reconcile.presend(posts, 5)
+        self.assertEqual([h['channel'] for h in found['held']], ['x'])
+        self.assertEqual(found['checked'], 4)
+        self.assertIn('1 with no tracked subscribe route', found['line'])
+        holds = reconcile.presend_holds(found)
+        self.assertEqual(len(holds), 1)
+        self.assertIn('x post due Mon 16 Nov 10:00 New York (15:00 UTC)', holds[0]['detail'])
+        self.assertNotIn('b' * 24, holds[0]['detail'])
+        self.assertNotIn('TEST FIXTURE', holds[0]['detail'])
+
+    def test_the_gates_rule_is_used_a_link_naming_another_channel_is_held(self):
+        # The gate requires utm_source to name the channel; the sent check does not. Pre-send follows the gate.
+        found = reconcile.presend([self.scheduled('x', 'TEST FIXTURE ONLY. ' + route.subscribe_url('threads', 's'))], 5)
+        self.assertEqual(len(found['held']), 1)
+
+    def test_below_the_conversion_urgency_nothing_is_held(self):
+        found = reconcile.presend([self.scheduled('x', 'TEST FIXTURE ONLY. No link.')], 3)
+        self.assertEqual(found['held'], [])
+
+    def test_a_thread_whose_first_item_has_no_route_is_not_verifiable(self):
+        found = reconcile.presend([self.scheduled('x', 'TEST FIXTURE ONLY. No link.', thread=2)], 5)
+        self.assertEqual((found['held'], found['unverified']), ([], 1))
+
+    def test_holds_are_capped_so_the_report_stays_valid(self):
+        posts = [self.scheduled('x', 'TEST FIXTURE ONLY. No link.', pid='{:024x}'.format(i)) for i in range(30)]
+        holds = reconcile.presend_holds(reconcile.presend(posts, 5))
+        self.assertEqual(len(holds), reconcile.PRESEND_HOLDS_MAX + 1)
+        self.assertIn('5 more', holds[-1]['detail'])
+
+    def test_buffer_reads_lists_only_scheduled_posts_on_pinned_channels_within_two_days(self):
+        from engine.buffer_channels import BUFFER_CHANNEL_ID, HANDED_OFF_CHANNELS
+        from engine.run import buffer_reads
+        from engine.run.release import BUFFER_NAME
+
+        def node(n, cid, due, status='scheduled', service='twitter', name=None, channel_id=None):
+            channel_id = channel_id or BUFFER_CHANNEL_ID[cid]
+            return {'id': '{:024x}'.format(n), 'status': status, 'dueAt': due, 'text': 'TEST FIXTURE ONLY.',
+                    'channelId': channel_id, 'metadata': {'threadCount': 0},
+                    'channel': {'id': channel_id, 'name': name or BUFFER_NAME.get(cid), 'service': service,
+                                'isDisconnected': False, 'isLocked': False}}
+        linkedin = next(iter(HANDED_OFF_CHANNELS))
+
+        class Fake:
+            calls = []
+
+            def list_posts(self, status, since):
+                self.calls.append(status)
+                return [node(1, 'x', '2026-11-16T15:00:00Z'),
+                        node(2, 'x', '2026-11-20T15:00:00Z'),  # beyond two days
+                        node(3, 'x', '2026-11-16T16:00:00Z', status='sent'),
+                        node(4, 'x', '2026-11-16T17:00:00Z', service='linkedin', name='Krish',
+                             channel_id=linkedin)]
+
+        fake = Fake()
+        got = buffer_reads.scheduled_posts(fake, '2026-11-16T12:00:00Z')
+        self.assertEqual(fake.calls, ['scheduled'])
+        self.assertEqual([(p['channel'], p['post_id']) for p in got], [('x', '{:024x}'.format(1))])
