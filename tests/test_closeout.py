@@ -113,6 +113,23 @@ class FoldTests(unittest.TestCase):
             '- Waiting on Krish: a ruling he has not given.',
             '- North Star check (2026-11-12): holds.'])
 
+    def test_a_drop_removes_the_one_waiting_item_it_names_and_a_miss_is_a_problem(self):
+        # Audit 2026-11-14: stale waiting lines had no way out but an edit of NOW.md.
+        self.repo.note('2026-11-12-drop.md', note() + 'Drop: Waiting on Krish: a ruling he\n  has not given.\n')
+        result = closeout.fold(self.repo.root, head='abcdef1234', day='2026-11-12')
+        self.assertEqual(result['problems'], [])
+        self.assertEqual(self.repo.section(closeout.WAITING), [
+            '- Next (2026-11-12): Krish reads NOW.md once.', '- North Star check (2026-11-12): holds.'])
+        parsed = closeout.parse_note('2026-11-13-x.md', note(day='2026-11-13') + 'Drop: Waiting on Krish: no such line here.\n')
+        self.assertEqual(parsed['drop'], ['Waiting on Krish: no such line here.'])
+        self.repo.note('2026-11-13-miss.md', note(day='2026-11-13') + 'Drop: Waiting on Krish: no such line here.\n')
+        result = closeout.fold(self.repo.root, head='abcdef1234', day='2026-11-13')
+        self.assertEqual(len(result['problems']), 1)
+        self.assertIn('matches 0 items', result['problems'][0])
+        self.assertTrue((self.repo.root / 'now-notes' / '2026-11-13-miss.md').exists())
+        short = closeout.parse_note('2026-11-13-y.md', note(day='2026-11-13') + 'Drop: Waiting\n')
+        self.assertTrue(any('shorter than 20' in p for p in short['problems']))
+
     def test_notes_fold_oldest_first_and_dates_never_go_back(self):
         self.repo.note('2026-11-10-first.md', note(status='The first status is long enough.', nxt='First next.',
                                                    day='2026-11-10'))
