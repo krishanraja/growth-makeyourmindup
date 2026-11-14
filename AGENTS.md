@@ -143,12 +143,15 @@ off-day options to the live board through the same place: `python growth.py run 
 --deliver` posts the `growth.py mix offdays` file (`growth-offdays/1`) to `POST /api/board/<Monday>/offdays`, where each
 is offered on its day with Move to… and Approve like every other option; never a file of its own the board must merge.
 Every off-day post Growth makes, schedules or posts goes back to the same place, from Growth's own record and never a
-post it did not post: `python growth.py run board posts --deliver` (after the tick in `release.yml`) reports each option's
-posts from the derived slots indexed in Control Center and Buffer (made, scheduled with its time, live with its native
-link) to `POST /api/board/<Monday>/offday-posts`, and a session that posted by hand reports its own receipts with
-`--record <receipts.json>`. The board then shows the post out (an approved option Growth reports live makes its day
-done). A day's piece's own posts that Buffer has scheduled go back the same way, as the piece's entries with their time,
-so the board says when the day goes out (Ruling, Krish, 2026-11-12: the board shows exactly where everything is). A post already scheduled for a day it left is moved only through the approved posting route (a signed go-live
+post it did not post. Control Center's Buffer sweep is the one writer of off-day posts Buffer holds (audit 2026-11-14,
+gmymu-6: one system per job): every 15 minutes it writes each one Buffer has scheduled (with its time) or sent (with its
+native link) to `POST /api/board/<Monday>/offday-posts`, whoever made it, so `release.yml` no longer runs `board posts`.
+A session that posted outside Buffer, which the sweep cannot see, reports its own receipts with
+`python growth.py run board posts --record <receipts.json> --deliver`. The board then shows the post out (an approved option Growth reports live makes its day
+done). A day's piece's own posts that Buffer has scheduled are the sweep's to write as the piece's entries with their
+time, so the board says when the day goes out (Ruling, Krish, 2026-11-12: the board shows exactly where everything is);
+until Control Center's sweep covers a piece's own posts, as it covers off-day items, the board tick still ticks each
+piece post Buffer shows sent. A post already scheduled for a day it left is moved only through the approved posting route (a signed go-live
 names its time); until then the board says plainly "Still scheduled for Tue 17 on Instagram: move it there too". Content-engine's PUBLISH_BOARDS.md, "Moving an off-day item to any day".
 
 ## The brand palette (Ruling, Krish, 2026-11-12)
