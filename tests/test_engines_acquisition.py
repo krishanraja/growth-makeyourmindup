@@ -43,7 +43,7 @@ def outreach(rid, opp, recipient='editor@example.org', **detail):
 PATH = {'find': True, 'follow': True, 'subscribe': True}
 STORY = [{'basis': 'story_interest', 'ref': 'thread on shopping agents'}]
 TITLE = [{'basis': 'title', 'ref': 'head of engineering'}]
-FIELDS = dict(sender='hello@krishraja.com', recipient='editor@example.org', channel='email', subject='A test',
+FIELDS = dict(sender='krish@mindmake.co', recipient='editor@example.org', channel='email', subject='A test',
               body='Hello', links=[MYMU])
 
 

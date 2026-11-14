@@ -419,8 +419,10 @@ video and a 90-second vertical cut (Shorts, Reels, TikTok, X).
 | LinkedIn (Krish; growth-mindmake's since 13 Nov 2026, read only here) | https://www.linkedin.com/in/krish-raja/ |
 | Spotify | the show "Make Your Mind Up" (being set up) |
 
-Krish's public contact address is hello@krishraja.com. Never put any other
-address of his in anything.
+Krish's public contact address is krish@mindmake.co, the one address every
+part of the OS sends and replies from (Ruling, Krish, 2026-11-14: "everything
+uses krish@mindmake.co as that is what is auto connected to every part of the
+OS"). Never put any other address of his in anything.
 
 ## Running commands on Krish's machine
 

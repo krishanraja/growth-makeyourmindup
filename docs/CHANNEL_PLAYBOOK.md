@@ -57,7 +57,7 @@ experience. Pick the live source first; do not publish a placeholder.
 ## Shared quality checks for every surface
 
 - Display name, recognisable handle/avatar, promise and public contact
-  `hello@krishraja.com` agree. Banner text remains legible after mobile crop.
+  `krish@mindmake.co` agree. Banner text remains legible after mobile crop.
 - The opening tells a particular reader what they get. Hook, thumbnail,
   title and delivered finding agree. First-person experience has a source.
 - One primary next step. Label destination honestly; make topic, format and

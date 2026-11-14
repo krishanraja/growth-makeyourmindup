@@ -1,5 +1,10 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-14: Everything uses krish@mindmake.co. His words: "everything uses krish@mindmake.co as that is what is
+  auto connected to every part of the OS". His public contact address (`AGENTS.md`), the podcast pitch sign-off
+  (`jobs/pitches.md`), the shared surface check (`docs/CHANNEL_PLAYBOOK.md`) and the one address a committed record may
+  carry (`engine/engines/core.py`) are krish@mindmake.co. hello@krishraja.com is still recognised as his, so a record
+  quoting it is not refused, and it is never the one written.
 - 2026-11-13: All vertical content goes to Instagram, Threads, Facebook, TikTok and X. His words: "saturdays post should
   be instagram, threads, facebook, tiktok, X - all vertical content should be all those platforms". The carousel,
   short-video and meme formats now list all five and Threads and X take carousels (Threads takes shorts too);
