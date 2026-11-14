@@ -8,6 +8,8 @@ now-notes/YYYY-MM-DD-<slug>.md, in the format of ai-harness's closeout hook:
     Status: <what is true now that this work changed>
     Changed: <optional: the why, for "What changed recently">
     Next: <the single next action>
+    Drop: <optional, repeatable: the start of one item under "What is next and what is waiting on Krish" that is
+          stale or done, as NOW.md says it, after its "- ">
     North Star check (YYYY-MM-DD): holds.        (or "...: recalibration proposed. <why>")
 
 When the note reaches main, the fold job in .github/workflows/check.yml runs `growth.py closeout fold`,
@@ -18,6 +20,9 @@ which writes each note into NOW.md and deletes it:
 - its Changed, when present, goes on top of "What changed recently";
 - its Next replaces every top-level "- Next" item under "What is next and what is waiting on Krish",
   and its North Star check replaces the old check line there;
+- each Drop removes the one item there that starts with its words (whitespace aside); a Drop that matches no item,
+  or more than one, is a problem, so a stale line is dropped only by name (audit 2026-11-14: a waiting list of
+  lines "not re-checked" since October had no way out but an edit of NOW.md, which pull requests never make);
 - `as_of`, the heading's date and `head` move forward, never back.
 
 NOW.md then stays under its byte cap (tests/test_studio.py): the oldest "What changed recently" items, and
@@ -46,6 +51,7 @@ RECENT = 'What changed recently'
 WAITING = 'What is next and what is waiting on Krish'
 NOTE_NAME = re.compile(r'^(\d{4}-\d{2}-\d{2})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$')
 LABELS = ('Status', 'Changed', 'Next')
+DROP = 'Drop'
 NOTE_CHECK = re.compile(r'^North Star check \((\d{4}-\d{2}-\d{2})\): (holds\.|recalibration proposed\.\s+\S.*)$')
 # Any earlier check line in NOW.md, whatever it went on to say.
 NOW_CHECK = re.compile(r'^- (North Star|Earlier) check \(')
@@ -61,7 +67,7 @@ def parse_note(name, text):
     path = NOTES + '/' + name
     found = NOTE_NAME.match(name)
     note = {'path': path, 'date': found.group(1) if found else None, 'status': None, 'changed': None,
-            'next': None, 'check': None, 'problems': []}
+            'next': None, 'check': None, 'drop': [], 'problems': []}
     if not found:
         note['problems'].append(path + ' is not named ' + NOTES + '/YYYY-MM-DD-<slug>.md (lowercase letters, '
                                 'digits and hyphens)')
@@ -74,21 +80,29 @@ def parse_note(name, text):
             continue
         label = next((l for l in LABELS if line.startswith(l + ':')), None)
         check = NOTE_CHECK.match(line)
-        if label:
+        if line.startswith(DROP + ':'):
+            field = 'drop'
+            note['drop'].append(line[len(DROP) + 1:].strip())
+        elif label:
             field = label.lower()
             note[field] = line[len(label) + 1:].strip()
         elif check:
             field = None
             note['check'] = line
+        elif field == 'drop':
+            note['drop'][-1] = (note['drop'][-1] + ' ' + line).strip()
         elif field:
             note[field] = (note[field] + ' ' + line).strip()
         else:
             note['problems'].append(path + ' has a line the fold cannot place: "' + line[:60] + '". Use only '
-                                    'Status:, Changed:, Next: and the North Star check line')
+                                    'Status:, Changed:, Next:, Drop: and the North Star check line')
     if not note['status'] or len(note['status']) < 20:
         note['problems'].append(path + ' needs "Status: <what is true now that this work changed>" (a sentence)')
     if not note['next'] or len(note['next']) < 5:
         note['problems'].append(path + ' needs "Next: <the single next action>"')
+    for words in note['drop']:
+        if len(words) < 20:
+            note['problems'].append(path + ' has a Drop shorter than 20 characters; name the item by its start')
     if not note['check']:
         note['problems'].append(path + ' needs one line "North Star check (' + str(note['date']) + '): holds." or '
                                 '"...: recalibration proposed. <why>"')
@@ -163,6 +177,16 @@ def fold_note(lines, note):
     if not where or not waiting or (note['changed'] and not recent):
         return (NOW + ' is missing a section ' + note['path'] + ' needs ("' + WHERE + '", "' + WAITING + '"'
                 + (', "' + RECENT + '"' if note['changed'] else '') + ')')
+    # Each Drop removes the one waiting item it names, before anything else changes there.
+    for words in note.get('drop') or []:
+        want = ' '.join(words.split())
+        hits = [(s, e) for s, e in _items(lines, waiting)
+                if ' '.join(' '.join(lines[s:e]).split())[2:].startswith(want)]
+        if len(hits) != 1:
+            return (note['path'] + ': Drop "' + words[:60] + '" matches ' + str(len(hits)) + ' items under "' + WAITING
+                    + '", not one')
+        del lines[hits[0][0]:hits[0][1]]
+        waiting = _section(lines, WAITING)
     # What is next: the note's check replaces every old one; its Next replaces every top-level "- Next" item.
     for start, end in reversed(_items(lines, waiting)):
         if NOW_CHECK.match(lines[start]) or re.match(r'^- Next\b', lines[start]):
