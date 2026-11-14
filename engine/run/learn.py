@@ -23,7 +23,7 @@ import datetime as dt
 from pathlib import Path
 import sys
 
-from ..cc_loop import web_analytics_block
+from ..cc_loop import subscribers_block, web_analytics_block
 from ..core import instant, ny_time, write_json
 from .. import mix
 from . import buffer_reads
@@ -76,7 +76,21 @@ def build(posts_read, directive, entries, now, root=ROOT):
             'judged_week_of': judged.isoformat(), 'made_at': instant(now).isoformat(), 'rows': mixed,
             'counts': {'posts_in_week': len(rows), 'from_the_mix': len(mixed),
                        'not_from_the_mix': len(rows) - len(mixed)},
+            'subscribers_by_source': by_source_tally(directive, judged),
             'local_only': True}
+
+
+def by_source_tally(directive, judged):
+    """Beside the lane verdicts: which sources brought new subscribers, as Control Center counts them from
+    Substack's notices (cc_loop.subscribers_block, audit 2026-11-14, I-09). Its own week (the block's week_of),
+    said beside the judged week so they are never read as one; 'absent' when it is not served. Kept in this local
+    file only: `mix learn` reads lanes and channels, so no weight moves on a source's count until Krish rules."""
+    block = subscribers_block(directive)
+    if block is None:
+        return {'read': 'absent'}
+    return {'read': 'served', 'week_of': block['week_of'], 'judged_week_of': judged.isoformat(),
+            'same_week': block['week_of'] == judged.isoformat(), 'by_source': block['by_source'],
+            'total': block['total'], 'organic': block['organic'], 'unclassified_n': block['unclassified_n']}
 
 
 def read_entries(cc, judged):
@@ -131,7 +145,8 @@ def main(argv=None, buffer=None, make_client=None, out=print, root=ROOT, environ
     out('learn: week of ' + doc['judged_week_of'] + ' for the plan of ' + doc['for_week_of'] + '; '
         + str(doc['counts']['posts_in_week']) + ' posts, ' + str(doc['counts']['from_the_mix'])
         + ' from the mix; by subscribers ' + ' '.join(k + '=' + str(v) for k, v in tally.items())
-        + ('; index holds ' + ','.join(sorted(holds)) if holds else ''))
+        + ('; index holds ' + ','.join(sorted(holds)) if holds else '')
+        + '; subscribers by source ' + doc['subscribers_by_source']['read'])
     out('written locally to ' + str(path.relative_to(root) if path.is_relative_to(root) else path)
         + '; next: growth.py mix learn --verdicts')
     return 0

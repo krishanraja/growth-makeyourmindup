@@ -1163,6 +1163,72 @@ def keep_web_analytics(root, directive):
     return path if isinstance(block, dict) else None
 
 
+SUBSCRIBERS_FILE = 'subscribers.json'
+SUBSCRIBERS_FEATURE = 'subscriber_sources'
+SUBSCRIBER_COUNTS = ('total', 'organic', 'paid', 'this_week_so_far')
+
+
+def _count(value):
+    """A whole count of zero or more, else None: a missing figure stays missing, never 0."""
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
+
+
+def subscribers_block(directive):
+    """New subscribers by source, as Control Center counts them from Substack's own notices (audit 2026-11-14,
+    I-09), or None.
+
+    Served only behind features.subscriber_sources, as `subscribers { rule, week_of, total, organic, paid,
+    by_source, unclassified[], this_week_so_far, read_on }`: counts and Substack's own source labels only,
+    absent when unread, never 0. Read tolerantly: a malformed field is left out, never repaired or invented;
+    by_source may be {label: count} or [{source, count}]. Nothing here moves a weight in the mix: Krish rules
+    on that first."""
+    if not isinstance(directive, dict):
+        return None
+    body = directive.get('directive') if isinstance(directive.get('directive'), dict) else directive
+    features = body.get('features') if isinstance(body.get('features'), dict) else {}
+    block = body.get('subscribers')
+    if features.get(SUBSCRIBERS_FEATURE) is not True or not isinstance(block, dict):
+        return None
+    week = block.get('week_of')
+    if not isinstance(week, str) or not re.match(r'^\d{4}-\d{2}-\d{2}$', week):
+        return None
+    raw = block.get('by_source')
+    pairs = raw.items() if isinstance(raw, dict) else [
+        (r.get('source'), r.get('count')) for r in raw if isinstance(r, dict)] if isinstance(raw, list) else []
+    by_source = {}
+    for label, count in pairs:
+        label = _wa_text(label, 80)
+        if label and _count(count) is not None:
+            by_source[label] = by_source.get(label, 0) + count
+    unclassified = [u for u in (block.get('unclassified') or []) if isinstance(block.get('unclassified'), list)
+                    and isinstance(u, (str, dict))]
+    out = {'week_of': week, 'by_source': dict(sorted(by_source.items())), 'unclassified_n': len(unclassified),
+           'rule': _wa_text(block.get('rule'), 300),
+           'read_on': block.get('read_on') if isinstance(block.get('read_on'), str) else None}
+    out.update({key: _count(block.get(key)) for key in SUBSCRIBER_COUNTS})
+    return out
+
+
+def keep_subscribers(root, directive):
+    """Keep today's subscribers block in the ignored .scratch/cc/, as keep_web_analytics keeps its block: replaced at
+    every fresh start and removed when the directive carries none, so last week's reading never stands in."""
+    path = state_path(root, SUBSCRIBERS_FILE)
+    block = subscribers_block(directive)
+    if block is not None:
+        write_json(path, block)
+    elif path.exists():
+        path.unlink()
+    return path if block is not None else None
+
+
+def subscribers_line(block):
+    """What a public log may say: whether the block was read and its shape, never a count."""
+    if block is None:
+        return 'subscribers by source: not served (the weekly Substack read in jobs/subscribers.md stands)'
+    return ('subscribers by source: read for the week of ' + block['week_of'] + ', ' + str(len(block['by_source']))
+            + ' sources, ' + str(block['unclassified_n']) + ' unclassified')
+
+
 WA_DIMS = ('source_medium', 'landing_page', 'utm_content')
 _WA_NAME = re.compile(r'^[A-Za-z][A-Za-z0-9_]{0,39}$')
 _WA_TEXT = re.compile(r'[^A-Za-z0-9 ,.:;()/_-]+')
@@ -1498,6 +1564,7 @@ def describe(directive, ledger=None):
     if ai_answers.detail_served(directive):
         n = len(ai_answers.kits(ai_answers.standing(directive)))
         lines.append('AI-answer kits: ' + str(n) + ' from AEO-Engine in ' + state_label(AI_ANSWERS_FILE))
+    lines.append(subscribers_line(subscribers_block(directive)))
     return lines + voice_block(directive)
 
 
@@ -1573,8 +1640,10 @@ def cli(args, root, make_client, out=print, checks=None):
         def build(directive):
             # Keep the block for the measure job, and say what it holds, shape only.
             keep_web_analytics(root, directive)
+            keep_subscribers(root, directive)
             seen['web'] = web_analytics_summary(web_analytics_block(directive))
-            lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web'])]
+            lines = ['Kept for the measure job: ' + web_analytics_activity(seen['web']),
+                     subscribers_line(subscribers_block(directive))]
             # The share of each prepaid pool (1.16.0); the runner spends none of it (docs/CREDITS.md is how a session does).
             lines += credits_lines(credits_block(directive)) + [meter.cost_line('before this report')]
             # AI answers are AEO-Engine's (protocol 1.22.0; Ruling, Krish, 2026-11-12): one line, and real reader questions to AEO.
@@ -1696,6 +1765,7 @@ def cli(args, root, make_client, out=print, checks=None):
         # The same, structured, for the four engine sessions' engine start (local and ignored).
         engine_state.keep_local(instruction_json, loop.directive, clock())
         keep_web_analytics(root, loop.directive)
+        keep_subscribers(root, loop.directive)
         for line in describe(loop.directive, ledger):
             out(line)
         if args.cc_cmd == 'start':
