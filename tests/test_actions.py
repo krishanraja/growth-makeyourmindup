@@ -234,7 +234,7 @@ class WorkflowTests(unittest.TestCase):
 
     def test_measure_runs_three_times_a_day_after_a_key_check(self):
         text = self.read('measure.yml')
-        for needle in ("cron: '0 7,13,19 * * *'", 'workflow_dispatch', 'contents: read', 'group: measure',
+        for needle in ("cron: '11 7,13,19 * * *'", 'types: [growth-mymu-measure]', 'workflow_dispatch', 'contents: read', 'group: measure',
                        'timeout-minutes: 15', '${{ vars.CONTROL_CENTER_URL }}', 'Buffer not configured',
                        'python growth.py run measure auto --deliver'):
             self.assertIn(needle, text)

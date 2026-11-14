@@ -2,7 +2,10 @@
 
 The maker is a GitHub Actions job in lane L0 (`.github/workflows/maker.yml`,
 `engine/run/maker.py`, `growth.py run maker`). Every day at 04:30 UTC, just
-before or just after midnight in New York, it makes the posts of the rest of
+before or just after midnight in New York (Control Center's clock knocks it,
+with repository_dispatch `growth-mymu-maker` or a workflow_dispatch whose
+`trigger` is `control-center-clock`, both delivering as the schedule does;
+GitHub's own schedule at 04:33 is the backup), it makes the posts of the rest of
 today in New York (the slots release can still schedule) and all of
 tomorrow from the ideas and mocks Krish approved in the week's mix plan
 (`docs/MIX.md`), saves each one in Buffer as a draft, and hands it off with
@@ -271,6 +274,22 @@ point at a file he approved.
 - **The Drive files are in Krish's own Drive.** The links point at files in
   his own Google Drive folder, so the bytes come from his account, and the
   hash check holds whatever a link serves.
+
+## Taste and cost, said every run
+
+- **Taste is a hold, never silent.** The taste ledger is read only in a
+  session (`docs/TASTE.md`), so this job never has it. Every run lists
+  `taste_unavailable` in `run_holds`, on the job page and on each standing
+  report it keeps in Control Center. It is not loud: the drafts still follow
+  the account rules and the voice profile.
+- **Every paid call is metered.** The client counts the tokens each
+  answered call used (a refused or truncated answer is billed, so it
+  counts). The run's summary carries them as `model_usage`, and the run
+  posts them once to Control Center's meter
+  (`POST /api/growth/engines/makeyourmindup/meter/usage`, the body of
+  `/api/meter/usage`, source `growth-makeyourmindup`, job `maker`), so the
+  calls count toward the chain's weekly cap. A refusal is logged as
+  `meter_<code>` and never fails the run.
 
 ## Its secrets
 

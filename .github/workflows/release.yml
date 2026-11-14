@@ -1,5 +1,5 @@
 name: release
-# Lane L0. Every 30 minutes the engine reads Krish's signed go-lives, and the
+# Lane L0. Every 30 minutes (Control Center's clock, GitHub's schedule as backup) the engine reads Krish's signed go-lives, and the
 # ideas and mocks he approved in the week's mix plan, from Control Center and
 # schedules in Buffer exactly what he signed, once, at the signed time, each draft about an hour before it is due (until then a No
 # stops it; one still scheduled after a No fails this run, so GitHub emails
@@ -9,8 +9,20 @@ name: release
 # ids or keys, and nothing is uploaded.
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '7,37 * * * *'
+  # Control Center's clock knocks this workflow (gmymu-3, gha-1 of the 14 Nov 2026 audit: GitHub starts its schedules
+  # about four times a day). Either route works, with no payload read: a repository_dispatch of type growth-mymu-release, or
+  # api/_watchdogClock.ts knockWorkflow (a workflow_dispatch with trigger control-center-clock). The schedule stays as
+  # the backup, off :00 and :30, where GitHub's queue is longest.
+  repository_dispatch:
+    types: [growth-mymu-release]
   workflow_dispatch:
+    inputs:
+      trigger:
+        description: 'Who started it (Control Center sends control-center-clock); nothing reads it'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -53,13 +65,7 @@ jobs:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           GROWTH_WRITEBACK_TOKEN: ${{ secrets.GROWTH_WRITEBACK_TOKEN }}
         run: python growth.py run board tick --deliver
-      # Ruling (Krish, 2026-11-12): any off-day post moves to any day at his press. Every off-day post this engine
-      # made, scheduled or posted goes back to the board's one place, from its own record: the board shows it out, and
-      # says plainly when one is still scheduled for a day it left.
-      - name: Write back this engine's off-day posts to the publish board
-        if: success() || failure()
-        env:
-          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
-          GROWTH_WRITEBACK_TOKEN: ${{ secrets.GROWTH_WRITEBACK_TOKEN }}
-          CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
-        run: python growth.py run board posts --deliver
+      # One system per job (audit 2026-11-14, gmymu-6): Control Center's Buffer sweep (_doneChecks.ts buffer_sent,
+      # every 15 minutes) writes each off-day post Buffer has scheduled or sent back to the board, whoever made it.
+      # This workflow no longer writes them too; `growth.py run board posts --record` stays for a post made outside
+      # Buffer, which the sweep cannot see.

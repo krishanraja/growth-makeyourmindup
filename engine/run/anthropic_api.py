@@ -67,6 +67,14 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         raise AnthropicError('redirect_refused', code)
 
 
+# The API's usage fields and the meter's names for them (Control Center's /api/meter/usage body).
+USAGE_FIELDS = {'input_tokens': 'input_tokens', 'output_tokens': 'output_tokens',
+                'cache_read_input_tokens': 'cache_read_tokens', 'cache_creation_input_tokens': 'cache_write_tokens'}
+
+
+METER_SOURCE = 'growth-makeyourmindup'
+
+
 class Anthropic:
     """One JSON answer per call, on MODEL. Nothing else."""
 
@@ -87,6 +95,16 @@ class Anthropic:
         self._sleep, self._clock, self.deadline = sleep, clock, None
         self.calls = 0
         self.waited = 0.0
+        # What the answered calls used, as the API reports it (result['usage']), for the meter (ai-cost-4, audit of
+        # 14 Nov 2026): Control Center prices the tokens; nothing here counts dollars.
+        self.usage = dict.fromkeys(USAGE_FIELDS.values(), 0)
+        self.answered = 0
+
+    def _count_usage(self, usage):
+        """Add one answered call's usage. A refused or truncated answer was still billed, so it is counted too."""
+        self.answered += 1
+        for field, name in USAGE_FIELDS.items():
+            self.usage[name] += _usage_value(usage.get(field) if isinstance(usage, dict) else None)
 
     def set_deadline(self, deadline):
         """No attempt reaches past deadline (a clock() instant); a call too close to it is anthropic_out_of_time."""
@@ -165,6 +183,7 @@ class Anthropic:
             raise AnthropicError('anthropic_bad_response') from None
         if not isinstance(result, dict):
             raise AnthropicError('anthropic_bad_response')
+        self._count_usage(result.get('usage'))
         if result.get('stop_reason') == 'refusal':
             raise AnthropicError('anthropic_refused')
         if result.get('stop_reason') == 'max_tokens':
@@ -178,6 +197,22 @@ class Anthropic:
         if not isinstance(value, dict):
             raise AnthropicError('anthropic_bad_response')
         return value
+
+
+def _usage_value(value):
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
+
+
+def meter_body(client, run_id, job, day=None):
+    """The /api/meter/usage body for what client's answered calls used, or None when it made none. Tokens only."""
+    usage = getattr(client, 'usage', None)
+    if not isinstance(usage, dict) or not getattr(client, 'answered', 0):
+        return None
+    body = {'source': METER_SOURCE, 'run_id': run_id, 'job': job,
+            'calls': [dict(model=client.model, calls=client.answered, **usage)]}
+    if day:
+        body['day'] = day
+    return body
 
 
 def _retry_after(headers):

@@ -875,6 +875,16 @@ class Client:
             raise ProtocolError('backstop_not_confirmed')
         return result
 
+    def post_meter_usage(self, body):
+        """Post one run's model usage to the meter (ai-cost-4, audit of 14 Nov 2026), the body Control Center's
+        /api/meter/usage takes (engine/run/anthropic_api.py meter_body), on this engine's own route and token.
+        Idempotent per (run_id, job, model) there. Returns the answer; raises ProtocolError (a refusal is the
+        caller's to log, never to retry in a loop)."""
+        result = self._request('POST', 'meter/usage', body)
+        if result.get('ok') is not True:
+            raise ProtocolError('meter_not_confirmed')
+        return result
+
     def decisions(self, since):
         result = self._request('GET', 'decisions?since=' + quote(iso(since), safe=''))
         if not isinstance(result.get('decisions'), list):
