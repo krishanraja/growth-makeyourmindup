@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-11-14
-head: e5e312f
+head: 198b721
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -30,6 +30,7 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
+- our own pull requests (Krish or the Actions bot, branch in this repository, ready, at the commit that passed) now merge themselves when every "check" run on that commit is green (.github/workflows/auto-merge.yml, rule .github/scripts/auto-merge-pick.jq, tested). Forks, drafts and strangers wait for a person. (2026-11-14)
 - krishraja.com (with and without www) now counts as an organic subscriber source in `invariants/sources.json`, by Krish's decision 5.12 of 14 Nov. Its two subscribe links already carry the publication's tracking tags (krish-raja #46). (2026-11-14)
 - docs/control-center/ is Control Center's protocol bundle 1.33.0, byte for byte (bundle_sha256 4b7175a8aebbb8979eaefbeea1b7f0f44f2cffa0bbba9cea341da784fe7fde4d), the last protocol version of 14 November. (2026-11-14)
 - docs/control-center/ is Control Center's protocol bundle 1.28.0, byte for byte (bundle_sha256 b0dfa0d7aaa10aea0de45fb5f7dcc241c62bef70766f0fed9c6351d69af1b791), with bundle.json and a hash test that fails an edit in place (integration plan I-11). (2026-11-14)
@@ -37,7 +38,6 @@ Lifecycle: live. The detail is in `README.md`.
 - Every post Buffer has scheduled on the pinned channels in the next two days is checked for a tracked subscribe route with the subscribe gate's own rule, and each routeless one is a hold in the measure report before it goes out (R127, #96); release, measure and maker take Control Center's clock (repository_dispatch growth-mymu-release, growth-mymu-measure, growth-mymu-maker, or a workflow_dispatch with trigger control-center-clock) with crons off :00 and :30 (#97); the maker says taste_unavailable every run and meters its model calls (#98); Control Center's Buffer sweep is the one writer of off-day posts on the board (#99); a closeout note can drop a stale waiting line by name. (2026-11-14)
 - Every vertical post (carousel, short, meme) is routed to Instagram, Threads, Facebook, TikTok and X; the records refuse a vertical format that misses one, and the run spec warns on a post placed on fewer (Ruling, Krish, 2026-11-13). (2026-11-13)
 - The engine reads AEO-Engine's win kits for the publication once Control Center serves them (features.ai_answers_detail, proposed protocol 1.23.0; Ruling, Krish, 2026-11-13: AEO's win kits reach him through each venture's own growth engine), and is a no-op until then. `cc start` keeps up to five kits, best priority first, in the ignored .scratch/cc/ai-answers.txt, and the weekly answer piece reads them before any other source (jobs/answer.md); reports carry counts only. A kit fix or off-site move that would put author, Person or E-E-A-T work under Krish's name is dropped and counted (R100). The runner asks AEO again, once per list, when the request on file's digest differs from config/ai-answer-questions.json's questions, and tells AEO of the answer pieces a session marked shipped there, once each time that list changes. (2026-11-13)
-- docs/plans/A1.md, the one plan for this engine, now matches the LinkedIn handover to growth-mindmake (#92): his LinkedIn post per piece moves there, and the open-drafts question closes here. (2026-11-13)
 
 ## What changed recently
 
@@ -54,7 +54,7 @@ Lifecycle: live. The detail is in `README.md`.
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-14): the next Substack capture shows whether its referrals arrive under the label krishraja.com; if they use another label, add that label the same way.
+- Next (2026-11-14): watch the first pull request after this one merge itself on green.
 - Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
 - Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
 - Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).

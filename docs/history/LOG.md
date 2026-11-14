@@ -10,6 +10,14 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "Where it is right now":
 
+- docs/plans/A1.md, the one plan for this engine, now matches the LinkedIn handover to growth-mindmake (#92): his LinkedIn post per piece moves there, and the open-drafts question closes here. (2026-11-13)
+
+## 2026-11-14
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
 - Krish's personal LinkedIn is growth-mindmake's, not this engine's (Ruling, Krish, 2026-11-13: "growth-mindmake owns it"): this engine drafts, queues, taps, schedules and pins nothing there, and every route that could prepare a LinkedIn post, comment, reply, tap or go-live refuses it with one reason (engine/owners.py, social/channels/linkedin.json owned_by). His X and the publication's own accounts stay here; reading LinkedIn stays. (2026-11-13) (2026-11-13)
 
 ## 2026-11-14
