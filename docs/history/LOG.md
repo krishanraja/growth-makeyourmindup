@@ -8,6 +8,14 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "Where it is right now":
+
+- Saturday 14 Nov's explainer carousel "AI is fixing what we got wrong" is made, at nine cards with a realistic scene on every card. It passes the ten-second swipe at 50 headline words and content-engine's 10/10 judges at 9 (ready). It is filed with send.py to 3 Posts/2026-11-14 Sat off.day - Five good things AI did for people/4 Social as "AI fixing what we got wrong v2" and read back with every hash matching; v1 is in the Drive bin on Krish's yes. Nothing is posted or scheduled. (2026-11-13)
+
+## 2026-11-14
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "What changed recently":
 
 - 2026-11-13 Krish connected the correct account; live provider readback closed the connection hold. No post was created, moved or published.
