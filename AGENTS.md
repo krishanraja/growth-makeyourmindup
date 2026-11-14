@@ -107,7 +107,7 @@ receipts, incomplete coverage and approval boundaries.
 
 ## Autonomy (Ruling, Krish, 2026-10-19)
 
-Krish: "the engine shows me what it is going to do, I approve, it gets up to go-live and asks me to review." This engine runs autonomously under Control Center protocol 1.1.0 (`docs/control-center/ENGINE-PROTOCOL.md`, "Autonomy" and "Amend"), in steps Krish answers on his one list in Control Center:
+Krish: "the engine shows me what it is going to do, I approve, it gets up to go-live and asks me to review." This engine runs autonomously under Control Center's growth engine protocol (`docs/control-center/ENGINE-PROTOCOL.md`, its "Autonomy" and "Amend" sections, which arrived in 1.1.0; the copy's version and hash are in `docs/control-center/bundle.json`), in steps Krish answers on his one list in Control Center:
 
 1. **Plan.** Propose what the engine is going to do as `stage: "plan"`, behind a wall (usually `strategy`), with the plan itself in `exact_payload` so he can change it. Wait for his yes.
 2. **Go-live.** Once the plan is approved, build everything up to go-live: the assets, the exact words, the amount. Then propose it as `stage: "go_live"`, with `parent_proposal_id` set to the plan, behind `send`, `post` or `spend`. Nothing goes out yet.
