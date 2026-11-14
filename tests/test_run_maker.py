@@ -1019,7 +1019,7 @@ class MakerTests(unittest.TestCase):
         # own words never reach it, and the blind reviewer never reads taste (judges never read taste).
         saved = self.cc.directive_extra
         self.addCleanup(lambda: setattr(self.cc, 'directive_extra', saved))
-        floor = {'rule': 'TEST FIXTURE ONLY.', 'venture': 'makeyourmindup', 'as_of': '2026-11-14', 'standards': [
+        floor = {'rule': 'TEST FIXTURE ONLY.', 'venture': 'publication', 'as_of': '2026-11-14', 'standards': [
             {'id': 's1', 'layer': 'copy', 'formats': [], 'statement': 'TEST FIXTURE ONLY floor for every format.',
              'how_to_check': None, 'his_words': 'TEST FIXTURE ONLY his words', 'standing': 'approved', 'support_n': 3},
             {'id': 's2', 'layer': 'copy', 'formats': ['no-such-format'], 'statement': 'TEST FIXTURE ONLY other format.',
