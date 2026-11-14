@@ -272,6 +272,22 @@ point at a file he approved.
   his own Google Drive folder, so the bytes come from his account, and the
   hash check holds whatever a link serves.
 
+## Taste and cost, said every run
+
+- **Taste is a hold, never silent.** The taste ledger is read only in a
+  session (`docs/TASTE.md`), so this job never has it. Every run lists
+  `taste_unavailable` in `run_holds`, on the job page and on each standing
+  report it keeps in Control Center. It is not loud: the drafts still follow
+  the account rules and the voice profile.
+- **Every paid call is metered.** The client counts the tokens each
+  answered call used (a refused or truncated answer is billed, so it
+  counts). The run's summary carries them as `model_usage`, and the run
+  posts them once to Control Center's meter
+  (`POST /api/growth/engines/makeyourmindup/meter/usage`, the body of
+  `/api/meter/usage`, source `growth-makeyourmindup`, job `maker`), so the
+  calls count toward the chain's weekly cap. A refusal is logged as
+  `meter_<code>` and never fails the run.
+
 ## Its secrets
 
 GitHub repository secrets, read only on the runner:
