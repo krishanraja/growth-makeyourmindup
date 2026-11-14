@@ -112,6 +112,7 @@ from engine.core import instant, ny_time, read_json
 from engine.packs import x_weight
 from engine.run import autorelease, buffer_api, cc_records, handoff, release, voice_profile
 from engine.run.anthropic_api import CALL_WORST, GAVE_UP, KEY_ENV, Anthropic, AnthropicAuthError, AnthropicError
+from engine.run.anthropic_api import meter_body as anthropic_meter_body
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
 from engine.run.buffer_drafts import DraftBuffer
 from engine.run.spec import ny_midnight, review_reason
@@ -640,6 +641,11 @@ def _long_day(day):
     return mix_rules.DAYS[day.weekday()] + ' ' + str(day.day) + ' ' + MONTHS[day.month - 1] + ' ' + str(day.year)
 
 
+TASTE_HOLD = 'taste_unavailable'
+TASTE_LINE = ("The taste ledger is read only in a session (docs/TASTE.md), so these drafts follow the account rules and "
+              "the voice profile alone.")
+
+
 def report_state(work):
     """The engine's 1.20.0 state (engine/engine_state.py) for a live report this run posts, or None. Control Center
     shows the newest live report's priorities, obsessions and next steps on every place, so a maker report without
@@ -667,6 +673,7 @@ def standing_report(day, monday, why, drafts, now, root, state=None):
               ' reads them.'}]
     lines += [{'line': 'Draft, ' + NAMES[d['channel']] + ', ' + _long_day(day) + ', not approved, from a piece published '
                + d['published'] + ': ' + d['words'], 'evidence_url': d['piece_url']} for d in drafts]
+    lines.append({'line': 'Held: ' + TASTE_HOLD + '. ' + TASTE_LINE})
     lines.append({'line': 'Posted, sent, published and spent nothing'})
     record = {'schema': STANDING_SCHEMA, 'day': day.isoformat(), 'week_of': monday, 'why': why,
               'drafts': [{k: d[k] for k in ('channel', 'format', 'piece_url', 'words', 'title', 'share')} for d in drafts]}
@@ -1141,6 +1148,10 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
         return _finish(summary, tally, buffer)
     if callable(getattr(anthropic, 'set_deadline', None)):
         anthropic.set_deadline(started + RUN_BUDGET)
+    # The taste ledger is read only in a session (docs/TASTE.md, get_approved_taste), never in this job, so every
+    # run here is without it: a hold the summary, the job page and its Control Center report say, never silent
+    # (gmymu-4, audit of 14 Nov 2026). It is not loud: the drafts still follow the account rules and voice profile.
+    summary['run_holds'] = [TASTE_HOLD]
     first = ny_midnight(dt.date.fromisoformat(mondays[0]))
     work.since, work.created_since = first.isoformat(), (first - DRAFT_LOOKBACK).isoformat()
     folder = tempfile.TemporaryDirectory()
@@ -1181,12 +1192,21 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
         summary['judges'] = work.judges
     summary.update(drafted_from=dict(sorted(work.drafted_from.items())), skipped_weeks=dict(sorted(work.skipped.items())),
                    standing={label: dict(sorted(c.items())) for label, c in sorted(work.standing.items())})
+    body = anthropic_meter_body(anthropic, 'meter', 'maker')
+    if body:
+        summary['model_usage'] = {k: v for k, v in body['calls'][0].items()}
     return _finish(summary, tally, buffer)
 
 
 def step_summary(summary):
     """The run's lines for the GitHub job summary: what each week was drafted from, in counts and codes only."""
     lines = []
+    if TASTE_HOLD in (summary.get('run_holds') or []):
+        lines.append('- Held: ' + TASTE_HOLD + '. ' + TASTE_LINE)
+    usage = summary.get('model_usage')
+    if usage:
+        lines.append('- Model calls: ' + str(usage['calls']) + ' on ' + usage['model'] + ', ' + str(usage['input_tokens'])
+                     + ' tokens in and ' + str(usage['output_tokens']) + ' out; meter ' + str(summary.get('meter')) + '.')
     for label, source in sorted((summary.get('drafted_from') or {}).items()):
         if source != 'standing_plan':
             lines.append('- ' + label + ": drafted from Krish's approved mix.")
@@ -1212,6 +1232,33 @@ def _finish(summary, tally, buffer):
     code = 1 if summary['error'] or summary['loud'] else 0
     summary['exit'] = code
     return summary, code
+
+
+def meter_run_id(environ):
+    """This run's meter id: the GitHub run and attempt, or the clock by hand. Never a secret."""
+    run, attempt = (environ.get('GITHUB_RUN_ID') or '').strip(), (environ.get('GITHUB_RUN_ATTEMPT') or '1').strip()
+    if run.isdigit() and attempt.isdigit():
+        return 'makeyourmindup-maker-gh' + run + '.' + attempt
+    return 'makeyourmindup-maker-' + instant().strftime('%Y%m%dT%H%M%SZ')
+
+
+def post_meter(cc, anthropic, environ):
+    """Post the run's model usage to Control Center's meter, once, after the run (ai-cost-4). Returns a code for the
+    summary: no_calls, recorded or meter_<reason>. Never fails the run and never retries: the usage stays in the
+    summary line either way."""
+    body = anthropic_meter_body(anthropic, meter_run_id(environ), 'maker')
+    if body is None:
+        return 'no_calls'
+    post = getattr(cc, 'post_meter_usage', None)
+    if not callable(post):
+        return 'meter_unsupported'
+    try:
+        post(body)
+    except ProtocolError as error:
+        return 'meter_' + (error.code if re.match(r'^[a-z_]{1,40}$', str(error.code or '')) else 'refused')
+    except Exception as error:  # an outside call: keep only its name
+        return 'meter_' + type(error).__name__
+    return 'recorded'
 
 
 def _buffer_client():
@@ -1261,6 +1308,7 @@ def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=N
     from engine.run.board_tick import board_from_env
     result, code = maker(cc, buffer, anthropic, args.now, args.deliver, fetch, day=args.day,
                          board=(make_board or board_from_env)(), profile=(read_profile or voice_profile.read)())
+    result['meter'] = post_meter(cc, anthropic, os.environ)
     out(json.dumps(result, sort_keys=True))
     where = os.environ.get('GITHUB_STEP_SUMMARY', '').strip()
     if where:

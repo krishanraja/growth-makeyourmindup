@@ -35,6 +35,7 @@ except ImportError:  # run as tests.test_run_maker
 from engine import catalog, concepts, mix, route
 from engine import buffer_channels
 from engine.buffer_channels import BUFFER_CHANNEL_ID
+from engine.control_center import ProtocolError
 from engine.run import anthropic_api, autorelease, buffer_api, buffer_drafts, cc_records, handoff, maker
 from engine.run.buffer_api import BufferError
 
@@ -257,6 +258,7 @@ class MakerTests(unittest.TestCase):
         self.assertEqual((summary['days'], summary['slots'].get('made'), summary['handoff']['recorded']),
                          (['2026-11-10'], 4, 4), summary)
         self.assertEqual(summary['taste'], 'taste_unavailable')
+        self.assertEqual(summary['run_holds'], ['taste_unavailable'])  # said, never silent (gmymu-4)
         posts = [p for p in self.buf.posts.values()]
         self.assertEqual(sorted(p['channelService'] for p in posts), ['instagram', 'tiktok', 'twitter', 'youtube'])
         by_service = {p['channelService']: p for p in posts}
@@ -1170,6 +1172,46 @@ class AnthropicClientTests(unittest.TestCase):
         with self.assertRaises(anthropic_api.AnthropicError) as caught:
             client.json_message('s', 'u', {'type': 'object'})
         self.assertEqual(caught.exception.code, 'anthropic_refused')
+
+    def test_usage_is_counted_for_the_meter_and_posted_once_as_tokens(self):
+        # ai-cost-4 (audit, 14 Nov 2026): the maker's paid calls reach Control Center's meter, tokens only.
+        client = anthropic_api.Anthropic('synthetic-key', self.url, 5, loopback_for_tests=True)
+        self.assertIsNone(anthropic_api.meter_body(client, 'makeyourmindup-maker-gh1.1', 'maker'))
+        self.reply = dict(self.reply, usage={'input_tokens': 1200, 'output_tokens': 300,
+                                             'cache_read_input_tokens': 50, 'cache_creation_input_tokens': 7})
+        client.json_message('s', 'u', {'type': 'object'})
+        self.reply = {'stop_reason': 'refusal', 'content': [], 'usage': {'input_tokens': 10, 'output_tokens': 1}}
+        with self.assertRaises(anthropic_api.AnthropicError):
+            client.json_message('s', 'u', {'type': 'object'})  # billed, so counted
+        body = anthropic_api.meter_body(client, 'makeyourmindup-maker-gh1.1', 'maker')
+        self.assertEqual(body, {'source': 'growth-makeyourmindup', 'run_id': 'makeyourmindup-maker-gh1.1',
+                                'job': 'maker', 'calls': [{'model': 'claude-sonnet-5-5', 'calls': 2,
+                                                           'input_tokens': 1210, 'output_tokens': 301,
+                                                           'cache_read_tokens': 50, 'cache_write_tokens': 7}]})
+
+        class CC:
+            posted = []
+
+            def post_meter_usage(self, body):
+                self.posted.append(body)
+                return {'ok': True}
+
+        cc = CC()
+        self.assertEqual(maker.post_meter(cc, client, {'GITHUB_RUN_ID': '42', 'GITHUB_RUN_ATTEMPT': '2'}), 'recorded')
+        self.assertEqual(cc.posted[0]['run_id'], 'makeyourmindup-maker-gh42.2')
+
+        class Refusing:
+            def post_meter_usage(self, body):
+                raise ProtocolError('not_found', 404)
+
+        self.assertEqual(maker.post_meter(Refusing(), client, {}), 'meter_not_found')
+        self.assertEqual(maker.post_meter(cc, anthropic_api.Anthropic('synthetic-key', self.url, 5,
+                                                                      loopback_for_tests=True), {}), 'no_calls')
+        summary = {'run_holds': [maker.TASTE_HOLD], 'meter': 'recorded',
+                   'model_usage': body['calls'][0]}
+        lines = '\n'.join(maker.step_summary(summary))
+        self.assertIn('- Held: taste_unavailable.', lines)
+        self.assertIn('- Model calls: 2 on claude-sonnet-5-5, 1210 tokens in and 301 out; meter recorded.', lines)
 
     def test_a_refused_key_is_its_own_error_and_never_echoed(self):
         client = anthropic_api.Anthropic('another-synthetic-key', self.url, 5, loopback_for_tests=True)
