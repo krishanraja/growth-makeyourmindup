@@ -50,7 +50,7 @@
       "id": "release",
       "lane": "L0_code",
       "workflow": "release.yml",
-      "trigger": "every 30 minutes and by hand; acts only on go-lives Krish approved in Control Center, each draft only 5 to 90 minutes before it is due",
+      "trigger": "every 30 minutes (Control Center's clock: repository_dispatch growth-mymu-release or a workflow_dispatch with trigger control-center-clock; GitHub's schedule at :07 and :37 is the backup) and by hand; acts only on go-lives Krish approved in Control Center, each draft only 5 to 90 minutes before it is due",
       "may_write": [
         "Buffer posts whose bytes equal the signed manifest line, with their readback"
       ],
@@ -274,7 +274,7 @@
       "id": "maker",
       "lane": "L0_code",
       "workflow": "maker.yml",
-      "trigger": "04:30 UTC daily with --deliver, for the rest of today and all of tomorrow in New York; by hand a dry run unless deliver is ticked (today or tomorrow in New York only)",
+      "trigger": "04:30 UTC daily with --deliver (Control Center's clock: repository_dispatch growth-mymu-maker or a workflow_dispatch with trigger control-center-clock; GitHub's schedule at 04:33 is the backup), for the rest of today and all of tomorrow in New York; by hand a dry run unless deliver is ticked (today or tomorrow in New York only)",
       "may_write": [
         "Buffer drafts saved with saveToDraft true and no due time, made only from ideas and mock files Krish approved in the week's mix plan",
         "each draft's review and the day's index in Control Center, through the handoff's own code, read back by digest",

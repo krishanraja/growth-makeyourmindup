@@ -2,7 +2,10 @@
 
 The maker is a GitHub Actions job in lane L0 (`.github/workflows/maker.yml`,
 `engine/run/maker.py`, `growth.py run maker`). Every day at 04:30 UTC, just
-before or just after midnight in New York, it makes the posts of the rest of
+before or just after midnight in New York (Control Center's clock knocks it,
+with repository_dispatch `growth-mymu-maker` or a workflow_dispatch whose
+`trigger` is `control-center-clock`, both delivering as the schedule does;
+GitHub's own schedule at 04:33 is the backup), it makes the posts of the rest of
 today in New York (the slots release can still schedule) and all of
 tomorrow from the ideas and mocks Krish approved in the week's mix plan
 (`docs/MIX.md`), saves each one in Buffer as a draft, and hands it off with
