@@ -1,5 +1,5 @@
 name: maker
-# Lane L0. Every day at 04:30 UTC (just before or just after midnight in New
+# Lane L0. Every day at 04:30 UTC (Control Center's clock; GitHub's schedule at 04:33 is the backup) (just before or just after midnight in New
 # York) the maker reads the ideas and mocks Krish approved in the week's mix
 # plan from Control Center, makes the rest of today's and all of tomorrow's (New York) posts from them as
 # Buffer drafts (saved as drafts with no due time, never published), and hands
@@ -16,9 +16,20 @@ name: maker
 # ids or keys, and nothing is uploaded.
 on:
   schedule:
-    - cron: '30 4 * * *'
+    - cron: '33 4 * * *'
+  # Control Center's clock knocks this workflow (gmymu-3, gha-1 of the 14 Nov 2026 audit: GitHub starts its schedules
+  # about four times a day). Either route works, with no payload read: a repository_dispatch of type growth-mymu-maker, or
+  # api/_watchdogClock.ts knockWorkflow (a workflow_dispatch with trigger control-center-clock). The schedule stays as
+  # the backup, off :00 and :30, where GitHub's queue is longest.
+  repository_dispatch:
+    types: [growth-mymu-maker]
   workflow_dispatch:
     inputs:
+      trigger:
+        description: 'Who started it: control-center-clock delivers, as the schedule does; empty is by hand'
+        required: false
+        type: string
+        default: ''
       deliver:
         description: 'Save the drafts in Buffer and hand them off (off: a dry run)'
         required: false
@@ -42,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      MAKER_DELIVER: ${{ github.event_name == 'schedule' || inputs.deliver }}
+      MAKER_DELIVER: ${{ github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.trigger == 'control-center-clock' || inputs.deliver }}
       MAKER_DAY: ${{ inputs.day }}
     steps:
       - uses: actions/checkout@v7.0.1
