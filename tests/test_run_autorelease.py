@@ -1142,7 +1142,7 @@ class SourceAndWorkflowTests(unittest.TestCase):
         self.assertIn('GROWTH_WRITEBACK_TOKEN', release_step)
         self.assertNotIn('.posted(', (ROOT / 'engine' / 'run' / 'autorelease.py').read_text(encoding='utf-8'))
         self.assertEqual(set(re.findall(r'vars\.([A-Z_]+)', text)), {'CONTROL_CENTER_URL'})
-        for needle in ("cron: '*/30 * * * *'", 'workflow_dispatch', 'contents: read', 'group: release',
+        for needle in ("cron: '7,37 * * * *'", 'types: [growth-mymu-release]', 'workflow_dispatch', 'contents: read', 'group: release',
                        'cancel-in-progress: false', 'timeout-minutes: 10', "python-version: '3.12'",
                        'actions/checkout@v7.0.1', 'actions/setup-python@v7.0.0', 'persist-credentials: false',
                        'python growth.py run autorelease --deliver', 'exit 0', 'exit 1'):

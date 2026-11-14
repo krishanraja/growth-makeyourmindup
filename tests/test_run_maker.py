@@ -1302,10 +1302,11 @@ class MakerWorkflowTests(unittest.TestCase):
         self.assertEqual(set(re.findall(r'secrets\.([A-Z_]+)', text)),
                          {'CONTROL_CENTER_ENGINE_TOKEN', 'BUFFER_API_KEY', 'ANTHROPIC_API_KEY', 'GROWTH_WRITEBACK_TOKEN'})
         self.assertNotIn('.posted(', (ROOT / 'engine' / 'run' / 'maker.py').read_text(encoding='utf-8'))
-        for needle in ("cron: '30 4 * * *'", 'workflow_dispatch', 'contents: read', 'group: maker',
+        for needle in ("cron: '33 4 * * *'", 'types: [growth-mymu-maker]', 'workflow_dispatch', 'contents: read', 'group: maker',
                        'cancel-in-progress: false', 'timeout-minutes:', "python-version: '3.12'",
                        'persist-credentials: false', 'set -- run maker', 'set -- "$@" --deliver', 'python growth.py "$@"',
-                       "MAKER_DELIVER: ${{ github.event_name == 'schedule' || inputs.deliver }}", 'default: false'):
+                       "MAKER_DELIVER: ${{ github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || "
+                       "inputs.trigger == 'control-center-clock' || inputs.deliver }}", 'default: false'):
             self.assertIn(needle, text)
         for banned in ('upload-artifact', 'GITHUB_TOKEN', 'contents: write', 'set -x', 'client_payload'):
             self.assertNotIn(banned, text)

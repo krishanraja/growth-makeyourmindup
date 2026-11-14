@@ -11,8 +11,20 @@ name: measure
 # measures the GA4 part and says "Buffer not configured".
 on:
   schedule:
-    - cron: '0 7,13,19 * * *'
+    - cron: '11 7,13,19 * * *'
+  # Control Center's clock knocks this workflow (gmymu-3, gha-1 of the 14 Nov 2026 audit: GitHub starts its schedules
+  # about four times a day). Either route works, with no payload read: a repository_dispatch of type growth-mymu-measure, or
+  # api/_watchdogClock.ts knockWorkflow (a workflow_dispatch with trigger control-center-clock). The schedule stays as
+  # the backup, off :00 and :30, where GitHub's queue is longest.
+  repository_dispatch:
+    types: [growth-mymu-measure]
   workflow_dispatch:
+    inputs:
+      trigger:
+        description: 'Who started it (Control Center sends control-center-clock); nothing reads it'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
