@@ -127,7 +127,7 @@ This go-live exception holds only for an approved go-live decision the engine re
 
 Ruling (Krish, 2026-11-11): one live board, in Control Centre; the old board is a read-only archive. The live
 board is Control Centre's Content tab (`https://controlcenter.krishraja.com/#/content?week=<Monday>&day=<day>`);
-content.krishraja.com/board is the archive and takes no press. How every actor uses it is content-engine's
+content.krishraja.com/board is retired and redirects to the live board. How every actor uses it is content-engine's
 [PUBLISH_BOARDS.md](https://github.com/krishanraja/content-engine/blob/main/docs/PUBLISH_BOARDS.md); Growth's part: read what Krish approved with `GET /api/board/<Monday>/pieces` (only his
 Approve puts an idea on the board; Growth proposes and never places one), tick what went out with
 `POST /api/board/<Monday>/posted` (content-engine's GROWTH-HANDOFF.md, "Tick the board when a post goes out"), never keep a board of its own, and file what a session started from a board prompt makes or reads on
