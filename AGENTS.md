@@ -107,7 +107,7 @@ receipts, incomplete coverage and approval boundaries.
 
 ## Codex at any point (Ruling, Krish, 2026-11-15)
 
-Claude starts Codex only through scripts/codex_thread.mjs, focus sprints included. `node scripts/codex_thread.mjs open "<message>"` makes a permanent thread in Krish's Codex Desktop recents, titled by its first line; `send <thread> "<message>"` adds one turn and releases the thread so he can type in it too; `read <thread>` prints every turn, his from Desktop included. Never the Codex plugin's long-running server. The script is a copy of content-engine's `scripts/codex_thread.mjs`, which holds the source.
+Claude starts Codex only through scripts/codex_thread.mjs, focus sprints included. `node scripts/codex_thread.mjs open "<message>"` makes a permanent thread in Krish's Codex Desktop recents, titled by its first line; `send <thread> "<message>"` adds one turn and releases the thread so he can type in it too; `read <thread>` prints every turn, his from Desktop included. Never the Codex plugin's long-running server. The script is a byte-for-byte copy of ai-harness's `scripts/codex_thread.mjs`, the canonical one; change it there first (Ruling, Krish, 2026-11-15).
 
 ## Autonomy (Ruling, Krish, 2026-10-19)
 
