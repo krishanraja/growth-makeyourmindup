@@ -362,6 +362,24 @@
         "merge-own-green-pull-request"
       ],
       "secrets": []
+    },
+    {
+      "id": "branch-sweep",
+      "lane": "L0_code",
+      "workflow": "branch-sweep.yml",
+      "trigger": "Sunday 03:17 UTC, or by hand (a hand run defaults to a dry run) (Ruling, Krish, 2026-11-15)",
+      "may_write": [
+        "the deletion of a remote branch whose head is contained in main or is the head of a merged pull request from that branch"
+      ],
+      "never": [
+        "delete main, a protected branch, gh-pages, floor/rejections, inspo/new-drops, or any branch with unmerged work or an open pull request",
+        "read a key",
+        "post, send, publish or spend"
+      ],
+      "actions": [
+        "delete-merged-branches"
+      ],
+      "secrets": []
     }
   ],
   "automations": [
