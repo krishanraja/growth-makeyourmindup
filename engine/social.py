@@ -220,6 +220,10 @@ def inventory(root=ROOT):
                 raise ValueError('verified capability requires its specific tested operation')
             if cap['status'] == 'held' and not all(cap.get(k) for k in HELD_FIELDS):
                 raise ValueError('held capability requires ' + ', '.join(HELD_FIELDS))
+            if cap['format'] in COVER_VIDEO_FORMATS and cap['channel'] in COVER_VIDEO_CHANNELS and not cap.get('cover'):
+                # F133 (Ruling, Krish, 2026-11-15): every video route says how its designed cover reaches the post.
+                raise ValueError('a video capability says how its designed cover is set: ' + cap['channel'] + ' '
+                                 + cap['format'])
     for obj in result['lesson'].values():
         if obj['status'] == 'accepted' and obj['evidence']['kind'] != 'user_ruling':
             raise ValueError('accepted rule needs a user ruling, not a performance inference')
@@ -231,6 +235,11 @@ def inventory(root=ROOT):
                 raise ValueError('unknown operating lesson reference')
     load_share_rules(root / 'social' / 'share.json')
     return result
+
+
+# The video routes whose grid tile or player shows a cover (engine/run/video_cover.py COVER_CHANNELS).
+COVER_VIDEO_FORMATS = ('short-video', 'long-video')
+COVER_VIDEO_CHANNELS = ('instagram', 'tiktok', 'youtube', 'facebook', 'threads', 'x')
 
 
 def route(channel, format_id, tool='buffer', as_of=None, root=ROOT):

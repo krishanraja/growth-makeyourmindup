@@ -39,7 +39,7 @@ html, body {
 
 .frame {
   position: absolute; inset: 0;
-  padding: var(--top, var(--margin)) var(--margin) var(--bottom, var(--margin)) var(--margin);
+  padding: var(--top, var(--margin)) var(--side, var(--margin)) var(--bottom, var(--margin)) var(--side, var(--margin));
   display: flex; flex-direction: column;
 }
 
@@ -118,6 +118,18 @@ html, body {
 .tone-mint .accent { color: var(--mint); }
 .tone-coral .accent { color: var(--coral); }
 .tone-lilac .accent { color: var(--lilac); }
+
+/* The front cover's field: the whole card in the piece's tone (butter unless it says mint, coral or lilac), so a
+   cover never looks like the ink body cards after it (the ruling of 15 Nov 2026). */
+.cover-field, .tone-butter .cover-field { background: var(--butter); }
+.tone-mint .cover-field { background: var(--mint); }
+.tone-coral .cover-field { background: var(--coral); }
+.tone-lilac .cover-field { background: var(--lilac); }
+/* A body card's anchor: its figure and its foot stripe in the piece's tone. */
+.tone-ink, .tone-butter .tone-ink { color: var(--butter); }
+.tone-mint .tone-ink { color: var(--mint); }
+.tone-coral .tone-ink { color: var(--coral); }
+.tone-lilac .tone-ink { color: var(--lilac); }
 
 /* An arrow between two values ("$2 -> $4"), drawn so every font shows it the same way. */
 .arrow { display: inline-block; position: relative; width: 0.62em; height: 0.045em; min-height: 3px; margin: 0 0.22em;

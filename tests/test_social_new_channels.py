@@ -198,7 +198,8 @@ class NewChannelsTests(unittest.TestCase):
         new = [c for c in buffer['capabilities']
                if c['channel'] in ('threads', 'substack-notes') or c['format'] == 'meme']
         self.assertEqual({(c['channel'], c['format']) for c in new},
-                         {('threads', 'text'), ('threads', 'single-image'), ('substack-notes', 'note')}
+                         {('threads', 'text'), ('threads', 'single-image'), ('substack-notes', 'note'),
+                          ('threads', 'short-video')}  # its cover route recorded (F133, 2026-11-15)
                          | {(c, 'meme') for c in MEME_CHANNELS})
         for c in new:
             self.assertEqual((c['status'], c['verified_at'], c['verified_operations']), ('unverified', None, []))

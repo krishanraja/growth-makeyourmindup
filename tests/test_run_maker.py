@@ -50,6 +50,7 @@ WORDS = CLAIM + ' Synthetic fixture words after the claim, about the pilot budge
 FRAME1 = b'\x89PNG\r\n\x1a\n' + b'synthetic maker frame one\n'
 FRAME2 = b'\x89PNG\r\n\x1a\n' + b'synthetic maker frame two\n'
 VIDEO = b'\x00\x00\x00\x18ftypmp42' + b'synthetic maker video\n'
+VIDEO_COVER_MS = 61500  # the middle of the cover's last second (engine/run/video_cover.py)
 DRIVE = {'SyntheticDriveFile0001': FRAME1, 'SyntheticDriveFile0002': FRAME2, 'SyntheticDriveFile0003': VIDEO}
 ANSWER = {'would_send': True, 'receiver': 'my CFO', 'job': 'settles_it', 'dm_line': 'Synthetic line.',
           'why': 'Synthetic.'}
@@ -102,6 +103,7 @@ def dispatch_of(plan, files=True):
     body = {key: copy.deepcopy(plan[key]) for key in handoff.MIX_KEYS}
     if files:
         body['mock_files'] = {sha(data): file_id for file_id, data in DRIVE.items()}
+        body['mock_covers'] = {sha(VIDEO): VIDEO_COVER_MS}  # the designed cover appended to the cut (F133)
     return body
 
 
@@ -659,9 +661,34 @@ class MakerTests(unittest.TestCase):
         self.assertEqual(summary['holds'], {'mock_hash_mismatch': 4}, summary)
         self.assertEqual((self.creates(), self.words.calls), ([], []))
 
+    def test_a_video_whose_designed_cover_frame_is_not_recorded_is_held_never_made(self):
+        # F133 (Ruling, Krish, 2026-11-15): Buffer takes no cover image, and a null thumbnailOffset showed frame 0.
+        payload = dispatch_of(self.plan)
+        del payload['mock_covers']
+        self.handoff(payload)
+        self.decide([r['proposals'][0] for r in self.cc.reports.values() if r['proposals']])
+        summary, code = self.make()
+        self.assertEqual(summary['holds'], {'video_without_designed_cover': 1}, summary)
+        self.assertIn('video_without_designed_cover', summary['loud'])
+        self.assertEqual(code, 1)
+        sent = [a for c in self.creates() for a in c['variables']['input']['assets']]
+        self.assertTrue(sent and not any('video' in a for a in sent), 'no video draft is saved without its cover')
+
+    def test_a_video_is_saved_pointing_at_its_designed_cover_frame(self):
+        self.approved()
+        self.make()
+        videos = [a['video'] for c in self.creates() for a in c['variables']['input']['assets'] if 'video' in a]
+        self.assertEqual(videos and [v['metadata'] for v in videos], [{'thumbnailOffset': VIDEO_COVER_MS}])
+
+    def test_a_cover_for_a_file_the_manifest_does_not_name_is_refused(self):
+        payload = dispatch_of(self.plan)
+        payload['mock_covers'] = {'f' * 64: 1000}
+        self.assertEqual(self.handoff(payload)[0]['error'], 'payload_rejected_bad_mock_covers')
+
     def test_a_mock_missing_from_the_manifest_holds(self):
         payload = dispatch_of(self.plan)
         del payload['mock_files'][sha(VIDEO)]
+        del payload['mock_covers']
         summary, code = self.handoff(payload)
         self.assertEqual(summary['holds'], {'mock_file_missing': 1}, summary)
         self.decide([r['proposals'][0] for r in self.cc.reports.values() if r['proposals']])

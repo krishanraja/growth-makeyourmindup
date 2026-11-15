@@ -80,7 +80,8 @@ approved mix", below).
 6b. **Asks content-engine's 10/10 judges** (a carousel or a Short; Ruling, Krish,
    2026-11-12: "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts.").
    `engine/run/judges.py` sends the post's format, channel, claim, exact words and each
-   picture's sha256 to `POST https://content.krishraja.com/api/board/<Monday>/judge` on the
+   picture's sha256 with its own view link, so the panel sees the cards (Ruling, Krish, 2026-11-15;
+   a picture with no link holds as `judges_cannot_see`), to `POST https://content.krishraja.com/api/board/<Monday>/judge` on the
    board key, before anything is saved (an adopted draft is judged before it is handed off).
    A fail is never made: the slot holds loudly as `judges_failed`, the judges' reasons stay on
    content-engine's record and in the ignored `.scratch/judges/<slot>.json` for the session

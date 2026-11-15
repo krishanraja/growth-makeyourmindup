@@ -90,6 +90,14 @@ HANDLED_METADATA = {
 }
 HANDLED_ASSET = {'type', 'source', 'mimeType', 'image', 'video', 'document'}
 HANDLED_MEDIA = {'image': {'altText', 'userTags'}, 'video': {'title', 'thumbnailOffset'}}
+# The services whose grid or player shows a video's cover (engine/run/video_cover.py COVER_SERVICES, kept here so
+# this client imports nothing of the engine's).
+COVER_SERVICES = ('instagram', 'tiktok', 'youtube', 'facebook', 'threads', 'twitter')
+
+
+def _offset_ok(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
 
 ACCOUNT_QUERY = 'query AccountCheck { account { id organizations { id } } }'
 POST_QUERY = 'query GetPost($input: PostInput!) { post(input: $input) { ' + POST_FIELDS + ' } }'
@@ -425,6 +433,12 @@ def carried(post):
     every asset with its metadata, the post metadata and the fixed flags."""
     out = {'assets': [_asset_input(a) for a in post.get('assets') or []],
            'schedulingType': 'automatic', 'saveToDraft': False}
+    if post.get('channelService') in COVER_SERVICES and any(
+            'video' in a and not _offset_ok((a['video'].get('metadata') or {}).get('thumbnailOffset'))
+            for a in out['assets']):
+        # F133 (Ruling, Krish, 2026-11-15): a video with no cover frame shows frame 0 on the grid. Never carried
+        # forward with a null offset: the cover is appended and its offset set first (engine/run/video_cover.py).
+        raise CarryHold('video_without_cover_offset')
     meta = _metadata_input(post)
     if meta:
         out['metadata'] = meta

@@ -198,7 +198,7 @@
           "lilac"
         ]
       },
-      "note": "headline is the cream lines, accent the one line in the tone colour (butter unless tone says mint, coral or lilac)."
+      "note": "The front cover (the ruling of 15 Nov 2026): a full field in the tone colour, a masthead, the biggest headline in the deck and an ink band that says swipe, so it never looks like the body cards. headline is the ink lines, accent the stamped strip. content-engine's docs/CAROUSEL-STANDARD.md and docs/COVER-STANDARD.md own the standard."
     },
     "carousel-body": {
       "file": "templates/carousel-body.html",
@@ -206,9 +206,11 @@
       "height": 1350,
       "fields": {
         "label": "text",
+        "anchor": "text",
         "body": "text",
         "attribution": "text",
-        "page": "text"
+        "page": "text",
+        "tone": "text"
       },
       "required": [
         "label",
@@ -216,10 +218,20 @@
       ],
       "example": {
         "label": "series.label",
-        "body": "One plain idea per slide, in words a reader can follow at a glance.",
+        "anchor": "The figure",
+        "body": "One full plain sentence that a stranger can follow without having read the cover.",
         "attribution": "From the piece title, with its date",
-        "page": "2 of 4"
-      }
+        "page": "2 of 6"
+      },
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral",
+          "lilac"
+        ]
+      },
+      "note": "A body card (the ruling of 15 Nov 2026): body is one full plain sentence of up to 20 words that a stranger can follow on its own (growth.py run carousel lint holds it to that), set centred under the anchor panel, the card's visual anchor. anchor is the card's one figure or object word, in the tone colour; the panel is drawn even with no anchor, so no card is plain ground."
     },
     "carousel-close": {
       "file": "templates/carousel-close.html",
@@ -248,8 +260,8 @@
       "width": 1080,
       "height": 1920,
       "safe": {
-        "top": 250,
-        "bottom": 340
+        "top": 270,
+        "bottom": 600
       },
       "fields": {
         "label": "text",
@@ -315,8 +327,8 @@
       "width": 1080,
       "height": 1920,
       "safe": {
-        "top": 250,
-        "bottom": 340
+        "top": 270,
+        "bottom": 600
       },
       "fields": {
         "label": "text",
@@ -577,8 +589,8 @@
       "width": 1080,
       "height": 1920,
       "safe": {
-        "top": 250,
-        "bottom": 340
+        "top": 270,
+        "bottom": 600
       },
       "fields": {
         "eyebrow": "text",
@@ -651,6 +663,38 @@
         "foot_right": "The date, and that nothing was sent"
       },
       "note": "The first actor has a mint bar, the second a lilac bar; leave every actor2 field empty and that panel is not drawn."
+    },
+    "meme-tall": {
+      "file": "templates/meme-tall.html",
+      "width": 1080,
+      "height": 1920,
+      "safe": {
+        "top": 270,
+        "bottom": 600
+      },
+      "fields": {
+        "headline": "text",
+        "accent": "text",
+        "credit": "text",
+        "tone": "text"
+      },
+      "required": [
+        "headline"
+      ],
+      "example": {
+        "headline": "The everyday moment",
+        "accent": "everyone at work knows",
+        "credit": "Clip: where it came from"
+      },
+      "choices": {
+        "tone": [
+          "butter",
+          "mint",
+          "coral",
+          "lilac"
+        ]
+      },
+      "note": "The tall meme with a video slot, centred by construction (the ruling of 15 Nov 2026). The headline sits centred above the clip window (x 200 to 880, y 600 to 1240); growth.py run meme compose puts the clip into it, fitted and centred; the wordmark and credit sit centred under it, all above y 1320 and left of x 880 (content-engine config/channel-safe-zones.json)."
     }
   }
 }

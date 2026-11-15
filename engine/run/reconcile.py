@@ -41,6 +41,7 @@ from urllib.parse import parse_qsl, urlsplit
 from .. import intensity, subscribe_gate
 from ..buffer_channels import BUFFER_CHANNEL_ID
 from ..core import instant, ny_time
+from . import video_cover
 from .ga4 import OWN_HOST, own_links
 
 # The go-live route check landed on 13 November 2026; earlier posts are history, counted but never alarmed.
@@ -134,9 +135,15 @@ def presend(scheduled, urgency=None, root=intensity.ROOT):
     it. Below the conversion urgency the gate requires nothing, so nothing is held."""
     if urgency is None:
         urgency = intensity.state(root)['urgency']
-    held, unverified = [], 0
+    held, unverified, covers = [], 0, []
     for post in scheduled:
         channel = post['channel']
+        offsets = post.get('cover_offsets') or []
+        if channel in video_cover.COVER_CHANNELS and any(not video_cover.offset_ok(o) for o in offsets):
+            # F133 (Ruling, Krish, 2026-11-15): a scheduled video with no cover frame shows frame 0, whoever
+            # scheduled it. Held here, never edited (a Buffer write is a post).
+            covers.append({'channel': channel, 'due_at': instant(post['due_at']), 'post_id': post['post_id'],
+                           'why': 'cover_not_set'})
         tool_input = {'channelId': BUFFER_CHANNEL_ID.get(channel), 'text': post.get('text') or '',
                       'metadata': {subscribe_gate.SERVICE.get(channel, channel): dict(post.get('metadata') or {})}}
         why = [w for w in subscribe_gate.errors('create_post', tool_input, urgency, root)
@@ -151,7 +158,9 @@ def presend(scheduled, urgency=None, root=intensity.ROOT):
     line = ('Before it goes out: ' + str(len(scheduled)) + ' posts Buffer has scheduled on the pinned channels in the '
             'next two days, whoever scheduled them; ' + str(len(held)) + ' with no tracked subscribe route, each held '
             'below; not verifiable ' + str(unverified) + ' (threads whose first item carries no route)')
-    return {'checked': len(scheduled), 'held': held, 'unverified': unverified, 'line': line}
+    if covers:
+        line += '; ' + str(len(covers)) + ' video(s) with no designed cover frame (thumbnailOffset), each held below'
+    return {'checked': len(scheduled), 'held': held, 'unverified': unverified, 'line': line, 'covers': covers}
 
 
 # The report takes at most 40 holds (engine-report.schema.json); the pre-send ones take no more than this, and say
@@ -170,6 +179,13 @@ def presend_holds(found, limit=PRESEND_HOLDS_MAX):
                       + due.strftime('%H:%M') + ' UTC): add the four-tag subscribe link (engine/route.py, utm_source '
                       + item['channel'] + ') to its words or first comment, or on Instagram and TikTok words pointing '
                       'to the profile link, before it goes out; nothing here edits it (a Buffer write is a post)'})
+    for item in (found.get('covers') or [])[:max(0, limit - len(holds))]:
+        due = item['due_at']
+        holds.append({'reason': 'Scheduled video with no designed cover frame, before it goes out',
+                      'detail': item['channel'] + ' video due ' + ny_time(due).strftime('%a %d %b %H:%M') + ' New York ('
+                      + due.strftime('%H:%M') + ' UTC): its thumbnailOffset is not set, so the platform would show '
+                      'frame 0 (F133). Append the designed cover (growth.py run cover append) and point the offset '
+                      'at it, or take it off the schedule; nothing here edits it (a Buffer write is a post)'})
     if len(found['held']) > limit:
         holds.append({'reason': 'More scheduled posts with no tracked subscribe route',
                       'detail': str(len(found['held']) - limit) + ' more after these, due later; the next run lists them'})

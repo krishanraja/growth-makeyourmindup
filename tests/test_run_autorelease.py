@@ -170,7 +170,8 @@ def created_post(stand, data):
     assets = []
     for asset in data.get('assets') or []:
         (kind, body), = asset.items()
-        inner = {'altText': None, 'userTags': None} if kind == 'image' else {'title': None, 'thumbnailOffset': None}
+        offset = (body.get('metadata') or {}).get('thumbnailOffset')  # Buffer stores the cover frame it was given
+        inner = {'altText': None, 'userTags': None} if kind == 'image' else {'title': None, 'thumbnailOffset': offset}
         assets.append({'type': kind, 'source': body['url'], 'mimeType': 'image/png' if kind == 'image' else 'video/mp4',
                        kind: inner})
     given = (data.get('metadata') or {}).get(service) or {}
@@ -398,7 +399,7 @@ class AutoreleaseTests(unittest.TestCase):
         # never builds; edit_input lints them through release's own media_copy_errors.
         api = self.buf.client()
         post = api.get_post(P_X)
-        video = {'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {'title': "Krish's test"}}
+        video = {'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {'title': "Krish's test", 'thumbnailOffset': 3}}
         cases = (dict(post, assets=[video]),
                  dict(post, metadata={'__typename': 'TiktokPostMetadata', 'title': 'A chart by @TheRealKrisho',
                                       'isAiGenerated': False}),
@@ -954,7 +955,8 @@ class BufferClientTests(unittest.TestCase):
                 dict(post, metadata={'__typename': 'ThreadsPostMetadata', 'type': 'post', 'threadCount': 0,
                                      'topic': 'A topic', 'locationId': '1', 'locationName': 'A place'}),
                 dict(post, metadata={'__typename': 'FacebookPostMetadata', 'type': 'post', 'firstComment': 'A comment'}),
-                dict(post, assets=[{'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {}}],
+                dict(post, assets=[{'type': 'video', 'source': 'https://example.invalid/v.mp4',
+                                    'video': {'thumbnailOffset': 3}}],
                      metadata={'__typename': 'TiktokPostMetadata', 'type': 'post', 'title': 'A title'}),
                 dict(post, metadata={'__typename': 'YoutubePostMetadata', 'type': 'video', 'title': 'A title',
                                      'category': {'categoryId': '22'}, 'privacy': 'public', 'license': 'youtube'})]
@@ -1084,9 +1086,20 @@ class SignedMetaTests(unittest.TestCase):
 
     def youtube(self, title, privacy):
         video = {'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {'title': None,
-                                                                                       'thumbnailOffset': None}}
+                                                                                       'thumbnailOffset': 61500}}
         return self.base('youtube', [video], {'__typename': 'YoutubePostMetadata', 'title': title,
                                               'category': {'categoryId': '22'}, 'privacy': privacy})
+
+    def test_a_video_with_no_cover_frame_is_never_carried_forward(self):
+        # F133 (Ruling, Krish, 2026-11-15): with a null thumbnailOffset the platform shows frame 0, not the cover.
+        for service in ('youtube', 'tiktok', 'instagram'):
+            post = self.base(service, [{'type': 'video', 'source': 'https://example.invalid/v.mp4',
+                                        'video': {'title': None, 'thumbnailOffset': None}}], None)
+            with self.assertRaisesRegex(CarryHold, 'video_without_cover_offset'):
+                buffer_api.carried(post)
+            self.assertIsNone(buffer_api.signed_meta(post, ['a' * 64]))
+        post = self.youtube('Synthetic title', 'private')
+        self.assertEqual(buffer_api.carried(post)['assets'][0]['video']['metadata'], {'thumbnailOffset': 61500})
 
     def test_the_probe_cases_change_the_digest(self):
         plain = self.instagram('post', None)
@@ -1098,7 +1111,8 @@ class SignedMetaTests(unittest.TestCase):
                             self.digest(self.youtube('Synthetic other title', 'private')))
         self.assertNotEqual(self.digest(self.youtube('Synthetic title', 'private')),
                             self.digest(self.youtube('Synthetic title', 'public')))
-        tiktok = self.base('tiktok', [{'type': 'video', 'source': 'https://example.invalid/v.mp4', 'video': {}}],
+        tiktok = self.base('tiktok', [{'type': 'video', 'source': 'https://example.invalid/v.mp4',
+                                       'video': {'thumbnailOffset': 3}}],
                            {'__typename': 'TiktokPostMetadata', 'title': 'Synthetic title', 'isAiGenerated': False})
         self.assertNotEqual(self.digest(tiktok), self.digest(dict(tiktok, metadata=dict(tiktok['metadata'], title='Other'))))
         # The Buffer account is signed too.

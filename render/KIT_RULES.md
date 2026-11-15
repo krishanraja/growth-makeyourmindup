@@ -41,6 +41,31 @@ Read these first, and copy their patterns: `../../kit.css` (the house tokens), `
 `../../templates/story-frame.html` (how a template is built), and `../../KIT.md` (the house look).
 Never change any file outside your folder.
 
+## The cover, the body cards and the tall meme (the ruling of 15 Nov 2026)
+
+The ruling's words: "the front cover card does not look like a front cover. It looks like all the rest of the cards", the cards
+"assume that people have a working knowledge", "use too few words" and "aren't using the page space centrally or
+correctly. They look too bland and too plain", and "The POV computer meme, it's not centralized on the screen".
+content-engine's `docs/CAROUSEL-STANDARD.md` and `docs/COVER-STANDARD.md` own the standard; these are the kit's rules
+for meeting it.
+
+- **The cover is its own template, and it looks like a front cover.** A carousel kit has exactly one cover template
+  (an id ending in `cover`), drawn unlike every body template: its own ground or field, its own layout, a headline
+  larger than any body card's. Never the body card with bigger words, and never a full scene on every card, which
+  is how a cover stops looking like one. The house cover (`../../templates/carousel-cover.html`) shows the pattern: a
+  full field in the tone colour, a masthead, the deck's biggest headline and an ink band that says swipe.
+- **A body card carries one full plain sentence of up to 20 words a stranger can follow**, with its subject, its unit
+  and what it is compared with on the card itself, never leaning on another card (no So, But, This or It to open,
+  no "12x"). `growth.py run carousel lint` holds the words to it.
+- **A body card uses the page, centred.** The sentence is set centred in the safe area under a substantial visual
+  anchor (a framed figure, an object drawn in boxes, a real photo), never plain ground and never a column pushed to
+  one side. Mark centred blocks with `data-centred`; the renderer reports every line and the check refuses a
+  centred line more than 16 px off the centre line, and any word or mark outside the 80 px margin.
+- **A tall meme is built on `../../templates/meme-tall.html`**, never by hand: the headline centred above a fixed
+  clip window (x 200 to 880, y 600 to 1240), the wordmark and credit centred under it. `growth.py run meme compose`
+  puts the clip into the window, fitted and centred. A media slot (`data-slot`) more than 4 px across or 48 px down
+  from the centre is refused.
+
 ## The rules the renderer checks
 
 A kit that breaks any of these fails the card's acceptance (`python growth.py run kit check`, then the two renders
@@ -53,7 +78,9 @@ and `python growth.py run kit painted`) and is not used.
   `{{rows:name}}`, `{{options:name}}` or `{{photo:name}}`.
 - Sizes: only the house sizes: 1080 by 1350, 1080 by 1080, 1080 by 1920, 1200 by 675, 1314 by 1080,
   1600 by 900, 1920 by 1080 or 1280 by 820. A 1080 by 1920 template has
-  `"safe": {"top": 250, "bottom": 340}` and sets `--top: 250px; --bottom: 340px;`.
+  `"safe": {"top": 270, "bottom": 600}` and sets `--top: 270px; --bottom: 600px; --side: 200px;`: everything
+  that must be read sits in the clear box every channel leaves, y 270 to 1320 and x 200 to 880 (content-engine
+  `config/channel-safe-zones.json`; the old bottom of 340 ran words into Instagram's caption from y 1320).
 - Each template starts `<!doctype html>`, sets `--w` and `--h` to its size in a `:root` rule, links
   `../../../kit.css` then `../piece.css`, ends with `<script src="../../../fit.js"></script>`, and
   has one element with `class="frame"`. Text that can grow sits in a `data-fit` box with
@@ -83,5 +110,8 @@ and `python growth.py run kit painted`) and is not used.
   "series.label". Never put the piece's title, its claims or any real figure in the kit: the real
   words are filled in later, outside this repository.
 - Every template must render the same pixels every time: no randomness, no clock, no animation.
+- Layout: every line of text and the mark inside the safe box for its size (above), centred blocks on the centre
+  line, a media slot centred, and a carousel kit's cover drawn unlike its body cards. `python growth.py run kit
+  painted` reads the renderer's report and refuses each miss by name.
 
 When you are done, reply as the card's Return section says, and put the idea in under 15 words in it.

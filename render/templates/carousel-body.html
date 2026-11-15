@@ -2,16 +2,34 @@
 <html lang="en"><head><meta charset="utf-8"><title>carousel body</title>
 <link rel="stylesheet" href="../kit.css">
 <style>
-  :root { --w: 1080px; --h: 1350px; }
-  .grow { margin: 48px 0 56px; }
-  .rule { margin: 48px 0 32px; }
+  /* A body card (the ruling of 15 Nov 2026): one full plain sentence of up to 20 words a stranger can follow, set
+     centred, under a substantial visual anchor that fills the middle of the page, never plain ground. The anchor is
+     the card's one figure or object word in the tone colour, in a framed panel; the panel is drawn even when the
+     card has no figure. Everything sits inside the 80px safe margin; the mark is small in the bottom corner. */
+  :root { --w: 1080px; --h: 1350px; --top: 96px; --bottom: 150px; --side: 96px; }
+  .frame { align-items: center; text-align: center; }
+  .frame > .label { font-size: 28px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .anchor { position: relative; width: 100%; flex: none; height: 430px; margin: 44px 0 0; display: flex;
+    align-items: center; justify-content: center; background: var(--ink-deep); border: 4px solid var(--green);
+    border-radius: 28px; overflow: hidden; }
+  .anchor::before { content: ''; position: absolute; box-sizing: border-box; width: 380px; height: 380px; border-radius: 50%;
+    border: 30px solid var(--green); opacity: 0.55; }
+  .anchor::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 18px; background: currentColor; }
+  .figure { display: block; position: relative; font-family: var(--heading); text-transform: uppercase; line-height: 1;
+    padding: 0 40px; }
+  .grow { width: 100%; align-items: center; margin: 48px 0 0; }
+  .body { max-width: 860px; }
+  .small { margin-top: 28px; opacity: 0.66; }
+  .page { position: absolute; left: 96px; bottom: 88px; font-family: var(--mono); font-size: 28px; color: var(--mint); }
+  .brandmark.corner { bottom: 84px; right: 96px; }
 </style></head>
-<body><div class="frame">
+<body class="tone-{{tone}}"><div class="frame">
   <div class="label">{{label}}</div>
-  <div class="grow" data-fit="body and attribution">
-    <p class="body" data-max="84" data-min="44">{{body}}</p>
-    <div class="rule"></div>
-    <p class="small" data-max="32" data-min="28" data-empty-hide>{{attribution}}</p>
+  <div class="anchor tone-ink" data-fit="anchor" data-centred><span class="figure" data-max="240" data-min="110" data-empty-hide>{{anchor}}</span></div>
+  <div class="grow" data-fit="sentence and attribution" data-centred>
+    <p class="body" data-max="76" data-min="48">{{body}}</p>
+    <p class="small" data-max="30" data-min="26" data-empty-hide>{{attribution}}</p>
   </div>
-  <div class="footer"><span>makeyourmindup.ai <span class="page">{{page}}</span></span><div class="brandmark"></div></div>
+  <div class="page">makeyourmindup.ai {{page}}</div>
+  <div class="brandmark corner"></div>
 </div><script src="../fit.js"></script></body></html>

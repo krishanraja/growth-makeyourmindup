@@ -1,5 +1,20 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-15: Every video carries its designed cover, a carousel cover looks like a front cover, body cards carry one
+  full plain sentence a stranger can follow and use the page centrally, and tall memes are centred. His words: "the
+  front cover card does not look like a front cover. It looks like all the rest of the cards", the cards "assume that
+  people have a working knowledge", "use too few words" and "aren't using the page space centrally or correctly. They
+  look too bland and too plain", "the thumbnail is ridiculously poor, and that must never be the case", and "The POV
+  computer meme, it's not centralized on the screen." The Counting rat tails reel went out a second time through
+  Buffer on 14 Nov with a null thumbnailOffset and showed frame 0, an AI scene (F133). Buffer takes no cover image, so
+  `growth.py run cover append` appends the designed cover as the cut's last second and sets thumbnailOffset to it;
+  release, the L0 carry, the maker and the pre-send read refuse or hold any video with no cover frame, and every
+  video route closes against its cover (R128). The house cover and body card templates were redrawn, the copy lint
+  holds every body card to one full sentence of 8 to 20 words that leans on no other card, the renderer reports
+  every line so `growth.py run kit painted` refuses a cover drawn like its body cards, a word outside the safe box or
+  a centred line off the centre, and the judges are given each card's own view link (R129). Tall templates keep to
+  the clear box every channel leaves (y 270 to 1320, x 200 to 880), and `meme-tall` with `growth.py run meme
+  compose` centres a clip by construction (R130). content-engine owns the standard; Growth meets it.
 - 2026-11-14: Everything uses krish@mindmake.co. His words: "everything uses krish@mindmake.co as that is what is
   auto connected to every part of the OS". His public contact address (`AGENTS.md`), the podcast pitch sign-off
   (`jobs/pitches.md`), the shared surface check (`docs/CHANNEL_PLAYBOOK.md`) and the one address a committed record may

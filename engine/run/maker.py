@@ -110,7 +110,7 @@ from engine.cc_loop import decisions_paged, never_beneath, revision, taste_state
 from engine.control_center import SLUG, ProtocolError, build_report, proposal
 from engine.core import instant, ny_time, read_json
 from engine.packs import x_weight
-from engine.run import autorelease, buffer_api, cc_records, handoff, release, voice_profile
+from engine.run import autorelease, buffer_api, cc_records, handoff, release, video_cover, voice_profile
 from engine.run.anthropic_api import CALL_WORST, GAVE_UP, KEY_ENV, Anthropic, AnthropicAuthError, AnthropicError
 from engine.run.anthropic_api import meter_body as anthropic_meter_body
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
@@ -318,9 +318,18 @@ def week_slots(cc, monday, parts, read, cfg, root):
     return mix['slots']
 
 
+class MockFiles(dict):
+    """{sha256: Drive file id}, with .covers {video sha256: the frame, in ms, of its designed cover}."""
+    covers = None
+
+
 def mock_manifest(cc, monday, parts):
     """{sha256: Drive file id} for the week, its highest version (a corrected map is the next version), or None
-    when none is reported. Held (loud) when unreadable."""
+    when none is reported. Held (loud) when unreadable.
+
+    A chunk may also carry `covers`, {video sha256: thumbnailOffset in ms}: the frame of the designed cover the
+    session appended to that cut with `growth.py run cover append` (engine/run/video_cover.py; Ruling, Krish,
+    2026-11-15). The video's bytes are pinned by its sha256, so its cover frame is too."""
     label, key = autorelease._week_label(monday), cc_records.plan_key(parts)
     try:
         found = cc_records.probe(cc, lambda n: cc_records.mocks_run_id(label, key, n), cc_records.MOCKS,
@@ -332,14 +341,17 @@ def mock_manifest(cc, monday, parts):
         raise Held('mock_manifest_unreadable', loud=True) from None
     if chunks is None:
         return None
-    files = {}
+    files, covers = MockFiles(), {}
     for chunk in chunks:
-        got = chunk.get('files')
+        got, cov = chunk.get('files'), chunk.get('covers', {})
         if chunk.get('plan') != parts or not isinstance(got, dict) or not all(
                 isinstance(k, str) and release.HEX64.match(k) and isinstance(v, str) and handoff.DRIVE_ID.match(v)
-                for k, v in got.items()):
+                for k, v in got.items()) or not isinstance(cov, dict) or not all(
+                isinstance(k, str) and release.HEX64.match(k) and video_cover.offset_ok(v) for k, v in cov.items()):
             raise Held('mock_manifest_unreadable', loud=True)
         files.update(got)
+        covers.update(cov)
+    files.covers = covers
     return files
 
 
@@ -367,6 +379,11 @@ def placement_files(mocks, fmt, channel):
     if not picked or len(picked) < (shape['min'] or 0):
         raise Held('mock_files_do_not_fit_format')
     return [(sha, ext) for sha, ext, _ in picked]
+
+
+def seen(assets, files, manifest):
+    """The assets with each picture's own Drive view link, so the judges see the cards (judges.py)."""
+    return [dict(a, view_url=drive_url(manifest[sha])) for a, (sha, _) in zip(assets, files)]
 
 
 # The words and their review ------------------------------------------------------------------
@@ -843,6 +860,12 @@ class Maker:
         if due is None or due - self.now < MIN_LEAD:
             raise Held('due_too_soon')
         files = placement_files(self.mocks_of(concept, manifest), slot['format'], slot['channel'])
+        covers = getattr(manifest, 'covers', None) or {}
+        if any(release.MEDIA.get('.' + str(ext)) == 'video' and sha not in covers for sha, ext in files):
+            # F133 (Ruling, Krish, 2026-11-15): a video goes out only pointing at its designed cover. Buffer takes no
+            # cover image and a draft with a null offset shows frame 0, so a cut whose mock record names no cover
+            # frame (growth.py run cover append, engine/run/video_cover.py) is held, never made.
+            raise Held('video_without_designed_cover', loud=True)
         assets = [{'name': 'mock-' + str(n) + '.' + ext, 'sha256': sha} for n, (sha, ext) in enumerate(files, 1)]
         return files, assets
 
@@ -858,10 +881,13 @@ class Maker:
         answer = review_words(self.anthropic, slot, words, share, assets)
         if not self.deliver:
             return None
-        verdict = self.judged(slot, concept, words, assets, monday)
+        verdict = self.judged(slot, concept, words, seen(assets, files, manifest), monday)
         channel = slot['channel']
         pinned = BUFFER_CHANNEL_ID[channel]
-        body = [{release.MEDIA['.' + ext]: {'url': drive_url(manifest[sha])}} for sha, ext in files]
+        covers = getattr(manifest, 'covers', None) or {}
+        body = [{'video': {'url': drive_url(manifest[sha]), 'metadata': {'thumbnailOffset': covers[sha]}}}
+                if release.MEDIA['.' + ext] == 'video' else {release.MEDIA['.' + ext]: {'url': drive_url(manifest[sha])}}
+                for sha, ext in files]
         try:
             created = self.buffer.create_draft(channel, pinned, words, body, draft_metadata(channel, files, title))
         except BufferAuthError:
@@ -923,7 +949,7 @@ class Maker:
             answer = review_words(self.anthropic, slot, words, share, assets)
             if not self.deliver:
                 return None
-            verdict = self.judged(slot, concept, words, assets, monday)
+            verdict = self.judged(slot, concept, words, seen(assets, files, manifest), monday)
             return self.hand(slot, concept, post, files, assets, share, answer, monday, verdict)
         except Held as hold:
             raise Held(hold.code, loud=True) from None

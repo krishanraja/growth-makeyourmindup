@@ -17,6 +17,7 @@ import unittest
 
 from engine.copy_lint import copy_lint_errors
 from engine.packs import prose_errors
+from engine.run import kits
 
 ROOT = Path(__file__).resolve().parents[1]
 RENDER = ROOT / 'render'
@@ -37,11 +38,16 @@ TEN = {'quote-card': (1080, 1350), 'receipt-card': (1600, 900), 'scorecard': (10
 FROM_THE_ARTWORK = {'versus-card': (1200, 675), 'versus-card-tall': (1080, 1350), 'number-card': (1314, 1080),
                     'number-card-tall': (1080, 1350), 'chapter-card': (1920, 1080),
                     'chapter-card-vertical': (1080, 1920), 'evidence-card': (1280, 820)}
-TEMPLATES = {**TEN, **FROM_THE_ARTWORK}
+# The tall meme with a clip window, centred by construction (the ruling of 15 Nov 2026).
+CENTRED_TALL = {'meme-tall': (1080, 1920)}
+TEMPLATES = {**TEN, **FROM_THE_ARTWORK, **CENTRED_TALL}
 # Every page that carries the wordmark, and the pages that keep the old label, rule and footer.
 WORDMARK = {'carousel-cover', 'carousel-body', 'carousel-close', 'story-frame', 'quote-card', 'receipt-card', 'meme-square', 'meme-vertical',
-            'versus-card', 'versus-card-tall', 'evidence-card'}
-WITH_RULE = {'quote-card', 'receipt-card', 'carousel-body', 'carousel-close', 'meme-square', 'meme-vertical', 'profile-art'}
+            'versus-card', 'versus-card-tall', 'evidence-card', 'meme-tall'}
+# The cover and the body card were redrawn on 15 Nov 2026 (a front cover that looks like one; a centred sentence under
+# a visual anchor), so they carry the mark in the corner and no rule.
+REDRAWN = {'carousel-cover', 'carousel-body'}
+WITH_RULE = {'quote-card', 'receipt-card', 'carousel-close', 'meme-square', 'meme-vertical', 'profile-art'}
 TONES = ['butter', 'mint', 'coral', 'lilac']
 PLACEHOLDER = re.compile(r'\{\{(?:(rows|options):)?([a-z0-9_]+)\}\}')
 HEX = re.compile(r'#[0-9A-Fa-f]{3,8}\b')
@@ -93,18 +99,22 @@ class TemplatesExist(unittest.TestCase):
             self.assertIn('src="../fit.js"', text, tid)
 
     def test_vertical_frames_keep_the_safe_zones_clear(self):
-        for tid in ('story-frame', 'meme-vertical', 'chapter-card-vertical'):
+        # The clear box every channel leaves (content-engine config/channel-safe-zones.json): y 270 to 1320 and x 200
+        # to 880; the old bottom of 340 let words run into Instagram's caption zone from y 1320.
+        for tid in ('story-frame', 'meme-vertical', 'chapter-card-vertical', 'meme-tall'):
             spec = manifest()['templates'][tid]
-            self.assertEqual(spec['safe'], {'top': 250, 'bottom': 340})
+            self.assertEqual(spec['safe'], {'top': 270, 'bottom': 600})
             text = template_text(spec)
-            self.assertIn('--top: 250px', text)
-            self.assertIn('--bottom: 340px', text)
+            for css in ('--top: 270px', '--bottom: 600px', '--side: 200px'):
+                self.assertIn(css, text, tid)
 
     def test_the_older_pages_keep_the_footer_label_and_rule(self):
         for tid in TEN:
             text = template_text(manifest()['templates'][tid])
             if tid != 'profile-art':
                 self.assertIn('makeyourmindup.ai', text, tid)
+            if tid in REDRAWN:
+                continue
                 self.assertIn('class="label"', text, tid)
             if tid in WITH_RULE:
                 self.assertIn('class="rule"', text, tid)
@@ -124,9 +134,12 @@ class TemplatesExist(unittest.TestCase):
         # Ruling (Krish, 2026-11-03): "They need to go in the bottom corner, subtly, on all carousels of this nature."
         for tid in ('carousel-cover', 'carousel-body', 'carousel-close'):
             text = template_text(manifest()['templates'][tid])
+            self.assertEqual(text.count('class="brandmark'), 1, tid)
+            if tid in REDRAWN:
+                self.assertIn('<div class="brandmark corner"></div>', text, tid)
+                continue
             footer = text[text.index('<div class="footer">'):]
             self.assertIn('<div class="brandmark"></div>', footer, tid)
-            self.assertEqual(text.count('brandmark'), 1, tid)
 
     def test_a_two_tone_headline_has_one_accent_line(self):
         for tid, spec in manifest()['templates'].items():
@@ -291,6 +304,16 @@ class RendersInChromium(unittest.TestCase):
             one, two = (first / out).read_bytes(), (second / out).read_bytes()
             self.assertEqual(hashlib.sha256(one).hexdigest(), a[out]['sha256'], out)
             self.assertEqual(one, two, out)
+
+    def test_the_redrawn_cards_and_the_tall_meme_are_centred_inside_the_safe_box(self):
+        # The ruling of 15 Nov 2026: centred, inside the safe area, the clip window centred on a tall frame.
+        templates = manifest()['templates']
+        for tid in ('carousel-cover', 'carousel-body', 'meme-tall', 'meme-vertical', 'story-frame',
+                    'chapter-card-vertical'):
+            result = self.runs[0][1][tid + '.png']
+            spec = templates[tid]
+            self.assertEqual(kits.layout_errors(spec['width'], spec['height'], result['layout']), [], tid)
+        self.assertTrue(self.runs[0][1]['meme-tall.png']['layout']['slots'], 'the tall meme reports its clip window')
 
     def test_only_kit_colours_and_fonts_are_painted(self):
         for out, result in self.runs[0][1].items():

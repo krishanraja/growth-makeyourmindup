@@ -300,7 +300,7 @@ class FailureRegisterTests(unittest.TestCase):
         # Review 3 of PR #19, 29 Oct 2026: every way he says no holds on the L0 executor.
         failures = {f['id']: f for f in load_failures()}
         new = FAILURE_IDS[119:132]
-        self.assertEqual((new[0], new[-1], FAILURE_IDS[132]), ('F120', 'F132', 'G1'))
+        self.assertEqual((new[0], new[-1], FAILURE_IDS[132], FAILURE_IDS[133]), ('F120', 'F132', 'F133', 'G1'))
         self.assertTrue(all(failures[fid]['status'] == 'tested' for fid in new))
         for fid, guard, test in (
                 ('F120', 'autorelease.py:week_state', 'test_a_no_on_a_part_a_later_version_dropped_still_stops_the_week'),
