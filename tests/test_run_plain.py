@@ -17,11 +17,11 @@ from engine.run.spec import lint, payload_sha256, social_records
 
 ROOT = Path(__file__).resolve().parents[1]
 GOOD = ['TEST FIXTURE. Who gets paid when your team buys an AI tool?',
-        'Most of the money goes to the company that hosts the model.',
-        'The tool you see is often a thin layer on top.',
-        'That layer can change its price with one email.',
-        'So ask who owns the model before you sign.',
-        'I think this matters more than the demo does.',
+        'Most of the money from an AI tool goes to the company that hosts the model.',
+        'The AI tool your team sees is often a thin layer on top of that model.',
+        'The company behind the thin layer can change its price with one email.',
+        'Ask who owns the AI model before your team signs for any tool.',
+        'I think who owns the model matters more than how good the demo looks.',
         'Thanks for reading. Tell me where I got it wrong.']
 
 
@@ -54,10 +54,24 @@ class PlainTextTests(unittest.TestCase):
         self.assertEqual(lint_text('Thanks. Read the whole piece today, it is short.'), [])
 
     def test_a_carousel_needs_a_humble_human_line_and_six_to_eight_cards(self):
-        cold = GOOD[:5] + ['Ask who owns the model.', 'Read the full piece today.']
+        cold = GOOD[:5] + ['Ask who owns the AI model before your team signs for any new tool.', 'Read the full piece today.']
         self.assertEqual(codes(lint_carousel(cold)), ['no_humble_line'])
         self.assertEqual(codes(lint_carousel(GOOD[2:])), ['card_count'])
-        self.assertEqual(codes(lint_carousel(GOOD + GOOD[:2])), ['card_count'])
+        self.assertIn('card_count', codes(lint_carousel(GOOD + GOOD[:2])))
+
+    def test_every_body_card_is_one_full_sentence_a_stranger_can_follow(self):
+        # Ruling (Krish, 2026-11-15): cards assumed working knowledge and used too few words.
+        def body(card):
+            return codes(lint_carousel(GOOD[:3] + [card] + GOOD[4:]))
+        self.assertEqual(body('Teams pay twelve times more for code review than they did in May.'), [])
+        self.assertEqual(body('12x more code in four months.'), ['body_too_short', 'multiplier_shorthand'])
+        self.assertEqual(body('So one bad merge now costs a whole day of work for the team.'),
+                         ['body_leans_on_another_card'])
+        self.assertEqual(body('It broke. Then the team spent a whole day putting every change back.'),
+                         ['body_leans_on_another_card', 'body_not_one_sentence'])
+        self.assertIn('body_too_long', body(' '.join(['word'] * 21) + '.'))
+        self.assertEqual(body('Teams pay twelve times more for code review than they did in May'),
+                         ['body_not_one_sentence'])
         self.assertEqual(codes(lint_carousel('not a list')), ['bad_input'])
         for line in ('I think we missed this.', 'I was wrong about the price.', 'We learned it the hard way.',
                      'Thanks, I owe you one.', 'I am not sure this lasts.'):

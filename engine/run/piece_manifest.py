@@ -15,7 +15,14 @@ The shape (`specs/schema/piece-manifest.schema.json`):
 {"schema": "content-engine-piece-manifest/1", "piece_id", "approval_sha256",
  "qa": {"state": "passed" | "held" | "failed", "checked_at"},
  "assets": [{"name", "drive_id", "sha256", "order"}],
- "channels": {channel or "channel:format": {"words", "alt_text": [text, ...] | null, "assets": [name, ...]}}}
+ "channels": {channel or "channel:format": {"words", "alt_text": [text, ...] | null, "assets": [name, ...],
+                                             "cover": {"asset", "sha256", "cover_offset_ms": int | null}}}}
+
+`cover` is optional (content-engine adds it per channel for every post that carries a video, Ruling, Krish,
+2026-11-15): the designed cover the video posts with (`asset` names it in assets[], `sha256` its bytes) and, once the
+cover is appended to the cut, the frame Buffer shows (`cover_offset_ms`). A video line with no thumbnailOffset holds
+as `video_without_cover_offset`; one whose offset is not the manifest's holds as `cover_offset_mismatch`
+(engine/run/video_cover.py).
 
 A channel that carries two formats of one piece (YouTube's long video and its
 Short) keys each by "channel:format" (youtube:long-video, youtube:short-video);
@@ -29,6 +36,7 @@ import json
 import re
 
 from engine.run.release import CHANNELS, HEX64
+from engine.run.video_cover import COVER_CHANNELS
 
 SCHEMA = 'content-engine-piece-manifest/1'
 KEYS = frozenset({'schema', 'piece_id', 'approval_sha256', 'qa', 'assets', 'channels'})
@@ -36,6 +44,8 @@ QA_KEYS = frozenset({'state', 'checked_at'})
 QA_STATES = ('passed', 'held', 'failed')
 ASSET_KEYS = frozenset({'name', 'drive_id', 'sha256', 'order'})
 CHANNEL_KEYS = frozenset({'words', 'alt_text', 'assets'})
+OPTIONAL_CHANNEL_KEYS = frozenset({'cover'})
+COVER_KEYS = frozenset({'asset', 'sha256', 'cover_offset_ms'})
 PIECE_ID = re.compile(r'^[A-Za-z0-9][A-Za-z0-9:._-]{0,119}$')
 FORMAT = re.compile(r'^[a-z0-9][a-z0-9_-]{0,47}$')
 NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$')
@@ -99,16 +109,49 @@ def validate(value):
         raise ManifestRejected('manifest_malformed')
     for key, entry in channels.items():
         channel, _, fmt = key.partition(':') if isinstance(key, str) else (None, '', '')
-        if channel not in CHANNELS or (':' in key and not FORMAT.match(fmt)) or not isinstance(entry, dict) or set(entry) != CHANNEL_KEYS \
+        if channel not in CHANNELS or (':' in key and not FORMAT.match(fmt)) or not isinstance(entry, dict) \
+                or set(entry) - OPTIONAL_CHANNEL_KEYS != CHANNEL_KEYS \
                 or not (isinstance(entry['words'], str) and entry['words'].strip()) \
                 or not isinstance(entry['assets'], list) or any(n not in names for n in entry['assets']) \
                 or len(set(entry['assets'])) != len(entry['assets']):
+            raise ManifestRejected('manifest_malformed')
+        if 'cover' in entry and not _cover_ok(entry['cover'], names):
             raise ManifestRejected('manifest_malformed')
         alt = entry['alt_text']
         if alt is not None and not (isinstance(alt, list) and len(alt) == len(entry['assets'])
                                     and all(isinstance(a, str) for a in alt)):
             raise ManifestRejected('manifest_malformed')
     return value
+
+
+def _cover_ok(cover, names):
+    offset = cover.get('cover_offset_ms') if isinstance(cover, dict) else None
+    return isinstance(cover, dict) and set(cover) == COVER_KEYS and cover['asset'] in names \
+        and isinstance(cover['sha256'], str) and bool(HEX64.match(cover['sha256'])) \
+        and (offset is None or (isinstance(offset, int) and not isinstance(offset, bool) and offset >= 0))
+
+
+def _entry(manifest, channel, fmt=None):
+    entries = manifest['channels']
+    entry = entries.get(str(channel) + ':' + str(fmt)) if fmt else None
+    return entry if entry is not None else entries.get(channel)
+
+
+def cover_for(manifest, channel, fmt=None):
+    """The designed cover content-engine names for this channel and format, or None."""
+    entry = _entry(manifest, channel, fmt)
+    return dict(entry['cover']) if isinstance(entry, dict) and isinstance(entry.get('cover'), dict) else None
+
+
+def video_offsets(meta):
+    """The thumbnailOffset of each video asset the draft carries, in order (None where it has none)."""
+    assets = meta.get('assets') if isinstance(meta, dict) else None
+    out = []
+    for asset in assets if isinstance(assets, list) else []:
+        video = asset.get('video') if isinstance(asset, dict) else None
+        if isinstance(video, dict):
+            out.append((video.get('metadata') or {}).get('thumbnailOffset'))
+    return out
 
 
 def expected(manifest, channel, fmt=None):
@@ -148,6 +191,13 @@ def line_hold(manifest, line):
     words, assets, alt = want
     if line.get('words') != words or list(line.get('assets') or []) != assets:
         return 'manifest_differs'
+    offsets = video_offsets(line.get('meta'))
+    if offsets and line.get('channel') in COVER_CHANNELS:
+        if any(not (isinstance(o, int) and not isinstance(o, bool) and o >= 0) for o in offsets):
+            return 'video_without_cover_offset'
+        cover = cover_for(manifest, line.get('channel'), line.get('format'))
+        if cover and cover.get('cover_offset_ms') is not None and offsets[0] != cover['cover_offset_ms']:
+            return 'cover_offset_mismatch'
     if alt is not None:
         carried = alt_texts(line.get('meta'))
         kinds = [next(iter(a)) if isinstance(a, dict) and len(a) == 1 else None

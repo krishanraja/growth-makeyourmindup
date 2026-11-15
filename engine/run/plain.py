@@ -10,6 +10,17 @@ import re
 
 MAX_AVERAGE, MAX_SENTENCE = 16, 25
 CAROUSEL_CARDS = (6, 8)
+# A body card (every card between the cover and the close) carries one full plain sentence a stranger can follow on its
+# own (Ruling, Krish, 2026-11-15: cards "assume that people have a working knowledge" and "use too few words"; one full
+# plain sentence of up to 20 words). The floor of 8 words keeps a card from being a fragment; content-engine's
+# docs/CAROUSEL-STANDARD.md owns the standard and its card check, and this is Growth's copy of the rule for its own
+# decks, never a looser one.
+BODY_WORDS = (8, 20)
+# A card that opens on a joining word or a bare pointer leans on a card the reader may not have seen.
+LEANS = re.compile(r"^\W*(?:so|but|and|then|or|because|also|this|that|these|those|it|they|he|she|here)\b", re.I)
+# "12x" is shorthand a stranger has to decode: write "12 times".
+MULTIPLIER = re.compile(r"\b\d+(?:\.\d+)?\s?[x×](?![A-Za-z0-9])")
+END = re.compile(r"[.!?…][\"”’)\]]*\s*$")
 JARGON = (('leverage', r'leverag(?:e|es|ed|ing)'), ('paradigm', r'paradigms?'), ('synergy', r'synerg(?:y|ies|istic)'),
           ('unlock', r'unlock(?:s|ed|ing)?'), ('game-changer', r'game[- ]changers?|game[- ]changing'),
           ('delve', r'delv(?:e|es|ed|ing)'), ('landscape', r'landscapes?'), ('robust', r'robust(?:ly|ness)?'),
@@ -69,8 +80,28 @@ def lint_text(text, at='$'):
     return out
 
 
+def body_card_errors(card, at):
+    """One body card: one full sentence of 8 to 20 words that stands on its own, with no shorthand."""
+    out = []
+    parts = sentences(card)
+    n = sum(len(words(p)) for p in parts)
+    if len(parts) != 1 or not END.search(card.strip()):
+        out.append(finding('body_not_one_sentence', at, '%d sentences; a body card is one full sentence' % len(parts)))
+    if n > BODY_WORDS[1]:
+        out.append(finding('body_too_long', at, '%d words, at most %d' % (n, BODY_WORDS[1])))
+    if n < BODY_WORDS[0]:
+        out.append(finding('body_too_short', at, '%d words; say it in a full sentence a stranger can follow' % n))
+    if LEANS.search(card):
+        out.append(finding('body_leans_on_another_card', at, 'opens on a joining word or a pointer: ' + card[:40]))
+    if MULTIPLIER.search(card):
+        out.append(finding('multiplier_shorthand', at, 'write the multiple out, such as 12 times'))
+    return out
+
+
 def lint_carousel(cards, caption=''):
-    """Every card and the caption pass lint_text; 6 to 8 cards; at least one humble, human line."""
+    """Every card and the caption pass lint_text; 6 to 8 cards; at least one humble, human line; every body card is
+    one full plain sentence a stranger can follow (body_card_errors). The first card is the cover and the last the
+    close, which keep their own forms."""
     out = []
     if not isinstance(cards, list) or not all(isinstance(c, str) for c in cards):
         return [finding('bad_input', '$.cards', 'cards is a list of strings')]
@@ -78,6 +109,8 @@ def lint_carousel(cards, caption=''):
         out.append(finding('card_count', '$.cards', '%d cards, not %d to %d' % ((len(cards),) + CAROUSEL_CARDS)))
     for i, card in enumerate(cards):
         out += lint_text(card, '$.cards[%d]' % i)
+        if 0 < i < len(cards) - 1:
+            out += body_card_errors(card, '$.cards[%d]' % i)
     if caption:
         out += lint_text(caption, '$.caption')
     if not any(humble(text) for text in cards + [caption or '']):

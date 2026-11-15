@@ -257,14 +257,30 @@ async function renderOne(browser, manifest, job, piecesDir) {
           }
         }
       }
-      return { unloaded, errors, faces: faces.length, colours: [...colours].sort(), fonts: [...fonts].sort() };
+      // Where every line of text, every brand mark and every media slot landed, in page pixels, so the kit check can
+      // hold them to the safe box and to the centre (engine/run/kits.py layout_errors; Ruling, Krish, 2026-11-15).
+      const box = (r) => [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)];
+      const lines = [];
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        const el = n.parentElement;
+        if (!n.textContent.trim() || !el || getComputedStyle(el).visibility === 'hidden') continue;
+        const range = document.createRange();
+        range.selectNodeContents(n);
+        const centred = !!el.closest('[data-centred]');
+        for (const r of range.getClientRects()) if (r.width > 1 && r.height > 1) lines.push({ box: box(r), centred });
+      }
+      const rects = (sel) => Array.from(document.querySelectorAll(sel)).map((e) => e.getBoundingClientRect())
+        .filter((r) => r.width > 0 && r.height > 0).map(box);
+      const layout = { lines, marks: rects('.brandmark'), slots: rects('[data-slot]') };
+      return { unloaded, errors, faces: faces.length, colours: [...colours].sort(), fonts: [...fonts].sort(), layout };
     });
     if (refused.length) throw new Error(job.out + ': the page asked for what the renderer refuses: ' + refused.join(', '));
     if (!report.faces || report.unloaded.length) throw new Error(job.out + ': fonts did not load: ' + report.unloaded.join(', '));
     if (report.errors.length) throw new Error(job.out + ': ' + report.errors.join('; '));
     const png = await page.screenshot({ type: 'png', animations: 'disabled', caret: 'hide', scale: 'css',
       clip: { x: 0, y: 0, width: spec.width, height: spec.height } });
-    return { png: stripPng(Buffer.from(png)), colours: report.colours, fonts: report.fonts };
+    return { png: stripPng(Buffer.from(png)), colours: report.colours, fonts: report.fonts, layout: report.layout };
   } finally {
     await page.close();
   }
@@ -324,7 +340,7 @@ async function main(argv) {
   try {
     for (const job of jobs.filter((j) => !j.video)) {
       const { spec } = resolveTemplate(manifest, job.template, piecesDir);
-      const { png, colours, fonts } = await renderOne(browser, manifest, job, piecesDir);
+      const { png, colours, fonts, layout } = await renderOne(browser, manifest, job, piecesDir);
       const digest = sha256(png);
       if (args.verify) {
         const again = sha256((await renderOne(browser, manifest, job, piecesDir)).png);
@@ -334,7 +350,7 @@ async function main(argv) {
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.writeFileSync(out, png);
       results.push({ out: job.out, template: job.template, width: spec.width,
-        height: spec.height, bytes: png.length, sha256: digest, colours, fonts,
+        height: spec.height, bytes: png.length, sha256: digest, colours, fonts, layout,
         ...(job.credits ? { credits: job.credits } : {}) });
     }
   } finally {

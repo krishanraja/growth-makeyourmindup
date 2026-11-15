@@ -27,8 +27,15 @@ NO_PLAIN_CLOSE = KINDS
 CHECKS = ('scheduled', 'public', 'grid_cover', 'player_cover', 'playable_video', 'continuation_link',
           'email_delivery')
 # Checks beyond scheduled and public that a destination carries (review section 6).
+# Every video closes against its designed cover on every route (Ruling, Krish, 2026-11-15; F133: a Buffer reel went
+# out with a null thumbnailOffset and showed an AI frame): the grid tile and the player poster are read back.
 EXTRA_CHECKS = {('facebook', 'short-video'): ('grid_cover', 'player_cover'),
-                ('youtube', 'short-video'): ('continuation_link',),
+                ('instagram', 'short-video'): ('grid_cover', 'player_cover'),
+                ('tiktok', 'short-video'): ('grid_cover', 'player_cover'),
+                ('youtube', 'short-video'): ('continuation_link', 'grid_cover', 'player_cover'),
+                ('youtube', 'long-video'): ('grid_cover', 'player_cover'),
+                ('threads', 'short-video'): ('player_cover',),
+                ('x', 'short-video'): ('player_cover',),
                 ('substack', 'article'): ('playable_video', 'email_delivery')}
 ROUTES = ('buffer', 'native', 'krish_click')
 SHA256 = re.compile(r'^[0-9a-f]{64}$')

@@ -220,7 +220,7 @@ def scheduled_posts(client, now, hours=PRESEND_HOURS):
     """This engine's posts Buffer has scheduled on its seven pinned channels, due from now to `hours` ahead,
     whoever scheduled them (engine/run/reconcile.py presend checks each for a subscribe route before it goes out).
 
-    Each is {'post_id', 'channel', 'due_at', 'text', 'metadata', 'thread_count'}: its own words and Buffer's
+    Each is {'post_id', 'channel', 'due_at', 'text', 'metadata', 'thread_count', 'cover_offsets'}: its own words and Buffer's
     metadata as read (first comment, link card, story link sticker), never rewritten. A post on a channel another
     engine owns (HANDED_OFF_CHANNELS) is never this engine's to check, and another venture's channel is left out."""
     now = instant(now)
@@ -252,8 +252,18 @@ def scheduled_posts(client, now, hours=PRESEND_HOURS):
         out.append({'post_id': pid, 'channel': cid, 'due_at': due,
                     'text': post.get('text') if isinstance(post.get('text'), str) else '',
                     'metadata': post.get('metadata') if isinstance(post.get('metadata'), dict) else {},
-                    'thread_count': _thread_count(post)})
+                    'thread_count': _thread_count(post), 'cover_offsets': _cover_offsets(post)})
     return sorted(out, key=lambda p: p['due_at'])
+
+
+def _cover_offsets(post):
+    """The thumbnailOffset of each video asset Buffer holds for the post, in order (None where none is set)."""
+    out = []
+    for asset in post.get('assets') if isinstance(post.get('assets'), list) else []:
+        if isinstance(asset, dict) and asset.get('type') == 'video':
+            video = asset.get('video') if isinstance(asset.get('video'), dict) else {}
+            out.append(video.get('thumbnailOffset'))
+    return out
 
 
 def account_check(client):

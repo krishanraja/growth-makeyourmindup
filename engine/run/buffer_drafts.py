@@ -29,7 +29,7 @@ Errors carry a lower_snake code only, never words, URLs or the key.
 import re
 
 from engine.buffer_channels import channel_id_errors
-from engine.run.buffer_api import LOOPBACK, MAX_PAGES, PAGE, POST_FIELDS, POSTS_QUERY, Buffer, BufferError
+from engine.run.buffer_api import LOOPBACK, MAX_PAGES, PAGE, POST_FIELDS, POSTS_QUERY, Buffer, BufferError, _offset_ok
 
 CREATE_MUTATION = ('mutation CreateDraft($input: CreatePostInput!) { createPost(input: $input) { __typename '
                    '... on PostActionSuccess { post { ' + POST_FIELDS + ' } } ... on MutationError { message } } }')
@@ -63,7 +63,7 @@ class DraftBuffer(Buffer):
         """Save one new draft on this engine's pinned channel: saveToDraft true, no dueAt.
 
         channel is the engine's channel id (x, instagram, youtube, tiktok); assets a list of
-        AssetInput ({image: {url}} or {video: {url}}, https only); metadata at most the one key of
+        AssetInput ({image: {url}} or {video: {url, metadata: {thumbnailOffset}}}, https only); metadata at most the one key of
         its service. Sent once, never retried (a failure may have landed, so the caller reads
         Buffer before it tries again). Returns the post the mutation returned; the caller reads
         it back."""
@@ -75,9 +75,18 @@ class DraftBuffer(Buffer):
             pair = list(asset.items()) if isinstance(asset, dict) and len(asset) == 1 else [(None, None)]
             kind, body = pair[0]
             url = body.get('url') if isinstance(body, dict) else None
-            if kind not in ('image', 'video') or set(body or {}) != {'url'} or not isinstance(url, str) or not (
+            allowed = {'url'} if kind == 'image' else {'url', 'metadata'}
+            if kind not in ('image', 'video') or not isinstance(body, dict) or 'url' not in body \
+                    or set(body) - allowed or not isinstance(url, str) or not (
                     url.startswith('https://') or (self._loopback and LOOPBACK.match(url))):
                 raise BufferError('draft_asset_refused')
+            if kind == 'video':
+                # Every draft channel shows a video's cover; Buffer takes only a frame, so the designed cover is
+                # appended to the cut and its frame named (engine/run/video_cover.py; Ruling, Krish, 2026-11-15).
+                meta = body.get('metadata')
+                if not isinstance(meta, dict) or set(meta) != {'thumbnailOffset'} \
+                        or not _offset_ok(meta['thumbnailOffset']):
+                    raise BufferError('draft_video_without_cover')
         service = DRAFT_CHANNELS[channel]
         if metadata is not None and (not isinstance(metadata, dict) or set(metadata) != {service}):
             raise BufferError('draft_metadata_refused')

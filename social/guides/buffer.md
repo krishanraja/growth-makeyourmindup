@@ -138,6 +138,16 @@ label was applied. Krish subsequently prohibited public illustration
 boilerplate; that copy was removed and independently read back. Do not restore
 it as a workaround. Recheck supported native metadata before a live action.
 
+## Every video carries its designed cover (Ruling, Krish, 2026-11-15)
+
+Buffer takes a video as `{url, metadata {title, thumbnailOffset}}`: there is no field for a cover image, and a null
+`thumbnailOffset` lets the platform show frame 0 (F133: the Counting rat tails reel, 14 Nov, showed an AI scene). So
+before a video draft is saved: `python growth.py run cover append --cut CUT --cover COVER --out OUT` appends the
+designed tall cover (the piece manifest's per-channel `cover` first, else the post's library cover) as the cut's last
+second and prints the `offset_ms` to use as `thumbnailOffset`; it re-reads that frame and refuses a file whose frame is
+not the cover. File the new cut, put its link on the draft with that offset, and read the draft back. Release, the L0
+carry and the maker refuse a video with no offset, and the pre-send read holds any scheduled one, whoever made it.
+
 ## TikTok short video: held, observed 5 November
 
 Three Buffer video attempts to Krish's TikTok account failed and the provider

@@ -2,20 +2,34 @@
 <html lang="en"><head><meta charset="utf-8"><title>carousel cover</title>
 <link rel="stylesheet" href="../kit.css">
 <style>
-  /* The cover: the series as a mono eyebrow, the two-tone headline, all centred. */
-  :root { --w: 1080px; --h: 1350px; }
-  .frame { align-items: center; text-align: center; }
-  .label { margin: 34px 0 30px; font-size: 28px; letter-spacing: 0.1em; text-transform: uppercase; }
-  .grow { width: 100%; align-items: center; margin: 0 0 48px; }
-  .sub { margin-top: 44px; }
-  .footer { width: 100%; }
-  .footer span:first-child { opacity: 0.66; }
+  /* The front cover (the ruling of 15 Nov 2026: a front cover must look like a front cover). It never looks like
+     the cards after it: a full field in the tone colour (kit.css .cover-field), not the ink ground; a masthead across
+     the top; the biggest headline in the deck, centred; a stamped accent strip; an ink band at the foot that says
+     swipe, with the mark small in its corner. */
+  :root { --w: 1080px; --h: 1350px; --top: 92px; --bottom: 0px; --side: 80px; }
+  .frame { align-items: center; text-align: center; color: var(--ink); }
+  .masthead { width: 100%; border-bottom: 8px solid var(--ink); padding-bottom: 20px; display: flex;
+    justify-content: space-between; align-items: baseline; }
+  .masthead .label { color: var(--ink); font-size: 30px; letter-spacing: 0.12em; text-transform: uppercase; text-align: left; }
+  .masthead .page { font-family: var(--mono); font-size: 26px; color: var(--ink); }
+  .grow { width: 100%; align-items: center; margin: 40px 0 40px; }
+  .cover-head { color: var(--ink); }
+  .cover-head .lead { display: block; color: var(--ink); }
+  .cover-head .accent { display: inline-block; margin-top: 0.12em; padding: 0.04em 0.22em 0.02em; color: var(--cream);
+    background: var(--ink); }
+  .sub { margin-top: 40px; color: var(--ink); max-width: 860px; }
+  .band { align-self: stretch; margin: 0 calc(-1 * var(--side)); height: 196px; background: var(--ink); flex: none;
+    display: flex; align-items: flex-start; justify-content: flex-start; padding: 34px 80px 0; }
+  .band .swipe { font-family: var(--heading); font-size: 52px; line-height: 1; color: var(--cream); text-transform: uppercase; }
+  .band .swipe .arrow { color: var(--cream); }
+  .brandmark.corner { bottom: 84px; right: 80px; }
 </style></head>
-<body class="tone-{{tone}}"><div class="frame">
-  <div class="grow" data-fit="headline and subhead">
-    <div class="label">{{label}}</div>
-    <h1 class="headline" data-max="150" data-min="72"><span class="lead">{{headline}}</span><span class="accent" data-empty-hide>{{accent}}</span></h1>
-    <p class="sub" data-max="50" data-min="32" data-empty-hide>{{subhead}}</p>
+<body class="tone-{{tone}}"><div class="frame cover-field">
+  <div class="masthead"><div class="label">{{label}}</div><span class="page">makeyourmindup.ai {{page}}</span></div>
+  <div class="grow" data-fit="headline and subhead" data-centred>
+    <h1 class="headline cover-head" data-max="190" data-min="110"><span class="lead">{{headline}}</span><span class="accent" data-empty-hide>{{accent}}</span></h1>
+    <p class="sub" data-max="52" data-min="36" data-empty-hide>{{subhead}}</p>
   </div>
-  <div class="footer"><span>makeyourmindup.ai <span class="page">{{page}}</span></span><div class="brandmark"></div></div>
+  <div class="band"><span class="swipe">Swipe <span class="arrow"></span></span></div>
+  <div class="brandmark corner"></div>
 </div><script src="../fit.js"></script></body></html>

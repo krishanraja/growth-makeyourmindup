@@ -266,6 +266,16 @@ class PresendTests(unittest.TestCase):
         found = reconcile.presend([self.scheduled('x', 'TEST FIXTURE ONLY. No link.', thread=2)], 5)
         self.assertEqual((found['held'], found['unverified']), ([], 1))
 
+    def test_a_scheduled_video_with_no_cover_frame_is_held_whoever_scheduled_it(self):
+        # F133 (Ruling, Krish, 2026-11-15): Buffer post 6af7980e... went out with thumbnailOffset null.
+        video = dict(self.scheduled('instagram', 'TEST FIXTURE ONLY. ' + route.subscribe_url('instagram', 's')),
+                     cover_offsets=[None])
+        found = reconcile.presend([video, dict(video, post_id='c' * 24, cover_offsets=[61500])], 1)
+        self.assertEqual([(c['post_id'], c['why']) for c in found['covers']], [('b' * 24, 'cover_not_set')])
+        holds = reconcile.presend_holds(found)
+        self.assertEqual([h['reason'] for h in holds], ['Scheduled video with no designed cover frame, before it goes out'])
+        self.assertNotIn('b' * 24, holds[0]['detail'], 'no ids in the report')
+
     def test_holds_are_capped_so_the_report_stays_valid(self):
         posts = [self.scheduled('x', 'TEST FIXTURE ONLY. No link.', pid='{:024x}'.format(i)) for i in range(30)]
         holds = reconcile.presend_holds(reconcile.presend(posts, 5))

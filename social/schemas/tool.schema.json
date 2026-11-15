@@ -92,6 +92,10 @@
           "alternative": {
             "type": "string",
             "minLength": 1
+          },
+          "cover": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [

@@ -6,7 +6,8 @@ each one that passes and goes live counts." Content-engine owns the judges and p
 route content-engine keeps for it:
 
     POST https://content.krishraja.com/api/board/<Monday>/judge
-    {"op": "judge", "item", "format", "channel", "concept_id", "claim", "words", "assets": [{"name", "sha256"}]}
+    {"op": "judge", "item", "format", "channel", "concept_id", "claim", "words",
+     "assets": [{"name", "sha256", "view_url"}]}
         -> {"verdict": "pass" | "fail", "score", "band", "reasons": [{"judge", "score", "fix"}], "artifact_sha256"}
     {"op": "bind", "artifact_sha256", "buffer_post_id", "payload_sha256", "item"}   once the draft is saved
     {"op": "live", "posts": [{"buffer_post_id", "url", "at"}]}                       board tick, from Buffer's sent posts
@@ -17,6 +18,13 @@ judges_failed, and the judges' reasons are kept in the ignored .scratch/judges/ 
 repository is public, so the log carries codes only). Content-engine keeps every verdict, reasons included, on the item.
 The North Star's number then counts each judged derived post that passed and went live (content-engine's reader in
 Control Center). No judge is ever skipped for a judged format: with no board key the slot holds as judges_unavailable.
+
+The judges see the cards (Ruling, Krish, 2026-11-15: the cover must look like a cover, the cards must not be bland, so a
+verdict on words alone is not a verdict on the post). Every asset goes with `view_url`, its own Drive view link, so the
+panel reads the pictures themselves; the verdict still binds their sha256. A picture with no view link holds the slot
+as judges_cannot_see, never judged blind. Before the panel is asked, a Growth carousel has passed the kit's layout
+check (`growth.py run kit painted`: cover distinct, every line inside the safe margin and centred where the template
+centres it) and its copy lint (`growth.py run carousel lint`: one full sentence of up to 20 words on every body card).
 """
 import hashlib
 import json
@@ -52,9 +60,11 @@ def judge(board, monday, slot, concept, words, assets, root=None):
     """The judges' verdict on one derived post, or JudgesHeld. Only a judged format is asked."""
     if board is None or not hasattr(board, 'judge'):
         raise JudgesHeld('judges_unavailable')
+    if any(not (isinstance(a.get('view_url'), str) and a['view_url'].startswith('https://')) for a in assets):
+        raise JudgesHeld('judges_cannot_see')
     body = {'op': 'judge', 'item': slot['slot_id'], 'format': slot['format'], 'channel': slot['channel'],
             'concept_id': (concept or {}).get('concept_id'), 'claim': (concept or {}).get('claim') or '', 'words': words,
-            'assets': [{'name': a['name'], 'sha256': a['sha256']} for a in assets]}
+            'assets': [{'name': a['name'], 'sha256': a['sha256'], 'view_url': a['view_url']} for a in assets]}
     try:
         answer = board.judge(monday, body)
     except BoardError as error:

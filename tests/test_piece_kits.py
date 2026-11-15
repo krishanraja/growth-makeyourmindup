@@ -317,11 +317,19 @@ class TheCommands(unittest.TestCase):
         self.assertEqual(written, kit_checks.render_jobs(kit))
         spec = json.loads((kit / 'templates.json').read_text(encoding='utf-8'))['templates']
         good = [{'template': j['template'], 'width': spec[j['template'].split('/')[1]]['width'],
-                 'height': spec[j['template'].split('/')[1]]['height'], 'colours': ['#0C1512'], 'fonts': ['Anton']}
+                 'height': spec[j['template'].split('/')[1]]['height'], 'colours': ['#0C1512'], 'fonts': ['Anton'],
+                 'layout': {'lines': [], 'marks': [], 'slots': []}}
                 for j in written]
         report = Path(self.tmp.name) / 'report.json'
         report.write_text(json.dumps(good), encoding='utf-8')
         self.assertEqual(self.run_main(['kit', 'painted', str(kit), '--report', str(report)])[0], 0)
+        # A line set outside the safe margin is refused (the ruling of 15 Nov 2026).
+        good[0]['layout'] = {'lines': [{'box': [40, 600, 300, 60], 'centred': False}], 'marks': [], 'slots': []}
+        report.write_text(json.dumps(good), encoding='utf-8')
+        code, out = self.run_main(['kit', 'painted', str(kit), '--report', str(report)])
+        self.assertEqual(code, 1)
+        self.assertIn('safe margin', out)
+        good[0]['layout'] = {'lines': [], 'marks': [], 'slots': []}
         good[0]['colours'].append(OFF_KIT)
         report.write_text(json.dumps(good), encoding='utf-8')
         code, out = self.run_main(['kit', 'painted', str(kit), '--report', str(report)])

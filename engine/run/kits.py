@@ -52,7 +52,21 @@ SPEC_OPTIONAL = ('choices', 'note', 'safe')
 # field, and the credits go in the post's description (Krish, 2026-11-02: "all sources should go in the carousel post
 # description").
 FIELD_TYPES = ('text', 'rows', 'options', 'photo')
-SAFE_VERTICAL = {'top': 250, 'bottom': 340}
+# The clear box every channel leaves on a tall frame (content-engine config/channel-safe-zones.json, the union of its
+# channels): y 270 to 1320, and nothing past x 880 between y 520 and 1320, where the action rails sit. A tall template
+# sets --top 270, --bottom 600 and --side 200 (Ruling, Krish, 2026-11-15: "The POV computer meme, it's not
+# centralized on the screen"); the old 250/340 ran into Instagram's caption zone from y 1320.
+SAFE_VERTICAL = {'top': 270, 'bottom': 600}
+TALL_CSS = ('--top: 270px', '--bottom: 600px', '--side: 200px')
+TALL_CLEAR = {'top': 270, 'bottom': 1320, 'rail_top': 520, 'rail_x': 880, 'left': 120}
+# A 4:5 carousel card keeps every word and the mark inside the house 80px feed margin (content-engine
+# config/brand-palette.json safe.feed_margin_px), and a centred block's lines sit on the card's centre line.
+FEED_MARGIN = 80
+CENTRE_TOLERANCE = 16
+# A media slot in a tall frame (the tall meme's clip window) is centred across and close to the middle down.
+SLOT_TOLERANCE = (4, 48)
+# A tight line height lets a glyph box poke a few pixels past its block; the safe edges allow that much and no more.
+EDGE_TOLERANCE = 4
 MAX_TEMPLATES = 8
 MAX_FILE_BYTES = 64 * 1024
 # Every carousel ends on the house close (render/templates/carousel-close.html: the takeaway, Subscribe free and the
@@ -63,6 +77,9 @@ MAX_FILE_BYTES = 64 * 1024
 OWN_CLOSE = re.compile(r'(?:^|-)(?:close|closer|ending|end|outro|takeaway|cta)(?:-|$)')
 OWN_CLOSE_KEPT = frozenset({'carousel-1aaf9a3ce399213eb222', 'carousel-2298e19a6b82b4543f0e', 'carousel-734e1efbef8f3b2199b4',
                             'carousel-96b5d3c036fad579a034', 'carousel-ce7f9aa2d1d6a9d5318f', 'off-sat-goodnews'})
+# Kits made before the cover and layout checks (15 Nov 2026) keep their templates for the record; every kit made after
+# them is held to both.
+LAYOUT_KEPT = OWN_CLOSE_KEPT
 KIT_CSS_LINK = '<link rel="stylesheet" href="../../../kit.css">'
 PIECE_CSS_LINK = '<link rel="stylesheet" href="../piece.css">'
 FIT_SCRIPT = '<script src="../../../fit.js"></script>'
@@ -209,8 +226,8 @@ def template_errors(kit_dir, tid, spec, sizes):
     w, h = spec['width'], spec['height']
     if '--w: %dpx' % w not in html or '--h: %dpx' % h not in html:
         errors.append(at + ': sets --w: %dpx and --h: %dpx' % (w, h))
-    if (w, h) == (1080, 1920) and ('--top: 250px' not in html or '--bottom: 340px' not in html):
-        errors.append(at + ': a vertical frame sets --top: 250px and --bottom: 340px')
+    if (w, h) == (1080, 1920) and not all(css in html for css in TALL_CSS):
+        errors.append(at + ': a vertical frame sets ' + ', '.join(TALL_CSS) + ' (the clear box every channel leaves)')
     used = {}
     for kind, name in PLACEHOLDER.findall(html):
         if used.get(name, kind or 'text') != (kind or 'text'):
@@ -242,7 +259,7 @@ def spec_errors(tid, spec, sizes):
     if (spec['width'], spec['height']) not in sizes:
         errors.append(at + ': %sx%s is not a house size' % (spec['width'], spec['height']))
     if (spec['width'], spec['height']) == (1080, 1920) and spec.get('safe') != SAFE_VERTICAL:
-        errors.append(at + ': a 1080x1920 template keeps the safe zones (top 250, bottom 340)')
+        errors.append(at + ': a 1080x1920 template keeps the safe zones (top 270, bottom 600)')
     fields = spec['fields']
     if not isinstance(fields, dict) or not fields or any(v not in FIELD_TYPES for v in fields.values()):
         return errors + [at + ': fields map names to text, rows, options or photo']
@@ -380,6 +397,8 @@ def kit_errors(kit_dir, root=ROOT, secrets=(), others=None):
             named = {'templates/' + t + '.html' for t in manifest['templates']}
             on_disk = {rel for rel in texts if rel.startswith('templates/')}
             errors += [rel + ': a template templates.json does not declare' for rel in sorted(on_disk - named)]
+            if piece_id not in LAYOUT_KEPT:
+                errors += cover_errors(manifest, {t: texts.get('templates/' + t + '.html') for t in manifest['templates']})
     errors += reuse_errors(kit_dir, texts, root, others)
     return errors
 
@@ -437,6 +456,57 @@ def render_jobs(kit_dir):
             for tid, spec in manifest['templates'].items()]
 
 
+def cover_errors(manifest, texts):
+    """A carousel kit has its own front cover that does not look like its body cards (Ruling, Krish, 2026-11-15: "the
+    front cover card does not look like a front cover. It looks like all the rest of the cards"). texts maps each
+    template id to its HTML; the cover's styles differ from every other template's."""
+    cards = [tid for tid, spec in manifest['templates'].items() if (spec.get('width'), spec.get('height')) == (1080, 1350)]
+    if not cards:
+        return []
+    covers = [tid for tid in cards if tid == 'cover' or tid.endswith('-cover')]
+    if len(covers) != 1:
+        return ['a carousel kit has exactly one cover template (an id ending in cover), its own front cover']
+    style = lambda html: ' '.join(re.findall(r'<style\b[^>]*>(.*?)</style\s*>', html or '', re.I | re.S)).split()
+    same = [tid for tid in cards if tid != covers[0] and style(texts.get(tid)) == style(texts.get(covers[0]))]
+    return [covers[0] + ': the cover is drawn like ' + ', '.join(same) + '; a front cover never looks like a body card'
+            ] if same else []
+
+
+def layout_errors(width, height, layout):
+    """Where the renderer says each line of text, mark and media slot landed, against the safe box and the centre.
+
+    layout is the renderer's report: {lines: [{box: [x, y, w, h], centred}], marks: [[x, y, w, h]], slots}."""
+    if not isinstance(layout, dict):
+        return ['no layout reported (render with the current renderer)']
+    errors = []
+    lines = [l for l in layout.get('lines') or [] if isinstance(l, dict)]
+    things = [('a line', l['box']) for l in lines] + [('the mark', m) for m in layout.get('marks') or []]
+    for what, (x, y, w, h) in things:
+        if (width, height) == (1080, 1920):
+            c, t = TALL_CLEAR, EDGE_TOLERANCE
+            if y < c['top'] - t or y + h > c['bottom'] + t or x < c['left'] - t:
+                errors.append(what + ' at y %d to %d leaves the clear box (y 270 to 1320)' % (y, y + h))
+            elif y + h > c['rail_top'] and x + w > c['rail_x'] + t:
+                errors.append(what + ' runs under the action rail (right edge %d past x 880)' % (x + w))
+        elif (width, height) == (1080, 1350):
+            m = FEED_MARGIN - EDGE_TOLERANCE
+            if x < m or y < m or x + w > width - m or y + h > height - m:
+                errors.append(what + ' at [%d, %d, %d, %d] is outside the 80px safe margin' % (x, y, w, h))
+    for line in lines:
+        if line.get('centred'):
+            x, _, w, _ = line['box']
+            if abs(x + w / 2 - width / 2) > CENTRE_TOLERANCE:
+                errors.append('a centred line sits %d px off the centre line' % round(x + w / 2 - width / 2))
+    if (width, height) == (1080, 1920):
+        for x, y, w, h in layout.get('slots') or []:
+            dx, dy = x + w / 2 - width / 2, y + h / 2 - height / 2
+            if abs(dx) > SLOT_TOLERANCE[0] or abs(dy) > SLOT_TOLERANCE[1]:
+                errors.append('the media slot sits %d px across and %d px down from the centre' % (dx, dy))
+            if x + w > TALL_CLEAR['rail_x'] or y < TALL_CLEAR['top'] or y + h > TALL_CLEAR['bottom']:
+                errors.append('the media slot leaves the clear box')
+    return sorted(set(errors))
+
+
 def painted_errors(kit_dir, results, root=ROOT):
     """The renderer's own report on a kit: every template rendered at its size, in kit colours and fonts only."""
     manifest = read_json(Path(kit_dir) / 'templates.json')
@@ -457,6 +527,8 @@ def painted_errors(kit_dir, results, root=ROOT):
             errors.append(tid + ': paints a colour outside the kit (' + ', '.join(sorted(painted - colours)) + ')')
         if not fonts or not fonts <= set(KIT_FONTS):
             errors.append(tid + ': paints a font outside the kit (' + ', '.join(sorted(fonts - set(KIT_FONTS))) + ')')
+        if pid not in LAYOUT_KEPT:
+            errors += [tid + ': ' + e for e in layout_errors(spec['width'], spec['height'], result.get('layout'))]
     return errors
 
 

@@ -15,8 +15,16 @@
         "tone": "text",
         "page": "text"
       },
-      "required": ["label", "headline"],
-      "choices": {"tone": ["green", "coral"]},
+      "required": [
+        "label",
+        "headline"
+      ],
+      "choices": {
+        "tone": [
+          "green",
+          "coral"
+        ]
+      },
       "example": {
         "label": "series.label",
         "headline": "Who gets paid",
@@ -37,14 +45,29 @@
         "total": "text",
         "page": "text"
       },
-      "required": ["label", "heading", "rows", "total_label", "total"],
+      "required": [
+        "label",
+        "heading",
+        "rows",
+        "total_label",
+        "total"
+      ],
       "example": {
         "label": "series.label",
         "heading": "Line by line",
         "rows": [
-          ["The first payee", "$0.40"],
-          ["The second payee", "$0.25"],
-          ["The third payee", "$0.10"]
+          [
+            "The first payee",
+            "$0.40"
+          ],
+          [
+            "The second payee",
+            "$0.25"
+          ],
+          [
+            "The third payee",
+            "$0.10"
+          ]
         ],
         "total_label": "Total",
         "total": "$0.75",
@@ -56,7 +79,10 @@
       "file": "templates/tape-receipt-vertical.html",
       "width": 1080,
       "height": 1920,
-      "safe": {"top": 250, "bottom": 340},
+      "safe": {
+        "top": 270,
+        "bottom": 600
+      },
       "fields": {
         "label": "text",
         "headline": "text",
@@ -66,14 +92,29 @@
         "stamp": "text",
         "page": "text"
       },
-      "required": ["label", "headline", "rows", "total_label", "total"],
+      "required": [
+        "label",
+        "headline",
+        "rows",
+        "total_label",
+        "total"
+      ],
       "example": {
         "label": "series.label",
         "headline": "The whole receipt",
         "rows": [
-          ["The first payee", "$0.40"],
-          ["The second payee", "$0.25"],
-          ["The third payee", "$0.10"]
+          [
+            "The first payee",
+            "$0.40"
+          ],
+          [
+            "The second payee",
+            "$0.25"
+          ],
+          [
+            "The third payee",
+            "$0.10"
+          ]
         ],
         "total_label": "Total",
         "total": "$0.75",

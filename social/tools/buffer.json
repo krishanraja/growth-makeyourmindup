@@ -9,7 +9,8 @@
     "Inspect the current tool schema and current saved draft before a mutation.",
     "Keep saveToDraft=true and dueAt absent/null for draft preparation; default queue behaviour is not draft authority.",
     "Publication/scheduling needs the exact approved payload and the authorised go-live route.",
-    "Independently reopen native saved state in Codex; API success alone is insufficient."
+    "Independently reopen native saved state in Codex; API success alone is insufficient.",
+    "Before any video is scheduled, read its draft back: every video asset carries a thumbnailOffset that is the designed cover's frame (growth.py run cover check); Buffer cannot take a cover image, and a null offset shows frame 0 (F133)."
   ],
   "capabilities": [
     {
@@ -38,7 +39,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "linkedin",
@@ -99,7 +101,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "tiktok",
@@ -122,7 +125,8 @@
       "held_since": "2026-11-05",
       "failure": "Krish's TikTok account, short video through Buffer: three Buffer video attempts failed and the provider rejection is unresolved.",
       "recheck_when": "Buffer or TikTok changes the video route, or the provider rejection is explained; then one bounded check under Krish's approval, never a repeat attempt.",
-      "alternative": "native TikTok uploader, under the applicable approval (Wednesday's approved video went live this way with public playback verified)"
+      "alternative": "native TikTok uploader, under the applicable approval (Wednesday's approved video went live this way with public playback verified)",
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "youtube",
@@ -130,7 +134,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "youtube",
@@ -138,7 +143,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified. W2.8 (Krish, plan of 28 October 2026): its first real post is the capability check he approves on its Monday; release waits on a signed title and category.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "substack",
@@ -174,7 +180,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified in this pilot.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "facebook",
@@ -236,7 +243,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "facebook",
@@ -244,7 +252,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "tiktok",
@@ -252,7 +261,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "youtube",
@@ -260,7 +270,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "x",
@@ -268,7 +279,8 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified for the meme format; perform one bounded capability check on the exact channel.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     },
     {
       "channel": "threads",
@@ -276,7 +288,17 @@
       "status": "unverified",
       "verified_at": null,
       "evidence_ref": "Not verified for this format. Connection verified on 13 November 2026 for @makeyourmind.up; connection identity alone does not prove draft, schedule or publish capability on the new channel.",
-      "verified_operations": []
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
+    },
+    {
+      "channel": "threads",
+      "format": "short-video",
+      "status": "unverified",
+      "verified_at": null,
+      "evidence_ref": "Not verified by this pilot; consult prior dated evidence and perform one bounded capability check.",
+      "verified_operations": [],
+      "cover": "frame_offset_only: Buffer takes a video as {url, metadata {title, thumbnailOffset}} and no cover image, so the designed cover is appended to the cut as its last second and thumbnailOffset names it (growth.py run cover append, engine/run/video_cover.py); a video with a null offset is held, never posted (F133; Ruling, Krish, 2026-11-15)."
     }
   ],
   "lessons": [
