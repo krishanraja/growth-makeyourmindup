@@ -369,10 +369,11 @@
       "workflow": "branch-sweep.yml",
       "trigger": "Sunday 03:17 UTC, or by hand (a hand run defaults to a dry run) (Ruling, Krish, 2026-11-15)",
       "may_write": [
-        "the deletion of a remote branch whose head is contained in main or is the head of a merged pull request from that branch"
+        "the deletion of a remote branch whose head is contained in main or is the head of a merged pull request from that branch",
+        "on a hand run with the approved input, the deletion of each branch Krish approved, only while its head is the exact commit he reviewed (Ruling, Krish, 2026-11-15)"
       ],
       "never": [
-        "delete main, a protected branch, gh-pages, floor/rejections, inspo/new-drops, or any branch with unmerged work or an open pull request",
+        "delete main, a protected branch, gh-pages, floor/rejections, inspo/new-drops, a branch with an open pull request, or a branch with unmerged work that Krish has not approved at its exact commit",
         "read a key",
         "post, send, publish or spend"
       ],
