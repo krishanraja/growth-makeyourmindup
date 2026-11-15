@@ -272,3 +272,24 @@ class Recovery(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PaidBoostReadings(unittest.TestCase):
+    """Ruling (Krish, 2026-11-15): Codex reads every paid boost in his browser; the reading is kept apart from organic."""
+
+    def detail(self, **boost):
+        d = {'metric': 'reach', 'unit': 'accounts', 'data_source': 'Meta Ads Manager, read by Codex', 'read_at': '2026-11-16',
+             'value': 8984, 'window_start': '2026-11-13', 'window_end': '2026-11-14',
+             'paid_boost': {'platform': 'meta', 'window_start': '2026-11-13', 'window_end': '2026-11-14', 'spend_cents': None}}
+        d['paid_boost'].update(boost)
+        return d
+
+    def test_a_boost_reading_is_kept_with_its_window(self):
+        self.assertEqual(msr._observation_errors(self.detail()), [])
+        self.assertEqual(msr._observation_errors(self.detail(spend_cents=2500, piece='agent-computer')), [])
+
+    def test_a_bad_boost_reading_is_refused(self):
+        self.assertTrue(msr._observation_errors(self.detail(platform='instagram_app')))
+        self.assertTrue(msr._observation_errors(self.detail(window_end='2026-11-01')))
+        self.assertTrue(msr._observation_errors(self.detail(spend_cents=-5)))
+        self.assertTrue(msr._observation_errors(self.detail(audience='names')))

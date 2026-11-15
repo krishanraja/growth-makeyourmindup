@@ -1,0 +1,3 @@
+Status: Claude and Codex division written in (Ruling, Krish, 2026-11-15): Codex does the visual builds and the social legwork (post approved work, read it back for cover, caption and call to action, read measurement and paid boosts) in sessions Krish watches in Codex Desktop, never touching Drive or ai-harness. The weekly review gains "What worked, what did not, and why" with paid split from organic, beside the Sunday learn workflow; boost readings are `paid_boost` observations. First analysis: `docs/reviews/2026-11-15-interest-vs-paid.md`.
+Next: Codex reads Meta Ads Manager, TikTok Promote, YouTube Studio and Substack's 9 to 15 Nov sources in Krish's browser, and the Measurement session records them.
+North Star check (2026-11-15): holds.

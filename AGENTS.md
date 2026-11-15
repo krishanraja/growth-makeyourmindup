@@ -393,6 +393,14 @@ Krish, same day: "One session should work on one engine only." Work that belongs
 
 Each engine records what it did; Measurement and Allocation judges what worked. Committed records stay privacy-safe: exact words, recipients and post URLs live only in `.scratch/engines/`. The existing daily job and automations keep running through the shadow week; Measurement then compares the engines' decisions with what the operation actually did.
 
+## Claude and Codex: who does what (Ruling (Krish, 2026-11-15): Codex does a minimum of every video session and the social legwork, visible in Codex Desktop; Claude owns strategy, orchestration, verification and learnings; Codex never updates ai-harness or Google Drive)
+
+His words: "Codex should also do the leg work for social media asset scheduling, posting, verifying posts went live properly with the right thumbnails and captions and CTAs, and also the measurement reports are ingested, and we understand whats working well and what isn't, and use that to optimise future assets." Where this and an older line below disagree, this wins.
+
+- **Claude** owns the strategy, the week's plan and mix, every Codex card and handoff, the check of every result, the learnings written back (`engines/records/`, `social/lessons/`, `CHANGES.md`, the taste ledger), every file put in Google Drive and every ai-harness proposal.
+- **Codex** does the visual builds of every video and picture session (content-engine's `ve card`, at least one card a session: content-engine `config/codex-minimum.json`), and the social legwork in Krish's signed-in browser, in a session he can watch in his Codex Desktop app: it schedules and posts only what Krish approved, inside `docs/PUBLISHING-AUTHORITY.md`; reads each post back live for its cover or thumbnail, caption and call to action (the Publishing engine's `check` records, source `live_readback`); and reads the measurement each post and each paid boost earned (the Measurement engine's observations; a boost's reading carries `paid_boost`). It never writes to Google Drive or ai-harness, never places or changes a boost without Krish's Yes on that boost, and hands what it read to the Claude session, which checks and records it.
+- **The weekly loop**: `jobs/report.md`, step 4b, and the Sunday `learn` workflow, which reweights next week's mix from what brought subscribers.
+
 ## What you are growing
 
 **makeyourmindup** is Krish's AI media channel: "What's coming in AI, before
