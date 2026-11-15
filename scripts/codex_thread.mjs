@@ -12,7 +12,8 @@
 // Options: --cwd DIR (default: here), --prompt-file FILE (the message from a file), --sandbox read-only|workspace-write
 // (default read-only), --model M, --effort E, --home DIR (default: VE_CODEX_DESKTOP_HOME, else ~/.codex), --json,
 // --detach (open or send runs on in the background; its output, the thread id first, goes to --log FILE).
-// Copied unchanged into growth-heartside and growth-makeyourmindup; content-engine holds the source.
+// Canonical copy: krishanraja/ai-harness scripts/codex_thread.mjs (Ruling, Krish, 2026-11-15). Change it there first,
+// then copy it unchanged to the same path in every repository that starts Codex; ai-harness checks the copies match.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
