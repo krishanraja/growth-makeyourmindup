@@ -294,12 +294,16 @@ function renderVideo(job, base) {
   }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mocks-'));
   try {
-    const list = frames.map((f, i) => "file '" + f.replace(/'/g, "'\\''") + "'\nduration " + seconds[i]).join('\n')
-      + "\nfile '" + frames[frames.length - 1].replace(/'/g, "'\\''") + "'\n";
-    fs.writeFileSync(path.join(dir, 'list.txt'), list);
+    // Each frame is its own looped input, scaled and padded on its own, then joined. One concat-demuxer stream
+    // reinitialised its filters when a frame changed size (a 9:16 cover before 4:5 cards), and the video came out
+    // short: 2.03 s for 3 + 2 s on ffmpeg 6.1 (found 15 Nov 2026, tests/test_render_templates.py VideoJobs).
+    const inputs = frames.flatMap((f, i) => ['-loop', '1', '-framerate', '30', '-t', String(seconds[i]), '-i', f]);
+    const chains = frames.map((_, i) => '[' + i + ':v]scale=1080:-2:flags=bicubic,'
+      + 'pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0x0C1512,setsar=1,fps=30,format=yuv420p[v' + i + ']');
+    const graph = chains.join(';') + ';' + frames.map((_, i) => '[v' + i + ']').join('')
+      + 'concat=n=' + frames.length + ':v=1:a=0[out]';
     const tmp = path.join(dir, 'out.mp4');
-    execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', path.join(dir, 'list.txt'),
-      '-vf', 'scale=1080:-2:flags=bicubic,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0x0C1512,fps=30,format=yuv420p',
+    execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...inputs, '-filter_complex', graph, '-map', '[out]',
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-threads', '1', '-x264-params', 'threads=1:sliced-threads=0',
       '-an', '-map_metadata', '-1', '-fflags', '+bitexact', '-flags:v', '+bitexact', '-movflags', '+faststart', tmp]);
     return fs.readFileSync(tmp);

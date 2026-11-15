@@ -1,5 +1,17 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-15: Paid reach is read apart from genuine interest, read only, and nothing here changes an ad account. His
+  words: "Improve automated creative production and advertising analysis for Make Your Mind Up" and "Advertising
+  account changes must remain draft-only and require explicit approval. No campaign launches or budget changes."
+  HyperFrames and Claude Ads were evaluated and neither is installed (`docs/reviews/2026-11-15-hyperframes-and-claude-ads.md`).
+  `growth.py run paid audit` reads a saved Buffer capture, native posts included, with the measurement records' paid
+  boost readings: it calls a post suspected paid at ten times its channel's organic median with half its interest or
+  less, or at a hundred times whatever its rate (at least 1,000 views or impressions, on a channel an ads platform can
+  boost), holds paid and suspected-paid posts out of the organic baseline, flags any Substack subscriber from a boosted
+  platform in a boost week as not provably organic, and ends every check pass, fail, unknown or not_applicable. Its
+  only recommendations are reads, a hold-out, no new boosts and make more of what people stayed with, each a draft for
+  his Yes that changes nothing (R131). Thresholds are proposed defaults for his approval. The slideshow video job keeps
+  every second asked for when its frames differ in size (a 9:16 cover with 4:5 cards came out 2.03 s for 5 s).
 - 2026-11-15: Every video carries its designed cover, a carousel cover looks like a front cover, body cards carry one
   full plain sentence a stranger can follow and use the page centrally, and tall memes are centred. His words: "the
   front cover card does not look like a front cover. It looks like all the rest of the cards", the cards "assume that

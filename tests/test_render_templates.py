@@ -397,3 +397,42 @@ class ToneFollowsTheDay(unittest.TestCase):
 
     def test_an_asset_that_carries_the_piece_wears_its_colour_on_any_day(self):
         self.assertEqual(self.run_fill(self.job(fields={'tone': 'coral'}, date='2026-11-17', carries='piece-123')), 'ok:coral')
+
+
+class VideoJobs(unittest.TestCase):
+    """A video job is a slideshow of rendered PNGs on a 1080x1920 ink frame. Frames of different sizes (a 9:16
+    cover before 4:5 cards) keep every second asked for and are each padded onto ink (fixed 15 Nov 2026: one
+    concat-demuxer stream made 3 + 2 s into 2.03 s and left the second frame unpadded)."""
+
+    def test_mixed_sizes_keep_their_seconds_and_their_ink_frame(self):
+        for tool in ('node', 'ffmpeg', 'ffprobe'):
+            if shutil.which(tool) is None:
+                raise unittest.SkipTest(tool + ' is not installed here')
+        templates = manifest()['templates']
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            jobs = [{'template': 'story-frame', 'fields': templates['story-frame']['example'], 'out': 'tall.png'},
+                    {'template': 'quote-card', 'fields': templates['quote-card']['example'], 'out': 'feed.png'},
+                    {'video': ['tall.png', 'feed.png'], 'seconds': [3, 2], 'out': 'short.mp4'}]
+            (base / 'jobs.json').write_text(json.dumps(jobs), encoding='utf-8')
+            proc = subprocess.run(['node', str(ROOT / 'scripts' / 'render_mocks.mjs'), str(base / 'jobs.json'),
+                                   '--out-dir', str(base / 'out'), '--verify'],
+                                  capture_output=True, text=True, timeout=600, cwd=str(ROOT))
+            if proc.returncode and re.search(r"Playwright is not available|Executable doesn't exist|browserType\.launch",
+                                             proc.stderr):
+                raise unittest.SkipTest('Playwright or its Chromium is not available here')
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            video = base / 'out' / 'short.mp4'
+            probe = subprocess.run(['ffprobe', '-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries',
+                                    'stream=width,height,nb_read_frames', '-of', 'json', str(video)],
+                                   capture_output=True, text=True, timeout=60)
+            stream = json.loads(probe.stdout)['streams'][0]
+            self.assertEqual((stream['width'], stream['height']), (1080, 1920))
+            self.assertEqual(int(stream['nb_read_frames']), 150)  # 5 s at 30 fps
+            # The 4:5 frame is centred on ink: the pixel at the bottom edge of the frame is ink, never another colour.
+            frame = subprocess.run(['ffmpeg', '-v', 'error', '-ss', '4', '-i', str(video), '-frames:v', '1', '-vf',
+                                    'crop=2:2:540:1900', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'],
+                                   capture_output=True, timeout=60).stdout
+            self.assertEqual(len(frame), 12)  # a 2x2 crop, the smallest a 4:2:0 frame allows
+            ink = (0x0C, 0x15, 0x12)
+            self.assertTrue(all(abs(a - b) <= 3 for a, b in zip(frame[:3], ink)), tuple(frame[:3]))

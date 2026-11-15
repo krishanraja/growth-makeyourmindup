@@ -1854,6 +1854,24 @@
         "test_compose_puts_the_clip_in_the_window",
         "test_the_redrawn_cards_and_the_tall_meme_are_centred_inside_the_safe_box"
       ]
+    },
+    {
+      "id": "R131",
+      "statement": "Paid reach is read apart from organic interest and never counts toward the zero-paid North Star: growth.py run paid audit is read only and local, holds paid and suspected-paid posts out of the organic baseline, flags subscribers from a boosted platform in a boost week as not provably organic, and every recommendation it makes is a draft for Krish's Yes that launches, buys, boosts, pauses and changes no budget or account.",
+      "source_file": "CHANGES.md",
+      "quote": "\"Advertising account changes must remain draft-only and require explicit approval. No campaign launches or budget changes.\"",
+      "enforced_by": [
+        "engine/run/paid_audit.py:recommend",
+        "engine/run/paid_audit.py:channel_reading",
+        "engine/run/paid_audit.py:exposure_check"
+      ],
+      "tests": [
+        "test_no_recommendation_can_launch_buy_pause_or_change_a_budget",
+        "test_every_recommendation_is_a_draft_outside_the_north_star",
+        "test_the_module_opens_no_network_connection",
+        "test_a_recorded_boost_holds_its_post_out_of_the_organic_baseline",
+        "test_subscribers_from_a_boosted_platform_in_its_window_are_not_provably_organic"
+      ]
     }
   ]
 }
