@@ -58,7 +58,7 @@ decision. Act first on `krish_instruction` (his instruction; its own lines say h
   path.
 - A source attribution never implies an activity attribution. The
   specific post and any outreach link stay unknown until evidence names them.
-- Direct stays unattributed. Paid never counts toward the North Star. A paid boost, read by Codex in Krish's ads manager, is an observation with `paid_boost` (platform, window, spend in cents, piece), never a subscriber reading (Ruling, Krish, 2026-11-15).
+- Direct stays unattributed. Paid never counts toward the North Star. A paid boost, read by Codex in Krish's ads manager, is an observation with `paid_boost` (platform, window, spend in cents, piece), never a subscriber reading (Ruling, Krish, 2026-11-15). Before judging any channel, read paid apart: `python growth.py run paid audit --posts <saved Buffer list_posts capture, includeMetrics> [--substack <growth-sources capture>]`. Read only and local (R131): it names the posts that look paid with no boost reading (each a read for Codex), the channel medians with paid held out, and any subscriber from a boosted platform in a boost week, which is not provably organic. Its thresholds are proposed defaults; its recommendations are drafts for Krish's Yes.
 - Two readings compare only when metric, source and window length match.
 - Where people drop out: a `funnel` record per engine, from access to
   subscriptions for Acquisition, responses for Engagement, delivery and

@@ -1,0 +1,4 @@
+Status: `growth.py run paid audit` reads paid reach apart from organic interest, read only (R131): on 15 Nov's Buffer read it found the same four posts that look paid as the hand review (TikTok and YouTube 11 Nov, YouTube and Facebook 13 Nov), none with a boost reading. HyperFrames and Claude Ads were evaluated and neither is installed (docs/reviews/2026-11-15-hyperframes-and-claude-ads.md); the slideshow video job keeps its seconds with mixed frame sizes.
+Changed: Krish asked to improve automated creative production and advertising analysis, with ad account changes draft-only and no launches or budget changes.
+Next: a Claude session on Krish's computer has Codex read the four boosts (Meta Ads Manager, TikTok Promote, YouTube Studio traffic sources) and records each as a paid_boost observation.
+North Star check (2026-11-15): holds.
