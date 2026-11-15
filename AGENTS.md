@@ -105,6 +105,10 @@ and its weekly scheduled runs. It does not widen Control Center writes or
 the separate go-live protocol. See `docs/CHANNEL-AUDIT.md` for guards,
 receipts, incomplete coverage and approval boundaries.
 
+## Codex at any point (Ruling, Krish, 2026-11-15)
+
+Claude starts Codex only through scripts/codex_thread.mjs, focus sprints included. `node scripts/codex_thread.mjs open "<message>"` makes a permanent thread in Krish's Codex Desktop recents, titled by its first line; `send <thread> "<message>"` adds one turn and releases the thread so he can type in it too; `read <thread>` prints every turn, his from Desktop included. Never the Codex plugin's long-running server. The script is a copy of content-engine's `scripts/codex_thread.mjs`, which holds the source.
+
 ## Autonomy (Ruling, Krish, 2026-10-19)
 
 Krish: "the engine shows me what it is going to do, I approve, it gets up to go-live and asks me to review." This engine runs autonomously under Control Center's growth engine protocol (`docs/control-center/ENGINE-PROTOCOL.md`, its "Autonomy" and "Amend" sections, which arrived in 1.1.0; the copy's version and hash are in `docs/control-center/bundle.json`), in steps Krish answers on his one list in Control Center:
