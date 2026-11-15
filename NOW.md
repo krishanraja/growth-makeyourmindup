@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-11-15
-head: 2162844
+head: abc6382
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -30,6 +30,7 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
+- Claude starts Codex only through scripts/codex_thread.mjs, focus sprints included: a permanent thread in Krish's Codex Desktop recents, released after every turn so he can type in it too. (2026-11-15)
 - A weekly branch sweep (`.github/workflows/branch-sweep.yml`, Sunday 03:17 UTC, and by hand) deletes every remote branch whose work is already on main and lists each branch it keeps with why: unmerged work, an open pull request, protected (Ruling, Krish, 2026-11-15). The script is `.github/scripts/branch_sweep.py`, copied unchanged from ai-harness, which holds the canonical copy. (2026-11-15)
 - No video leaves this engine without its designed cover: Buffer takes no cover image, so `growth.py run cover append` appends the cover as the cut's last second and sets thumbnailOffset to it, and release, the L0 carry, the maker and the pre-send read hold any video with a null offset (F133, R128). The house carousel cover now looks like a front cover, body cards carry one full centred sentence of 8 to 20 words under a visual anchor, the renderer reports every line so the kit check refuses an off-centre or out-of-margin card, and the judges get each card's view link (R129). Tall frames keep to the clear box (y 270 to 1320, x 200 to 880) and `meme-tall` with `growth.py run meme compose` centres a clip by construction (R130). (2026-11-15)
 - Claude and Codex division written in (Ruling, Krish, 2026-11-15): Codex does the visual builds and the social legwork (post approved work, read it back for cover, caption and call to action, read measurement and paid boosts) in sessions Krish watches in Codex Desktop, never touching Drive or ai-harness. The weekly review gains "What worked, what did not, and why" with paid split from organic, beside the Sunday learn workflow; boost readings are `paid_boost` observations. First analysis: `docs/reviews/2026-11-15-interest-vs-paid.md`. (2026-11-15)
@@ -37,10 +38,10 @@ Lifecycle: live. The detail is in `README.md`.
 - our own pull requests (Krish or the Actions bot, branch in this repository, ready, at the commit that passed) now merge themselves when every "check" run on that commit is green (.github/workflows/auto-merge.yml, rule .github/scripts/auto-merge-pick.jq, tested). Forks, drafts and strangers wait for a person. (2026-11-14)
 - krishraja.com (with and without www) now counts as an organic subscriber source in `invariants/sources.json`, by Krish's decision 5.12 of 14 Nov. Its two subscribe links already carry the publication's tracking tags (krish-raja #46). (2026-11-14)
 - docs/control-center/ is Control Center's protocol bundle 1.33.0, byte for byte (bundle_sha256 4b7175a8aebbb8979eaefbeea1b7f0f44f2cffa0bbba9cea341da784fe7fde4d), the last protocol version of 14 November. (2026-11-14)
-- docs/control-center/ is Control Center's protocol bundle 1.28.0, byte for byte (bundle_sha256 b0dfa0d7aaa10aea0de45fb5f7dcc241c62bef70766f0fed9c6351d69af1b791), with bundle.json and a hash test that fails an edit in place (integration plan I-11). (2026-11-14)
 
 ## What changed recently
 
+- 2026-11-15 copied from content-engine (krishanraja/content-engine#719), where it was tested live on 15 Nov.
 - 2026-11-15 Krish, 15 Nov: "the thumbnail is ridiculously poor, and that must never be the case"; the cover did not look like a front cover; the cards were bland, off centre and too short to follow; the POV meme was not centred.
 - 2026-11-14 Fleet integration items I-09 and I-14, this repository's halves: tolerant readers behind flags, nothing made, scheduled or posted.
 - 2026-11-14 Fixes from the fleet integration audit of 14 November 2026 (gmymu-1 to gmymu-6, gha-1, ai-cost-4): hardening and de-duplication only, nothing drafted, scheduled or posted.
@@ -50,11 +51,10 @@ Lifecycle: live. The detail is in `README.md`.
 - 2026-11-13 Krish approved the plan as the build on 13 November 2026. The engine had shipped nothing on its automatic path, and no post carried a subscribe route, so the first steps make every unit attributable before any volume.
 - 2026-11-13 Rulings (Krish, 2026-11-13): "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual workflows"; "memes and Notes images should go the same way"; "Off-day voiceover shorts should go the same way too".
 - 2026-11-13 An ask about a past week held every live ask behind it on Krish's one list (one ask per engine at a time), so the AI-answer questions and the keyword-DM experiment waited behind a mix plan for a week that was over. engine/stale_asks.py; docs/ENGINE.md, "Nothing stale on his list".
-- 2026-11-13 AGENTS.md, research.md, invariants/rules.json, knowledge/corpus/external-growth-skills.md, experiments.json, docs/plans/2026-11-13-keyword-dm-test.md, docs/GET-GOING.md (Step 0.4).
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-15): content-engine's judge route reads each asset's view_url so its panel sees the cards, and its piece manifest writes the per-channel cover field Growth now reads.
+- Next (2026-11-15): Use it for the next focus sprint's Codex work.
 - Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
 - Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
 - Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).

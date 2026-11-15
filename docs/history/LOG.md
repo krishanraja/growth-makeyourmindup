@@ -8,6 +8,18 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "What changed recently":
+
+- 2026-11-13 AGENTS.md, research.md, invariants/rules.json, knowledge/corpus/external-growth-skills.md, experiments.json, docs/plans/2026-11-13-keyword-dm-test.md, docs/GET-GOING.md (Step 0.4).
+
+From "Where it is right now":
+
+- docs/control-center/ is Control Center's protocol bundle 1.28.0, byte for byte (bundle_sha256 b0dfa0d7aaa10aea0de45fb5f7dcc241c62bef70766f0fed9c6351d69af1b791), with bundle.json and a hash test that fails an edit in place (integration plan I-11). (2026-11-14)
+
+## 2026-11-15
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "Where it is right now":
 
 - The one subscribe route is written down once in specs/subscribe-route.json (mymu-subscribe-route/1) and a test fails when the code stops equalling it (#102); the engine reads Control Center's subscribers-by-source block behind features.subscriber_sources into .scratch/cc/subscribers.json, learn keeps a by_source tally beside its verdicts, and the weekly Substack read becomes a cross-check when the block holds last week (#103); the maker reads his approved floor behind features.taste_floor and his voice rules from the directive, gives them to its writer only, and says taste read, none or absent (#104). (2026-11-14)
