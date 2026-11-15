@@ -4,6 +4,19 @@ Newest first. Entries are written by the docs steward (`krishanraja/ai-harness`,
 and by people doing the same job by hand. Nothing in this file describes current behaviour; `NOW.md` and
 `README.md` do. Text moved here from `NOW.md` keeps its wording verbatim.
 
+## 2026-11-15
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-13 Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." engine/run/judges.py, the maker's step 6b, board tick's live report.
+
+From "Where it is right now":
+
+- Every post Buffer has scheduled on the pinned channels in the next two days is checked for a tracked subscribe route with the subscribe gate's own rule, and each routeless one is a hold in the measure report before it goes out (R127, #96); release, measure and maker take Control Center's clock (repository_dispatch growth-mymu-release, growth-mymu-measure, growth-mymu-maker, or a workflow_dispatch with trigger control-center-clock) with crons off :00 and :30 (#97); the maker says taste_unavailable every run and meters its model calls (#98); Control Center's Buffer sweep is the one writer of off-day posts on the board (#99); a closeout note can drop a stale waiting line by name. (2026-11-14)
+- Every vertical post (carousel, short, meme) is routed to Instagram, Threads, Facebook, TikTok and X; the records refuse a vertical format that misses one, and the run spec warns on a post placed on fewer (Ruling, Krish, 2026-11-13). (2026-11-13)
+
 ## 2026-11-14
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
