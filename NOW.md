@@ -2,7 +2,7 @@
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
 as_of: 2026-11-15
-head: 8b379b2
+head: 2162844
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -30,6 +30,7 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
+- A weekly branch sweep (`.github/workflows/branch-sweep.yml`, Sunday 03:17 UTC, and by hand) deletes every remote branch whose work is already on main and lists each branch it keeps with why: unmerged work, an open pull request, protected (Ruling, Krish, 2026-11-15). The script is `.github/scripts/branch_sweep.py`, copied unchanged from ai-harness, which holds the canonical copy. (2026-11-15)
 - No video leaves this engine without its designed cover: Buffer takes no cover image, so `growth.py run cover append` appends the cover as the cut's last second and sets thumbnailOffset to it, and release, the L0 carry, the maker and the pre-send read hold any video with a null offset (F133, R128). The house carousel cover now looks like a front cover, body cards carry one full centred sentence of 8 to 20 words under a visual anchor, the renderer reports every line so the kit check refuses an off-centre or out-of-margin card, and the judges get each card's view link (R129). Tall frames keep to the clear box (y 270 to 1320, x 200 to 880) and `meme-tall` with `growth.py run meme compose` centres a clip by construction (R130). (2026-11-15)
 - Claude and Codex division written in (Ruling, Krish, 2026-11-15): Codex does the visual builds and the social legwork (post approved work, read it back for cover, caption and call to action, read measurement and paid boosts) in sessions Krish watches in Codex Desktop, never touching Drive or ai-harness. The weekly review gains "What worked, what did not, and why" with paid split from organic, beside the Sunday learn workflow; boost readings are `paid_boost` observations. First analysis: `docs/reviews/2026-11-15-interest-vs-paid.md`. (2026-11-15)
 - krish@mindmake.co is Krish's public contact address here: AGENTS.md, the podcast pitch sign-off, the shared surface check and the one address a committed record may carry (Ruling, Krish, 2026-11-14). hello@krishraja.com stays recognised as his and is never written. (2026-11-14)
@@ -37,7 +38,6 @@ Lifecycle: live. The detail is in `README.md`.
 - krishraja.com (with and without www) now counts as an organic subscriber source in `invariants/sources.json`, by Krish's decision 5.12 of 14 Nov. Its two subscribe links already carry the publication's tracking tags (krish-raja #46). (2026-11-14)
 - docs/control-center/ is Control Center's protocol bundle 1.33.0, byte for byte (bundle_sha256 4b7175a8aebbb8979eaefbeea1b7f0f44f2cffa0bbba9cea341da784fe7fde4d), the last protocol version of 14 November. (2026-11-14)
 - docs/control-center/ is Control Center's protocol bundle 1.28.0, byte for byte (bundle_sha256 b0dfa0d7aaa10aea0de45fb5f7dcc241c62bef70766f0fed9c6351d69af1b791), with bundle.json and a hash test that fails an edit in place (integration plan I-11). (2026-11-14)
-- The one subscribe route is written down once in specs/subscribe-route.json (mymu-subscribe-route/1) and a test fails when the code stops equalling it (#102); the engine reads Control Center's subscribers-by-source block behind features.subscriber_sources into .scratch/cc/subscribers.json, learn keeps a by_source tally beside its verdicts, and the weekly Substack read becomes a cross-check when the block holds last week (#103); the maker reads his approved floor behind features.taste_floor and his voice rules from the directive, gives them to its writer only, and says taste read, none or absent (#104). (2026-11-14)
 
 ## What changed recently
 

@@ -8,6 +8,14 @@ and by people doing the same job by hand. Nothing in this file describes current
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
+From "Where it is right now":
+
+- The one subscribe route is written down once in specs/subscribe-route.json (mymu-subscribe-route/1) and a test fails when the code stops equalling it (#102); the engine reads Control Center's subscribers-by-source block behind features.subscriber_sources into .scratch/cc/subscribers.json, learn keeps a by_source tally beside its verdicts, and the weekly Substack read becomes a cross-check when the block holds last week (#103); the maker reads his approved floor behind features.taste_floor and his voice rules from the directive, gives them to its writer only, and says taste read, none or absent (#104). (2026-11-14)
+
+## 2026-11-15
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
 From "What changed recently":
 
 - 2026-11-13 Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." engine/run/judges.py, the maker's step 6b, board tick's live report.
