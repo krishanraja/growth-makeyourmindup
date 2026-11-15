@@ -173,3 +173,7 @@ the maker holds a Sunday slot as `rest_day`, and release holds any post due on
 a Sunday (New York time) as `rest_day`, loud as `scheduled_on_rest_day` if it
 is already scheduled. A time that cannot be read counts as a rest day. The
 weekly plan still lays out Sunday slots; they are never drafted or released.
+
+## Interest versus paid, 15 Nov 2026
+
+`docs/reviews/2026-11-15-interest-vs-paid.md` reads every post since 5 Oct: Instagram posts on one AI thing a reader can use or recognise hold people for 14 to 45 seconds and get shared, while the large TikTok, YouTube and Facebook spikes of 11 and 13 Nov bought reach with the lowest engagement per view. Its five proposals wait on Krish's Yes; the mix rules above are unchanged until then.

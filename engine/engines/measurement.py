@@ -42,6 +42,8 @@ JUDGE_HOURS = {'note': 24, 'linkedin': 48, 'x': 48, 'threads': 48, 'reel': 72, '
 DATE = re.compile(r'\b(\d{4}-\d{2}-\d{2})\b')
 SPENDING = re.compile(r'\b(spend\w*|paid|budget|money|costs?)\b', re.IGNORECASE)
 CHANGES = ('increase', 'reduce', 'stop')
+BOOST_PLATFORMS = ('meta', 'tiktok', 'youtube', 'x', 'linkedin')
+BOOST_KEYS = ('platform', 'window_start', 'window_end', 'spend_cents', 'piece')
 
 
 def _text(value):
@@ -330,6 +332,18 @@ def _observation_errors(d):
                              or prev.get('metric') != d.get('metric') or not _text(prev.get('data_source'))
                              or (_day(d.get('read_at')) and _day(prev['read_at']) >= _day(d['read_at']))):
         errors.append('detail.previous is the earlier reading of the same metric, with read_at and data_source')
+    boost = d.get('paid_boost')
+    if boost is not None:
+        # One paid boost or promotion, read by Codex in Krish's signed-in ads manager (Ruling, Krish, 2026-11-15):
+        # the reading is kept so the paid share of a post is never mistaken for organic interest. Paid never counts.
+        if not isinstance(boost, dict) or set(boost) - set(BOOST_KEYS) or boost.get('platform') not in BOOST_PLATFORMS \
+                or not _day(boost.get('window_start')) or not _day(boost.get('window_end')) \
+                or _day(boost['window_end']) < _day(boost['window_start']) \
+                or (boost.get('spend_cents') is not None and not _count(boost['spend_cents'])):
+            errors.append('detail.paid_boost is {platform: ' + '|'.join(BOOST_PLATFORMS)
+                          + ', window_start, window_end: YYYY-MM-DD, spend_cents: whole number or null, piece}')
+        if d.get('metric') in SUBSCRIBER_METRICS:
+            errors.append('a paid boost reading is never a North Star subscriber reading')
     if d.get('metric') in SUBSCRIBER_METRICS:
         week = _day(d.get('week_of'))
         if week is None or week.weekday() != 0:
