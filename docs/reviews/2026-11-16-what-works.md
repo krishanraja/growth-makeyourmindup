@@ -133,5 +133,5 @@ and `msr-substack-new-subscribers-2026-11-09` in `engines/records/measurement.js
 - Facebook's 13 Nov reach (16,252) is still unexplained: Meta and X were signed out in the worker's Chromium.
 
 **Verdict on the boosts so far:** about £33 bought roughly 19,000 paid views, 364 clicks to the home page and one follower,
-and no subscriber. Neither boosted post passes the boost bar above. The YouTube promotion runs to 17 Nov with £6.10 left;
-stopping it early is Krish's call.
+and no subscriber. Neither boosted post passes the boost bar above. Krish stopped the YouTube promotion on 16 Nov ("Yes, stop it"): Codex paused it on the worker
+and the saved page reads Paused, at £13.90 of £20 (final: 7,070 impressions, 2,941 views, 366 visits).
