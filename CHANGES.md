@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-16: Boost the top performers this week, as a test. Asked "During this 7-day run, should anything be
+  boosted?", Krish chose "Boost the top performers". Each boost still needs his Yes on that exact boost (post, amount,
+  duration, audience, destination) immediately before Codex places it; it is a `paid_boost` observation, reported
+  apart, and never counts toward the organic North Star. The candidates are posts at least twice their channel's
+  interactions per 1,000 at 72 hours with at least one share (`docs/reviews/2026-11-16-what-works.md`). For this
+  test it supersedes the 15 Nov line that no campaign is launched; every other spend wall is unchanged. Same day:
+  content production stays out of this run ("we dont need to produce more content ... i will just get the content
+  engine to use these capabilities for this weeks posts"), and outgoing comments are approved in batches, word for
+  word, in his Codex Desktop thread before Codex submits them.
 - 2026-11-15: Paid reach is read apart from genuine interest, read only, and nothing here changes an ad account. His
   words: "Improve automated creative production and advertising analysis for Make Your Mind Up" and "Advertising
   account changes must remain draft-only and require explicit approval. No campaign launches or budget changes."

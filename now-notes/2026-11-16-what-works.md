@@ -1,0 +1,4 @@
+Status: Every Make Your Mind Up post from 5 Oct to 14 Nov (139, read from Buffer) is analysed in docs/reviews/2026-11-16-what-works.md, with four new lessons: reach, not polish, is the constraint; Instagram video that opens on one named thing holds people; a written Substack Note brought the only subscriber; Threads and X video earn almost nothing. Four posts still look paid, unconfirmed, because Codex could not reach the browser.
+Changed: Krish asked for an aggressive 7-day push (16 Nov): the analysis first, then a comment campaign approved in batches in Codex, and a boost test on the top performers, each boost on his Yes.
+Next: Codex reaches the browser again, then reads the four suspected boosts and Substack subscribers by source for 2 to 15 Nov, and each is recorded as a paid_boost observation.
+North Star check (2026-11-16): holds.

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "instagram-video-named-thing",
+  "category": "format",
+  "scope": [
+    "instagram",
+    "short-video"
+  ],
+  "status": "observed",
+  "finding": "On Instagram, video that opens on one named, concrete AI thing (a product, a deal, a song, a refund) and then follows the money or the surprise holds people longest and earns the shares; abstract framing does not.",
+  "evidence": {
+    "kind": "published_source",
+    "ref": "docs/reviews/2026-11-16-what-works.md",
+    "observed_at": "2026-11-16",
+    "result": "Instagram video median exposure 116 against 25 for carousels; 9 of 10 organic shares. Watch: Higgsfield 44.6 s, Disney and Character.AI 39.7 s, UK number two 28.5 s with 4 shares, refund bot 24.9 s; Claude Duet 124 interactions per 1,000 with 4 shares; abstract \"two passports\" 17.5 s and no shares."
+  },
+  "revisit_when": "Compare this week's Instagram videos that open on a named thing with those that do not, on watch time and shares.",
+  "supersedes": null
+}
