@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "threads-x-video-cut",
+  "category": "channel",
+  "scope": [
+    "threads",
+    "x"
+  ],
+  "status": "hypothesis",
+  "finding": "Videos cross-posted to Threads and X earn almost no organic reach; on Threads carousels did better than videos.",
+  "evidence": {
+    "kind": "published_source",
+    "ref": "docs/reviews/2026-11-16-what-works.md",
+    "observed_at": "2026-11-16",
+    "result": "Threads video median exposure 5 (11 posts) against carousels 35 (4 posts); X video median 11.5 (10 posts), no shares."
+  },
+  "revisit_when": "Revisit when either account has more than a few hundred followers, or after a week of Threads carousels only.",
+  "supersedes": null
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "reach-before-polish",
+  "category": "account",
+  "scope": [
+    "instagram",
+    "tiktok",
+    "youtube",
+    "facebook",
+    "threads",
+    "x",
+    "substack-notes"
+  ],
+  "status": "observed",
+  "finding": "Organic reach, not creative polish, is the binding constraint: posting 2.5 times as often (20 to 50 a week) did not double organic exposure, and interactions per post fell from about 4 to about 1. Borrowed audiences (comments on bigger accounts, swaps, Notes conversations) come before more cross-posts.",
+  "evidence": {
+    "kind": "published_source",
+    "ref": "docs/reviews/2026-11-16-what-works.md",
+    "observed_at": "2026-11-16",
+    "result": "139 Buffer posts 5 Oct to 14 Nov: organic median exposure Facebook 2, Notes 4, Threads 5, X 7, YouTube 13, Instagram 58, TikTok 280; week of 9 Nov 50 posts, 3,696 organic exposures, 64 interactions."
+  },
+  "revisit_when": "After the 16 to 22 Nov comment campaign and swaps: compare organic exposure and new subscribers per week with the week of 9 Nov.",
+  "supersedes": null
+}

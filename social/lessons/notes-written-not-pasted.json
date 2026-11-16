@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "notes-written-not-pasted",
+  "category": "channel",
+  "scope": [
+    "substack-notes"
+  ],
+  "status": "observed",
+  "finding": "A written Substack Note (plain text, an opinion about something a reader can use) is the one post that brought a subscriber; image cross-posts pasted into Notes reach almost nobody.",
+  "evidence": {
+    "kind": "published_source",
+    "ref": "docs/reviews/2026-11-16-what-works.md",
+    "observed_at": "2026-11-16",
+    "result": "Note \"The interesting bit of Claude Duet is who starts the work\" (4 Nov): reach 208 against a Notes median of 4, 8 interactions, 1 free subscription in Buffer. Six image cross-posts on Notes: median reach 4, no subscriber."
+  },
+  "revisit_when": "After a week of one written Note a day: subscriptions per Note against image cross-posts.",
+  "supersedes": null
+}
