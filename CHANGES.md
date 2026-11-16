@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-16: All Make Your Mind Up activity runs on the worker. His words: "because my machine's codex app is using a
+  different set of social accounts (heartside), all Makeyourmindup activity will be run on my VPS worker - which has
+  codex access as well as is signed in to chromium on all the right accounts", then "the whole point of this set up is
+  that YOU manage the codex session and I manage you here", and "just open it all up so you can execute everything".
+  Codex runs as `agent` on the worker and drives its Chromium through `chrome-devtools-mcp@1.12.0`, every tool approved
+  without a prompt; the approval walls are kept in each brief (`AGENTS.md`, "Make Your Mind Up runs on the worker";
+  `BROWSER.md`, "The worker's Chromium"). First reads: the 9 to 15 Nov week had 0 new subscribers, and the two
+  boosts (TikTok $24, YouTube GBP 13.90 so far) brought none (`docs/reviews/2026-11-16-what-works.md`).
 - 2026-11-16: Boost the top performers this week, as a test. Asked "During this 7-day run, should anything be
   boosted?", Krish chose "Boost the top performers". Each boost still needs his Yes on that exact boost (post, amount,
   duration, audience, destination) immediately before Codex places it; it is a `paid_boost` observation, reported

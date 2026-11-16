@@ -397,6 +397,15 @@ Krish, same day: "One session should work on one engine only." Work that belongs
 
 Each engine records what it did; Measurement and Allocation judges what worked. Committed records stay privacy-safe: exact words, recipients and post URLs live only in `.scratch/engines/`. The existing daily job and automations keep running through the shadow week; Measurement then compares the engines' decisions with what the operation actually did.
 
+## Make Your Mind Up runs on the worker (Ruling, Krish, 2026-11-16)
+
+All Make Your Mind Up activity that needs Codex or a signed-in browser runs on the worker (`ssh worker`): Codex as the
+`agent` user in `~agent/work/growth-makeyourmindup`, driving the worker's signed-in Chromium through its
+`chrome-devtools` MCP server. The Codex app on Krish's PC uses Heartside's accounts and is never used for this engine.
+Krish manages Claude here; Claude starts and drives the Codex session (`scripts/codex_thread.mjs` over SSH), checks what
+it reports, and tells him the session's exact name whenever it starts one. `BROWSER.md`, "The worker's Chromium", has
+the setup. Where the section below says a session runs on his own computer or shows in his Codex Desktop app, this wins.
+
 ## Claude and Codex: who does what (Ruling (Krish, 2026-11-15): Codex does a minimum of every video session and the social legwork, visible in Codex Desktop; Claude owns strategy, orchestration, verification and learnings; Codex never updates ai-harness or Google Drive)
 
 His words: "Codex should also do the leg work for social media asset scheduling, posting, verifying posts went live properly with the right thumbnails and captions and CTAs, and also the measurement reports are ingested, and we understand whats working well and what isn't, and use that to optimise future assets." Where this and an older line below disagree, this wins.

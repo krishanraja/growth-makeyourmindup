@@ -114,3 +114,24 @@ twice its channel's interactions per 1,000 at 72 hours, and at least one share.
 - Nothing else passes. The Claude Duet Note cannot be boosted (Notes has no ads platform).
 
 A boost cannot be placed or read until Codex can reach the browser.
+
+## Confirmed later on 16 Nov: what the boosts bought
+
+Read by Codex in the worker's Chromium (`BROWSER.md`, "The worker's Chromium"), read only, with each number checked by
+Claude against Codex's screenshots. Recorded as `msr-paid-boost-tiktok-2026-11-11`, `msr-paid-boost-youtube-2026-11-12`
+and `msr-substack-new-subscribers-2026-11-09` in `engines/records/measurement.jsonl`.
+
+| Boost | Spend | What it bought | Subscribers |
+|---|---|---|---|
+| TikTok Promote, "The UK number two" (order 11 Nov, completed) | $24 | 16,090 views, 1 new follower, 38 profile views, 14 likes; 0.6 in 100 watched the whole video, all "below average" | none visible |
+| YouTube promotion of the 5:02 "A Reiki master wrote a UK number two" video (12 to 17 Nov, still running, £20 budget) | £13.90 so far | 7,061 impressions, 2,936 views, 364 clicks to home.makeyourmindup.ai | 0 new in Substack, 9 to 15 Nov |
+
+- **Substack, week of 9 Nov: 0 new subscribers** ("No subscribers found for selected time period"). Week of 2 Nov: 1, from
+  Notes. 497 subscribers in total on 16 Nov.
+- The 13 Nov YouTube Shorts were **not** promoted: "Your AI agent, without the setup" took 95.8 in 100 of its views from
+  the Shorts feed. The audit's suspicion on them was wrong; their reach was YouTube's own feed.
+- Facebook's 13 Nov reach (16,252) is still unexplained: Meta and X were signed out in the worker's Chromium.
+
+**Verdict on the boosts so far:** about £33 bought roughly 19,000 paid views, 364 clicks to the home page and one follower,
+and no subscriber. Neither boosted post passes the boost bar above. The YouTube promotion runs to 17 Nov with £6.10 left;
+stopping it early is Krish's call.

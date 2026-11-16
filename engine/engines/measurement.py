@@ -522,8 +522,11 @@ def largest_constraint(records):
 def recover(records, all_records, now):
     """Current number and source, comparable windows, overdue measurements, the largest observed constraint
     and one resource decision."""
+    # A reading made after `now` is not known yet: a replay at an earlier date never sees a later week.
+    today = _day(now)
     subs = sorted((r for r in records.values() if r['kind'] == 'observation'
-                   and r['detail'].get('metric') in SUBSCRIBER_METRICS),
+                   and r['detail'].get('metric') in SUBSCRIBER_METRICS
+                   and (today is None or _day(r['detail']['read_at']) <= today)),
                   key=lambda r: (r['detail']['read_at'], r['id']))
     current = None
     if subs:
