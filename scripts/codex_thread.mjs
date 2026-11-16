@@ -290,10 +290,12 @@ export async function open(opts) {
   return withServer(home, cwd, async (server) => {
     const started = await server.request('thread/start', { ...threadParams(cwd, opts), ephemeral: false });
     const threadId = started.thread.id;
-    console.error(`thread ${threadId} opened in ${home}`);
+    // Krish finds a thread by its title, so the title is always printed with the id (Ruling, Krish, 2026-11-16: tell
+    // him the session name whenever a session is spawned).
+    console.error(`thread ${threadId} "${firstLine(text)}" opened in ${home}: look for that title in Codex Desktop`);
     try { await server.request('thread/name/set', { threadId, name: firstLine(text) }); } catch { /* older servers name it from the message */ }
     const turn = await server.runTurn(threadId, text, opts);
-    return { thread: threadId, home, ...turn };
+    return { thread: threadId, title: firstLine(text), home, ...turn };
   });
 }
 
@@ -347,7 +349,7 @@ async function main() {
   const out = command === 'open' ? await open(opts) : await send(opts);
   if (opts.json) console.log(JSON.stringify(out, null, 2));
   else {
-    console.log(`thread ${out.thread} (${out.home}): turn ${out.status}; released`);
+    console.log(`thread ${out.thread}${out.title ? ` "${out.title}"` : ''} (${out.home}): turn ${out.status}; released`);
     if (out.message) console.log(out.message);
     if (out.error) console.error(out.error);
   }
