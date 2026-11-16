@@ -153,6 +153,6 @@ Page's Ad Centre lists five boosts, all of Instagram posts, created by makeyourm
 X Ads: $0.00 and 0 impressions from 1 Oct to 16 Nov. The Facebook post of 13 Nov (reach 16,252) was not boosted; its
 reach is Facebook's own distribution, still unexplained.
 
-**All paid since October:** about $119.68 on Meta and TikTok and £13.90 on YouTube. In return: about 26,700 paid views,
+**All paid since October:** about $119.68 on Meta and TikTok and £13.90 on YouTube. In return: 27,847 paid views,
 409 + 366 + 13 clicks, 169 profile visits and one TikTok follower. Substack shows one new subscriber in the whole
 period (2 to 8 Nov, from Notes, organic) and none in the boost week. Paid reach has not bought a reader yet.
