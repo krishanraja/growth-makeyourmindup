@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // codex_thread.mjs: the one way Claude starts and talks to Codex (Ruling, Krish, 2026-11-15: "Claude starts Codex only
-// through scripts/codex_thread.mjs"). It drives `codex app-server` directly, one short-lived server per command, so the
-// thread lives in Krish's everyday Codex home, shows in his Codex Desktop app, and is never held open: Claude and Krish
-// take turns on the same thread. It never uses the Codex plugin's long-running broker.
+// through scripts/codex_thread.mjs"). Each command connects to Codex Desktop's own app-server daemon for one turn, so
+// the thread is made in the server Desktop runs, shows in his Codex Desktop sidebar with Desktop's tools (the in-app
+// browser included), and is never held open: Claude and Krish take turns on the same thread. It never uses the Codex
+// plugin's long-running broker.
 //
 //   node scripts/codex_thread.mjs open [options] "<message>"   a permanent thread titled by the message's first line;
 //                                                              runs that first message, prints the thread id
@@ -15,10 +16,10 @@
 // Canonical copy: krishanraja/ai-harness scripts/codex_thread.mjs (Ruling, Krish, 2026-11-15). Change it there first,
 // then copy it unchanged to the same path in every repository that starts Codex; ai-harness checks the copies match.
 import { spawn } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import readline from 'node:readline';
 
 const USAGE = 'usage: codex_thread.mjs open [opts] "<message>" | send [opts] <thread> "<message>" | read <thread> [--json]';
 
@@ -91,28 +92,105 @@ export function readTurns(file) {
   return { meta, turns };
 }
 
-// ---- driving one short-lived app-server -------------------------------------------------------------------------
+// ---- driving Codex Desktop's own app-server ----------------------------------------------------------------------
+// Every command talks to the app-server daemon Codex Desktop itself runs, through `codex app-server proxy`, which
+// bridges stdio to its control socket. The thread therefore lives in the same server as Desktop: it appears in Krish's
+// sidebar as it is made, he can open and type in it, and its turns run with Desktop's tools, the in-app browser
+// included. Spawning a private `codex app-server` (what this did before 16 Nov 2026) saved the thread to disk but kept
+// it out of Desktop's list and ran its turns with no browser (Krish, 2026-11-16: "we need to fix your ability to open a
+// codex desktop session I can see and use alongside you"). If the daemon is not reachable the command fails and says
+// so. It never falls back to a private server, because that thread would be invisible.
+// The control socket speaks WebSocket: one HTTP upgrade, then one JSON-RPC message per text frame.
+
+const HANDSHAKE_MS = 15000;
 
 class AppServer {
   constructor(home, cwd) {
     const env = { ...process.env, CODEX_HOME: home };
     delete env.CODEX_COMPANION_APP_SERVER_ENDPOINT;
-    this.proc = spawn('codex', ['app-server'], { cwd, env, stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+    this.proc = spawn('codex', ['app-server', 'proxy'], { cwd, env, stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
     this.next = 1;
     this.pending = new Map();
     this.listeners = [];
     this.stderr = '';
+    this.buf = Buffer.alloc(0);
+    this.fragments = [];
+    this.upgraded = false;
+    this.ready = new Promise((resolve, reject) => { this.onReady = resolve; this.onReadyFail = reject; });
+    this.ready.catch(() => {});
     this.proc.stderr.on('data', (d) => { this.stderr = (this.stderr + d).slice(-4000); });
     this.exited = new Promise((resolve) => this.proc.on('exit', resolve));
     this.proc.on('error', (error) => this.failAll(error));
-    this.proc.on('exit', (code) => this.failAll(new Error(`codex app-server exited (${code}) ${this.stderr.trim().split('\n').pop() || ''}`.trim())));
-    readline.createInterface({ input: this.proc.stdout }).on('line', (line) => this.onLine(line));
+    this.proc.on('exit', (code) => this.failAll(new Error((this.upgraded
+      ? `Codex Desktop's app-server connection closed (${code})`
+      : `Codex Desktop's app-server is not reachable from ${home}: open Codex Desktop (\`codex app-server daemon version\` says whether its daemon runs), then retry (${code})`)
+      + ` ${this.stderr.trim().split('\n').pop() || ''}`.trimEnd())));
+    this.proc.stdout.on('data', (d) => this.onData(d));
+    this.proc.stdin.write('GET / HTTP/1.1\r\nHost: localhost\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n'
+      + `Sec-WebSocket-Key: ${crypto.randomBytes(16).toString('base64')}\r\nSec-WebSocket-Version: 13\r\n\r\n`);
+    this.handshakeTimer = setTimeout(() => this.failAll(new Error("Codex Desktop's app-server did not answer: open Codex "
+      + 'Desktop (`codex app-server daemon version` says whether its daemon runs), then retry')), HANDSHAKE_MS);
   }
 
   failAll(error) {
+    clearTimeout(this.handshakeTimer);
+    this.onReadyFail(error);
     for (const { reject } of this.pending.values()) reject(error);
     this.pending.clear();
     for (const l of this.listeners) l.reject?.(error);
+  }
+
+  onData(chunk) {
+    this.buf = Buffer.concat([this.buf, chunk]);
+    if (!this.upgraded) {
+      const end = this.buf.indexOf('\r\n\r\n');
+      if (end < 0) return;
+      const head = this.buf.subarray(0, end).toString('latin1');
+      this.buf = this.buf.subarray(end + 4);
+      if (!/^HTTP\/1\.1 101/.test(head)) {
+        this.failAll(new Error(`Codex Desktop's app-server refused the connection: ${head.split('\r\n')[0]}`));
+        return;
+      }
+      this.upgraded = true;
+      clearTimeout(this.handshakeTimer);
+      this.onReady();
+    }
+    this.readFrames();
+  }
+
+  readFrames() {
+    for (;;) {
+      if (this.buf.length < 2) return;
+      const fin = this.buf[0] & 0x80;
+      const op = this.buf[0] & 0x0f;
+      let len = this.buf[1] & 0x7f;
+      let off = 2;
+      if (len === 126) { if (this.buf.length < 4) return; len = this.buf.readUInt16BE(2); off = 4; }
+      else if (len === 127) { if (this.buf.length < 10) return; len = Number(this.buf.readBigUInt64BE(2)); off = 10; }
+      if (this.buf.length < off + len) return;
+      const payload = this.buf.subarray(off, off + len);
+      this.buf = this.buf.subarray(off + len);
+      if (op === 0x9) { this.frame(0xa, payload); continue; } // ping: answer with a pong
+      if (op === 0xa) continue;
+      if (op === 0x8) { this.failAll(new Error("Codex Desktop's app-server closed the connection")); return; }
+      this.fragments.push(payload);
+      if (!fin) continue;
+      const text = Buffer.concat(this.fragments).toString('utf8');
+      this.fragments = [];
+      this.onLine(text);
+    }
+  }
+
+  // One client frame (RFC 6455); every frame a client sends is masked.
+  frame(op, data) {
+    const mask = crypto.randomBytes(4);
+    let head;
+    if (data.length < 126) head = Buffer.from([0x80 | op, 0x80 | data.length]);
+    else if (data.length < 65536) { head = Buffer.alloc(4); head[0] = 0x80 | op; head[1] = 0x80 | 126; head.writeUInt16BE(data.length, 2); }
+    else { head = Buffer.alloc(10); head[0] = 0x80 | op; head[1] = 0x80 | 127; head.writeBigUInt64BE(BigInt(data.length), 2); }
+    const masked = Buffer.alloc(data.length);
+    for (let i = 0; i < data.length; i += 1) masked[i] = data[i] ^ mask[i % 4];
+    this.proc.stdin.write(Buffer.concat([head, mask, masked]));
   }
 
   onLine(line) {
@@ -133,7 +211,7 @@ class AppServer {
     if (msg.method) for (const l of [...this.listeners]) l.onNotification(msg);
   }
 
-  write(obj) { this.proc.stdin.write(JSON.stringify(obj) + '\n'); }
+  write(obj) { this.frame(0x1, Buffer.from(JSON.stringify(obj), 'utf8')); }
 
   request(method, params) {
     const id = this.next++;
@@ -144,7 +222,8 @@ class AppServer {
   }
 
   async start() {
-    await this.request('initialize', { clientInfo: { name: 'codex_thread', title: 'Claude (codex_thread.mjs)', version: '1.0.0' }, capabilities: {} });
+    await this.ready;
+    await this.request('initialize', { clientInfo: { name: 'codex_thread', title: 'Claude (codex_thread.mjs)', version: '1.1.0' }, capabilities: {} });
     this.write({ method: 'initialized', params: {} });
   }
 
@@ -174,6 +253,8 @@ class AppServer {
   }
 
   async close() {
+    clearTimeout(this.handshakeTimer);
+    try { if (this.upgraded) this.frame(0x8, Buffer.from([0x03, 0xe8])); } catch { /* already closed */ }
     try { this.proc.stdin.end(); } catch { /* already closed */ }
     const timer = setTimeout(() => { try { this.proc.kill(); } catch { /* gone */ } }, 5000);
     await this.exited;
