@@ -10,6 +10,21 @@ Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
 
 From "What changed recently":
 
+- 2026-11-13 An ask about a past week held every live ask behind it on Krish's one list (one ask per engine at a time), so the AI-answer questions and the keyword-DM experiment waited behind a mix plan for a week that was over. engine/stale_asks.py; docs/ENGINE.md, "Nothing stale on his list".
+
+From "Where it is right now":
+
+- krish@mindmake.co is Krish's public contact address here: AGENTS.md, the podcast pitch sign-off, the shared surface check and the one address a committed record may carry (Ruling, Krish, 2026-11-14). hello@krishraja.com stays recognised as his and is never written. (2026-11-14)
+- our own pull requests (Krish or the Actions bot, branch in this repository, ready, at the commit that passed) now merge themselves when every "check" run on that commit is green (.github/workflows/auto-merge.yml, rule .github/scripts/auto-merge-pick.jq, tested). Forks, drafts and strangers wait for a person. (2026-11-14)
+- krishraja.com (with and without www) now counts as an organic subscriber source in `invariants/sources.json`, by Krish's decision 5.12 of 14 Nov. Its two subscribe links already carry the publication's tracking tags (krish-raja #46). (2026-11-14)
+- docs/control-center/ is Control Center's protocol bundle 1.33.0, byte for byte (bundle_sha256 4b7175a8aebbb8979eaefbeea1b7f0f44f2cffa0bbba9cea341da784fe7fde4d), the last protocol version of 14 November. (2026-11-14)
+
+## 2026-11-15
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
 - 2026-11-13 AGENTS.md, research.md, invariants/rules.json, knowledge/corpus/external-growth-skills.md, experiments.json, docs/plans/2026-11-13-keyword-dm-test.md, docs/GET-GOING.md (Step 0.4).
 
 From "Where it is right now":
