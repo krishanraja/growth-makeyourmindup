@@ -14,6 +14,15 @@ name: Auto-merge
 #
 # A merge made with the Actions token starts no push workflow on main, so a
 # closeout note it carries folds on the next push to main.
+# Either copy of "check" may merge (fixed 2026-11-17). A push to a pull
+# request's branch starts two check runs, one for push and one for
+# pull_request. Whichever finishes first sees the other still running and
+# leaves the merge to "the last green one"; when that last one was the push
+# run, its event used to be skipped here, so nothing merged (growth-heartside
+# #117 and growth-makeyourmindup #129 sat green until merged by hand). The
+# push run is now allowed: the picker below still merges only our own ready
+# pull request at exactly that commit, and a push with no open pull request
+# (main, or a branch without one) finds nothing to merge.
 on:
   workflow_run:
     workflows: ["check"]
@@ -31,7 +40,7 @@ jobs:
   merge:
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'pull_request' &&
+      (github.event.workflow_run.event == 'pull_request' || github.event.workflow_run.event == 'push') &&
       github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
