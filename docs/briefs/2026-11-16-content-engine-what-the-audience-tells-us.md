@@ -36,11 +36,10 @@ Distribution and the subscribe journey are Growth's to fix and are being fixed. 
    written opinion for Substack Notes. Video cross-posted to Threads, X and Facebook reached a median of 5 to 11 people.
    The one written Note, on Claude Duet, reached 208 against a Notes median of 4 and brought the only subscriber.
 6. **Put a subscribe ask inside every article,** right after the key takeaway, and one near the top for non-subscribers,
-   saying what the reader gets ("three short reads a week; every call dated and scored, misses included"). Today the
+   saying what the reader gets ("three short reads a week for leaders working out what AI changes in their business"). Today the
    newest article asks only in the navigation, the sidebar, and after the sources and comments at the very end.
-7. **Make the public scorecard real.** "Every call dated and scored in public" is the publication's most distinctive
-   promise, but makeyourmindup.ai shows an "Example board". A live board gives a leader a reason to come back and to
-   subscribe.
+7. ~~Make the public scorecard real.~~ **Withdrawn 17 Nov.** Ruling (Krish, 2026-11-17): Make Your Mind Up makes no dated-and-scored calls ("it felt quite tacky and
+   gimmicky"). Pieces carry no dated prediction to be scored, and no copy promises one.
 8. **Covers that read at phone-grid size:** one claim of five words or fewer, secondary text legible on a grid. This one
    is a hypothesis: there is no cover-level data yet, only the grid as a stranger sees it.
 9. **One forwardable line per piece,** a sentence a leader would send to their boss or team. Four shares was the best

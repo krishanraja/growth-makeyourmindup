@@ -1,5 +1,13 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-17: Make Your Mind Up makes no dated-and-scored calls. His words: "I don't do dated-and-scored
+  make-your-mind-up pieces because it felt quite tacky and gimmicky. I don't really have the clout such that my opinion
+  can hold up in official scores.. Lets get rid of that from the cover page makeyourmindup repo and all documentation".
+  The cover's scoreboard and every "dated and scored in public" line are removed in the makeyourmindup repository
+  (branch `claude/2026-11-17-drop-scored-calls`); here fix C7 and the playbook row are dropped, the content-engine brief's
+  item 7 is withdrawn, the copy doctrine no longer leans on checkable calls, and collaboration offer 3 (the scored call)
+  is replaced by the live disagreement. Dated history (logs, the 16 Nov readbacks, the user-supplied corpus copy) stays
+  as the record. The live Substack description and profile bio set on 16 Nov still carry the line until he says yes.
 - 2026-11-16: All Make Your Mind Up activity runs on the worker. His words: "because my machine's codex app is using a
   different set of social accounts (heartside), all Makeyourmindup activity will be run on my VPS worker - which has
   codex access as well as is signed in to chromium on all the right accounts", then "the whole point of this set up is
