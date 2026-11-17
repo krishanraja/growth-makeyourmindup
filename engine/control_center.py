@@ -808,6 +808,15 @@ class Client:
             raise ProtocolError('bad_voice_check')
         return result['check']
 
+    def humour(self, call):
+        """One humour-engine model call through Control Center's humour route (features.humour, 2026-11-17):
+        humour-engine's published prompt and forced tool, Control Center's key and model, capped per day.
+        A reading only: it approves nothing and sends nothing (engine/humour.py)."""
+        result = self._request('POST', 'humour', call)
+        if result.get('ok') is not True or not isinstance(result.get('payload'), dict):
+            raise ProtocolError('bad_humour')
+        return result
+
     def directive(self):
         result = self._request('GET', 'directive')
         if result.get('ok') is not True or not isinstance(result.get('directive'), dict):

@@ -335,6 +335,22 @@ Engine needs nothing to do with it, but Control Center certainly does."
 That historical separation is clarified by the 2026-10-26 ruling above:
 independent engines, with an explicit production-to-distribution handoff.
 
+## Ask the humour engine (Krish, 2026-11-17)
+
+Krish, 2026-11-17: "go ahead on both, makeyourmindup first". humour-engine (krishanraja/humour-engine) is the fleet's one
+definition of humour and holds no taste; the taste is the house register and ai-harness `krish-voice`
+references/humour.md. It is on call through this engine's own bearer: `python growth.py humour check "<line>" ...
+--surface caption|comment|onscreen|note|line [--context "<fact>"] [--mindmake]`, `humour compare A.txt B.txt`, and
+`humour doctor` (token, package, and Control Center serving the route; no model call). Consult it:
+- before a comment batch goes to Krish for approval, one check per comment that tries to be funny;
+- before a caption or on-screen line that carries a joke goes into a mix plan or a concept's mocks;
+- on anything that sells, announces or links to Mindmake, with `--mindmake`.
+It holds three house rules (engine/humour.py): no joke at the poster or another commenter on someone else's post, no
+humour on Mindmake, and no joke that needs more than one outside reference to land. Exit 0 is a pass, 1 is flagged
+(rewrite it, or cut the joke), 2 is unavailable, which is never a pass: say so beside the draft. It is not a release gate
+and never runs on a schedule; each call costs about half a cent, capped at 200 a day. Install:
+`pip install -r requirements-humour.txt && pip install --no-deps -r requirements-humour-engine.txt`.
+
 ## Intensity (Ruling, Krish, 2026-10-29)
 
 "At U3 to U5, engines and Control Center may raise volume caps up to each

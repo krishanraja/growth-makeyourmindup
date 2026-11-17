@@ -1,5 +1,10 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-17: The humour engine on call. Asked how this engine could use humour-engine as an on-call consultant,
+  Krish said "go ahead on both, makeyourmindup first". `python growth.py humour check|compare|doctor`
+  (`engine/humour.py`) reads any line through this engine's own Control Center bearer and holds three house rules: no
+  joke at a person on someone else's post, no humour on Mindmake, no joke that needs explaining. Optional install, not a
+  release gate, nothing scheduled; the engine stays standard library only. Nothing was posted, sent or spent.
 - 2026-11-16: Boost the top performers this week, as a test. Asked "During this 7-day run, should anything be
   boosted?", Krish chose "Boost the top performers". Each boost still needs his Yes on that exact boost (post, amount,
   duration, audience, destination) immediately before Codex places it; it is a `paid_boost` observation, reported
