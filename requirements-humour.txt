@@ -1,0 +1,5 @@
+# The humour engine (engine/humour.py, `python growth.py humour`): optional, only for sessions that consult it.
+# The engine itself stays standard library only. Install:
+#   pip install -r requirements-humour.txt && pip install --no-deps -r requirements-humour-engine.txt
+pydantic==2.13.5
+PyYAML==6.0.3

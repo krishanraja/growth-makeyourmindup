@@ -225,6 +225,14 @@ def main(argv=None):
     if social_args and social_args[0] == 'engine':
         from engine.engines.core import command as engines
         return engines(social_args[1:], ROOT)
+    if social_args and social_args[0] == 'humour':
+        from engine.humour import HUMOUR_TIMEOUT, command as humour
+
+        def humour_client():
+            cc = engine_client()
+            return Client(engine_token(), os.environ.get('CONTROL_CENTER_URL', '').strip() or APPROVED_ORIGIN,
+                          timeout=HUMOUR_TIMEOUT) if cc else None
+        return humour(social_args[1:], humour_client)
     if social_args and social_args[0] == 'closeout':
         from engine.closeout import command as closeout
         return closeout(social_args[1:], ROOT)
@@ -237,6 +245,7 @@ def main(argv=None):
     sub.add_parser('mix', help="the week's mix of repurposed carousels and filler lanes, and Krish's one idea and mock press")
     sub.add_parser('ledger', help="calendar/ledger.json: each day's slot, stage, next action and owner (read-only)")
     sub.add_parser('engine', help='run one of the four engines from shared records: start, check, show, history (read-only); handoff, close, done')
+    sub.add_parser('humour', help='the humour engine on call: check, compare, doctor (engine/humour.py)')
     sub.add_parser('closeout', help='closeout notes: check them, or fold them into NOW.md (the fold job on main)')
     p = sub.add_parser('pieces'); p.add_argument('--days', type=int, default=21); p.add_argument('--full', action='store_true')
     p.add_argument('--feed-file'); p.add_argument('--now'); p.add_argument('--json', action='store_true')

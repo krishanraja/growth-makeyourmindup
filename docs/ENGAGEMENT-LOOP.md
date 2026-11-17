@@ -100,6 +100,8 @@ reaction can stand alone when context makes it specific. An optional
 question should be one he would actually want answered. No compulsory
 newsletter fact, link, self-promotion, praise template or forced joke.
 Never invent experience. Allow a skip without a replacement comment.
+A comment that tries to be funny is checked first with `python growth.py humour check --surface comment`
+(AGENTS.md, "Ask the humour engine"): it holds a joke at the poster and a joke that does not land.
 
 Each card shows:
 
