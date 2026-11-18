@@ -231,7 +231,7 @@
           "lilac"
         ]
       },
-      "note": "A body card (the ruling of 15 Nov 2026): body is one full plain sentence of up to 20 words that a stranger can follow on its own (growth.py run carousel lint holds it to that), set centred under the anchor panel, the card's visual anchor. anchor is the card's one figure or object word, in the tone colour; the panel is drawn even with no anchor, so no card is plain ground."
+      "note": "A body card (the ruling of 15 Nov 2026): body is one full plain sentence of up to 20 words that a stranger can follow on its own (growth.py run carousel lint holds it to that), set centred under the anchor panel, the card's visual anchor. anchor is the card's one figure or object word, in the tone colour; the panel is drawn even with no anchor, so no card is plain ground. The sentence is set in Anton, in capitals, the face of the cover and the close (the ruling of 18 Nov 2026); never Archivo Black or Archivo at 800 or heavier."
     },
     "carousel-close": {
       "file": "templates/carousel-close.html",

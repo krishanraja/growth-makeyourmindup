@@ -218,6 +218,18 @@ class KitOnly(unittest.TestCase):
                     self.assertIn(name, KIT_FONTS | GENERIC_FONTS, str(path))
         self.assertIsNone(re.search(r'fonts\.googleapis|fonts\.gstatic|https?://', css), 'fonts load offline only')
 
+    def test_a_carousel_body_sentence_is_anton_in_capitals_never_heavy_archivo(self):
+        """Krish, 2026-11-18: "this font is crappy, I have given this feedback before". The body card's sentence is Anton
+        uppercase, the face of the cover and the close; never Archivo Black, never Archivo at 800 or heavier."""
+        html = (RENDER / 'templates' / 'carousel-body.html').read_text(encoding='utf-8')
+        rule = re.search(r'\n\s*\.body\s*\{([^}]*)\}', html)
+        self.assertIsNotNone(rule, 'carousel-body.html styles its sentence with .body')
+        self.assertIn('font-family: var(--heading)', rule.group(1))
+        self.assertIn('text-transform: uppercase', rule.group(1))
+        self.assertIsNone(re.search(r'font-weight\s*:\s*(?:[89]\d\d|bolder)', rule.group(1)))
+        painted = re.sub(r'/\*.*?\*/', ' ', html + (RENDER / 'kit.css').read_text(encoding='utf-8'), flags=re.S)
+        self.assertIsNone(re.search(r'Archivo Black', painted), 'comments may name the face; the CSS may not use it')
+
     def test_no_em_dashes(self):
         files = list(style_sources()) + [MANIFEST, ROOT / 'scripts' / 'render_mocks.mjs', RENDER / 'KIT.md']
         for path in files:
