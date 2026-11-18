@@ -101,8 +101,9 @@ class Recovery(unittest.TestCase):
         self.assertIn('Post more often', body['cliches'])
         self.assertIn('Post more', body['cliches'])
         self.assertTrue(any('Substack Live' in c for c in body['cliches']))
-        for word in ('delve', 'leverage', 'Krish'):
+        for word in ('delve', 'leverage'):
             self.assertIn(word, body['bannedWords'])
+        self.assertNotIn('Krish', body['bannedWords'])
         self.assertNotIn('\u2014', json.dumps(body, ensure_ascii=False))
 
     def test_sparks_are_checked_and_the_top_survivor_is_the_one_ask_with_its_provenance(self):
@@ -267,3 +268,11 @@ class ClientRoute(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class BannedWordsForTheGate(unittest.TestCase):
+    def test_his_name_is_not_sent_but_the_slop_is(self):
+        from engine import divergent as d
+        words = [w.lower() for w in d.BANNED_WORDS]
+        self.assertNotIn('krish', words)
+        self.assertIn('leverage', words)
