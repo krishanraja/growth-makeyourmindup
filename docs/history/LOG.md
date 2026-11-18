@@ -4,6 +4,15 @@ Newest first. Entries are written by the docs steward (`krishanraja/ai-harness`,
 and by people doing the same job by hand. Nothing in this file describes current behaviour; `NOW.md` and
 `README.md` do. Text moved here from `NOW.md` keeps its wording verbatim.
 
+## 2026-11-18
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
+- Claude starts Codex only through scripts/codex_thread.mjs, focus sprints included: a permanent thread in Krish's Codex Desktop recents, released after every turn so he can type in it too. (2026-11-15)
+- A weekly branch sweep (`.github/workflows/branch-sweep.yml`, Sunday 03:17 UTC, and by hand) deletes every remote branch whose work is already on main and lists each branch it keeps with why: unmerged work, an open pull request, protected (Ruling, Krish, 2026-11-15). The script is `.github/scripts/branch_sweep.py`, copied unchanged from ai-harness, which holds the canonical copy. (2026-11-15)
+
 ## 2026-11-17
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
