@@ -558,7 +558,7 @@ def backlog_line(backlog):
 
 def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False, rev=None, sent=None,
                   backlog=None, gap=None, extra_activity=(), directive=None, seen=False, events=(), weeks=None,
-                  golives=None):
+                  golives=None, recovery=None):
     """The runner's held report. sent is already_sent(): asks Krish has, answered or pending, are
     never sent again, and None (not read) proposes nothing. backlog is backlog.for_runner():
     (inventory, None) or (None, reason); None means it was not read. extra_activity: lines
@@ -571,7 +571,9 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
     back (withdrawn), and none is asked again (Ruling, Krish, 2026-11-12: nothing on his list is stale).
     golives is engine/run/handoff.py handed_off_golives()'s (withdraw, code): its undecided go-lives that
     carried only a LinkedIn post, taken back the same way (Ruling, Krish, 2026-11-13: LinkedIn is
-    growth-mindmake's), or why they could not be read; None means not read (a dry run)."""
+    growth-mindmake's), or why they could not be read; None means not read (a dry run). recovery is
+    engine/divergent.py recovery()'s (proposal, lines, holds): divergent-thinker's top play, proposed only when
+    nothing else is, with its notes and the sparks the walls held."""
     root = Path(root)
     automations = automation_count(root)
     defined = 'the ' + str(automations) + ' ' if automations is not None else 'the '
@@ -662,6 +664,13 @@ def runner_report(root, run_id, now, checks, mode='live', directive_pulled=False
                              "growth-mindmake's since 13 November 2026: " + ', '.join(handed_out)})
         # Each id whole, so tomorrow's runner reads every one back (already_sent).
         holds += id_holds(WAITING, waiting) + id_holds(ANSWERED, answered) + id_holds(WITHDREW, carried)
+    if recovery:
+        # At U4 or U5 with nothing else proposed: one recovery play, never beside another ask (engine/divergent.py).
+        play, play_lines, play_holds = recovery
+        if play and not proposals:
+            proposals.append(play)
+        activity += [{'line': line} for line in play_lines]
+        holds += play_holds
     pilot_activity, pilot_holds = pilot_lines(root, now)
     activity += pilot_activity + [{'line': 'Posted, sent, published and spent nothing'}]
     holds += pilot_holds
@@ -1698,11 +1707,19 @@ def cli(args, root, make_client, out=print, checks=None):
                 lines_again, golives = handed_off_golives(client, sent, clock(), root)
                 lines += lines_again
             # Its own asks for weeks that are over, read from its own records (engine/stale_asks.py).
-            return runner_report(root, run_id, clock(), checks(root), args.mode, True,
-                                 sent=sent, backlog=for_runner(root, clock()),
-                                 gap=intensity.state(root, clock(), directive), extra_activity=lines,
-                                 directive=directive, seen=told, events=[event] if event else [],
-                                 weeks=stale_asks.week_candidates(client, clock()), golives=golives)
+            gap = intensity.state(root, clock(), directive)
+            parts = dict(sent=sent, backlog=for_runner(root, clock()), gap=gap, extra_activity=lines,
+                         directive=directive, seen=told, events=[event] if event else [],
+                         weeks=stale_asks.week_candidates(client, clock()), golives=golives)
+            ran = checks(root)
+            report, error = runner_report(root, run_id, clock(), ran, args.mode, True, **parts)
+            if not report['proposals'] and sent is not None:
+                # Nothing proposed at U4 or U5: divergent-thinker's recovery plays, when served (engine/divergent.py).
+                from . import divergent
+                play = divergent.recovery(client, directive, gap, sent, clock(), engine_state.held(directive))
+                if any(play):
+                    report, error = runner_report(root, run_id, clock(), ran, args.mode, True, recovery=play, **parts)
+            return report, error
 
         loop = Loop(client, 'runner', run_id, clock)
         try:

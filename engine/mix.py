@@ -26,6 +26,11 @@ for that week by itself. The older path reads verdict/<slot>.json under a run
 folder. Nothing is invented: a lane with too few judged posts keeps its
 weight.
 
+Hooks: given --ideas, `mix plan` asks divergent-thinker (engine/divergent.py) to score the plan's caption hooks and
+each idea's planned Substack Note (`note`) against the live posts held here, with zero model calls, and flags a hook
+that sits on the obvious one or repeats one already live (`hook_guard`); none is dropped. It is the one network read
+here, dormant until Control Center serves it; --offline skips it.
+
 Nothing here posts, schedules, sends or writes outside where --out points.
 """
 import argparse
@@ -36,7 +41,7 @@ import re
 import sys
 
 from . import concepts as concept_rules
-from . import intensity, stale_asks
+from . import divergent, intensity, stale_asks
 from .control_center import proposal
 from .core import TIMEZONE, calendar_date, http_url, ny_time, read_json, write_json
 from .social import inventory as social_inventory, max_daily_posts
@@ -758,7 +763,27 @@ def learned_for(week_of, root=ROOT):
 
 # Command line ---------------------------------------------------------------
 
-def command(argv, root=ROOT):
+LIVE_FILE = divergent.LIVE_FILE  # written by growth.py run measure auto
+
+
+def hook_guard(mix, ideas, client_factory, live_path):
+    """divergent-thinker's score on the plan's hooks against the live posts held here (zero model calls), added to
+    the plan as hook_guard: a repeated or obvious hook is flagged, never dropped. Dormant until served."""
+    try:
+        client = client_factory() if client_factory else None
+    except ValueError:
+        client = None
+    path = Path(live_path)
+    live = read_json(path) if path.is_file() else []
+    guard = divergent.guard_hooks(client, mix, ideas, live if isinstance(live, list) else [])
+    mix['hook_guard'] = guard
+    print('hooks: ' + guard['note'], file=sys.stderr)
+    for flag in guard['flags']:
+        print('  flagged ' + flag['status'] + ': ' + flag['where'] + ' (' + flag['why'] + ')', file=sys.stderr)
+    return guard
+
+
+def command(argv, root=ROOT, client_factory=None):
     if argv and argv[0] in ('offdays', 'topup', 'clock', 'briefs'):
         from .offday import command as offday
         return offday(argv, root)
@@ -775,6 +800,8 @@ def command(argv, root=ROOT):
                    + ' when the learn workflow committed one)')
     p.add_argument('--no-learn', action='store_true', help='plan on mix.json weights alone')
     p.add_argument('--urgency', type=int, choices=range(1, 6))
+    p.add_argument('--live', help='JSON list of live post words for the hook score (default: ' + str(LIVE_FILE) + ')')
+    p.add_argument('--offline', action='store_true', help='no divergent-thinker hook score, even when served')
     p.add_argument('--out')
     lp = sub.add_parser('learn', help="last week's verdicts by concept, lane and channel")
     lp.add_argument('specs', nargs='*'); lp.add_argument('--runs-dir'); lp.add_argument('--out')
@@ -789,6 +816,8 @@ def command(argv, root=ROOT):
         mix = plan(read_json(args.inventory), args.week_of, read_json(args.ideas) if args.ideas else (),
                    read_json(args.mocks) if args.mocks else None, learned,
                    root, args.urgency if args.urgency else intensity.state(root)['urgency'])
+        if args.ideas and not args.offline:
+            hook_guard(mix, read_json(args.ideas), client_factory, args.live or Path(root) / LIVE_FILE)
     elif args.verdicts:
         if args.specs:
             parser.error('learn takes specs or --verdicts, not both')

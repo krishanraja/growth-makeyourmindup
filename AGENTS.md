@@ -351,6 +351,54 @@ humour on Mindmake, and no joke that needs more than one outside reference to la
 and never runs on a schedule; each call costs about half a cent, capped at 200 a day. Install:
 `pip install -r requirements-humour.txt && pip install --no-deps -r requirements-humour-engine.txt`.
 
+## Ask divergent-thinker (2026-11-18)
+
+divergent-thinker is the fleet's divergent thinking engine: it proposes ideas and measures how far an idea sits from
+the obvious one, and never sends, posts or spends. This engine reaches it only through Control Center's route on its
+own bearer (`POST /api/growth/engines/makeyourmindup/divergent`, control-center#963), in `engine/divergent.py`. It is
+**dormant until Control Center serves it**: every use reads capabilities first, and with `features.divergent` not
+true it makes no call and says "not served". A refusal (a daily cap, an uncalibrated embedder, a held engine) is one
+quiet line, never a failed run and never retried. It is consulted three ways automatically, and at will (below):
+- **Recovery plays, the runner.** At U4 or U5, not held, with Krish's ledger read, no earlier play still waiting on
+  him and nothing else on the runner's report, `diverge` once for three unconventional recovery plays (protocol: "at
+  U5 three unconventional recovery plays, each different in kind"). About 25 model calls and about $1.30 on Control
+  Center's key, at most one a day. Every spark is checked in code against this engine's walls (no paid reach, nothing
+  in bulk, consent, platform community rules) and the copy lint before it can be proposed: on 18 November a live run
+  proposed plays that broke consent and community rules while reading well. The top survivor is the one ask, a plan
+  behind `strategy` with the evidence item `divergent-thinker spark <rank>, run <runId>`; the other two are report
+  notes, and a spark the walls held is a hold with its reason.
+- **Hooks, the weekly mix plan.** With `--ideas`, `growth.py mix plan` scores each concept's caption hook and each
+  idea's planned Substack Note (`note`) against the live posts held here (`.scratch/divergent/live.json`, or
+  `--live FILE`), namespace `growth-makeyourmindup:hooks`, with zero model calls. A hook that sits on the obvious one
+  (`rejected_gravity`) or repeats one already live (`rejected_archive`) is flagged in the plan's `hook_guard`, never
+  dropped. No live posts held means no score. `--offline` skips it.
+- **What went live, the measure job.** `growth.py run measure auto --deliver` records the last three days of live
+  posts' published words, links removed, to the same namespace (zero model calls), and keeps them locally for the
+  mix plan. Counts only in the log.
+
+**At will.** Any session in this repository may also ask it directly, whenever it needs to:
+`python growth.py divergent <op> [options]`, op one of `map`, `provoke`, `challenge`, `diverge`, `score`, `record`
+(`--problem` (required except record), `--context`, `--idea` for challenge, `--ideas-file` and `--obvious-file` for
+score (a JSON list or one a line), `--items-file` for record, `--cliche` (repeatable), `--count`, `--target`,
+`--temperament`, `--lane NAME` for namespace `growth-makeyourmindup:<lane>`, `--judge`). Reach for it when:
+- the weekly mix keeps repeating hook families: `score` the new hooks against recent Notes and live posts;
+- a borrowed-audience or partner angle is about to be pitched: `challenge` it first;
+- a lane has stalled: `provoke` for angles it has not tried;
+- before a piece's angle locks: `map` the problem;
+- after posts go live: `record` their words (the measure job already does it daily);
+- at U4 or U5 the runner already asks for recovery plays, so do not ask again by hand.
+
+Cost per op, on Control Center's key: `score` and `record` no model call (`score` with `--obvious-file`; without it,
+or with `--judge`, it spends calls), `map` 1 call, `provoke` 2 calls (about $0.15), `challenge` 3 calls, `diverge`
+about 25 calls (about $1.30, one a day); Control Center caps it at 20 quick calls and $5 a day. `bannedWords` is always
+`BANNED_WORDS` in `engine/divergent.py`. It prints Control Center's JSON and exits 0, 1 when a `score` rejected
+anything, and 2 when the route is not served, unreachable, capped, uncalibrated, or this engine is held for a
+generating op (`map`, `provoke`, `challenge`, `diverge`), with the reason on stderr; it makes one call at most and
+never retries. The walls do not move: it sends, posts and spends nothing, and its result is for the session to read,
+never written to his list. A spark reaches Krish only as this engine's own proposal behind `strategy`, through the
+walls check and the copy lint like the runner's. Krish's own Claude sessions can use the Control Center connector's
+`divergent_score`, `divergent_record` and `divergent_run` with namespace `growth-makeyourmindup`.
+
 ## Intensity (Ruling, Krish, 2026-10-29)
 
 "At U3 to U5, engines and Control Center may raise volume caps up to each

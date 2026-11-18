@@ -35,7 +35,7 @@ import datetime as dt
 from pathlib import Path
 import sys
 
-from .. import engine_state, intensity, meter
+from .. import divergent, engine_state, intensity, meter
 from ..cc_loop import (STATE_DIR, count, WEB_ANALYTICS_FILE, keep_subscribers, keep_web_analytics, revision, run, summary,
                        web_analytics_activity, web_analytics_block, web_analytics_summary)
 from ..control_center import SLUG, build_report, iso, objective
@@ -449,6 +449,7 @@ def main(argv=None, make_client=None, buffer=None, out=print, root=ROOT, environ
     if not args.deliver:
         report, error = work(None, False)
         write_json(root / STATE_DIR / 'report-measure.json', report)
+        _keep_live(seen['posts'], now, root)
         if seen['posts']:
             write_json(root / STATE_DIR / 'source-clock.json', source_clock.record(seen['posts'], now))
         out(_counts_line(seen['counts']))
@@ -465,6 +466,10 @@ def main(argv=None, make_client=None, buffer=None, out=print, root=ROOT, environ
         write_json(root / STATE_DIR / 'report-measure.json', outcome['report'])
     if outcome['status'] == 'succeeded':
         _post_source_clock(cc, seen.get('posts'), now, root, out)  # logged; the next run retries, never fails this one
+        line = divergent.record_live(cc, seen.get('posts'), now)  # counts only; a refusal is a line, never a failure
+        if line:
+            out(line)
+    _keep_live(seen.get('posts'), now, root)
     if 'counts' in seen:
         out(_counts_line(seen['counts']))
     for line in summary(outcome, public=True):
@@ -491,6 +496,13 @@ def _post_source_clock(cc, posts, now, root, out):
         return 'source_clock_refused'
     out('source clock: recorded ' + str(len(source_clock.record(posts, now)['posts'])) + ' posts')
     return None
+
+
+def _keep_live(posts, now, root):
+    """The live posts' words, links removed, newest first, kept locally (ignored) as the mix plan's obvious hooks."""
+    words = divergent.live_words(posts, now, LOOKBACK_DAYS)[:divergent.MAX_OBVIOUS]
+    if words:
+        write_json(root / divergent.LIVE_FILE, words)
 
 
 def _local_block(root):
