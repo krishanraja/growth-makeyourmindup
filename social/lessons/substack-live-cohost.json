@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "substack-live-cohost",
+  "category": "channel",
+  "scope": [
+    "substack-live"
+  ],
+  "status": "observed",
+  "finding": "A co-hosted Substack Live (collaboration offer 3, the live disagreement) takes up to three publishers, and a co-host needs a Substack account, which they can make in the free app. Substack's help pages say both hosts appear live and subscribers are notified when the host chooses to notify them; they do not say plainly that the co-host's own subscribers get the alert. So a pitch never promises the partner's readers will be notified: it promises a recorded conversation and a written piece both sides share. Before pitching, check whether the partner has a Substack publication (substack.com/api/v1/user/<handle>/public_profile), and treat the side Krish argues as his judgement, for his approval.",
+  "evidence": {
+    "kind": "published_source",
+    "ref": "https://on.substack.com/p/live-video-is-available-to-all-publishers; https://support.substack.com/hc/en-us/articles/32070353475860-Live-video-on-Substack-via-RTMP",
+    "observed_at": "2026-11-18",
+    "result": "Up to three publishers per collaborative live; a collaborator not on Substack joins by downloading the app and creating an account; you and your co-host appear live, and subscribers get notifications if you selected to notify them. Of the three offer 3 targets, two have a Substack publication and one has none."
+  },
+  "revisit_when": "After the first co-hosted Live: record whether the co-host's subscribers were alerted and how many new subscribers its tagged link brought.",
+  "supersedes": null
+}
