@@ -17,7 +17,7 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
    (docs/ENGINE.md, "The content backlog"). Record each live edition with
    `growth.py backlog record` once its native URL reads back.
 2. Record a literal source excerpt for the forwardable finding, named facts,
-   quote or dated call. Establish the article/video pair only from explicit
+   or quote. Establish the article/video pair only from explicit
    published links or a human verification record. If unavailable, keep the
    video items blocked and recheck on the next existing job. Empty bodies
    contain no facts. Do not infer them from titles.
@@ -50,10 +50,9 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
      reason to share. Include a faithful quote, specific benefit and distinct
      tracked placement; never invent an endorsement.
 4. Optional lifecycle tasks: next-day discussion, a later relevant evergreen
-   retrieval or a due dated-call review. Each gets a distinct placement,
-   evidence, why now and expiry when time-sensitive. A monthly call review
-   needs the original dated call and a public outcome; otherwise "not due"
-   or "not verified". Editorial planning remains outside this engine.
+   retrieval. Each gets a distinct placement, evidence, why now and expiry
+   when time-sensitive. There are no call reviews: the prediction format is
+   retired (Ruling, Krish, 2026-11-18). Editorial planning remains outside this engine.
 5. Subjective breakout score out of 20 can guide effort, with rationale and
    weak dimensions. It is not measured reach or predicted performance.
 6. Run the doctrine's before-handoff passes and critique rubric on each

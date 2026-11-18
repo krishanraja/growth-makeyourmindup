@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "media-account-comments",
+  "category": "account",
+  "scope": [
+    "x",
+    "instagram",
+    "substack-notes"
+  ],
+  "status": "observed",
+  "finding": "Comments posted under big media accounts earn almost no attention: in the 16 Nov campaign, 10 replies on X under news accounts drew 1 like, 7 replies on writers' Substack Notes drew 2, and none drew a reply. Borrowed audiences come from partners and Substack's network, not from replies under news accounts, so comment effort goes, at most, to a few Notes conversations with business-AI writers, judged by subscribers.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": "docs/reviews/2026-11-18-comment-campaign-read.md",
+    "observed_at": "2026-11-18",
+    "result": "18 of 23 comments read at about 47 hours: X 10 comments, 1 like; Substack Note replies 7, 2 likes; Instagram 1 of 5 readable, 0 likes; 0 replies anywhere."
+  },
+  "revisit_when": "After the next weekly subscriber read: if any new subscriber is traced to a comment or Notes reply, reopen.",
+  "supersedes": null
+}

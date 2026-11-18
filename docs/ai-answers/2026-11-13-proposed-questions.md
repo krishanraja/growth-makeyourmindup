@@ -103,9 +103,9 @@ Every question below is one a person typed or asked; none was made up, and none 
     Best piece now: [Why is Disney eating the scraps of bankrupt Character.AI?](https://home.makeyourmindup.ai/p/why-is-disney-eating-the-scraps-of) ("what that means for any business that runs on someone else's AI"). Direct.
 
 17. **How will AI change the world in the next 10 years?**
-    Why: mind.the.gap's own question; "how ai will change the world" is typed 880 times a month, and our dated calls are what an assistant can quote.
+    Why: mind.the.gap's own question; "how ai will change the world" is typed 880 times a month, and where our pieces say it leads is what an assistant can quote.
     Evidence: AnswerThePublic "ai" (how ai will change the world 880; where ai will be in 10 years, new in this snapshot; where ai is heading).
-    Best piece now: none answers it whole. Nearest are the dated calls in [Why Claude and ChatGPT model launches keep speeding up](https://home.makeyourmindup.ai/p/why-claude-and-chatgpt-model-launches) and [AI used to reply. Now it acts first.](https://home.makeyourmindup.ai/p/ai-used-to-reply-now-it-acts-first).
+    Best piece now: none answers it whole. Nearest are the closing sections in [Why Claude and ChatGPT model launches keep speeding up](https://home.makeyourmindup.ai/p/why-claude-and-chatgpt-model-launches) and [AI used to reply. Now it acts first.](https://home.makeyourmindup.ai/p/ai-used-to-reply-now-it-acts-first).
 
 ## Saturday good news
 

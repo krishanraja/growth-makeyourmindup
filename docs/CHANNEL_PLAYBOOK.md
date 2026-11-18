@@ -36,7 +36,7 @@ Ready-to-paste cadence block for [Substack About](https://home.makeyourmindup.ai
 
 > Monday: follow.the.money. I follow who gets paid.
 > Wednesday: under.the.hood. I look at how it really works.
-> Friday: mind.the.gap. I look at where it leads, with a dated call.
+> Friday: mind.the.gap. I look at where it leads.
 
 Suggested subscribe benefit text, preserving the existing promise:
 
@@ -121,8 +121,8 @@ experience. Pick the live source first; do not publish a placeholder.
    A click is not a subscription. Deduplicate completion by actual subscriber
    event where the provider supports it; otherwise report the visibility gap.
 4. Add useful topic/series navigation only where published material supports
-   it. Candidates are a money map, a theatre/claims index, and a dated calls
-   record. These are derivative evidence resources, not thin AI pages or a
+   it. Candidates are a money map and a theatre/claims index (no calls
+   record: the prediction format is retired, Ruling, Krish, 2026-11-18). These are derivative evidence resources, not thin AI pages or a
    second article pipeline. Do not claim they currently exist.
 5. Match the external entry to an article, source list or topic page. Avoid
    sending every interested reader to the same generic homepage.
@@ -140,9 +140,9 @@ experience. Pick the live source first; do not publish a placeholder.
    clear attribution where editorially useful. Read AEO results; never run
    the paid engine from here or guarantee citations. The full strategy is
    "Search and AI answers: GEO and AEO" below.
-10. Keep the real calls record useful even when a call is wrong: original
-    wording, publication date, due date, public outcome, uncertainty and
-    correction. Sample data must stay clearly labelled until replaced.
+10. Retired: there is no calls record and no dated calls (Rulings, Krish,
+    2026-11-17 and 2026-11-18). Corrections to published facts are still
+    recorded with the original wording and the date.
 
 ## LinkedIn: authority to a useful read
 
@@ -295,8 +295,8 @@ only make sense to a machine, do not make it.
    quoted alone and still be right. Names, a date and the finding go there.
 3. Then the evidence: each claim next to its source, named and dated.
 4. Subheads are the follow-up questions, each answered at its top.
-5. The dated call (mind.the.gap) is quoted word for word with its date,
-   so a later check can cite it either way.
+5. Where it leads (mind.the.gap) is stated plainly, with no date or
+   confidence attached.
 6. A visible published date and, when edited, an updated date and what
    changed. A correction is stated, not silently overwritten.
 
@@ -319,13 +319,13 @@ answer goes to Krish as a topic; the engine does not write the answer.
 ### What makes a page worth citing
 
 - Something only makeyourmindup has: who gets paid, how it really works,
-  a dated call. A summary of other people's news is not that.
+  where it leads. A summary of other people's news is not that.
 - Precise, checkable statements with named sources and dates, close to
   the claim. Counts and plain words, no inflated numbers.
 - A stable URL per piece, a clear author (Krish Raja, with an about page
   that says who he is and links his profiles) and the same names
   everywhere: makeyourmindup, the three series, Krish Raja.
-- The calls record kept honest, right or wrong, with the original wording.
+- Corrections kept honest, with the original wording and the date.
 - Article and video link to each other, so either can be cited and found.
 
 ### Host checklist (Krish applies; the engine never changes a host)
@@ -355,7 +355,7 @@ actually control on this account before relying on them).
   `Google-Extended` (a control token; it does not affect Google Search),
   `Applebot-Extended`, `CCBot`, `meta-externalagent`, `Bytespider`. This is
   Krish's ruling, separate from visibility. Record it in `CHANGES.md`.
-- No `noindex` on pieces, the about page, series pages or the calls record.
+- No `noindex` on pieces, the about page, or series pages.
   Check that a CDN or bot-protection setting is not blocking the allowed
   agents (a firewall challenge is a block even when `robots.txt` allows).
 - Sitemaps: Substack's article sitemap exists; the website sitemap should
@@ -363,7 +363,7 @@ actually control on this account before relying on them).
 
 **`llms.txt` (website).** A plain Markdown file at
 `https://makeyourmindup.ai/llms.txt`: the promise, the three series with
-what each asks, the start-here read, the calls record, and the best pieces
+what each asks, the start-here read, and the best pieces
 with one line each and their canonical Substack URLs. It is a proposed
 convention, not something any engine has confirmed it reads: cheap, so do
 it, but never claim it raises citations. It must say only what the site

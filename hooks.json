@@ -47,7 +47,6 @@
     }
   },
   "hook_families": [
-    "prediction",
     "contrarian claim",
     "new evidence",
     "avoidable loss",

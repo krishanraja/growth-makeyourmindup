@@ -23,8 +23,8 @@ measure whether they act ([Final Operating Doctrine]).
   and make it legible to people while it still counts."
 - **USP** ([The USP test]): For a leader who has to make AI calls early,
   makeyourmindup shows one AI shift before it is obvious, three times a week,
-  because every piece follows who gets paid, opens up how it works and puts a
-  dated call on the record that anyone can check later.
+  because every piece follows who gets paid, opens up how it works and says
+  plainly where it leads (no dated calls: Ruling, Krish, 2026-11-17 and 2026-11-18).
 - **Big idea:** see it while it still counts. Every asset carries that one
   idea, one emotion (the calm of seeing clearly, not alarm) and one action.
 
@@ -37,8 +37,8 @@ Find the weakest link and fix only that ([The persuasion chain]).
 | Relevance | Is this for me? | Name the decision a leader faces, in the first line |
 | Attention | Why notice it? | The sourced finding itself, not a tease |
 | Desire | Do I want it? | Seeing the shift before peers do, while it still counts |
-| Difference | Why this one? | Who gets paid, how it works, a dated call on record |
-| Belief | Will it be right? | Facts from the published piece; real settled calls |
+| Difference | Why this one? | Who gets paid, how it works, where it leads |
+| Belief | Will it be right? | Facts from the published piece, each with its source |
 | Value | Worth my inbox? | Free, one story, plain words, three fixed days |
 | Safety | What if it isn't? | Free and easy to leave; say only what is true |
 | Timing | Why now? | The story is live now, or the call's date is near |
@@ -58,7 +58,7 @@ Schwartz's awareness levels ([Breakthrough Advertising]) and the six leads
 
 Series and lead: follow.the.money and under.the.hood suit a Secret (a true
 mechanism or money flow most people miss). mind.the.gap suits a Proclamation
-(the dated call). A Story opening must reach the point within two sentences.
+(where the pattern leads, never a dated call). A Story opening must reach the point within two sentences.
 
 **Sophistication is high.** Leaders have heard every louder AI claim. Do not
 shout harder. Show the mechanism (who gets paid, how it works) and identify
@@ -101,10 +101,9 @@ familiarity or a compliment.
 
 ([Phase 6: Build the proof architecture]). Strongest first:
 
-1. A dated call the public record has since settled, with both URLs.
-2. The finding itself, quoted literally from the published piece.
-3. The primary source the piece cites.
-4. The method: who gets paid, how it works, the dated call.
+1. The finding itself, quoted literally from the published piece.
+2. The primary source the piece cites.
+3. The method: who gets paid, how it works, where it leads.
 5. What the publication has published about its own work (its method and
    its record of calls), said as "we", and nothing more. Proof never names
    Krish (rule 14 below).
@@ -127,7 +126,7 @@ asks come after value (consistency). Talk like a person, never flatter.
 |---|---|---|
 | follow.the.money | See whose incentives drive the story | The money facts in that piece |
 | under.the.hood | Judge what is real versus theatre | The mechanism the piece explains |
-| mind.the.gap | A dated call to plan against | The call, its date, later its outcome |
+| mind.the.gap | See where a pattern leads before peers do | The threads the piece lines up, each sourced |
 | Three fixed days | Known, small inbox cost | The cadence on the page |
 | Video versions | Get it in 3 minutes or 90 seconds | The live video URL |
 
@@ -148,7 +147,7 @@ that fit the surface's awareness, then keep one.
 | Story | narrative scene | Yes, only what the piece records |
 | Testimonial | (none) | No, unless real and approved |
 | Offer, Command | (front door only) | Substack page and welcome |
-| (prediction) | prediction | The dated call, mind.the.gap |
+| (prediction) | none | Retired: no predictions (Ruling, Krish, 2026-11-18: "i have abandoned the prediction format, it feels lame") |
 
 Score each candidate 1 to 5 on relevance, useful specificity, credibility,
 distinction, emotional force and match with the body. Keep the best, then
