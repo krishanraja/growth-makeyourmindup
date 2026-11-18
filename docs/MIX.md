@@ -22,6 +22,8 @@ channels right now, the faster we learn."
   the obvious one or repeats one already live; nothing is dropped. Dormant until
   Control Center serves it; `--offline` skips it (AGENTS.md, "Ask
   divergent-thinker");
+  to check a hook by hand, `python growth.py divergent score --problem TEXT --ideas-file F --obvious-file F`
+  (AGENTS.md, "At will");
 - `--mocks FILE`: `{concept_id: {claim, mock_sha256, style_card?}}` once the mocks exist (each mock made in a Claude
   session with the Codex plugin building it, R126; content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel
   is made", never by a scheduled job); `style_card` names the

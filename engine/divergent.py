@@ -279,3 +279,147 @@ def record_live(client, posts, now):
     except ProtocolError as error:
         return refusal(error)
     return 'divergent-thinker: recorded ' + str(len(items)) + ' live posts to ' + HOOKS
+
+
+# At will: any session in this repository, by hand -----------------------------
+
+# The ops Control Center's route takes, and the ones that spend model calls on its key (a refusal while held).
+OPS = ('map', 'provoke', 'challenge', 'diverge', 'score', 'record')
+GENERATING = ('map', 'provoke', 'challenge', 'diverge')
+COST = {'map': '1 model call', 'provoke': '2 model calls, about $0.15', 'challenge': '3 model calls',
+        'diverge': 'about 25 model calls and about $1.30, one a day', 'score': 'no model call with obvious hooks',
+        'record': 'no model call'}
+LANE = re.compile(r'^[a-z0-9][a-z0-9_-]{0,39}$')
+EXIT_OK, EXIT_FLAGGED, EXIT_UNAVAILABLE = 0, 1, 2
+
+
+def items_of(path):
+    """A JSON list of strings, or one item a line. Blank lines and blank items are dropped."""
+    import json
+    text = Path(path).read_text(encoding='utf-8-sig')
+    try:
+        value = json.loads(text)
+    except ValueError:
+        value = None
+    rows = value if isinstance(value, list) else text.splitlines()
+    return [w for w in (' '.join(str(x).split()) for x in rows) if w]
+
+
+def at_will_body(op, problem=None, context=None, idea=None, ideas=(), obvious=(), items=(), cliches=(),
+                 count=None, target=None, temperament=None, lane=None, judge=False, label=None):
+    """The exact body Control Center's route takes for one at-will op. Raises ValueError on a missing input."""
+    if op not in OPS:
+        raise ValueError('op must be one of ' + ', '.join(OPS))
+    if lane is not None and not LANE.match(lane):
+        raise ValueError('--lane is lower case letters, digits, - and _ (at most 40)')
+    namespace = NAMESPACE + (':' + lane if lane else '')
+    if op == 'record':
+        if not items:
+            raise ValueError('record needs --items-file with at least one item')
+        body = {'op': op, 'items': list(items)[:MAX_RECORD], 'namespace': namespace}
+        if label:
+            body['label'] = label
+        return body
+    if not (problem or '').strip():
+        raise ValueError(op + ' needs --problem')
+    body = {'op': op, 'problem': ' '.join(problem.split())}
+    if op == 'score':
+        if not ideas:
+            raise ValueError('score needs --ideas-file with at least one idea')
+        body.update(ideas=list(ideas)[:MAX_IDEAS], bannedWords=list(BANNED_WORDS), namespace=namespace)
+        if obvious:
+            body['obvious'] = list(obvious)[:MAX_OBVIOUS]
+        if judge:
+            body['judge'] = True
+        return body
+    if context:
+        body['context'] = ' '.join(context.split())
+    if op == 'map':
+        return body
+    if op == 'challenge':
+        if not (idea or '').strip():
+            raise ValueError('challenge needs --idea')
+        body['idea'] = ' '.join(idea.split())
+        return body
+    # provoke and diverge
+    body.update(bannedWords=list(BANNED_WORDS), namespace=namespace)
+    if cliches:
+        body['cliches'] = [' '.join(c.split()) for c in cliches if c.strip()]
+    if count is not None:
+        body['count'] = count
+    if target:
+        body['target'] = target
+    if temperament:
+        body['temperament'] = temperament
+    return body
+
+
+def flagged(answer):
+    """The score results divergent-thinker rejected (any rejected_* status)."""
+    results = answer.get('results') if isinstance(answer.get('results'), list) else []
+    return [r for r in results if isinstance(r, dict) and str(r.get('status') or '').startswith('rejected')]
+
+
+def at_will(client, body):
+    """(exit code, answer or None, reason or None). One call at most, never retried, never written to his list.
+
+    Not served, unreachable, a refusal, or a held engine for a generating op is exit 2 with its reason and no
+    divergent call; a score that rejects anything is exit 1."""
+    if not served(client):
+        return EXIT_UNAVAILABLE, None, NOT_SERVED
+    if body['op'] in GENERATING:
+        from .engine_state import held
+        try:
+            directive = client.directive()
+        except (ProtocolError, AttributeError):
+            return EXIT_UNAVAILABLE, None, ('divergent-thinker: not consulted (held state unreadable); a generating '
+                                            'op spends model calls, so none was made')
+        if held(directive):
+            return EXIT_UNAVAILABLE, None, ('divergent-thinker: not consulted (held); Control Center holds this '
+                                            'engine, so no generating op runs')
+    try:
+        answer = client.divergent(body)
+    except ProtocolError as error:
+        return EXIT_UNAVAILABLE, None, refusal(error)
+    if body['op'] == 'score' and flagged(answer):
+        return EXIT_FLAGGED, answer, None
+    return EXIT_OK, answer, None
+
+
+def command(argv, client_factory):
+    """growth.py divergent <op> [options]: print Control Center's JSON. Exit 0 ok, 1 a score flagged something,
+    2 not served, unreachable, refused or held (the reason on stderr)."""
+    import argparse
+    import json
+    import sys
+    p = argparse.ArgumentParser(prog='growth.py divergent',
+                                description='divergent-thinker at will, through Control Center (engine/divergent.py)',
+                                epilog='Cost: ' + '; '.join(op + ' ' + COST[op] for op in OPS) + '.')
+    p.add_argument('op', choices=OPS)
+    p.add_argument('--problem'); p.add_argument('--context'); p.add_argument('--idea')
+    p.add_argument('--ideas-file'); p.add_argument('--obvious-file'); p.add_argument('--items-file')
+    p.add_argument('--label', help='record: a short label for the batch')
+    p.add_argument('--cliche', action='append', default=[])
+    p.add_argument('--count', type=int); p.add_argument('--target'); p.add_argument('--temperament')
+    p.add_argument('--lane', help='namespace ' + NAMESPACE + ':<lane>')
+    p.add_argument('--judge', action='store_true', help='score: ask the judge too (spends model calls)')
+    a = p.parse_args(argv)
+    try:
+        body = at_will_body(a.op, a.problem, a.context, a.idea,
+                            items_of(a.ideas_file) if a.ideas_file else (),
+                            items_of(a.obvious_file) if a.obvious_file else (),
+                            items_of(a.items_file) if a.items_file else (),
+                            a.cliche, a.count, a.target, a.temperament, a.lane, a.judge, a.label)
+    except (ValueError, OSError) as error:
+        p.error(str(error))
+    try:
+        client = client_factory()
+    except ValueError as error:
+        print('divergent-thinker: not consulted (' + str(error) + ')', file=sys.stderr)
+        return EXIT_UNAVAILABLE
+    code, answer, reason = at_will(client, body)
+    if reason:
+        print(reason, file=sys.stderr)
+    if answer is not None:
+        print(json.dumps(answer, ensure_ascii=False, indent=2))
+    return code

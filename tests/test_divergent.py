@@ -276,3 +276,137 @@ class BannedWordsForTheGate(unittest.TestCase):
         words = [w.lower() for w in d.BANNED_WORDS]
         self.assertNotIn('krish', words)
         self.assertIn('leverage', words)
+
+
+class AtWill(unittest.TestCase):
+    """growth.py divergent <op>: any session, by hand. One call at most, never retried, never on his list."""
+
+    class CC(FakeCC):
+        def __init__(self, held=False, directive_error=None, **kw):
+            super().__init__(**kw)
+            self.held, self.directive_error = held, directive_error
+
+        def directive(self):
+            self.calls.append('directive')
+            if self.directive_error:
+                raise self.directive_error
+            words = 'Krish has held this engine until he releases it' if self.held else 'Prepare the week'
+            return {'ok': True, 'directive': {'next_action': {'instruction': words}}}
+
+    def cc(self, **kw):
+        kw.setdefault('features', {'divergent': True})
+        return self.CC(**kw)
+
+    def run_cli(self, argv, cc):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = divergent.command(argv, lambda: cc)
+        return code, out.getvalue(), err.getvalue()
+
+    def test_each_op_sends_its_own_body_and_namespace(self):
+        d = divergent
+        self.assertEqual(d.at_will_body('map', 'A problem', 'Some context'),
+                         {'op': 'map', 'problem': 'A problem', 'context': 'Some context'})
+        self.assertEqual(d.at_will_body('challenge', 'A problem', idea='One idea'),
+                         {'op': 'challenge', 'problem': 'A problem', 'idea': 'One idea'})
+        provoke = d.at_will_body('provoke', 'A problem', cliches=['Post more'], count=4, target='strategy',
+                                 temperament='wild', lane='hooks')
+        self.assertEqual(provoke['namespace'], 'growth-makeyourmindup:hooks')
+        self.assertEqual((provoke['cliches'], provoke['count'], provoke['target'], provoke['temperament']),
+                         (['Post more'], 4, 'strategy', 'wild'))
+        self.assertEqual(provoke['bannedWords'], list(d.BANNED_WORDS))
+        self.assertNotIn('krish', [w.lower() for w in provoke['bannedWords']])
+        diverge = d.at_will_body('diverge', 'A problem')
+        self.assertEqual((diverge['op'], diverge['namespace']), ('diverge', 'growth-makeyourmindup'))
+        score = d.at_will_body('score', 'A problem', ideas=['a', 'b'], obvious=['c'], judge=True)
+        self.assertEqual(score, {'op': 'score', 'problem': 'A problem', 'ideas': ['a', 'b'],
+                                 'bannedWords': list(d.BANNED_WORDS), 'namespace': 'growth-makeyourmindup',
+                                 'obvious': ['c'], 'judge': True})
+        self.assertEqual(d.at_will_body('record', items=['x'], lane='live', label='batch'),
+                         {'op': 'record', 'items': ['x'], 'namespace': 'growth-makeyourmindup:live', 'label': 'batch'})
+        for bad in (lambda: d.at_will_body('map'), lambda: d.at_will_body('challenge', 'p'),
+                    lambda: d.at_will_body('score', 'p'), lambda: d.at_will_body('record'),
+                    lambda: d.at_will_body('map', 'p', lane='Not A Lane')):
+            self.assertRaises(ValueError, bad)
+
+    def test_the_cli_reads_files_and_prints_the_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ideas, obvious = Path(tmp, 'ideas.json'), Path(tmp, 'obvious.txt')
+            ideas.write_text(json.dumps(['Hook one', 'Hook two']), encoding='utf-8')
+            obvious.write_text('Live one\n\nLive two\n', encoding='utf-8')
+            cc = self.cc(answer={'ok': True, 'results': [{'status': 'accepted'}, {'status': 'accepted'}]})
+            code, out, err = self.run_cli(['score', '--problem', 'p', '--ideas-file', str(ideas),
+                                           '--obvious-file', str(obvious), '--lane', 'hooks'], cc)
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(out)['results'][0]['status'], 'accepted')
+        body = cc.calls[-1]
+        self.assertEqual((body['ideas'], body['obvious'], body['namespace']),
+                         (['Hook one', 'Hook two'], ['Live one', 'Live two'], 'growth-makeyourmindup:hooks'))
+        self.assertEqual(cc.calls[0], 'capabilities')
+        self.assertNotIn('directive', cc.calls)  # score spends nothing, so the held read is not needed
+
+    def test_a_score_that_flags_anything_exits_one(self):
+        cc = self.cc(answer={'ok': True, 'results': [{'status': 'accepted'}, {'status': 'rejected_gravity'}]})
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp, 'ideas.txt'); f.write_text('a\nb\n', encoding='utf-8')
+            code, out, _ = self.run_cli(['score', '--problem', 'p', '--ideas-file', str(f)], cc)
+        self.assertEqual(code, 1)
+        self.assertIn('rejected_gravity', out)
+
+    def test_generating_ops_read_the_held_state_and_run_once(self):
+        cc = self.cc(answer={'ok': True, 'runId': RUN, 'sparks': []})
+        code, out, _ = self.run_cli(['provoke', '--problem', 'p', '--count', '3'], cc)
+        self.assertEqual(code, 0)
+        self.assertEqual(cc.calls[:2], ['capabilities', 'directive'])
+        self.assertEqual([c['op'] for c in cc.calls if isinstance(c, dict)], ['provoke'])
+        self.assertEqual(json.loads(out)['runId'], RUN)
+
+    def test_held_refuses_generating_ops_and_never_calls(self):
+        for op, extra in (('map', []), ('provoke', []), ('challenge', ['--idea', 'i']), ('diverge', [])):
+            cc = self.cc(held=True)
+            code, out, err = self.run_cli([op, '--problem', 'p'] + extra, cc)
+            self.assertEqual((code, out), (2, ''))
+            self.assertIn('held', err)
+            self.assertEqual(cc.calls, ['capabilities', 'directive'])
+        unreadable = self.cc(directive_error=ProtocolError('unreachable'))
+        self.assertEqual(self.run_cli(['map', '--problem', 'p'], unreadable)[0], 2)
+        self.assertEqual(unreadable.calls, ['capabilities', 'directive'])
+        # Held does not stop the free ops: they spend nothing.
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp, 'items.txt'); f.write_text('one\n', encoding='utf-8')
+            cc = self.cc(held=True)
+            self.assertEqual(self.run_cli(['record', '--items-file', str(f)], cc)[0], 0)
+            self.assertEqual(cc.calls[-1]['op'], 'record')
+
+    def test_not_served_exits_two_with_no_call(self):
+        for cc in (self.cc(features={'divergent': False}), self.cc(features={}),
+                   self.cc(cap_error=ProtocolError('unreachable'))):
+            code, out, err = self.run_cli(['map', '--problem', 'p'], cc)
+            self.assertEqual((code, out), (2, ''))
+            self.assertIn('not served', err)
+            self.assertEqual(cc.calls, ['capabilities'])
+
+    def test_a_refusal_or_no_token_exits_two_and_is_never_retried(self):
+        for status, server in ((429, 'daily_diverge_cap_reached'), (503, 'embedder_uncalibrated'),
+                               (409, 'engine_held'), (400, 'bad_request')):
+            cc = self.cc(error=ProtocolError('http_error', status, server))
+            code, out, err = self.run_cli(['diverge', '--problem', 'p'], cc)
+            self.assertEqual((code, out), (2, ''))
+            self.assertIn(server, err)
+            self.assertEqual(len([c for c in cc.calls if isinstance(c, dict)]), 1)
+
+        def no_token():
+            raise ValueError('No Control Center engine key')
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(divergent.command(['map', '--problem', 'p'], no_token), 2)
+        self.assertIn('not consulted', err.getvalue())
+
+    def test_growth_py_dispatches_the_command(self):
+        import growth
+        err = io.StringIO()
+        with patch.dict('os.environ', {'CONTROL_CENTER_ENGINE_TOKEN': ''}), \
+                patch.object(growth, 'ENGINE_TOKEN_FILE', Path('/nonexistent/engine-token')), \
+                contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(growth.main(['divergent', 'map', '--problem', 'p']), 2)
+        self.assertIn('not consulted', err.getvalue())
