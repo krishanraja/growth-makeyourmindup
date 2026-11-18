@@ -4,6 +4,29 @@ Newest first. Entries are written by the docs steward (`krishanraja/ai-harness`,
 and by people doing the same job by hand. Nothing in this file describes current behaviour; `NOW.md` and
 `README.md` do. Text moved here from `NOW.md` keeps its wording verbatim.
 
+## 2026-11-18
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "Where it is right now":
+
+- Claude starts Codex only through scripts/codex_thread.mjs, focus sprints included: a permanent thread in Krish's Codex Desktop recents, released after every turn so he can type in it too. (2026-11-15)
+- A weekly branch sweep (`.github/workflows/branch-sweep.yml`, Sunday 03:17 UTC, and by hand) deletes every remote branch whose work is already on main and lists each branch it keeps with why: unmerged work, an open pull request, protected (Ruling, Krish, 2026-11-15). The script is `.github/scripts/branch_sweep.py`, copied unchanged from ai-harness, which holds the canonical copy. (2026-11-15)
+
+## 2026-11-17
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-13 Krish approved the plan as the build on 13 November 2026. The engine had shipped nothing on its automatic path, and no post carried a subscribe route, so the first steps make every unit attributable before any volume.
+- 2026-11-13 Rulings (Krish, 2026-11-13): "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual workflows"; "memes and Notes images should go the same way"; "Off-day voiceover shorts should go the same way too".
+
+From "Where it is right now":
+
+- No video leaves this engine without its designed cover: Buffer takes no cover image, so `growth.py run cover append` appends the cover as the cut's last second and sets thumbnailOffset to it, and release, the L0 carry, the maker and the pre-send read hold any video with a null offset (F133, R128). The house carousel cover now looks like a front cover, body cards carry one full centred sentence of 8 to 20 words under a visual anchor, the renderer reports every line so the kit check refuses an off-centre or out-of-margin card, and the judges get each card's view link (R129). Tall frames keep to the clear box (y 270 to 1320, x 200 to 880) and `meme-tall` with `growth.py run meme compose` centres a clip by construction (R130). (2026-11-15)
+- Claude and Codex division written in (Ruling, Krish, 2026-11-15): Codex does the visual builds and the social legwork (post approved work, read it back for cover, caption and call to action, read measurement and paid boosts) in sessions Krish watches in Codex Desktop, never touching Drive or ai-harness. The weekly review gains "What worked, what did not, and why" with paid split from organic, beside the Sunday learn workflow; boost readings are `paid_boost` observations. First analysis: `docs/reviews/2026-11-15-interest-vs-paid.md`. (2026-11-15)
+
 ## 2026-11-15
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).

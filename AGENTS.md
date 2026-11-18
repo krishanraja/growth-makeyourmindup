@@ -335,6 +335,70 @@ Engine needs nothing to do with it, but Control Center certainly does."
 That historical separation is clarified by the 2026-10-26 ruling above:
 independent engines, with an explicit production-to-distribution handoff.
 
+## Ask the humour engine (Krish, 2026-11-17)
+
+Krish, 2026-11-17: "go ahead on both, makeyourmindup first". humour-engine (krishanraja/humour-engine) is the fleet's one
+definition of humour and holds no taste; the taste is the house register and ai-harness `krish-voice`
+references/humour.md. It is on call through this engine's own bearer: `python growth.py humour check "<line>" ...
+--surface caption|comment|onscreen|note|line [--context "<fact>"] [--mindmake]`, `humour compare A.txt B.txt`, and
+`humour doctor` (token, package, and Control Center serving the route; no model call). Consult it:
+- before a comment batch goes to Krish for approval, one check per comment that tries to be funny;
+- before a caption or on-screen line that carries a joke goes into a mix plan or a concept's mocks;
+- on anything that sells, announces or links to Mindmake, with `--mindmake`.
+It holds three house rules (engine/humour.py): no joke at the poster or another commenter on someone else's post, no
+humour on Mindmake, and no joke that needs more than one outside reference to land. Exit 0 is a pass, 1 is flagged
+(rewrite it, or cut the joke), 2 is unavailable, which is never a pass: say so beside the draft. It is not a release gate
+and never runs on a schedule; each call costs about half a cent, capped at 200 a day. Install:
+`pip install -r requirements-humour.txt && pip install --no-deps -r requirements-humour-engine.txt`.
+
+## Ask divergent-thinker (2026-11-18)
+
+divergent-thinker is the fleet's divergent thinking engine: it proposes ideas and measures how far an idea sits from
+the obvious one, and never sends, posts or spends. This engine reaches it only through Control Center's route on its
+own bearer (`POST /api/growth/engines/makeyourmindup/divergent`, control-center#963), in `engine/divergent.py`. It is
+**dormant until Control Center serves it**: every use reads capabilities first, and with `features.divergent` not
+true it makes no call and says "not served". A refusal (a daily cap, an uncalibrated embedder, a held engine) is one
+quiet line, never a failed run and never retried. It is consulted three ways automatically, and at will (below):
+- **Recovery plays, the runner.** At U4 or U5, not held, with Krish's ledger read, no earlier play still waiting on
+  him and nothing else on the runner's report, `diverge` once for three unconventional recovery plays (protocol: "at
+  U5 three unconventional recovery plays, each different in kind"). About 25 model calls and about $1.30 on Control
+  Center's key, at most one a day. Every spark is checked in code against this engine's walls (no paid reach, nothing
+  in bulk, consent, platform community rules) and the copy lint before it can be proposed: on 18 November a live run
+  proposed plays that broke consent and community rules while reading well. The top survivor is the one ask, a plan
+  behind `strategy` with the evidence item `divergent-thinker spark <rank>, run <runId>`; the other two are report
+  notes, and a spark the walls held is a hold with its reason.
+- **Hooks, the weekly mix plan.** With `--ideas`, `growth.py mix plan` scores each concept's caption hook and each
+  idea's planned Substack Note (`note`) against the live posts held here (`.scratch/divergent/live.json`, or
+  `--live FILE`), namespace `growth-makeyourmindup:hooks`, with zero model calls. A hook that sits on the obvious one
+  (`rejected_gravity`) or repeats one already live (`rejected_archive`) is flagged in the plan's `hook_guard`, never
+  dropped. No live posts held means no score. `--offline` skips it.
+- **What went live, the measure job.** `growth.py run measure auto --deliver` records the last three days of live
+  posts' published words, links removed, to the same namespace (zero model calls), and keeps them locally for the
+  mix plan. Counts only in the log.
+
+**At will.** Any session in this repository may also ask it directly, whenever it needs to:
+`python growth.py divergent <op> [options]`, op one of `map`, `provoke`, `challenge`, `diverge`, `score`, `record`
+(`--problem` (required except record), `--context`, `--idea` for challenge, `--ideas-file` and `--obvious-file` for
+score (a JSON list or one a line), `--items-file` for record, `--cliche` (repeatable), `--count`, `--target`,
+`--temperament`, `--lane NAME` for namespace `growth-makeyourmindup:<lane>`, `--judge`). Reach for it when:
+- the weekly mix keeps repeating hook families: `score` the new hooks against recent Notes and live posts;
+- a borrowed-audience or partner angle is about to be pitched: `challenge` it first;
+- a lane has stalled: `provoke` for angles it has not tried;
+- before a piece's angle locks: `map` the problem;
+- after posts go live: `record` their words (the measure job already does it daily);
+- at U4 or U5 the runner already asks for recovery plays, so do not ask again by hand.
+
+Cost per op, on Control Center's key: `score` and `record` no model call (`score` with `--obvious-file`; without it,
+or with `--judge`, it spends calls), `map` 1 call, `provoke` 2 calls (about $0.15), `challenge` 3 calls, `diverge`
+about 25 calls (about $1.30, one a day); Control Center caps it at 20 quick calls and $5 a day. `bannedWords` is always
+`BANNED_WORDS` in `engine/divergent.py`. It prints Control Center's JSON and exits 0, 1 when a `score` rejected
+anything, and 2 when the route is not served, unreachable, capped, uncalibrated, or this engine is held for a
+generating op (`map`, `provoke`, `challenge`, `diverge`), with the reason on stderr; it makes one call at most and
+never retries. The walls do not move: it sends, posts and spends nothing, and its result is for the session to read,
+never written to his list. A spark reaches Krish only as this engine's own proposal behind `strategy`, through the
+walls check and the copy lint like the runner's. Krish's own Claude sessions can use the Control Center connector's
+`divergent_score`, `divergent_record` and `divergent_run` with namespace `growth-makeyourmindup`.
+
 ## Intensity (Ruling, Krish, 2026-10-29)
 
 "At U3 to U5, engines and Control Center may raise volume caps up to each
@@ -823,7 +887,7 @@ NOW.md's oldest lines to `docs/history/LOG.md` verbatim to keep it under its
 byte cap. ai-harness's administration publisher excludes this repository
 until Krish accepts it there by name, so this fold is the repository's own.
 
-<!-- krish-canon:start release=v2026.11.15.2 sha=79e4ca3b4662 rendered=2026-11-16 -->
+<!-- krish-canon:start release=v2026.11.15.2 sha=2222de5dee08 rendered=2026-11-18 -->
 ## Krish canon
 
 Rendered from `krishanraja/ai-harness`; the start marker names the last release that changed this block, not the latest release. Nothing inside these
@@ -866,7 +930,7 @@ lives only in a chat window teaches nothing.
 **Route.** principles, then context, then `strategy-brief`, then the producer, then
 `verification-loop`, then the approval gate, then delivery. The narrowest applicable
 skill wins; a broad "always" or "mandatory" claim inside a skill never overrides the
-router. One primary writer; validators may stack after it, competing writers may not. **North Star:** before any work, read the North Star linked from the `north-star` block in `AGENTS.md` or `CLAUDE.md`, say which part of it the task moves, and say so first when it moves nothing; only Krish changes it, and a repository with none asks him for one. Then read the number's urgency (U1 to U5) in `NOW.md` and push at the intensity `contract/north-star-metric.md` sets for it; urgency never widens authority. A growth engine also follows that file's Engines section. Where the Control Center connector offers it, read your repository's open instruction first with `get_engine_instruction`, and answer it with `ack_engine_instruction`, which records only that instruction's state in Control Center and so, like a taste report, is exempt from the approval wall and is never a send, post or publish to anyone (Ruling, Krish, 2026-11-14); never print, log or commit his words. `registered: false` means the repository is no engine; a failed read means do not act from memory. **Close out:** before a session that changed the repository ends, write `now-notes/YYYY-MM-DD-<slug>.md` (`Status:`, `Next:` the single next step, and one dated North Star check line: holds, or recalibration proposed for Krish), folded into `NOW.md` on main. **Branches:** each session works in its own worktree on its own branch, one branch per pull request; a branch with no pull request after a day gets one or is removed, and every repository carries the weekly branch sweep (`.github/workflows/branch-sweep.yml`, canonical in ai-harness), which deletes branches whose work is already on main and lists the rest (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-branch-hygiene.md). **Codex:** Claude opens a Codex session only through the repository's codex_thread tool (`scripts/codex_thread.mjs`, canonical in ai-harness), from a session on Krish's computer when he must see or share the session, and a Codex start failure is reported in one line, never worked around by editing MCP or Claude settings (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-visible-codex-sessions.md). Content production is the one exception and opens no session: Claude queues it as Codex cards from the cloud to the build lane, which builds them away from his Codex Desktop app and hands each result back to the Claude session that checks and records it, while social media legwork runs only in a codex_thread session on his computer that he can watch (Ruling, Krish, 2026-11-15). Claude owns strategy, planning, orchestration, verification and writing learnings back, and is the only writer to ai-harness and Google Drive; Codex does art direction, visual builds and browser legwork, a defined minimum of every video session, and hands what it made or read to the Claude session that checks and records it; Codex's own report is never proof, and no rule here widens what either may post, send or spend (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-claude-codex-division.md). **One home per fact:** read a venture's state from its repository, doctrine from ai-harness; never keep a copy. **Research:** file routing's home for a research document is the research library: the session that wrote it files it there as it writes, where its authority already covers that write (`add_piece_material`, kind `research`, on its piece or on its venture's own shelf), and cites it by id; it is not committed to a repository as its home or left only in scratch or a chat, and every other artifact follows file routing as before (docs/proposals/2026-11-14-research-shelf-route.md). **Taste:** where the Control Center connector offers them, before writing or designing for Krish read his approved rules with `get_approved_taste` (form only; empty means none yet, never invent one; without the connector, the `krish-voice` and `krish-design` copies), giving the repository you are in (owner/name) and, from a repository that serves several ventures, the venture the work is for; it returns only that venture's rules, never another's (Ruling, Krish, 2026-10-28: the taste ledger is keyed by venture, not repository), and when he corrects voice, design, a piece or an idea, send his exact typed words to `report_to_taste_engine` with where and when he typed them and the repository you are in (naming the venture from a repository that serves several); anything else you noticed goes only as an observation. A report writes only to his own taste ledger and is exempt from the approval wall above (Ruling, Krish, 2026-10-26: "reports to my taste ledger are exempt from the approval wall"); it is never a send, post or publish to anyone. Never answer a card or approve a rule for him.
+router. One primary writer; validators may stack after it, competing writers may not. **North Star:** before any work, read the North Star linked from the `north-star` block in `AGENTS.md` or `CLAUDE.md`, say which part of it the task moves, and say so first when it moves nothing; only Krish changes it, and a repository with none asks him for one. Then read the number's urgency (U1 to U5) in `NOW.md` and push at the intensity `contract/north-star-metric.md` sets for it; urgency never widens authority. A growth engine also follows that file's Engines section. Where the Control Center connector offers it, read your repository's open instruction first with `get_engine_instruction`, and answer it with `ack_engine_instruction`, which records only that instruction's state in Control Center and so, like a taste report, is exempt from the approval wall and is never a send, post or publish to anyone (Ruling, Krish, 2026-11-14); never print, log or commit his words. `registered: false` means the repository is no engine; a failed read means do not act from memory. **Close out:** before a session that changed the repository ends, write `now-notes/YYYY-MM-DD-<slug>.md` (`Status:`, `Next:` the single next step, and one dated North Star check line: holds, or recalibration proposed for Krish), folded into `NOW.md` on main. **Branches:** each session works in its own worktree on its own branch, one branch per pull request; a branch with no pull request after a day gets one or is removed, and every repository carries the weekly branch sweep (`.github/workflows/branch-sweep.yml`, canonical in ai-harness), which deletes branches whose work is already on main and lists the rest (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-branch-hygiene.md). **Codex:** Claude opens a Codex session only through the repository's codex_thread tool (`scripts/codex_thread.mjs`, canonical in ai-harness), from a session on Krish's computer when he must see or share the session, and a Codex start failure is reported in one line, never worked around by editing MCP or Claude settings (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-visible-codex-sessions.md). Whenever Claude starts or spawns a session he can open (a Codex thread, a Claude Code session, a cloud session), it tells Krish that session's exact name in the same message, and its id or link where it has one; a session he cannot name is one he cannot find (Ruling, Krish, 2026-11-16). Content production is the one exception and opens no session: Claude queues it as Codex cards from the cloud to the build lane, which builds them away from his Codex Desktop app and hands each result back to the Claude session that checks and records it, while social media legwork runs only in a codex_thread session on his computer that he can watch (Ruling, Krish, 2026-11-15). Claude owns strategy, planning, orchestration, verification and writing learnings back, and is the only writer to ai-harness and Google Drive; Codex does art direction, visual builds and browser legwork, a defined minimum of every video session, and hands what it made or read to the Claude session that checks and records it; Codex's own report is never proof, and no rule here widens what either may post, send or spend (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-claude-codex-division.md). **One home per fact:** read a venture's state from its repository, doctrine from ai-harness; never keep a copy. **Research:** file routing's home for a research document is the research library: the session that wrote it files it there as it writes, where its authority already covers that write (`add_piece_material`, kind `research`, on its piece or on its venture's own shelf), and cites it by id; it is not committed to a repository as its home or left only in scratch or a chat, and every other artifact follows file routing as before (docs/proposals/2026-11-14-research-shelf-route.md). **Taste:** where the Control Center connector offers them, before writing or designing for Krish read his approved rules with `get_approved_taste` (form only; empty means none yet, never invent one; without the connector, the `krish-voice` and `krish-design` copies), giving the repository you are in (owner/name) and, from a repository that serves several ventures, the venture the work is for; it returns only that venture's rules, never another's (Ruling, Krish, 2026-10-28: the taste ledger is keyed by venture, not repository), and when he corrects voice, design, a piece or an idea, send his exact typed words to `report_to_taste_engine` with where and when he typed them and the repository you are in (naming the venture from a repository that serves several); anything else you noticed goes only as an observation. A report writes only to his own taste ledger and is exempt from the approval wall above (Ruling, Krish, 2026-10-26: "reports to my taste ledger are exempt from the approval wall"); it is never a send, post or publish to anyone. Never answer a card or approve a rule for him.
 
 **Who Krish is.** Purpose: "I see what is coming before it is obvious and make it
 legible to people while it still counts." Mindmake is his mission and his one company;

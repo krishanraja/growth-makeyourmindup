@@ -54,6 +54,9 @@ class AutoMergeGuard(unittest.TestCase):
         self.assertRegex(wf, r'CHECKS: check\n')
         self.assertIn('workflow_run.head_repository.full_name == github.repository', wf)
         self.assertIn("workflow_run.event == 'pull_request'", wf)
+        # Both copies of check may merge, so the last green one always can (17 Nov: a push-event last run was skipped).
+        self.assertIn("(github.event.workflow_run.event == 'pull_request' || github.event.workflow_run.event == 'push')", wf)
+        self.assertIn("the last green one merges", wf)
         self.assertIn('-f .github/scripts/auto-merge-pick.jq', wf)
         self.assertIn('isCrossRepository,author,headRepositoryOwner', wf)
 

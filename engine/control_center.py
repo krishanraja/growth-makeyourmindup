@@ -124,6 +124,7 @@ STAGES = ('plan', 'go_live', 'check_in')
 GO_LIVE_WALLS = ('send', 'post', 'spend')
 TIMEZONE = 'America/New_York'
 TIMEOUT = 20
+DIVERGE_TIMEOUT = 300  # divergent-thinker's diverge runs up to 4 minutes (engine/divergent.py)
 MAX_RESPONSE = 1000000
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / 'docs' / 'control-center' / 'engine-report.schema.json'
 CODE = re.compile(r'^[a-z][a-z0-9_]{0,63}$')
@@ -721,7 +722,7 @@ class Client:
     def __repr__(self):
         return '<Control Center client for ' + self._base + '>'
 
-    def _request(self, method, route, body=None, idempotency_key=None):
+    def _request(self, method, route, body=None, idempotency_key=None, timeout=None):
         headers = {'Authorization': 'Bearer ' + self._token, 'Accept': 'application/json'}
         data = None
         if body is not None:
@@ -731,7 +732,7 @@ class Client:
             headers['Idempotency-Key'] = idempotency_key
         request = urllib.request.Request(self._base + route, data=data, method=method, headers=headers)
         try:
-            with self._opener.open(request, timeout=self._timeout) as response:
+            with self._opener.open(request, timeout=timeout or self._timeout) as response:
                 raw = response.read(MAX_RESPONSE + 1)
                 status = response.status
         except ProtocolError:
@@ -807,6 +808,26 @@ class Client:
         if result.get('ok') is not True or not isinstance(result.get('check'), dict):
             raise ProtocolError('bad_voice_check')
         return result['check']
+
+    def humour(self, call):
+        """One humour-engine model call through Control Center's humour route (features.humour, 2026-11-17):
+        humour-engine's published prompt and forced tool, Control Center's key and model, capped per day.
+        A reading only: it approves nothing and sends nothing (engine/humour.py)."""
+        result = self._request('POST', 'humour', call)
+        if result.get('ok') is not True or not isinstance(result.get('payload'), dict):
+            raise ProtocolError('bad_humour')
+        return result
+
+    def divergent(self, body):
+        """One call to divergent-thinker, the fleet's divergent thinking engine, through Control Center's route
+        (features.divergent; control-center#963). score and record make no model call; diverge makes about 25 and
+        takes up to 4 minutes, so it waits DIVERGE_TIMEOUT. Ideas only: it approves, sends and posts nothing
+        (engine/divergent.py)."""
+        wait = DIVERGE_TIMEOUT if isinstance(body, dict) and body.get('op') == 'diverge' else None
+        result = self._request('POST', 'divergent', body, timeout=wait)
+        if result.get('ok') is not True:
+            raise ProtocolError('bad_divergent')
+        return result
 
     def directive(self):
         result = self._request('GET', 'directive')

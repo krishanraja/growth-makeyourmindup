@@ -8,6 +8,11 @@
   item 7 is withdrawn, the copy doctrine no longer leans on checkable calls, and collaboration offer 3 (the scored call)
   is replaced by the live disagreement. Dated history (logs, the 16 Nov readbacks, the user-supplied corpus copy) stays
   as the record. The live Substack description and profile bio set on 16 Nov still carry the line until he says yes.
+- 2026-11-17: The humour engine on call. Asked how this engine could use humour-engine as an on-call consultant,
+  Krish said "go ahead on both, makeyourmindup first". `python growth.py humour check|compare|doctor`
+  (`engine/humour.py`) reads any line through this engine's own Control Center bearer and holds three house rules: no
+  joke at a person on someone else's post, no humour on Mindmake, no joke that needs explaining. Optional install, not a
+  release gate, nothing scheduled; the engine stays standard library only. Nothing was posted, sent or spent.
 - 2026-11-16: All Make Your Mind Up activity runs on the worker. His words: "because my machine's codex app is using a
   different set of social accounts (heartside), all Makeyourmindup activity will be run on my VPS worker - which has
   codex access as well as is signed in to chromium on all the right accounts", then "the whole point of this set up is

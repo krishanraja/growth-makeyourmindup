@@ -1,31 +1,35 @@
 #!/usr/bin/env node
 // codex_thread.mjs: the one way Claude starts and talks to Codex (Ruling, Krish, 2026-11-15: "Claude starts Codex only
-// through scripts/codex_thread.mjs"). Each command connects to Codex Desktop's own app-server daemon for one turn, so
-// the thread is made in the server Desktop runs, shows in his Codex Desktop sidebar with Desktop's tools (the in-app
-// browser included), and is never held open: Claude and Krish take turns on the same thread. It never uses the Codex
-// plugin's long-running broker.
+// through scripts/codex_thread.mjs"). It drives `codex app-server` directly, one short-lived server per command, so the
+// thread lives in Krish's everyday Codex home, shows in his Codex Desktop app, and is never held open: Claude and Krish
+// take turns on the same thread. When Desktop holds the thread (he has it open), `send` queues the message with
+// `codex queue` and Desktop runs it as the next turn, with its browser (Ruling, Krish, 2026-11-17).
 //
 //   node scripts/codex_thread.mjs open [options] "<message>"   a permanent thread titled by the message's first line;
 //                                                              runs that first message, prints the thread id
-//   node scripts/codex_thread.mjs send [options] <thread> "<message>"   one turn on the thread, then it is released
+//   node scripts/codex_thread.mjs send [options] <thread> "<message>"   one turn on the thread, then it is released;
+//                                                              queued for Desktop when Desktop is the thread's writer
 //   node scripts/codex_thread.mjs read <thread>                 the thread's turns from its session file, Desktop's too
 //
 // Options: --cwd DIR (default: here), --prompt-file FILE (the message from a file), --sandbox read-only|workspace-write
 // (default read-only), --model M, --effort E, --home DIR (default: VE_CODEX_DESKTOP_HOME, else ~/.codex), --json,
-// --detach (open or send runs on in the background; its output, the thread id first, goes to --log FILE).
+// --detach (open or send runs on in the background; its output, the thread id first, goes to --log FILE),
+// --wait (a send queued for Desktop waits for that turn and prints Codex's last message), --timeout SECONDS (for
+// --wait, default 1800). The codex binary: CODEX_THREAD_BIN if set, else found on PATH (on Windows, the native
+// codex.exe behind npm's codex.cmd, else Desktop's own). Every failure exits non-zero with a one-line reason.
 // Canonical copy: krishanraja/ai-harness scripts/codex_thread.mjs (Ruling, Krish, 2026-11-15). Change it there first,
 // then copy it unchanged to the same path in every repository that starts Codex; ai-harness checks the copies match.
 import { spawn } from 'node:child_process';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import readline from 'node:readline';
 
 const USAGE = 'usage: codex_thread.mjs open [opts] "<message>" | send [opts] <thread> "<message>" | read <thread> [--json]';
 
 export function parseArgs(argv) {
   const opts = { positional: [] };
-  const valued = new Set(['--cwd', '--prompt-file', '--sandbox', '--model', '--effort', '--home', '--log']);
+  const valued = new Set(['--cwd', '--prompt-file', '--sandbox', '--model', '--effort', '--home', '--log', '--timeout']);
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (valued.has(arg)) {
@@ -35,6 +39,8 @@ export function parseArgs(argv) {
       opts.json = true;
     } else if (arg === '--detach') {
       opts.detach = true;
+    } else if (arg === '--wait') {
+      opts.wait = true;
     } else {
       opts.positional.push(arg);
     }
@@ -48,6 +54,50 @@ export function codexHome(opts = {}) {
 
 export function firstLine(text) {
   return String(text).split(/\r?\n/).map((l) => l.trim()).find(Boolean)?.slice(0, 120) || 'Codex thread';
+}
+
+// ---- finding a runnable codex -----------------------------------------------------------------------------------
+
+const WIN_TRIPLES = { x64: 'x86_64-pc-windows-msvc', arm64: 'aarch64-pc-windows-msvc' };
+
+// The codex to run, as { command, prefix }: prefix is argv placed before codex's own (a .js/.mjs file runs on this
+// node). On Windows the npm install puts only codex.cmd and codex.ps1 on PATH, which spawn cannot run without a shell
+// (it fails with ENOENT), so this finds the native codex.exe: the one npm installed behind codex.cmd, a codex.exe on
+// PATH, then Codex Desktop's own app-server. Pure given its inputs; throws a one-line reason when there is none.
+export function resolveCodex({ env = process.env, platform = process.platform, arch = process.arch, homedir = os.homedir(), exists = fs.existsSync } = {}) {
+  const forced = env.CODEX_THREAD_BIN;
+  if (forced) {
+    if (!exists(forced)) throw new Error(`CODEX_THREAD_BIN is ${forced}, which does not exist`);
+    return /\.(c|m)?js$/i.test(forced) ? { command: process.execPath, prefix: [forced] } : { command: forced, prefix: [] };
+  }
+  const dirs = String(env.PATH ?? env.Path ?? '').split(platform === 'win32' ? ';' : ':').filter(Boolean);
+  if (platform !== 'win32') {
+    for (const dir of dirs) if (exists(path.posix.join(dir, 'codex'))) return { command: path.posix.join(dir, 'codex'), prefix: [] };
+    throw new Error('codex is not on PATH; install the Codex CLI (npm i -g @openai/codex)');
+  }
+  const win = path.win32;
+  const tried = [];
+  const triple = WIN_TRIPLES[arch] || WIN_TRIPLES.x64;
+  for (const dir of dirs) {
+    if (!exists(win.join(dir, 'codex.cmd'))) continue;
+    const exe = win.join(dir, 'node_modules', '@openai', 'codex', 'node_modules', '@openai', `codex-win32-${arch}`, 'vendor', triple, 'bin', 'codex.exe');
+    tried.push(exe);
+    if (exists(exe)) return { command: exe, prefix: [] };
+  }
+  for (const dir of dirs) {
+    const exe = win.join(dir, 'codex.exe');
+    if (exists(exe)) return { command: exe, prefix: [] };
+  }
+  const desktop = win.join(homedir, '.codex', 'packages', 'app-server-daemon', 'current', 'bin', 'codex.exe');
+  tried.push(desktop);
+  if (exists(desktop)) return { command: desktop, prefix: [] };
+  throw new Error(`no runnable codex.exe found (looked on PATH and at ${tried.join(', ')})`);
+}
+
+function codexEnv(home) {
+  const env = { ...process.env, CODEX_HOME: home };
+  delete env.CODEX_COMPANION_APP_SERVER_ENDPOINT;
+  return env;
 }
 
 // ---- reading a thread from its session file ---------------------------------------------------------------------
@@ -73,15 +123,21 @@ function itemText(item) {
   return (item.content || []).map((c) => c.text || '').filter(Boolean).join('\n');
 }
 
+function parseLines(text) {
+  const out = [];
+  for (const line of String(text).split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try { out.push(JSON.parse(line)); } catch { /* a line still being written */ }
+  }
+  return out;
+}
+
 // The turns as the session file records them: each completed UserMessage (Claude's or Krish's in Desktop) and
 // AgentMessage, in order. Injected context (AGENTS.md, environment) is not a UserMessage item and is left out.
 export function readTurns(file) {
   const turns = [];
   let meta = {};
-  for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
-    if (!line.trim()) continue;
-    let o;
-    try { o = JSON.parse(line); } catch { continue; }
+  for (const o of parseLines(fs.readFileSync(file, 'utf8'))) {
     const p = o.payload || {};
     if (o.type === 'session_meta') meta = { id: p.id, cwd: p.cwd, originator: p.originator, source: p.source };
     if (o.type === 'event_msg' && p.type === 'item_completed' && p.item) {
@@ -92,105 +148,49 @@ export function readTurns(file) {
   return { meta, turns };
 }
 
-// ---- driving Codex Desktop's own app-server ----------------------------------------------------------------------
-// Every command talks to the app-server daemon Codex Desktop itself runs, through `codex app-server proxy`, which
-// bridges stdio to its control socket. The thread therefore lives in the same server as Desktop: it appears in Krish's
-// sidebar as it is made, he can open and type in it, and its turns run with Desktop's tools, the in-app browser
-// included. Spawning a private `codex app-server` (what this did before 16 Nov 2026) saved the thread to disk but kept
-// it out of Desktop's list and ran its turns with no browser (Krish, 2026-11-16: "we need to fix your ability to open a
-// codex desktop session I can see and use alongside you"). If the daemon is not reachable the command fails and says
-// so. It never falls back to a private server, because that thread would be invisible.
-// The control socket speaks WebSocket: one HTTP upgrade, then one JSON-RPC message per text frame.
+// Where a queued message stands, from the session file lines written after it was queued. Pure. The turn is the one
+// whose UserMessage is the queued text, never a turn someone else queued. Returns null until that turn ends, then
+// { status, message, error, turn }.
+export function queuedTurnResult(lines, text) {
+  const want = String(text).trim();
+  let turn = null;
+  const last = new Map(), ended = new Map();
+  for (const o of lines) {
+    const p = o.payload || {};
+    if (o.type !== 'event_msg') continue;
+    if (p.type === 'item_completed' && p.item?.type === 'UserMessage' && !turn && itemText(p.item).trim() === want) turn = p.turn_id;
+    if (p.type === 'item_completed' && p.item?.type === 'AgentMessage') last.set(p.turn_id, itemText(p.item) || last.get(p.turn_id));
+    if (p.type === 'task_complete') ended.set(p.turn_id, { status: 'completed', message: p.last_agent_message ?? last.get(p.turn_id) ?? '', error: null });
+    if (p.type === 'turn_aborted') ended.set(p.turn_id, { status: 'interrupted', message: last.get(p.turn_id) ?? '', error: `turn aborted${p.reason ? ` (${p.reason})` : ''}` });
+  }
+  return turn && ended.has(turn) ? { ...ended.get(turn), turn } : null;
+}
 
-const HANDSHAKE_MS = 15000;
+// ---- driving one short-lived app-server -------------------------------------------------------------------------
 
-class AppServer {
-  constructor(home, cwd) {
-    const env = { ...process.env, CODEX_HOME: home };
-    delete env.CODEX_COMPANION_APP_SERVER_ENDPOINT;
-    this.proc = spawn('codex', ['app-server', 'proxy'], { cwd, env, stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+export class AppServer {
+  constructor(home, cwd, codex = resolveCodex()) {
     this.next = 1;
     this.pending = new Map();
     this.listeners = [];
     this.stderr = '';
-    this.buf = Buffer.alloc(0);
-    this.fragments = [];
-    this.upgraded = false;
-    this.ready = new Promise((resolve, reject) => { this.onReady = resolve; this.onReadyFail = reject; });
-    this.ready.catch(() => {});
+    this.dead = null;
+    this.proc = spawn(codex.command, [...codex.prefix, 'app-server'], { cwd, env: codexEnv(home), stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+    // 'close' follows both a normal exit and a failed spawn, so close() never waits on an event that cannot come.
+    this.exited = new Promise((resolve) => this.proc.on('close', resolve));
     this.proc.stderr.on('data', (d) => { this.stderr = (this.stderr + d).slice(-4000); });
-    this.exited = new Promise((resolve) => this.proc.on('exit', resolve));
-    this.proc.on('error', (error) => this.failAll(error));
-    this.proc.on('exit', (code) => this.failAll(new Error((this.upgraded
-      ? `Codex Desktop's app-server connection closed (${code})`
-      : `Codex Desktop's app-server is not reachable from ${home}: open Codex Desktop (\`codex app-server daemon version\` says whether its daemon runs), then retry (${code})`)
-      + ` ${this.stderr.trim().split('\n').pop() || ''}`.trimEnd())));
-    this.proc.stdout.on('data', (d) => this.onData(d));
-    this.proc.stdin.write('GET / HTTP/1.1\r\nHost: localhost\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n'
-      + `Sec-WebSocket-Key: ${crypto.randomBytes(16).toString('base64')}\r\nSec-WebSocket-Version: 13\r\n\r\n`);
-    this.handshakeTimer = setTimeout(() => this.failAll(new Error("Codex Desktop's app-server did not answer: open Codex "
-      + 'Desktop (`codex app-server daemon version` says whether its daemon runs), then retry')), HANDSHAKE_MS);
+    this.proc.stdin.on('error', () => { /* the server went away; 'exit' or 'error' says why */ });
+    this.proc.on('error', (error) => this.failAll(new Error(`could not run ${codex.command} app-server: ${error.code || error.message}`)));
+    this.proc.on('exit', (code, signal) => this.failAll(new Error(`codex app-server exited (${code ?? signal}) ${this.stderr.trim().split('\n').pop() || ''}`.trim())));
+    readline.createInterface({ input: this.proc.stdout }).on('line', (line) => this.onLine(line));
   }
 
   failAll(error) {
-    clearTimeout(this.handshakeTimer);
-    this.onReadyFail(error);
-    for (const { reject } of this.pending.values()) reject(error);
+    this.dead = this.dead || error;
+    for (const { reject } of this.pending.values()) reject(this.dead);
     this.pending.clear();
-    for (const l of this.listeners) l.reject?.(error);
-  }
-
-  onData(chunk) {
-    this.buf = Buffer.concat([this.buf, chunk]);
-    if (!this.upgraded) {
-      const end = this.buf.indexOf('\r\n\r\n');
-      if (end < 0) return;
-      const head = this.buf.subarray(0, end).toString('latin1');
-      this.buf = this.buf.subarray(end + 4);
-      if (!/^HTTP\/1\.1 101/.test(head)) {
-        this.failAll(new Error(`Codex Desktop's app-server refused the connection: ${head.split('\r\n')[0]}`));
-        return;
-      }
-      this.upgraded = true;
-      clearTimeout(this.handshakeTimer);
-      this.onReady();
-    }
-    this.readFrames();
-  }
-
-  readFrames() {
-    for (;;) {
-      if (this.buf.length < 2) return;
-      const fin = this.buf[0] & 0x80;
-      const op = this.buf[0] & 0x0f;
-      let len = this.buf[1] & 0x7f;
-      let off = 2;
-      if (len === 126) { if (this.buf.length < 4) return; len = this.buf.readUInt16BE(2); off = 4; }
-      else if (len === 127) { if (this.buf.length < 10) return; len = Number(this.buf.readBigUInt64BE(2)); off = 10; }
-      if (this.buf.length < off + len) return;
-      const payload = this.buf.subarray(off, off + len);
-      this.buf = this.buf.subarray(off + len);
-      if (op === 0x9) { this.frame(0xa, payload); continue; } // ping: answer with a pong
-      if (op === 0xa) continue;
-      if (op === 0x8) { this.failAll(new Error("Codex Desktop's app-server closed the connection")); return; }
-      this.fragments.push(payload);
-      if (!fin) continue;
-      const text = Buffer.concat(this.fragments).toString('utf8');
-      this.fragments = [];
-      this.onLine(text);
-    }
-  }
-
-  // One client frame (RFC 6455); every frame a client sends is masked.
-  frame(op, data) {
-    const mask = crypto.randomBytes(4);
-    let head;
-    if (data.length < 126) head = Buffer.from([0x80 | op, 0x80 | data.length]);
-    else if (data.length < 65536) { head = Buffer.alloc(4); head[0] = 0x80 | op; head[1] = 0x80 | 126; head.writeUInt16BE(data.length, 2); }
-    else { head = Buffer.alloc(10); head[0] = 0x80 | op; head[1] = 0x80 | 127; head.writeBigUInt64BE(BigInt(data.length), 2); }
-    const masked = Buffer.alloc(data.length);
-    for (let i = 0; i < data.length; i += 1) masked[i] = data[i] ^ mask[i % 4];
-    this.proc.stdin.write(Buffer.concat([head, mask, masked]));
+    for (const l of this.listeners) l.reject?.(this.dead);
+    this.listeners = [];
   }
 
   onLine(line) {
@@ -211,9 +211,13 @@ class AppServer {
     if (msg.method) for (const l of [...this.listeners]) l.onNotification(msg);
   }
 
-  write(obj) { this.frame(0x1, Buffer.from(JSON.stringify(obj), 'utf8')); }
+  write(obj) {
+    if (this.dead) return;
+    try { this.proc.stdin.write(JSON.stringify(obj) + '\n'); } catch { /* reported by 'exit' or 'error' */ }
+  }
 
   request(method, params) {
+    if (this.dead) return Promise.reject(this.dead);
     const id = this.next++;
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
@@ -222,13 +226,13 @@ class AppServer {
   }
 
   async start() {
-    await this.ready;
     await this.request('initialize', { clientInfo: { name: 'codex_thread', title: 'Claude (codex_thread.mjs)', version: '1.1.0' }, capabilities: {} });
     this.write({ method: 'initialized', params: {} });
   }
 
   // One turn: resolves with the turn's status and Codex's last message once turn/completed arrives for this thread.
   runTurn(threadId, text, opts) {
+    if (this.dead) return Promise.reject(this.dead);
     return new Promise((resolve, reject) => {
       let last = '';
       const listener = {
@@ -253,8 +257,6 @@ class AppServer {
   }
 
   async close() {
-    clearTimeout(this.handshakeTimer);
-    try { if (this.upgraded) this.frame(0x8, Buffer.from([0x03, 0xe8])); } catch { /* already closed */ }
     try { this.proc.stdin.end(); } catch { /* already closed */ }
     const timer = setTimeout(() => { try { this.proc.kill(); } catch { /* gone */ } }, 5000);
     await this.exited;
@@ -290,13 +292,54 @@ export async function open(opts) {
   return withServer(home, cwd, async (server) => {
     const started = await server.request('thread/start', { ...threadParams(cwd, opts), ephemeral: false });
     const threadId = started.thread.id;
-    // Krish finds a thread by its title, so the title is always printed with the id (Ruling, Krish, 2026-11-16: tell
-    // him the session name whenever a session is spawned).
-    console.error(`thread ${threadId} "${firstLine(text)}" opened in ${home}: look for that title in Codex Desktop`);
+    console.error(`thread ${threadId} opened in ${home}`);
     try { await server.request('thread/name/set', { threadId, name: firstLine(text) }); } catch { /* older servers name it from the message */ }
     const turn = await server.runTurn(threadId, text, opts);
-    return { thread: threadId, title: firstLine(text), home, ...turn };
+    return { thread: threadId, home, ...turn };
   });
+}
+
+// Another process (Codex Desktop, when Krish has the thread open) is the thread's one writer.
+export const isActiveWriterError = (error) => /already has an active writer/i.test(String(error?.message ?? error));
+
+// Windows caps a whole command line at 32767 characters. A message longer than this goes in a file the turn reads.
+export const QUEUE_INLINE_MAX = 24000;
+
+// `codex queue` writes the message to the home's queue; the process holding the thread runs it as its next turn. The
+// message is one argv element on the native binary, never through a shell, so no quoting can change it.
+function queueMessage(home, threadId, text) {
+  let inline = text, file = null;
+  if (text.length > QUEUE_INLINE_MAX) {
+    const dir = path.join(home, 'codex_thread-messages');
+    fs.mkdirSync(dir, { recursive: true });
+    file = path.join(dir, `${threadId}-${Date.now()}.md`);
+    fs.writeFileSync(file, text, 'utf8');
+    inline = `${firstLine(text)}\n\nThis message from Claude is too long to queue inline. Read it in full from ${file} and act on it as this turn's message.`;
+  }
+  const codex = resolveCodex();
+  return new Promise((resolve, reject) => {
+    let out = '';
+    const proc = spawn(codex.command, [...codex.prefix, 'queue', '--thread', threadId, '--message', inline], { env: codexEnv(home), stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
+    proc.stdout.on('data', (d) => { out += d; });
+    proc.stderr.on('data', (d) => { out += d; });
+    proc.on('error', (error) => reject(new Error(`could not run ${codex.command} queue: ${error.code || error.message}`)));
+    proc.on('close', (code) => (code === 0 ? resolve({ text: inline, file })
+      : reject(new Error(`codex queue exited (${code}): ${out.trim().split('\n').pop() || 'no output'}`))));
+  });
+}
+
+async function waitForQueuedTurn(home, threadId, text, since, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const file = findSessionFile(home, threadId);
+    if (file) {
+      const body = fs.readFileSync(file);
+      const result = queuedTurnResult(parseLines(body.subarray(Math.min(since.get(file) ?? 0, body.length)).toString('utf8')), text);
+      if (result) return result;
+    }
+    if (Date.now() > deadline) throw new Error(`the queued turn on ${threadId} did not finish within ${Math.round(timeoutMs / 1000)}s; it may still run in Desktop (read it later)`);
+    await new Promise((r) => setTimeout(r, 2000));
+  }
 }
 
 export async function send(opts) {
@@ -306,11 +349,30 @@ export async function send(opts) {
   const file = findSessionFile(home, threadId);
   const cwd = path.resolve(opts.cwd || (file && readTurns(file).meta.cwd) || process.cwd());
   const text = message(opts, 2);
-  return withServer(home, cwd, async (server) => {
-    await server.request('thread/resume', { threadId, ...threadParams(cwd, opts) });
+  let held = false;
+  const direct = await withServer(home, cwd, async (server) => {
+    try {
+      await server.request('thread/resume', { threadId, ...threadParams(cwd, opts) });
+    } catch (error) {
+      if (!isActiveWriterError(error)) throw error;
+      held = true;
+      return null;
+    }
     const turn = await server.runTurn(threadId, text, opts);
     return { thread: threadId, home, ...turn };
   });
+  if (!held) return direct;
+
+  // Desktop is the thread's writer: queue the message for it instead of failing.
+  const since = new Map();
+  const before = findSessionFile(home, threadId);
+  if (before) since.set(before, fs.statSync(before).size);
+  const queued = await queueMessage(home, threadId, text);
+  console.error(`thread ${threadId} is held by another writer (Codex Desktop): the message is queued and runs as its next turn there${queued.file ? `; full text in ${queued.file}` : ''}`);
+  if (!opts.wait) return { thread: threadId, home, status: 'queued', message: '', error: null, via: 'codex queue', file: queued.file };
+  const timeoutMs = Math.max(1, Number(opts.timeout || 1800)) * 1000;
+  const turn = await waitForQueuedTurn(home, threadId, queued.text, since, timeoutMs);
+  return { thread: threadId, home, ...turn, via: 'codex queue' };
 }
 
 export function read(opts) {
@@ -348,15 +410,22 @@ async function main() {
   if (command !== 'open' && command !== 'send') { console.error(USAGE); return 2; }
   const out = command === 'open' ? await open(opts) : await send(opts);
   if (opts.json) console.log(JSON.stringify(out, null, 2));
-  else {
-    console.log(`thread ${out.thread}${out.title ? ` "${out.title}"` : ''} (${out.home}): turn ${out.status}; released`);
+  else if (out.status === 'queued') {
+    console.log(`thread ${out.thread} (${out.home}): queued for the Codex Desktop writer; it runs as the thread's next turn. Read it with: codex_thread.mjs read ${out.thread}`);
+  } else {
+    console.log(`thread ${out.thread} (${out.home}): turn ${out.status}; ${out.via ? 'ran in Codex Desktop' : 'released'}`);
     if (out.message) console.log(out.message);
     if (out.error) console.error(out.error);
   }
-  return out.status === 'completed' ? 0 : 1;
+  return out.status === 'completed' || out.status === 'queued' ? 0 : 1;
 }
 
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 if (invoked) {
-  main().then((code) => process.exit(code), (error) => { console.error(`codex_thread: ${error.message}`); process.exit(1); });
+  let settled = false;
+  // Never exit silently: if the event loop drains while a command is still unsettled, that is a failure.
+  process.on('beforeExit', () => {
+    if (!settled) { console.error('codex_thread: stopped with no result (the codex process went away without answering)'); process.exit(1); }
+  });
+  main().then((code) => { settled = true; process.exit(code); }, (error) => { settled = true; console.error(`codex_thread: ${error.message}`); process.exit(1); });
 }
