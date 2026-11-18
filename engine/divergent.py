@@ -289,7 +289,7 @@ GENERATING = ('map', 'provoke', 'challenge', 'diverge')
 COST = {'map': '1 model call', 'provoke': '2 model calls, about $0.15', 'challenge': '3 model calls',
         'diverge': 'about 25 model calls and about $1.30, one a day', 'score': 'no model call with obvious hooks',
         'record': 'no model call'}
-LANE = re.compile(r'^[a-z0-9][a-z0-9_-]{0,39}$')
+LANE = re.compile(r'^[a-z0-9][a-z0-9-]{0,39}$')  # Control Center's namespace rule: lowercase letters, digits and hyphens
 EXIT_OK, EXIT_FLAGGED, EXIT_UNAVAILABLE = 0, 1, 2
 
 
