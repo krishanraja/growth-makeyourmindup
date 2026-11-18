@@ -489,7 +489,7 @@ what's real, and where it leads. You make your mind up."
 |---|---|---|
 | Monday | follow.the.money | who gets paid |
 | Wednesday | under.the.hood | how it really works |
-| Friday | mind.the.gap | where it leads, with a dated call |
+| Friday | mind.the.gap | where it leads (no dated calls: Rulings, Krish, 2026-11-17 and 2026-11-18) |
 
 Each piece is a Substack article plus a "VIDEO:" post, a 3-minute YouTube
 video and a 90-second vertical cut (Shorts, Reels, TikTok, X).
