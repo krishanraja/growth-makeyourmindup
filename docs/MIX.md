@@ -15,7 +15,13 @@ channels right now, the faster we learn."
   the channel formats still open;
 - the lanes in `mix.json`, which only an interactive session changes;
 - `--ideas FILE`: this week's filler ideas, each with `idea_id`, `lane`,
-  `idea`, `claim`, `source_url` and `source_date`;
+  `idea`, `claim`, `source_url` and `source_date`, and optionally `note`, the
+  Substack Note hook planned with it. Given ideas, the plan also asks
+  divergent-thinker to score every caption hook and Note against the live posts
+  held here, with zero model calls, and flags in `hook_guard` a hook that sits on
+  the obvious one or repeats one already live; nothing is dropped. Dormant until
+  Control Center serves it; `--offline` skips it (AGENTS.md, "Ask
+  divergent-thinker");
 - `--mocks FILE`: `{concept_id: {claim, mock_sha256, style_card?}}` once the mocks exist (each mock made in a Claude
   session with the Codex plugin building it, R126; content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel
   is made", never by a scheduled job); `style_card` names the

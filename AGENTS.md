@@ -351,6 +351,31 @@ humour on Mindmake, and no joke that needs more than one outside reference to la
 and never runs on a schedule; each call costs about half a cent, capped at 200 a day. Install:
 `pip install -r requirements-humour.txt && pip install --no-deps -r requirements-humour-engine.txt`.
 
+## Ask divergent-thinker (2026-11-18)
+
+divergent-thinker is the fleet's divergent thinking engine: it proposes ideas and measures how far an idea sits from
+the obvious one, and never sends, posts or spends. This engine reaches it only through Control Center's route on its
+own bearer (`POST /api/growth/engines/makeyourmindup/divergent`, control-center#963), in `engine/divergent.py`. It is
+**dormant until Control Center serves it**: every use reads capabilities first, and with `features.divergent` not
+true it makes no call and says "not served". A refusal (a daily cap, an uncalibrated embedder, a held engine) is one
+quiet line, never a failed run and never retried. It is consulted three ways, and nowhere else:
+- **Recovery plays, the runner.** At U4 or U5, not held, with Krish's ledger read, no earlier play still waiting on
+  him and nothing else on the runner's report, `diverge` once for three unconventional recovery plays (protocol: "at
+  U5 three unconventional recovery plays, each different in kind"). About 25 model calls and about $1.30 on Control
+  Center's key, at most one a day. Every spark is checked in code against this engine's walls (no paid reach, nothing
+  in bulk, consent, platform community rules) and the copy lint before it can be proposed: on 18 November a live run
+  proposed plays that broke consent and community rules while reading well. The top survivor is the one ask, a plan
+  behind `strategy` with the evidence item `divergent-thinker spark <rank>, run <runId>`; the other two are report
+  notes, and a spark the walls held is a hold with its reason.
+- **Hooks, the weekly mix plan.** With `--ideas`, `growth.py mix plan` scores each concept's caption hook and each
+  idea's planned Substack Note (`note`) against the live posts held here (`.scratch/divergent/live.json`, or
+  `--live FILE`), namespace `growth-makeyourmindup:hooks`, with zero model calls. A hook that sits on the obvious one
+  (`rejected_gravity`) or repeats one already live (`rejected_archive`) is flagged in the plan's `hook_guard`, never
+  dropped. No live posts held means no score. `--offline` skips it.
+- **What went live, the measure job.** `growth.py run measure auto --deliver` records the last three days of live
+  posts' published words, links removed, to the same namespace (zero model calls), and keeps them locally for the
+  mix plan. Counts only in the log.
+
 ## Intensity (Ruling, Krish, 2026-10-29)
 
 "At U3 to U5, engines and Control Center may raise volume caps up to each

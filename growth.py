@@ -218,7 +218,7 @@ def main(argv=None):
         return backlog(social_args[1:], ROOT)
     if social_args and social_args[0] == 'mix':
         from engine.mix import command as mix
-        return mix(social_args[1:], ROOT)
+        return mix(social_args[1:], ROOT, engine_client)
     if social_args and social_args[0] == 'ledger':
         from engine.ledger import command as ledger
         return ledger(social_args[1:], ROOT)

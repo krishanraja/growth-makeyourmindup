@@ -1,0 +1,3 @@
+Status: The engine can consult divergent-thinker through Control Center (engine/divergent.py): three unconventional recovery plays at U4 or U5 when the runner proposes nothing, checked against the walls and the copy lint before the top one is asked; a zero-call hook score before the weekly mix plan that flags repeated or obvious hooks; and a record of what went live. All of it is dormant until Control Center serves features.divergent (control-center#963).
+Next: Once control-center#963 merges and features.divergent is on, read the next runner report for the recovery play and the measure job's "recorded" line.
+North Star check (2026-11-18): holds.
