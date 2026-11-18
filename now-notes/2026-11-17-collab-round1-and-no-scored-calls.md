@@ -1,0 +1,4 @@
+Status: Collaboration round 1 is under way. The growth model and ten offers are in docs/plans/2026-11-17-growth-model-and-collab-offers.md. The worker's Acquisition pass verified 8 targets with public evidence, and a second pass is filling offers 1, 2, 5, 6, 7, 8 and 10. Offer 4 comes from Krish's own network. Every pitch waits on Krish's word-for-word approval, and none has been sent.
+Changed: Ruling (Krish, 2026-11-17): no dated-and-scored calls. Offer 3 (the scored call) is replaced by the live disagreement. Fix C7, the playbook scoreboard row and item 7 of the content-engine brief are withdrawn, and the copy doctrine no longer leans on checkable calls. The cover's scoreboard is removed in krishanraja/makeyourmindup PR 48.
+Next: Krish approves or edits the round 1 pitches (North Star still 0 of 162 at U5; this round has no measurement yet); the live Substack description and profile bio drop the scored-calls line on his yes.
+North Star check (2026-11-17): holds.

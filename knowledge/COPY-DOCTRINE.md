@@ -69,8 +69,8 @@ with the reader's actual decision ([Breakthrough Advertising], sophistication).
 ([$100M Offers], [Phase 5: Engineer the offer])
 
 - **Dream outcome:** make the right AI call earlier than the room does.
-- **Likelihood:** named sources, the mechanism shown, dated calls that can be
-  checked. A scoreboard shows only real rows with both URLs.
+- **Likelihood:** named sources, the mechanism shown, every number naming whoever
+  produced it. No dated or scored calls (Ruling, Krish, 2026-11-17).
 - **Time delay:** the first useful finding is in the post itself. The welcome
   gives one start-here read straight away.
 - **Effort:** one story per piece, plain words, a 3-minute or 90-second

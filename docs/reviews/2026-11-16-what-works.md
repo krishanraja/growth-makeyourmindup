@@ -114,3 +114,45 @@ twice its channel's interactions per 1,000 at 72 hours, and at least one share.
 - Nothing else passes. The Claude Duet Note cannot be boosted (Notes has no ads platform).
 
 A boost cannot be placed or read until Codex can reach the browser.
+
+## Confirmed later on 16 Nov: what the boosts bought
+
+Read by Codex in the worker's Chromium (`BROWSER.md`, "The worker's Chromium"), read only, with each number checked by
+Claude against Codex's screenshots. Recorded as `msr-paid-boost-tiktok-2026-11-11`, `msr-paid-boost-youtube-2026-11-12`
+and `msr-substack-new-subscribers-2026-11-09` in `engines/records/measurement.jsonl`.
+
+| Boost | Spend | What it bought | Subscribers |
+|---|---|---|---|
+| TikTok Promote, "The UK number two" (order 11 Nov, completed) | $24 | 16,090 views, 1 new follower, 38 profile views, 14 likes; 0.6 in 100 watched the whole video, all "below average" | none visible |
+| YouTube promotion of the 5:02 "A Reiki master wrote a UK number two" video (12 to 17 Nov, still running, £20 budget) | £13.90 so far | 7,061 impressions, 2,936 views, 364 clicks to home.makeyourmindup.ai | 0 new in Substack, 9 to 15 Nov |
+
+- **Substack, week of 9 Nov: 0 new subscribers** ("No subscribers found for selected time period"). Week of 2 Nov: 1, from
+  Notes. 497 subscribers in total on 16 Nov.
+- The 13 Nov YouTube Shorts were **not** promoted: "Your AI agent, without the setup" took 95.8 in 100 of its views from
+  the Shorts feed. The audit's suspicion on them was wrong; their reach was YouTube's own feed.
+- Facebook's 13 Nov reach (16,252) is still unexplained: Meta and X were signed out in the worker's Chromium.
+
+**Verdict on the boosts so far:** about £33 bought roughly 19,000 paid views, 364 clicks to the home page and one follower,
+and no subscriber. Neither boosted post passes the boost bar above. Krish stopped the YouTube promotion on 16 Nov ("Yes, stop it"): Codex paused it on the worker
+and the saved page reads Paused, at £13.90 of £20 (final: 7,070 impressions, 2,941 views, 366 visits).
+
+## Meta and X, read later on 16 Nov
+
+The worker's Chromium is signed in (Facebook as Krish Raja with Makeyourmind/up among his Pages; X as @TheRealKrisho).
+The earlier "Log in to Ads Manager" page was the wrong door: Ads Manager's own link opens Heartside's ad account. The
+Page's Ad Centre lists five boosts, all of Instagram posts, created by makeyourmind.up (checked against its pages):
+
+| Boost | Window | Spent | Results |
+|---|---|---|---|
+| "When an AI agent gets a computer" | 14 to 20 Nov, **active** | $0.00 of $18 | reached 0 accounts |
+| "The UK number two" | from 11 Nov | $32.72 of $36 | 3,561 views, 3,247 reach, 409 link clicks |
+| "Ten jobs you can hand to AI" | from 11 Nov | $29.73 of $30 | 2,013 views, 1,666 reach, 71 profile visits |
+| "Ten jobs you can hand to AI" | from 5 Nov | $29.39 of $30 | 3,160 views, 2,642 reach, 98 profile visits |
+| "New AI model release day" | 21 to 25 Oct | $3.84 (Codex's read) of $20 | 82 views, 181 reach, 13 link clicks, 9 landing page views |
+
+X Ads: $0.00 and 0 impressions from 1 Oct to 16 Nov. The Facebook post of 13 Nov (reach 16,252) was not boosted; its
+reach is Facebook's own distribution, still unexplained.
+
+**All paid since October:** about $119.68 on Meta and TikTok and £13.90 on YouTube. In return: 27,847 paid views,
+409 + 366 + 13 clicks, 169 profile visits and one TikTok follower. Substack shows one new subscriber in the whole
+period (2 to 8 Nov, from Notes, organic) and none in the boost week. Paid reach has not bought a reader yet.

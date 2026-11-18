@@ -36,6 +36,20 @@ align subscription links. Follow jobs/channel-audit.md and its local guards.
 Verify owner, exact before/after and persisted saved-page readback.
 Creative replacement, re-upload, bios, positioning and pins need approval.
 
+## The worker's Chromium, through Codex on the worker (Ruling, Krish, 2026-11-16)
+
+Krish: "because my machine's codex app is using a different set of social accounts (heartside), all Makeyourmindup
+activity will be run on my VPS worker - which has codex access as well as is signed in to chromium on all the right
+accounts", then "the whole point of this set up is that YOU manage the codex session and I manage you here". So every
+Make Your Mind Up browser task runs in the worker's Chromium container (`ssh worker`, container `chromium`, profile in
+the `chromium` volume), driven by Codex as the `agent` user through its `chrome-devtools` MCP server
+(`chrome-devtools-mcp@1.12.0`, DevTools on the worker's loopback `127.0.0.1:9222` only, forwarded inside the
+container by `/opt/worker-chromium/cdp/cdp-forward.py`). A Claude session starts that Codex with
+`scripts/codex_thread.mjs` in `~agent/work/growth-makeyourmindup`, over SSH, names the session to Krish, and checks
+what Codex reports. The Codex app on Krish's PC and its in-app browser belong to Heartside and are never used for
+Make Your Mind Up. Every other line of this file still binds; where the section below says "the Codex in-app
+browser beside this chat", read "the worker's Chromium".
+
 ## Codex browser only (Ruling, Krish, 2026-10-24)
 
 Use the Codex in-app browser beside this chat, reusing its signed-in tabs.

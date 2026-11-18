@@ -1,10 +1,26 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-17: Make Your Mind Up makes no dated-and-scored calls. His words: "I don't do dated-and-scored
+  make-your-mind-up pieces because it felt quite tacky and gimmicky. I don't really have the clout such that my opinion
+  can hold up in official scores.. Lets get rid of that from the cover page makeyourmindup repo and all documentation".
+  The cover's scoreboard and every "dated and scored in public" line are removed in the makeyourmindup repository
+  (branch `claude/2026-11-17-drop-scored-calls`); here fix C7 and the playbook row are dropped, the content-engine brief's
+  item 7 is withdrawn, the copy doctrine no longer leans on checkable calls, and collaboration offer 3 (the scored call)
+  is replaced by the live disagreement. Dated history (logs, the 16 Nov readbacks, the user-supplied corpus copy) stays
+  as the record. The live Substack description and profile bio set on 16 Nov still carry the line until he says yes.
 - 2026-11-17: The humour engine on call. Asked how this engine could use humour-engine as an on-call consultant,
   Krish said "go ahead on both, makeyourmindup first". `python growth.py humour check|compare|doctor`
   (`engine/humour.py`) reads any line through this engine's own Control Center bearer and holds three house rules: no
   joke at a person on someone else's post, no humour on Mindmake, no joke that needs explaining. Optional install, not a
   release gate, nothing scheduled; the engine stays standard library only. Nothing was posted, sent or spent.
+- 2026-11-16: All Make Your Mind Up activity runs on the worker. His words: "because my machine's codex app is using a
+  different set of social accounts (heartside), all Makeyourmindup activity will be run on my VPS worker - which has
+  codex access as well as is signed in to chromium on all the right accounts", then "the whole point of this set up is
+  that YOU manage the codex session and I manage you here", and "just open it all up so you can execute everything".
+  Codex runs as `agent` on the worker and drives its Chromium through `chrome-devtools-mcp@1.12.0`, every tool approved
+  without a prompt; the approval walls are kept in each brief (`AGENTS.md`, "Make Your Mind Up runs on the worker";
+  `BROWSER.md`, "The worker's Chromium"). First reads: the 9 to 15 Nov week had 0 new subscribers, and the two
+  boosts (TikTok $24, YouTube GBP 13.90 so far) brought none (`docs/reviews/2026-11-16-what-works.md`).
 - 2026-11-16: Boost the top performers this week, as a test. Asked "During this 7-day run, should anything be
   boosted?", Krish chose "Boost the top performers". Each boost still needs his Yes on that exact boost (post, amount,
   duration, audience, destination) immediately before Codex places it; it is a `paid_boost` observation, reported
