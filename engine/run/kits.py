@@ -176,6 +176,9 @@ def _declaration_errors(name, value, at):
             if not (family in KIT_FONTS or family in GENERIC_FONTS
                     or re.fullmatch(r'var\((?:' + '|'.join(FONT_TOKENS) + r')\)', family)):
                 errors.append(at + ': the font ' + family + ' is not a kit font')
+    if name == 'font-weight' and re.fullmatch(r'(?:[89]\d\d|bolder)', value.strip().lower()):
+        errors.append(at + ': font-weight ' + value.strip() + ' is too heavy; a card never sets Archivo at 800 or heavier '
+                      '(the ruling of 18 Nov 2026: the heavy Archivo body face was rejected twice)')
     if name == 'font' and not re.search(r'var\((?:' + '|'.join(FONT_TOKENS) + r')\)', value):
         errors.append(at + ': the font shorthand names no kit font token')
     if (name in ('letter-spacing', 'word-spacing') and value.startswith('-')) or (

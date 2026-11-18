@@ -18,7 +18,11 @@
   .figure { display: block; position: relative; font-family: var(--heading); text-transform: uppercase; line-height: 1;
     padding: 0 40px; }
   .grow { width: 100%; align-items: center; margin: 48px 0 0; }
-  .body { max-width: 860px; }
+  /* The sentence is Anton in capitals, the same face as the cover, the figure and the close (the ruling of 18 Nov 2026,
+     content-engine docs/CAROUSEL-STANDARD.md, body type). Archivo is the kit's body face but never a card's sentence,
+     and never at weight 800 or heavier. */
+  .body { max-width: 900px; font-family: var(--heading); font-weight: 400; text-transform: uppercase; line-height: 1.06;
+    letter-spacing: 0.005em; }
   .small { margin-top: 28px; opacity: 0.66; }
   .page { position: absolute; left: 96px; bottom: 88px; font-family: var(--mono); font-size: 28px; color: var(--mint); }
   .brandmark.corner { bottom: 84px; right: 96px; }
@@ -27,7 +31,7 @@
   <div class="label">{{label}}</div>
   <div class="anchor tone-ink" data-fit="anchor" data-centred><span class="figure" data-max="240" data-min="110" data-empty-hide>{{anchor}}</span></div>
   <div class="grow" data-fit="sentence and attribution" data-centred>
-    <p class="body" data-max="76" data-min="48">{{body}}</p>
+    <p class="body" data-max="96" data-min="60">{{body}}</p>
     <p class="small" data-max="30" data-min="26" data-empty-hide>{{attribution}}</p>
   </div>
   <div class="page">makeyourmindup.ai {{page}}</div>

@@ -57,6 +57,9 @@ for meeting it.
 - **A body card carries one full plain sentence of up to 20 words a stranger can follow**, with its subject, its unit
   and what it is compared with on the card itself, never leaning on another card (no So, But, This or It to open,
   no "12x"). `growth.py run carousel lint` holds the words to it.
+- **A body card's sentence is Anton, in capitals** (`var(--heading)`, `text-transform: uppercase`): the face of the cover and the
+  close, never Archivo Black and never Archivo at weight 800 or heavier. `growth.py run kit check` refuses a font-weight of 800 or more
+  or `bolder` anywhere in a piece kit (the ruling of 18 Nov 2026: the heavy Archivo body face was rejected twice).
 - **A body card uses the page, centred.** The sentence is set centred in the safe area under a substantial visual
   anchor (a framed figure, an object drawn in boxes, a real photo), never plain ground and never a column pushed to
   one side. Mark centred blocks with `data-centred`; the renderer reports every line and the check refuses a

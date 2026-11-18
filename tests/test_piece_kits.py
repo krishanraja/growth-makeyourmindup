@@ -141,6 +141,14 @@ class StaticChecksCanFail(unittest.TestCase):
         self.assertTrue(any('at-rule' in e for e in found), found)
         self.assertTrue(any('Remote Sans is not a kit font' in e for e in found), found)
 
+    def test_light_and_bold_weights_stay_allowed(self):
+        for weight in ('400', '500', '600', '700', 'bold'):
+            with tempfile.TemporaryDirectory() as alone:   # one kit at a time: two copies are 'the same as another kit'
+                kit = copy_kit(alone, 'synthetic-weight-' + weight)
+                css = kit / 'piece.css'
+                css.write_text(css.read_text(encoding='utf-8') + '\n.tape { font-weight: ' + weight + '; }\n', encoding='utf-8')
+                self.assertEqual(kit_checks.kit_errors(kit), [], weight)
+
     def test_an_img(self):
         self.assertTrue(any('<img>' in e for e in self.errors('img')))
 
@@ -151,7 +159,9 @@ class StaticChecksCanFail(unittest.TestCase):
         cases = {'color: rgb(1, 2, 3);': 'colour function', 'color: tomato;': 'named colour tomato',
                  'background: color-mix(in srgb, var(--mint) 50%, var(--coral));': 'colour function',
                  'filter: hue-rotate(40deg);': 'filter is not allowed', '--ink: var(--coral);': 'redefines',
-                 'background-image: url(face.png);': 'remote address or url'}
+                 'background-image: url(face.png);': 'remote address or url',
+                 'font-weight: 900;': 'font-weight 900 is too heavy', 'font-weight: 800;': 'font-weight 800 is too heavy',
+                 'font-weight: bolder;': 'font-weight bolder is too heavy'}
         for decl, needle in cases.items():
             kit = copy_kit(self.tmp.name, 'synthetic-' + hashlib.sha256(decl.encode()).hexdigest()[:8])
             css = kit / 'piece.css'
