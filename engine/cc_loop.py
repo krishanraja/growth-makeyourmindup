@@ -1343,7 +1343,6 @@ def voice_rules(directive):
 
 FLOOR_FEATURE = 'taste_floor'
 FLOOR_STANDING = ('approved', 'reworded')
-FLOOR_MAX = 40
 # The names Control Center gives this venture on the floor: the registry's product_slug and the taste ledger's
 # venture key ('publication'; lane D, control-center #815), or this engine's slug.
 FLOOR_VENTURES = ('publication', SLUG)
@@ -1368,8 +1367,8 @@ def taste_floor(directive):
 
     Returns (state, rule, standards): 'absent' when it is not served or not readable, or names another venture
     (no venture receives another's rows); 'none' when served with no standard approved yet; 'standards' otherwise.
-    Only approved or reworded standards are kept (a draft standard never reaches a headless maker), at most
-    FLOOR_MAX, each with its statement and the formats it applies to (none listed means every format). Malformed
+    Only approved or reworded standards are kept (a draft standard never reaches a headless maker), all of them
+    (Ruling, Krish, 2026-11-18: serve the whole approved floor, not the top 40), each with its statement and the formats it applies to (none listed means every format). Malformed
     entries are dropped, never repaired or invented."""
     body = directive.get('directive', {}) if isinstance(directive, dict) else {}
     body = body if isinstance(body, dict) else {}
@@ -1395,8 +1394,6 @@ def taste_floor(directive):
                           'statement': ' '.join(statement.split()),
                           'formats': sorted({f.strip().lower().replace('-', '_') for f in formats
                                              if isinstance(f, str) and f.strip()})})
-        if len(standards) == FLOOR_MAX:
-            break
     return ('standards' if standards else 'none'), rule, standards
 
 
