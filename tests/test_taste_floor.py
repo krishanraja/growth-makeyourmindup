@@ -28,10 +28,10 @@ class TasteFloorTests(unittest.TestCase):
         self.assertEqual(cc_loop.taste_floor(directive([std(1)]))[0], 'standards')
         self.assertEqual(cc_loop.taste_floor(None)[0], 'absent')
 
-    def test_drafts_and_malformed_standards_never_reach_the_maker_and_at_most_forty(self):
+    def test_drafts_and_malformed_standards_never_reach_the_maker_and_every_standing_one_does(self):
         rows = [std(1, standing='draft'), std(2, statement=' '), 'junk'] + [std(n) for n in range(3, 50)]
         state, _, standards = cc_loop.taste_floor(directive(rows))
-        self.assertEqual((state, len(standards), standards[0]['id']), ('standards', cc_loop.FLOOR_MAX, 's3'))
+        self.assertEqual((state, len(standards), standards[0]['id']), ('standards', 47, 's3'))  # the whole approved floor (18 Nov), never the top 40
         self.assertEqual(cc_loop.taste_floor(directive([std(1, standing='draft')]))[0], 'none')
 
     def test_the_ledger_formats_map_onto_the_makers_formats(self):
