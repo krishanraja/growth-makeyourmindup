@@ -1,6 +1,7 @@
 # Cowork brief: humour in the welcome emails and every reader-facing Substack surface
 
 Status: ready for Krish to paste into a Cowork session on his own computer
+Updated: 2026-11-19, paid perks per plan (Ruling, Krish, 2026-11-19: monthly live session and a teardown for annual; every brain module and a monthly check-in for founding)
 Written: 2026-11-19
 Ruling (Krish, 2026-11-19): "and its both - makeyourmindup should always have good humour". The welcome email is
 both the publication's surface and an email, and the publication always carries good humour. Mindmake, his Gmail
@@ -42,8 +43,8 @@ its promises. All the words you need are below.
    conference slide. Plain words only: a stranger must understand every line.
 8. If a page looks different from what this brief expects, report what you saw with a screenshot. Do not guess
    the menu path.
-9. Out of scope, do not touch: the Instagram keyword DM, any Mindmake page, any email in Krish's Gmail, the
-   subscription benefits lists, pricing, and the post archive.
+9. Out of scope, do not touch: the Instagram keyword DM, any Mindmake page, any email in Krish's Gmail,
+   pricing, and the post archive. Never name Mindmake or its site in Substack copy.
 
 ## Task 1: read the current welcome emails (do this first)
 
@@ -79,36 +80,59 @@ One small job, about ten seconds: hit reply and tell us which AI claim you most 
 
 makeyourmindup
 
-### Paid welcome
+### Paid welcome (monthly and annual share it)
 
 Subject: Thank you, properly.
 
 Every written piece on makeyourmindup is free, and it stays free. So you've just paid for something you could have read for nothing. That is either a vote of confidence or a billing error, and we are choosing to treat it as the first. Thank you.
 
-Here's what your subscription gets you:
+Every paid plan gets:
 
-- Beta access to CTRL.
 - The diagrams and artifacts from every piece, as files you can take and reuse.
-- The audio and video editions.
-- A live session with us, once a month.
-- The full Resources library.
+- The audio editions.
+- One brain module of your choice: a small piece of working software that checks a number, a board update or an email against your own files before you rely on it. On the monthly plan it arrives with your second payment.
 
-A few of these are still at the printers. Each one lands in your inbox the day it's ready.
+The annual plan also gets two things. A live session with us, once a month. And the Real-or-Theatre Desk: once a month, send us one AI claim you are being asked to believe, such as a vendor pitch, a board slide or a press release, and it comes back to you as a written teardown, every part stamped real or theatre.
+
+To claim any of it, hit reply. Ask for the list of brain modules, or paste in the claim. We read every reply.
+
+If something here hasn't reached you yet, it's still at the printers, and it lands in your inbox the day it's ready.
 
 In the spirit of follow.the.money, here's where your money goes. It pays the running costs of the machinery behind this, so the machines do the grind and we get to spend our time on the thinking and the writing.
-
-One favour: hit reply and tell us what you want taken apart first. We read every reply.
 
 makeyourmindup
 
 ### Founding welcome
 
-If Substack shows a separate founding email, use the paid email above with this line added straight after its first
-paragraph:
+If Substack shows a separate founding email, use the paid email above with this paragraph added straight after its
+first paragraph:
 
-You went founding member, which means you paid more than you had to. Thank you twice.
+You went founding member, which means you paid more than you had to. Thank you twice. So every brain module is yours, free, not just one. And once a month we sit down with you to unpick your biggest AI bottleneck: where it slows you down, where it is theatre, and what to change. Places are limited each month, so reply to book yours.
 
-If Substack sends founding members the paid email by default, change nothing and say so.
+If Substack sends founding members the paid email by default, change nothing, say so, and ask Krish where the
+founding paragraph should go.
+
+### Subscription benefits (Settings, Payments)
+
+Replace the benefits lists with these, with the same before-and-after and yes as the emails:
+
+Free:
+
+- Every written piece, in full
+- follow.the.money on Mondays, under.the.hood on Wednesdays, mind.the.gap on Fridays
+
+Paid:
+
+- Diagrams and artifacts as files you can reuse
+- The audio editions
+- One brain module of your choice (monthly plan: from your second payment)
+- Annual plan: a monthly live session, and the Real-or-Theatre Desk, one written teardown a month
+
+Founding:
+
+- Everything in the annual plan
+- Every brain module, free
+- A monthly check-in to unpick your biggest AI bottlenecks
 
 ## Task 3: audit every other reader-facing surface (read first, propose, do not edit)
 
