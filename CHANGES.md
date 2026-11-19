@@ -1,5 +1,11 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-19: No Canva. Shown a Canva copy of the story template for Instagram's Start here highlight, Krish said "It
+  looks terrible and boring and off-brand, and components are cramped, and it doesn't have anything enjoyable about it.
+  It feels like you've not read any of my engines", then "canva drafts are always shitty, forget about canva". So this
+  engine makes no draft in Canva for any format (`social/guides/canva.md`, top): every still is built in code from the
+  house kit and the publication's real published artwork, and checked at full size before he sees it (lesson
+  `real-artwork-not-templates`). Both quotes are filed with his taste engine.
 - 2026-11-19: Instagram's profile gets an exit. Krish shared a 28-day read of @makeyourmind.up and asked this engine to
   act on it as its growth lead. A live readback in the worker's Chromium found the funnel is paid: one boosted carousel
   held 173 of 251 profile visits, and 14 unboosted posts earned 934 views and no follow

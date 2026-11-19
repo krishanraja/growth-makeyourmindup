@@ -1,5 +1,10 @@
 # Canva lane
 
+**Retired (Ruling, Krish, 2026-11-19): "canva drafts are always shitty, forget about canva".** Make no draft in
+Canva for any format, the five below included. Build every still in code from `render/kit.css`, the official mark and the
+publication's real published artwork, render it at full size and look at it before Krish sees it (lesson
+`real-artwork-not-templates`; `CHANGES.md`, 19 Nov 2026). The rest of this file is history.
+
 Ruling: Krish, 27 October 2026 (`CHANGES.md`). Growth makes, in Canva, the
 formats content-engine does not cover: `receipt-card`, `quote-card`,
 `scorecard`, `poll` and `story-frame`, whose `production_owner` is
