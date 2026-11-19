@@ -1,6 +1,7 @@
 # Cowork brief: align Substack with the new paid plans and the publication's humour
 
 Status: ready for Krish to paste into a Cowork session on his own computer
+Updated: 2026-11-19, after the members page, its files and the member links were checked live.
 Written: 2026-11-19. Rewritten the same day for the paid plans and their release.
 Ruling (Krish, 2026-11-19): "and its both - makeyourmindup should always have good humour".
 Ruling (Krish, 2026-11-19): monthly live session and a teardown for annual; every brain module free and a monthly
@@ -56,15 +57,12 @@ All the words you need are below. Do not write new copy unless a task asks you t
 
 ## Task 0: what is ready (ask first)
 
-Ask Krish three things and wait for the answers:
+Checked live on 19 November: makeyourmindup.ai/members opens with the members code and lists the first ten files,
+and a member link for a free brain module works end to end. So ask Krish one thing and wait for the answer: is the
+"Desk" label set up in his inbox, so replies with an AI claim in them are not missed?
 
-1. Is makeyourmindup.ai/members live, and does he have its code? If yes, open it, enter the code he gives you,
-   and confirm the page loads.
-2. Can members already redeem a brain module code at checkout?
-3. Is the Desk label set up in his inbox?
-
-If any answer is no, do Tasks 1, 2, 4 and 6 now, and hold Tasks 3 and 5: the paid welcome and the release email
-promise things that must already work.
+If he says no, do Tasks 1, 2, 3, 4 and 6 now, and hold Task 5 (the release email) until it is. The release promises
+the Desk, and the Desk must already work.
 
 ## Task 1: read the current state
 
@@ -100,7 +98,7 @@ One small job, about ten seconds: hit reply and tell us which AI claim you most 
 
 makeyourmindup
 
-## Task 3: the paid and founding welcomes (only if Task 0 said ready)
+## Task 3: the paid and founding welcomes
 
 ### Paid welcome (monthly and annual share it)
 

@@ -4,3 +4,5 @@ North Star check 2026-11-19: holds. Indirect only; the number stays U5 until acq
 Ruling (Krish, 2026-11-19): "and its both - makeyourmindup should always have good humour"
 
 Update 2026-11-19: brief rewritten to align all of Substack with the paid plans, with a readiness gate (Task 0) and the paid-only release email.
+
+Update 2026-11-19: Task 0 now asks only about the Desk label; the members page, its files and member links were checked live.
