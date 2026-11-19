@@ -1,5 +1,16 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-19: Instagram's profile gets an exit. Krish shared a 28-day read of @makeyourmind.up and asked this engine to
+  act on it as its growth lead. A live readback in the worker's Chromium found the funnel is paid: one boosted carousel
+  held 173 of 251 profile visits, and 14 unboosted posts earned 934 views and no follow
+  (`docs/reviews/2026-11-19-instagram-profile-leak.md`). He pinned three posts himself, approved the bio "Daily AI take.
+  Free newsletter ↓" with the three series lines (option A, word for word), and approved one closing line on the three
+  pinned captions, "The full breakdown lands free in the newsletter every Mon, Wed and Fri. Link in bio.". Codex saved
+  the bio and the Claude Duet caption and read them back; the two boosted posts' captions did not persist and are
+  held; the pins were not yet visible on desktop. Three lessons, two planned experiments (`ig-one-take-reel`,
+  `ig-profile-follow-reason`) and the guide's "Profile conversion" section record it. Same day, on the worker's tabs:
+  "close down the rest of the tabs so you don't waste all the compute. But you don't also close down tabs you need"
+  (`BROWSER.md`). Nothing was posted, boosted or spent.
 - 2026-11-17: Make Your Mind Up makes no dated-and-scored calls. His words: "I don't do dated-and-scored
   make-your-mind-up pieces because it felt quite tacky and gimmicky. I don't really have the clout such that my opinion
   can hold up in official scores.. Lets get rid of that from the cover page makeyourmindup repo and all documentation".

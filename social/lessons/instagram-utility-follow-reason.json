@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "instagram-utility-follow-reason",
+  "category": "format",
+  "scope": [
+    "instagram",
+    "carousel"
+  ],
+  "status": "hypothesis",
+  "finding": "The only post that turned visits into follows was a utility list with a deadline ('Ten jobs you can hand to AI this week. Pick one and try it before Friday'): 27 follows from 173 visits and 18 saves. Something a leader can use this week may be a stronger follow reason than the series names; it was boosted, so this is unproven organically.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": "docs/reviews/2026-11-19-instagram-profile-leak.md",
+    "observed_at": "2026-11-19",
+    "result": "'Ten jobs' carousel, boosted twice (about $59): 5,443 views, 173 profile visits, 27 follows, 18 saves. Every unboosted carousel since 26 Oct: 16 to 46 views, 0 follows, 0 saves."
+  },
+  "revisit_when": "An unboosted utility-list carousel or Reel: compare its follows and saves per 1,000 views with the take Reels.",
+  "supersedes": null
+}

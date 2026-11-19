@@ -66,6 +66,32 @@
       "sampling_note": "Six Reels in each arm is a review floor, not statistical power; say so in the readout.",
       "start": null,
       "end": null
+    },
+    {
+      "experiment_id": "ig-one-take-reel",
+      "status": "planned",
+      "hypothesis": "On @makeyourmind.up, a 20 to 35 second Reel that opens on one named AI thing, makes one sharp take in the first three seconds and closes on the newsletter as the payoff (the piece it comes from, the day it lands, the keyword or link step) earns at least twice the organic follows and link taps per 1,000 organic views of the current carousels and recut videos. Source: Instagram feedback and live readback, 19 Nov 2026 (docs/reviews/2026-11-19-instagram-profile-leak.md).",
+      "primary_metric": "new_free",
+      "guardrail": "Organic views only (Instagram's Ad label excluded); no boost on any test Reel during the window; 3-second hold and average watch per Reel; unfollows; every Reel passes content-engine's judges and copy lint",
+      "decision_rule": "Two weeks, at least 6 one-take Reels against at least 6 comparable carousels or recut videos posted in the same weeks. Compare organic follows, link taps and tagged subscribers (utm_content per Reel) per 1,000 organic views. Keep the format only at twice the comparator with no fall in watch time; otherwise change the take, not the volume. A review floor, not statistical power.",
+      "owner": "Krish",
+      "minimum_observations": 6,
+      "sampling_note": "Six comparable observations is a review floor, not statistical power; set a power-based target when a baseline exists.",
+      "start": null,
+      "end": null
+    },
+    {
+      "experiment_id": "ig-profile-follow-reason",
+      "status": "planned",
+      "hypothesis": "A profile that states the follow reason (what lands each Monday, Wednesday and Friday), pins the three posts that best prove it, and keeps one Start here highlight with a tagged link sticker turns at least 5 in 100 organic profile visits into an external link tap, against 2 taps from 251 visits (30 days to 19 Nov 2026, mostly paid traffic).",
+      "primary_metric": "new_free",
+      "guardrail": "Organic profile visits only; bio and pins changed once at the start and not again inside the window; tagged subscribe link (utm_content=bio) so Substack and GA4 credit it",
+      "decision_rule": "Read profile visits, external link taps and follows from Instagram's 7-day insights for at least 6 consecutive weeks from the change, against the 30 days before it with paid visits removed. Keep at 5 or more taps per 100 organic visits; below 2 per 100, change the bio's first line before anything else.",
+      "owner": "Krish",
+      "minimum_observations": 6,
+      "sampling_note": "Six comparable observations is a review floor, not statistical power; set a power-based target when a baseline exists.",
+      "start": null,
+      "end": null
     }
   ]
 }
