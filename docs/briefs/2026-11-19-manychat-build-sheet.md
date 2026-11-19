@@ -7,6 +7,10 @@ Reel's approved go-live, and the trial's paid plan is his yes on the exact amoun
 
 ## Before building (each a read, or his click)
 
+Read on 19 Nov 2026: items 1 and 3 hold in workspace `makeyourmindup.ai` (Instagram @makeyourmind.up connected; trial to
+27 Nov, then $348 a year plus overages). Krish: "only use makeyourmindup.ai account, NOT the other one" (the other is
+`Makeyourmind/up`). Item 2 could not be seen on desktop.
+
 1. ManyChat workspace for @makeyourmind.up exists and Instagram is connected **as makeyourmind.up**. Connecting it is an
    account permission change: his click.
 2. Instagram, Settings > Messages and story replies > Message controls > Connected tools: "Allow access to messages" on.
