@@ -1,5 +1,11 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-19: ManyChat Pro kept for the keyword-DM test. Asked whether to keep the makeyourmindup.ai workspace on Pro
+  when its trial ends on 27 Nov 2026, at $348 a year plus overages, Krish chose "Approve $348/year". Only that workspace
+  is used ("only use makeyourmindup.ai account, NOT the other one"). Instagram @makeyourmind.up is already connected
+  there. Any payment step ManyChat asks for is his click; no Codex brief touches billing. The Start here Story
+  (approved after he saw it) is posted from his phone: the worker's browser bridge cannot attach a downloaded file, and
+  Instagram web rarely offers a link sticker.
 - 2026-11-19: No Canva. Shown a Canva copy of the story template for Instagram's Start here highlight, Krish said "It
   looks terrible and boring and off-brand, and components are cramped, and it doesn't have anything enjoyable about it.
   It feels like you've not read any of my engines", then "canva drafts are always shitty, forget about canva". So this
