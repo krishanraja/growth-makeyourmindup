@@ -1,0 +1,16 @@
+{
+  "schema": "growth-mix-learn/1",
+  "basis": "subscribers",
+  "for_week_of": "2026-11-23",
+  "judged_week_of": "2026-11-09",
+  "lanes": {},
+  "channels": {},
+  "counts": {
+    "posts_in_week": 32,
+    "from_the_mix": 0,
+    "not_from_the_mix": 32,
+    "joined_to_a_lane": 0,
+    "no_lane": 0,
+    "insufficient_because": {}
+  }
+}
