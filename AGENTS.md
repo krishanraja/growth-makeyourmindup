@@ -413,9 +413,12 @@ Neither readable means the desk is unavailable and the week runs exactly as befo
   reason, 2 unreadable); `--print-sha` prints the `sheet_sha256` it should carry.
 - **The hook.** `growth.py mix plan --week-of <Monday> --insight <sheet>` checks the sheet first (an invalid one makes
   no plan), then adds its ideas to the week's filler ideas in the `--ideas` shape, in the lane `--insight-lane` names
-  (default `level_up`). An idea that failed a test on its sheet, or a measurement idea, is refused with why. The
-  sheet's hash and `harness_skill_sha` ride beside the plan as `insight`, never in its proposal, so `concept_sha256`
-  and the plan's words are made exactly as before. Without `--insight` nothing changes.
+  (default `level_up`). An idea that failed a test on its sheet, a measurement idea, or one that would make the same
+  concept as an `--ideas` item in that lane is refused with why. An idea with a test `unavailable` may join the plan
+  but never leads, and `insight.untested` names it with those tests. The sheet's hash and `harness_skill_sha` ride
+  beside the plan as `insight`, never in its proposal, so `concept_sha256` and the plan's words are made exactly as
+  before. Like `--ideas`, `--insight` runs the hook guard unless `--offline` is given. Without `--insight` nothing
+  changes.
 - **Ideas only** (`docs/ENGINE-BOUNDARY.md`): the sheet gives the claim and the mechanic; content-engine keeps the
   story, copy, design and rendering.
 - **Engines.** The humour engine reads an idea's premise through `engine/humour.py`, its three house rules holding;

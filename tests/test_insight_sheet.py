@@ -4,6 +4,7 @@ Synthetic fixtures only. Nothing here reads the network or a real sheet.
 """
 import contextlib
 import copy
+import hashlib
 import io
 import json
 import os
@@ -194,10 +195,25 @@ class ToIdeasTest(unittest.TestCase):
                       blind_passes=[{'reader': 'r1', 'order': ['failed-move', 'measure-it', 'first-move'], 'lead': None},
                                     {'reader': 'r2', 'order': ['first-move', 'measure-it', 'failed-move'], 'lead': None}])
         self.assertEqual(insight_sheet.check(value), [])
-        ideas, refused, _ = insight_sheet.to_ideas(value, 'meme', LANES, taken={'first-move'})
+        ideas, refused, _ = insight_sheet.to_ideas(value, 'meme', LANES, taken={('meme', 'first-move')})
         self.assertEqual(ideas, [])
         self.assertEqual([r['idea_id'] for r in refused], ['failed-move', 'measure-it', 'first-move'])
         self.assertIn('share', refused[0]['why'])
+
+    def test_the_duplicate_guard_compares_the_concept_id_the_mix_would_make(self):
+        # 'First-Move' by hand in the same lane slugs to the same concept as the sheet's 'first-move': refused.
+        _, refused, _ = insight_sheet.to_ideas(sheet(), 'level_up', LANES, taken={('level_up', 'First-Move')})
+        self.assertEqual([r['idea_id'] for r in refused], ['first-move'])
+        self.assertIn('level-up-first-move', refused[0]['why'])
+        # The same idea_id in another lane makes another concept: admitted.
+        ideas, refused, _ = insight_sheet.to_ideas(sheet(), 'level_up', LANES, taken={('meme', 'first-move')})
+        self.assertEqual(refused, [])
+        self.assertEqual([i['idea_id'] for i in ideas], ['first-move', 'second-move'])
+
+    def test_an_idea_with_an_unavailable_test_is_admitted_but_named_as_untested(self):
+        _, _, record = insight_sheet.to_ideas(sheet(), 'level_up', LANES)
+        self.assertEqual(record['untested'], {'second-move': ['analogue']})
+        self.assertNotEqual(record['lead'], 'second-move')
 
     def test_a_lane_that_takes_no_ideas_is_refused(self):
         with self.assertRaisesRegex(ValueError, 'takes no ideas'):
@@ -223,10 +239,24 @@ class MixPlanTest(unittest.TestCase):
         self.assertEqual(code, 0, err)
         return json.loads(out.read_text(encoding='utf-8'))
 
-    def test_without_insight_the_plan_is_exactly_as_before(self):
+    def test_the_cli_without_insight_matches_the_library_plan(self):
+        # Guards the CLI wiring only; the next test guards the behaviour before --insight existed.
         before = mix.plan(inventory(), WEEK, (), urgency=4)
         self.assertEqual(json.loads(json.dumps(before)), self.plan())
         self.assertNotIn('insight', self.plan())
+
+    def test_without_insight_the_plan_is_byte_for_byte_the_one_made_before_insight_existed(self):
+        # Digests of the canonical plan JSON, made by running this same command with the code of commit 0d8edb0,
+        # the parent of the insight desk adapter. A deliberate change to config/mix.json or engine/mix.py that moves
+        # them must regenerate them in the same change and say why; nothing about --insight may.
+        hand = self.dir / 'hand.json'
+        write_json(hand, [{'idea_id': 'hand-move', 'lane': 'level_up', 'idea': 'TEST FIXTURE hand idea',
+                           'claim': 'TEST FIXTURE claim.', 'source_url': None, 'source_date': None}])
+        expected = {(): '5bd7fd3a5043585c29233d1274fb1416234debdbe86727f2fe63c87e0c0bedcc',
+                    ('--ideas', str(hand)): '05e4150a0411d0ff681ff428481e4ee5b0c420b7d2ab463b0fce0eb3220d35b4'}
+        for extra, digest in expected.items():
+            made = json.dumps(self.plan(*extra), sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+            self.assertEqual(hashlib.sha256(made.encode('utf-8')).hexdigest(), digest, extra)
 
     def test_sheet_ideas_are_laid_out_like_ideas_given_by_hand(self):
         with_sheet = self.plan('--insight', str(self.sheet))

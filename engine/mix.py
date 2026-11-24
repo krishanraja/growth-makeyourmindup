@@ -34,7 +34,8 @@ here, dormant until Control Center serves it; --offline skips it.
 Insight: --insight <sheet> adds the ideas of an insight desk sheet (the ai-harness insight-desk skill, adapter
 config/insight-desk.json, checks in engine/insight_sheet.py) to this week's filler ideas in the --ideas shape, in
 one lane. The sheet's hash rides beside the plan as `insight`; concept_sha256 and the proposal's words are made
-exactly as before. Without --insight nothing here changes.
+exactly as before. Like --ideas, --insight also runs the hook guard above unless --offline is given. Without --insight
+nothing here changes.
 
 Nothing here posts, schedules, sends or writes outside where --out points.
 """
@@ -797,7 +798,7 @@ def insight_ideas(path, lane, ideas, root=ROOT):
     lane = lane or insight_sheet.adapter(root)['hook']['default_lane']
     lanes = {name for name, cfg in load(root)['lanes'].items() if cfg['source'] == 'ideas'}
     ideas = list(ideas or ())
-    added, _, record = insight_sheet.to_ideas(sheet, lane, lanes, {i.get('idea_id') for i in ideas
+    added, _, record = insight_sheet.to_ideas(sheet, lane, lanes, {(i.get('lane'), i.get('idea_id')) for i in ideas
                                                                       if isinstance(i, dict)})
     return ideas + added, record
 

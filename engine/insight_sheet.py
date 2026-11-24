@@ -351,13 +351,25 @@ def check(sheet, methods=None):
 
 # Into the mix --------------------------------------------------------------------------------------------------
 
+def concept_id(lane, idea_id):
+    """The concept_id the mix gives an idea in a lane (engine/mix.py, idea_pool): two ideas with the same one would
+    collapse into one concept, so the duplicate guard compares these, not the raw idea_id."""
+    from .mix import _slug
+    return _slug(str(lane).replace('_', '-') + '-' + str(idea_id))
+
+
 def to_ideas(sheet, lane, lanes, taken=()):
     """(ideas, refused, record): each sheet idea as the mix's idea shape for `lane`, the ones refused with why, and
-    the provenance the plan carries beside it. The sheet must already pass check()."""
+    the provenance the plan carries beside it. The sheet must already pass check().
+
+    `taken` holds the (lane, idea_id) pairs already given by --ideas; a sheet idea is refused only when it would make
+    the same concept_id as one of them. An idea admitted with a test that is `unavailable` may sit in the plan but
+    never leads (check() holds that), and the record lists it under `untested` with those tests, so Krish sees which
+    concepts reach him without every test passed."""
     if lane not in lanes:
         raise ValueError('lane ' + str(lane) + ' takes no ideas; one of ' + ', '.join(sorted(lanes)))
-    taken = set(taken)
-    ideas, refused = [], []
+    taken_ids = {concept_id(*pair) for pair in taken}
+    ideas, refused, untested = [], [], {}
     source = 'insight-sheet:' + sheet['sheet_sha256']
     for idea in sheet['ideas']:
         failed = [k for k in TEST_KEYS if idea['tests'][k]['result'] == 'fail']
@@ -366,16 +378,20 @@ def to_ideas(sheet, lane, lanes, taken=()):
             why = 'a measurement idea is not a post; the Measurement engine takes it'
         elif failed:
             why = 'failed on its sheet: ' + ', '.join(failed)
-        elif idea['id'] in taken:
-            why = 'an idea with this idea_id is already in --ideas'
+        elif concept_id(lane, idea['id']) in taken_ids:
+            why = 'an idea in --ideas already makes concept ' + concept_id(lane, idea['id'])
         if why:
             refused.append({'idea_id': idea['id'], 'lane': lane, 'why': why})
             continue
+        taken_ids.add(concept_id(lane, idea['id']))
+        unavailable = [k for k in TEST_KEYS if idea['tests'][k]['result'] == 'unavailable']
+        if unavailable:
+            untested[idea['id']] = unavailable
         ideas.append({'idea_id': idea['id'], 'lane': lane, 'idea': idea['mechanic'].strip(),
                       'claim': idea['claim'].strip(), 'source_url': None, 'source_date': None, 'source': source})
     record = {'schema': SCHEMA, 'sheet_sha256': sheet['sheet_sha256'],
               'harness_skill_sha': sheet['harness_skill_sha'], 'lane': lane, 'lead': sheet['lead'],
-              'ideas': [i['idea_id'] for i in ideas], 'refused': refused}
+              'ideas': [i['idea_id'] for i in ideas], 'untested': untested, 'refused': refused}
     return ideas, refused, record
 
 
