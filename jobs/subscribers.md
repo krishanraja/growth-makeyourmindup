@@ -66,6 +66,13 @@ Run each command on its own line in PowerShell (`python`, or `py` if that is mis
      period the page says the number covers, such as "All time") and `new_free` and `new_paid` as shown;
    - `category_only` if it shows subscribers only by source or category: leave `items` empty;
    - `not_checked` if you could not check: leave `items` empty.
+6a. **Renewals.** Open the paid subscribers view and check whether Substack shows renewals and paid
+   cancellations by the month each subscriber first paid. If it does, fill `renewals`: `cohorts`, one row per
+   first-paid month shown, `first_paid_month` (`YYYY-MM`), `renewed` and `cancelled` exactly as shown (null
+   where the page shows nothing), `source_url` the page's address, `reason` null. If it does not, leave
+   `cohorts` empty and set `reason` to what the page showed (for example "no renewals view"), with
+   `source_url` the page you checked or null. Counts only: never open a paid subscriber's row or export the
+   list.
 7. Set `"captured_at"` (now, with its offset), `"read": "taken"` and `"not_taken": null`, and save.
 8. Check it without writing:
    `python growth.py run subscribers ingest .scratch/substack/week-<Monday>.json`
