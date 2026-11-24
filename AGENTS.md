@@ -428,6 +428,17 @@ Neither readable means the desk is unavailable and the week runs exactly as befo
   `strategy`; approving it approves the idea and its mock, nothing more. The desk never posts, sends or spends, and
   his words about a sheet go to the floor and his taste ledger, never into this public repository.
 
+## Revenue desk (Ruling, Krish, 2026-11-24)
+
+The revenue desk is ai-harness's `revenue-desk` method, run by krishanraja/strategist in its daily U5 watch and
+Sunday board: it reads each step from work to money, names any blind step, and proposes at most one 7-day test.
+This engine keeps only the thin adapter, `config/revenue-desk.json`: the money path (post, visit, free subscriber,
+paid subscriber, renewal), where each step is read here, gross apart from net retention by cohort, and the offer
+terms (a discount is the last lever, always traded for something; zero paid). Renewal and cohort retention are
+measure first: nothing here counts them yet, and the adapter names the reading that would. Bands are assumptions
+and bind only after Krish's yes; `spend_authority` is none. Sheets stay in the ignored `.scratch/revenue/`.
+`tests/test_revenue_desk.py` checks that the adapter parses and every source it names exists.
+
 ## Intensity (Ruling, Krish, 2026-10-29)
 
 "At U3 to U5, engines and Control Center may raise volume caps up to each
