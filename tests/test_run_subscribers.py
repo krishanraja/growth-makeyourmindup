@@ -221,5 +221,46 @@ class IngestTests(unittest.TestCase):
             self.assertEqual(ROUTES['subscribers'], 'subscribers')
 
 
+RENEWED = {'cohorts': [{'first_paid_month': '2026-09', 'renewed': 4, 'cancelled': 1},
+                       {'first_paid_month': '2026-10', 'renewed': 6, 'cancelled': 0}],
+           'source_url': 'https://synthetic.substack.com/publish/subscribers/paid', 'reason': None}
+
+
+class RenewalTests(unittest.TestCase):
+    """Renewals and paid cancellations by first-paid month, counts only (config/revenue-desk.json, renewal)."""
+
+    def test_counted_when_every_cohort_shows_both(self):
+        capture = subscribers.validate(taken(renewals=copy.deepcopy(RENEWED)), NOW)
+        got = subscribers.renewals(capture)
+        self.assertEqual((got['renewed'], got['cancelled'], got['reason']), (10, 1, None))
+        self.assertEqual([c['first_paid_month'] for c in got['cohorts']], ['2026-09', '2026-10'])
+
+    def test_unknown_is_null_with_its_reason_never_zero(self):
+        gap = copy.deepcopy(RENEWED)
+        gap['cohorts'][1]['cancelled'] = None
+        got = subscribers.renewals(subscribers.validate(taken(renewals=gap), NOW))
+        self.assertIsNone(got['renewed'])
+        self.assertIn('2026-10', got['reason'])
+        shown = {'cohorts': [], 'source_url': None, 'reason': 'the dashboard showed no renewals view'}
+        self.assertEqual(subscribers.renewals(taken(renewals=shown))['reason'], shown['reason'])
+        self.assertIn('predates', subscribers.renewals(subscribers.validate(taken(), NOW))['reason'])
+        self.assertIsNone(subscribers.renewals(missed())['renewed'])
+
+    def test_the_block_is_closed(self):
+        bad = [dict(RENEWED, reason='both'),
+               {'cohorts': [], 'source_url': None, 'reason': None},
+               dict(RENEWED, cohorts=[{'first_paid_month': '2026-9', 'renewed': 1, 'cancelled': 0}]),
+               dict(RENEWED, cohorts=[{'first_paid_month': '2026-12', 'renewed': 1, 'cancelled': 0}]),
+               dict(RENEWED, cohorts=[{'first_paid_month': '2026-09', 'renewed': -1, 'cancelled': 0}]),
+               dict(RENEWED, cohorts=[{'first_paid_month': '2026-09', 'renewed': 1, 'cancelled': 0, 'email': 'x'}]),
+               dict(RENEWED, cohorts=RENEWED['cohorts'] + RENEWED['cohorts'][:1])]
+        for block in bad:
+            with self.assertRaises(ValueError, msg=str(block)):
+                subscribers.validate(taken(renewals=copy.deepcopy(block)), NOW)
+
+    def test_the_template_asks_for_it(self):
+        self.assertEqual(subscribers.template(NOW)['renewals']['reason'], 'not checked')
+
+
 if __name__ == '__main__':
     unittest.main()

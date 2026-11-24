@@ -56,6 +56,10 @@ ITEMS_VIEWS = ('per_item', 'category_only', 'not_checked')
 ITEM_KINDS = ('post', 'note')
 ITEM_KEYS = {'kind', 'url', 'window_label', 'new_free', 'new_paid'}
 TOTAL_KEYS = {'value', 'free', 'paid', 'source_url', 'reason'}
+# Renewals: paid subscribers renewing and paid cancellations, by the month each first paid, as Substack's own
+# dashboard shows them. Counts only, never a subscriber. Optional, so a capture made before it still reads.
+RENEWAL_KEYS = {'cohorts', 'source_url', 'reason'}
+COHORT_KEYS = {'first_paid_month', 'renewed', 'cancelled'}
 ITEM_HOSTS = ('home.makeyourmindup.ai', 'substack.com')
 
 
@@ -69,7 +73,8 @@ def template(now=None):
     monday = last_week(now)
     return {'kind': KIND, 'week_of': monday.isoformat(), 'captured_at': None, 'read': 'not_taken',
             'not_taken': {'code': None, 'detail': None}, 'growth_sources': None, 'total_subscribers': None,
-            'items_view': 'not_checked', 'items': []}
+            'items_view': 'not_checked', 'items': [],
+            'renewals': {'cohorts': [], 'source_url': None, 'reason': 'not checked'}}
 
 
 def _count(value, field):
@@ -100,8 +105,9 @@ def validate(capture, now=None):
     """The weekly capture in its closed shape; the Growth-sources part by measure.validate_capture (F54)."""
     if not isinstance(capture, dict) or capture.get('kind') != KIND:
         raise ValueError('capture must be a ' + KIND + ' object')
-    if set(capture) != CAPTURE_KEYS:
-        raise ValueError('capture fields must be exactly ' + ', '.join(sorted(CAPTURE_KEYS)))
+    if set(capture) not in (CAPTURE_KEYS, CAPTURE_KEYS | {'renewals'}):
+        raise ValueError('capture fields must be exactly ' + ', '.join(sorted(CAPTURE_KEYS))
+                         + ', and renewals where it was read')
     week = measure.as_date(capture['week_of'], 'week_of')
     if week.weekday() != 0:
         raise ValueError('week_of is the Monday of the week read')
@@ -148,7 +154,61 @@ def validate(capture, now=None):
     urls = [_item(item, 'item ' + str(n))['url'] for n, item in enumerate(capture['items'], 1)]
     if len(urls) != len(set(urls)):
         raise ValueError('an item is recorded once')
+    if 'renewals' in capture:
+        _renewals(capture['renewals'], week)
     return capture
+
+
+def _renewals(block, week):
+    if not isinstance(block, dict) or set(block) != RENEWAL_KEYS:
+        raise ValueError('renewals needs exactly ' + ', '.join(sorted(RENEWAL_KEYS)))
+    if not isinstance(block['cohorts'], list):
+        raise ValueError('renewals cohorts is a list')
+    if bool(block['cohorts']) == (block['reason'] is not None):
+        raise ValueError('renewals gives cohorts or the reason they were not shown, not both')
+    if block['reason'] is not None:
+        measure.plain(block['reason'], 'renewals reason')
+        if block['source_url'] is not None:
+            _https(block['source_url'], 'renewals source_url')
+        return block
+    _https(block['source_url'], 'renewals source_url')
+    months = []
+    for n, row in enumerate(block['cohorts'], 1):
+        at = 'renewals cohort ' + str(n)
+        if not isinstance(row, dict) or set(row) != COHORT_KEYS:
+            raise ValueError(at + ' needs exactly ' + ', '.join(sorted(COHORT_KEYS)))
+        month = row['first_paid_month']
+        if not isinstance(month, str) or len(month) != 7 or month[4] != '-':
+            raise ValueError(at + ' first_paid_month is YYYY-MM')
+        first = measure.as_date(month + '-01', at + ' first_paid_month')
+        if first > week:
+            raise ValueError(at + ' first_paid_month is after the week read')
+        _count(row['renewed'], at + ' renewed')
+        _count(row['cancelled'], at + ' cancelled')
+        months.append(month)
+    if len(months) != len(set(months)):
+        raise ValueError('a first-paid month is recorded once')
+    return block
+
+
+def renewals(capture):
+    """The week's renewal reading from the capture: paid renewals and paid cancellations, counted only when every
+    first-paid cohort shows both; otherwise null with the reason. Never zero for unknown, never a subscriber."""
+    block = capture.get('renewals')
+    if capture.get('read') != 'taken':
+        return {'renewed': None, 'cancelled': None, 'cohorts': [], 'reason': 'the weekly read was not taken'}
+    if block is None:
+        return {'renewed': None, 'cancelled': None, 'cohorts': [],
+                'reason': 'this capture predates the renewals read (jobs/subscribers.md step 6a)'}
+    if block['reason'] is not None:
+        return {'renewed': None, 'cancelled': None, 'cohorts': [], 'reason': block['reason']}
+    cohorts = sorted((dict(r) for r in block['cohorts']), key=lambda r: r['first_paid_month'])
+    gaps = [r['first_paid_month'] for r in cohorts if r['renewed'] is None or r['cancelled'] is None]
+    if gaps:
+        return {'renewed': None, 'cancelled': None, 'cohorts': cohorts,
+                'reason': 'Substack did not show both counts for ' + ', '.join(gaps)}
+    return {'renewed': sum(r['renewed'] for r in cohorts), 'cancelled': sum(r['cancelled'] for r in cohorts),
+            'cohorts': cohorts, 'reason': None}
 
 
 def _target(metric, week):
@@ -214,6 +274,7 @@ def summary(capture, result):
             'paid_new': result.get('paid_subscribers'),
             'sources': [dict(r) for r in sources['rows']] if sources else [],
             'total_subscribers': capture['total_subscribers'],
+            'renewals': renewals(capture),
             'items_view': capture['items_view'],
             'items': {'recorded': len(items), 'with_a_new_subscriber': len([g for g in shown if g >= 1]),
                       'with_none': len([g for g in shown if g == 0]), 'not_shown': len(items) - len(shown)},
@@ -312,6 +373,10 @@ def main(argv=None, out=print, root=ROOT):
         + ' recorded, ' + str(items['with_a_new_subscriber']) + ' with a new subscriber, '
         + str(items['with_none']) + ' with none, ' + str(items['not_shown']) + ' not shown; by subscribers '
         + ', '.join(k + ' ' + str(v) for k, v in judged.items()) + '.')
+    kept = result['summary']['renewals']
+    out('Renewals: ' + ('not counted, ' + kept['reason'] if kept['renewed'] is None else
+                        str(kept['renewed']) + ' renewed, ' + str(kept['cancelled']) + ' cancelled across '
+                        + str(len(kept['cohorts'])) + ' first-paid months') + '.')
     if not args.write:
         out('Dry run: pass --write to record it.')
     return 0

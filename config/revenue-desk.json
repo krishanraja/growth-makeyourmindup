@@ -14,7 +14,7 @@
     "state_line": "NOW.md, the first line under \"Where it is right now\""
   },
   "stage": "partly_counted",
-  "stage_why": "Posts, visits and free subscribers each have a counted read in this engine. Paid subscribers are counted only when the weekly Substack page shows a paid column for every source. Renewals and paid cancellations have no counted field anywhere here, so the renewal step and the cohort retention rule are measure first: their one output is the reading that would count them, never an estimate.",
+  "stage_why": "Posts, visits and free subscribers each have a counted read in this engine. Paid subscribers are counted only when the weekly Substack page shows a paid column for every source. Renewals and paid cancellations have a counted field in the weekly Substack read but no week read with it yet, so the renewal step and the cohort retention rule stay measure first until two readings: never an estimate.",
   "blind_rule": "A step with no reading, an unreadable one, or one older than 7 days is blind, recorded with its reason and never as zero. While any step is blind the venture never reads on track or clear, and the fix goes to the owner of that reading (this engine's measurement job), never as a new ask on Krish's list.",
   "money_path": [
     {
@@ -70,11 +70,13 @@
       "counts": "paid subscribers renewing, and paid cancellations, by the month they first paid",
       "better": "up",
       "stage": "measure_first",
-      "read": [],
+      "read": [
+        {"path": "engine/run/subscribers.py", "function": "renewals"}
+      ],
       "measure_first": {
-        "nearest_reading": {"path": "jobs/numbers.md"},
-        "gap": "jobs/numbers.md asks for free-to-paid upgrades, unsubscribes, reactivations and paid cancellations when Substack shows them, but no capture field counts them, so no renewal or cancellation is counted today.",
-        "plan": "Add renewal and paid cancellation counts by first-paid month to the weekly Substack read (jobs/subscribers.md, engine/run/subscribers.py) as counts only, never a subscriber list, then two readings before any band is proposed."
+        "nearest_reading": {"path": "jobs/subscribers.md"},
+        "gap": "The weekly Substack capture now has a renewals block (jobs/subscribers.md step 6a, engine/run/subscribers.py renewals), counted only when every first-paid month shows both renewals and paid cancellations; no week has been read with it yet, and whether Substack shows renewals by first-paid month is unconfirmed until the first read.",
+        "plan": "Take two weekly reads with the renewals block. If Substack shows them, the step moves to counted and cohort retention can be read; if it shows no renewals view, Krish connects a read-only source that does (Substack's paid subscriber export read as counts on his PC, or the Stripe account behind the publication read through Control Center), then two readings before any band is proposed."
       }
     }
   ],
