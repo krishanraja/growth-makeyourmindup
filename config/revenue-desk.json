@@ -1,0 +1,139 @@
+{
+  "schema": "revenue-desk-adapter/1",
+  "why": "The revenue desk is ai-harness's revenue-desk method: it reads each step from work to money, says which step is blind, where the money is stuck and whether this week's rung can be reached, and proposes one 7-day test. This file is the thin adapter that tells the method where this engine reads each step. It holds no figures and no people. Ruling (Krish, 2026-11-24): build the revenue desk as recommended; measure first where nothing is counted; thresholds binding only after his yes.",
+  "method": {
+    "name": "revenue-desk",
+    "home": "krishanraja/ai-harness",
+    "read": "get_skill('revenue-desk') once Control Center serves it; until the method is admitted, a local ai-harness checkout (skills/revenue-desk), named by the AI_HARNESS_ROOT environment variable. Neither one readable means the desk records itself unavailable and nothing in this engine changes.",
+    "runner": "krishanraja/strategist runs the desk in its existing daily U5 watch and Sunday board; this engine runs nothing new."
+  },
+  "venture": "makeyourmindup",
+  "repo": "krishanraja/growth-makeyourmindup",
+  "north_star": {
+    "doc": "docs/NORTH_STAR.md",
+    "state_line": "NOW.md, the first line under \"Where it is right now\""
+  },
+  "stage": "partly_counted",
+  "stage_why": "Posts, visits and free subscribers each have a counted read in this engine. Paid subscribers are counted only when the weekly Substack page shows a paid column for every source. Renewals and paid cancellations have no counted field anywhere here, so the renewal step and the cohort retention rule are measure first: their one output is the reading that would count them, never an estimate.",
+  "blind_rule": "A step with no reading, an unreadable one, or one older than 7 days is blind, recorded with its reason and never as zero. While any step is blind the venture never reads on track or clear, and the fix goes to the owner of that reading (this engine's measurement job), never as a new ask on Krish's list.",
+  "money_path": [
+    {
+      "step": "post",
+      "counts": "posts sent on each channel, with each post's own reach and engagement",
+      "better": "up",
+      "stage": "counted",
+      "read": [
+        {"path": "engine/run/buffer_reads.py", "function": "sent_posts"},
+        {"path": "jobs/publishing.md"}
+      ],
+      "note": "Read from Buffer by the runner. Paid reach is kept apart from organic by engine/run/paid_audit.py; a post that looks paid never counts here."
+    },
+    {
+      "step": "visit",
+      "counts": "sessions on the publication from this engine's own tracked links, per slot",
+      "better": "up",
+      "stage": "counted",
+      "read": [
+        {"path": "engine/run/ga4.py", "function": "join_directive"},
+        {"path": "engine/run/ga4.py", "function": "join"},
+        {"path": "invariants/ga4.json"}
+      ],
+      "note": "Analytics is read only through Control Center's directive block or this engine's own GA4 capture. Direct traffic stays unattributed."
+    },
+    {
+      "step": "free_subscriber",
+      "counts": "new free subscribers a week by source, organic apart from unattributed and paid",
+      "better": "up",
+      "stage": "counted",
+      "read": [
+        {"path": "jobs/subscribers.md"},
+        {"path": "engine/run/subscribers.py", "function": "ingest"},
+        {"path": "engine/run/measure.py", "function": "classify"},
+        {"path": "engine/run/measure.py", "function": "northstar"},
+        {"path": "invariants/sources.json"}
+      ],
+      "note": "This is the North Star number. The capture holds private figures and stays in the ignored .scratch/substack/."
+    },
+    {
+      "step": "paid_subscriber",
+      "counts": "new paid subscribers in the capture week, and the paid total on the dashboard",
+      "better": "up",
+      "stage": "counted",
+      "read": [
+        {"path": "engine/run/measure.py", "function": "paid_week"},
+        {"path": "engine/run/subscribers.py", "function": "validate"}
+      ],
+      "note": "paid_week sums only when every source row shows a paid count; otherwise it is null with its reason and the step is blind that week. The GA4 paid event name is not verified yet (engine/run/ga4.py verified_event refuses it), so GA4 is never the paid read."
+    },
+    {
+      "step": "renewal",
+      "counts": "paid subscribers renewing, and paid cancellations, by the month they first paid",
+      "better": "up",
+      "stage": "measure_first",
+      "read": [],
+      "measure_first": {
+        "nearest_reading": {"path": "jobs/numbers.md"},
+        "gap": "jobs/numbers.md asks for free-to-paid upgrades, unsubscribes, reactivations and paid cancellations when Substack shows them, but no capture field counts them, so no renewal or cancellation is counted today.",
+        "plan": "Add renewal and paid cancellation counts by first-paid month to the weekly Substack read (jobs/subscribers.md, engine/run/subscribers.py) as counts only, never a subscriber list, then two readings before any band is proposed."
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "cohort_retention",
+      "rule": "Read retention by cohort, the month a subscriber first paid: gross retention (paid subscribers kept, ignoring upgrades) apart from net retention (kept plus upgrades and reactivations). A falling gross figure is never hidden by a rising net one.",
+      "stage": "measure_first",
+      "needs": ["renewal"]
+    },
+    {
+      "id": "slice_before_averaging",
+      "rule": "Slice a failing step by source, channel, cohort and week before averaging it.",
+      "stage": "counted",
+      "needs": ["post", "visit", "free_subscriber"]
+    },
+    {
+      "id": "organic_only",
+      "rule": "The North Star counts organic subscribers with zero paid boosts; a step whose rise came from paid reach is reported apart and never counts toward the number.",
+      "stage": "counted",
+      "read": {"path": "engine/run/paid_audit.py"}
+    }
+  ],
+  "bands": {
+    "status": "assumption",
+    "binding": false,
+    "binding_after": "Krish's yes on the exact bands, recorded with his words",
+    "calibrate_from": "this engine's own weekly readings in the North Star ledger (engine/run/measure.py read_ledger), never another venture's or an outside benchmark",
+    "per_step": {
+      "post": {"warning": null, "breach": null},
+      "visit": {"warning": null, "breach": null},
+      "free_subscriber": {"warning": null, "breach": null},
+      "paid_subscriber": {"warning": null, "breach": null},
+      "renewal": {"warning": null, "breach": null}
+    },
+    "note": "No band is set. A band is proposed only after enough counted weeks to calibrate it, labelled an assumption, and binds only after Krish's yes."
+  },
+  "offer_terms": [
+    {
+      "id": "discount_last_lever",
+      "rule": "A discount is the last lever, tried only after the post, visit and sign-up steps have each been tested, and always traded for something: a longer commitment, an annual plan, a referral or a named action. A discount given for nothing is refused.",
+      "class": "never_overridden"
+    },
+    {
+      "id": "zero_paid",
+      "rule": "No paid boost, ad or paid placement is proposed to move the number; the North Star is organic with zero paid.",
+      "class": "never_overridden"
+    },
+    {
+      "id": "no_new_price",
+      "rule": "The desk never states, changes or tests a price. A price or discount test is a plan behind strategy for Krish, and anything it makes keeps its own go-live.",
+      "class": "never_overridden"
+    }
+  ],
+  "sheets": {
+    "path": ".scratch/revenue/",
+    "committed": false,
+    "cadence": "read daily by the strategist's U5 watch, folded into the Sunday board; at most one ask a week for this venture"
+  },
+  "spend_authority": "none",
+  "approval": "The desk reads, computes and proposes, and nothing else. Its one test a week reaches Krish only as a plan behind strategy; his yes approves a plan, never a send, post, price or spend. Every gate and go-live in this engine is unchanged."
+}
