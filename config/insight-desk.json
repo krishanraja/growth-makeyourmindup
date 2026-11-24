@@ -1,0 +1,56 @@
+{
+  "schema": "insight-desk-adapter/1",
+  "why": "The insight desk is ai-harness's insight-desk skill: it turns this engine's North Star goal into an insight sheet of up to three tested ideas before any words are made. This file is the thin adapter that tells the skill where this engine keeps each input and where an approved idea goes. Ruling (Krish, 2026-11-24): one skill in ai-harness with a thin adapter in each growth engine.",
+  "skill": {
+    "name": "insight-desk",
+    "home": "krishanraja/ai-harness",
+    "read": "get_skill('insight-desk') once Control Center serves it; until the skill is admitted, a local ai-harness checkout (candidates/insight-desk or skills/insight-desk), named by the AI_HARNESS_ROOT environment variable. Neither one readable means the desk records itself unavailable and the mix plan runs exactly as before."
+  },
+  "venture": "makeyourmindup",
+  "repo": "krishanraja/growth-makeyourmindup",
+  "north_star": {
+    "doc": "docs/NORTH_STAR.md",
+    "state_line": "NOW.md, the first line under \"Where it is right now\""
+  },
+  "taste": "get_approved_taste for venture makeyourmindup; empty means none yet, never invented",
+  "floor": [
+    "docs/CAROUSEL-STANDARD.md",
+    "docs/TASTE.md",
+    "vendor/content-engine/copy-lint",
+    "engine/copy_lint.py"
+  ],
+  "live": ".scratch/divergent/live.json",
+  "verdicts": "lists/mix-learn/for-<Monday>.json",
+  "humour": {
+    "allowed": true,
+    "command": "engine/humour.py",
+    "rules": [
+      "at_person",
+      "mindmake_humour",
+      "needs_explaining"
+    ],
+    "note": "The humour engine reads an idea's premise and mechanic only, through this engine's own client; its three house rules hold, and unavailable is never a pass."
+  },
+  "divergent": {
+    "namespace": "growth-makeyourmindup:ideas",
+    "client": "engine/divergent.py",
+    "note": "score with the three obvious ideas is free and runs every sheet; map, provoke and challenge are paid and stay inside Control Center's caps."
+  },
+  "sheets": {
+    "path": ".scratch/insight/",
+    "committed": false,
+    "cadence": "at most one sheet a week"
+  },
+  "hook": {
+    "command": "python3 growth.py mix plan --week-of <Monday> --insight <sheet.json>",
+    "object": "the week's mix plan (engine/mix.py) and its concepts, each bound by concept_sha256 (engine/concepts.py)",
+    "default_lane": "level_up",
+    "lanes": [
+      "meme",
+      "positive_news",
+      "level_up"
+    ],
+    "boundary": "docs/ENGINE-BOUNDARY.md: the sheet gives ideas only; content-engine keeps story, copy, design and rendering."
+  },
+  "approval": "Each idea reaches Krish only as a concept inside the week's one mix plan proposal, stage plan behind strategy. Approving it approves the idea and its mock, nothing more; release keeps every gate."
+}

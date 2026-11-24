@@ -31,6 +31,11 @@ each idea's planned Substack Note (`note`) against the live posts held here, wit
 that sits on the obvious one or repeats one already live (`hook_guard`); none is dropped. It is the one network read
 here, dormant until Control Center serves it; --offline skips it.
 
+Insight: --insight <sheet> adds the ideas of an insight desk sheet (the ai-harness insight-desk skill, adapter
+config/insight-desk.json, checks in engine/insight_sheet.py) to this week's filler ideas in the --ideas shape, in
+one lane. The sheet's hash rides beside the plan as `insight`; concept_sha256 and the proposal's words are made
+exactly as before. Without --insight nothing here changes.
+
 Nothing here posts, schedules, sends or writes outside where --out points.
 """
 import argparse
@@ -783,6 +788,20 @@ def hook_guard(mix, ideas, client_factory, live_path):
     return guard
 
 
+def insight_ideas(path, lane, ideas, root=ROOT):
+    """(ideas, record): --ideas with the insight sheet's ideas added in the same shape, and the sheet's provenance
+    for the plan (engine/insight_sheet.py). The sheet is checked first; an invalid one is a ValueError and no plan.
+    The record sits beside the plan, never in its proposal, so concept_sha256 and the plan's words are unchanged."""
+    from . import insight_sheet
+    sheet = insight_sheet.load(path, insight_sheet.known_methods())
+    lane = lane or insight_sheet.adapter(root)['hook']['default_lane']
+    lanes = {name for name, cfg in load(root)['lanes'].items() if cfg['source'] == 'ideas'}
+    ideas = list(ideas or ())
+    added, _, record = insight_sheet.to_ideas(sheet, lane, lanes, {i.get('idea_id') for i in ideas
+                                                                      if isinstance(i, dict)})
+    return ideas + added, record
+
+
 def command(argv, root=ROOT, client_factory=None):
     if argv and argv[0] in ('offdays', 'topup', 'clock', 'briefs'):
         from .offday import command as offday
@@ -795,6 +814,10 @@ def command(argv, root=ROOT, client_factory=None):
     p.add_argument('--week-of', required=True, help='the Monday, YYYY-MM-DD')
     p.add_argument('--inventory', default=str(Path('.scratch') / 'backlog' / 'inventory.json'))
     p.add_argument('--ideas', help='JSON list of filler ideas: idea_id, lane, idea, claim, source_url, source_date')
+    p.add_argument('--insight', help='an insight desk sheet (insight-sheet/1, engine/insight_sheet.py): its ideas join '
+                   'the week as filler ideas, checked first; config/insight-desk.json')
+    p.add_argument('--insight-lane', help='the filler lane the sheet\'s ideas go to (default: the adapter\'s '
+                   'hook.default_lane)')
     p.add_argument('--mocks', help='JSON map concept_id to {claim, mock_sha256}')
     p.add_argument('--learn', help='a mix learn file from last week (default: ' + str(LEARN_DIR / 'for-<week-of>.json')
                    + ' when the learn workflow committed one)')
@@ -813,11 +836,22 @@ def command(argv, root=ROOT, client_factory=None):
             learned, path = learned_for(args.week_of, root)
             if path is not None:
                 print('learned from ' + (LEARN_DIR / path.name).as_posix(), file=sys.stderr)
-        mix = plan(read_json(args.inventory), args.week_of, read_json(args.ideas) if args.ideas else (),
+        ideas = read_json(args.ideas) if args.ideas else ()
+        insight = None
+        if args.insight:
+            try:
+                ideas, insight = insight_ideas(args.insight, args.insight_lane, ideas, root)
+            except (OSError, ValueError) as error:
+                print(str(error), file=sys.stderr)
+                return 1
+        mix = plan(read_json(args.inventory), args.week_of, ideas,
                    read_json(args.mocks) if args.mocks else None, learned,
                    root, args.urgency if args.urgency else intensity.state(root)['urgency'])
-        if args.ideas and not args.offline:
-            hook_guard(mix, read_json(args.ideas), client_factory, args.live or Path(root) / LIVE_FILE)
+        if insight is not None:
+            mix['refused_ideas'] += insight['refused']
+            mix['insight'] = insight
+        if (args.ideas or args.insight) and not args.offline:
+            hook_guard(mix, ideas, client_factory, args.live or Path(root) / LIVE_FILE)
     elif args.verdicts:
         if args.specs:
             parser.error('learn takes specs or --verdicts, not both')

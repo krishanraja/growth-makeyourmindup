@@ -399,6 +399,32 @@ never written to his list. A spark reaches Krish only as this engine's own propo
 walls check and the copy lint like the runner's. Krish's own Claude sessions can use the Control Center connector's
 `divergent_score`, `divergent_record` and `divergent_run` with namespace `growth-makeyourmindup`.
 
+## Insight desk (Ruling, Krish, 2026-11-24)
+
+The insight desk is ai-harness's `insight-desk` skill: it turns this engine's North Star goal into an insight sheet
+(`insight-sheet/1`) of up to three tested ideas, each with a claim, a mechanic and a conversion path, before any
+words are made. There is no separate repository; this engine keeps only the thin adapter, `config/insight-desk.json`,
+which names where each input lives and where an approved idea goes. Read the skill with `get_skill('insight-desk')`
+once Control Center serves it; until it is admitted, from a local ai-harness checkout named by `AI_HARNESS_ROOT`.
+Neither readable means the desk is unavailable and the week runs exactly as before.
+- **Where it runs.** At the weekly mix plan, at most one sheet a week. Sheets live under `.scratch/insight/` and are
+  never committed.
+- **The check.** `python3 -m engine.insight_sheet <sheet>` checks a sheet offline (exit 0 valid, 1 invalid with every
+  reason, 2 unreadable); `--print-sha` prints the `sheet_sha256` it should carry.
+- **The hook.** `growth.py mix plan --week-of <Monday> --insight <sheet>` checks the sheet first (an invalid one makes
+  no plan), then adds its ideas to the week's filler ideas in the `--ideas` shape, in the lane `--insight-lane` names
+  (default `level_up`). An idea that failed a test on its sheet, or a measurement idea, is refused with why. The
+  sheet's hash and `harness_skill_sha` ride beside the plan as `insight`, never in its proposal, so `concept_sha256`
+  and the plan's words are made exactly as before. Without `--insight` nothing changes.
+- **Ideas only** (`docs/ENGINE-BOUNDARY.md`): the sheet gives the claim and the mechanic; content-engine keeps the
+  story, copy, design and rendering.
+- **Engines.** The humour engine reads an idea's premise through `engine/humour.py`, its three house rules holding;
+  divergent-thinker runs in namespace `growth-makeyourmindup:ideas` (`growth.py divergent score --lane ideas` with the
+  three obvious ideas, free). Unavailable is never a pass.
+- **Walls.** Each idea reaches Krish only as a concept in the week's one mix plan proposal, stage `plan` behind
+  `strategy`; approving it approves the idea and its mock, nothing more. The desk never posts, sends or spends, and
+  his words about a sheet go to the floor and his taste ledger, never into this public repository.
+
 ## Intensity (Ruling, Krish, 2026-10-29)
 
 "At U3 to U5, engines and Control Center may raise volume caps up to each
