@@ -1,5 +1,14 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-25: One email a week, the weekly edition, and Claude schedules in Buffer. His words, on the weekly edition
+  design (pull request 143): "Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex".
+  The publication sends one email a week, "makeyourmindup weekly", Saturday 08:00 New York, only on his Approve for
+  send bound to the edition package's sha256; the Monday, Wednesday and Friday pieces go to the web and the app and
+  never email the whole list (R132). On the follow-up he chose "Codex, Substack step only": Codex on the worker keeps
+  only the edition's Substack editor step (`jobs/edition.md`, written and switched off until he turns it on), and
+  Claude schedules every Buffer post. The edition's links carry `utm_source=newsletter` (`specs/subscribe-route.json`,
+  `edition`); the Monday read takes the edition's numbers and names any series post that emailed more readers than
+  the opt-in section holds. Nothing was sent, posted, scheduled or spent.
 - 2026-11-17: Make Your Mind Up makes no dated-and-scored calls. His words: "I don't do dated-and-scored
   make-your-mind-up pieces because it felt quite tacky and gimmicky. I don't really have the clout such that my opinion
   can hold up in official scores.. Lets get rid of that from the cover page makeyourmindup repo and all documentation".

@@ -510,9 +510,15 @@ Krish manages Claude here; Claude starts and drives the Codex session (`scripts/
 it reports, and tells him the session's exact name whenever it starts one. `BROWSER.md`, "The worker's Chromium", has
 the setup. Where the section below says a session runs on his own computer or shows in his Codex Desktop app, this wins.
 
-## Claude and Codex: who does what (Ruling (Krish, 2026-11-15): Codex does a minimum of every video session and the social legwork, visible in Codex Desktop; Claude owns strategy, orchestration, verification and learnings; Codex never updates ai-harness or Google Drive)
+## Claude and Codex: who does what (Ruling (Krish, 2026-11-25): Claude schedules in Buffer, Codex keeps only the weekly edition's Substack step; Ruling (Krish, 2026-11-15): Codex does a minimum of every video session and the social legwork, visible in Codex Desktop; Claude owns strategy, orchestration, verification and learnings; Codex never updates ai-harness or Google Drive)
 
-His words: "Codex should also do the leg work for social media asset scheduling, posting, verifying posts went live properly with the right thumbnails and captions and CTAs, and also the measurement reports are ingested, and we understand whats working well and what isn't, and use that to optimise future assets." Where this and an older line below disagree, this wins.
+**25 November 2026: Claude schedules in Buffer; Codex keeps only the weekly edition's Substack step.** Ruling (Krish, 2026-11-25), taking every recommendation of the weekly edition design (pull request 143). His words: "Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex". Where this and an older line below disagree, this wins.
+
+- **Claude** schedules every Buffer post, through Buffer's API or connector, only after Krish's approval and inside `docs/PUBLISHING-AUTHORITY.md`, and reads each one back from Buffer: the Saturday Note that points to the weekly edition, and every social post that points to a piece or to the edition. Notes and series posts still sign post by post. This replaces the 15 November line below that Codex schedules and posts.
+- **Codex** keeps one publishing step: the weekly edition's Substack editor step, on the worker (`jobs/edition.md`). On the follow-up the same day Krish chose "Codex, Substack step only": Buffer's Substack channel posts Notes only, and a newsletter post is built and scheduled in Substack's own editor. Codex builds the edition's draft from content-engine's package, schedules it only after his Approve for send bound to the package's sha256, and reads it back. It never touches Buffer.
+- Everything else in the 15 November ruling below stands: Codex's visual builds, its live read-back of posts and its reading of the numbers; Claude's strategy, checks and learnings.
+
+**15 November 2026.** His words: "Codex should also do the leg work for social media asset scheduling, posting, verifying posts went live properly with the right thumbnails and captions and CTAs, and also the measurement reports are ingested, and we understand whats working well and what isn't, and use that to optimise future assets." Where this and an older line below disagree, this wins.
 
 - **Claude** owns the strategy, the week's plan and mix, every Codex card and handoff, the check of every result, the learnings written back (`engines/records/`, `social/lessons/`, `CHANGES.md`, the taste ledger), every file put in Google Drive and every ai-harness proposal.
 - **Codex** does the visual builds of every video and picture session (content-engine's `ve card`, at least one card a session: content-engine `config/codex-minimum.json`), and the social legwork in Krish's signed-in browser, in a session he can watch in his Codex Desktop app: it schedules and posts only what Krish approved, inside `docs/PUBLISHING-AUTHORITY.md`; reads each post back live for its cover or thumbnail, caption and call to action (the Publishing engine's `check` records, source `live_readback`); and reads the measurement each post and each paid boost earned (the Measurement engine's observations; a boost's reading carries `paid_boost`). It never writes to Google Drive or ai-harness, never places or changes a boost without Krish's Yes on that boost, and hands what it read to the Claude session, which checks and records it.
@@ -533,6 +539,19 @@ what's real, and where it leads. You make your mind up."
 
 Each piece is a Substack article plus a "VIDEO:" post, a 3-minute YouTube
 video and a 90-second vertical cut (Shorts, Reels, TikTok, X).
+
+**One email a week (Ruling, Krish, 2026-11-25).** Subscribers get one email a
+week: the weekly edition, "makeyourmindup weekly", every Saturday at 08:00 New
+York (13:00 London), with the week's pieces and the news from the creative
+industries that matters, sent only on his Approve for send. The Monday,
+Wednesday and Friday pieces keep their days and go live on the web and in the
+Substack app with no email; a reader who wants every piece by email opts in to
+its section. Only the weekly edition emails the whole list (R132). The
+edition's own links carry `utm_source=newsletter` (`specs/subscribe-route.json`,
+`edition`), and the Monday read takes its numbers (`jobs/subscribers.md`). The
+line quoted above was the publication's promise before this ruling; the new
+promise line is the makeyourmindup site's and the rebrand session's to set,
+not this engine's.
 
 | Where | Address |
 |---|---|
@@ -581,7 +600,10 @@ that it runs there:
    session Krish is driving, one outreach send or one comment he approved
    word for word in that session ("Outreach for Make Your Mind Up";
    `engines/acquisition.json`, `engines/engagement.json`). Draft saves never
-   authorise scheduling or publication.
+   authorise scheduling or publication. Since 25 November 2026 one more
+   exception: the weekly edition's Substack step on the worker
+   (`jobs/edition.md`), which schedules only the edition Krish approved for
+   send, bound to its sha256, and nothing else.
 2. **Facts only from his published pieces.** Every fact, number and name in
    a draft comes from an article `python3 growth.py pieces
    --full` prints, or from the thread you are replying to. Never invent a
