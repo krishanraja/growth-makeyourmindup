@@ -109,4 +109,4 @@ then makeyourmindup 55 the week edition one sends.
 | CC2 | krishanraja/control-center#1030 | built; his one list names the edition while it waits for Approve for send and opens the Saturday card (no Clear, Bump or Purge: his answer is the press on the card); 112 list tests pass here. CC1 is not needed (the board draws the new item generically) |
 | V1 | not settled | the first Video post publish screen opened with a video attached |
 | K1, K2 | Krish's Substack settings | not started |
-| Dry run | `dry-run/` in this folder | waiting for Krish's approval |
+| Dry run | `dry-run/` in this folder | held by Krish until the v5 brand kit is settled (DECISIONS.md, 25 Nov); then rendered in the Library's `newsletter-weekly-edition` and brought back once, for the shape, the words and the look |

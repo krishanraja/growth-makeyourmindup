@@ -34,3 +34,8 @@ Claude now in charge of Buffer scheduling not Codex". So questions 1 to 11 are a
 Substack's own editor (Buffer Help Centre, "Using Substack with Buffer"). Asked who builds the edition's Substack draft
 on Friday and schedules it after his press, he chose "Codex, Substack step only (Recommended)": Codex on the worker
 does the Substack editor step and nothing in Buffer.
+
+**25 Nov 2026, on edition one's dry run:** "I think, wait for your parent session to be completed as it will cement
+the entire brand kit". So his approval of the dry run (`dry-run/`) waits for the makeyourmindup v5 rebrand to settle
+the brand kit, the Library's `newsletter-weekly-edition` among it. Then the dry run is rendered in that template and
+comes back to him once, for the shape, the words and the look together. Nothing about the design changes.

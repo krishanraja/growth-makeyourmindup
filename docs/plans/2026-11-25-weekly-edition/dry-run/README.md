@@ -4,6 +4,10 @@ What edition one of makeyourmindup weekly would have been on Saturday 14 Novembe
 three pieces all went live (9 to 13 November). For Krish's approval of the shape and the words. Nothing has been sent,
 scheduled or put into Substack.
 
+**Held (Krish, 25 Nov 2026):** his approval waits for the v5 brand kit to be settled ("wait for your parent session to
+be completed as it will cement the entire brand kit"; DECISIONS.md). Then this package is rendered in the Library's
+`newsletter-weekly-edition` and comes back to him once, for the shape, the words and the look together.
+
 - `edition-2026-11-14.draft.json`: the package, in the contract's shape (`content-engine-edition/1`), keys sorted.
 - `edition-2026-11-14.preview.html`: the page it renders to. Structure only: the v5 look comes from the Library's
   `newsletter-weekly-edition` template once Krish approves the Library.
