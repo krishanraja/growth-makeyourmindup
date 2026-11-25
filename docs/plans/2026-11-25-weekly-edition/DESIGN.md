@@ -1,7 +1,8 @@
 # The weekly edition: how makeyourmindup reaches its readers (design, 25 Nov 2026)
 
-Status: **proposed, for Krish's approval.** Nothing here is built, scheduled or sent. The decisions it needs are in
-[`DECISIONS.md`](DECISIONS.md), one question at a time; the implementation plan follows his answers.
+Status: **approved by Krish on 25 Nov 2026** ("Yes take all recommendations - but Claude now in charge of Buffer
+scheduling not Codex"). His answers and the one change are in [`DECISIONS.md`](DECISIONS.md); the build is in
+[`IMPLEMENTATION.md`](IMPLEMENTATION.md). Nothing here is sent until he presses Approve for send on an edition.
 
 The brief (Drive, Ventures/Temp, "2026-11-25 makeyourmindup channels and distribution"), in Krish's words of 25 Nov 2026:
 "nobody cares enough to receive 3 deep dives a week, valuable though they are. We should figure out how to deliver an
@@ -132,7 +133,8 @@ write it ("Growth adds no article", `specs/standing-plan.json`).
 | By Sat 07:30 | **One press: Approve for send**, on the Saturday card in Control Center's Content tab, bound to the hash. It also shows on his one list. | Control Center | | **one press** |
 | Sat 07:30 | **Schedule** the post for 08:00 with email on ("Schedule time to email and publish"), only if his press matches the hash; read back that it is scheduled. Substack schedules in the scheduling device's time zone, so the worker's browser time is converted and the scheduled time is read back in New York time. No press, or a changed edition: nothing is scheduled and the card says why. | growth | Codex on the worker | none |
 | Sat 08:00 | Substack sends. | Substack | | none |
-| Sat 08:30 | **Read back**: the post is live and the email went; tick the board; draft the Saturday Note that points to the edition. | growth | Codex on the worker | signs the Note, as every Note today |
+| Sat 08:30 | **Read back**: the post is live and the email went; tick the board. | growth | Codex on the worker | none |
+| Sat, after his Note sign-off | **Schedule the Saturday Note** that points to the edition, and any social post that points to it, in Buffer (Buffer's Substack channel posts Notes only). | growth | Claude, through Buffer (Ruling, Krish, 2026-11-25) | signs the Note, as every Note today |
 | Mon 06:15 | **Measure**: the weekly Substack read adds the edition's numbers and confirms each piece sent no email. | growth | the existing "Growth: subscribers" job | none |
 
 Zero Claude routines (Ruling, Krish, 2026-10-29): every timed step is a GitHub Actions schedule or one of growth's
@@ -163,8 +165,10 @@ removed. What changes:
    week for leaders...") and welcome email, and the site's description ("Free, every Monday, Wednesday and Friday",
    makeyourmindup `apps/cover/content/site.json`) say what the reader now gets. The v5 rebrand session owns the new
    Substack copy and the new site; this design hands it the promise line.
-5. **What runs on its own after his approval**: the edition's schedule and read-back (Codex on the worker), and every
-   Buffer post as today. Notes and series posts still sign post by post; this design does not change that.
+5. **What runs on its own after his approval**: the edition's schedule and read-back in Substack's editor (Codex on the
+   worker, the Substack step only), and every Buffer post, which Claude now schedules (Ruling, Krish, 2026-11-25:
+   "Claude now in charge of Buffer scheduling not Codex"). Buffer's Substack channel posts Notes only, never newsletter
+   posts (Buffer Help Centre, "Using Substack with Buffer"). Notes and series posts still sign post by post.
 
 ## 6. Measurement
 
