@@ -25,6 +25,15 @@ spends: the first send is edition one, on his Approve for send.
   post draft, goes to its publish settings, records whether the box and Advanced, "Only send to a specific audience
   segment" are there, and leaves without publishing. Result recorded in this folder. If neither exists, Krish chooses:
   a text post with the video embedded, or the Video post keeps its email.
+  **Tried 25 Nov 2026, not settled.** Codex thread "MYMU V1: can a Substack Video post skip the email? (read only, 25
+  Nov 2026)" on the worker found that Substack keeps Continue disabled until a video is attached, and the worker
+  browser's upload tool refused every file path (it is outside the tool's workspace roots, even when the file is copied
+  into the browser container). Nothing was published, sent, scheduled or uploaded; the test files were removed and the
+  browser container was put back as it was. So V1 is settled the first time a Video post's publish screen is open with
+  a video attached: Krish, when he next publishes a piece, or Codex once the worker's upload roots are configured.
+  Until then C1 stays held and every piece keeps its current publish step. The same limit means the edition's Substack
+  draft (G4) must need no upload: it uses Substack's post cards for the pieces, links and text, and the email header
+  set once in Substack's settings.
 - **V2. Baselines.** The Monday Substack read takes, for 2 to 13 Nov: unsubscribes a week, unique clicks a send, and each
   piece's web views in its first seven days (counts only). Without them the bars in DESIGN.md section 6 cannot be judged.
 
