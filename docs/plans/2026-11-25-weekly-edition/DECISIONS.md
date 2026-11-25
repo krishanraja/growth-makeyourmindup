@@ -39,3 +39,12 @@ does the Substack editor step and nothing in Buffer.
 the entire brand kit". So his approval of the dry run (`dry-run/`) waits for the makeyourmindup v5 rebrand to settle
 the brand kit, the Library's `newsletter-weekly-edition` among it. Then the dry run is rendered in that template and
 comes back to him once, for the shape, the words and the look together. Nothing about the design changes.
+
+**25 Nov 2026, who says when, relayed by the rebrand session:** Krish asked the makeyourmindup v5 rebrand session
+(the one that started this work) to control this one: "can you also ensure you control your other subsession
+'makeyourmindup channels and distribution' at the right moment? I felt like it should wait on your say so." So
+everything here that depends on the v5 look (renders, templates, the dry run) waits until the rebrand session says the
+Library is locked; its message names the template IDs to use, the weekly edition template among them. Read here as:
+the re-render starts on that session's word, not on a separate word from Krish that the kit is settled. The rendered
+dry run still comes back to Krish once, for the shape, the words and the look, and nothing sends without his yes for
+that send. Work that does not depend on the look carries on as it is.
