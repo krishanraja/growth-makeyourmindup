@@ -519,6 +519,15 @@
       ],
       "status": "on-request",
       "successor": null
+    },
+    {
+      "name": "Worker job: the weekly edition's Substack step",
+      "source": "worker",
+      "jobs": [
+        "jobs/edition.md"
+      ],
+      "status": "off-until-krish",
+      "successor": null
     }
   ],
   "claude_sessions": [

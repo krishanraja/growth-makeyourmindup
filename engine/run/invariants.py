@@ -488,18 +488,22 @@ def load_lanes(root=ROOT):
         # The four engines (docs/reviews/2026-11-05-growth-engine-review.md) run when Krish
         # starts a Codex session on one of them: on request, never on a schedule. A PC automation
         # is kept until W46, or standing when only his signed-in browser can do it, so no L0 job
-        # takes it over (the weekly Substack read, jobs/subscribers.md; Krish, 2026-11-12).
+        # takes it over (the weekly Substack read, jobs/subscribers.md; Krish, 2026-11-12). A worker job written
+        # but not yet scheduled is off until Krish turns it on: automations.json has no field that holds an entry
+        # off, so it is named here instead (the weekly edition's Substack step, jobs/edition.md; Krish, 2026-11-25).
         allowed = (('on-request',) if entry['source'] == 'engine-session'
                    else ('kept-until-W46', 'standing') if entry['source'] == 'automations.json'
+                   else ('off-until-krish',) if entry['source'] == 'worker'
                    else ('kept-until-W46',))
         if entry['status'] not in allowed:
             raise ValueError(at + ': status kept-until-W46, standing for a PC automation only his signed-in '
-                                  'browser can run, or on-request for an engine session')
-        if entry['status'] == 'standing' and entry['successor'] is not None:
-            raise ValueError(at + ': a standing automation has no successor')
+                                  'browser can run, on-request for an engine session, or off-until-krish for a '
+                                  'worker job not yet scheduled')
+        if entry['status'] in ('standing', 'off-until-krish') and entry['successor'] is not None:
+            raise ValueError(at + ': a standing automation or a job not yet scheduled has no successor')
         _strings(entry['jobs'], 'jobs', at)
-        if entry['source'] not in ('automations.json', 'heartbeat', 'engine-session'):
-            raise ValueError(at + ': source is automations.json, heartbeat or engine-session')
+        if entry['source'] not in ('automations.json', 'heartbeat', 'engine-session', 'worker'):
+            raise ValueError(at + ': source is automations.json, heartbeat, engine-session or worker')
     if not isinstance(data['claude_sessions'], list):
         raise ValueError('claude_sessions is a list')
     for entry in data['claude_sessions']:
