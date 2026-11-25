@@ -1872,6 +1872,20 @@
         "test_a_recorded_boost_holds_its_post_out_of_the_organic_baseline",
         "test_subscribers_from_a_boosted_platform_in_its_window_are_not_provably_organic"
       ]
+    },
+    {
+      "id": "R132",
+      "statement": "Only the weekly edition emails the whole list (Ruling, Krish, 2026-11-25). A series piece's (Monday, Wednesday, Friday) Substack step never emails everyone: the piece goes to the web and the app, and a reader who opted in to every piece may get it through that section or a send to that segment only. The Monday read names any series post that emailed more readers than the opt-in section holds, a count it could not read is unknown and never a pass, and the Sunday report shows each one as a failure.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "The Substack step of a series piece never emails the whole list; only the weekly edition emails everyone.",
+      "enforced_by": [
+        "engine/run/subscribers.py:series_email_check"
+      ],
+      "tests": [
+        "test_a_series_post_above_the_opt_in_section_is_a_failure",
+        "test_with_no_opt_in_section_any_email_is_a_failure_and_unknown_is_never_a_pass",
+        "test_the_weekly_edition_rule_is_quoted_and_guarded"
+      ]
     }
   ]
 }
