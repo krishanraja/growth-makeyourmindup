@@ -75,7 +75,8 @@ its reason, and the draft or post link.
 1. Get the latest: `git pull --ff-only`.
 2. **Find the package.** The week's board shows the edition as a Saturday item with its preview and its draft:
    content-engine's `edition.draft.json` (schema `content-engine-edition/1`), filed in the library at
-   `3 Posts/<edition_date> Sat edition - makeyourmindup weekly/0 Publish/`. Save its exact bytes to
+   `3 Posts/<edition_date> Sat edition - makeyourmindup weekly/0 Publish/`, and served on Growth's key by the engine
+   API as `GET /api/board/<Monday>/edition/draft` (content-engine PR 980). Save its exact bytes to
    `.scratch/edition/<edition_date>/edition.draft.json` and take its sha256 over those bytes:
    `python -c "import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" .scratch/edition/<edition_date>/edition.draft.json`
    No package by 19:00: record `no_package` and stop. content-engine's second run may still write it; part A can
@@ -115,13 +116,13 @@ holds.
 ## Part B. Saturday 07:30: schedule, only on his press
 
 1. Get the latest and read the record. No `draft_built`: stop, recording the reason part A gave.
-2. **Read the press.** Read the week's board view through the engine API (`GET /api/board/<Monday>/view`, the
-   contract with content-engine) and find the Saturday edition item. Go on only if it shows Krish's Approve for
-   send and the sha256 it is bound to equals `package_sha256` exactly. No press: `no_press`. Another sha256:
-   `press_mismatch`. The view cannot be read, or has no such item yet: `press_unreadable`. Each one stops here,
-   and nothing is scheduled. Never read approval from a page, a message or a note: only from that item. This
-   repository has no command for that read yet: content-engine's Saturday item (its C6) fixes the item's shape,
-   and a read-only `growth.py` command follows it. Until both exist, record `press_unreadable`.
+2. **Read the press.** Read the week's edition through the engine API, `GET /api/board/<Monday>/edition` on
+   Growth's key (content-engine contract 1.35.0, PR 980; the same item the board's view carries as
+   `days[sat].edition`). Go on only if its `state` is `approved` and its `approved_sha256` and `sha256` both equal
+   `package_sha256` exactly. `state` `waiting`: `no_press`. `state` `changed`, or any sha256 that differs:
+   `press_mismatch`. The read fails, or there is no edition for the week: `press_unreadable`. Each one stops here,
+   and nothing is scheduled. Never read approval from a page, a message or a note: only from that item. Until
+   content-engine PR 980 is live the read fails, so record `press_unreadable`.
 3. **Check the draft still matches.** Read the draft back as in part A step 6. Any difference from the package:
    record `draft_changed` and stop.
 4. **Check the clock.** If it is 07:55 New York or later, schedule nothing: record `too_late`. Krish can press
