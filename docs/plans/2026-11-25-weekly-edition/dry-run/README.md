@@ -26,6 +26,7 @@ scheduled or put into Substack.
 - In Substack each piece goes in as Substack's own post card (the edition needs no upload; IMPLEMENTATION.md, V1).
 - The opener's "switch it on in your email settings" needs the opt-in section (K1) to exist before edition one sends.
 - No good-news group: the good-news run did not run for that week. A live edition adds up to three.
-- Three research candidates were left out as weaker or off the beat (NVentures' subpoena fight, Weta FX in Taiwan, with
-  its source only on a wire service, and Rumble's AI computing revenue); twelve others were dropped for no primary source
-  or a date outside the window.
+- Four research candidates were left out as weaker or off the beat: NVentures' subpoena fight in the labels' case
+  against Suno, Weta FX in Taiwan (its source only on a wire service), OpenAI and Upwork's freelance study (only partly
+  about creative work) and Rumble's AI computing revenue. The research pass dropped more for no primary source or a date
+  outside the window.
