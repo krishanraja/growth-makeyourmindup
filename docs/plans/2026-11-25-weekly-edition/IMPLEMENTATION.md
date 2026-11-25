@@ -106,7 +106,7 @@ then makeyourmindup 55 the week edition one sends.
 | C3 to C8 | krishanraja/content-engine#980 | built; the edition run, package and Saturday card (contract 1.35.0); the early run moved to 20:17 UTC and holds while a picked piece is not live |
 | C1, C2 | krishanraja/content-engine#979 | built and held until V1; carries the vendored route from 144 |
 | M1, M2 | krishanraja/makeyourmindup#55 | built; its red check is main's NOW.md over its byte cap, not this change |
-| CC2 | control-center, in progress | his one list shows the edition while it waits for Approve for send; CC1 is not needed (the board draws the new item generically) |
+| CC2 | krishanraja/control-center#1030 | built; his one list names the edition while it waits for Approve for send and opens the Saturday card (no Clear, Bump or Purge: his answer is the press on the card); 112 list tests pass here. CC1 is not needed (the board draws the new item generically) |
 | V1 | not settled | the first Video post publish screen opened with a video attached |
 | K1, K2 | Krish's Substack settings | not started |
 | Dry run | `dry-run/` in this folder | waiting for Krish's approval |
