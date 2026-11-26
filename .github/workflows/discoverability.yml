@@ -1,0 +1,40 @@
+name: discoverability
+# Every Monday the discoverability job reads how findable makeyourmindup.ai is (Krish, 2026-11-26: "make sure that
+# this page is the most discoverable page by search engines and AI engines and hand growth the job of improving
+# that from there over time"): the pages its sitemaps submit, read live; Google impressions and clicks by desk and
+# the pages Google and Bing hold, once Control Center serves its search signals; AI citations by engine from
+# AEO-Engine's research; and last week's new subscribers from search, AI assistants and the site, by Substack's
+# own label. It reports them to Control Center with a readback (engine/run/discoverability.py). A part not served
+# is unknown with its reason, never zero. It never posts, sends, publishes, submits or spends, and it uploads
+# nothing: this repository is public, so its log says which parts were read and never a number.
+on:
+  schedule:
+    # Monday, after the New York week closes, off :00 and :30 where GitHub's queue is longest.
+    - cron: '41 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: discoverability
+  cancel-in-progress: false
+
+jobs:
+  discoverability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CONTROL_CENTER_ENGINE_TOKEN: ${{ secrets.CONTROL_CENTER_ENGINE_TOKEN }}
+      CONTROL_CENTER_URL: ${{ vars.CONTROL_CENTER_URL }}
+    steps:
+      - name: Start the run clock
+        run: echo "GROWTH_RUN_STARTED=$(date +%s)" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Read and report the week's discoverability
+        run: python growth.py run discoverability --deliver
