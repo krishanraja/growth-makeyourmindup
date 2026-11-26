@@ -181,17 +181,12 @@ FORMAT_SHAPE = {
     'article': {'kinds': frozenset(), 'types': frozenset({'post'})},
     'text': {'kinds': frozenset(), 'types': frozenset({'post'})},
     'note': {'kinds': _STILL, 'types': frozenset({'post'})},
-    'poll': {'kinds': _STILL, 'types': frozenset({'post'})},
     'single-image': {'kinds': _STILL, 'types': frozenset({'post'})},
-    'quote-card': {'kinds': _STILL, 'types': frozenset({'post'})},
-    'receipt-card': {'kinds': _STILL, 'types': frozenset({'post'})},
-    'scorecard': {'kinds': _STILL, 'types': frozenset({'post'})},
     'carousel': {'kinds': _STILL, 'types': frozenset({'post'})},
     'meme': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'post', 'reel'})},
     'short-video': {'kinds': frozenset({'video'}), 'types': frozenset({'reel'})},
     'long-video': {'kinds': frozenset({'video'}), 'types': frozenset({'post'})},
     'story': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'story'})},
-    'story-frame': {'kinds': frozenset({'image', 'video'}), 'types': frozenset({'story'})},
 }
 # Services whose Buffer metadata type is what makes a post a Story, a Reel or a feed post.
 TYPED_SERVICES = ('instagram', 'facebook')
