@@ -381,6 +381,28 @@
       "secrets": []
     },
     {
+      "id": "stray-guard",
+      "lane": "L0_code",
+      "workflow": "stray-guard.yml",
+      "trigger": "every hour at :41, or by hand (a hand run defaults to a dry run) (Ruling, Krish, 2026-11-26: \"ensure stray branches may NEVER ever be left unmerged\")",
+      "may_write": [
+        "the deletion of a remote branch whose work is on main, or whose pull request was closed unmerged at its exact head",
+        "a ready pull request for a branch idle six hours with none, and marking a draft untouched for a day ready",
+        "a merge of our own ready pull request whose CI is green at its head, with the deletion of its branch",
+        "one issue, \"Stray branches and pull requests\", listing what it could not land"
+      ],
+      "never": [
+        "touch a fork, main, gh-pages, floor/rejections or inspo/new-drops",
+        "read a key",
+        "post, send, publish or spend"
+      ],
+      "actions": [
+        "delete-merged-branches",
+        "merge-own-green-pull-request"
+      ],
+      "secrets": []
+    },
+    {
       "id": "discoverability",
       "lane": "L0_code",
       "workflow": "discoverability.yml",
