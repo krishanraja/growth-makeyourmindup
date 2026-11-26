@@ -159,8 +159,9 @@ removed. What changes:
 2. **The edition's own links are tagged**: a new source in `specs/subscribe-route.json`, `utm_source=newsletter`,
    `utm_medium=email`, `utm_campaign=weekly`, and `utm_content=edition-<YYYY-MM-DD>-<place>` (`forward`, `piece-mon`,
    and so on), so a subscriber who arrives from a forwarded edition is credited to it.
-3. **A Saturday Note** points at the edition: Notes are the one format that has converted. growth drafts it; Krish signs
-   it, as he signs every Note today (`docs/PUBLISHING-AUTHORITY.md`), and once signed it can be scheduled in Substack.
+3. **A Saturday Note** points at the edition: Notes are the one format that has converted. content-engine makes it with
+   its other Notes (Ruling, Krish, 2026-11-26: all asset production is content-engine's); Krish signs it, as he signs
+   every Note today (`docs/PUBLISHING-AUTHORITY.md`), and once signed Claude schedules it in Buffer.
 4. **The promise everywhere a reader decides to subscribe**: Substack's publication description ("Three short reads a
    week for leaders...") and welcome email, and the site's description ("Free, every Monday, Wednesday and Friday",
    makeyourmindup `apps/cover/content/site.json`) say what the reader now gets. The v5 rebrand session owns the new

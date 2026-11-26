@@ -48,3 +48,12 @@ Library is locked; its message names the template IDs to use, the weekly edition
 the re-render starts on that session's word, not on a separate word from Krish that the kit is settled. The rendered
 dry run still comes back to Krish once, for the shape, the words and the look, and nothing sends without his yes for
 that send. Work that does not depend on the look carries on as it is.
+
+**26 Nov 2026, asset production, relayed by the rebrand session:** Krish ruled that all asset production moves from
+growth-makeyourmindup to content-engine: "I believe that growth should move all asset production to Content Engine. I
+see no point in having a separate repository produce specific assets... This would leave growth in charge of simply
+growing the channel." With it, captions are written in content-engine when the asset is made, and the edition's
+Substack editor step stays with growth. For this plan: content-engine renders the edition, and edition one's dry run,
+from the v5 Library's weekly edition template; `dry-run/render_edition.py` stays here as a dated plan artefact and is
+never wired into production; the Saturday Note's words are made in content-engine with its other Notes, Krish signs
+it, and Claude schedules it in Buffer. Nothing else in the design changes.
