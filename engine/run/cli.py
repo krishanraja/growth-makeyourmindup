@@ -10,7 +10,7 @@ ROUTES = {'new': 'spec', 'drafts': 'spec', 'lint': 'spec', 'status': 'spec', 'se
           'release': 'release', 'decide': 'decision', 'measure': 'measure', 'northstar': 'measure',
           'verdict': 'measure', 'subscribers': 'subscribers', 'learn': 'learn',
           'cost': 'cost', 'ga4': 'ga4', 'autorelease': 'autorelease', 'keys': 'keys',
-          'dispatch-check': 'backup', 'calendar': 'calendar', 'carousel': 'plain', 'plain': 'plain',
+          'dispatch-check': 'backup', 'calendar': 'calendar',
           'handoff': 'handoff', 'maker': 'maker',
           'board': 'board_tick', 'paid': 'paid_audit'}
 

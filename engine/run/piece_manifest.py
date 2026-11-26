@@ -12,11 +12,16 @@ not passed QA, does not hash to its sha256 or is not this closed shape holds
 every slot.
 
 The shape (`specs/schema/piece-manifest.schema.json`):
-{"schema": "content-engine-piece-manifest/1", "piece_id", "approval_sha256",
+{"schema": "content-engine-piece-manifest/1" or "/1.1", "piece_id", "approval_sha256",
  "qa": {"state": "passed" | "held" | "failed", "checked_at"},
  "assets": [{"name", "drive_id", "sha256", "order"}],
  "channels": {channel or "channel:format": {"words", "alt_text": [text, ...] | null, "assets": [name, ...],
-                                             "cover": {"asset", "sha256", "cover_offset_ms": int | null}}}}
+                                             "cover": {"asset", "sha256", "cover_offset_ms": int | null},
+                                             "title": text}}}
+
+The words are the caption content-engine wrote for the channel at make time, with its subscribe line (Ruling, Krish,
+2026-11-26: content-engine makes every asset and writes every caption and title). `title` is optional and only in a
+1.1 manifest: the channel's title, YouTube's above all. A manifest with no title stays /1, unchanged.
 
 `cover` is optional (content-engine adds it per channel for every post that carries a video, Ruling, Krish,
 2026-11-15): the designed cover the video posts with (`asset` names it in assets[], `sha256` its bytes) and, once the
@@ -39,12 +44,15 @@ from engine.run.release import CHANNELS, HEX64
 from engine.run.cover_gate import COVER_CHANNELS
 
 SCHEMA = 'content-engine-piece-manifest/1'
+SCHEMA_TITLED = 'content-engine-piece-manifest/1.1'  # a channel may carry its title (26 Nov 2026)
+SCHEMAS = (SCHEMA, SCHEMA_TITLED)
 KEYS = frozenset({'schema', 'piece_id', 'approval_sha256', 'qa', 'assets', 'channels'})
 QA_KEYS = frozenset({'state', 'checked_at'})
 QA_STATES = ('passed', 'held', 'failed')
 ASSET_KEYS = frozenset({'name', 'drive_id', 'sha256', 'order'})
 CHANNEL_KEYS = frozenset({'words', 'alt_text', 'assets'})
-OPTIONAL_CHANNEL_KEYS = frozenset({'cover'})
+OPTIONAL_CHANNEL_KEYS = frozenset({'cover', 'title'})
+TITLE_MAX = 100
 COVER_KEYS = frozenset({'asset', 'sha256', 'cover_offset_ms'})
 PIECE_ID = re.compile(r'^[A-Za-z0-9][A-Za-z0-9:._-]{0,119}$')
 FORMAT = re.compile(r'^[a-z0-9][a-z0-9_-]{0,47}$')
@@ -79,7 +87,7 @@ def parse(data, sha256):
 
 
 def validate(value):
-    if not isinstance(value, dict) or set(value) != KEYS or value.get('schema') != SCHEMA:
+    if not isinstance(value, dict) or set(value) != KEYS or value.get('schema') not in SCHEMAS:
         raise ManifestRejected('manifest_malformed')
     if not isinstance(value['piece_id'], str) or not PIECE_ID.match(value['piece_id']):
         raise ManifestRejected('manifest_malformed')
@@ -117,6 +125,9 @@ def validate(value):
             raise ManifestRejected('manifest_malformed')
         if 'cover' in entry and not _cover_ok(entry['cover'], names):
             raise ManifestRejected('manifest_malformed')
+        if 'title' in entry and not (value['schema'] == SCHEMA_TITLED and isinstance(entry['title'], str)
+                                     and entry['title'].strip() and len(entry['title']) <= TITLE_MAX):
+            raise ManifestRejected('manifest_malformed')
         alt = entry['alt_text']
         if alt is not None and not (isinstance(alt, list) and len(alt) == len(entry['assets'])
                                     and all(isinstance(a, str) for a in alt)):
@@ -141,6 +152,12 @@ def cover_for(manifest, channel, fmt=None):
     """The designed cover content-engine names for this channel and format, or None."""
     entry = _entry(manifest, channel, fmt)
     return dict(entry['cover']) if isinstance(entry, dict) and isinstance(entry.get('cover'), dict) else None
+
+
+def title_for(manifest, channel, fmt=None):
+    """The title content-engine wrote for this channel and format (manifest 1.1), or None."""
+    entry = _entry(manifest, channel, fmt)
+    return entry.get('title') if isinstance(entry, dict) else None
 
 
 def video_offsets(meta):

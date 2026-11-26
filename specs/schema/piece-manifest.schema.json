@@ -14,7 +14,11 @@
   ],
   "properties": {
     "schema": {
-      "const": "content-engine-piece-manifest/1"
+      "enum": [
+        "content-engine-piece-manifest/1",
+        "content-engine-piece-manifest/1.1"
+      ],
+      "description": "1.1 (26 Nov 2026): a channel may carry its title, the caption content-engine wrote for it at make time; a manifest without one says /1."
     },
     "piece_id": {
       "type": "string",
@@ -115,6 +119,12 @@
             },
             "uniqueItems": true,
             "description": "Asset names, in the order the post carries them."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Optional, manifest 1.1 only (Ruling, Krish, 2026-11-26: content-engine writes every caption and title): the title content-engine wrote for this channel, YouTube's above all."
           },
           "cover": {
             "type": "object",

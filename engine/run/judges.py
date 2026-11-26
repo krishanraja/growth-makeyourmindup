@@ -1,46 +1,27 @@
-"""content-engine's 10/10 judges on every Growth carousel and Short before it is made.
+"""content-engine's 10/10 judges: Growth binds their pass to the post it saves and reports the post live.
 
 Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and
-each one that passes and goes live counts." Content-engine owns the judges and production standards
-(docs/ENGINE-BOUNDARY.md); this engine asks them, on its own board key (GROWTH_WRITEBACK_TOKEN), through the one board
-route content-engine keeps for it:
+each one that passes and goes live counts." Since 26 Nov 2026 content-engine makes every asset and its make flow asks
+the judges itself (Ruling, Krish: "I believe that growth should move all asset production to Content Engine"), so
+Growth never asks a judge. It keeps the two board write-backs that need a Buffer post, on its own board key
+(GROWTH_WRITEBACK_TOKEN), through the one board route content-engine keeps for it:
 
     POST https://content.krishraja.com/api/board/<Monday>/judge
-    {"op": "judge", "item", "format", "channel", "concept_id", "claim", "words",
-     "assets": [{"name", "sha256", "view_url"}]}
-        -> {"verdict": "pass" | "fail", "score", "band", "reasons": [{"judge", "score", "fix"}], "artifact_sha256"}
-    {"op": "bind", "artifact_sha256", "buffer_post_id", "payload_sha256", "item"}   once the draft is saved
+    {"op": "bind", "artifact_sha256", "buffer_post_id", "payload_sha256", "item"}   once the maker saves the draft
     {"op": "live", "posts": [{"buffer_post_id", "url", "at"}]}                       board tick, from Buffer's sent posts
 
-The maker asks before a draft is saved (make) or handed off (adopt). A pass is made and handed off, and its verdict is
-bound to the Buffer post, so the post counts once it goes live. A fail is never made: the slot holds loudly as
-judges_failed, and the judges' reasons are kept in the ignored .scratch/judges/ for the session that rewrites it (this
-repository is public, so the log carries codes only). Content-engine keeps every verdict, reasons included, on the item.
-The North Star's number then counts each judged derived post that passed and went live (content-engine's reader in
-Control Center). No judge is ever skipped for a judged format: with no board key the slot holds as judges_unavailable.
-
-The judges see the cards (Ruling, Krish, 2026-11-15: the cover must look like a cover, the cards must not be bland, so a
-verdict on words alone is not a verdict on the post). Every asset goes with `view_url`, its own Drive view link, so the
-panel reads the pictures themselves; the verdict still binds their sha256. A picture with no view link holds the slot
-as judges_cannot_see, never judged blind.
+The artifact the pass binds is the format, the channel, the exact words and each picture's sha256, in order
+(artifact_sha256), so the maker names it from the draft it saved. The North Star's number then counts each judged
+derived post that passed and went live (content-engine's reader in Control Center). Content-engine keeps every verdict,
+reasons included, on the item.
 """
 import hashlib
 import json
-from pathlib import Path
 
 from .board_tick import BoardError
 
-# The derived posts the North Star names ("essays, Shorts, carousels"): Growth makes the carousels and the Shorts.
+# The derived posts the North Star names ("essays, Shorts, carousels"): the carousels and the Shorts are judged.
 JUDGED_FORMATS = ('carousel', 'short-video')
-SCRATCH = Path('.scratch') / 'judges'
-
-
-class JudgesHeld(Exception):
-    """The judges said no, or could not be asked: a code, and the reasons when they gave them."""
-
-    def __init__(self, code, reasons=None):
-        self.code, self.reasons = code, list(reasons or [])
-        super().__init__(code)
 
 
 def judged(slot):
@@ -52,38 +33,6 @@ def artifact_sha256(slot, words, assets):
     canon = json.dumps({'format': slot.get('format'), 'channel': slot.get('channel'), 'words': words,
                         'assets': [a['sha256'] for a in assets]}, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
     return hashlib.sha256(canon.encode('utf-8')).hexdigest()
-
-
-def judge(board, monday, slot, concept, words, assets, root=None):
-    """The judges' verdict on one derived post, or JudgesHeld. Only a judged format is asked."""
-    if board is None or not hasattr(board, 'judge'):
-        raise JudgesHeld('judges_unavailable')
-    if any(not (isinstance(a.get('view_url'), str) and a['view_url'].startswith('https://')) for a in assets):
-        raise JudgesHeld('judges_cannot_see')
-    body = {'op': 'judge', 'item': slot['slot_id'], 'format': slot['format'], 'channel': slot['channel'],
-            'concept_id': (concept or {}).get('concept_id'), 'claim': (concept or {}).get('claim') or '', 'words': words,
-            'assets': [{'name': a['name'], 'sha256': a['sha256'], 'view_url': a['view_url']} for a in assets]}
-    try:
-        answer = board.judge(monday, body)
-    except BoardError as error:
-        raise JudgesHeld('judges_unavailable' if error.code != 'judge_cap_reached' else 'judges_cap_reached') from None
-    verdict = answer.get('verdict') if isinstance(answer, dict) else None
-    if verdict not in ('pass', 'fail') or answer.get('artifact_sha256') != artifact_sha256(slot, words, assets):
-        raise JudgesHeld('judges_bad_answer')
-    if verdict == 'fail':
-        keep(root, slot['slot_id'], answer)
-        raise JudgesHeld('judges_failed', answer.get('reasons'))
-    return answer
-
-
-def keep(root, slot_id, answer):
-    """The judges' reasons, kept privately for the session that rewrites the post (never committed, never logged)."""
-    folder = Path(root or '.') / SCRATCH
-    try:
-        folder.mkdir(parents=True, exist_ok=True)
-        (folder / (str(slot_id) + '.json')).write_text(json.dumps(answer, indent=1, sort_keys=True), encoding='utf-8')
-    except OSError:
-        pass
 
 
 def bind(board, monday, verdict, post_id, payload, slot_id):

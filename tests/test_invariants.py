@@ -142,11 +142,12 @@ class RuleTests(unittest.TestCase):
         failures = {f['id']: f for f in load_failures()}
         self.assertEqual(FAILURE_IDS[65:71], ('F66', 'F67', 'F68', 'F69', 'F70', 'F71'))
         for fid, guard in (('F66', 'may_post_alone'), ('F67', 'check_lanes'), ('F68', 'check_lanes'),
-                           ('F69', 'calendar.py:lint'), ('F70', 'plain.py:lint_carousel')):
+                           ('F69', 'calendar.py:lint')):
             self.assertEqual(failures[fid]['status'], 'tested', fid)
             self.assertIn(guard, failures[fid]['guard'], fid)
-        # The Canva lane retired on 26 Nov 2026 (Ruling, Krish): F71 stays in the register as superseded.
-        self.assertEqual(failures['F71']['status'], 'superseded')
+        # Content-engine makes every asset and writes every caption since 26 Nov 2026 (Ruling, Krish): the plain
+        # English check (F70) and the Canva lane (F71) stay in the register as superseded.
+        self.assertEqual((failures['F70']['status'], failures['F71']['status']), ('superseded', 'superseded'))
         for path in (ROOT / 'invariants' / 'authority.json', ROOT / 'lanes.json', ROOT / 'calendar' / 'v1.json'):
             self.assertEqual(house_errors(path.read_text(encoding='utf-8')), [], path.name)
 

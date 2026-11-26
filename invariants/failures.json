@@ -737,17 +737,9 @@
       "id": "F70",
       "title": "A carousel or caption is not plain English, human and humble",
       "source": "CHANGES.md 2026-10-27 (evening) (R105); social/lessons/carousel-plain-english.json",
-      "guard": "engine/run/plain.py:lint_carousel and engine/run/plain.py:lint_text",
-      "tests": [
-        "test_good_synthetic_carousel_passes",
-        "test_long_sentences_and_long_averages_are_refused",
-        "test_jargon_and_em_dashes_are_refused",
-        "test_stacked_two_word_fragments_are_refused",
-        "test_a_carousel_needs_a_humble_human_line_and_six_to_eight_cards",
-        "test_carousel_lint_is_a_run_route",
-        "test_run_lint_blocks_an_unplain_carousel_and_warns_on_other_captions"
-      ],
-      "status": "tested"
+      "guard": "Superseded on 26 Nov 2026: content-engine writes every caption and checks carousel copy for plain English at make time (Ruling, Krish: content-engine makes every asset); Growth's plain.py is deleted, and the maker still holds any caption that fails the copy lint, the claim or the voice check",
+      "tests": [],
+      "status": "superseded"
     },
     {
       "id": "F71",

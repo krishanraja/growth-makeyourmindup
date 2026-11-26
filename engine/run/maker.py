@@ -1,8 +1,13 @@
-"""Lane L0, the maker: the next New York days' Buffer drafts from the ideas and mocks Krish approved, handed off.
+"""Lane L0, the maker: the next New York days' Buffer drafts of the assets and captions content-engine finished.
+
+Ruling (Krish, 2026-11-26): "I believe that growth should move all asset production to Content Engine." Content-engine
+makes every asset and writes every caption and title (its channel_captions.py, at make time); this maker makes
+nothing. It builds Buffer drafts from the finished files and the captions exactly as content-engine wrote them, checks
+them, and hands them off for release to schedule.
 
 `growth.py run maker [--deliver]` runs in GitHub Actions (.github/workflows/maker.yml) at
 04:30 UTC, just before or after New York midnight. Without --deliver it is a dry run: it
-reads Control Center and Buffer, writes and reviews the words, and creates no draft and
+reads Control Center and Buffer, checks and reviews the captions, and creates no draft and
 writes nothing to Control Center.
 
 The days it makes (make_days): the slots of today in New York not yet due within release's
@@ -30,30 +35,35 @@ plan. For each week, in order:
    adopted: rebuilt from Buffer, its words checked, its share declared and reviewed blind,
    and handed off, never made again. A post that is not a draft carrying the claim, or
    more than one, holds loudly as made_not_handed_off.
-4. The mock files, by the week's mock manifest (cc_records.MOCKS, sha256 to Drive file
-   id, its highest version): each file downloaded from its Drive download link and
-   hashed; a file not in the manifest holds as mock_file_missing, one whose bytes differ
-   as mock_hash_mismatch. A placement takes the files its format takes
-   (release.format_shape): every picture for a carousel, the video for YouTube, the first
-   picture (the cover) for one image, none for text. Buffer gets the same Drive link, so
-   release rebuilds the post from exactly those bytes.
-5. The words, from the Anthropic API (ANTHROPIC_API_KEY, model claude-sonnet-5-5), from
-   the concept's idea and claim only, in the account's voice (docs/ACCOUNT-VOICE.md). They
-   must carry the claim word for word (concepts.carries), pass content-engine's copy lint
-   (release.copy_errors) and the share rule (release.share_ask_errors), and declare a share
-   block (share.share_errors). One rewrite with the reasons, then it holds. Then the maker
-   writes the subscribe route itself, never the model (with_route; Ruling, Krish, 2026-11-11:
-   at U4 and U5 every post carries one): when the words carry none, a last line
-   "Subscribe: " and the tagged subscribe page (route.subscribe_url, utm_content the slot id)
-   on X and YouTube, "Subscribe: link in bio." on Instagram and TikTok. Never twice, never on
-   LinkedIn, and never past the channel's own limit (CHANNEL_LIMIT): a route that does not fit
-   holds the slot as subscribe_route_too_long, and the words are never cut. These are the
-   final words: the review, the judges, Buffer and release all see exactly them.
-6. The review: a separate Anthropic call that sees only the post's format, its words and
+4. The files, by the week's mock manifest (cc_records.MOCKS, sha256 to Drive file
+   id, its highest version): the finished assets content-engine made, each downloaded from
+   its Drive download link and hashed; a file not in the manifest holds as
+   mock_file_missing, one whose bytes differ as mock_hash_mismatch. A placement takes the
+   files its format takes (release.format_shape): every picture for a carousel, the video
+   for YouTube, the first picture (the cover) for one image, none for text. Buffer gets the
+   same Drive link, so release rebuilds the post from exactly those bytes.
+5. The words: the caption content-engine wrote for the concept and channel (or
+   "channel:format"), carried in the same manifest's `captions` with the YouTube title
+   (the mix dispatch's `mock_captions`, from content-engine's piece manifest). This maker
+   never writes or rewrites a word. A slot with no caption holds as caption_missing. The
+   caption must carry the claim word for word (concepts.carries), fit the channel, pass
+   content-engine's copy lint (release.copy_errors), the share rule
+   (release.share_ask_errors) and the voice check, or it holds with that code and goes back
+   to content-engine. Then the maker adds the subscribe route itself, never the model, only
+   when the caption carries none (with_route; Ruling, Krish, 2026-11-11: at U4 and U5 every
+   post carries one): "Subscribe: " and the tagged subscribe page (route.subscribe_url,
+   utm_content the slot id) on X and YouTube, "Subscribe: link in bio." on Instagram and
+   TikTok. Never twice, never on LinkedIn, and never past the channel's own limit
+   (CHANNEL_LIMIT): a route that does not fit holds the slot as subscribe_route_too_long.
+   These are the final words: the review, Buffer and release all see exactly them.
+6. The review: an Anthropic call declares the share block of the fixed words (who would
+   send it to whom), and a separate call that sees only the post's format, its words and
    its files' blind names, under the blind send-test lens (social/share.json). Its answer
    is compared with the declared share block (share.compare_send_test) and judged again,
    at the draft's own payload_sha256, by spec.review_reason, the one judge release uses.
-   It is maker-attested, not an independent judge (docs/CONCEPT-MANIFEST.md).
+   It is maker-attested, not an independent judge (docs/CONCEPT-MANIFEST.md). Content-engine's
+   10/10 judges ran when it made the asset; for a carousel or a Short the maker binds that
+   pass to the saved post (judges.bind) so it counts once live.
 7. With --deliver: the draft is saved in Buffer with saveToDraft true and no due time
    (buffer_drafts.DraftBuffer.create_draft) and read back. A readback that is not a draft
    with no due time stops the whole run at once, loud (draft_not_a_draft): Buffer queued
@@ -65,21 +75,15 @@ plan. For each week, in order:
    Nothing here schedules, publishes or deletes; release.yml schedules each post, later,
    only while every gate still passes.
 
-With no approved weekly mix (Ruling, Krish, 2026-11-12: with no approved weekly mix, the maker
-drafts from the standing plan and asks him once a week instead of failing): when week_state says
-the week's plan is not reported, or reported and not yet approved on the board (NO_APPROVED_MIX),
-and the standing plan (specs/standing-plan.json) covers the week and he has not declined it, the
-maker drafts that week's workdays from the standing plan instead (standing_week): one text post a
-day on X, the one maker channel whose standing format needs no approved edition, from a piece the
-publication already published (the public feed, oldest unamplified first, a different piece each
-day of the week), written and reviewed blind as above. Instagram, TikTok and YouTube need an
-approved edition, so they are counted as no_approved_edition, as the standing plan says. These are
-drafts only: never saved in Buffer, never handed off, so release, which reads only the handoff's
-index and reviews, never sees one. With --deliver each New York day's drafts are kept in Control
-Center as one live report (makeyourmindup:standing:<day>, the words in plain lines marked as
-drafts, a day drafted once), and the week raises one ask on his list, "This week's mix isn't
-approved" (makeyourmindup:mixask:<ISO week>), only when that address is still empty, so every
-other run that week is silent about it. Once his mix is approved, the next run makes his plan.
+With no approved weekly mix (Ruling, Krish, 2026-11-12: the maker asks him once a week instead of
+failing): when week_state says the week's plan is not reported, or reported and not yet approved
+on the board (NO_APPROVED_MIX), and the standing plan (specs/standing-plan.json) covers the week and
+he has not declined it, the maker makes nothing for that week and raises one ask on his list,
+"This week's mix isn't approved" (makeyourmindup:mixask:<ISO week>), only when that address is
+still empty, so every other run that week is silent about it. Until 26 Nov 2026 it also drafted X
+posts from the standing plan; that writer left with the rest of production (Ruling, Krish,
+2026-11-26: content-engine writes every caption). Once his mix is approved, the next run makes his
+plan.
 A week whose only days in this run are rest days (the Sunday that ends a past week) has nothing
 to make: it is skipped and its hold, if any, noted in skipped_weeks, never failing the run.
 
@@ -89,12 +93,12 @@ deadline, RUN_BUDGET after it starts: no Anthropic call reaches past it and no s
 started after it (maker_out_of_time, loud), which leaves JOB_LIMIT - RUN_BUDGET for the last
 slot's Buffer and Control Center work under the job's 30-minute limit, whatever the slot count.
 
-Without ANTHROPIC_API_KEY it holds loudly (anthropic_key_missing) and reads nothing.
+Without ANTHROPIC_API_KEY (the share declaration and the blind review) it holds loudly
+(anthropic_key_missing) and reads nothing.
 Output is one JSON line of counts and reason codes: never words, URLs, ids or keys.
 """
 import argparse
 import datetime as dt
-import http.client
 import json
 import os
 from pathlib import Path
@@ -103,14 +107,14 @@ import sys
 import tempfile
 import time
 
-from engine import (backlog, catalog, concepts as concept_rules, engine_state, intensity, mix as mix_rules, route,
-                    stale_asks, subscribe_gate, voice as voice_check)
+from engine import (concepts as concept_rules, engine_state, intensity, mix as mix_rules, route, stale_asks,
+                    subscribe_gate, voice as voice_check)
 from engine.buffer_channels import BUFFER_CHANNEL_ID
-from engine.cc_loop import decisions_paged, never_beneath, revision, taste_state
+from engine.cc_loop import decisions_paged, revision
 from engine.control_center import SLUG, ProtocolError, build_report, proposal
 from engine.core import instant, ny_time, read_json
 from engine.packs import x_weight
-from engine.run import autorelease, buffer_api, cc_records, cover_gate, handoff, release, voice_profile
+from engine.run import autorelease, buffer_api, cc_records, cover_gate, handoff, release
 from engine.run.anthropic_api import CALL_WORST, GAVE_UP, KEY_ENV, Anthropic, AnthropicAuthError, AnthropicError
 from engine.run.anthropic_api import meter_body as anthropic_meter_body
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
@@ -123,8 +127,7 @@ from engine.social import inventory
 ROOT = Path(__file__).resolve().parents[2]
 DRIVE_URL = 'https://drive.usercontent.google.com/download?id={}&export=download'
 MIN_LEAD = dt.timedelta(minutes=60)  # a slot due sooner is not made: release needs time to read it
-MAX_WRITES = 2  # the first words, then one rewrite with the reasons
-CALLS_PER_SLOT = MAX_WRITES + 1  # the words (and one rewrite), then the blind review
+CALLS_PER_SLOT = 2  # the share declaration of the caption, then the blind review
 JOB_LIMIT = 30 * 60  # seconds: maker.yml timeout-minutes
 RUN_BUDGET = 20 * 60  # seconds after the start: no Anthropic call reaches past it and no slot starts after it
 DRAFT_LOOKBACK = dt.timedelta(days=7)  # drafts listed from the week's Monday less this, by when they were created
@@ -142,70 +145,32 @@ STATE_DIR = Path('.scratch') / 'cc'
 
 # With no approved weekly mix (Ruling, Krish, 2026-11-12) ------------------------------------
 STANDING_PLAN = Path('specs') / 'standing-plan.json'
-# What week_state says when the week has no approved mix yet, waiting on the plan or on his press: the maker
-# drafts from the standing plan. Every other hold (a record that does not match, a hash, a stop) stays as it was.
+# What week_state says when the week has no approved mix yet, waiting on the plan or on his press: the maker makes
+# nothing and asks him once. Every other hold (a record that does not match, a hash, a stop) stays as it was.
 NO_APPROVED_MIX = ('mix_plan_not_reported', 'mix_not_approved', 'mix_not_proposed')
-# The standing plan's format on each maker channel that needs no approved edition: X takes a text post. Instagram,
-# TikTok and YouTube Shorts need a picture or a video he approved, so with no mix they get nothing (the standing
-# plan: "A slot with no approved edition is recorded as missing, never filled with unapproved creative").
-STANDING_FORMAT = {'x': 'text'}
-STANDING_DAYS = 6  # a week's workdays (Sunday rests): the pieces needed so no piece repeats on a channel in a week
-PIECE_TEXT_MAX = 6000  # characters of the piece the writer is shown
-STANDING_SCHEMA = 'growth-standing-drafts/1'
 ASK_TITLE = "This week's mix isn't approved"
 CONTENT_BOARD = 'https://controlcenter.krishraja.com/#/content?week='
 
-SHARE_RULE = ('Then declare the share: the one specific person who would send this post to one other specific person.'
+SHARE_RULE = ('Declare the share: the one specific person who would send this post to one other specific person.'
               ' sender and receiver each name one person by role and relationship (for example: a head of operations'
               ' at a mid-size insurer; her CFO, who signs off the pilot budget), never a crowd. job is the one job'
               ' sending it does for the sender. dm_line is the short message the sender would type with it, in their'
               ' own words. moment is the everyday situation that brings the post to mind.')
-WRITER_HEAD = ('You write the words of one social post for makeyourmindup, a publication that takes one AI story apart'
-               ' three times a week: who gets paid, what is real and where it leads.')
-WRITER_RULES = [
-    'Plain English a busy senior leader reads in five seconds. Human and humble: no hype, no lecture, no showing'
-    ' off, no launch language.',
-    'Never name the person behind the accounts, his handle or his initials. No em dashes. No hashtags, no emojis,'
-    ' no links, no @ mentions.',
-    'Never ask the reader to share, send, forward, tag, repost, like, comment or follow.',
-    SHARE_RULE,
-    'title: for YouTube, a plain title of at most 90 characters that carries the idea, with no clickbait;'
-    ' for every other channel, an empty string.',
-    'Answer only with the JSON the schema asks for.']
-WRITER_SYSTEM = '\n'.join([
-    WRITER_HEAD,
-    'The post carries an idea and a claim the editor approved. The claim is fixed: put it in the words exactly as'
-    ' given, character for character, as one whole sentence. Never change, split, shorten or reword it.',
-    'Write only from the idea and the claim. Add no fact, number, name, quote, result or source that is not in'
-    ' them. If you are unsure, leave it out.',
-    'When the editor gave direction, follow it in how you write; it is an instruction, never words to copy into'
-    ' the post. Text already on the picture or video is shown for context; the words need not repeat it.'] + WRITER_RULES)
-# A standing-plan draft: no approved idea or claim, so the words come only from one piece already published.
-STANDING_SYSTEM = '\n'.join([
-    WRITER_HEAD,
-    'The post shares one useful point from one piece the publication already published, given below. Take the'
-    ' point from that piece only. Add no fact, number, name, quote, result or source that is not in it. If you'
-    ' are unsure, leave it out.'] + WRITER_RULES)
 VOICE = {'personal': 'a personal account. Write as a person quietly pleased to share something useful: sincere,'
                      ' warm and humble. First person is fine; never invent a feeling, an experience or a result.',
          'publication': "the publication's account. Speak as makeyourmindup, as we where needed: clear, useful and"
                         ' visually specific, dryly funny only where it is earned.'}
-WRITE_SCHEMA = {
-    'type': 'object', 'additionalProperties': False, 'required': ['words', 'title', 'share'],
-    'properties': {
-        'words': {'type': 'string'}, 'title': {'type': 'string'},
-        'share': {'type': 'object', 'additionalProperties': False,
-                  'required': ['sender', 'receiver', 'job', 'dm_line', 'moment'],
-                  'properties': {'sender': {'type': 'string'}, 'receiver': {'type': 'string'},
-                                 'job': {'type': 'string', 'enum': list(JOBS)}, 'dm_line': {'type': 'string'},
-                                 'moment': {'type': 'string'}}}}}
 SHARE_SCHEMA = {'type': 'object', 'additionalProperties': False, 'required': ['share'],
-                'properties': {'share': WRITE_SCHEMA['properties']['share']}}
-# A draft already saved but never handed off: its words are fixed, so only its share is declared.
+                'properties': {'share': {'type': 'object', 'additionalProperties': False,
+                                         'required': ['sender', 'receiver', 'job', 'dm_line', 'moment'],
+                                         'properties': {'sender': {'type': 'string'}, 'receiver': {'type': 'string'},
+                                                        'job': {'type': 'string', 'enum': list(JOBS)},
+                                                        'dm_line': {'type': 'string'}, 'moment': {'type': 'string'}}}}}
+# The words are content-engine's caption, fixed before the maker sees them, so only their share is declared.
 DECLARE_SYSTEM = '\n'.join([
-    'You read the words of one social post for makeyourmindup that is already written and saved. Never change or'
-    ' judge the words; only declare who would share them.',
-    SHARE_RULE.replace('Then declare', 'Declare'),
+    'You read the words of one social post for makeyourmindup that is already written. Never change or judge the'
+    ' words; only declare who would share them.',
+    SHARE_RULE,
     'Answer only with the JSON the schema asks for.'])
 NULLABLE = lambda schema: {'anyOf': [schema, {'type': 'null'}]}
 REVIEW_SCHEMA = {
@@ -319,8 +284,10 @@ def week_slots(cc, monday, parts, read, cfg, root):
 
 
 class MockFiles(dict):
-    """{sha256: Drive file id}, with .covers {video sha256: the frame, in ms, of its designed cover}."""
+    """{sha256: Drive file id}, with .covers {video sha256: the frame, in ms, of its designed cover} and .captions
+    {concept_id: {channel or "channel:format": {"words", "title"?}}}, content-engine's captions."""
     covers = None
+    captions = None
 
 
 def mock_manifest(cc, monday, parts):
@@ -329,7 +296,11 @@ def mock_manifest(cc, monday, parts):
 
     A chunk may also carry `covers`, {video sha256: thumbnailOffset in ms}: the frame of the designed cover
     content-engine baked into that cut (engine/run/cover_gate.py; Ruling, Krish,
-    2026-11-15). The video's bytes are pinned by its sha256, so its cover frame is too."""
+    2026-11-15). The video's bytes are pinned by its sha256, so its cover frame is too.
+
+    A chunk may also carry `captions`, {concept_id: {channel or "channel:format": {"words", "title"?}}}: the
+    caption and YouTube title content-engine wrote for each concept and channel (Ruling, Krish, 2026-11-26), read
+    exactly as written."""
     label, key = autorelease._week_label(monday), cc_records.plan_key(parts)
     try:
         found = cc_records.probe(cc, lambda n: cc_records.mocks_run_id(label, key, n), cc_records.MOCKS,
@@ -341,18 +312,34 @@ def mock_manifest(cc, monday, parts):
         raise Held('mock_manifest_unreadable', loud=True) from None
     if chunks is None:
         return None
-    files, covers = MockFiles(), {}
+    files, covers, captions = MockFiles(), {}, {}
     for chunk in chunks:
-        got, cov = chunk.get('files'), chunk.get('covers', {})
+        got, cov, cap = chunk.get('files'), chunk.get('covers', {}), chunk.get('captions', {})
         if chunk.get('plan') != parts or not isinstance(got, dict) or not all(
                 isinstance(k, str) and release.HEX64.match(k) and isinstance(v, str) and handoff.DRIVE_ID.match(v)
                 for k, v in got.items()) or not isinstance(cov, dict) or not all(
                 isinstance(k, str) and release.HEX64.match(k) and cover_gate.offset_ok(v) for k, v in cov.items()):
             raise Held('mock_manifest_unreadable', loud=True)
+        try:
+            cap = handoff.check_captions(cap)
+        except handoff.PayloadRejected:
+            raise Held('mock_manifest_unreadable', loud=True) from None
         files.update(got)
         covers.update(cov)
-    files.covers = covers
+        for cid, by_channel in cap.items():
+            captions.setdefault(cid, {}).update(by_channel)
+    files.covers, files.captions = covers, captions
     return files
+
+
+def caption_of(manifest, concept_id, channel, fmt):
+    """(words, title) content-engine wrote for this concept on this channel: its "channel:format" caption first,
+    then its plain channel caption. Held (caption_missing) when there is none: the maker never writes one."""
+    by_channel = ((getattr(manifest, 'captions', None) or {}) if manifest is not None else {}).get(concept_id) or {}
+    entry = by_channel.get(str(channel) + ':' + str(fmt)) or by_channel.get(channel)
+    if not isinstance(entry, dict):
+        raise Held('caption_missing')
+    return entry['words'], entry.get('title') or ''
 
 
 # One placement's files ---------------------------------------------------------------------
@@ -381,25 +368,18 @@ def placement_files(mocks, fmt, channel):
     return [(sha, ext) for sha, ext, _ in picked]
 
 
-def seen(assets, files, manifest):
-    """The assets with each picture's own Drive view link, so the judges see the cards (judges.py)."""
-    return [dict(a, view_url=drive_url(manifest[sha])) for a, (sha, _) in zip(assets, files)]
+# The caption's checks and its review ------------------------------------------------------------------
 
-
-# The words and their review ------------------------------------------------------------------
-
-def brief_of(slot, concept, voice, files, profile=None, note=None):
-    """profile: voice_profile.read() for the run, or None; it adds his measured style to the account's voice.
+def brief_of(slot, concept, voice, files, note=None):
+    """What the share declaration is told about the post: its channel, account, format, idea and claim.
     note: his words on the option as offday.note_parts read them (Ruling, Krish, 2026-11-02): his direction is
-    followed and never printed; his quotes are on the media, shown here only so the words fit them."""
+    context and never printed; his quotes are on the media."""
     channel, fmt = slot['channel'], slot['format']
     media = ('text only, no picture' if not files else
              str(len(files)) + (' pictures' if len(files) > 1 else ' picture' if release.MEDIA.get(
                  '.' + files[0][1]) == 'image' else ' video'))
-    style = ('\n' + profile[voice]) if profile and profile.get(voice) else ''
-    return ('Channel: ' + NAMES[channel] + ', ' + VOICE[voice] + style + '\nFormat: ' + fmt + ', ' + media
-            + '.\nAt most ' + str(WORDS_MAX[channel]) + ' characters of words, the claim included.'
-            + '\nIdea: ' + concept['idea'] + '\nClaim: ' + concept['claim'] + note_brief(note))
+    return ('Channel: ' + NAMES[channel] + ', ' + VOICE[voice] + '\nFormat: ' + fmt + ', ' + media
+            + '.\nIdea: ' + concept['idea'] + '\nClaim: ' + concept['claim'] + note_brief(note))
 
 
 def note_brief(note):
@@ -407,7 +387,7 @@ def note_brief(note):
         return ''
     out = ''
     if note.get('direction'):
-        out += '\nEditor\'s direction (follow it, never quote it): ' + note['direction']
+        out += '\nEditor\'s direction (context only, never quote it): ' + note['direction']
     for text in note.get('on_media') or []:
         out += '\nAlready on the picture or video, exactly: ' + json.dumps(text, ensure_ascii=False)
     return out
@@ -420,8 +400,9 @@ def voice_reasons(cc, voice, channel, words):
 
 
 def word_checks(slot, concept, words, title, voice_found=None, claim=True):
-    """[(code, reasons)] the words and title fail, in order: the claim, the length, the copy lint, the share ask
-    and the YouTube title. Empty when they pass. claim=False only for a standing-plan draft, which has no claim."""
+    """[(code, reasons)] content-engine's caption and title fail, in order: the claim, the length, the copy lint, the
+    share ask, the voice check and the YouTube title. Empty when they pass; a failing caption holds with the first
+    code and goes back to content-engine, never rewritten here. claim=False is kept for callers."""
     channel, fmt = slot['channel'], slot['format']
     return [(name, found) for name, found in (
         ('words_missing_claim', [] if not claim or concept_rules.carries(concept['claim'], words)
@@ -447,7 +428,7 @@ def post_length(channel, text):
 
 
 def without_route(words):
-    """The words without the route line with_route adds, so a saved draft's own words are measured as the writer
+    """The words without the route line with_route adds, so a saved draft's own words are measured as content-engine
     wrote them (Maker.adopt reads back words that already end with the route)."""
     head, sep, last = (words or '').rpartition('\n')
     if sep and (last == PROFILE_ROUTE or (last.startswith('Subscribe: ') and '/subscribe?' in last)):
@@ -487,72 +468,9 @@ def with_route(slot, words, root=ROOT):
     return final
 
 
-def floor_brief(floor):
-    """His approved floor for the writer, never the blind reviewer (audit 2026-11-14, I-14): his approved voice rules and
-    the floor standards for the slot's format (cc_loop.never_beneath), form only, or '' when none reached the run."""
-    if not floor:
-        return ''
-    return ('\nHis approved floor. Never write beneath any of these, and never quote them:\n'
-            + '\n'.join('- ' + line for line in floor))
-
-
-def write_words(anthropic, slot, concept, voice, files, profile=None, note=None, voice_check=None, root=ROOT,
-                floor=None):
-    """(words, title, share) that carry the claim and pass every check, with the subscribe route (with_route), or
-    Held. One rewrite with the reasons. voice_check(words) gives the hard krish-voice rules the words break
-    (voice_reasons), checked like the copy lint."""
-    return _written(anthropic, WRITER_SYSTEM, brief_of(slot, concept, voice, files, profile, note) + floor_brief(floor),
-                    slot, concept, voice_check, claim=True, root=root)
-
-
-def standing_brief(channel, voice, piece, profile=None):
-    """The writer's brief for a standing-plan draft: the account's voice, a text post, and one published piece."""
-    style = ('\n' + profile[voice]) if profile and profile.get(voice) else ''
-    return ('Channel: ' + NAMES[channel] + ', ' + VOICE[voice] + style + '\nFormat: ' + STANDING_FORMAT[channel]
-            + ', text only, no picture.\nAt most ' + str(WORDS_MAX[channel]) + ' characters of words.'
-            + '\nThe piece, published ' + str(piece['published_at'])[:10] + ': ' + piece['title']
-            + ('\nIts subtitle: ' + piece['subtitle'] if piece.get('subtitle') else '')
-            + '\nThe piece as published:\n' + piece['text'][:PIECE_TEXT_MAX])
-
-
-def write_standing(anthropic, slot, voice, piece, profile=None, voice_check=None, root=ROOT, floor=None):
-    """(words, title, share) of a standing-plan draft from one published piece, passing every check but the claim
-    (it has none), with the subscribe route (with_route), or Held. One rewrite with the reasons."""
-    return _written(anthropic, STANDING_SYSTEM, standing_brief(slot['channel'], voice, piece, profile) + floor_brief(floor),
-                    slot, None, voice_check, claim=False, root=root)
-
-
-def _written(anthropic, system, brief, slot, concept, voice_check, claim, root=ROOT):
-    reasons, code = [], None
-    for _ in range(MAX_WRITES):
-        user = brief + ('\nYour last draft was held. Write it again so none of these applies: ' + '; '.join(reasons)
-                        if reasons else '')
-        got = anthropic.json_message(system, user, WRITE_SCHEMA)
-        words, title, share = got.get('words'), got.get('title'), got.get('share')
-        code, reasons = None, []
-        if not isinstance(words, str) or not words.strip() or not isinstance(title, str) \
-                or not isinstance(share, dict):
-            code, reasons = 'words_unreadable', ['answer with words, a title and a share block']
-            continue
-        words = words.strip()
-        share = share_block(share)
-        failed = word_checks(slot, concept, words, title, voice_check(words) if voice_check else None, claim)
-        shared = share_errors(share, True)
-        if shared:
-            failed.insert(len([f for f in failed if f[0] != 'title_refused']), ('share_block_refused', shared))
-        for name, found in failed:
-            code = code or name
-            reasons += found
-        if code is None:
-            # The one point a draft's words are fixed: the route is added here, after the writer and its checks and
-            # before the review, the judges, the digest and Buffer, so each of them sees exactly these words.
-            return with_route(slot, words, root), title.strip(), share
-    raise Held(code)
-
-
-def declare_share(anthropic, slot, concept, voice, files, words, profile=None, note=None, floor=None):
-    """The share block of words already saved (an adopted draft), or Held. The words are never rewritten."""
-    user = (brief_of(slot, concept, voice, files, profile, note) + floor_brief(floor) + '\nThe words, exactly as saved: '
+def declare_share(anthropic, slot, concept, voice, files, words, note=None):
+    """The share block of content-engine's fixed words, or Held. The words are never rewritten."""
+    user = (brief_of(slot, concept, voice, files, note) + '\nThe words, exactly as written: '
             + json.dumps(words, ensure_ascii=False))
     got = anthropic.json_message(DECLARE_SYSTEM, user, SHARE_SCHEMA)
     share = got.get('share') if isinstance(got, dict) else None
@@ -566,8 +484,7 @@ def declare_share(anthropic, slot, concept, voice, files, words, profile=None, n
 
 def review_words(anthropic, slot, words, share, assets):
     """The blind reader's answer to the post's exact words, compared with its share block, or Held. It never reads
-    his taste: judges never read taste (inspirationhouse docs/TWO_WAY.md; cc_loop.voice_rules), so his floor goes to
-    the writer only."""
+    his taste: judges never read taste (inspirationhouse docs/TWO_WAY.md; cc_loop.voice_rules)."""
     request = slot_send_test_request({'format': slot['format'], 'words': words, 'assets': assets})
     user = ('The post, as JSON. Its pictures or video are not shown; judge it from its format, its file names and'
             ' its words.\n' + json.dumps(request['post'], ensure_ascii=False, sort_keys=True))
@@ -588,7 +505,7 @@ def review_words(anthropic, slot, words, share, assets):
 def draft_metadata(channel, files, title):
     video = any(release.MEDIA.get('.' + ext) == 'video' for _, ext in files)
     if channel == 'instagram':
-        # The mocks are drawn by this engine's renderer from approved templates, not generated by AI.
+        # The assets are drawn by content-engine's v5 Library from approved templates, not generated by AI.
         return {'instagram': {'type': 'reel' if video else 'post', 'shouldShareToFeed': True, 'isAiGenerated': False}}
     if channel == 'youtube':
         return {'youtube': {'title': title, 'categoryId': YOUTUBE_CATEGORY, 'privacy': 'public',
@@ -596,7 +513,7 @@ def draft_metadata(channel, files, title):
     return None
 
 
-# With no approved weekly mix: the standing plan (Ruling, Krish, 2026-11-12) ----------------------
+# With no approved weekly mix: one ask a week (Ruling, Krish, 2026-11-12) ----------------------
 
 def standing_plan(root, decisions):
     """The standing plan (specs/standing-plan.json), or None when there is none or his latest decision on it is a no:
@@ -632,34 +549,6 @@ def week_has_ended(days):
     return all(mix_rules.is_rest_day(ny_midnight(d) + dt.timedelta(hours=12)) for d in days)
 
 
-def published_pieces(rows, root, now, monday):
-    """The articles published before the week began, with their text, oldest unamplified first (the backlog's
-    order, engine/backlog.py). Published before the Monday so the list, and each day's pick, holds all week."""
-    inventory = backlog.build(rows, None, backlog.pilot_editions(root), root, now, backlog.FEED_DAYS,
-                              ['public feed', str(backlog.PILOTS)])
-    start = ny_midnight(dt.date.fromisoformat(monday))
-    by_id = {r['piece_id']: r for r in rows if isinstance(r, dict)}
-    out = []
-    for piece in inventory['pieces']:
-        row = by_id.get(piece['piece_id'])
-        if piece['kind'] == 'article' and row and row.get('text') and instant(piece['published_at']) < start:
-            out.append(dict(row, published_at=piece['published_at']))
-    return out
-
-
-def standing_piece(pieces, day):
-    """The day's piece: a different one each workday of the week, moving on week to week. None when there are too
-    few for that, so a piece never repeats on a channel in a week."""
-    n = len(pieces)
-    if n >= STANDING_DAYS:
-        return pieces[(day.isocalendar()[1] * STANDING_DAYS + day.weekday()) % n]
-    return pieces[day.weekday()] if day.weekday() < n else None
-
-
-def standing_run_id(day):
-    return SLUG + ':standing:' + day.isoformat()
-
-
 def ask_run_id(week_label):
     return stale_asks.mixask_id(week_label)
 
@@ -671,18 +560,6 @@ MONTHS = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'Augus
 def _long_day(day):
     """'Tuesday 10 November 2026', whatever the runner's locale."""
     return mix_rules.DAYS[day.weekday()] + ' ' + str(day.day) + ' ' + MONTHS[day.month - 1] + ' ' + str(day.year)
-
-
-TASTE_HOLD = 'taste_unavailable'
-TASTE_LINE = ("His taste did not reach this run (the directive served neither his approved voice rules nor his floor), "
-              "so these drafts follow the account rules and the voice profile alone.")
-TASTE_READ_LINE = 'Drafted inside his approved floor and voice rules, as today\'s directive served them.'
-TASTE_NONE_LINE = 'His taste was served with nothing approved yet, so these drafts follow the account rules and the voice profile.'
-
-
-def taste_line(taste):
-    """The standing report's line for what this run read of his taste (summary['taste'])."""
-    return {'read': TASTE_READ_LINE, 'none': TASTE_NONE_LINE}.get(taste, 'Held: ' + TASTE_HOLD + '. ' + TASTE_LINE)
 
 
 def report_state(work):
@@ -711,50 +588,30 @@ def read_directive(work):
     return work.directive
 
 
-def standing_report(day, monday, why, drafts, now, root, state=None, taste='absent'):
-    """One New York day's standing-plan drafts, kept in Control Center as one live report: each draft's words in a
-    plain line marked as a draft, its piece as the line's link, and the whole in a record. No proposal: nothing on
-    his list, and no address release reads (cc_records). state: report_state's fields, so the engine's state rides
-    on this report too."""
-    label = autorelease._week_label(monday)
-    lines = [{'line': 'Drafted from the standing plan (specs/standing-plan.json): no approved mix for ' + label + ' ('
-              + why + '). These are drafts only: nothing is saved in Buffer, scheduled or posted, and release never'
-              ' reads them.'}]
-    lines += [{'line': 'Draft, ' + NAMES[d['channel']] + ', ' + _long_day(day) + ', not approved, from a piece published '
-               + d['published'] + ': ' + d['words'], 'evidence_url': d['piece_url']} for d in drafts]
-    lines.append({'line': taste_line(taste)})
-    lines.append({'line': 'Posted, sent, published and spent nothing'})
-    record = {'schema': STANDING_SCHEMA, 'day': day.isoformat(), 'week_of': monday, 'why': why,
-              'drafts': [{k: d[k] for k in ('channel', 'format', 'piece_url', 'words', 'title', 'share')} for d in drafts]}
-    return build_report(standing_run_id(day), 'live', now, revision(root), now, 'ready', cc_records.objectives(),
-                        lines + cc_records.record_lines(STANDING_SCHEMA, record), state=state)
-
-
 def ask_report(monday, why, now, root, state=None):
-    """The week's one ask on his list: a strategy proposal saying the mix is not approved and what the maker is doing
-    instead. It expires when the week ends. state: report_state's fields, as on standing_report."""
+    """The week's one ask on his list: a strategy proposal saying the mix is not approved, so nothing of the week is
+    made or posted. It expires when the week ends. state: report_state's fields, so the engine's state rides on it."""
     label = autorelease._week_label(monday)
     first = dt.date.fromisoformat(monday)
     ends = ny_midnight(first + dt.timedelta(days=7))
     words = '\n'.join([
         ASK_TITLE + ': the week of ' + _long_day(first) + ' (' + label + ') has no approved mix yet (' + why + ').',
         '',
-        'Until it has, the maker drafts from the standing plan (specs/standing-plan.json): one post a day on X from a'
-        ' piece already published, kept in Control Center as a draft. Instagram, TikTok and YouTube Shorts get'
-        ' nothing, because each needs an edition you approved. Nothing is saved in Buffer, scheduled or posted.',
+        'Until it has, nothing from this week is put in Buffer, scheduled or posted. Content-engine makes every post'
+        ' and its caption; the maker only turns the ones from your approved mix into drafts.',
         '',
         "To switch to your plan, approve this week's mix on the publish board. The next maker run makes your plan's"
-        ' posts instead.',
+        ' drafts.',
         '',
         'This ask comes once a week and expires when the week ends.'])
     item = proposal(ask_run_id(label), ASK_TITLE,
-                    "Nothing from this week's mix can be made until you approve it, so the maker is drafting from the"
-                    ' standing plan, and none of those drafts goes out.',
+                    "Nothing from this week's mix can be drafted until you approve it, so nothing goes out this week"
+                    ' until then.',
                     'advice', 'strategy', 'mix_approved', exact_payload=words,
                     evidence=[{'label': "This week's publish board", 'url': CONTENT_BOARD + monday}],
                     reference='docs/MAKER.md, With no approved mix', expires_at=ends)
     return build_report(ask_run_id(label), 'live', now, revision(root), now, 'held', cc_records.objectives(),
-                        [{'line': 'Drafted from the standing plan: no approved mix for ' + label + ' (' + why + ')'},
+                        [{'line': 'Nothing drafted: no approved mix for ' + label + ' (' + why + ')'},
                          {'line': 'Posted, sent, published and spent nothing'}], [item], [],
                         [{'reason': 'week_mix_not_approved', 'detail': label + ': ' + why}], state=state)
 
@@ -769,21 +626,19 @@ class Maker:
         self.organizations, self.listed, self.downloads = [], {}, {}
         self.since = self.created_since = None
         self.handed = {'recorded': 0, 'holds': {}, 'error': None}
-        # content-engine's judges on each carousel and Short (Ruling, Krish, 2026-11-12): passed, bound to its post.
+        # content-engine's judges passed each carousel and Short when it made them (Ruling, Krish, 2026-11-12 and
+        # 2026-11-26): the maker binds each pass to its saved post so it counts once live.
         self.judges = {}
-        self.profile = None  # voice_profile.read() for the run; None drafts from the account rules alone
         self.board = None  # the board client whose mix press approves the week (autorelease.mix_binding)
-        # With no approved weekly mix (Ruling, Krish, 2026-11-12): the standing plan, the published pieces (read once,
-        # when a week first needs them), what each week was drafted from, each standing week's counts, and the weeks
-        # skipped because nothing of them can be made in this run.
-        self.standing_doc, self.feed, self.rows = None, catalog.pieces, None
+        # With no approved weekly mix (Ruling, Krish, 2026-11-12): the standing plan, what each week was drafted from,
+        # each such week's reason and ask, and the weeks skipped because nothing of them can be made in this run.
+        self.standing_doc = None
         self.drafted_from, self.standing, self.skipped = {}, {}, {}
         # The engine's 1.20.0 state for the live reports this run posts (report_state): read once, on first need.
         self.state_read, self.state_fields = False, None
-        # Today's directive, read once a run (read_directive): the engine's state and his taste come from it.
+        # Today's directive, read once a run (read_directive): the engine's state comes from it.
         self.directive_read, self.directive = False, None
         self.board_items = {}  # {board week: {option id: board item id}} for item_route, read once a week a run
-        self.taste = 'absent'  # what this run read of his taste: read, none or absent (taste_state)
 
     def item_route(self, slot, concept, monday):
         """utm_content for a slot whose concept is an off-day option he approved on the board: content_of(<the board's
@@ -805,10 +660,6 @@ class Maker:
             return route.item_content(item, slot['channel']) if item else None
         except ValueError:
             return None
-
-    def floor(self, fmt):
-        """His approved voice rules and the floor standards for this format, for the writer only."""
-        return never_beneath(self.directive, fmt) if self.directive else []
 
     def out_of_time(self):
         return self.deadline is not None and self.clock() >= self.deadline
@@ -869,19 +720,27 @@ class Maker:
         assets = [{'name': 'mock-' + str(n) + '.' + ext, 'sha256': sha} for n, (sha, ext) in enumerate(files, 1)]
         return files, assets
 
-    def make(self, slot, concept, voice, manifest, monday, note=None):
-        """The handoff slot for one draft made and handed off (or None in a dry run), Held, or Stop."""
-        files, assets = self.prepare(slot, concept, manifest)
-        floor = self.floor(slot['format'])
+    def caption(self, slot, concept, voice, manifest, monday):
+        """(words, title): content-engine's caption and YouTube title for this slot, checked, with the subscribe route
+        added only when the caption carries none (with_route), or Held. Never written or rewritten here."""
+        words, title = caption_of(manifest, concept['concept_id'], slot['channel'], slot['format'])
+        words, title = words.strip(), title.strip()
+        failed = word_checks(slot, concept, words, title, self.voice_found(voice, slot['channel'], words))
+        if failed:
+            raise Held(failed[0][0])
         routed = self.item_route(slot, concept, monday)
-        words, title, share = write_words(self.anthropic, dict(slot, route_content=routed) if routed else slot,
-                                          concept, voice, files, self.profile, note,
-                                          voice_check=lambda w: self.voice_found(voice, slot['channel'], w),
-                                          root=self.root, floor=floor)
+        return with_route(dict(slot, route_content=routed) if routed else slot, words, self.root), title
+
+    def make(self, slot, concept, voice, manifest, monday, note=None):
+        """The handoff slot for one draft of content-engine's asset and caption, saved and handed off (or None in a
+        dry run), Held, or Stop."""
+        files, assets = self.prepare(slot, concept, manifest)
+        words, title = self.caption(slot, concept, voice, manifest, monday)
+        share = declare_share(self.anthropic, slot, concept, voice, files, words, note)
         answer = review_words(self.anthropic, slot, words, share, assets)
         if not self.deliver:
             return None
-        verdict = self.judged(slot, concept, words, seen(assets, files, manifest), monday)
+        verdict = self.verdict_of(slot, words, assets)
         channel = slot['channel']
         pinned = BUFFER_CHANNEL_ID[channel]
         covers = getattr(manifest, 'covers', None) or {}
@@ -909,24 +768,18 @@ class Maker:
             raise Held('draft_readback_differs', loud=True)
         return self.hand(slot, concept, post, files, assets, share, answer, monday, verdict)
 
-    def judged(self, slot, concept, words, assets, monday):
-        """content-engine's 10/10 judges on a carousel or a Short, before it is made or handed off (Ruling, Krish,
-        2026-11-12: "Every Growth carousel goes through the same 10/10 judges"); None for any other format. A fail
-        or no answer holds the slot loudly; the reasons stay on content-engine's record and in .scratch/judges/."""
+    def verdict_of(self, slot, words, assets):
+        """For a carousel or a Short, what content-engine's 10/10 judges passed when it made the asset (Ruling, Krish,
+        2026-11-12 and 2026-11-26: the make flow asks the judges itself), as the artifact the pass binds
+        (judges.artifact_sha256); None for any other format. The maker asks no judge."""
         if not judges.judged(slot):
             return None
-        try:
-            day = monday.isoformat() if hasattr(monday, 'isoformat') else str(monday)
-            verdict = judges.judge(self.board, day, slot, concept, words, assets, self.root)
-        except judges.JudgesHeld as held:
-            raise Held(held.code, loud=True) from None
-        self.judges['passed'] = self.judges.get('passed', 0) + 1
-        return verdict
+        return {'artifact_sha256': judges.artifact_sha256(slot, words, assets)}
 
     def adopt(self, slot, concept, voice, manifest, monday, found, note=None):
-        """A draft saved by an earlier run but never handed off, made good: read back, its words checked, its share
-        declared and reviewed blind, and handed off. Its words are never changed. Every hold is loud: a draft
-        exists that release cannot read."""
+        """A draft saved by an earlier run but never handed off, made good: read back, its words checked against
+        content-engine's caption, its share declared and reviewed blind, and handed off. Its words are never changed.
+        Every hold is loud: a draft exists that release cannot read."""
         try:
             files, assets = self.prepare(slot, concept, manifest)
             try:
@@ -939,17 +792,14 @@ class Maker:
             if not is_draft(post) or post.get('channelId') != BUFFER_CHANNEL_ID[slot['channel']] \
                     or not isinstance(words, str) or len(post.get('assets') or []) != len(files):
                 raise Held('made_not_handed_off')
-            meta = post.get('metadata') if isinstance(post.get('metadata'), dict) else {}
-            title = meta.get('title') if slot['channel'] == 'youtube' and isinstance(meta.get('title'), str) else ''
-            failed = word_checks(slot, concept, words, title, self.voice_found(voice, slot['channel'], words))
-            if failed:
-                raise Held(failed[0][0])
-            floor = self.floor(slot['format'])
-            share = declare_share(self.anthropic, slot, concept, voice, files, words, self.profile, note, floor)
+            want, _ = self.caption(slot, concept, voice, manifest, monday)
+            if without_route(words) != without_route(want):
+                raise Held('draft_differs_from_caption')
+            share = declare_share(self.anthropic, slot, concept, voice, files, words, note)
             answer = review_words(self.anthropic, slot, words, share, assets)
             if not self.deliver:
                 return None
-            verdict = self.judged(slot, concept, words, seen(assets, files, manifest), monday)
+            verdict = self.verdict_of(slot, words, assets)
             return self.hand(slot, concept, post, files, assets, share, answer, monday, verdict)
         except Held as hold:
             raise Held(hold.code, loud=True) from None
@@ -1002,91 +852,6 @@ class Maker:
             raise Stop('handoff_incomplete')  # a draft exists that release cannot read yet: the next run adopts it
 
 
-def standing_week(work, monday, days, why, voices):
-    """Draft each of days (workdays of the week starting monday) from the standing plan: no approved mix, so the
-    standing plan's own cadence on the maker's channels, from pieces already published. Drafts only: nothing is
-    saved in Buffer or handed off. With deliver, each day's drafts are one live report in Control Center, and the
-    week raises its one ask on his list when none is raised yet. Raises Stop like make_week."""
-    label = autorelease._week_label(monday)
-    counts = work.standing.setdefault(label, {'why': why, 'held': {}})
-
-    def count(key, n=1):
-        counts[key] = counts.get(key, 0) + n
-
-    def hold(code, loud=False):
-        counts['held'][code] = counts['held'].get(code, 0) + 1
-        if loud:
-            work.tally.loud.append(code)
-
-    channels = [c for c in concept_rules.CONCEPT_CHANNELS
-                if c in work.standing_doc['channels'] and c not in release.KRISH_CLICK_ONLY]
-    pieces = None
-    for day in days:
-        try:
-            if cc_records.read_report(work.cc, standing_run_id(day)) is not None:
-                count('already_drafted')  # an earlier run drafted this day: a day is drafted once
-                continue
-        except ValueError:
-            hold('standing_record_unreadable', loud=True)
-            continue
-        drafts = []
-        for channel in channels:
-            fmt = STANDING_FORMAT.get(channel)
-            if fmt is None:
-                count('no_approved_edition')
-                continue
-            if voices.get(channel) not in VOICE:
-                hold('account_voice_unknown')
-                continue
-            if pieces is None:
-                try:
-                    if work.rows is None:
-                        work.rows = work.feed(backlog.FEED_DAYS, work.now)
-                    pieces = published_pieces(work.rows, work.root, work.now, monday)
-                except (ValueError, KeyError, TypeError, OSError, http.client.HTTPException):
-                    pieces = False  # the feed could not be read: nothing is guessed, the next run tries again
-            if pieces is False:
-                hold('pieces_unreadable')
-                continue
-            piece = standing_piece(pieces, day)
-            if piece is None:
-                hold('no_published_piece')
-                continue
-            if work.out_of_time():
-                raise Stop('maker_out_of_time')
-            slot = {'slot_id': channel + '-' + day.isoformat() + '-standing', 'channel': channel, 'format': fmt}
-            try:
-                floor = work.floor(fmt)
-                words, title, share = write_standing(
-                    work.anthropic, slot, voices[channel], piece, work.profile,
-                    voice_check=lambda w, c=channel: work.voice_found(voices[c], c, w), root=work.root, floor=floor)
-                review_words(work.anthropic, slot, words, share, [])
-            except Held as held:
-                hold(held.code)
-                continue
-            except AnthropicAuthError:
-                raise
-            except AnthropicError as error:
-                if error.code in GAVE_UP:
-                    raise Stop(error.code) from None
-                hold(error.code)
-                continue
-            drafts.append({'channel': channel, 'format': fmt, 'piece_url': piece['url'], 'words': words,
-                           'title': title, 'share': share, 'published': str(piece['published_at'])[:10]})
-        if not drafts:
-            continue
-        if not work.deliver:
-            count('would_draft', len(drafts))
-            continue
-        posted = work.cc.post_report(standing_report(day, monday, why, drafts, work.now, work.root,
-                                                     report_state(work), work.taste))
-        if posted['accepted']:
-            count('drafted', len(drafts))
-        else:
-            hold('standing_report_conflict', loud=True)
-    counts['ask'] = raise_ask(work, monday, why)
-
-
 def raise_ask(work, monday, why):
     """The week's one ask, "This week's mix isn't approved", on his list once per ISO week: raised only when its
     address is still empty, so every other run that week says nothing, and never once the week is over (the
@@ -1107,7 +872,7 @@ def raise_ask(work, monday, why):
 
 def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
     """Make the slots of days (all in the week starting monday) under that week's plan, or, with no approved mix
-    for the week, draft them from the standing plan (standing_week)."""
+    for the week, make nothing and raise the week's one ask (raise_ask)."""
     tally = work.tally
     label = autorelease._week_label(monday)
     state = autorelease.week_state(work.cc, monday, decisions, folder, work.now, work.root, proposals, work.board)
@@ -1122,8 +887,8 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
         return
     why = no_approved_mix(state)
     if why and work.standing_doc is not None and monday in work.standing_doc['weeks']:
-        work.drafted_from[label] = 'standing_plan'
-        standing_week(work, monday, [d for d in days if not week_has_ended([d])], why, voices)
+        work.drafted_from[label] = 'no_approved_mix'
+        work.standing[label] = {'why': why, 'ask': raise_ask(work, monday, why)}
         return
     if state.get('hold'):
         tally.hold(state['why'] if state['hold'] == 'concept_hold' and state.get('why') else state['hold'],
@@ -1195,16 +960,14 @@ def make_week(work, monday, days, decisions, proposals, folder, cfg, voices):
 
 
 def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None, out_path=None, day=None,
-          clock=time.monotonic, board=None, profile=None, feed=None):
+          clock=time.monotonic, board=None):
     """Returns (summary, exit_code). summary holds counts and codes only.
 
     day (YYYY-MM-DD) names the New York day to make by hand; only today or tomorrow there is accepted,
     so a yes given after the night's run can still be made that morning (day_out_of_range otherwise).
     Without it, the days are make_days(now).
-    profile is voice_profile.read() (main reads it live); None makes the drafts from the account rules alone.
-    feed(days, now) reads the published pieces a standing-plan draft is written from (default: the public feed,
-    engine/catalog.py). summary says, per week, what it was drafted from (drafted_from: his_mix or standing_plan),
-    each standing week's counts and its ask (standing), and the weeks skipped with their hold (skipped_weeks)."""
+    summary says, per week, what it was drafted from (drafted_from: his_mix, or no_approved_mix when nothing was),
+    each week with no approved mix and its ask (standing), and the weeks skipped with their hold (skipped_weeks)."""
     started = clock()
     now = instant(now)
     root = Path(root or ROOT)
@@ -1224,30 +987,19 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
     mondays = sorted({(d - dt.timedelta(days=d.weekday())).isoformat() for d in days})
     summary = {'lane': 'L0', 'command': 'maker', 'deliver': bool(deliver), 'days': [d.isoformat() for d in days],
                'weeks': [autorelease._week_label(m) for m in mondays], 'slots': {}, 'holds': {}, 'mutations': 0,
-               'handoff': None, 'taste': 'absent', 'loud': [], 'error': None,
-               'voice_profile': 'read' if profile else 'voice_profile_unavailable', 'drafted_from': {},
-               'standing': {}, 'skipped_weeks': {}}
+               'handoff': None, 'loud': [], 'error': None, 'drafted_from': {}, 'standing': {},
+               'skipped_weeks': {}}
     work = Maker(cc, buffer, anthropic, now, deliver, fetch or buffer_api.download_facts, root, out_path,
                  started + RUN_BUDGET, clock)
     work.board = board
-    work.profile = profile
-    if feed is not None:
-        work.feed = feed
     tally = work.tally
     if anthropic is None:
-        # No words without the key: nothing is read, nothing is made, and the run fails so GitHub emails him.
+        # No share declaration or blind review without the key: nothing is read, nothing is made, and the run fails
+        # so GitHub emails him.
         tally.hold('anthropic_key_missing', loud=True)
         return _finish(summary, tally, buffer)
     if callable(getattr(anthropic, 'set_deadline', None)):
         anthropic.set_deadline(started + RUN_BUDGET)
-    # His taste reaches this job through the directive (audit 2026-11-14, I-14): his approved voice rules and, behind
-    # features.taste_floor, the floor for each format, passed to the writer as never-beneath lines (never to the blind
-    # reviewer: judges never read taste). The summary says what was read: read, none (served, nothing approved yet) or absent. Absent is
-    # taste_unavailable, a hold the job page and its Control Center reports say, never silent and never loud: the
-    # slots still run on the account rules and the voice profile.
-    summary['taste'] = work.taste = taste_state(read_directive(work))
-    if summary['taste'] == 'absent':
-        summary['run_holds'] = [TASTE_HOLD]
     first = ny_midnight(dt.date.fromisoformat(mondays[0]))
     work.since, work.created_since = first.isoformat(), (first - DRAFT_LOOKBACK).isoformat()
     folder = tempfile.TemporaryDirectory()
@@ -1297,24 +1049,17 @@ def maker(cc, buffer, anthropic, now=None, deliver=False, fetch=None, root=None,
 def step_summary(summary):
     """The run's lines for the GitHub job summary: what each week was drafted from, in counts and codes only."""
     lines = []
-    if TASTE_HOLD in (summary.get('run_holds') or []):
-        lines.append('- Held: ' + TASTE_HOLD + '. ' + TASTE_LINE)
     usage = summary.get('model_usage')
     if usage:
         lines.append('- Model calls: ' + str(usage['calls']) + ' on ' + usage['model'] + ', ' + str(usage['input_tokens'])
                      + ' tokens in and ' + str(usage['output_tokens']) + ' out; meter ' + str(summary.get('meter')) + '.')
     for label, source in sorted((summary.get('drafted_from') or {}).items()):
-        if source != 'standing_plan':
-            lines.append('- ' + label + ": drafted from Krish's approved mix.")
+        if source != 'no_approved_mix':
+            lines.append('- ' + label + ": drafted from Krish's approved mix, with content-engine's captions.")
             continue
         counts = (summary.get('standing') or {}).get(label) or {}
-        made = counts.get('drafted', 0) + counts.get('would_draft', 0)
-        lines.append('- ' + label + ': drafted from the standing plan, no approved weekly mix (' + str(counts.get('why'))
-                     + '). Drafts ' + ('kept in Control Center' if summary.get('deliver') else 'written, dry run, saved'
-                                       ' nowhere') + ': ' + str(made) + ' new, ' + str(counts.get('already_drafted', 0))
-                     + ' already drafted, ' + str(sum((counts.get('held') or {}).values())) + ' held; '
-                     + str(counts.get('no_approved_edition', 0)) + ' with no approved edition. The ask: '
-                     + str(counts.get('ask')) + '.')
+        lines.append('- ' + label + ': nothing drafted, no approved weekly mix (' + str(counts.get('why'))
+                     + '). The ask: ' + str(counts.get('ask')) + '.')
     for label, code in sorted((summary.get('skipped_weeks') or {}).items()):
         lines.append('- ' + label + ': skipped, nothing of it can be made in this run (' + str(code) + ').')
     return ['### Maker', ''] + (lines or ['- Nothing drafted.']) + ['']
@@ -1366,8 +1111,7 @@ def _anthropic_client():
     return Anthropic(key) if key else None
 
 
-def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=None, out=print, make_board=None,
-         read_profile=None):
+def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=None, out=print, make_board=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv[:1] == ['maker']:
         argv = argv[1:]
@@ -1403,7 +1147,7 @@ def main(argv=None, make_cc=None, make_buffer=None, make_anthropic=None, fetch=N
         return 1
     from engine.run.board_tick import board_from_env
     result, code = maker(cc, buffer, anthropic, args.now, args.deliver, fetch, day=args.day,
-                         board=(make_board or board_from_env)(), profile=(read_profile or voice_profile.read)())
+                         board=(make_board or board_from_env)())
     result['meter'] = post_meter(cc, anthropic, os.environ)
     out(json.dumps(result, sort_keys=True))
     where = os.environ.get('GITHUB_STEP_SUMMARY', '').strip()
