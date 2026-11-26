@@ -265,21 +265,6 @@ def clock(mix, now, filled_slot_ids=(), root=ROOT):
             'offday_slots_filled': sum(1 for s in slots if s['slot_id'] in ids), 'offday_slots_available': len(slots)}
 
 
-def mock_briefs(approved):
-    """What the Canva lane makes for each off-day option Krish approved (the pieces route's `offdays`, as
-    board_tick.board_offdays reads it): the idea and the direction exactly as he approved them, his direction, and his
-    quotes as the text that goes on the picture or video exactly as written (Ruling, Krish, 2026-11-02). An option
-    whose quote reads as what not to say is listed as held. Pure."""
-    out = []
-    for row in approved or ():
-        parts = note_parts(row.get('note'))
-        out.append({'option': 'off-' + str(row.get('day')) + '-' + str(row.get('option_id')), 'day': row.get('day'),
-                    'format': row.get('format'), 'idea': row.get('idea'), 'direction': row.get('direction'),
-                    'his_direction': parts['direction'] or None, 'on_media_exactly': parts['on_media'],
-                    'held': parts['hold'],
-                    'required_texts': [] if parts['hold'] else parts['on_media']})
-    return {'schema': 'growth-mock-briefs/1', 'briefs': out, 'local_only': True}
-
 
 def command(argv, root=ROOT):
     parser = argparse.ArgumentParser(prog='growth.py mix', description='The off-day lane on top of the mix. Offline.')
@@ -296,24 +281,12 @@ def command(argv, root=ROOT):
     t.add_argument('--taken', help='JSON list of slot_ids already given a post')
     t.add_argument('--now')
     t.add_argument('--out')
-    b = sub.add_parser('briefs', help="the Canva lane's brief for each approved off-day option, his quotes as exact text")
-    b.add_argument('--approved', required=True, help="the pieces route's `offdays` (GET /api/board/<Monday>/pieces), saved")
-    b.add_argument('--out')
     c = sub.add_parser('clock', help='offday_stocked and offday_slots_filled for Control Center')
     c.add_argument('--plan', required=True)
     c.add_argument('--filled', help='JSON list of filled slot_ids')
     c.add_argument('--now')
     c.add_argument('--out')
     args = parser.parse_args(argv)
-    if args.action == 'briefs':
-        listed = read_json(args.approved)
-        value = mock_briefs(listed.get('offdays') if isinstance(listed, dict) else listed)
-        if args.out:
-            write_json(args.out, value)
-            print('written locally to ' + args.out + '; no external write')
-        else:
-            print(json.dumps(value, indent=2, ensure_ascii=False))
-        return 0
     mix = read_json(args.plan)
     now = args.now or instant().isoformat()
     if args.action == 'offdays':

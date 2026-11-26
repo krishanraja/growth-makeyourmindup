@@ -10,10 +10,6 @@
     "text",
     "short-video",
     "meme",
-    "receipt-card",
-    "quote-card",
-    "scorecard",
-    "poll",
     "carousel"
   ],
   "guide": "social/guides/other-channels.md",

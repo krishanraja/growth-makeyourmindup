@@ -25,10 +25,8 @@ from engine.share import (JOBS, RULES, StaleSendTest, compare_send_test, cta_app
                           share_line, stage_send_test)
 from engine.social import ROOT, command, inventory, preflight, validate
 
-# The V1 build's Growth-made cards and Story frames are snackable too (merge of main into the V1 branch);
-# a poll is a native text post, like text, and is not.
-SNACKABLE = {'meme', 'carousel', 'single-image', 'short-video', 'story', 'note',
-             'quote-card', 'receipt-card', 'scorecard', 'story-frame'}
+# Every snackable format content-engine makes (the Canva lane's cards and Story frames retired on 26 Nov 2026).
+SNACKABLE = {'meme', 'carousel', 'single-image', 'short-video', 'story', 'note'}
 SHARE = {'sender': 'a head of marketing at a mid-size retailer',
          'receiver': 'her CEO, who keeps asking when the AI pilot pays back',
          'job': 'settles_it',

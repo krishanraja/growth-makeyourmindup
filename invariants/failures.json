@@ -753,16 +753,9 @@
       "id": "F71",
       "title": "A Canva export is off the brand kit, the wrong size for its channel, carries boilerplate or quotes words the piece does not contain",
       "source": "social/guides/canva.md; social/brand/kit.json (kit kAHZOJ-K6I8)",
-      "guard": "engine/run/canva.py:lint_design and engine/social.py:has_boilerplate",
-      "tests": [
-        "test_kit_holds_the_makeyourmindup_brand",
-        "test_an_on_kit_design_passes",
-        "test_off_kit_colour_font_and_size_are_refused",
-        "test_a_quote_must_be_a_literal_match_to_the_piece",
-        "test_boilerplate_and_unapproved_templates_are_refused",
-        "test_canva_lint_is_a_run_route"
-      ],
-      "status": "tested"
+      "guard": "Superseded on 26 Nov 2026: Krish retired the Canva lane (\"Canva is crap so we don't use that anymore\"), so Growth exports nothing from Canva; content-engine's v5 Library makes every asset and its gates check them",
+      "tests": [],
+      "status": "superseded"
     },
     {
       "id": "F72",
