@@ -1,5 +1,10 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-26: The weekly edition goes to all subscribers. His words: "substack weekly should be sent to ALL
+  subscribers". On this publication a new Substack post starts as "Paid subscribers only", so `jobs/edition.md` now
+  sets the edition post's audience to Everyone in part A and reads it back. Part B schedules nothing on any other
+  audience (`wrong_audience`). That post's audience is the one setting the job may change. Nothing was sent, posted,
+  scheduled or spent.
 - 2026-11-25: One email a week, the weekly edition, and Claude schedules in Buffer. His words, on the weekly edition
   design (pull request 143): "Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex".
   The publication sends one email a week, "makeyourmindup weekly", Saturday 08:00 New York, only on his Approve for

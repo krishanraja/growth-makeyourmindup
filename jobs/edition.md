@@ -51,9 +51,12 @@ one post after his press. Nothing else.
   makeyourmindup never names Krish, mind/make or CTRL.
 - **Test email to the owner only.** Use Substack's "Send test email" as it fills itself for the signed-in owner.
   Never type an address and never add a recipient.
-- **No settings.** Never change a publication setting, a section, the email header or footer, the welcome email,
-  a recommendation, the referral programme, a price or the post's audience. The edition goes to every
-  subscriber, with "Send via email and Substack app inbox" on, as Substack sets a new post.
+- **No settings, one exception.** Never change a publication setting, a section, the email header or footer, the
+  welcome email, a recommendation, the referral programme or a price. The one exception is the edition post's own
+  audience. Krish, 26 Nov 2026: "substack weekly should be sent to ALL subscribers". That is Substack's audience
+  **Everyone** (every subscriber, free and paid, by email; anyone on the web), with "Send via email and Substack app
+  inbox" on. A new post here starts as "Paid subscribers only", which would email only paid subscribers. So part A
+  sets Everyone and reads it back, and part B schedules nothing on any other audience.
 - **No secrets.** Never read, copy, store or print a cookie, a password, a login code or a session token. If
   Substack asks you to sign in, stop and record `signed_out`: Krish signs in himself.
 - **No Drive, no ai-harness, no board writes.** Codex never writes to Google Drive or ai-harness. It records what
@@ -66,7 +69,7 @@ One file per edition: `.scratch/edition/<edition_date>/record.json`, never commi
 `package_sha256`, `draft_url`, each part's `at` (with its offset) and `outcome`, the scheduled time as the page
 showed it with its zone, that time in New York, and `post_url` once published. Outcome codes: `draft_built`,
 `draft_changed`, `no_package`, `package_refused`, `no_press`, `press_mismatch`, `press_unreadable`, `too_late`,
-`scheduled`, `schedule_mismatch`, `published`, `not_published`, `editor_changed`, `signed_out`,
+`scheduled`, `schedule_mismatch`, `wrong_audience`, `published`, `not_published`, `editor_changed`, `signed_out`,
 `browser_unavailable`. Every part ends with a final message of three lines: the edition date, the outcome with
 its reason, and the draft or post link.
 
@@ -102,9 +105,10 @@ its reason, and the draft or post link.
      `source_url`. `quote` and `checked_at` are for the check and are never typed.
    - `pass_it_on`: its `text`, linked to its `url` (the tagged subscribe link, place `forward`).
    - `close`: its `text`. Substack's own footer stays as it is.
+   - **Audience:** Post settings (the gear at the foot of the editor), Audience: **Everyone**, then Done.
 6. **Read it back** from the saved draft: every heading, sentence and link address equals the package's, in
-   order, and nothing else is there. A difference you cannot fix by retyping the package's words: record
-   `editor_changed` with what differs and stop.
+   order, nothing else is there, and the audience reads Everyone. A difference you cannot fix by retyping the
+   package's words or choosing Everyone again: record `editor_changed` with what differs and stop.
 7. **Send the test email** with Substack's "Send test email", to the owner only (the walls). It sends nothing to
    subscribers.
 8. Record `draft_built` with `package_sha256`, `draft_url` and the time.
@@ -131,8 +135,9 @@ holds.
    browser's zone (in the page: `Intl.DateTimeFormat().resolvedOptions().timeZone`), then convert 08:00 New York
    on `edition_date` into it:
    `python -c "import datetime as d, zoneinfo as z; t=d.datetime.fromisoformat('<edition_date>T08:00').replace(tzinfo=z.ZoneInfo('America/New_York')); print(t.astimezone(z.ZoneInfo('<browser zone>')).isoformat())"`
-6. **Schedule.** Publish settings: leave the audience as every subscriber and "Send via email and Substack app
-   inbox" on, choose "Schedule time to email and publish", enter the converted date and time, and confirm.
+6. **Schedule.** Publish settings: the audience must read Everyone, with "Send via email and Substack app inbox"
+   on. If it reads anything else, schedule nothing: record `wrong_audience` and stop. Then choose "Schedule time
+   to email and publish", enter the converted date and time, and confirm.
 7. **Read back the schedule.** Read the scheduled time Substack now shows and its zone, convert it back to New
    York, and check that it is 08:00 on `edition_date`. Any other time: unschedule it at once, so it returns to a
    draft and nothing is sent, record `schedule_mismatch` and stop. Otherwise record `scheduled`, with the time as
@@ -142,8 +147,8 @@ holds.
 
 1. Read the record. Not `scheduled`: stop; there is nothing to read back.
 2. Open the post's public address and the publication's posts list. Check that it is published, dated
-   `edition_date`, and that Substack shows it was sent by email (its stats show recipients, or the post says it
-   was emailed). Read only: never edit it.
+   `edition_date`, and that Substack shows it was sent by email to all subscribers (its audience is Everyone and its
+   stats show recipients, or the post says it was emailed). Read only: never edit it.
 3. Record `published` with `post_url`, or `not_published` with what the page showed. Do nothing else: never
    publish now, never resend. The Claude session reads the record, ticks the board, and schedules the Saturday
    Note in Buffer once Krish has signed it. The Monday read (`jobs/subscribers.md`, step 6b) takes its numbers.
