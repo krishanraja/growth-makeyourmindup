@@ -43,5 +43,6 @@ jobs:
           CI_FILE: ''
           IDLE_HOURS: '6'
           DRAFT_HOURS: '24'
+          KEEP: '^(gh-pages|floor/rejections|inspo/new-drops)$'
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
         run: python3 .github/scripts/stray_guard.py
