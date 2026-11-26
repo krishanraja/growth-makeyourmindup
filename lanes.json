@@ -379,6 +379,28 @@
         "delete-merged-branches"
       ],
       "secrets": []
+    },
+    {
+      "id": "discoverability",
+      "lane": "L0_code",
+      "workflow": "discoverability.yml",
+      "trigger": "Mondays 07:41 UTC, and by hand",
+      "may_write": [
+        "the weekly discoverability report to Control Center",
+        "each run's own cost reading"
+      ],
+      "never": [
+        "write a business figure into this public repository",
+        "submit a URL, post or publish anything"
+      ],
+      "actions": [
+        "read-metrics",
+        "meter-run-cost",
+        "report-to-control-center"
+      ],
+      "secrets": [
+        "CONTROL_CENTER_ENGINE_TOKEN"
+      ]
     }
   ],
   "automations": [

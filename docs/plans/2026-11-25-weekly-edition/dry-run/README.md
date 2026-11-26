@@ -6,16 +6,18 @@ scheduled or put into Substack.
 
 **Held (Krish, 25 Nov 2026):** his approval waits for the v5 brand kit to be settled ("wait for your parent session to
 be completed as it will cement the entire brand kit"; DECISIONS.md). The re-render starts when the rebrand session says
-the Library is locked and names the template IDs to use (Krish: "I felt like it should wait on your say so"). Then this
-package is rendered in the weekly edition template it names and comes back to him once, for the shape, the words and
-the look together.
+the Library is locked and names the template IDs to use (Krish: "I felt like it should wait on your say so"). Then
+content-engine renders this package in the weekly edition template it names, and it comes back to him once, for the
+shape, the words and the look together.
 
 **Not the design:** `edition-2026-11-14.preview.html` is in the old look and is superseded by the v5 Library's weekly edition template.
 
 - `edition-2026-11-14.draft.json`: the package, in the contract's shape (`content-engine-edition/1`), keys sorted.
 - `edition-2026-11-14.preview.html`: the page it renders to. Structure only, in the old look: the v5 look comes from the
   Library's weekly edition template once the Library is locked.
-- `render_edition.py`: the renderer and checks used here, until content-engine's `scripts/edition/edition.py` replaces it.
+- `render_edition.py`: the renderer and checks used for this dry run only, kept as a dated plan artefact and never wired
+  into production. The edition is rendered by content-engine (`scripts/edition/edition.py`) from the v5 Library's
+  weekly edition template (Ruling, Krish, 2026-11-26: all asset production is content-engine's).
 
 ## What was checked
 
@@ -34,6 +36,9 @@ the look together.
 - In Substack each piece goes in as Substack's own post card (the edition needs no upload; IMPLEMENTATION.md, V1).
 - The opener's "switch it on in your email settings" needs the opt-in section (K1) to exist before edition one sends.
 - No good-news group: the good-news run did not run for that week. A live edition adds up to three.
+- Its news groups are under the beat's heads of 25 Nov. Since 26 Nov a live edition takes its news from the week's daily
+  hub editions, under the hub's subsectors with at most two items each (DESIGN.md section 3), so the re-render puts
+  these items under those heads and leaves out any that fit none or go past two.
 - Four research candidates were left out as weaker or off the beat: NVentures' subpoena fight in the labels' case
   against Suno, Weta FX in Taiwan (its source only on a wire service), OpenAI and Upwork's freelance study (only partly
   about creative work) and Rumble's AI computing revenue. The research pass dropped more for no primary source or a date

@@ -132,7 +132,12 @@ RUN_ID = re.compile(r'^[A-Za-z0-9][A-Za-z0-9:._-]{0,119}$')
 LOOPBACK = re.compile(r'^http://127\.0\.0\.1:[0-9]{1,5}$')
 STATUS_CODES = {400: 'bad_request', 401: 'unauthorized', 403: 'forbidden', 404: 'not_found',
                 409: 'conflict', 413: 'payload_too_large', 429: 'rate_limited'}
-OBJECTIVES = {'new_subscribers': 'people', 'paid_boosts_usd': 'USD'}
+OBJECTIVES = {'new_subscribers': 'people', 'paid_boosts_usd': 'USD',
+              # The weekly discoverability reading (engine/run/discoverability.py; Krish, 2026-11-26).
+              'sitemap_pages': 'pages', 'pages_in_google': 'pages', 'pages_indexed_bing': 'pages',
+              'search_impressions': 'impressions', 'search_clicks': 'clicks', 'ai_questions_asked': 'questions',
+              'ai_cited_first': 'questions', 'ai_cited_any': 'questions', 'subscribers_from_search': 'people',
+              'subscribers_from_ai': 'people', 'subscribers_from_site': 'people', 'ai_visits': 'sessions'}
 WALLED = ('spend', 'send', 'post', 'strategy')
 
 

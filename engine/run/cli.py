@@ -12,7 +12,8 @@ ROUTES = {'new': 'spec', 'drafts': 'spec', 'lint': 'spec', 'status': 'spec', 'se
           'cost': 'cost', 'ga4': 'ga4', 'autorelease': 'autorelease', 'keys': 'keys',
           'dispatch-check': 'backup', 'calendar': 'calendar',
           'handoff': 'handoff', 'maker': 'maker',
-          'board': 'board_tick', 'paid': 'paid_audit'}
+          'board': 'board_tick', 'paid': 'paid_audit',
+          'discoverability': 'discoverability'}
 
 
 def main(argv=None):
