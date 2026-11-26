@@ -17,7 +17,7 @@ Control Center already reads all of this every day into `growth_search_signals` 
    - `reads`: the `growth_search_reads` rows for those hosts, `{ source, part, host, ok, reason }`, so the engine can say why a part is unknown.
    - Absent when the store could not be read; an unknown is never a zero. Counts only: no person, no address.
    The engine's reader is already built against exactly this shape (`search_block` and `search_part` in `engine/run/discoverability.py`, tested in `tests/test_run_discoverability.py`), so the change on this side is the flag only.
-2. **Check that Search Console and Bing can see the site.** makeyourmindup.ai is being verified in Search Console as a Domain property and in Bing Webmaster Tools on 26 November (Krish's sign-in). The service account `searchConsoleTokens()` uses needs read access on that property, and the Bing account `BING_ANALYTICS_API_KEY` belongs to needs the site, or `growth_search_reads` will say why not.
+2. **Search Console access.** makeyourmindup.ai has been a verified Domain property in Search Console since 25 September 2026, and verified in Bing Webmaster Tools since 10 November 2026. Bing already reads: `growth_search_reads` shows its queries, pages and crawl issues read for makeyourmindup.ai on 25 November (no rows yet). Search Console does not: the same table says the property is not shared with the service account `searchConsoleTokens()` uses. Krish adds that account to the property as a restricted user; nothing else on this side changes.
 3. **Later, not blocking:** `query_page` rows let Growth test desk titles and descriptions against the queries each desk is actually shown for (docs/DISCOVERABILITY.md, "Improving it over time").
 
 ## What the engine does with it
