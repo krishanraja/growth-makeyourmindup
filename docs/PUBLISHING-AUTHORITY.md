@@ -381,7 +381,11 @@ stands unless a line here says otherwise.
 - **Who does what.** Codex on the worker does only the edition's Substack
   editor step: it builds the draft from the package, sends Substack's test
   email to the publication owner, schedules the post after his press and reads
-  it back; it uploads nothing and never touches Buffer. Claude schedules every
+  it back; it uploads nothing and never touches Buffer. Since 26 November 2026
+  (`docs/V5-REBRAND.md`, sections 3 and 5) it schedules nothing until the
+  Substack branding is v5 (Krish: "send nothing until all this is done") or
+  while a picture Krish places is missing, and the edition's only named lines
+  are his opener and signed footnote, which come from the package alone. Claude schedules every
   Buffer post after his approval, inside every rule above: the Saturday Note
   that points to the edition, and every social post that points to a piece or
   to the edition. Buffer's Substack channel posts Notes only, so the edition

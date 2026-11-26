@@ -1,5 +1,11 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-26: The weekly edition's Substack step follows v5. His words: "send nothing until all this is done".
+  `jobs/edition.md` now schedules nothing until `docs/V5-REBRAND.md` section 5 records that the Substack branding
+  is v5 (`branding_not_v5`). His handwritten opener and signed footnote (signed Krish, with his signature, headshot,
+  krishraja.com and one mindmake.co link; section 3) come only from the package. Codex still uploads nothing: part
+  A leaves the email's pictures for him to place (`images_pending`) and part B holds while one or its alt text is
+  missing (`images_missing`). Edition one opens draft 226648035. Nothing was sent, posted, scheduled or spent.
 - 2026-11-26: The weekly edition goes to all subscribers. His words: "substack weekly should be sent to ALL
   subscribers". On this publication a new Substack post starts as "Paid subscribers only", so `jobs/edition.md` now
   sets the edition post's audience to Everyone in part A and reads it back. Part B schedules nothing on any other

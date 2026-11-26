@@ -553,9 +553,9 @@ Substack app with no email; a reader who wants every piece by email opts in to
 its section. Only the weekly edition emails the whole list (R132). The
 edition's own links carry `utm_source=newsletter` (`specs/subscribe-route.json`,
 `edition`), and the Monday read takes its numbers (`jobs/subscribers.md`). The
-line quoted above was the publication's promise before this ruling; the new
-promise line is the makeyourmindup site's and the rebrand session's to set,
-not this engine's.
+line quoted above was the publication's promise before this ruling; the
+promise now is "AI news for the creative industries, every morning."
+(`docs/V5-REBRAND.md`, section 2).
 
 | Where | Address |
 |---|---|
