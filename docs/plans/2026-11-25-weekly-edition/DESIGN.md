@@ -74,7 +74,7 @@ and the look are not.
 | 1 | A short personal opener | **Opener** | Two to four plain sentences on what the week was about, in the publication's "we". Unsigned: makeyourmindup never names Krish (v5 rules, 25 Nov). | up to 60 words |
 | 2 | "What else we've got for you today" | **In this edition** | One line per piece, then one "Also" line naming the news topics. | 4 lines |
 | 3 | Named sections for each deep piece | **The three pieces**, one section each | A plain label (the day and its question: "Monday: who gets paid"), the piece's own approved title, a summary of 50 to 80 words that says the facts plainly and leaves the landing for the piece, its approved cover picture, and two links: read the full piece, watch the 5-minute video. | about 250 words |
-| 4 | "More stories to catch up on", by topic | **Also this week** | Six to ten items under plain topic heads from the beat (Music; Film, TV and streaming; Games; Creators and creator tech; Art and design; Theatre and performance; Media and entertainment; Creative tools and platforms; Licensing and rights; Sport once it joins the beat), plus a "Good news" group of up to three from the good-news run. Each item is one or two sentences, with its primary source linked. | about 400 words |
+| 4 | "More stories to catch up on", by topic | **Also this week** | Six to ten items, at most two a subsector, under the hub's subsector heads, the rooms of makeyourmindup.ai (today Music; Film & TV; Gaming; Sport; Publishing & Media; Art & Design, as content-engine `config/hub-sources.json` lists them; 26 Nov 2026, section 3), plus a "Good news" group of up to three from the good-news run. Each item is one or two sentences, with its primary source linked. | about 400 words |
 | 5 | A job board | **Pass it on** (replaces the job board) | One sentence asking the reader to forward the edition to one person in their industry, and a tagged subscribe link for whoever receives it. makeyourmindup has no job board; this is the fix list's D5 and C9, built. Substack's referral link can sit under it if Krish switches the referral setting on (D5 already asks). | 2 lines |
 | 6 | A closing line and footer | **Close** | One closing line, then Substack's own footer (email preferences and unsubscribe). | 1 line |
 
@@ -100,15 +100,17 @@ groups, and a "Pass it on" line. Both are written here and flagged to the Librar
 **What qualifies.** An item goes in when all of these hold:
 
 1. It happened in the seven days to Friday 12:00 New York.
-2. It sits on the beat (content-engine `config/beat.json`: the focus sectors above, never the avoid list, which is
-   governance, regulation, security, privacy and enterprise productivity with no creative angle).
+2. It sits in one of the hub's subsectors (content-engine `config/hub-sources.json`), never on the beat's avoid list
+   (`config/beat.json`: governance, regulation, security, privacy and enterprise productivity with no creative angle).
 3. It names one concrete thing: a company, a deal, a number, a product or a person (fix list C3).
 4. A reader in those industries would decide, buy, say or do something differently for knowing it.
 5. It is not one of the week's three pieces.
 
 **Where it comes from**, in this order:
 
-1. content-engine's feed pool, already gathered and filtered to the beat by its headline gate.
+1. The week's daily hub editions: content-engine's hub pipeline writes one snapshot a day (`hub_snapshots`, the items
+   makeyourmindup.ai shows), already gathered, placed in a subsector, de-duplicated with its coverage count and checked
+   against the report it came from. The edition reads them and runs no gathering of its own (26 Nov 2026, below).
 2. The Saturday good-news run: its five stories, checked against their primary sources, feed the "Good news" group.
 3. The ideas the Sunday run found and Krish filed "for later" or "trend" on the ideas board.
 4. Anything Krish drops in the Cold Ideas and Inspo folder that week.
@@ -117,7 +119,14 @@ groups, and a "Pass it on" line. Both are written here and flagged to the Librar
 court record, the dataset, or the official statement, never only an article about it. The item's sentences are checked
 against that source's text; every number is quoted exactly, with its unit and date. An item whose primary source cannot
 be found or does not say what the item says is dropped, never softened. This is the good-news run's rule, applied to
-every item.
+every item. A hub item's address is the report the hub's writer read, usually a trade title, so it is where the search
+for the primary source starts, never the source itself.
+
+**26 Nov 2026, the news comes from the hub.** Krish approved makeyourmindup.ai as a daily creative-industry news hub
+that day ("just keep it focused on the subsectors"), and the coordinating session asked, through the story-engine
+session, that the edition read a week of the hub's rows instead of gathering its own. So the candidates are the hub's,
+the heads are the hub's subsectors (which brings in Sport, one of its rooms) and an edition carries at most two items a
+subsector; the checks above do not change.
 
 **Who drafts it.** content-engine, which produces and drafts: a weekly edition run (Claude Code inside GitHub Actions on
 Krish's subscription, like the Sunday ideas run), which gathers, checks, writes and renders the edition. growth does not

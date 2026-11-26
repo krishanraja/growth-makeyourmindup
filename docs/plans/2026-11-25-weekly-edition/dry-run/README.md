@@ -36,6 +36,9 @@ shape, the words and the look together.
 - In Substack each piece goes in as Substack's own post card (the edition needs no upload; IMPLEMENTATION.md, V1).
 - The opener's "switch it on in your email settings" needs the opt-in section (K1) to exist before edition one sends.
 - No good-news group: the good-news run did not run for that week. A live edition adds up to three.
+- Its news groups are under the beat's heads of 25 Nov. Since 26 Nov a live edition takes its news from the week's daily
+  hub editions, under the hub's subsectors with at most two items each (DESIGN.md section 3), so the re-render puts
+  these items under those heads and leaves out any that fit none or go past two.
 - Four research candidates were left out as weaker or off the beat: NVentures' subpoena fight in the labels' case
   against Suno, Weta FX in Taiwan (its source only on a wire service), OpenAI and Upwork's freelance study (only partly
   about creative work) and Rumble's AI computing revenue. The research pass dropped more for no primary source or a date

@@ -12,6 +12,10 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Only Krish changes it.
 <!-- north-star:end -->
 
+## makeyourmindup v5: read `docs/V5-REBRAND.md` first (Rulings, Krish, 25 and 26 November 2026)
+
+Krish locked the v5 look on 25 Nov ("s3h is great, lock v5") and asked that this engine carry all of the rebrand's work. `docs/V5-REBRAND.md` says what changed: the look and what is retired, the promise ("AI news for the creative industries, every morning."), no series names on new surfaces, the Saturday edition going to all subscribers ("substack weekly should be sent to ALL subscribers"), nothing sending until the Substack branding is v5, content-engine making every asset, and the social profiles and ManyChat work in flight. Where an older section below disagrees on the look, the copy or who makes what, that file wins.
+
 **Current (5 November 2026).** The work runs as four engines, one per session: read "Four engines" below before anything else. Make Your Mind Up outreach is this engine's and social engagement is the Engagement engine's; Krish enacts both in his own Codex sessions on the exact payload he approves, and only Mindmake's outreach stays with Control Center ("Outreach for Make Your Mind Up" below). Through the shadow week the existing automations, `jobs/daily-growth.md` and the GitHub workflows keep running. Krish's personal LinkedIn is growth-mindmake's since 13 November 2026, not this engine's ("Krish's personal LinkedIn is growth-mindmake's" below). Older sections below stay as dated evidence; where one says otherwise, those sections win.
 
 ## Asset continuity (Krish, 27 October 2026)
