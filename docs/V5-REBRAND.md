@@ -21,8 +21,9 @@ Krish locked full look v5 on 25 Nov 2026 ("s3h is great, lock v5") and asked tha
 **Type:**
 - Anton for cover headlines, one face per headline: no split headlines.
 - Fraunces for headlines on the site and the share cards.
-- DM Mono for labels. It replaces IBM Plex Mono.
-- Archivo is not in v5. The fonts and brand PNGs under `render/` here are the old kit and are not used.
+- Archivo for structure and video captions.
+- DM Mono for labels and data. It replaces IBM Plex Mono, which is retired.
+- The four v5 files are in content-engine `assets/fonts/makeyourmindup/`. The fonts and brand PNGs under `render/` here are the old kit and are not used.
 
 **Marks:** content-engine `assets/brand/makeyourmindup/v5/`:
 
@@ -102,7 +103,7 @@ The site's discoverability is this engine's job (`docs/DISCOVERABILITY.md`).
   - Rule 5 and R07 still bind: one DM reply to someone who commented the keyword on that post, nothing else.
   - The DM words came from the old piece format ("three things to do tomorrow"). Check them against the v5 piece, and get Krish's approval of the exact words before any flow goes live.
 - **Old-look copy and assets in this repository** to rewrite or retire when touched:
-  - `render/KIT.md` and `render/brand/`, `render/fonts/` (Archivo, IBM Plex Mono);
+  - `render/KIT.md` and `render/brand/`, `render/fonts/` (the old kit, IBM Plex Mono among it);
   - the Mon/Wed/Fri and series lines in channel copy;
   - "AI, unpicked" bios.
 
