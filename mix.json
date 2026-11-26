@@ -30,7 +30,7 @@
       "max": 70,
       "source": "backlog",
       "what": "a carousel made from a past piece, oldest unamplified first, to content-engine's carousel standard",
-      "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: derived carousels",
+      "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: derived carousels (content-engine makes them since 26 November 2026)",
       "placements": {
         "instagram": "carousel",
         "tiktok": "carousel",

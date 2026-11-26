@@ -1275,17 +1275,18 @@ class MakerWorkflowTests(unittest.TestCase):
         self.assertIn('first live run', text)
 
     def test_the_maker_doc_says_what_it_does_with_no_approved_mix(self):
-        # Ruling (Krish, 2026-11-12): with no approved weekly mix, draft from the standing plan and ask once a week.
+        # Ruling (Krish, 2026-11-12): with no approved weekly mix, ask once a week; since 26 Nov 2026 (content-engine
+        # writes every caption) nothing is drafted from the standing plan.
         text = (ROOT / 'docs' / 'MAKER.md').read_text(encoding='utf-8')
         self.assertIn('## With no approved mix', text)
         section = ' '.join(text.split('## With no approved mix', 1)[1].split('\n## ', 1)[0].split())
-        for needle in ('Ruling (Krish, 2026-11-12)', 'specs/standing-plan.json', 'never saved in Buffer',
-                       'never handed off', 'makeyourmindup:standing:<day>', 'makeyourmindup:mixask:<ISO week>',
-                       "This week's mix isn't approved", 'every other run that week says nothing', 'skipped_weeks',
-                       'the next run makes his plan', 'no_approved_edition'):
+        for needle in ('Ruling (Krish, 2026-11-12)', 'Ruling, Krish, 2026-11-26', 'specs/standing-plan.json',
+                       'makes nothing', 'makeyourmindup:mixask:<ISO week>', "This week's mix isn't approved",
+                       'already_raised', 'skipped_weeks', 'the next run makes his plan'):
             self.assertIn(needle, section)
-        self.assertIn('draft-from-standing-plan', json.dumps(json.loads((ROOT / 'lanes.json').read_text(encoding='utf-8'))))
-
+        lanes = json.dumps(json.loads((ROOT / 'lanes.json').read_text(encoding='utf-8')))
+        self.assertNotIn('draft-from-standing-plan', lanes)
+        self.assertIn('raise-weekly-mix-ask', lanes)
 
 if __name__ == '__main__':
     unittest.main()

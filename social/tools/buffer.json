@@ -10,7 +10,7 @@
     "Keep saveToDraft=true and dueAt absent/null for draft preparation; default queue behaviour is not draft authority.",
     "Publication/scheduling needs the exact approved payload and the authorised go-live route.",
     "Independently reopen native saved state in Codex; API success alone is insufficient.",
-    "Before any video is scheduled, read its draft back: every video asset carries a thumbnailOffset that is the designed cover's frame (growth.py run cover check); Buffer cannot take a cover image, and a null offset shows frame 0 (F133)."
+    "Before any video is scheduled, read its draft back: every video asset carries a thumbnailOffset that is the designed cover's frame, which content-engine bakes into the cut (engine/run/cover_gate.py); Buffer cannot take a cover image, and a null offset shows frame 0 (F133)."
   ],
   "capabilities": [
     {

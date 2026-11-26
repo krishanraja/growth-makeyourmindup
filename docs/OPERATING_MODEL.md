@@ -237,7 +237,7 @@ There is one owner per stage and one place each stage's output lives. The
 | 2 | **Ideate** | Saturday's run writes three options per publishing day and two per off day, in the pitch format. Every day has at least one option built from his asks. Options may combine asks. No topic repeats within three weeks (checked in code). | content-engine `plan-week`, in GitHub Actions | the week's Ideas tab | none | Every ask is used, merged or declined with a stated reason |
 | 3 | **Agree** | On each option, including off days and carousels: Pick, Combine, Comment inline, or Reject with a reason. Every option shows its date. Carousels show card-by-card words and pictures. | Krish, on the board | board presses | **Sunday: one sitting** | Every slot has a pick or an empty-on-purpose |
 | 4 | **Flesh out** | Narrative lock. **One title of record**, written to the piece, then the board, YouTube, Substack and Buffer all read it. Scripts to the listening rule. Teleprompter. | content-engine `make-piece` | the piece record | Sign the lock, approve the scripts | Scripts are in Teleprompter |
-| 5 | **Produce** | He records. The article is written with its inline figures, and an article with zero figures fails. Off-day assets are made from approved mocks. | Krish records; content-engine makes the hero assets; Growth makes the derived posts | Drive post folder | Record | All assets are filed |
+| 5 | **Produce** | He records. The article is written with its inline figures, and an article with zero figures fails. Off-day assets are made from approved mocks. | Krish records; content-engine makes every asset, the derived posts and their captions included (26 November 2026) | Drive post folder | Record | All assets are filed |
 | 6 | **Post-produce** | Cuts, thumbnails and covers; independent review; Approve for publish; sealed manifest. | content-engine (ve / quick-edit) | `0 Publish/manifest.json` | Watch it, then one Approve | Manifest sealed |
 | 7 | **Post** | Schedule, post, tick, measure and learn. Autonomous inside what he approved; LinkedIn stays his click. | **Growth (this repo)** | Buffer and the ledger | none | Posted, measured, recorded on the ledger |
 
@@ -427,7 +427,7 @@ are spelled out card by card.
 - **Sun 8:** a 30-second short from Friday's "where your AI was built decides
   what it refuses" piece.
 
-Growth makes all four from approved mocks once he says yes.
+Content-engine makes all four from approved mocks once he says yes, and Growth posts them (26 November 2026).
 
 ---
 

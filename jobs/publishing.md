@@ -65,8 +65,8 @@ Commit a caption, a post URL or a raw receipt.
   provider `post_id`.
 - Each destination closes against separate `check` records on the same
   post ID: scheduled and public everywhere,
-  plus the designed cover on every video (R128, `growth.py run cover append`;
-  a null thumbnailOffset holds), the continuation link on a YouTube Short,
+  plus the designed cover on every video (R128: content-engine bakes it into the cut and names its frame;
+  a null thumbnailOffset holds, `engine/run/cover_gate.py`), the continuation link on a YouTube Short,
   and playable video and email delivery on Substack. `publishing.applicable_checks` is the list.
 - Only a readback of the public reader view closes a check
   (`publishing.readback`, source `live_readback`). A correct grid cover

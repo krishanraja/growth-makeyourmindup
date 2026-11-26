@@ -21,11 +21,8 @@ the saved setting (lesson `public-cover-verification`; the Publishing engine,
 `jobs/publishing.md`). Text editions need native
 copy and sourced claims. Article work retains the separate body/paid-offer gates.
 
-Notes images and memes take the carousel route (Ruling, Krish, 13 November
-2026: "memes and Notes images should go the same way"): made in a Claude
-session, with the Codex plugin building them, as content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made"
-says; their `production_owner` is content-engine's route, no longer the Canva
-lane. A Note is native Notes copy with at most one approved image. A meme is
+Notes images, memes and every other asset are made by content-engine from its v5 Library, captions included
+(Ruling, Krish, 2026-11-26: content-engine makes every asset); every `production_owner` is content-engine, and the Canva lane is retired. A Note is native Notes copy with at most one approved image. A meme is
 one approved picture per channel, built from Krish's idea and shown to him
 before it queues; on YouTube it must be a real video. Preflight refuses a package whose
 production owner differs from its format's owner.
@@ -53,8 +50,7 @@ needs a `share` block in its package, checked by `social preflight` against
 | `standalone` | True only if it works with no context; a snackable post must |
 
 Each snackable profile names its share mechanic in its delivery checks. For
-Growth's Canva lane (cards, polls, Story frames) the mechanic is Growth's own
-to build. For content-engine's formats (carousel, meme, Note, single image, short video, Story) it is a
+every format, all content-engine's since 26 November 2026 (carousel, meme, Note, single image, short video, Story), it is a
 proposed hook in Growth's distribution brief, beside the share block; it
 becomes a production standard only when content-engine adopts it through its
 own route (content-engine `docs/GROWTH-HANDOFF.md`).
