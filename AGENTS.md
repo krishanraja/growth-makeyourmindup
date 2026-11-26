@@ -12,6 +12,16 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Only Krish changes it.
 <!-- north-star:end -->
 
+## No branch is ever left unmerged (Ruling, Krish, 2026-11-26)
+
+Krish, 26 Nov 2026: "ensure stray branches may NEVER ever be left unmerged". Every session reads the open pull
+requests before it starts (), so it never works blind to unmerged work, and ends with its
+branch either merged (a ready pull request, never a draft left behind) or deleted. The stray guard
+(, every hour) enforces it: it deletes merged branches and branches whose pull
+request was closed, opens a pull request for any branch idle six hours without one, marks drafts idle a day ready,
+merges every ready pull request whose CI is green, and lists whatever it cannot land in one issue, "Stray branches and
+pull requests". A red pull request on that list is fixed or closed the same day.
+
 ## makeyourmindup v5: read `docs/V5-REBRAND.md` first (Rulings, Krish, 25 and 26 November 2026)
 
 Krish locked the v5 look on 25 Nov ("s3h is great, lock v5") and asked that this engine carry all of the rebrand's work. `docs/V5-REBRAND.md` says what changed: the look and what is retired, the promise ("AI news for the creative industries, every morning."), no series names on new surfaces, the Saturday edition going to all subscribers ("substack weekly should be sent to ALL subscribers"), nothing sending until the Substack branding is v5, content-engine making every asset, and the social profiles and ManyChat work in flight. Where an older section below disagrees on the look, the copy or who makes what, that file wins.

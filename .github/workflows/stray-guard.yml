@@ -1,0 +1,47 @@
+# No branch is ever left unmerged (Ruling, Krish, 2026-11-26: "ensure stray branches may NEVER ever be left
+# unmerged"). Every hour .github/scripts/stray_guard.py deletes merged branches and branches whose pull request was
+# closed unmerged, opens a pull request for any branch idle STRAY_IDLE_HOURS with none, marks drafts idle
+# STRAY_DRAFT_HOURS ready, merges every ready pull request whose CI is green, and keeps one issue, "Stray branches
+# and pull requests", listing what it could not land. Copied byte for byte into content-engine,
+# growth-makeyourmindup and makeyourmindup; only the env block below differs.
+name: Stray guard
+
+on:
+  schedule:
+    - cron: '41 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Report what it would do and change nothing
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: stray-guard
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - name: Land or clear every stray branch and pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          CI_WORKFLOW: check
+          CI_FILE: ''
+          IDLE_HOURS: '6'
+          DRAFT_HOURS: '24'
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
+        run: python3 .github/scripts/stray_guard.py
