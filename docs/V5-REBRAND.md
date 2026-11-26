@@ -97,7 +97,7 @@ The site's discoverability is this engine's job (`docs/DISCOVERABILITY.md`).
 ## 7. In flight for Growth
 
 - **Social profiles to v5:** YouTube `@makeyourmind-up`, Instagram `@makeyourmind.up`, the Facebook Page, Substack, and the header and bio on Krish's own X and TikTok. A worker session runs it from this repository.
-  - content-engine's `scripts/channel-kit/` still makes the October look. It is rebuilt in v5 first, and Krish approves the sheet before any upload.
+  - The v5 profile set is final. It is in Drive, `makeyourmindup > 1 Brand kit (permanent) > Channel art` (folder id `1FVfcoSMT3DCzvyvsq0KHdSgr8JTzRBIe`), and in makeyourmindup `brand-kit/makeyourmindup-brand-kit.zip` under `Channel art/`, with the exact profile copy in `bios-and-descriptions.txt`. content-engine's `scripts/channel-kit/` is retired. A worker session uploads the set.
   - Record what each profile carries in content-engine `docs/AMPLIFICATION.md` ("The profiles every link lands on") and here.
 - **ManyChat:** the keyword-DM test (`docs/plans/2026-11-13-keyword-dm-test.md`, `docs/GET-GOING.md` Step 0.4).
   - Rule 5 and R07 still bind: one DM reply to someone who commented the keyword on that post, nothing else.
