@@ -1,0 +1,17 @@
+# Five creative-industry questions to add to the pending AI-answer set (26 November 2026)
+
+The set on Krish's list (`makeyourmindup:ai-answer-questions:2026-11-13`, 20 questions, still undecided on 26 November) was written before makeyourmindup.ai became the daily creative-industries AI news site with six desks and the Creative 24 index. These five questions are the ones the new pages exist to answer. They are offered as lines Krish adds to that set on his list before he approves it (it says "change, add or delete any line"), which brings it to 25, the most AEO-Engine takes. No new proposal is sent, so his list holds one copy of the ask.
+
+Each is phrased as a stranger types it, and each has a public record of people asking it. None is invented, and none is a keyword variant of another.
+
+| Question | Evidence that people ask it | The page that answers it |
+|---|---|---|
+| How will AI change the music industry? | Complex, ["How will AI change the music industry"](https://www.complex.com/pigeons-and-planes/how-will-ai-change-the-music-industry); Produce Like A Pro, ["What is really happening to the music industry with AI"](https://producelikeapro.com/blog/what-is-really-happening-to-the-music-industry-with-ai/amp/) | [/music](https://www.makeyourmindup.ai/music) |
+| Will AI replace VFX artists? | Medium, ["Will AI replace VFX artists?"](https://medium.com/@AvidAnimator/will-ai-replace-vfx-artists-2f5c4d296e57); Cone Magazine, ["Will AI replace VFX artists in film? Experts weigh in"](https://conemagazine.com/film/will-ai-replace-vfx-artists-in-film-experts-weigh-in); a mirrored r/vfx thread, ["Is AI becoming standard in VFX?"](https://t.me/s/vfxbackup/19137) | [/film-tv](https://www.makeyourmindup.ai/film-tv) |
+| How are game developers using AI? | OpenAI developer forum, ["How are developers using AI to enhance games?"](https://community.openai.com/t/how-are-developers-using-ai-to-enhance-games/1372556); TechRepublic, ["Generative AI use in video games sparks heated debates"](https://www.techrepublic.com/article/news-video-game-development-generative-ai/) | [/gaming](https://www.makeyourmindup.ai/gaming) |
+| Where can I follow AI news for the creative industries? | Civitai community, ["Where do you follow genAI news and updates?"](https://civitai.com/articles/23035/community-question-time-1-where-do-you-follow-genai-news-and-updates); No Film School launched an AI channel for the same need, ["AI video news"](https://nofilmschool.com/ai-video-news) | [the home page](https://www.makeyourmindup.ai/) and [/editions](https://www.makeyourmindup.ai/editions) |
+| Is there an index or ETF for music and entertainment stocks? | ETF Central, ["There's an ETF for that: investing in the music industry with MUSQ"](https://www.etfcentral.com/news/theres-an-etf-for-that-investing-in-the-music-industry-with-musq); ETF Database's [media ETF list](https://etfdb.com/etfs/industry/media/) | [/creative-24](https://www.makeyourmindup.ai/creative-24) |
+
+Evidence strength, honestly: these are article titles and community threads, not search volume. The 13 November set leaned on AnswerThePublic volumes; none were collected here. Once Search Console reads the site, the queries each desk is actually shown for replace this list (DISCOVERABILITY.md, "Improving it over time").
+
+The handover's own suggestions ("what is happening with AI in the music industry", "AI news for the creative industries", "creative industry stocks index") are covered by the first, fourth and fifth lines, rewritten as the questions people type.
