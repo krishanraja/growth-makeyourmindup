@@ -22,7 +22,7 @@ The shape (`specs/schema/piece-manifest.schema.json`):
 2026-11-15): the designed cover the video posts with (`asset` names it in assets[], `sha256` its bytes) and, once the
 cover is appended to the cut, the frame Buffer shows (`cover_offset_ms`). A video line with no thumbnailOffset holds
 as `video_without_cover_offset`; one whose offset is not the manifest's holds as `cover_offset_mismatch`
-(engine/run/video_cover.py).
+(engine/run/cover_gate.py).
 
 A channel that carries two formats of one piece (YouTube's long video and its
 Short) keys each by "channel:format" (youtube:long-video, youtube:short-video);
@@ -36,7 +36,7 @@ import json
 import re
 
 from engine.run.release import CHANNELS, HEX64
-from engine.run.video_cover import COVER_CHANNELS
+from engine.run.cover_gate import COVER_CHANNELS
 
 SCHEMA = 'content-engine-piece-manifest/1'
 KEYS = frozenset({'schema', 'piece_id', 'approval_sha256', 'qa', 'assets', 'channels'})

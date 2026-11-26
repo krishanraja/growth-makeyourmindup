@@ -124,7 +124,7 @@
               "sha256",
               "cover_offset_ms"
             ],
-            "description": "Optional (Ruling, Krish, 2026-11-15): the designed cover a video on this channel posts with, named in assets[], and once appended to the cut the frame Buffer shows (thumbnailOffset). Growth holds a video line with no offset, or another offset (engine/run/video_cover.py).",
+            "description": "Optional (Ruling, Krish, 2026-11-15): the designed cover a video on this channel posts with, named in assets[], and once baked into the cut the frame Buffer shows (thumbnailOffset). Growth holds a video line with no offset, or another offset (engine/run/cover_gate.py).",
             "properties": {
               "asset": {
                 "type": "string",

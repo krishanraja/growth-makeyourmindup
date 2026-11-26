@@ -50,7 +50,7 @@ WORDS = CLAIM + ' Synthetic fixture words after the claim, about the pilot budge
 FRAME1 = b'\x89PNG\r\n\x1a\n' + b'synthetic maker frame one\n'
 FRAME2 = b'\x89PNG\r\n\x1a\n' + b'synthetic maker frame two\n'
 VIDEO = b'\x00\x00\x00\x18ftypmp42' + b'synthetic maker video\n'
-VIDEO_COVER_MS = 61500  # the middle of the cover's last second (engine/run/video_cover.py)
+VIDEO_COVER_MS = 61500  # the frame of the cover content-engine baked into the cut (engine/run/cover_gate.py)
 DRIVE = {'SyntheticDriveFile0001': FRAME1, 'SyntheticDriveFile0002': FRAME2, 'SyntheticDriveFile0003': VIDEO}
 ANSWER = {'would_send': True, 'receiver': 'my CFO', 'job': 'settles_it', 'dm_line': 'Synthetic line.',
           'why': 'Synthetic.'}
@@ -103,7 +103,7 @@ def dispatch_of(plan, files=True):
     body = {key: copy.deepcopy(plan[key]) for key in handoff.MIX_KEYS}
     if files:
         body['mock_files'] = {sha(data): file_id for file_id, data in DRIVE.items()}
-        body['mock_covers'] = {sha(VIDEO): VIDEO_COVER_MS}  # the designed cover appended to the cut (F133)
+        body['mock_covers'] = {sha(VIDEO): VIDEO_COVER_MS}  # the designed cover baked into the cut (F133)
     return body
 
 

@@ -237,7 +237,7 @@ def inventory(root=ROOT):
     return result
 
 
-# The video routes whose grid tile or player shows a cover (engine/run/video_cover.py COVER_CHANNELS).
+# The video routes whose grid tile or player shows a cover (engine/run/cover_gate.py COVER_CHANNELS).
 COVER_VIDEO_FORMATS = ('short-video', 'long-video')
 COVER_VIDEO_CHANNELS = ('instagram', 'tiktok', 'youtube', 'facebook', 'threads', 'x')
 

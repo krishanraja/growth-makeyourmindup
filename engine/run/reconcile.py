@@ -41,7 +41,7 @@ from urllib.parse import parse_qsl, urlsplit
 from .. import intensity, subscribe_gate
 from ..buffer_channels import BUFFER_CHANNEL_ID
 from ..core import instant, ny_time
-from . import video_cover
+from . import cover_gate
 from .ga4 import OWN_HOST, own_links
 
 # The go-live route check landed on 13 November 2026; earlier posts are history, counted but never alarmed.
@@ -139,7 +139,7 @@ def presend(scheduled, urgency=None, root=intensity.ROOT):
     for post in scheduled:
         channel = post['channel']
         offsets = post.get('cover_offsets') or []
-        if channel in video_cover.COVER_CHANNELS and any(not video_cover.offset_ok(o) for o in offsets):
+        if channel in cover_gate.COVER_CHANNELS and any(not cover_gate.offset_ok(o) for o in offsets):
             # F133 (Ruling, Krish, 2026-11-15): a scheduled video with no cover frame shows frame 0, whoever
             # scheduled it. Held here, never edited (a Buffer write is a post).
             covers.append({'channel': channel, 'due_at': instant(post['due_at']), 'post_id': post['post_id'],
@@ -184,8 +184,8 @@ def presend_holds(found, limit=PRESEND_HOLDS_MAX):
         holds.append({'reason': 'Scheduled video with no designed cover frame, before it goes out',
                       'detail': item['channel'] + ' video due ' + ny_time(due).strftime('%a %d %b %H:%M') + ' New York ('
                       + due.strftime('%H:%M') + ' UTC): its thumbnailOffset is not set, so the platform would show '
-                      'frame 0 (F133). Append the designed cover (growth.py run cover append) and point the offset '
-                      'at it, or take it off the schedule; nothing here edits it (a Buffer write is a post)'})
+                      'frame 0 (F133). Content-engine bakes the designed cover into the cut and names its frame; point the '
+                      'offset at it, or take it off the schedule; nothing here edits it (a Buffer write is a post)'})
     if len(found['held']) > limit:
         holds.append({'reason': 'More scheduled posts with no tracked subscribe route',
                       'detail': str(len(found['held']) - limit) + ' more after these, due later; the next run lists them'})

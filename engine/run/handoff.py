@@ -454,7 +454,7 @@ class MockMap(dict):
 
 def validate_mock_covers(value, files):
     """The optional mock_covers {video sha256: thumbnailOffset ms} (Ruling, Krish, 2026-11-15; F133): the frame of
-    the designed cover a session appended to that cut (growth.py run cover append). Each key is a file mock_files
+    the designed cover content-engine baked into that cut (engine/run/cover_gate.py). Each key is a file mock_files
     names; the maker holds a video whose cover is not named as video_without_designed_cover."""
     if value is None:
         return {}

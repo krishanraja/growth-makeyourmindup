@@ -110,7 +110,7 @@ from engine.cc_loop import decisions_paged, never_beneath, revision, taste_state
 from engine.control_center import SLUG, ProtocolError, build_report, proposal
 from engine.core import instant, ny_time, read_json
 from engine.packs import x_weight
-from engine.run import autorelease, buffer_api, cc_records, handoff, release, video_cover, voice_profile
+from engine.run import autorelease, buffer_api, cc_records, cover_gate, handoff, release, voice_profile
 from engine.run.anthropic_api import CALL_WORST, GAVE_UP, KEY_ENV, Anthropic, AnthropicAuthError, AnthropicError
 from engine.run.anthropic_api import meter_body as anthropic_meter_body
 from engine.run.buffer_api import BufferAuthError, BufferError, CarryHold
@@ -327,8 +327,8 @@ def mock_manifest(cc, monday, parts):
     """{sha256: Drive file id} for the week, its highest version (a corrected map is the next version), or None
     when none is reported. Held (loud) when unreadable.
 
-    A chunk may also carry `covers`, {video sha256: thumbnailOffset in ms}: the frame of the designed cover the
-    session appended to that cut with `growth.py run cover append` (engine/run/video_cover.py; Ruling, Krish,
+    A chunk may also carry `covers`, {video sha256: thumbnailOffset in ms}: the frame of the designed cover
+    content-engine baked into that cut (engine/run/cover_gate.py; Ruling, Krish,
     2026-11-15). The video's bytes are pinned by its sha256, so its cover frame is too."""
     label, key = autorelease._week_label(monday), cc_records.plan_key(parts)
     try:
@@ -347,7 +347,7 @@ def mock_manifest(cc, monday, parts):
         if chunk.get('plan') != parts or not isinstance(got, dict) or not all(
                 isinstance(k, str) and release.HEX64.match(k) and isinstance(v, str) and handoff.DRIVE_ID.match(v)
                 for k, v in got.items()) or not isinstance(cov, dict) or not all(
-                isinstance(k, str) and release.HEX64.match(k) and video_cover.offset_ok(v) for k, v in cov.items()):
+                isinstance(k, str) and release.HEX64.match(k) and cover_gate.offset_ok(v) for k, v in cov.items()):
             raise Held('mock_manifest_unreadable', loud=True)
         files.update(got)
         covers.update(cov)
@@ -864,7 +864,7 @@ class Maker:
         if any(release.MEDIA.get('.' + str(ext)) == 'video' and sha not in covers for sha, ext in files):
             # F133 (Ruling, Krish, 2026-11-15): a video goes out only pointing at its designed cover. Buffer takes no
             # cover image and a draft with a null offset shows frame 0, so a cut whose mock record names no cover
-            # frame (growth.py run cover append, engine/run/video_cover.py) is held, never made.
+            # frame (content-engine bakes it in; engine/run/cover_gate.py) is held, never made.
             raise Held('video_without_designed_cover', loud=True)
         assets = [{'name': 'mock-' + str(n) + '.' + ext, 'sha256': sha} for n, (sha, ext) in enumerate(files, 1)]
         return files, assets

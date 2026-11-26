@@ -22,9 +22,7 @@ Control Center). No judge is ever skipped for a judged format: with no board key
 The judges see the cards (Ruling, Krish, 2026-11-15: the cover must look like a cover, the cards must not be bland, so a
 verdict on words alone is not a verdict on the post). Every asset goes with `view_url`, its own Drive view link, so the
 panel reads the pictures themselves; the verdict still binds their sha256. A picture with no view link holds the slot
-as judges_cannot_see, never judged blind. Before the panel is asked, a Growth carousel has passed the kit's layout
-check (`growth.py run kit painted`: cover distinct, every line inside the safe margin and centred where the template
-centres it) and its copy lint (`growth.py run carousel lint`: one full sentence of up to 20 words on every body card).
+as judges_cannot_see, never judged blind.
 """
 import hashlib
 import json

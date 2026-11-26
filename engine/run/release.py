@@ -99,7 +99,7 @@ from engine.buffer_channels import BUFFER_CHANNEL_ID, DENIED_CHANNELS, HANDED_OF
 from engine.control_center import sha256_hex
 from engine.copy_lint import copy_lint_errors, version as copy_lint_version
 from engine.core import instant, locked, ny_time, read_json, write_json
-from engine.run import video_cover
+from engine.run import cover_gate
 from engine.run.buffer_api import signed_meta
 from engine.share import cta_applies, cta_errors
 from engine.social import HELD, inventory, route
@@ -123,7 +123,7 @@ SLOT_KEYS = {'slot_id', 'channel', 'format', 'play', 'due_at', 'words', 'assets'
 OPTIONAL_SLOT_KEYS = {'share', 'ecosystem_cta', 'subscribe_cta', 'concept_id'}
 ASSET_KEYS = {'name', 'sha256', 'url', 'bytes'}
 # Optional on a video asset: the frame Buffer shows as its cover, the designed cover appended as the cut's last second
-# (engine/run/video_cover.py; Ruling, Krish, 2026-11-15). Hashed into the slot's digest when present.
+# (content-engine bakes it in; engine/run/cover_gate.py; Ruling, Krish, 2026-11-15). Hashed into the slot's digest when present.
 OPTIONAL_ASSET_KEYS = {'cover_offset_ms'}
 # meta: exactly what an edit sends besides the words and the time (buffer_api.signed_meta);
 # buffer_channel_id: the one Buffer account the draft is on. Both are filled from the draft.
@@ -320,7 +320,7 @@ def check_slot(slot):
         if not isinstance(asset, dict) or set(asset) - OPTIONAL_ASSET_KEYS != ASSET_KEYS:
             raise ValueError(sid + ': each asset carries exactly name, sha256, url and bytes (and a video its'
                              ' cover_offset_ms)')
-        if 'cover_offset_ms' in asset and not video_cover.offset_ok(asset['cover_offset_ms']):
+        if 'cover_offset_ms' in asset and not cover_gate.offset_ok(asset['cover_offset_ms']):
             raise ValueError(sid + ': cover_offset_ms must be a whole number of milliseconds')
         if not isinstance(asset['name'], str) or not ASSET_NAME.match(asset['name']):
             raise ValueError(sid + ': asset name must be a plain file name')
@@ -490,7 +490,7 @@ def _carried(slot, target):
     urls = [a['url'] for a in slot['assets']]
     for asset in (target or {}).get('assets') or []:
         offset = ((asset or {}).get('video') or {}).get('thumbnailOffset') if isinstance(asset, dict) else None
-        if video_cover.offset_ok(offset) and asset.get('source') in urls:
+        if cover_gate.offset_ok(offset) and asset.get('source') in urls:
             alts[('cover', asset['source'])] = offset  # the draft's stored cover frame, carried like its alt text
         alt = ((asset or {}).get('image') or {}).get('altText') if isinstance(asset, dict) else None
         if not alt:
@@ -520,7 +520,7 @@ def _asset_input(asset, alts):
     if kind == 'image' and alts.get(asset['url']):
         body['metadata'] = {'altText': alts[asset['url']]}
     if kind == 'video':
-        # The designed cover's frame (video_cover.py): the slot's own, else the draft's stored one. Never null.
+        # The designed cover's frame (cover_gate.py): the slot's own, else the draft's stored one. Never null.
         stored = alts.get(('cover', asset['url']))
         offset = asset.get('cover_offset_ms', stored)
         if stored is not None and offset != stored:
@@ -766,16 +766,16 @@ def cover_errors(channel, assets):
     """A video on a cover channel goes out only pointing at its designed cover frame (Ruling, Krish, 2026-11-15).
 
     Buffer takes no cover image, only thumbnailOffset; with none, the platform shows frame 0 (F133). So every video
-    asset in the call carries a whole-number thumbnailOffset, set by `growth.py run cover append`."""
+    asset in the call carries a whole-number thumbnailOffset at the cover content-engine baked into the cut."""
     out = []
     for asset in assets or []:
         video = asset.get('video') if isinstance(asset, dict) else None
-        if video is None or not video_cover.needs_cover(channel, ('video',)):
+        if video is None or not cover_gate.needs_cover(channel, ('video',)):
             continue
         offset = (video.get('metadata') or {}).get('thumbnailOffset') if isinstance(video, dict) else None
-        if not video_cover.offset_ok(offset):
+        if not cover_gate.offset_ok(offset):
             out.append('video_without_designed_cover: a video on ' + str(channel) + ' goes out only with its designed'
-                       ' cover appended and thumbnailOffset set to it (growth.py run cover append); never a null offset')
+                       ' cover baked into the cut and thumbnailOffset set to it; never a null offset')
     return out
 
 

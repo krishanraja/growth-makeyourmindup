@@ -11,8 +11,8 @@ ROUTES = {'new': 'spec', 'drafts': 'spec', 'lint': 'spec', 'status': 'spec', 'se
           'verdict': 'measure', 'subscribers': 'subscribers', 'learn': 'learn',
           'cost': 'cost', 'ga4': 'ga4', 'autorelease': 'autorelease', 'keys': 'keys',
           'dispatch-check': 'backup', 'calendar': 'calendar', 'carousel': 'plain', 'plain': 'plain',
-          'canva': 'canva', 'handoff': 'handoff', 'kit': 'kits', 'maker': 'maker',
-          'board': 'board_tick', 'cover': 'video_cover', 'meme': 'tall_meme', 'paid': 'paid_audit'}
+          'canva': 'canva', 'handoff': 'handoff', 'maker': 'maker',
+          'board': 'board_tick', 'paid': 'paid_audit'}
 
 
 def main(argv=None):
