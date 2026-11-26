@@ -30,8 +30,8 @@ Run each command on its own line in PowerShell (`python`, or `py` if that is mis
    `"captured_at"` (now, with its offset), `"read": "not_taken"` and
    `"not_taken": {"code": "signed_out", "detail": null}`, save, and go to step 9. Do the same, with its own
    code, whenever a later step cannot be done: `browser_unavailable`, `substack_unreachable`,
-   `page_changed`, `not_settled` or `window_unavailable`, and put back `growth_sources` null and `items`
-   empty, so nothing half read is recorded.
+   `page_changed`, `not_settled` or `window_unavailable`, and put back `growth_sources` null, `items`
+   empty, and `edition` and `series_posts` as the template wrote them, so nothing half read is recorded.
 4. **New subscribers by source.** First check `.scratch/cc/subscribers.json` (kept by the runner and the measure
    job from today's directive when Control Center serves `features.subscriber_sources`; audit 2026-11-14, I-09).
    When it holds last week's `week_of`, Control Center has already counted last week by source from Substack's own
@@ -73,6 +73,31 @@ Run each command on its own line in PowerShell (`python`, or `py` if that is mis
    `cohorts` empty and set `reason` to what the page showed (for example "no renewals view"), with
    `source_url` the page you checked or null. Counts only: never open a paid subscriber's row or export the
    list.
+6b. **The weekly edition** (Krish, 2026-11-25: one email a week, "makeyourmindup weekly", Saturday 08:00 New
+   York). Find the edition post that went out on the Saturday of last week, the date the file already holds in
+   `edition.edition_date`. If none went out, set `edition.reason` to "no weekly edition went out that week" and
+   leave every number null. Otherwise open that post's own stats page and fill `edition`: `url` the post's own
+   address, `source_url` the stats page's address, `reason` null, then each number exactly as the page shows
+   it: `recipients`, `unique_clicks`, `click_rate` and `open_rate` (the number before the percent sign, as
+   written), `unsubscribes` (from that email) and `new_subscriptions` (the subscriptions Substack credits to the
+   post). For each one the page does not show, leave it null and add its reason to `not_shown` under the same
+   name (for example `"open_rate": "the stats page showed no open rate"`); `not_shown` names every null number
+   and only those. If the stats page cannot be read, set `reason` to what happened and leave every number null
+   and `not_shown` empty.
+6c. **Each series post's recipients.** Only the weekly edition emails everyone: a Monday, Wednesday or Friday
+   piece goes to the web and the app, and by email only to the readers in the opt-in section for every piece.
+   Until the first weekly edition has gone out, leave `series_posts.section` null and `posts` empty, set
+   `series_posts.reason` to "before the first weekly edition", and go to step 7. From then on:
+   - Open Settings, Sections, and fill `series_posts.section`: `name` the opt-in section's name as shown,
+     `subscribers` its subscriber count as shown, `source_url` the page's address, `reason` null. If the count
+     is not shown, `subscribers` null and `reason` what the page showed. If the publication has no such
+     section, `name`, `subscribers` and `source_url` null and `reason` "the publication has no opt-in section".
+     Never open the section's subscriber list.
+   - For each series post published last week, add one `posts` row: `day` (`mon`, `wed` or `fri`), `url` the
+     post's own address, `recipients` as its stats page shows it (0 when the page says it was not sent by
+     email) and `reason` null; or `recipients` null and `reason` what the page showed.
+   - Set `series_posts.reason` null. `ingest` names any series post that emailed more readers than the
+     section holds (none, when there is no section): a failure the Sunday report shows.
 7. Set `"captured_at"` (now, with its offset), `"read": "taken"` and `"not_taken": null`, and save.
 8. Check it without writing:
    `python growth.py run subscribers ingest .scratch/substack/week-<Monday>.json`
@@ -83,16 +108,18 @@ Run each command on its own line in PowerShell (`python`, or `py` if that is mis
    It updates the North Star state line in `NOW.md` through the same code as `growth.py run northstar`
    (when that loses no newer or measured reading) and appends the week's reading to
    `lists/northstar-history.jsonl`, once. A read not taken is recorded as unknown with its code, never as
-   zero. The total, the sources and the per-post rows stay in `.scratch/substack/weekly.jsonl`.
+   zero. The total, the sources, the per-post rows, the edition's numbers and the series check stay in
+   `.scratch/substack/weekly.jsonl`.
 10. Commit and push only those two files, to `main`:
     `git add NOW.md lists/northstar-history.jsonl`
     `git commit -m "subscribers: weekly Substack read for the week of <Monday>"`
     `git push`
     If nothing changed, there is nothing to commit. If it cannot push, put the new ledger line in the final
     message so the next session commits it.
-11. Final message, three lines: the week read; its new subscribers (all sources and organic, or why not
-    counted) against the week's target and the urgency; and whether Substack shows subscribers per post or
-    per Note.
+11. Final message, four lines: the week read; its new subscribers (all sources and organic, or why not
+    counted) against the week's target and the urgency; whether Substack shows subscribers per post or
+    per Note; and the two lines `ingest` printed for the weekly edition and the series emails (counts only,
+    never a percentage).
 
 ## What reads it
 

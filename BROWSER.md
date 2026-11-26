@@ -7,6 +7,18 @@ only reads it, and never types, prefills or prepares anything there. Every
 LinkedIn preparation permission below is growth-mindmake's now, not this
 engine's.
 
+**25 November 2026.** The weekly edition's Substack step is Codex's, on the
+worker (Ruling, Krish, 2026-11-25; `docs/PUBLISHING-AUTHORITY.md`, 25
+November). Under `jobs/edition.md` only, and only while Krish has it switched
+on, Codex may type the edition package's own words into one Substack draft
+(edition one's is draft 226648035), send Substack's test email to the
+publication owner, and schedule that one post with "Schedule time to email and
+publish" after his Approve for send bound to the package's sha256, and only
+once the Substack branding is v5 (Krish, 26 Nov 2026: "send nothing until all
+this is done"; `docs/V5-REBRAND.md`, section 5). It never publishes now, never
+edits a sent post, uploads nothing (the email's pictures are Krish's to place)
+and never touches Buffer. Every other line below stands.
+
 **5 November 2026.** In a Codex session Krish is driving, one
 outreach send (Acquisition) or one comment or reply (Engagement) may be
 submitted in this browser or through a connector, only after he approves

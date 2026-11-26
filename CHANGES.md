@@ -1,5 +1,25 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-26: The weekly edition's Substack step follows v5. His words: "send nothing until all this is done".
+  `jobs/edition.md` now schedules nothing until `docs/V5-REBRAND.md` section 5 records that the Substack branding
+  is v5 (`branding_not_v5`). His handwritten opener and signed footnote (signed Krish, with his signature, headshot,
+  krishraja.com and one mindmake.co link; section 3) come only from the package. Codex still uploads nothing: part
+  A leaves the email's pictures for him to place (`images_pending`) and part B holds while one or its alt text is
+  missing (`images_missing`). Edition one opens draft 226648035. Nothing was sent, posted, scheduled or spent.
+- 2026-11-26: The weekly edition goes to all subscribers. His words: "substack weekly should be sent to ALL
+  subscribers". On this publication a new Substack post starts as "Paid subscribers only", so `jobs/edition.md` now
+  sets the edition post's audience to Everyone in part A and reads it back. Part B schedules nothing on any other
+  audience (`wrong_audience`). That post's audience is the one setting the job may change. Nothing was sent, posted,
+  scheduled or spent.
+- 2026-11-25: One email a week, the weekly edition, and Claude schedules in Buffer. His words, on the weekly edition
+  design (pull request 143): "Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex".
+  The publication sends one email a week, "makeyourmindup weekly", Saturday 08:00 New York, only on his Approve for
+  send bound to the edition package's sha256; the Monday, Wednesday and Friday pieces go to the web and the app and
+  never email the whole list (R133). On the follow-up he chose "Codex, Substack step only": Codex on the worker keeps
+  only the edition's Substack editor step (`jobs/edition.md`, written and switched off until he turns it on), and
+  Claude schedules every Buffer post. The edition's links carry `utm_source=newsletter` (`specs/subscribe-route.json`,
+  `edition`); the Monday read takes the edition's numbers and names any series post that emailed more readers than
+  the opt-in section holds. Nothing was sent, posted, scheduled or spent.
 - 2026-11-26: Content-engine makes every asset; Growth grows the channel. His words, in the story-engine session:
   "I believe that growth should move all asset production to Content Engine. I see no point in having a separate
   repository produce specific assets. How can you accomplish this and ensure that this is updated absolutely

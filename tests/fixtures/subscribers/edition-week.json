@@ -1,0 +1,47 @@
+{
+  "note": "Synthetic. Every figure, label and address is invented: the weekly edition and the series posts as jobs/subscribers.md steps 6b and 6c record them for the week of 2026-11-09.",
+  "edition": {
+    "click_rate": 6.2,
+    "edition_date": "2026-11-14",
+    "new_subscriptions": 3,
+    "not_shown": {
+      "open_rate": "the post's stats page showed no open rate for this email"
+    },
+    "open_rate": null,
+    "reason": null,
+    "recipients": 480,
+    "source_url": "https://home.makeyourmindup.ai/publish/post/100000001/stats",
+    "unique_clicks": 30,
+    "unsubscribes": 2,
+    "url": "https://home.makeyourmindup.ai/p/synthetic-weekly-edition"
+  },
+  "series_posts": {
+    "posts": [
+      {
+        "day": "mon",
+        "reason": null,
+        "recipients": 0,
+        "url": "https://home.makeyourmindup.ai/p/synthetic-monday-piece"
+      },
+      {
+        "day": "wed",
+        "reason": null,
+        "recipients": 12,
+        "url": "https://home.makeyourmindup.ai/p/synthetic-wednesday-piece"
+      },
+      {
+        "day": "fri",
+        "reason": null,
+        "recipients": 478,
+        "url": "https://home.makeyourmindup.ai/p/synthetic-friday-piece"
+      }
+    ],
+    "reason": null,
+    "section": {
+      "name": "Synthetic every piece",
+      "reason": null,
+      "source_url": "https://home.makeyourmindup.ai/publish/settings/sections",
+      "subscribers": 12
+    }
+  }
+}

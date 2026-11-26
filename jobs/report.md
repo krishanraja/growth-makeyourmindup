@@ -48,6 +48,22 @@ Read the directive it prints ("Reporting to Control Center" in `AGENTS.md`).
      proposes them as a `check_in` behind `strategy` ("On track?"), with the strategy changes in `exact_payload`.
    - Anything only his browser shows (the ads managers, Substack's subscriber sources, YouTube Studio's traffic
      sources) is read by Codex in a session he watches, and named unread until it is.
+4c. **The weekly edition and the series emails** (Ruling, Krish, 2026-11-25: one email a week, the weekly
+   edition on Saturday; the Monday, Wednesday and Friday pieces go to the web and the app with no email, except
+   to the readers who opted in to every piece). Read the newest line of `.scratch/substack/weekly.jsonl`, the
+   weekly Substack read (`jobs/subscribers.md`, steps 6b and 6c):
+   - **A series post that emailed too many readers is a failure.** Each entry in `series_emails.failures` heads
+     "what did not work", in this form: "Failure: the Friday piece emailed 478 readers; the opt-in section holds
+     12. Only the weekly edition emails everyone." It goes into the check-in's `exact_payload` as the fix to make
+     before the next piece. An entry in `series_emails.unknown` is named unread with its reason, never a pass;
+     a `series_emails.reason` is reported as "series emails not judged" with that reason.
+   - **The edition's numbers, as counts.** Recipients; unique clicks, read first and written as "30 of 480
+     recipients clicked" (Control Center refuses a percentage); unsubscribes from that email; the subscriptions
+     Substack credits to the post. Beside them, when GA4 was read, the sessions and sign-ups GA4 credits to the
+     source newsletter (the `newsletter` block of `python -m engine.run.ga4 ga4 join`, or of the directive join).
+     Each number not shown is "not shown" with its reason; an edition not read says why.
+   - **No verdict before four editions.** The edition is judged against its bars only once four editions have
+     been read; until then the report shows the numbers and how many editions are in.
 5. Frame tests with the test record mapping in `knowledge/COPY-DOCTRINE.md`
    (weakest link first, biggest variable first). Money-model or paid tier
    ideas appear only here, as proposals with evidence. Each recommendation

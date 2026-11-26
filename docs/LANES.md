@@ -165,6 +165,16 @@ every session ends with `growth.py engine close NAME --learnings FILE`. They
 make under the same walls as every other maker. This is the shadow week: the
 PC automations, the heartbeat and every L0 job keep running alongside them.
 
+### The weekly edition's Substack step (25 November 2026)
+
+`jobs/edition.md` is a Codex job on the worker (Ruling, Krish, 2026-11-25:
+Codex keeps only the weekly edition's Substack editor step; Claude schedules
+in Buffer). It is written and switched off. `automations.json` has no field
+that holds an entry off, so the job is in `lanes.json` `automations` with
+`source` `worker` and `status` `off-until-krish`, checked by
+`engine/run/invariants.py`, and in no `automations.json` entry until Krish
+turns it on.
+
 ## L2: waits for Krish's eyes (one press in Control Center)
 
 These wait on his one list in Control Center. Each is one press: yes, change

@@ -27,6 +27,18 @@ committed, as they already are.
 A read that could not be taken is recorded as unknown with its reason code,
 never a guess and never zero. Nothing here opens a network connection, reads
 a cookie or a password, or changes a Substack setting.
+
+The weekly edition (Krish, 2026-11-25: one email a week, Saturday 08:00 New
+York; the Monday, Wednesday and Friday pieces go to the web and the app with
+no email). Two optional blocks, so a capture made before them still reads:
+`edition`, the week's edition post as its stats page shows it (recipients,
+unique clicks, click rate, open rate, unsubscribes from that email and the
+subscriptions Substack credits to the post), and `series_posts`, each series
+post's recipients beside the size of the opt-in section for readers who want
+every piece. series_email_check names each series post that emailed more
+readers than that section holds: a failure the Sunday report shows
+(jobs/report.md). Counts only; a number the page does not show is null with
+its reason, never zero.
 """
 import argparse
 import datetime as dt
@@ -61,6 +73,17 @@ TOTAL_KEYS = {'value', 'free', 'paid', 'source_url', 'reason'}
 RENEWAL_KEYS = {'cohorts', 'source_url', 'reason'}
 COHORT_KEYS = {'first_paid_month', 'renewed', 'cancelled'}
 ITEM_HOSTS = ('home.makeyourmindup.ai', 'substack.com')
+# The weekly edition (Krish, 2026-11-25), read from the edition post's own stats page. Counts as shown; the two
+# rates are the number the page shows before its percent sign. Optional, so a capture made before it still reads.
+EDITION_COUNTS = ('recipients', 'unique_clicks', 'unsubscribes', 'new_subscriptions')
+EDITION_RATES = ('click_rate', 'open_rate')
+EDITION_KEYS = {'edition_date', 'url', 'source_url', 'not_shown', 'reason'} | set(EDITION_COUNTS) | set(EDITION_RATES)
+# Each series post's recipients beside the opt-in section's size: a series post emails only that section.
+SERIES_KEYS = {'section', 'posts', 'reason'}
+SECTION_KEYS = {'name', 'subscribers', 'source_url', 'reason'}
+SERIES_POST_KEYS = {'day', 'url', 'recipients', 'reason'}
+SERIES_DAYS = ('mon', 'wed', 'fri')
+OPTIONAL_KEYS = {'renewals', 'edition', 'series_posts'}
 
 
 def last_week(now=None):
@@ -71,10 +94,14 @@ def last_week(now=None):
 def template(now=None):
     """The capture the job fills for last week, read not taken until it is."""
     monday = last_week(now)
+    edition = dict.fromkeys(EDITION_KEYS)
+    edition.update(edition_date=(monday + dt.timedelta(days=5)).isoformat(), not_shown={}, reason='not checked')
     return {'kind': KIND, 'week_of': monday.isoformat(), 'captured_at': None, 'read': 'not_taken',
             'not_taken': {'code': None, 'detail': None}, 'growth_sources': None, 'total_subscribers': None,
             'items_view': 'not_checked', 'items': [],
-            'renewals': {'cohorts': [], 'source_url': None, 'reason': 'not checked'}}
+            'renewals': {'cohorts': [], 'source_url': None, 'reason': 'not checked'},
+            'edition': dict(sorted(edition.items())),
+            'series_posts': {'section': None, 'posts': [], 'reason': 'not checked'}}
 
 
 def _count(value, field):
@@ -105,9 +132,9 @@ def validate(capture, now=None):
     """The weekly capture in its closed shape; the Growth-sources part by measure.validate_capture (F54)."""
     if not isinstance(capture, dict) or capture.get('kind') != KIND:
         raise ValueError('capture must be a ' + KIND + ' object')
-    if set(capture) not in (CAPTURE_KEYS, CAPTURE_KEYS | {'renewals'}):
+    if not CAPTURE_KEYS <= set(capture) <= CAPTURE_KEYS | OPTIONAL_KEYS:
         raise ValueError('capture fields must be exactly ' + ', '.join(sorted(CAPTURE_KEYS))
-                         + ', and renewals where it was read')
+                         + ', and renewals, edition and series_posts where they were read')
     week = measure.as_date(capture['week_of'], 'week_of')
     if week.weekday() != 0:
         raise ValueError('week_of is the Monday of the week read')
@@ -156,7 +183,159 @@ def validate(capture, now=None):
         raise ValueError('an item is recorded once')
     if 'renewals' in capture:
         _renewals(capture['renewals'], week)
+    if 'edition' in capture:
+        _edition(capture['edition'], week)
+    if 'series_posts' in capture:
+        _series(capture['series_posts'])
+    if capture['read'] == 'not_taken' and any(
+            capture.get(key) is not None and capture[key]['reason'] is None for key in ('edition', 'series_posts')):
+        raise ValueError('a read not taken carries no edition or series numbers; nothing is guessed')
     return capture
+
+
+def _substack_url(url, field):
+    host = (urlsplit(_https(url, field)).hostname or '').lower()
+    if not any(host == h or host.endswith('.' + h) for h in ITEM_HOSTS):
+        raise ValueError(field + ' is a page on Substack itself')
+    return url
+
+
+def _rate(value, field):
+    """A rate as the page shows it, the number before its percent sign: 0 to 100, or null."""
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 <= value <= 100:
+        raise ValueError(field + ' is the number the page shows before its percent sign, 0 to 100, or null')
+    return value
+
+
+def _edition(block, week):
+    """The week's edition post as its own stats page shows it, or the reason it was not read."""
+    if not isinstance(block, dict) or set(block) != EDITION_KEYS:
+        raise ValueError('edition needs exactly ' + ', '.join(sorted(EDITION_KEYS)))
+    saturday = (week + dt.timedelta(days=5)).isoformat()
+    if block['edition_date'] != saturday:
+        raise ValueError('edition_date is the Saturday of the week read, ' + saturday)
+    if not isinstance(block['not_shown'], dict):
+        raise ValueError('edition not_shown maps each number the page did not show to the reason')
+    metrics = EDITION_COUNTS + EDITION_RATES
+    for key in EDITION_COUNTS:
+        _count(block[key], 'edition ' + key)
+    for key in EDITION_RATES:
+        _rate(block[key], 'edition ' + key)
+    if block['reason'] is not None:
+        measure.plain(block['reason'], 'edition reason')
+        if any(block[key] is not None for key in metrics) or block['not_shown']:
+            raise ValueError('an edition not read carries no numbers; nothing is guessed')
+        for key in ('url', 'source_url'):
+            if block[key] is not None:
+                _substack_url(block[key], 'edition ' + key)
+        return block
+    _substack_url(block['url'], 'edition url')
+    _substack_url(block['source_url'], 'edition source_url')
+    missing = sorted(key for key in metrics if block[key] is None)
+    if sorted(block['not_shown']) != missing:
+        raise ValueError('edition not_shown names every null number, and only those, with its reason')
+    for key in missing:
+        measure.plain(block['not_shown'][key], 'edition not_shown ' + key)
+    if (block['recipients'] is not None and block['unique_clicks'] is not None
+            and block['unique_clicks'] > block['recipients']):
+        raise ValueError('edition unique_clicks cannot be more than its recipients')
+    return block
+
+
+def _series(block):
+    """Each series post's recipients beside the opt-in section's size, or the reason they were not read."""
+    if not isinstance(block, dict) or set(block) != SERIES_KEYS:
+        raise ValueError('series_posts needs exactly ' + ', '.join(sorted(SERIES_KEYS)))
+    if not isinstance(block['posts'], list):
+        raise ValueError('series_posts posts is a list')
+    if block['reason'] is not None:
+        measure.plain(block['reason'], 'series_posts reason')
+        if block['posts'] or block['section'] is not None:
+            raise ValueError('series_posts not read carries no section and no posts; nothing is guessed')
+        return block
+    section = block['section']
+    if not isinstance(section, dict) or set(section) != SECTION_KEYS:
+        raise ValueError('series_posts section needs exactly ' + ', '.join(sorted(SECTION_KEYS)))
+    _count(section['subscribers'], 'series_posts section subscribers')
+    if section['name'] is None:
+        # No opt-in section exists yet, so no reader has asked for every piece: the reason says so.
+        if section['subscribers'] is not None or section['reason'] is None:
+            raise ValueError('with no opt-in section, subscribers is null and the reason says there is none')
+    else:
+        measure.plain(section['name'], 'series_posts section name')
+        if (section['subscribers'] is None) == (section['reason'] is None):
+            raise ValueError('series_posts section gives its subscribers or the reason they were not shown, '
+                             'not both')
+    if section['reason'] is not None:
+        measure.plain(section['reason'], 'series_posts section reason')
+    if section['source_url'] is not None:
+        _substack_url(section['source_url'], 'series_posts section source_url')
+    elif section['subscribers'] is not None:
+        raise ValueError('series_posts section subscribers needs the page it was read on')
+    urls = []
+    for n, post in enumerate(block['posts'], 1):
+        at = 'series post ' + str(n)
+        if not isinstance(post, dict) or set(post) != SERIES_POST_KEYS:
+            raise ValueError(at + ' needs exactly ' + ', '.join(sorted(SERIES_POST_KEYS)))
+        if post['day'] not in SERIES_DAYS:
+            raise ValueError(at + ' day is ' + ', '.join(SERIES_DAYS))
+        urls.append(_substack_url(post['url'], at + ' url'))
+        _count(post['recipients'], at + ' recipients')
+        if (post['recipients'] is None) == (post['reason'] is None):
+            raise ValueError(at + ' gives its recipients or the reason they were not shown, not both')
+        if post['reason'] is not None:
+            measure.plain(post['reason'], at + ' reason')
+    if len(urls) != len(set(urls)):
+        raise ValueError('a series post is recorded once')
+    return block
+
+
+def edition_reading(capture):
+    """The week's edition numbers from the capture, or null with the reason. Never zero for unknown."""
+    block = capture.get('edition')
+    if capture.get('read') != 'taken':
+        return {'read': False, 'reason': 'the weekly read was not taken'}
+    if block is None:
+        return {'read': False, 'reason': 'this capture predates the weekly edition read (jobs/subscribers.md step 6b)'}
+    if block['reason'] is not None:
+        return {'read': False, 'edition_date': block['edition_date'], 'reason': block['reason']}
+    out = {'read': True, 'edition_date': block['edition_date'], 'url': block['url'], 'reason': None,
+           'not_shown': dict(block['not_shown'])}
+    out.update((key, block[key]) for key in EDITION_COUNTS + EDITION_RATES)
+    return out
+
+
+def series_email_check(capture):
+    """Did any series post email more readers than the opt-in section holds? (Krish, 2026-11-25: only the weekly
+    edition emails everyone; a Monday, Wednesday or Friday piece goes to the web and the app, and by email only to
+    the readers who opted in.) A post above the section's size is a failure for the Sunday report; a count the
+    page did not show is unknown with its reason, never a pass."""
+    empty = {'checked': 0, 'passed': 0, 'failures': [], 'unknown': [], 'allowed': None}
+    block = capture.get('series_posts')
+    if capture.get('read') != 'taken':
+        return dict(empty, reason='the weekly read was not taken')
+    if block is None:
+        return dict(empty, reason='this capture predates the series email read (jobs/subscribers.md step 6c)')
+    if block['reason'] is not None:
+        return dict(empty, reason=block['reason'])
+    section = block['section']
+    allowed = 0 if section['name'] is None else section['subscribers']
+    out = dict(empty, allowed=allowed, reason=None)
+    for post in block['posts']:
+        out['checked'] += 1
+        sent = post['recipients']
+        if sent is None:
+            out['unknown'].append({'day': post['day'], 'url': post['url'], 'reason': post['reason']})
+        elif sent == 0 or (allowed is not None and sent <= allowed):
+            out['passed'] += 1
+        elif allowed is None:
+            out['unknown'].append({'day': post['day'], 'url': post['url'],
+                                   'reason': 'the opt-in section\'s size was not shown: ' + section['reason']})
+        else:
+            out['failures'].append({'day': post['day'], 'url': post['url'], 'recipients': sent, 'allowed': allowed})
+    return out
 
 
 def _renewals(block, week):
@@ -275,6 +454,8 @@ def summary(capture, result):
             'sources': [dict(r) for r in sources['rows']] if sources else [],
             'total_subscribers': capture['total_subscribers'],
             'renewals': renewals(capture),
+            'edition': edition_reading(capture),
+            'series_emails': series_email_check(capture),
             'items_view': capture['items_view'],
             'items': {'recorded': len(items), 'with_a_new_subscriber': len([g for g in shown if g >= 1]),
                       'with_none': len([g for g in shown if g == 0]), 'not_shown': len(items) - len(shown)},
@@ -377,6 +558,21 @@ def main(argv=None, out=print, root=ROOT):
     out('Renewals: ' + ('not counted, ' + kept['reason'] if kept['renewed'] is None else
                         str(kept['renewed']) + ' renewed, ' + str(kept['cancelled']) + ' cancelled across '
                         + str(len(kept['cohorts'])) + ' first-paid months') + '.')
+    edition = result['summary']['edition']
+    if edition['read']:
+        shown = [(k, edition[k]) for k in EDITION_COUNTS]
+        out('Weekly edition of ' + edition['edition_date'] + ': ' + ', '.join(
+            k.replace('_', ' ') + ' ' + ('not shown' if v is None else str(v)) for k, v in shown) + '.')
+    else:
+        out('Weekly edition: not read, ' + edition['reason'] + '.')
+    series = result['summary']['series_emails']
+    if series['reason'] is not None:
+        out('Series emails: not judged, ' + series['reason'] + '.')
+    else:
+        out('Series emails: ' + str(series['checked']) + ' series posts read, ' + str(len(series['failures']))
+            + ' emailed more readers than the opt-in section holds'
+            + (' (a failure for the Sunday report)' if series['failures'] else '') + ', '
+            + str(len(series['unknown'])) + ' unknown.')
     if not args.write:
         out('Dry run: pass --write to record it.')
     return 0

@@ -607,10 +607,13 @@ class RuntimeTests(unittest.TestCase):
         subscribers = next(r for r in config['automations'] if r['job'] == 'jobs/subscribers.md')
         self.assertEqual(subscribers['schedule'], 'RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=6;BYMINUTE=15')
         self.assertNotIn('timezone', subscribers)
+        # The weekly edition's Substack step (jobs/edition.md, Krish, 2026-11-25) runs on the worker and is off
+        # until Krish turns it on: lanes.json names it, and no automations.json entry runs it yet.
         self.assertEqual({r['job'] for r in config['automations']},
                          {'jobs/' + p.name for p in (ROOT / 'jobs').glob('*.md')
                           if p.name not in ('channel-audit.md', 'daily-growth.md', 'acquisition.md',
-                                                         'engagement.md', 'publishing.md', 'measurement.md')})
+                                                         'engagement.md', 'publishing.md', 'measurement.md',
+                                                         'edition.md')})
         self.assertIn('jobs/channel-audit.md', (ROOT / 'jobs/conversion.md').read_text())
         conversion = next(r for r in config['automations'] if r['job'] == 'jobs/conversion.md')
         self.assertEqual(conversion['timezone'], 'Europe/London')

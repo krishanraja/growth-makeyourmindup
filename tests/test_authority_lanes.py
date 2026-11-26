@@ -200,6 +200,19 @@ class LanesTests(unittest.TestCase):
         (folder / 'surprise.yml').write_text('name: surprise\n', encoding='utf-8')
         self.assertEqual(self.errors(), ['workflow not in lanes.json: surprise.yml'])
 
+    def test_the_weekly_edition_job_is_named_and_off_until_krish_turns_it_on(self):
+        # Krish, 2026-11-25: Codex keeps only the edition's Substack step. automations.json has no field that holds
+        # an entry off, so the job is named here, off, and in no automations.json entry until he turns it on.
+        entry = next(a for a in self.lanes['automations'] if 'jobs/edition.md' in a['jobs'])
+        self.assertEqual((entry['source'], entry['status'], entry['successor'], entry['jobs']),
+                         ('worker', 'off-until-krish', None, ['jobs/edition.md']))
+        config = json.loads((ROOT / 'automations.json').read_text(encoding='utf-8'))['automations']
+        self.assertNotIn('jobs/edition.md', [a['job'] for a in config])
+        self.assertEqual(self.errors(), [])
+        lanes = copy.deepcopy(self.lanes)
+        lanes['automations'] = [a for a in lanes['automations'] if a['name'] != entry['name']]
+        self.assertIn('job file in no automation: jobs/edition.md', self.errors(lanes))
+
     def test_every_job_file_and_automation_is_named_exactly_once(self):
         (self.root / 'jobs' / 'brand-new.md').write_text('# synthetic\n', encoding='utf-8')
         self.assertIn('job file in no automation: jobs/brand-new.md', self.errors())
@@ -259,6 +272,11 @@ class LanesTests(unittest.TestCase):
                    (lambda d: d['automations'][0].update(status='standing', successor='measure'), 'no successor'),
                    (lambda d: next(a for a in d['automations'] if a['source'] == 'engine-session').update(
                        status='standing'), 'on-request'),
+                   (lambda d: next(a for a in d['automations'] if a['source'] == 'worker').update(
+                       status='kept-until-W46'), 'off-until-krish'),
+                   (lambda d: next(a for a in d['automations'] if a['source'] == 'worker').update(
+                       successor='measure'), 'no successor'),
+                   (lambda d: d['automations'][0].update(source='laptop'), 'source is'),
                    (lambda d: d.update(extra=1), 'needs exactly'))
         with tempfile.TemporaryDirectory() as folder:
             for change, message in changes:
