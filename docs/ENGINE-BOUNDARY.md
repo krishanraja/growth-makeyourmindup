@@ -63,6 +63,28 @@ Canva lane, the 28 October derived carousels, Notes, memes and off-day posts, Gr
 route (R126), the 12 November judge calls from Growth and the 19 November captions. Those sections are kept below as
 history.
 
+## 26 November 2026: content-engine v5, and what Growth reads from it
+
+Content-engine's story engine v5 changes how pieces are chosen and made. None of it asks Growth to make anything, and
+Growth reads nothing new:
+
+- **The story score.** Every candidate story is scored against content-engine's `config/story-score.json` floors
+  (truth, sources, the reader's beat, a unique angle); the gate starts on the board of 30 November.
+- **The whys before the pick.** A story must hold its five whys before Krish picks it on the board.
+- **The guaranteed wildcard slot.** Every Monday, Wednesday and Friday carries one checked wildcard option (Krish,
+  26 November 2026: "there's always one completely divergent, strange, obscure, or unexpected story suggestion that I
+  could pick from"), held to the same floors.
+- **Off-day alignment.** Good news, memes and carousels on the off days are the reader's world: the creative, arts,
+  music, entertainment, media and sports industries (`docs/NORTH_STAR.md`), gated from the story score's board.
+- **Touchpoints.** Content-engine's `config/cycle.json` lists every system it touches at each of its ten moments.
+  Growth has two kinds of row only: it is informed (stage 9: the finished, approved assets with their captions in the
+  piece manifest, and the board pieces) and it is read (stages 0 and 10: its latest performance review in
+  `docs/reviews`, at week open and at learn). The mix Growth plans is read through content-engine's pinned vendored
+  copy of `mix.json`, re-vendored when Growth changes it.
+
+Growth receives finished assets with their captions in the manifest and posts them; content-engine reads its reviews
+and the mix at week open and at learn.
+
 ## 26 October 2026: the original split (history)
 
 Ruling: Krish, 26 October 2026. Superseded on 26 November 2026 where it leaves any production with Growth (above).
