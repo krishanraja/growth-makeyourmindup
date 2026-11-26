@@ -60,7 +60,7 @@ spends.
   evidence.
 - `run decide SPEC`: decision.json from the week's mix plan decision.
 - `run send-test SPEC SLOT`: the blind send test.
-- `run calendar|plain|canva lint`: calendar, plain English, brand kit.
+- `run calendar lint`: the posting calendar.
 - `run measure`, `northstar`, `verdict`, `cost`, `ga4`: see `--help`.
 
 Keep a real spec at `.scratch/runs/<run>/spec.json`, never in git: it holds

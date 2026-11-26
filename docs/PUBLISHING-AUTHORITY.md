@@ -6,6 +6,12 @@ this day's earlier personal-drafts-only instruction for those two accounts.
 **Current as of 13 November 2026.** The sections below are dated, and a later
 one wins where it says so. In short:
 
+- Since 26 November 2026 content-engine makes every asset and writes every
+  caption (Ruling, Krish: "I believe that growth should move all asset
+  production to Content Engine"); this engine posts what it finishes. No
+  authority below changes: where a line says this engine makes or builds a
+  post, read that it makes the Buffer draft of content-engine's asset.
+
 - Derived (filler) posts on Instagram, YouTube, TikTok and X release from his
   one "Approve this week's mix" press on content-engine's board, inside every
   other gate (30 October, below).
@@ -104,8 +110,8 @@ rulings above; everything else above stands.
 - LinkedIn is unchanged: unscheduled drafts, and his final click.
 - Signed exact payloads post autonomously only through the go-live step
   (AGENTS.md, Autonomy), with the readback rules above.
-- Ad-hoc meme ideas are built, shown to him, then queued and posted only on
-  his approval of the exact payload.
+- Ad-hoc meme ideas are built by content-engine, shown to him, then queued and
+  posted only on his approval of the exact payload.
 - Substack articles keep their approved editorial rhythm; no daily target.
 - No spending, new connections (including connecting Substack in Buffer),
   new automation or engagement submission follows from these rulings.
@@ -201,8 +207,8 @@ rulings above; everything above stands unless a line here says otherwise.
   bound by the spec signature's `concepts_digest` and `concept_proposal_id`
   (`engine/run/decision.py`, fields in `docs/CONCEPT-MANIFEST.md`).
 - **It authorises every post made from it.** On those four channels the
-  engine makes, schedules and publishes each post derived from an approved
-  concept with no per-post approval, through `growth.py run release`, the
+  engine drafts (from content-engine's assets and captions), schedules and
+  publishes each post derived from an approved concept with no per-post approval, through `growth.py run release`, the
   Buffer channel lock and every check above (copy lint, share asks, the
   ecosystem route, route capability checks, the creative bar). For these
   posts this supersedes "Approve each day Monday" and "New creative ...

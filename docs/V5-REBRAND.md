@@ -1,6 +1,6 @@
 # makeyourmindup v5: what changed, what it means for Growth (26 Nov 2026)
 
-Written by the v5 rebrand session for this engine, at Krish's request on 26 Nov 2026: "ensure growth-makeyourmindup drives this session ... it has been upgraded with 100% of your and your sessions work". Read this before any Make Your Mind Up work. Where an older section of `AGENTS.md`, `render/KIT.md`, `docs/ACCOUNT-VOICE.md` or a plan says otherwise about the look, the copy or who makes what, this file wins until that section is rewritten.
+Written by the v5 rebrand session for this engine, at Krish's request on 26 Nov 2026: "ensure growth-makeyourmindup drives this session ... it has been upgraded with 100% of your and your sessions work". Read this before any Make Your Mind Up work. Where an older section of `AGENTS.md`, `docs/ACCOUNT-VOICE.md` or a plan says otherwise about the look, the copy or who makes what, this file wins until that section is rewritten.
 
 ## 1. The look is locked: v5 only
 
@@ -23,7 +23,7 @@ Krish locked full look v5 on 25 Nov 2026 ("s3h is great, lock v5") and asked tha
 - Fraunces for headlines on the site and the share cards.
 - Archivo for structure and video captions.
 - DM Mono for labels and data. It replaces IBM Plex Mono, which is retired.
-- The four v5 files are in content-engine `assets/fonts/makeyourmindup/`. The fonts and brand PNGs under `render/` here are the old kit and are not used.
+- The four v5 files are in content-engine `assets/fonts/makeyourmindup/`. Growth's old render kit (its fonts, brand PNGs and `render/KIT.md`) is deleted from this repository, and a guard keeps it from coming back (R132).
 
 **Marks:** content-engine `assets/brand/makeyourmindup/v5/`:
 
@@ -103,7 +103,6 @@ The site's discoverability is this engine's job (`docs/DISCOVERABILITY.md`).
   - Rule 5 and R07 still bind: one DM reply to someone who commented the keyword on that post, nothing else.
   - The DM words came from the old piece format ("three things to do tomorrow"). Check them against the v5 piece, and get Krish's approval of the exact words before any flow goes live.
 - **Old-look copy and assets in this repository** to rewrite or retire when touched:
-  - `render/KIT.md` and `render/brand/`, `render/fonts/` (the old kit, IBM Plex Mono among it);
   - the Mon/Wed/Fri and series lines in channel copy;
   - "AI, unpicked" bios.
 

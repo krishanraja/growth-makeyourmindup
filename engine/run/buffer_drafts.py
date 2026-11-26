@@ -82,7 +82,7 @@ class DraftBuffer(Buffer):
                 raise BufferError('draft_asset_refused')
             if kind == 'video':
                 # Every draft channel shows a video's cover; Buffer takes only a frame, so the designed cover is
-                # appended to the cut and its frame named (engine/run/video_cover.py; Ruling, Krish, 2026-11-15).
+                # baked into the cut by content-engine and its frame named (engine/run/cover_gate.py; Ruling, Krish, 2026-11-15).
                 meta = body.get('metadata')
                 if not isinstance(meta, dict) or set(meta) != {'thumbnailOffset'} \
                         or not _offset_ok(meta['thumbnailOffset']):

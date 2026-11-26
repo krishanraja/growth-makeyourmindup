@@ -13,7 +13,7 @@
   "snackable": true,
   "delivery_checks": [
     "Native Note copy written for the Notes feed, not a pasted article excerpt; every quote is a literal match to the published piece.",
-    "Any image: made in a Claude session, with the Codex plugin building it (Ruling, Krish, 2026-11-13; content-engine docs/CAROUSEL-STANDARD.md, \"How a carousel is made\"): the session writes the words and the direction, a Codex card of kind notes_image builds the picture in code, and the session verifies it against the brand palette before Krish sees it; never a scheduled job, a headless model run or a template engine. It is filed in its post's 3 Posts folder.",
+    "Any image: made by content-engine from its v5 Library, with its caption (Ruling, Krish, 2026-11-26: content-engine makes every asset); Growth posts it and makes nothing. Every quote is a literal match to the published piece.",
     "No outside link in a reach Note; verify the subscribe path live.",
     "Share mechanic: one line a reader would quote or forward to a named person, complete without the article behind it. It stays a proposal in the brief until content-engine adopts it as a production standard through its own route.",
     "Before Krish sees it: a complete share block (social/share.json), no generic share call to action in the copy, and a blind send test whose reader names the declared receiver and job (crew/send-test).",
@@ -30,7 +30,7 @@
   "lessons": [
     "revision-identity",
     "growth-measurement",
-    "one-route-for-pictures",
+    "content-engine-makes-every-asset",
     "notes-threads-in-scope",
     "built-to-be-sent",
     "share-rate-measure"

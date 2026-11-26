@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "content-engine-makes-every-asset",
+  "category": "format",
+  "scope": [
+    "carousel",
+    "meme",
+    "note",
+    "single-image",
+    "story",
+    "short-video",
+    "long-video",
+    "article"
+  ],
+  "status": "accepted",
+  "finding": "Content-engine makes every asset: hero pieces, carousels, memes, Substack Notes images and copy, the captions and titles for each channel, covers, thumbnails, cuts and the weekly edition package. It hands Growth finished, approved assets with their captions in the piece manifest. Growth makes nothing: it posts, schedules in Buffer, places the weekly edition in Substack, distributes, runs the subscribe route, measures, learns, keeps mix.json and the experiments, and reports performance back. The Canva lane is retired, and Growth's renderer is deleted because content-engine's v5 Library replaces it (covers and thumbnails from scripts/covers/make_covers.py, carousels from scripts/library/make_piece.py --set <set>).",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "CHANGES.md, 2026-11-26 entry: \"I believe that growth should move all asset production to Content Engine. I see no point in having a separate repository produce specific assets.\" and \"Canva is crap so we don't use that anymore.\"",
+    "observed_at": "2026-11-26",
+    "result": "render/, the piece kits, tall_meme, the cover compositing, the Canva lane, plain.py and the maker's caption writer deleted; invariants/boundary.json assigns every asset kind to content-engine and tests/test_production_boundary.py fails if one comes back."
+  },
+  "revisit_when": "Krish changes who makes an asset.",
+  "supersedes": "one-route-for-pictures"
+}

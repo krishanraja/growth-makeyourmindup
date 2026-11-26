@@ -18,13 +18,33 @@ Krish locked the v5 look on 25 Nov ("s3h is great, lock v5") and asked that this
 
 **Current (5 November 2026).** The work runs as four engines, one per session: read "Four engines" below before anything else. Make Your Mind Up outreach is this engine's and social engagement is the Engagement engine's; Krish enacts both in his own Codex sessions on the exact payload he approves, and only Mindmake's outreach stays with Control Center ("Outreach for Make Your Mind Up" below). Through the shadow week the existing automations, `jobs/daily-growth.md` and the GitHub workflows keep running. Krish's personal LinkedIn is growth-mindmake's since 13 November 2026, not this engine's ("Krish's personal LinkedIn is growth-mindmake's" below). Older sections below stay as dated evidence; where one says otherwise, those sections win.
 
+## Content-engine makes every asset; Growth grows the channel (Ruling, Krish, 2026-11-26)
+
+His words: "I believe that growth should move all asset production to Content Engine. I see no point in having a
+separate repository produce specific assets. How can you accomplish this and ensure that this is updated absolutely
+everywhere and that there can be no confusion moving forward? This would leave growth in charge of simply growing the
+channel." And: "I want everything to be one harmonious engine." On Canva: "Canva is crap so we don't use that anymore."
+
+Content-engine makes every asset (hero pieces, carousels, memes, Substack Notes images and copy, captions and titles
+per channel, covers, thumbnails, cuts and the weekly edition package) and hands Growth finished, approved assets with
+captions in the piece manifest; growth-makeyourmindup grows the channel: posting, scheduling in Buffer, the edition's
+Substack placement, distribution, the subscribe route, measurement, learning, mix.json and experiments, and reports
+performance back. This engine makes nothing and writes no caption: the maker posts content-engine's captions word for
+word (`docs/MAKER.md`). Production lives in content-engine's v5 Library (`python scripts/covers/make_covers.py <piece>
+--out <folder>` for covers and thumbnails, `python scripts/library/make_piece.py <piece> --set <set>` for carousels),
+run there, never here. The Canva lane is retired, and this repository's renderer, piece kits, cover compositing,
+plain-English lint and caption writer are deleted (`docs/ENGINE-BOUNDARY.md`, "26 November 2026";
+`invariants/boundary.json`; `tests/test_production_boundary.py`, R132). Where an older line below says Growth makes,
+renders, writes captions for or commissions in Canva any asset, this wins.
+
 ## Asset continuity (Krish, 27 October 2026)
 
 **One pipeline (proposed 31 October 2026).** `docs/OPERATING_MODEL.md` sets the seven stages from Inspiration to posting, who owns each, the ledger this repository keeps of every day's slot, and the pitch format every idea is written in. Krish ruled on 31 October that this repository schedules and posts everything and keeps track of what's what every day.
 
 Read `docs/ASSET-STORAGE.md` and `docs/SESSION-HANDOVER.md` at the start of
 every session. File every finished post, the off days included, into the
-library's **3 Posts** with content-engine's `send.py`, named like the series
+library's **3 Posts** with content-engine's `send.py` (content-engine files what it makes; Growth files nothing it did
+not receive), named like the series
 days (`YYYY-MM-DD Tue off.day - Subject`): one Posts folder for the whole week
 (Ruling, Krish, 2026-11-03). Do not file new posts in 4 Growth. Preserve private evidence and rejected versions
 locally with a dated hash inventory before closing or cleaning a workspace.
@@ -40,8 +60,8 @@ standing doc a run session reads, and `growth.py run pack` puts it on top.
 New channels: Substack Notes from Krish's Substack profile (handle in
 `social/channels/substack-notes.json`; up to two a day, as he signs) and
 Threads (one a day, his personal voice); signed exact payloads go out through
-the go-live step and LinkedIn stays his click. The Canva lane makes what
-content-engine does not cover (`social/guides/canva.md`).
+the go-live step and LinkedIn stays his click. (The Canva lane that made what content-engine did not cover was
+retired on 26 November 2026: content-engine makes every asset.)
 The Measurement Specialist (`crew/attribution-ladder/`) owns the North Star:
 Substack Growth sources stay its source, `growth.py run northstar` computes
 the NOW.md line from a capture, and GA4 is read directly for per-post joins on
@@ -150,7 +170,7 @@ first put it on, so a post he moved goes out on its new day and is held on the d
 off-day options to the live board through the same place: `python growth.py run board offer --file <offdays.json>
 --deliver` posts the `growth.py mix offdays` file (`growth-offdays/1`) to `POST /api/board/<Monday>/offdays`, where each
 is offered on its day with Move to… and Approve like every other option; never a file of its own the board must merge.
-Every off-day post Growth makes, schedules or posts goes back to the same place, from Growth's own record and never a
+Every off-day post Growth schedules or posts (content-engine makes it since 26 November 2026) goes back to the same place, from Growth's own record and never a
 post it did not post. Control Center's Buffer sweep is the one writer of off-day posts Buffer holds (audit 2026-11-14,
 gmymu-6: one system per job): every 15 minutes it writes each one Buffer has scheduled (with its time) or sent (with its
 native link) to `POST /api/board/<Monday>/offday-posts`, whoever made it, so `release.yml` no longer runs `board posts`.
@@ -164,8 +184,9 @@ names its time); until then the board says plainly "Still scheduled for Tue 17 o
 
 ## The brand palette (Ruling, Krish, 2026-11-12)
 
-Every opening, close, icon, wordmark and colour on an asset this engine makes comes from content-engine's
-`config/brand-palette.json` and nowhere else (`render/KIT.md`, "The brand palette"). Krish: "I approve the brand
+Every opening, close, icon, wordmark and colour on an asset comes from content-engine's
+`config/brand-palette.json` and nowhere else; since 26 November 2026 content-engine makes every asset, so this
+engine draws none. Krish: "I approve the brand
 palette sheet, but only if it falls in line with the attached." Never add a close, a logo position or a colour
 rule here. Change the palette in content-engine, in his words, first.
 
@@ -273,20 +294,17 @@ capabilities and standards as needed. Do not build a parallel production
 pipeline or quality canon in Growth. Keep responsibility for progress and
 delivery here. Legacy local pilot assets retain their review provenance.
 
-27 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md`, "the Canva lane"):
-Growth now produces, in Canva, the formats content-engine does not cover
-(today Substack Notes and memes). For that lane only, this supersedes the
-parallel-production line above; content-engine keeps every other format and
-its standards, and the lane applies them by reference.
+27 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md`, "the Canva lane"), superseded 26 November 2026:
+Growth produced, in Canva, the formats content-engine did not cover. That lane is retired; there is no exception to
+the parallel-production line above.
 
 28 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md` and
-`docs/PUBLISHING-AUTHORITY.md`, "28 October 2026"): Growth also makes
-derived carousels to content-engine's standard ("take over posting as well
-as creating new assets like carousels") and owns the off-day lane (Tuesday,
-Thursday, Saturday and Sunday on Instagram, TikTok and YouTube Shorts).
-Go-live is "Approve each day Monday"; every carousel and Short first passes
-content-engine's 10/10 judges (Ruling, Krish, 2026-11-12: "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts."; `engine/run/judges.py`, `docs/MAKER.md` step 6b), and a
-fail comes back with the judges' reasons and is never made; every route goes through Buffer,
+`docs/PUBLISHING-AUTHORITY.md`, "28 October 2026"): Growth owns the off-day
+lane's slots and posting (Tuesday, Thursday, Saturday and Sunday on
+Instagram, TikTok and YouTube Shorts). Since 26 November 2026 content-engine
+makes the derived carousels and every off-day post; Growth posts them.
+Go-live is "Approve each day Monday"; every carousel and Short passes
+content-engine's 10/10 judges when content-engine makes it (Ruling, Krish, 2026-11-12: "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts."), and Growth binds the pass to the post it saves (`engine/run/judges.py`); every route goes through Buffer,
 pinned by channelId to this engine's eight channels, and every post passes
 content-engine's copy lint. Engagement is a daily 10-minute queue across X,
 TikTok, Instagram and LinkedIn, still prepared only. LinkedIn stays his click.
@@ -296,25 +314,17 @@ it in his own Codex sessions: "Outreach for Make Your Mind Up" above. Since
 seven: LinkedIn is growth-mindmake's, "Krish's personal LinkedIn is
 growth-mindmake's" above.)
 
-## Carousels, memes and Notes images: one route (Rulings, Krish, 2026-11-13)
+## Carousels, memes and Notes images: one route (Rulings, Krish, 2026-11-13; superseded 2026-11-26)
 
-His words: "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual
-workflows"; then "memes and Notes images should go the same way", and "Off-day voiceover shorts should go the same way
-too". So every carousel, meme and Notes image this engine makes is made in a Claude session that someone opens
-(usually from the board item's "Copy prompt for Claude"), with the Codex plugin building it: the session writes the
-words, the story and the direction, then one Codex card (content-engine's `python3 scripts/ve.py card`, kind
-`carousel`, `meme` or `notes_image`, with its `spend_id`) in `codex/queue/<id>.md` on its `claude/` branch; the Codex
-lane builds the piece kit through the plugin (`render/KIT_RULES.md` is the card's brief, `python growth.py run kit
-check` its acceptance), and the session renders the real words, verifies every card, files them in the post's
-`3 Posts` folder and reports on the board. Off-day voiceover shorts are made on content-engine's ve route from a
-Claude session. Never a scheduled job, a headless model run or a template engine: the Saturday art-direction workflow
-is retired, no workflow here runs Codex or the renderer (R126, `tests/test_piece_kits.py`), and memes and Notes images
-left the Canva lane. The route is content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made". This
-engine's own sessions load the Codex plugin as content-engine's do (`.claude/settings.json`,
-`.claude/hooks/codex-login.sh`). Where an older line below says otherwise, this wins.
+His words then: "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual
+workflows"; then "memes and Notes images should go the same way". Since 26 November 2026 content-engine makes every
+carousel, meme and Notes image from its v5 Library (`python scripts/library/make_piece.py <piece> --set <set>`); this
+engine's piece kits, `render/` and its Codex kit queue are deleted, and no workflow here makes one (R126, R132). This
+engine's sessions still load the Codex plugin (`.claude/settings.json`, `.claude/hooks/codex-login.sh`) for the
+social legwork below, never to build an asset.
 
-Growth strategy is self-contained here. Content-engine supplies production
-assets; Control Center is the eventual unified review surface. Scheduled
+Growth strategy is self-contained here. Content-engine supplies every
+asset and its captions; Control Center is the eventual unified review surface. Scheduled
 jobs may use the supported growth routes. Interactive work makes no Control
 Center writes. Existing publishing and engagement authority still applies.
 
@@ -520,7 +530,7 @@ His words: "Codex should also do the leg work for social media asset scheduling,
 
 - **Claude** owns the strategy, the week's plan and mix, every Codex card and handoff, the check of every result, the learnings written back (`engines/records/`, `social/lessons/`, `CHANGES.md`, the taste ledger), every file put in Google Drive and every ai-harness proposal.
 - **Codex** does the visual builds of every video and picture session (content-engine's `ve card`, at least one card a session: content-engine `config/codex-minimum.json`), and the social legwork in Krish's signed-in browser, in a session he can watch in his Codex Desktop app: it schedules and posts only what Krish approved, inside `docs/PUBLISHING-AUTHORITY.md`; reads each post back live for its cover or thumbnail, caption and call to action (the Publishing engine's `check` records, source `live_readback`); and reads the measurement each post and each paid boost earned (the Measurement engine's observations; a boost's reading carries `paid_boost`). It never writes to Google Drive or ai-harness, never places or changes a boost without Krish's Yes on that boost, and hands what it read to the Claude session, which checks and records it.
-- **Where each runs** (Ruling, Krish, 2026-11-15: all content production runs on Codex cards from the cloud; every social media task runs through a Claude session on his own computer, visible in Codex Desktop. His words: "Maybe just have all content production running on the cloud Codex cards. Make sure the content watcher and music watcher always go to the VPS worker and make sure that any social media tasks run through the local session, build through to Codex desktop."): the visual builds are content production, queued from any session as cards (content-engine's `ve card`, or `codex/queue/` here) and built by his PC's lane under the Studio's own Codex home, never shown in Codex Desktop. The social legwork (scheduling, posting, checking a post live, reading its numbers) is started only from a Claude session on his own computer, through `scripts/codex_thread.mjs`, so it shows in his Codex Desktop app with his browser attached. A cloud session never starts it: it writes the exact approved handoff for that session to pick up.
+- **Where each runs** (Ruling, Krish, 2026-11-15: all content production runs on Codex cards from the cloud; every social media task runs through a Claude session on his own computer, visible in Codex Desktop. His words: "Maybe just have all content production running on the cloud Codex cards. Make sure the content watcher and music watcher always go to the VPS worker and make sure that any social media tasks run through the local session, build through to Codex desktop."): the visual builds are content production, queued from any session as cards (content-engine's `ve card`; since 26 November 2026 content-engine's alone, never `codex/queue/` here) and built by his PC's lane under the Studio's own Codex home, never shown in Codex Desktop. The social legwork (scheduling, posting, checking a post live, reading its numbers) is started only from a Claude session on his own computer, through `scripts/codex_thread.mjs`, so it shows in his Codex Desktop app with his browser attached. A cloud session never starts it: it writes the exact approved handoff for that session to pick up.
 - **The weekly loop**: `jobs/report.md`, step 4b, and the Sunday `learn` workflow, which reweights next week's mix from what brought subscribers.
 
 ## What you are growing
@@ -591,9 +601,11 @@ that it runs there:
    --full` prints, or from the thread you are replying to. Never invent a
    number, a quote or a result. If you are unsure, leave it out.
 3. **Standards have one production owner.** Content-engine owns production
-   and voice standards for every format. Growth owns channel strategy,
-   native posting packages, captions/links and engagement preparation,
-   applying those accepted standards and the applicable krish-voice guidance.
+   and voice standards for every format. Since 26 November 2026 it makes every
+   asset and writes every caption and title too. Growth owns channel strategy,
+   native posting packages built from content-engine's captions, links and
+   engagement preparation, applying those accepted standards and the
+   applicable krish-voice guidance.
    Use the established production route for finished creative. Existing-field
    repairs preserve meaning and voice; never invent experience or a claim.
 4. **Say something real.** A reply responds to the actual thread in ordinary
@@ -779,10 +791,10 @@ publication workspace". GitHub Actions runs nine workflows, all lane L0
 handoff, check, maker, ledger and learn. Measure judges each post
 by the subscribers it brought, and learn turns last judged week's verdicts
 into next week's mix (Ruling, Krish, 2026-11-12: the engine reads
-subscribers every week and judges posts by subscribers, not engagement). The maker (`docs/MAKER.md`) drafts each next day's posts from
-the ideas and mocks Krish approved and hands them off; it never schedules. With no approved mix
-for a week it drafts from the standing plan into Control Center only, never Buffer, and asks him
-once that week (Ruling, Krish, 2026-11-12). The ten automations below run on Krish's PC; nine are kept until W46, and the weekly Substack read stands, because only his signed-in browser can read Substack (Ruling, Krish, 2026-11-12).
+subscribers every week and judges posts by subscribers, not engagement). The maker (`docs/MAKER.md`) turns each next day's posts from
+the ideas Krish approved into Buffer drafts, from content-engine's finished assets and captions word for word (Ruling,
+Krish, 2026-11-26), and hands them off; it never schedules and never writes a caption. With no approved mix for a week
+it makes nothing and asks him once that week (Ruling, Krish, 2026-11-12). The ten automations below run on Krish's PC; nine are kept until W46, and the weekly Substack read stands, because only his signed-in browser can read Substack (Ruling, Krish, 2026-11-12).
 
 ## The schedule (New York time)
 

@@ -43,13 +43,10 @@ from content-engine, which alone owns production and production standards.
 Use its production capabilities and quality standards for the selected
 formats; do not build another production pipeline or canon in Growth.
 Keep responsibility for advancing the work and delivering it here.
-27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
-for the Canva lane only (`docs/ENGINE-BOUNDARY.md`, "the Canva lane"),
-Growth makes the cards, polls and Story frames content-engine does not
-cover, applying its standards by reference (`social/guides/canva.md`).
-For that lane only, this supersedes the "another orchestrator" and "another
-production pipeline" lines above. Every other format is still commissioned
-from content-engine.
+26 November 2026 (Ruling, Krish, 2026-11-26: content-engine makes every asset; `docs/ENGINE-BOUNDARY.md`): content-engine makes every
+format and writes every caption; the Canva lane that made cards, polls and Story frames here is retired, so there is
+no exception to the "another production pipeline" line above. This job posts, schedules, distributes and measures
+what content-engine finishes.
 13 November 2026 (`CHANGES.md`, R126): this job never makes a carousel, a
 meme or a Notes image. Each is made in a Claude session, with the Codex plugin
 building it (content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made"); this job may only propose one, as an

@@ -36,8 +36,8 @@ class TasteWiringTests(unittest.TestCase):
         for needle in ('get_approved_taste', 'report_to_taste_engine', 'Judges never read taste',
                        'taste_unavailable', 'Taste never blocks a slot', 'ids only',
                        'Never take a subject from them', 'never invent one', 'character for character',
-                       'never answer a card or approve a rule', 'At most one a week', 'krishanraja/inspirationhouse',
-                       'Any session or PC automation that makes or writes for this engine',
+                       'never answer a card or approve a rule', 'at most one a week', 'krishanraja/inspirationhouse',
+                       'Any session or PC automation that writes for this engine', 'writes no words',
                        'Whoever plans the week', 'There are no Claude routines',
                        # The only Control Center write a maker may call is the taste report (Ruling, Krish, 26 Oct 2026).
                        'Call no Control Center write tool but `report_to_taste_engine`'):

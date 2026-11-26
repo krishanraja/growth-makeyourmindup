@@ -1,11 +1,96 @@
 # Growth and production ownership
 
-Ruling: Krish, 26 October 2026. This supersedes any older instruction that
-makes Growth a content-production or production-standards owner.
+## 26 November 2026: content-engine makes every asset; Growth grows the channel
 
-**Current as of 5 November 2026.** The dated sections below add to or
-supersede the 26 October split where they say so. Two later facts sit on top
-of all of it:
+**Current. This section supersedes every older line in this file, and anywhere else, that gives Growth any part of
+asset production.** Ruling: Krish, 26 November 2026, in the content-engine story-engine session (`CHANGES.md`):
+
+> "I believe that growth should move all asset production to Content Engine. I see no point in having a separate
+> repository produce specific assets. How can you accomplish this and ensure that this is updated absolutely
+> everywhere and that there can be no confusion moving forward? This would leave growth in charge of simply growing
+> the channel."
+
+> "I want everything to be one harmonious engine."
+
+On captions: they are content-engine's, which retires his 19 November ruling that Growth generates every caption. On
+Canva: "Canva is crap so we don't use that anymore." The Canva lane is retired whole.
+
+**The split, in one sentence.** Content-engine makes every asset (hero pieces, carousels, memes, Substack Notes images
+and copy, captions and titles per channel, covers, thumbnails, cuts and the weekly edition package) and hands Growth
+finished, approved assets with captions in the piece manifest; growth-makeyourmindup grows the channel: posting,
+scheduling in Buffer, the edition's Substack placement, distribution, the subscribe route, measurement, learning,
+mix.json and experiments, and reports performance back.
+
+| Responsibility | Owner |
+|---|---|
+| Every asset: pieces, cuts, carousels, memes, Notes images and copy, covers, thumbnails, the weekly edition package | Content-engine |
+| Every caption and title, per channel, written at make time | Content-engine |
+| Production standards, creative QA, the 10/10 judges and production learning | Content-engine |
+| Audience, account roles, channel strategy, cadence and the mix (`mix.json`) | Growth |
+| Posting, scheduling in Buffer, native readback and the weekly edition's Substack placement | Growth |
+| Distribution, the subscribe route, engagement preparation and account management | Growth |
+| Measurement, experiments, learning, and performance reported back | Growth |
+| Creative acceptance and publishing authority | Krish under the applicable approval rules |
+
+**Where production lives.** Content-engine's v5 Library is locked (26 November 2026: Krish delegated its approval and
+said "I approve the new cover thumbnail systems, go"). Its templates are the only artwork:
+
+- covers and thumbnails: `python scripts/covers/make_covers.py <piece> --out <folder>` (writes `covers.json`, read by
+  post-pack as `cover_set`);
+- carousels: `python scripts/library/make_piece.py <piece> --set <set>` (`library.json` carousel sets: piece,
+  good-news, simple-advice, how-to, explainer, quiz, meme);
+- captions and titles: content-engine's captions step at make time, recorded in the piece manifest (schema
+  `content-engine-piece-manifest/1.1` when a channel carries a title).
+
+These are content-engine commands, run in content-engine. Growth's renderer (`render/`, `scripts/render_mocks.mjs`,
+the piece kits, `kits.py`, `tall_meme.py`, the cover compositing in `video_cover.py`), the Canva lane (`canva.py`,
+`crew/canva-studio`, `social/guides/canva.md`, its five formats and briefs), `plain.py` and the maker's caption writer
+were deleted, not moved: the Library replaces them.
+
+**What Growth keeps.** Release and Buffer; the release gate that every video names its designed cover's frame
+(`engine/run/cover_gate.py`, F133); the maker as the Buffer-draft builder, posting content-engine's captions word for
+word (`docs/MAKER.md`); the board write-backs (posted, off-day posts, the judges' bind and live); the handoff;
+measurement, learn, the subscribe route, the engines, the experiments and `mix.json`; and the weekly edition's
+Substack editor step (PR 144), which places a finished asset and schedules it.
+
+**How it is held.** `invariants/boundary.json` assigns every asset kind to content-engine, and
+`tests/test_production_boundary.py` fails the build if a renderer, template, font, image tool or caption writer
+reappears here (rule R132). `docs/plans` and `docs/history` are dated records and exempt, so the weekly edition's
+dry-run render (`docs/plans/2026-11-25-weekly-edition/dry-run/`) stays as a plan artefact, never production.
+
+**Superseded by this section:** the 26 October split below where it lets Growth prepare packaging copy, the 27 October
+Canva lane, the 28 October derived carousels, Notes, memes and off-day posts, Growth's side of the 13 November kit
+route (R126), the 12 November judge calls from Growth and the 19 November captions. Those sections are kept below as
+history.
+
+## 26 November 2026: content-engine v5, and what Growth reads from it
+
+Content-engine's story engine v5 changes how pieces are chosen and made. None of it asks Growth to make anything, and
+Growth reads nothing new:
+
+- **The story score.** Every candidate story is scored against content-engine's `config/story-score.json` floors
+  (truth, sources, the reader's beat, a unique angle); the gate starts on the board of 30 November.
+- **The whys before the pick.** A story must hold its five whys before Krish picks it on the board.
+- **The guaranteed wildcard slot.** Every Monday, Wednesday and Friday carries one checked wildcard option (Krish,
+  26 November 2026: "there's always one completely divergent, strange, obscure, or unexpected story suggestion that I
+  could pick from"), held to the same floors.
+- **Off-day alignment.** Good news, memes and carousels on the off days are the reader's world: the creative, arts,
+  music, entertainment, media and sports industries (`docs/NORTH_STAR.md`), gated from the story score's board.
+- **Touchpoints.** Content-engine's `config/cycle.json` lists every system it touches at each of its ten moments.
+  Growth has two kinds of row only: it is informed (stage 9: the finished, approved assets with their captions in the
+  piece manifest, and the board pieces) and it is read (stages 0 and 10: its latest performance review in
+  `docs/reviews`, at week open and at learn). The mix Growth plans is read through content-engine's pinned vendored
+  copy of `mix.json`, re-vendored when Growth changes it.
+
+Growth receives finished assets with their captions in the manifest and posts them; content-engine reads its reviews
+and the mix at week open and at learn.
+
+## 26 October 2026: the original split (history)
+
+Ruling: Krish, 26 October 2026. Superseded on 26 November 2026 where it leaves any production with Growth (above).
+
+**As of 5 November 2026.** The dated sections below added to or superseded the 26 October split where they said so.
+Two later facts sat on top of all of it:
 
 - **Make Your Mind Up outreach is Growth's** (Ruling, Krish, 2026-11-05;
   `AGENTS.md`, "Outreach for Make Your Mind Up"). Outreach for this show
@@ -18,7 +103,7 @@ of all of it:
 - **Growth runs as four engines** (built 5 November 2026; `AGENTS.md`, "Four
   engines"; `docs/LANES.md`): Acquisition, Engagement, Publishing, and
   Measurement and Allocation, each one Codex session Krish opens on
-  request. Production stays content-engine's exactly as below.
+  request. Production stays content-engine's.
 
 Growth-MakeYourMindUp is the social media manager and distribution engine
 for makeyourmindup and Krish's named personal accounts. It ensures published
@@ -120,6 +205,8 @@ this document.
 
 ## Sole production home
 
+Since 26 November 2026 that home is content-engine for every asset, its v5 Library above all.
+
 Production rules live in
 [content-engine/docs/CAROUSEL-STANDARD.md](https://github.com/krishanraja/content-engine/blob/main/docs/CAROUSEL-STANDARD.md).
 The receiving contract is
@@ -132,9 +219,10 @@ may prepare the channel-specific posting package. This approval establishes
 the production reference; it does not approve a publication payload or prove
 a deployed handoff, runtime learning capture or automatic posting.
 
-## 27 October 2026: the Canva lane
+## 27 October 2026: the Canva lane (superseded 26 November 2026, history)
 
-Ruling: Krish, 27 October 2026 (`CHANGES.md`). Growth makes, in Canva, the
+Retired on 26 November 2026 ("Canva is crap so we don't use that anymore"); its formats, crew card, lint and guide
+are deleted. What it said: Ruling: Krish, 27 October 2026 (`CHANGES.md`). Growth makes, in Canva, the
 formats content-engine does not cover, for amplification and speed: today
 cards, polls and Story frames, whose `production_owner` is `growth-canva` in
 `social/formats/`. Substack Notes images and memes were here until 13 November
@@ -146,9 +234,10 @@ published piece; Canva never publishes. Approved exports and manifests go to
 the Drive 4 Growth library per `docs/ASSET-STORAGE.md`. Creative acceptance
 stays with Krish. Guide: `social/guides/canva.md`.
 
-## 13 November 2026: carousels, memes and Notes images, one route
+## 13 November 2026: carousels, memes and Notes images, one route (superseded 26 November 2026, history)
 
-Rulings: Krish, 13 November 2026 (`CHANGES.md`, R126): "all the carousels
+Since 26 November 2026 content-engine makes every one of these from its v5 Library; Growth's piece kits and
+`render/` are deleted. What it said: Rulings: Krish, 13 November 2026 (`CHANGES.md`, R126): "all the carousels
 should now be done in Claude, but using the Codex plug in as per the other
 usual workflows"; "memes and Notes images should go the same way"; "Off-day
 voiceover shorts should go the same way too". Every carousel, meme and Notes
@@ -169,16 +258,18 @@ day in his personal voice, are scoped accounts by his ruling, not because
 Buffer connects them. The line above that a connected Buffer account alone
 never adds it to scope still holds for every other account.
 
-## 12 November 2026: every carousel through content-engine's judges
+## 12 November 2026: every carousel through content-engine's judges (Growth's side superseded 26 November 2026)
 
-Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." Content-engine owns the
+Since 26 November 2026 content-engine's make flow asks the judges itself; Growth only binds the pass to the post
+it saves and reports it live (`engine/run/judges.py`). What it said: Ruling (Krish, 2026-11-12): "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts." Content-engine owns the
 judges, as it owns the production standards; Growth asks them for every carousel and Short it makes, before the post
 is saved or handed off (`engine/run/judges.py`, `docs/MAKER.md` step 6b). A fail comes back with the judges' reasons
 and is never made; a pass is bound to its post and counts on content-engine's North Star once it goes live.
 
-## 28 October 2026: derived carousels, the off-day lane and the engage queue
+## 28 October 2026: derived carousels, the off-day lane and the engage queue (production superseded 26 November 2026)
 
-Rulings: Krish, 28 October 2026 (`CHANGES.md`), from the plan he approved
+Since 26 November 2026 content-engine makes the derived carousels, Notes, memes and every off-day post; Growth
+keeps the off-day slots, the posting, the engage queue and the accountability report. What it said: Rulings: Krish, 28 October 2026 (`CHANGES.md`), from the plan he approved
 that day. For the three things below they supersede the lines above that
 keep production out of Growth; content-engine keeps every production
 standard and the hero assets of each piece (the article, the two cuts,

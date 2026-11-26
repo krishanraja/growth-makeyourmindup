@@ -161,8 +161,7 @@
         "owner": {
           "type": "string",
           "enum": [
-            "content-engine",
-            "growth-canva"
+            "content-engine"
           ]
         },
         "approved": {

@@ -3,9 +3,9 @@
 Owner: Growth. Production owner: Content Engine. Authority: docs/PUBLISHING-AUTHORITY.md.
 This job implements Krish's 26 October instruction to actively grow every scoped
 channel after the pilot closeout. The publication North Star is unchanged.
-27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`): the Canva lane
-(`docs/ENGINE-BOUNDARY.md`) produces what content-engine does not cover,
-today Substack Notes and memes; Content Engine owns every other format.
+26 November 2026 (Ruling, Krish, 2026-11-26: content-engine makes every asset; `docs/ENGINE-BOUNDARY.md`): Content Engine makes every
+format, Notes and memes included, with its captions; the Canva lane of 27 October is retired. This job grows the
+channels with what content-engine finishes.
 
 1. Reconcile delivery, errors, duplication and open technical holds first.
 2. Record dated native follower/subscriber baselines and exposed attribution.

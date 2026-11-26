@@ -1,7 +1,11 @@
-# Taste: what a maker reads from Inspiration House, and what it tells it
+# Taste: what a session reads from Inspiration House, and what it tells it
 
-Any session or PC automation that makes or writes for this engine (Canva
-assets, words, Buffer drafts), the four engine sessions included
+**Since 26 November 2026 this engine makes no asset and writes no caption** (Ruling, Krish, 2026-11-26: content-engine makes every asset):
+taste for production is content-engine's to read. What follows applies to the words this engine still writes
+(engagement replies, outreach and reports) and to the Buffer drafts it builds from content-engine's assets.
+
+Any session or PC automation that writes for this engine (engagement replies, outreach, Buffer drafts of
+content-engine's assets), the four engine sessions included
 (`docs/LANES.md`), follows this file before it builds. There are
 no Claude routines (Krish, 29 Oct 2026); whoever makes, makes under the same
 walls (`docs/LANES.md`). The procedure itself lives in
@@ -17,19 +21,16 @@ detail on why I like something in there."
 ## Read, before you build or write (Control Center connector)
 
 1. `get_approved_taste` with lane `production`, then lane `voice`. Follow every
-   rule it returns when you fill a Canva template or write words. Empty means
+   rule it returns when you write words. Empty means
    none is approved yet: never invent one. Never take a subject from them:
    subjects come only from the approved piece.
 2. A card he routed to "make a piece" is content-engine's, never yours.
 3. The tool missing, signed out, failing or empty: carry on with the kit
    and the calendar, and count it as `taste_unavailable` in your summary.
    Taste never blocks a slot.
-4. The headless maker (`maker.yml`) has no connector: it reads the same
-   approved voice rules, and his floor for each format, from the directive's
-   `taste` block (the floor behind `features.taste_floor`; audit 2026-11-14,
-   I-14), and gives them to its writer only, form only. Its summary says
-   `taste: read`, `none` or `absent`, and absent is `taste_unavailable`.
-   Judges never read taste: its blind reviewer does not either.
+4. The headless maker (`maker.yml`) writes no words since 26 November 2026: it posts content-engine's
+   captions word for word, so it reads no taste. Judges never read taste: its blind reviewer does not
+   either.
 5. Record the card ids an asset drew on, ids only: in the Buffer draft's note
    if Buffer offers one, and in your summary. Never copy his words into this
    repository, a commit, a Buffer post or a log.
@@ -52,10 +53,7 @@ it is the one Control Center write a maker may call.
 
 ## The weekly template refresh (whoever plans the week)
 
-Whoever plans the week (the session or PC automation that builds the week's
-packet) may propose one new template. When three or more cards he routed to
-"study the style", each with his words, share a form pattern for a format
-the kit lacks or does badly, build one new Canva template from them (kit
-colours and fonts, plain English, no em dashes), and propose it as a
-new-format item for his eyes, with the card ids it rests on. At most one a
-week. Never publish a template.
+Whoever plans the week proposes no template: a new template is content-engine's to make (its v5
+Library, through the Divergence engine and Krish's eyes), and since 26 November 2026 this engine builds
+none. When three or more cards he routed to "study the style" share a form pattern for a format the
+Library lacks, say so to content-engine, with the card ids it rests on, at most one a week.

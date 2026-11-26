@@ -90,7 +90,7 @@ HANDLED_METADATA = {
 }
 HANDLED_ASSET = {'type', 'source', 'mimeType', 'image', 'video', 'document'}
 HANDLED_MEDIA = {'image': {'altText', 'userTags'}, 'video': {'title', 'thumbnailOffset'}}
-# The services whose grid or player shows a video's cover (engine/run/video_cover.py COVER_SERVICES, kept here so
+# The services whose grid or player shows a video's cover (engine/run/cover_gate.py COVER_SERVICES, kept here so
 # this client imports nothing of the engine's).
 COVER_SERVICES = ('instagram', 'tiktok', 'youtube', 'facebook', 'threads', 'twitter')
 
@@ -437,7 +437,7 @@ def carried(post):
             'video' in a and not _offset_ok((a['video'].get('metadata') or {}).get('thumbnailOffset'))
             for a in out['assets']):
         # F133 (Ruling, Krish, 2026-11-15): a video with no cover frame shows frame 0 on the grid. Never carried
-        # forward with a null offset: the cover is appended and its offset set first (engine/run/video_cover.py).
+        # forward with a null offset: content-engine names the cover frame first (engine/run/cover_gate.py).
         raise CarryHold('video_without_cover_offset')
     meta = _metadata_input(post)
     if meta:

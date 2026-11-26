@@ -31,11 +31,13 @@ class CrewTests(unittest.TestCase):
         self.crew = load_registry()
 
     def test_registry_lists_the_specialists_and_the_release_gate(self):
-        # Twelve from plan section 3, then row 13, the blind Send-Test Reader (Krish, 2026-10-28).
-        self.assertEqual(len(self.crew), 14)
-        self.assertEqual(sorted(e['row'] for e in self.crew if e['row'] is not None), list(range(1, 14)))
+        # Twelve from plan section 3, then the blind Send-Test Reader (Krish, 2026-10-28). Canva Studio, row 8, left
+        # with the Canva lane (Ruling, Krish, 2026-11-26), so the rows after it moved up one.
+        self.assertEqual(len(self.crew), 13)
+        self.assertEqual(sorted(e['row'] for e in self.crew if e['row'] is not None), list(range(1, 13)))
         self.assertEqual([e['id'] for e in self.crew if e['row'] is None], ['release-gate'])
-        self.assertEqual(next(e for e in self.crew if e['row'] == 13)['id'], 'send-test')
+        self.assertEqual(next(e for e in self.crew if e['row'] == 12)['id'], 'send-test')
+        self.assertNotIn('canva-studio', [e['id'] for e in self.crew])
 
     def test_send_test_reader_is_blind_and_cites_the_ruling(self):
         entry = next(e for e in self.crew if e['id'] == 'send-test')

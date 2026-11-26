@@ -99,8 +99,8 @@ whole run.
 
 His quotes on an off-day option go on its media exactly as written and his
 other words are direction, never printed (Ruling, Krish, 2026-11-02; see
-`docs/MAKER.md` step 5). `python growth.py mix briefs --approved <pieces.json>`
-lists them per approved option as `required_texts` for the Canva lane.
+`docs/MAKER.md` step 5). Content-engine puts them on the media when it makes the asset (since 26 November 2026
+it makes every asset; the Canva lane and its `mix briefs` command are retired).
 
 A run spec slot made from a concept names it in `concept_id` (outside
 `payload_sha256`). It needs no digest of its own in `slots`. Its mock is its

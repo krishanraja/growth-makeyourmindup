@@ -3,25 +3,20 @@
 The social media manager and distribution engine for makeyourmindup and
 Krish's named personal accounts. It owns posting strategy, amplification,
 authorised automatic posting, engagement preparation, live audits and
-channel performance. Content-engine owns production and all production
-standards. [The ownership and handoff contract](docs/ENGINE-BOUNDARY.md)
+channel performance. It makes no asset and writes no caption.
+[The ownership and handoff contract](docs/ENGINE-BOUNDARY.md)
 keeps those responsibilities separate. Growth preserves evidence, tracks
 each placement and fits human review into 20 minutes a day, 30 on Sunday. Krish
 approves creative, positioning, bio and pinned-content changes. Weekly live
 browser audits may repair existing metadata and subscription links under
 the explicit scoped authority in AGENTS.md. Other publication stays gated.
 
-27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
-Growth also produces, in Canva, the formats content-engine does not cover
-(today cards, polls and Story frames; `docs/ENGINE-BOUNDARY.md`, "the Canva
-lane"). Content-engine keeps every other format and all production standards.
-
-13 November 2026 (`CHANGES.md`, R126): every carousel, meme and Notes image is
-made in a Claude session, with the Codex plugin building it, as in the other
-usual workflows; off-day voiceover shorts the same way, on content-engine's ve
-route. Never a scheduled job, a headless model run or a template engine: the
-Saturday art-direction workflow is retired. The route is
-content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made".
+**26 November 2026 (Ruling, Krish; `CHANGES.md`).** "I believe that growth should move all asset production to
+Content Engine." Content-engine makes every asset (hero pieces, carousels, memes, Substack Notes images and copy, captions and titles per channel, covers, thumbnails, cuts and the weekly edition package) and hands Growth finished, approved assets with captions in the piece manifest; growth-makeyourmindup grows the channel: posting, scheduling in Buffer, the edition's Substack placement, distribution, the subscribe route, measurement, learning, mix.json and experiments, and reports performance back. Production runs in content-engine's v5 Library
+(`python scripts/covers/make_covers.py <piece> --out <folder>` for covers and thumbnails,
+`python scripts/library/make_piece.py <piece> --set <set>` for carousels). The Canva lane (27 October) and this
+repository's renderer, piece kits (13 November, R126) and caption writer (19 November) are retired and deleted;
+`tests/test_production_boundary.py` fails if one comes back (`docs/ENGINE-BOUNDARY.md`, "26 November 2026").
 
 **Current (5 November 2026).** The work runs as four engines, one per
 session: Acquisition, Engagement, Publishing, and Measurement and
@@ -80,9 +75,9 @@ maker ([docs/MAKER.md](docs/MAKER.md)), ledger and learn
 are no Claude routines and no Claude schedules of any kind (Krish, 29 Oct
 2026): a new schedule is a GitHub Actions job. His one exception that day is
 the daily credits session in `lanes.json` (`claude_sessions`,
-[docs/CREDITS.md](docs/CREDITS.md)). Making (Canva assets, words,
-Buffer drafts) is done by sessions and the automations on Krish's PC
-(below; nine kept until W46) under the same walls, and follows
+[docs/CREDITS.md](docs/CREDITS.md)). Making Buffer drafts from content-engine's
+finished assets and captions is done by the maker, sessions and the automations on Krish's PC
+(below; nine kept until W46) under the same walls; every asset and caption is content-engine's, and follows
 [docs/TASTE.md](docs/TASTE.md). Only the GitHub
 runner (a repository secret) and Krish's PC (a file, for Codex workspace
 runs) hold the Control Center engine key ([docs/KEY.md](docs/KEY.md)); a

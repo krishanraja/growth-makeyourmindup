@@ -19,8 +19,8 @@ only the Codex in-app browser. Never use Chrome, Skyvern, Stripe or cookie expor
    `list_posts` filtered by that channelId. Reuse an intended existing draft
    only after recording its current exact contents. Identify the revision by
    text and ordered asset hashes, not draft ID alone.
-3. Obtain the accepted package from content-engine or, for `growth-canva`
-   formats, from the Canva lane (`canva.md`). Record its approval
+3. Obtain the accepted package from content-engine, which makes every asset
+   and caption (26 November 2026). Record its approval
    evidence, immutable hashes, order and alt text. Apply the account voice rule.
    Keep the exact caption and proposed time in the private posting package.
 4. Inspect the current domain tool schema. Journal operation, target, payload,
@@ -142,10 +142,10 @@ it as a workaround. Recheck supported native metadata before a live action.
 
 Buffer takes a video as `{url, metadata {title, thumbnailOffset}}`: there is no field for a cover image, and a null
 `thumbnailOffset` lets the platform show frame 0 (F133: the Counting rat tails reel, 14 Nov, showed an AI scene). So
-before a video draft is saved: `python growth.py run cover append --cut CUT --cover COVER --out OUT` appends the
-designed tall cover (the piece manifest's per-channel `cover` first, else the post's library cover) as the cut's last
-second and prints the `offset_ms` to use as `thumbnailOffset`; it re-reads that frame and refuses a file whose frame is
-not the cover. File the new cut, put its link on the draft with that offset, and read the draft back. Release, the L0
+content-engine makes the cover (`python scripts/covers/make_covers.py <piece> --out <folder>`), bakes it into the cut
+and names its frame (the piece manifest's per-channel `cover.cover_offset_ms`, or the mix dispatch's `mock_covers`);
+Growth puts the cut's link on the draft with that offset and reads the draft back. Growth composes nothing (the
+`growth.py run cover` command left with production on 26 November 2026). Release, the L0
 carry and the maker refuse a video with no offset, and the pre-send read holds any scheduled one, whoever made it.
 
 ## TikTok short video: held, observed 5 November
