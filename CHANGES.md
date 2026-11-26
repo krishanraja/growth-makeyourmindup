@@ -1,5 +1,22 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-26: Content-engine makes every asset; Growth grows the channel. His words, in the story-engine session:
+  "I believe that growth should move all asset production to Content Engine. I see no point in having a separate
+  repository produce specific assets. How can you accomplish this and ensure that this is updated absolutely
+  everywhere and that there can be no confusion moving forward? This would leave growth in charge of simply growing
+  the channel." Then "I want everything to be one harmonious engine." Captions and titles move to content-engine too,
+  which retires his 19 Nov ruling that Growth generates every caption. On Canva: "Canva is crap so we don't use that
+  anymore." The Canva lane is retired whole (its receipt, quote, scorecard, poll and Story frame formats,
+  crew/canva-studio, canva.py and the Canva briefs). The v5 Library in content-engine is locked (he delegated its
+  approval and said "I approve the new cover thumbnail systems, go"), so Growth's renderer is deleted, not moved:
+  covers and thumbnails come from content-engine's `python scripts/covers/make_covers.py <piece> --out <folder>` and
+  carousels from `python scripts/library/make_piece.py <piece> --set <set>`. What stays Growth: posting, scheduling in
+  Buffer, the weekly edition's Substack placement (PR 144), distribution, the subscribe route, measurement, learning,
+  mix.json and the experiments, and reporting performance back. This supersedes the rulings of 26 Oct (the split),
+  27 Oct (the Canva lane), 28 Oct (Growth makes derived carousels, Notes, memes and off-day posts), the Growth-side kit
+  route of 13 Nov (R126) and 19 Nov (captions). `invariants/boundary.json` assigns every asset kind to content-engine
+  and `tests/test_production_boundary.py` fails if a renderer, template, font, image tool or caption writer comes back.
+  Nothing was posted, sent or spent.
 - 2026-11-17: Make Your Mind Up makes no dated-and-scored calls. His words: "I don't do dated-and-scored
   make-your-mind-up pieces because it felt quite tacky and gimmicky. I don't really have the clout such that my opinion
   can hold up in official scores.. Lets get rid of that from the cover page makeyourmindup repo and all documentation".

@@ -1,27 +1,108 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "boundary",
   "source_file": "CHANGES.md",
-  "quote": "For that Canva lane only, this supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line; content-engine keeps its formats and standards.",
-  "note": "Format to production owner under Krish's 27 Oct 2026 Canva ruling. Content-engine keeps its formats and standards; growth-canva produces only what content-engine does not cover; note and caption text is growth copy. Since 13 Nov 2026 memes and Note images are made like carousels, in a Claude session with the Codex plugin building them (CHANGES.md; content-engine docs/CAROUSEL-STANDARD.md), so their owner is content-engine's route.",
+  "quote": "I believe that growth should move all asset production to Content Engine. I see no point in having a separate repository produce specific assets.",
+  "note": "Every asset kind to its producer under Krish's 26 Nov 2026 ruling (CHANGES.md): content-engine makes every asset, captions and titles included, from its v5 Library (covers and thumbnails: python scripts/covers/make_covers.py <piece> --out <folder>; carousels: python scripts/library/make_piece.py <piece> --set <set>), and hands Growth finished, approved assets with their captions in the piece manifest. Growth makes nothing: it posts, schedules, places the weekly edition in Substack, distributes, runs the subscribe route, measures, learns, keeps mix.json and the experiments, and reports performance back. It supersedes the 27 Oct Canva lane (growth-canva) and the growth-copy captions of 19 Nov. engine/run/invariants.py:check_production_boundary refuses anything below that comes back; docs/plans and docs/history are dated records and exempt.",
   "owners": {
     "article": "content-engine",
     "long-video": "content-engine",
     "short-video": "content-engine",
+    "cut": "content-engine",
     "carousel": "content-engine",
+    "meme": "content-engine",
+    "single-image": "content-engine",
+    "story": "content-engine",
     "story-artwork": "content-engine",
     "cover": "content-engine",
     "thumbnail": "content-engine",
     "note-image": "content-engine",
-    "meme": "content-engine",
-    "receipt-card": "growth-canva",
-    "quote-card": "growth-canva",
-    "scorecard": "growth-canva",
-    "poll-result": "growth-canva",
-    "profile-art": "growth-canva",
-    "highlight-art": "growth-canva",
-    "platform-resize": "growth-canva",
-    "note-text": "growth-copy",
-    "caption": "growth-copy"
-  }
+    "note-text": "content-engine",
+    "caption": "content-engine",
+    "title": "content-engine",
+    "alt-text": "content-engine",
+    "quote-card": "content-engine",
+    "receipt-card": "content-engine",
+    "scorecard": "content-engine",
+    "poll-result": "content-engine",
+    "profile-art": "content-engine",
+    "highlight-art": "content-engine",
+    "platform-resize": "content-engine",
+    "weekly-edition": "content-engine"
+  },
+  "growth": [
+    "posting",
+    "scheduling",
+    "edition-placement",
+    "distribution",
+    "subscribe-route",
+    "measurement",
+    "learning",
+    "mix",
+    "experiments",
+    "performance-reports"
+  ],
+  "forbidden": {
+    "paths": [
+      "render",
+      "codex/queue",
+      "codex/results",
+      "crew/canva-studio",
+      "calendar/mock-briefs",
+      "social/guides/canva.md",
+      "social/brand/kit.json",
+      "scripts/render_mocks.mjs",
+      "engine/run/kits.py",
+      "engine/run/tall_meme.py",
+      "engine/run/video_cover.py",
+      "engine/run/canva.py",
+      "engine/run/plain.py",
+      "engine/run/voice_profile.py"
+    ],
+    "suffixes": [
+      ".ttf",
+      ".otf",
+      ".woff",
+      ".woff2",
+      ".html",
+      ".css",
+      ".psd",
+      ".ai",
+      ".sketch",
+      ".fig"
+    ],
+    "imports": [
+      "playwright",
+      "puppeteer",
+      "PIL",
+      "cairosvg",
+      "moviepy",
+      "imageio",
+      "skia",
+      "wand",
+      "html2image",
+      "selenium"
+    ],
+    "calls": [
+      "'ffmpeg'",
+      "\"ffmpeg\"",
+      "'ffprobe'",
+      "\"ffprobe\"",
+      "'magick'",
+      "\"magick\"",
+      "api.canva.com",
+      "--headless"
+    ],
+    "writer_markers": [
+      "WRITER_SYSTEM",
+      "WRITE_SCHEMA",
+      "def write_words",
+      "def write_standing",
+      "You write the words"
+    ]
+  },
+  "exempt": [
+    "docs/plans",
+    "docs/history"
+  ]
 }

@@ -27,7 +27,9 @@ CHANNEL_TASKS = ('platform-truth', 'profile-audit', 'idea-bank', 'reel-script', 
 CARD_BYTES, LENS_BYTES = 3072, 1024
 MIN_QUOTE = 40
 SOURCE_CLASSES = ('organic', 'unattributed', 'paid')
-OWNERS = ('content-engine', 'growth-canva', 'growth-copy')
+# Every asset kind has one producer, content-engine (Ruling, Krish, 2026-11-26: content-engine makes every asset;
+# Growth grows the channel). growth-canva and growth-copy retired with that ruling.
+OWNERS = ('content-engine',)
 GUARD_PATH = r'engine/[a-z0-9_/]+\.py:[A-Za-z_][A-Za-z0-9_]*'
 GUARD = re.compile('^' + GUARD_PATH + '$')
 TEST_DEF = re.compile(r'^\s*def (test_[A-Za-z0-9_]+)\(', re.M)
@@ -285,9 +287,71 @@ def load_boundary(root=ROOT):
     for field in ('source_file', 'quote', 'owners'):
         if field not in data:
             raise ValueError('boundary.json needs ' + field)
-    if not isinstance(data['owners'], dict) or any(v not in OWNERS for v in data['owners'].values()):
-        raise ValueError('every format names content-engine, growth-canva or growth-copy')
+    if not isinstance(data['owners'], dict) or not data['owners'] \
+            or any(v not in OWNERS for v in data['owners'].values()):
+        raise ValueError('every asset kind names content-engine, its one producer since 26 Nov 2026')
     return data
+
+
+# The production boundary (Ruling, Krish, 2026-11-26) --------------------------------------------
+
+BOUNDARY_SKIP = ('.git', '.scratch', 'node_modules', '__pycache__', '.pytest_cache', '.venv')
+CODE_SUFFIXES = ('.py', '.mjs', '.js', '.cjs', '.ts', '.sh', '.ps1', '.yml', '.yaml')
+# Where a forbidden name may be written down without being production: the boundary itself, and the tests that
+# prove it refuses one.
+MARKER_EXEMPT = ('tests', 'invariants')
+
+
+def _boundary_files(root, exempt):
+    root = Path(root)
+    for path in sorted(root.rglob('*')):
+        rel = path.relative_to(root).as_posix()
+        parts = rel.split('/')
+        if any(p in BOUNDARY_SKIP for p in parts) or any(rel == e or rel.startswith(e + '/') for e in exempt):
+            continue
+        yield rel, path
+
+
+def _import_pattern(names):
+    if not names:
+        return None
+    alt = '|'.join(re.escape(n) for n in names)
+    python = r'^\s*(?:from|import)\s+(' + alt + r')\b'
+    script = r"""(?:require\(|import\s+[^;]*?from\s+|import\s*\()['"](""" + alt + r""")['"/]"""
+    return re.compile(python + '|' + script, re.M)
+
+
+def check_production_boundary(root=ROOT):
+    """Problems, empty when Growth produces nothing (Ruling, Krish, 2026-11-26: "I believe that growth should move all
+    asset production to Content Engine"). Refused anywhere but the exempt dated records (docs/plans, docs/history):
+    a forbidden path (Growth's old renderer, kits, cover compositing, Canva lane, plain lint or voice profile), a
+    template, font or design file, and, in code outside tests/ and invariants/, an image or browser renderer import, an
+    image or video tool call, or a caption writer."""
+    data = load_boundary(root)
+    forbidden, exempt = data.get('forbidden') or {}, tuple(data.get('exempt') or ())
+    paths, suffixes = tuple(forbidden.get('paths') or ()), tuple(forbidden.get('suffixes') or ())
+    markers = tuple(forbidden.get('calls') or ()) + tuple(forbidden.get('writer_markers') or ())
+    imports = _import_pattern(tuple(forbidden.get('imports') or ()))
+    problems = []
+    for rel, path in _boundary_files(root, exempt):
+        if any(rel == p or rel.startswith(p + '/') for p in paths):
+            problems.append(rel + ': production belongs to content-engine (invariants/boundary.json forbidden.paths)')
+            continue
+        if not path.is_file():
+            continue
+        if rel.lower().endswith(suffixes):
+            problems.append(rel + ": a template, font or design file; content-engine's v5 Library holds the artwork")
+            continue
+        if not rel.endswith(CODE_SUFFIXES) or rel.split('/')[0] in MARKER_EXEMPT:
+            continue
+        text = path.read_text(encoding='utf-8', errors='replace')
+        found = imports.search(text) if imports else None
+        if found:
+            problems.append(rel + ': imports ' + (found.group(1) or found.group(2)) + ', a renderer or image tool')
+        for marker in markers:
+            if marker in text:
+                problems.append(rel + ': ' + marker + ', an image tool or a caption writer; content-engine makes it')
+    return problems
 
 
 # Authority and lanes (Krish, 27 Oct 2026: rules R105 to R107) -----------------

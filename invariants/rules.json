@@ -55,14 +55,16 @@
     },
     {
       "id": "R05",
-      "statement": "Content-engine owns production and voice standards for every format; Growth applies them (the Canva lane is the 27 Oct exception, R63).",
+      "statement": "Content-engine owns production and voice standards for every format and, since 26 Nov 2026, makes every asset and caption itself (R132); Growth applies its standards when it posts.",
       "source_file": "AGENTS.md",
       "quote": "Content-engine owns production and voice standards for every format.",
       "enforced_by": [
-        "engine/social.py:preflight"
+        "engine/social.py:preflight",
+        "engine/run/invariants.py:check_production_boundary"
       ],
       "tests": [
-        "test_wrong_account_context_and_unreviewed_voice_are_rejected"
+        "test_wrong_account_context_and_unreviewed_voice_are_rejected",
+        "test_this_repository_produces_nothing"
       ]
     },
     {
@@ -219,13 +221,16 @@
     },
     {
       "id": "R18",
-      "statement": "No parallel production pipeline or quality canon in Growth; superseded for the Canva lane only by R63.",
+      "statement": "No production pipeline or quality canon in Growth at all: since 26 Nov 2026 no exception remains (R132; the Canva lane exception of R63 is retired).",
       "source_file": "AGENTS.md",
       "quote": "Do not build a parallel production pipeline or quality canon in Growth.",
       "enforced_by": [
-        "process"
+        "engine/run/invariants.py:check_production_boundary"
       ],
-      "tests": []
+      "tests": [
+        "test_this_repository_produces_nothing",
+        "test_a_renderer_or_kit_coming_back_is_refused"
+      ]
     },
     {
       "id": "R19",
@@ -730,14 +735,14 @@
     },
     {
       "id": "R63",
-      "statement": "The Canva lane (growth-canva) may produce what content-engine does not cover; content-engine keeps its formats and standards (invariants/boundary.json).",
+      "statement": "Superseded on 26 Nov 2026 (R132): the Canva lane (growth-canva) is retired, \"Canva is crap so we don't use that anymore\"; content-engine makes every format. Kept as the record of the 27 Oct ruling.",
       "source_file": "CHANGES.md",
       "quote": "For that Canva lane only, this supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line; content-engine keeps its formats and standards.",
       "enforced_by": [
-        "process"
+        "engine/run/invariants.py:load_boundary"
       ],
       "tests": [
-        "test_boundary_follows_the_canva_ruling"
+        "test_boundary_follows_the_26_november_ruling"
       ]
     },
     {
@@ -892,7 +897,7 @@
     },
     {
       "id": "R78",
-      "statement": "The one-off brand kit may be built by Cowork computer use on Krish's PC, started by him; nothing else widens.",
+      "statement": "Superseded on 26 Nov 2026 (R132): the Canva brand kit and its Cowork build are retired with the Canva lane; content-engine's v5 Library holds the brand artwork. Kept as the record of the 27 Oct one-off.",
       "source_file": "CHANGES.md",
       "quote": "you can create the brand kit in Canva with computer use on my PC",
       "enforced_by": [
@@ -1522,13 +1527,15 @@
     },
     {
       "id": "R114",
-      "statement": "Superseded on 26 Nov 2026 (Ruling, Krish: content-engine makes every asset): Growth has no renderer, no piece kits and no kit checks. Content-engine's v5 Library templates are the only artwork; this rule stays as the record of the 13 Nov route.",
+      "statement": "Superseded on 26 Nov 2026 (R132): Growth has no renderer, no piece kits and no kit checks. Content-engine's v5 Library templates are the only artwork; this rule stays as the record of the 13 Nov route.",
       "source_file": "CHANGES.md",
       "quote": "we need to find a way of combining strengths",
       "enforced_by": [
-        "process"
+        "engine/run/invariants.py:check_production_boundary"
       ],
-      "tests": []
+      "tests": [
+        "test_the_old_producers_are_gone"
+      ]
     },
     {
       "id": "R115",
@@ -1761,13 +1768,15 @@
     },
     {
       "id": "R126",
-      "statement": "Superseded on 26 Nov 2026 (Ruling, Krish: content-engine makes every asset): carousels, memes and Notes images are made by content-engine from its v5 Library (python scripts/library/make_piece.py <piece> --set <set>), never in Growth; no workflow, cron or runner here makes one.",
+      "statement": "Superseded on 26 Nov 2026 (R132): carousels, memes and Notes images are made by content-engine from its v5 Library (python scripts/library/make_piece.py <piece> --set <set>), never in Growth; no workflow, cron or runner here makes one.",
       "source_file": "CHANGES.md",
       "quote": "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual workflows",
       "enforced_by": [
-        "process"
+        "engine/run/invariants.py:check_production_boundary"
       ],
-      "tests": []
+      "tests": [
+        "test_a_renderer_or_kit_coming_back_is_refused"
+      ]
     },
     {
       "id": "R127",
@@ -1820,13 +1829,15 @@
     },
     {
       "id": "R130",
-      "statement": "Superseded on 26 Nov 2026 (Ruling, Krish: content-engine makes every asset): the tall frame's clear box and the tall meme's composition are content-engine's v5 Library rules, held by its gates at make time; Growth composes nothing.",
+      "statement": "Superseded on 26 Nov 2026 (R132): the tall frame's clear box and the tall meme's composition are content-engine's v5 Library rules, held by its gates at make time; Growth composes nothing.",
       "source_file": "CHANGES.md",
       "quote": "\"The POV computer meme, it's not centralized on the screen.\"",
       "enforced_by": [
-        "process"
+        "engine/run/invariants.py:check_production_boundary"
       ],
-      "tests": []
+      "tests": [
+        "test_a_renderer_import_or_an_image_tool_call_is_refused"
+      ]
     },
     {
       "id": "R131",
@@ -1844,6 +1855,26 @@
         "test_the_module_opens_no_network_connection",
         "test_a_recorded_boost_holds_its_post_out_of_the_organic_baseline",
         "test_subscribers_from_a_boosted_platform_in_its_window_are_not_provably_organic"
+      ]
+    },
+    {
+      "id": "R132",
+      "statement": "Content-engine makes every asset: hero pieces, carousels, memes, Substack Notes images and copy, the captions and titles for each channel, covers, thumbnails, cuts and the weekly edition package, from its v5 Library, and hands Growth finished, approved assets with their captions in the piece manifest. Growth grows the channel: it posts, schedules in Buffer, places the weekly edition in Substack, distributes, runs the subscribe route, measures, learns, keeps mix.json and the experiments, and reports performance back. A renderer, template, font, image tool or caption writer in this repository fails the build (invariants/boundary.json).",
+      "source_file": "CHANGES.md",
+      "quote": "I believe that growth should move all asset production to Content Engine. I see no point in having a separate repository produce specific assets.",
+      "enforced_by": [
+        "engine/run/invariants.py:check_production_boundary",
+        "engine/run/invariants.py:load_boundary"
+      ],
+      "tests": [
+        "test_every_asset_kind_is_made_by_content_engine",
+        "test_this_repository_produces_nothing",
+        "test_a_renderer_or_kit_coming_back_is_refused",
+        "test_a_template_font_or_design_file_is_refused",
+        "test_a_renderer_import_or_an_image_tool_call_is_refused",
+        "test_a_caption_writer_coming_back_is_refused",
+        "test_the_dated_plan_records_and_the_tests_are_exempt",
+        "test_a_slot_with_no_caption_holds_and_the_maker_writes_none"
       ]
     }
   ]
