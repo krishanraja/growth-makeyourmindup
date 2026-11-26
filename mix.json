@@ -29,7 +29,7 @@
       "min": 30,
       "max": 70,
       "source": "backlog",
-      "what": "a carousel made from a past piece, oldest unamplified first, to content-engine's carousel standard",
+      "what": "a carousel made from a past piece, oldest unamplified first, for people who make the calls or make the work in the creative, arts, music, entertainment, media and sports industries; content-engine makes it from its Library set (piece) and Growth posts it",
       "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: derived carousels (content-engine makes them since 26 November 2026)",
       "placements": {
         "instagram": "carousel",
@@ -43,7 +43,7 @@
       "min": 10,
       "max": 40,
       "source": "ideas",
-      "what": "a meme made fresh in the brand kit; a borrowed format is credited, someone else's image is never reposted",
+      "what": "a meme on what AI is doing to how the work in those industries makes money; content-engine makes it from its Library set (meme), a borrowed format credited, someone else's image never reposted; Growth posts it",
       "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: the off-day lane (since 26 November 2026 content-engine makes every off-day asset and Growth posts it)",
       "placements": {
         "instagram": "meme",
@@ -59,7 +59,7 @@
       "source": "ideas",
       "needs_source": true,
       "fresh_days": 7,
-      "what": "an uplifting AI news carousel; every claim names its primary source, dated within 7 days",
+      "what": "good news of people in the creative, arts, music, entertainment, media and sports industries doing, earning or making more with AI, every claim naming its primary source, dated within 7 days; content-engine makes it from its Library set (good-news) and Growth posts it",
       "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: the off-day lane",
       "placements": {
         "instagram": "carousel",
@@ -73,7 +73,7 @@
       "min": 5,
       "max": 25,
       "source": "ideas",
-      "what": "simple valuable advice on how to level up with AI, one practical move per post",
+      "what": "one practical move for people who make the calls or make the work in those industries to do more with AI, one per post; content-engine makes it from its Library set (simple-advice) and Growth posts it",
       "doc": "docs/ENGINE-BOUNDARY.md, 28 October 2026: the off-day lane",
       "placements": {
         "instagram": "carousel",

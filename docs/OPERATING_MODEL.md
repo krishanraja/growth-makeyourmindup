@@ -34,7 +34,7 @@ stories people forward does, and the process below is built to produce them.
   - "You get hooked and can't scroll away"
 - **The week has 3 heroes and 4 off days.**
   - Mon, Wed and Fri: video plus article.
-  - Tue, Thu, Sat and Sun: one lighter post each, made by Growth.
+  - Tue, Thu, Sat and Sun: one lighter post each, made by content-engine and posted by Growth.
 - **Ideas come half and half.** Each day gets at least one option from his
   Inspiration asks and one from engine research. Every ask is used,
   combined or declined with a reason.

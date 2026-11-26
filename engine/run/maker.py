@@ -715,8 +715,9 @@ class Maker:
         if any(release.MEDIA.get('.' + str(ext)) == 'video' and sha not in covers for sha, ext in files):
             # F133 (Ruling, Krish, 2026-11-15): a video goes out only pointing at its designed cover. Buffer takes no
             # cover image and a draft with a null offset shows frame 0, so a cut whose mock record names no cover
-            # frame (content-engine bakes it in; engine/run/cover_gate.py) is held, never made.
-            raise Held('video_without_designed_cover', loud=True)
+            # frame is held, never made. Content-engine has no cover-in-cut route yet (cover_gate.CUT_ROUTE_GAP), so
+            # the hold names that gap.
+            raise Held(cover_gate.GAP_HOLD, loud=True)
         assets = [{'name': 'mock-' + str(n) + '.' + ext, 'sha256': sha} for n, (sha, ext) in enumerate(files, 1)]
         return files, assets
 

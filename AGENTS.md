@@ -122,8 +122,8 @@ The first priority is `jobs/channel-audit.md`, under the weekly conversion
 slot. Start with profiles, pinned/Featured content and the last 30 days;
 then audit new posts weekly, verify repairs and revisit older posts still
 getting attention. Use actual pages in a browser, never a synthetic or
-feed-only substitute. The target readers are senior business leaders
-judging AI's commercial impact who are publicly visible on the topic.
+feed-only substitute. The target readers are people who make the calls or make the work in the creative, arts, music, entertainment, media and sports industries
+(docs/NORTH_STAR.md, narrowed by Krish on 26 November 2026).
 
 Krish expressly authorises autonomous edits to existing post titles,
 captions, descriptions and links; also broken profile-link repairs and

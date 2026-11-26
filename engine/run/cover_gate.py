@@ -20,6 +20,17 @@ COVER_CHANNELS = ('instagram', 'tiktok', 'youtube', 'facebook', 'threads', 'x')
 COVER_SERVICES = ('instagram', 'tiktok', 'youtube', 'facebook', 'threads', 'twitter')
 
 
+# The known stop (docs/ENGINE-BOUNDARY.md, "Known stop: the cover in the cut"). Growth's video_cover.py, which appended
+# the designed cover to a cut and set thumbnailOffset, was deleted with the renderer; content-engine has no route that
+# does it yet (its config/asset-routes.json lists kind video-cover-in-cut as a gap: make_covers.py writes the cover
+# image only). Until it has one, no cut arrives with its cover frame named, so every video on a cover channel holds,
+# and the hold says why instead of pointing at a producer that does not exist.
+GAP_HOLD = 'video_cover_in_cut_gap'
+CUT_ROUTE_GAP = ('content-engine has no cover-in-cut route yet: config/asset-routes.json video-cover-in-cut (make_covers.py '
+                 'writes the cover image; no command yet appends it to the cut and names its frame), so the video holds '
+                 'until that route lands')
+
+
 def needs_cover(channel, kinds):
     """True when a post on this channel (engine id or Buffer service) carries a video."""
     return (channel in COVER_CHANNELS or channel in COVER_SERVICES) and 'video' in set(kinds or ())

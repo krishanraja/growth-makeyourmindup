@@ -1,4 +1,4 @@
-"""`growth.py run board tick [--deliver]`: tick the week's publish board for each post Growth made.
+"""`growth.py run board tick [--deliver]`: tick the week's publish board for each post Growth posted (content-engine made it).
 
 Krish, 29 October 2026: "we need the growth repo to keep the publish board check
 boxes update with what it has done and when". Content-engine's board takes one

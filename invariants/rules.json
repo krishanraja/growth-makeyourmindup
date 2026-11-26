@@ -1148,7 +1148,7 @@
     },
     {
       "id": "R96",
-      "statement": "Growth makes derived carousels to content-engine's standard, floor and copy lint, applied by reference; this supersedes the 26 Oct production split for carousels only.",
+      "statement": "Superseded on 26 Nov 2026 (R132): content-engine makes every carousel, derived ones included, from its v5 Library; Growth posts them. Kept as the record of the 28 Oct ruling that Growth made derived carousels to content-engine's standard, floor and copy lint.",
       "source_file": "CHANGES.md",
       "quote": "Growth makes derived carousels to content-engine's standard. This supersedes the 26 October production split for carousels only",
       "enforced_by": [
