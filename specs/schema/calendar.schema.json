@@ -31,10 +31,6 @@
       "type": "string",
       "const": "invariants/authority.json"
     },
-    "kit": {
-      "type": "string",
-      "const": "social/brand/kit.json"
-    },
     "preview_until": {
       "type": "string",
       "format": "date"
@@ -69,9 +65,6 @@
         ],
         "additionalProperties": false
       }
-    },
-    "templates": {
-      "type": "object"
     },
     "wave": {
       "type": "array",
@@ -109,9 +102,7 @@
           "producer": {
             "type": "string",
             "enum": [
-              "content-engine",
-              "canva-lane",
-              "words"
+              "content-engine"
             ]
           },
           "lane": {
@@ -205,9 +196,7 @@
           "producer": {
             "type": "string",
             "enum": [
-              "content-engine",
-              "canva-lane",
-              "words"
+              "content-engine"
             ]
           },
           "lane": {
@@ -396,7 +385,6 @@
     "caps",
     "floors",
     "id",
-    "kit",
     "memes",
     "note",
     "pieces",
@@ -404,7 +392,6 @@
     "schema",
     "status",
     "stories",
-    "templates",
     "tz",
     "wave",
     "weekly"

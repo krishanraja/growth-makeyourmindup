@@ -10,9 +10,7 @@
     "single-image",
     "short-video",
     "story",
-    "meme",
-    "quote-card",
-    "story-frame"
+    "meme"
   ],
   "guide": "social/guides/instagram.md",
   "voice_policy": "docs/ACCOUNT-VOICE.md",

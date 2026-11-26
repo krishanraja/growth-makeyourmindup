@@ -17,8 +17,7 @@
     "production_owner": {
       "type": "string",
       "enum": [
-        "content-engine",
-        "growth-canva"
+        "content-engine"
       ]
     },
     "production_reference": {

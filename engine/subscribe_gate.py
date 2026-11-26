@@ -29,6 +29,10 @@ you edit. The channel of each post read (get_post, list_posts or create_post) is
 its channel, seed the same map (engine/post_channels.py). An edit of a post on a handed-off channel is refused with the same
 line; an edit of a post whose channel is not known is refused until the post is read with get_post. Once
 read, an edit on this engine's channels is checked as before, and one on another venture's channel passes.
+
+A link from the weekly edition (utm_source=newsletter, specs/subscribe-route.json edition; Krish, 2026-11-25) is
+credited to newsletter (credited_source). It is the edition's own link, so it never stands in for a channel's:
+a post that carries only an edition link is held as before, now with the reason that names it.
 """
 from urllib.parse import parse_qs, urlsplit
 
@@ -69,10 +73,30 @@ def _texts(tool_input, channel):
     return '\n'.join(words), service.get('firstComment') or '', links
 
 
-def _source_errors(url, channel):
+def credited_source(url, root=intensity.ROOT):
+    """The source a tagged subscribe link is credited to, or None.
+
+    A link from the weekly edition (its four tags, specs/subscribe-route.json edition, engine/route.py
+    edition_tags) is credited to newsletter (Krish, 2026-11-25); any other link to the pinned channel its
+    utm_source names, Buffer's own service name included. The social sources are unchanged: newsletter is never one
+    of them, so an edition link never stands in for a channel's own link."""
+    from . import route  # route imports this module, so it is read here, when first needed
+    if route.edition_tags(url, root):
+        return route.EDITION_SOURCE
+    tag = (parse_qs(urlsplit(url).query).get('utm_source') or [''])[0].strip().lower()
+    channel = CHANNEL_BY_SERVICE.get(tag, tag)
+    return channel if channel in BUFFER_CHANNEL_ID else None
+
+
+def _source_errors(url, channel, root=intensity.ROOT):
     tag = (parse_qs(urlsplit(url).query).get('utm_source') or [''])[0].strip().lower()
     names = {channel, SERVICE.get(channel, channel)}
-    return [] if tag in names else ['utm_source=' + (tag or '(none)') + ' does not name the channel ' + channel]
+    if tag in names:
+        return []
+    if credited_source(url, root) == 'newsletter':
+        return [url + ' is a link from the weekly edition, credited to newsletter (specs/subscribe-route.json '
+                'edition); a ' + channel + ' post carries its own link, utm_source=' + channel]
+    return ['utm_source=' + (tag or '(none)') + ' does not name the channel ' + channel]
 
 
 def _tagged(text, channel, root):
@@ -84,7 +108,7 @@ def _tagged(text, channel, root):
         if urlsplit(url).path.rstrip('/') != urlsplit(page).path.rstrip('/'):
             continue
         problems = intensity.subscribe_errors({'url': url, 'placement': 'in_post'}, channel, url, None, 5, root)
-        problems = problems or _source_errors(url, channel)
+        problems = problems or _source_errors(url, channel, root)
         if not problems:
             return url, []
         why += problems

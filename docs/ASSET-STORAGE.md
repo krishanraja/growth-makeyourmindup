@@ -11,10 +11,9 @@ places every session. This applies to interactive work and scheduled jobs.
   convention and contents."). Every finished off-day asset is filed with content-engine's
   `scripts/post-pack/send.py` into the library's `3 Posts`, as `YYYY-MM-DD Tue off.day - Subject` (Thu and Sat
   likewise), with the series days' sections (`3 Video`, `4 Social`). The board links that folder.
-- **Brand kit (Krish, 2026-11-11):** one canonical kit, `1 Brand kit (permanent)`. Find any brand asset
-  (logo, colour, font, photo, template, sting, character, music, channel art) through
-  `social/brand/library.json`, by Drive id; why and what moved is in `docs/BRAND-KIT.md`. Never take
-  brand from anywhere else; `00_Brand-Assets` is deleted and music lives in the kit's `Music`.
+- **Brand kit (Krish, 2026-11-11):** one canonical kit, `1 Brand kit (permanent)`. Since 26 November 2026
+  content-engine makes every asset and reads the kit itself (its `docs/DRIVE.md`); Growth fetches no brand asset
+  (`docs/BRAND-KIT.md`). `00_Brand-Assets` is deleted and music lives in the kit's `Music`. Channel art is the kit's `Channel art` since 26 November 2026; `2 Channel art (permanent)` is retired and everything old is in `_Archive / 2026-11-26 v4 brand (retired, do not use)`.
 - **Older Growth library:** [makeyourmindup / 4 Growth](https://drive.google.com/drive/folders/1Ck0Eulgcs5pFIpS_Ds1vJ6mEAW__Xjwy)
   holds earlier distribution copies. Do not file new posts there. Its
   `mocks` folder holds the approved mock files the maker reads

@@ -12,7 +12,30 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Only Krish changes it.
 <!-- north-star:end -->
 
+## makeyourmindup v5: read `docs/V5-REBRAND.md` first (Rulings, Krish, 25 and 26 November 2026)
+
+Krish locked the v5 look on 25 Nov ("s3h is great, lock v5") and asked that this engine carry all of the rebrand's work. `docs/V5-REBRAND.md` says what changed: the look and what is retired, the promise ("AI news for the creative industries, every morning."), no series names on new surfaces, the Saturday edition going to all subscribers ("substack weekly should be sent to ALL subscribers"), nothing sending until the Substack branding is v5, content-engine making every asset, and the social profiles and ManyChat work in flight. Where an older section below disagrees on the look, the copy or who makes what, that file wins.
+
 **Current (5 November 2026).** The work runs as four engines, one per session: read "Four engines" below before anything else. Make Your Mind Up outreach is this engine's and social engagement is the Engagement engine's; Krish enacts both in his own Codex sessions on the exact payload he approves, and only Mindmake's outreach stays with Control Center ("Outreach for Make Your Mind Up" below). Through the shadow week the existing automations, `jobs/daily-growth.md` and the GitHub workflows keep running. Krish's personal LinkedIn is growth-mindmake's since 13 November 2026, not this engine's ("Krish's personal LinkedIn is growth-mindmake's" below). Older sections below stay as dated evidence; where one says otherwise, those sections win.
+
+## Content-engine makes every asset; Growth grows the channel (Ruling, Krish, 2026-11-26)
+
+His words: "I believe that growth should move all asset production to Content Engine. I see no point in having a
+separate repository produce specific assets. How can you accomplish this and ensure that this is updated absolutely
+everywhere and that there can be no confusion moving forward? This would leave growth in charge of simply growing the
+channel." And: "I want everything to be one harmonious engine." On Canva: "Canva is crap so we don't use that anymore."
+
+Content-engine makes every asset (hero pieces, carousels, memes, Substack Notes images and copy, captions and titles
+per channel, covers, thumbnails, cuts and the weekly edition package) and hands Growth finished, approved assets with
+captions in the piece manifest; growth-makeyourmindup grows the channel: posting, scheduling in Buffer, the edition's
+Substack placement, distribution, the subscribe route, measurement, learning, mix.json and experiments, and reports
+performance back. This engine makes nothing and writes no caption: the maker posts content-engine's captions word for
+word (`docs/MAKER.md`). Production lives in content-engine's v5 Library (`python scripts/covers/make_covers.py <piece>
+--out <folder>` for covers and thumbnails, `python scripts/library/make_piece.py <piece> --set <set>` for carousels),
+run there, never here. The Canva lane is retired, and this repository's renderer, piece kits, cover compositing,
+plain-English lint and caption writer are deleted (`docs/ENGINE-BOUNDARY.md`, "26 November 2026";
+`invariants/boundary.json`; `tests/test_production_boundary.py`, R132). Where an older line below says Growth makes,
+renders, writes captions for or commissions in Canva any asset, this wins.
 
 ## Asset continuity (Krish, 27 October 2026)
 
@@ -20,7 +43,8 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 
 Read `docs/ASSET-STORAGE.md` and `docs/SESSION-HANDOVER.md` at the start of
 every session. File every finished post, the off days included, into the
-library's **3 Posts** with content-engine's `send.py`, named like the series
+library's **3 Posts** with content-engine's `send.py` (content-engine files what it makes; Growth files nothing it did
+not receive), named like the series
 days (`YYYY-MM-DD Tue off.day - Subject`): one Posts folder for the whole week
 (Ruling, Krish, 2026-11-03). Do not file new posts in 4 Growth. Preserve private evidence and rejected versions
 locally with a dated hash inventory before closing or cleaning a workspace.
@@ -36,8 +60,8 @@ standing doc a run session reads, and `growth.py run pack` puts it on top.
 New channels: Substack Notes from Krish's Substack profile (handle in
 `social/channels/substack-notes.json`; up to two a day, as he signs) and
 Threads (one a day, his personal voice); signed exact payloads go out through
-the go-live step and LinkedIn stays his click. The Canva lane makes what
-content-engine does not cover (`social/guides/canva.md`).
+the go-live step and LinkedIn stays his click. (The Canva lane that made what content-engine did not cover was
+retired on 26 November 2026: content-engine makes every asset.)
 The Measurement Specialist (`crew/attribution-ladder/`) owns the North Star:
 Substack Growth sources stay its source, `growth.py run northstar` computes
 the NOW.md line from a capture, and GA4 is read directly for per-post joins on
@@ -146,7 +170,7 @@ first put it on, so a post he moved goes out on its new day and is held on the d
 off-day options to the live board through the same place: `python growth.py run board offer --file <offdays.json>
 --deliver` posts the `growth.py mix offdays` file (`growth-offdays/1`) to `POST /api/board/<Monday>/offdays`, where each
 is offered on its day with Move to… and Approve like every other option; never a file of its own the board must merge.
-Every off-day post Growth makes, schedules or posts goes back to the same place, from Growth's own record and never a
+Every off-day post Growth schedules or posts (content-engine makes it since 26 November 2026) goes back to the same place, from Growth's own record and never a
 post it did not post. Control Center's Buffer sweep is the one writer of off-day posts Buffer holds (audit 2026-11-14,
 gmymu-6: one system per job): every 15 minutes it writes each one Buffer has scheduled (with its time) or sent (with its
 native link) to `POST /api/board/<Monday>/offday-posts`, whoever made it, so `release.yml` no longer runs `board posts`.
@@ -160,8 +184,9 @@ names its time); until then the board says plainly "Still scheduled for Tue 17 o
 
 ## The brand palette (Ruling, Krish, 2026-11-12)
 
-Every opening, close, icon, wordmark and colour on an asset this engine makes comes from content-engine's
-`config/brand-palette.json` and nowhere else (`render/KIT.md`, "The brand palette"). Krish: "I approve the brand
+Every opening, close, icon, wordmark and colour on an asset comes from content-engine's
+`config/brand-palette.json` and nowhere else; since 26 November 2026 content-engine makes every asset, so this
+engine draws none. Krish: "I approve the brand
 palette sheet, but only if it falls in line with the attached." Never add a close, a logo position or a colour
 rule here. Change the palette in content-engine, in his words, first.
 
@@ -269,20 +294,17 @@ capabilities and standards as needed. Do not build a parallel production
 pipeline or quality canon in Growth. Keep responsibility for progress and
 delivery here. Legacy local pilot assets retain their review provenance.
 
-27 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md`, "the Canva lane"):
-Growth now produces, in Canva, the formats content-engine does not cover
-(today Substack Notes and memes). For that lane only, this supersedes the
-parallel-production line above; content-engine keeps every other format and
-its standards, and the lane applies them by reference.
+27 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md`, "the Canva lane"), superseded 26 November 2026:
+Growth produced, in Canva, the formats content-engine did not cover. That lane is retired; there is no exception to
+the parallel-production line above.
 
 28 October 2026 (`CHANGES.md`; `docs/ENGINE-BOUNDARY.md` and
-`docs/PUBLISHING-AUTHORITY.md`, "28 October 2026"): Growth also makes
-derived carousels to content-engine's standard ("take over posting as well
-as creating new assets like carousels") and owns the off-day lane (Tuesday,
-Thursday, Saturday and Sunday on Instagram, TikTok and YouTube Shorts).
-Go-live is "Approve each day Monday"; every carousel and Short first passes
-content-engine's 10/10 judges (Ruling, Krish, 2026-11-12: "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts."; `engine/run/judges.py`, `docs/MAKER.md` step 6b), and a
-fail comes back with the judges' reasons and is never made; every route goes through Buffer,
+`docs/PUBLISHING-AUTHORITY.md`, "28 October 2026"): Growth owns the off-day
+lane's slots and posting (Tuesday, Thursday, Saturday and Sunday on
+Instagram, TikTok and YouTube Shorts). Since 26 November 2026 content-engine
+makes the derived carousels and every off-day post; Growth posts them.
+Go-live is "Approve each day Monday"; every carousel and Short passes
+content-engine's 10/10 judges when content-engine makes it (Ruling, Krish, 2026-11-12: "Judge them; count passes. Every Growth carousel goes through the same 10/10 judges, and each one that passes and goes live counts."), and Growth binds the pass to the post it saves (`engine/run/judges.py`); every route goes through Buffer,
 pinned by channelId to this engine's eight channels, and every post passes
 content-engine's copy lint. Engagement is a daily 10-minute queue across X,
 TikTok, Instagram and LinkedIn, still prepared only. LinkedIn stays his click.
@@ -292,25 +314,17 @@ it in his own Codex sessions: "Outreach for Make Your Mind Up" above. Since
 seven: LinkedIn is growth-mindmake's, "Krish's personal LinkedIn is
 growth-mindmake's" above.)
 
-## Carousels, memes and Notes images: one route (Rulings, Krish, 2026-11-13)
+## Carousels, memes and Notes images: one route (Rulings, Krish, 2026-11-13; superseded 2026-11-26)
 
-His words: "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual
-workflows"; then "memes and Notes images should go the same way", and "Off-day voiceover shorts should go the same way
-too". So every carousel, meme and Notes image this engine makes is made in a Claude session that someone opens
-(usually from the board item's "Copy prompt for Claude"), with the Codex plugin building it: the session writes the
-words, the story and the direction, then one Codex card (content-engine's `python3 scripts/ve.py card`, kind
-`carousel`, `meme` or `notes_image`, with its `spend_id`) in `codex/queue/<id>.md` on its `claude/` branch; the Codex
-lane builds the piece kit through the plugin (`render/KIT_RULES.md` is the card's brief, `python growth.py run kit
-check` its acceptance), and the session renders the real words, verifies every card, files them in the post's
-`3 Posts` folder and reports on the board. Off-day voiceover shorts are made on content-engine's ve route from a
-Claude session. Never a scheduled job, a headless model run or a template engine: the Saturday art-direction workflow
-is retired, no workflow here runs Codex or the renderer (R126, `tests/test_piece_kits.py`), and memes and Notes images
-left the Canva lane. The route is content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made". This
-engine's own sessions load the Codex plugin as content-engine's do (`.claude/settings.json`,
-`.claude/hooks/codex-login.sh`). Where an older line below says otherwise, this wins.
+His words then: "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual
+workflows"; then "memes and Notes images should go the same way". Since 26 November 2026 content-engine makes every
+carousel, meme and Notes image from its v5 Library (`python scripts/library/make_piece.py <piece> --set <set>`); this
+engine's piece kits, `render/` and its Codex kit queue are deleted, and no workflow here makes one (R126, R132). This
+engine's sessions still load the Codex plugin (`.claude/settings.json`, `.claude/hooks/codex-login.sh`) for the
+social legwork below, never to build an asset.
 
-Growth strategy is self-contained here. Content-engine supplies production
-assets; Control Center is the eventual unified review surface. Scheduled
+Growth strategy is self-contained here. Content-engine supplies every
+asset and its captions; Control Center is the eventual unified review surface. Scheduled
 jobs may use the supported growth routes. Interactive work makes no Control
 Center writes. Existing publishing and engagement authority still applies.
 
@@ -399,6 +413,46 @@ never written to his list. A spark reaches Krish only as this engine's own propo
 walls check and the copy lint like the runner's. Krish's own Claude sessions can use the Control Center connector's
 `divergent_score`, `divergent_record` and `divergent_run` with namespace `growth-makeyourmindup`.
 
+## Insight desk (Ruling, Krish, 2026-11-24)
+
+The insight desk is ai-harness's `insight-desk` skill: it turns this engine's North Star goal into an insight sheet
+(`insight-sheet/1`) of up to three tested ideas, each with a claim, a mechanic and a conversion path, before any
+words are made. There is no separate repository; this engine keeps only the thin adapter, `config/insight-desk.json`,
+which names where each input lives and where an approved idea goes. Read the skill with `get_skill('insight-desk')`
+once Control Center serves it; until it is admitted, from a local ai-harness checkout named by `AI_HARNESS_ROOT`.
+Neither readable means the desk is unavailable and the week runs exactly as before.
+- **Where it runs.** At the weekly mix plan, at most one sheet a week. Sheets live under `.scratch/insight/` and are
+  never committed.
+- **The check.** `python3 -m engine.insight_sheet <sheet>` checks a sheet offline (exit 0 valid, 1 invalid with every
+  reason, 2 unreadable); `--print-sha` prints the `sheet_sha256` it should carry.
+- **The hook.** `growth.py mix plan --week-of <Monday> --insight <sheet>` checks the sheet first (an invalid one makes
+  no plan), then adds its ideas to the week's filler ideas in the `--ideas` shape, in the lane `--insight-lane` names
+  (default `level_up`). An idea that failed a test on its sheet, a measurement idea, or one that would make the same
+  concept as an `--ideas` item in that lane is refused with why. An idea with a test `unavailable` may join the plan
+  but never leads, and `insight.untested` names it with those tests. The sheet's hash and `harness_skill_sha` ride
+  beside the plan as `insight`, never in its proposal, so `concept_sha256` and the plan's words are made exactly as
+  before. Like `--ideas`, `--insight` runs the hook guard unless `--offline` is given. Without `--insight` nothing
+  changes.
+- **Ideas only** (`docs/ENGINE-BOUNDARY.md`): the sheet gives the claim and the mechanic; content-engine keeps the
+  story, copy, design and rendering.
+- **Engines.** The humour engine reads an idea's premise through `engine/humour.py`, its three house rules holding;
+  divergent-thinker runs in namespace `growth-makeyourmindup:ideas` (`growth.py divergent score --lane ideas` with the
+  three obvious ideas, free). Unavailable is never a pass.
+- **Walls.** Each idea reaches Krish only as a concept in the week's one mix plan proposal, stage `plan` behind
+  `strategy`; approving it approves the idea and its mock, nothing more. The desk never posts, sends or spends, and
+  his words about a sheet go to the floor and his taste ledger, never into this public repository.
+
+## Revenue desk (Ruling, Krish, 2026-11-24)
+
+The revenue desk is ai-harness's `revenue-desk` method, run by krishanraja/strategist in its daily U5 watch and
+Sunday board: it reads each step from work to money, names any blind step, and proposes at most one 7-day test.
+This engine keeps only the thin adapter, `config/revenue-desk.json`: the money path (post, visit, free subscriber,
+paid subscriber, renewal), where each step is read here, gross apart from net retention by cohort, and the offer
+terms (a discount is the last lever, always traded for something; zero paid). Renewal and cohort retention are
+measure first: nothing here counts them yet, and the adapter names the reading that would. Bands are assumptions
+and bind only after Krish's yes; `spend_authority` is none. Sheets stay in the ignored `.scratch/revenue/`.
+`tests/test_revenue_desk.py` checks that the adapter parses and every source it names exists.
+
 ## Intensity (Ruling, Krish, 2026-10-29)
 
 "At U3 to U5, engines and Control Center may raise volume caps up to each
@@ -470,13 +524,19 @@ Krish manages Claude here; Claude starts and drives the Codex session (`scripts/
 it reports, and tells him the session's exact name whenever it starts one. `BROWSER.md`, "The worker's Chromium", has
 the setup. Where the section below says a session runs on his own computer or shows in his Codex Desktop app, this wins.
 
-## Claude and Codex: who does what (Ruling (Krish, 2026-11-15): Codex does a minimum of every video session and the social legwork, visible in Codex Desktop; Claude owns strategy, orchestration, verification and learnings; Codex never updates ai-harness or Google Drive)
+## Claude and Codex: who does what (Ruling (Krish, 2026-11-25): Claude schedules in Buffer, Codex keeps only the weekly edition's Substack step; Ruling (Krish, 2026-11-15): Codex does a minimum of every video session and the social legwork, visible in Codex Desktop; Claude owns strategy, orchestration, verification and learnings; Codex never updates ai-harness or Google Drive)
 
-His words: "Codex should also do the leg work for social media asset scheduling, posting, verifying posts went live properly with the right thumbnails and captions and CTAs, and also the measurement reports are ingested, and we understand whats working well and what isn't, and use that to optimise future assets." Where this and an older line below disagree, this wins.
+**25 November 2026: Claude schedules in Buffer; Codex keeps only the weekly edition's Substack step.** Ruling (Krish, 2026-11-25), taking every recommendation of the weekly edition design (pull request 143). His words: "Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex". Where this and an older line below disagree, this wins.
+
+- **Claude** schedules every Buffer post, through Buffer's API or connector, only after Krish's approval and inside `docs/PUBLISHING-AUTHORITY.md`, and reads each one back from Buffer: the Saturday Note that points to the weekly edition, and every social post that points to a piece or to the edition. Notes and series posts still sign post by post. This replaces the 15 November line below that Codex schedules and posts.
+- **Codex** keeps one publishing step: the weekly edition's Substack editor step, on the worker (`jobs/edition.md`). On the follow-up the same day Krish chose "Codex, Substack step only": Buffer's Substack channel posts Notes only, and a newsletter post is built and scheduled in Substack's own editor. Codex builds the edition's draft from content-engine's package, schedules it only after his Approve for send bound to the package's sha256, and reads it back. It never touches Buffer.
+- Everything else in the 15 November ruling below stands: Codex's visual builds, its live read-back of posts and its reading of the numbers; Claude's strategy, checks and learnings.
+
+**15 November 2026.** His words: "Codex should also do the leg work for social media asset scheduling, posting, verifying posts went live properly with the right thumbnails and captions and CTAs, and also the measurement reports are ingested, and we understand whats working well and what isn't, and use that to optimise future assets." Where this and an older line below disagree, this wins.
 
 - **Claude** owns the strategy, the week's plan and mix, every Codex card and handoff, the check of every result, the learnings written back (`engines/records/`, `social/lessons/`, `CHANGES.md`, the taste ledger), every file put in Google Drive and every ai-harness proposal.
 - **Codex** does the visual builds of every video and picture session (content-engine's `ve card`, at least one card a session: content-engine `config/codex-minimum.json`), and the social legwork in Krish's signed-in browser, in a session he can watch in his Codex Desktop app: it schedules and posts only what Krish approved, inside `docs/PUBLISHING-AUTHORITY.md`; reads each post back live for its cover or thumbnail, caption and call to action (the Publishing engine's `check` records, source `live_readback`); and reads the measurement each post and each paid boost earned (the Measurement engine's observations; a boost's reading carries `paid_boost`). It never writes to Google Drive or ai-harness, never places or changes a boost without Krish's Yes on that boost, and hands what it read to the Claude session, which checks and records it.
-- **Where each runs** (Ruling, Krish, 2026-11-15: all content production runs on Codex cards from the cloud; every social media task runs through a Claude session on his own computer, visible in Codex Desktop. His words: "Maybe just have all content production running on the cloud Codex cards. Make sure the content watcher and music watcher always go to the VPS worker and make sure that any social media tasks run through the local session, build through to Codex desktop."): the visual builds are content production, queued from any session as cards (content-engine's `ve card`, or `codex/queue/` here) and built by his PC's lane under the Studio's own Codex home, never shown in Codex Desktop. The social legwork (scheduling, posting, checking a post live, reading its numbers) is started only from a Claude session on his own computer, through `scripts/codex_thread.mjs`, so it shows in his Codex Desktop app with his browser attached. A cloud session never starts it: it writes the exact approved handoff for that session to pick up.
+- **Where each runs** (Ruling, Krish, 2026-11-15: all content production runs on Codex cards from the cloud; every social media task runs through a Claude session on his own computer, visible in Codex Desktop. His words: "Maybe just have all content production running on the cloud Codex cards. Make sure the content watcher and music watcher always go to the VPS worker and make sure that any social media tasks run through the local session, build through to Codex desktop."): the visual builds are content production, queued from any session as cards (content-engine's `ve card`; since 26 November 2026 content-engine's alone, never `codex/queue/` here) and built by his PC's lane under the Studio's own Codex home, never shown in Codex Desktop. The social legwork (scheduling, posting, checking a post live, reading its numbers) is started only from a Claude session on his own computer, through `scripts/codex_thread.mjs`, so it shows in his Codex Desktop app with his browser attached. A cloud session never starts it: it writes the exact approved handoff for that session to pick up.
 - **The weekly loop**: `jobs/report.md`, step 4b, and the Sunday `learn` workflow, which reweights next week's mix from what brought subscribers.
 
 ## What you are growing
@@ -493,6 +553,19 @@ what's real, and where it leads. You make your mind up."
 
 Each piece is a Substack article plus a "VIDEO:" post, a 3-minute YouTube
 video and a 90-second vertical cut (Shorts, Reels, TikTok, X).
+
+**One email a week (Ruling, Krish, 2026-11-25).** Subscribers get one email a
+week: the weekly edition, "makeyourmindup weekly", every Saturday at 08:00 New
+York (13:00 London), with the week's pieces and the news from the creative
+industries that matters, sent only on his Approve for send. The Monday,
+Wednesday and Friday pieces keep their days and go live on the web and in the
+Substack app with no email; a reader who wants every piece by email opts in to
+its section. Only the weekly edition emails the whole list (R133). The
+edition's own links carry `utm_source=newsletter` (`specs/subscribe-route.json`,
+`edition`), and the Monday read takes its numbers (`jobs/subscribers.md`). The
+line quoted above was the publication's promise before this ruling; the
+promise now is "AI news for the creative industries, every morning."
+(`docs/V5-REBRAND.md`, section 2).
 
 | Where | Address |
 |---|---|
@@ -541,15 +614,20 @@ that it runs there:
    session Krish is driving, one outreach send or one comment he approved
    word for word in that session ("Outreach for Make Your Mind Up";
    `engines/acquisition.json`, `engines/engagement.json`). Draft saves never
-   authorise scheduling or publication.
+   authorise scheduling or publication. Since 25 November 2026 one more
+   exception: the weekly edition's Substack step on the worker
+   (`jobs/edition.md`), which schedules only the edition Krish approved for
+   send, bound to its sha256, and nothing else.
 2. **Facts only from his published pieces.** Every fact, number and name in
    a draft comes from an article `python3 growth.py pieces
    --full` prints, or from the thread you are replying to. Never invent a
    number, a quote or a result. If you are unsure, leave it out.
 3. **Standards have one production owner.** Content-engine owns production
-   and voice standards for every format. Growth owns channel strategy,
-   native posting packages, captions/links and engagement preparation,
-   applying those accepted standards and the applicable krish-voice guidance.
+   and voice standards for every format. Since 26 November 2026 it makes every
+   asset and writes every caption and title too. Growth owns channel strategy,
+   native posting packages built from content-engine's captions, links and
+   engagement preparation, applying those accepted standards and the
+   applicable krish-voice guidance.
    Use the established production route for finished creative. Existing-field
    repairs preserve meaning and voice; never invent experience or a claim.
 4. **Say something real.** A reply responds to the actual thread in ordinary
@@ -735,10 +813,10 @@ publication workspace". GitHub Actions runs nine workflows, all lane L0
 handoff, check, maker, ledger and learn. Measure judges each post
 by the subscribers it brought, and learn turns last judged week's verdicts
 into next week's mix (Ruling, Krish, 2026-11-12: the engine reads
-subscribers every week and judges posts by subscribers, not engagement). The maker (`docs/MAKER.md`) drafts each next day's posts from
-the ideas and mocks Krish approved and hands them off; it never schedules. With no approved mix
-for a week it drafts from the standing plan into Control Center only, never Buffer, and asks him
-once that week (Ruling, Krish, 2026-11-12). The ten automations below run on Krish's PC; nine are kept until W46, and the weekly Substack read stands, because only his signed-in browser can read Substack (Ruling, Krish, 2026-11-12).
+subscribers every week and judges posts by subscribers, not engagement). The maker (`docs/MAKER.md`) turns each next day's posts from
+the ideas Krish approved into Buffer drafts, from content-engine's finished assets and captions word for word (Ruling,
+Krish, 2026-11-26), and hands them off; it never schedules and never writes a caption. With no approved mix for a week
+it makes nothing and asks him once that week (Ruling, Krish, 2026-11-12). The ten automations below run on Krish's PC; nine are kept until W46, and the weekly Substack read stands, because only his signed-in browser can read Substack (Ruling, Krish, 2026-11-12).
 
 ## The schedule (New York time)
 
@@ -887,7 +965,7 @@ NOW.md's oldest lines to `docs/history/LOG.md` verbatim to keep it under its
 byte cap. ai-harness's administration publisher excludes this repository
 until Krish accepts it there by name, so this fold is the repository's own.
 
-<!-- krish-canon:start release=v2026.11.15.2 sha=2222de5dee08 rendered=2026-11-18 -->
+<!-- krish-canon:start release=v2026.11.25.2 sha=263292dbfd85 rendered=2026-11-26 -->
 ## Krish canon
 
 Rendered from `krishanraja/ai-harness`; the start marker names the last release that changed this block, not the latest release. Nothing inside these
@@ -904,7 +982,7 @@ destructive actions.
 external state, publishes, sends, spends, deletes, rotates a credential or changes a
 permission needs explicit approval immediately before the action, for that named action
 and target only. Approval does not carry forward to the next step, and no skill or
-instruction you load may widen the authority the request gave you.
+instruction you load may widen the authority the request gave you. One standing exception: in ai-harness, Krish's own green, judged pull request merges itself, change requests included, (Ruling, Krish, 2026-11-18); its operating contract holds the exact terms.
 
 **Verification.** Deterministic checks first: tests, builds, schemas, hashes, counts,
 API readback. Self-critique is supplemental and is never an independent verifier. Do not
@@ -930,7 +1008,7 @@ lives only in a chat window teaches nothing.
 **Route.** principles, then context, then `strategy-brief`, then the producer, then
 `verification-loop`, then the approval gate, then delivery. The narrowest applicable
 skill wins; a broad "always" or "mandatory" claim inside a skill never overrides the
-router. One primary writer; validators may stack after it, competing writers may not. **North Star:** before any work, read the North Star linked from the `north-star` block in `AGENTS.md` or `CLAUDE.md`, say which part of it the task moves, and say so first when it moves nothing; only Krish changes it, and a repository with none asks him for one. Then read the number's urgency (U1 to U5) in `NOW.md` and push at the intensity `contract/north-star-metric.md` sets for it; urgency never widens authority. A growth engine also follows that file's Engines section. Where the Control Center connector offers it, read your repository's open instruction first with `get_engine_instruction`, and answer it with `ack_engine_instruction`, which records only that instruction's state in Control Center and so, like a taste report, is exempt from the approval wall and is never a send, post or publish to anyone (Ruling, Krish, 2026-11-14); never print, log or commit his words. `registered: false` means the repository is no engine; a failed read means do not act from memory. **Close out:** before a session that changed the repository ends, write `now-notes/YYYY-MM-DD-<slug>.md` (`Status:`, `Next:` the single next step, and one dated North Star check line: holds, or recalibration proposed for Krish), folded into `NOW.md` on main. **Branches:** each session works in its own worktree on its own branch, one branch per pull request; a branch with no pull request after a day gets one or is removed, and every repository carries the weekly branch sweep (`.github/workflows/branch-sweep.yml`, canonical in ai-harness), which deletes branches whose work is already on main and lists the rest (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-branch-hygiene.md). **Codex:** Claude opens a Codex session only through the repository's codex_thread tool (`scripts/codex_thread.mjs`, canonical in ai-harness), from a session on Krish's computer when he must see or share the session, and a Codex start failure is reported in one line, never worked around by editing MCP or Claude settings (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-visible-codex-sessions.md). Whenever Claude starts or spawns a session he can open (a Codex thread, a Claude Code session, a cloud session), it tells Krish that session's exact name in the same message, and its id or link where it has one; a session he cannot name is one he cannot find (Ruling, Krish, 2026-11-16). Content production is the one exception and opens no session: Claude queues it as Codex cards from the cloud to the build lane, which builds them away from his Codex Desktop app and hands each result back to the Claude session that checks and records it, while social media legwork runs only in a codex_thread session on his computer that he can watch (Ruling, Krish, 2026-11-15). Claude owns strategy, planning, orchestration, verification and writing learnings back, and is the only writer to ai-harness and Google Drive; Codex does art direction, visual builds and browser legwork, a defined minimum of every video session, and hands what it made or read to the Claude session that checks and records it; Codex's own report is never proof, and no rule here widens what either may post, send or spend (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-claude-codex-division.md). **One home per fact:** read a venture's state from its repository, doctrine from ai-harness; never keep a copy. **Research:** file routing's home for a research document is the research library: the session that wrote it files it there as it writes, where its authority already covers that write (`add_piece_material`, kind `research`, on its piece or on its venture's own shelf), and cites it by id; it is not committed to a repository as its home or left only in scratch or a chat, and every other artifact follows file routing as before (docs/proposals/2026-11-14-research-shelf-route.md). **Taste:** where the Control Center connector offers them, before writing or designing for Krish read his approved rules with `get_approved_taste` (form only; empty means none yet, never invent one; without the connector, the `krish-voice` and `krish-design` copies), giving the repository you are in (owner/name) and, from a repository that serves several ventures, the venture the work is for; it returns only that venture's rules, never another's (Ruling, Krish, 2026-10-28: the taste ledger is keyed by venture, not repository), and when he corrects voice, design, a piece or an idea, send his exact typed words to `report_to_taste_engine` with where and when he typed them and the repository you are in (naming the venture from a repository that serves several); anything else you noticed goes only as an observation. A report writes only to his own taste ledger and is exempt from the approval wall above (Ruling, Krish, 2026-10-26: "reports to my taste ledger are exempt from the approval wall"); it is never a send, post or publish to anyone. Never answer a card or approve a rule for him.
+router. One primary writer; validators may stack after it, competing writers may not. **North Star:** before any work, read the North Star linked from the `north-star` block in `AGENTS.md` or `CLAUDE.md`, say which part of it the task moves, and say so first when it moves nothing; only Krish changes it, and a repository with none asks him for one. Then read the number's urgency (U1 to U5) in `NOW.md` and push at the intensity `contract/north-star-metric.md` sets for it; urgency never widens authority. A growth engine also follows that file's Engines section. Where the Control Center connector offers it, read your repository's open instruction first with `get_engine_instruction`, and answer it with `ack_engine_instruction`, which records only that instruction's state in Control Center and so, like a taste report, is exempt from the approval wall and is never a send, post or publish to anyone (Ruling, Krish, 2026-11-14); never print, log or commit his words. `registered: false` means the repository is no engine; a failed read means do not act from memory. **Close out:** before a session that changed the repository ends, write `now-notes/YYYY-MM-DD-<slug>.md` (`Status:`, `Next:` the single next step, and one dated North Star check line: holds, or recalibration proposed for Krish), folded into `NOW.md` on main. **Folders:** a session that creates a folder in Krish's Google Drive or dev folders, or moves, renames, merges or removes one there with his yes for that folder (removing one stays his decision, under the Authority rules above), reports the change to krishanraja/filearchives with his words, the way that repository's AGENTS.md says; a session that cannot reach his computer names the change in its closeout note instead, and filearchives follows every folder by id either way (Ruling, Krish, 2026-11-24; docs/proposals/2026-11-24-folder-change-reports.md). **Branches:** each session works in its own worktree on its own branch, one branch per pull request; a branch with no pull request after a day gets one or is removed, and every repository carries the weekly branch sweep (`.github/workflows/branch-sweep.yml`, canonical in ai-harness), which deletes branches whose work is already on main and lists the rest (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-branch-hygiene.md); deleting any other unmerged branch is Krish's decision, and his standing one is that internal-auditor may also retire idle work within the bounds in the operating contract's Authority section (Ruling, Krish, 2026-11-23). **Codex:** Claude opens a Codex session only through the repository's codex_thread tool (`scripts/codex_thread.mjs`, canonical in ai-harness), from a session on Krish's computer when he must see or share the session, and a Codex start failure is reported in one line, never worked around by editing MCP or Claude settings (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-visible-codex-sessions.md). Whenever Claude starts or spawns a session he can open (a Codex thread, a Claude Code session, a cloud session), it tells Krish that session's exact name in the same message, and its id or link where it has one; a session he cannot name is one he cannot find (Ruling, Krish, 2026-11-16). Content production is the one exception and opens no session: Claude queues it as Codex cards from the cloud to the build lane, which builds them away from his Codex Desktop app and hands each result back to the Claude session that checks and records it, while social media legwork runs only in a codex_thread session on his computer that he can watch (Ruling, Krish, 2026-11-15). Claude owns strategy, planning, orchestration, verification and writing learnings back, and is the only writer to ai-harness and Google Drive; Codex does art direction, visual builds and browser legwork, a defined minimum of every video session, and hands what it made or read to the Claude session that checks and records it; Codex's own report is never proof, and no rule here widens what either may post, send or spend (Ruling, Krish, 2026-11-15; docs/proposals/2026-11-15-claude-codex-division.md). **One home per fact:** read a venture's state from its repository, doctrine from ai-harness; never keep a copy. **Neighbours:** before you build or decide, read what every other repository can do for you in krish-principles `references/capabilities.md` (generated from the registry in `state/fleet.yaml`; Control Center `get_skill` serves it), and when your work matches one's trigger, call it through its route instead of doing its job yourself; a call goes through that repository's own walls, and this widens nothing a session may post, send or spend (Krish, 2026-11-24). **Research:** file routing's home for a research document is the research library: the session that wrote it files it there as it writes, where its authority already covers that write (`add_piece_material`, kind `research`, on its piece or on its venture's own shelf), and cites it by id; it is not committed to a repository as its home or left only in scratch or a chat, and every other artifact follows file routing as before (docs/proposals/2026-11-14-research-shelf-route.md). **Divergence:** when the obvious answer is not good enough (a number at U4 or U5 with nothing proposed, ideas returning the same, an angle about to be committed, a draft that feels familiar), consult divergence-engine (formerly divergent-thinker) through Control Center, in the repository's own namespace only (never another venture's), cheapest move first (`score` and `record` spend nothing; `map`, `provoke`, `challenge` and `diverge` are paid model calls that follow this contract's spend rules, and Control Center also refuses them past the per-caller daily caps in krishanraja/divergence-engine `docs/WHEN-TO-USE.md`, never routed around): the engine route, the repository's own `divergent` command, or the connector tools `divergent_score`, `divergent_record` and `divergent_run`, as krishanraja/divergence-engine `docs/WHEN-TO-USE.md` says. Never for facts, exact words or Krish's taste. Its sparks are proposals: checked against the repository's own walls, reduced to one, labelled `divergent-thinker spark <id>, run <run>` (the label keeps the former name, which Control Center counts), and sent through the normal approval flow; `divergent_record` writes only to that namespace's memory and is never a send, post or publish to anyone (Ruling, Krish, 2026-11-18; docs/proposals/2026-11-18-divergent-thinker.md; renamed by Ruling, Krish, 2026-11-24; docs/proposals/2026-11-24-fleet-renames.md). **Taste:** where the Control Center connector offers them, before writing or designing for Krish read his approved rules with `get_approved_taste` (form only; empty means none yet, never invent one; without the connector, the `krish-voice` and `krish-design` copies), giving the repository you are in (owner/name) and, from a repository that serves several ventures, the venture the work is for; it returns only that venture's rules, never another's (Ruling, Krish, 2026-10-28: the taste ledger is keyed by venture, not repository), and when he states a preference about voice, design, a piece or an idea, send his exact typed words to `report_to_taste_engine` with where and when he typed them and the repository you are in (naming the venture from a repository that serves several); anything else you noticed goes only as an observation. A defect or engine failure never goes there: record it with `record_harness_observation`, so the taste system holds only preference and inspiration (Ruling, Krish, 2026-11-23). A report writes only to his own taste ledger and is exempt from the approval wall above (Ruling, Krish, 2026-10-26: "reports to my taste ledger are exempt from the approval wall"); it is never a send, post or publish to anyone. Never answer a card or approve a rule for him.
 
 **Who Krish is.** Purpose: "I see what is coming before it is obvious and make it
 legible to people while it still counts." Mindmake is his mission and his one company;
@@ -941,7 +1019,7 @@ in the harness. What he works on is live, never copied here; read it from Contro
 https://controlcenter.krishraja.com/api/canon/KRISH.md (and `PORTFOLIO.md` beside it).
 
 **Where the rest lives.** The operating contract, the routing contract and the
-33 curated skills are in `krishanraja/ai-harness`. On a machine with the harness installed the same skills are under the user skills root, and the local copy is
+35 curated skills are in `krishanraja/ai-harness`. On a machine with the harness installed the same skills are under the user skills root, and the local copy is
 authoritative for reading; the repository is authoritative for what is correct. Where none is installed (claude.ai, a cloud session), read each skill live with Control Center `get_skill`.
 
 **This repository's own rules:** `AGENTS.md`, `PLAYBOOK.md`

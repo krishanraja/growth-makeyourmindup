@@ -19,7 +19,6 @@ from ..packs import prose_errors
 from ..share import (compare_send_test, cta_applies, cta_errors, share_errors, share_line,
                      slot_send_test_request, stage_slot_send_test)
 from ..social import VERTICAL_FORMATS, inventory, validate, vertical_missing
-from .plain import lint_text as plain_lint
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = ROOT / 'specs' / 'schema' / 'run-spec.schema.json'
@@ -305,11 +304,8 @@ def _slot(slot, at, channels, formats, tests, manifest, window, routes=None, urg
         errors.append(finding('krish_click_due_at', at + '.due_at',
                               'a krish_click slot stays an unscheduled draft: due_at must be null', sid))
     errors += [finding('prose', at + '.words', 'words ' + e, sid) for e in prose_errors(slot['words'])]
-    # Plain English on every caption (Krish, 27 Oct 2026, R105): it blocks a carousel, the new
-    # format he named, and is guidance elsewhere until he widens it.
-    plain = [finding('plain_' + f['code'], at + '.words', 'words: ' + f['detail'], sid)
-             for f in plain_lint(slot['words'])]
-    (errors if slot['format'] == 'carousel' else warnings).extend(plain)
+    # Plain English on a carousel (Krish, 27 Oct 2026, R105) is content-engine's check at make time since
+    # 26 Nov 2026 (Ruling, Krish: content-engine makes every asset and writes every caption).
     try:
         lint = copy_lint_errors(slot['words'], 'channel_copy')
     except ValueError as exc:

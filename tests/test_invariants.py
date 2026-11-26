@@ -142,10 +142,12 @@ class RuleTests(unittest.TestCase):
         failures = {f['id']: f for f in load_failures()}
         self.assertEqual(FAILURE_IDS[65:71], ('F66', 'F67', 'F68', 'F69', 'F70', 'F71'))
         for fid, guard in (('F66', 'may_post_alone'), ('F67', 'check_lanes'), ('F68', 'check_lanes'),
-                           ('F69', 'calendar.py:lint'), ('F70', 'plain.py:lint_carousel'),
-                           ('F71', 'canva.py:lint_design')):
+                           ('F69', 'calendar.py:lint')):
             self.assertEqual(failures[fid]['status'], 'tested', fid)
             self.assertIn(guard, failures[fid]['guard'], fid)
+        # Content-engine makes every asset and writes every caption since 26 Nov 2026 (Ruling, Krish): the plain
+        # English check (F70) and the Canva lane (F71) stay in the register as superseded.
+        self.assertEqual((failures['F70']['status'], failures['F71']['status']), ('superseded', 'superseded'))
         for path in (ROOT / 'invariants' / 'authority.json', ROOT / 'lanes.json', ROOT / 'calendar' / 'v1.json'):
             self.assertEqual(house_errors(path.read_text(encoding='utf-8')), [], path.name)
 
@@ -164,6 +166,27 @@ class RuleTests(unittest.TestCase):
                        'Store a manifest with SHA-256', 'without an explicit historical/rejected label',
                        'independently read back names, parents and sizes', 'a folder named Private as an access boundary'):
             self.assertIn(anchor, storage)
+
+    def test_the_weekly_edition_rule_is_quoted_and_guarded(self):
+        # Ruling, Krish, 2026-11-25: one email a week. Only the weekly edition emails the whole list; a series piece's
+        # Substack step never does, and the Monday read names any series post that did.
+        rule = {r['id']: r for r in load_rules()}['R133']
+        self.assertEqual(rule['source_file'], 'docs/PUBLISHING-AUTHORITY.md')
+        self.assertEqual(collapse(rule['quote']), 'The Substack step of a series piece never emails the whole list; '
+                                                  'only the weekly edition emails everyone.')
+        section = (ROOT / 'docs' / 'PUBLISHING-AUTHORITY.md').read_text(encoding='utf-8').split(
+            '## 25 November 2026: the weekly edition')
+        self.assertEqual(len(section), 2, 'the dated section is there once')
+        self.assertIn(collapse(rule['quote']), collapse(section[1]))
+        self.assertIn('Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex',
+                      collapse(section[1]))
+        self.assertEqual(rule['enforced_by'], ['engine/run/subscribers.py:series_email_check'])
+        for name in ('test_a_series_post_above_the_opt_in_section_is_a_failure',
+                     'test_with_no_opt_in_section_any_email_is_a_failure_and_unknown_is_never_a_pass'):
+            self.assertIn(name, rule['tests'])
+        for word in ('Monday', 'Wednesday', 'Friday', 'opted in', 'failure'):
+            self.assertIn(word, rule['statement'])
+        self.assertEqual(check_rule_links([rule]), [])
 
 
 class FailureRegisterTests(unittest.TestCase):
@@ -384,31 +407,27 @@ class SourceAndBoundaryTests(unittest.TestCase):
         self.assertEqual(cats['import'], 'unattributed')
         self.assertEqual(cats['paid ads'], 'paid')
 
-    def test_boundary_follows_the_canva_ruling(self):
+    def test_boundary_follows_the_26_november_ruling(self):
+        # Ruling (Krish, 2026-11-26): content-engine makes every asset; the 27 Oct Canva lane (growth-canva) and the
+        # 19 Nov Growth captions (growth-copy) are superseded (tests/test_production_boundary.py holds the rest).
         data = load_boundary()
         self.assertEqual(data['source_file'], 'CHANGES.md')
         self.assertIn(collapse(data['quote']), collapse((ROOT / 'CHANGES.md').read_text(encoding='utf-8')))
         owners = data['owners']
-        # Memes and Note images take the carousel route since 13 Nov 2026 (R126): content-engine's route, in a Claude
-        # session with the Codex plugin building them, no longer the Canva lane.
         for name in ('article', 'long-video', 'short-video', 'carousel', 'story-artwork', 'cover', 'thumbnail',
-                     'note-image', 'meme'):
+                     'note-image', 'meme', 'receipt-card', 'quote-card', 'scorecard', 'poll-result',
+                     'profile-art', 'highlight-art', 'platform-resize', 'note-text', 'caption'):
             self.assertEqual(owners[name], 'content-engine', name)
-        for name in ('receipt-card', 'quote-card', 'scorecard', 'poll-result',
-                     'profile-art', 'highlight-art', 'platform-resize'):
-            self.assertEqual(owners[name], 'growth-canva', name)
-        self.assertEqual(owners['note-text'], 'growth-copy')
-        self.assertEqual(owners['caption'], 'growth-copy')
 
     def test_bad_source_labels_and_owners_are_refused(self):
         sources = {'approved': False, 'approved_by': None, 'approved_at': None, 'note': 'Synthetic.',
                    'categories': {'direct': 'unattributed'}}
-        boundary = {'source_file': 'CHANGES.md', 'quote': 'Synthetic quote.', 'owners': {'meme': 'growth-canva'}}
+        boundary = {'source_file': 'CHANGES.md', 'quote': 'Synthetic quote.', 'owners': {'meme': 'content-engine'}}
         broken = [('sources', dict(sources, categories={'Direct': 'unattributed'}), 'lower-case'),
                   ('sources', dict(sources, categories={'direct': 'owned'}), 'lower-case'),
                   ('sources', dict(sources, approved_by='Someone'), 'names no approver'),
                   ('sources', dict(sources, approved_at='2026-10-27'), 'names no approver'),
-                  ('boundary', dict(boundary, owners={'meme': 'growth-studio'}), 'growth-canva')]
+                  ('boundary', dict(boundary, owners={'meme': 'growth-canva'}), 'content-engine')]
         with tempfile.TemporaryDirectory() as folder:
             for name, data, message in broken:
                 root = Path(tempfile.mkdtemp(dir=folder))
@@ -416,7 +435,7 @@ class SourceAndBoundaryTests(unittest.TestCase):
                 for kind, good in (('sources', sources), ('boundary', boundary)):
                     (root / 'invariants' / (kind + '.json')).write_text(json.dumps(good), encoding='utf-8')
                 self.assertEqual(load_sources(root)['categories'], {'direct': 'unattributed'})
-                self.assertEqual(load_boundary(root)['owners'], {'meme': 'growth-canva'})
+                self.assertEqual(load_boundary(root)['owners'], {'meme': 'content-engine'})
                 (root / 'invariants' / (name + '.json')).write_text(json.dumps(data), encoding='utf-8')
                 with self.assertRaisesRegex(ValueError, message):
                     (load_sources if name == 'sources' else load_boundary)(root)

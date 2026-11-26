@@ -3,8 +3,20 @@
 Rulings: Krish, 26 October 2026. The latest X/TikTok clarification supersedes
 this day's earlier personal-drafts-only instruction for those two accounts.
 
-**Current as of 13 November 2026.** The sections below are dated, and a later
+**Current as of 26 November 2026.** The sections below are dated, and a later
 one wins where it says so. In short:
+
+- The publication emails its whole list once a week: the weekly edition,
+  Saturday 08:00 New York, scheduled only on Krish's Approve for send bound
+  to the edition's sha256. A series piece goes to the web and the app and
+  never emails the whole list (25 November, below).
+- Claude, not Codex, schedules in Buffer. Codex keeps only the weekly
+  edition's Substack editor step, on the worker (25 November, below).
+- Since 26 November 2026 content-engine makes every asset and writes every
+  caption (Ruling, Krish: "I believe that growth should move all asset
+  production to Content Engine"); this engine posts what it finishes. No
+  authority below changes: where a line says this engine makes or builds a
+  post, read that it makes the Buffer draft of content-engine's asset.
 
 - Derived (filler) posts on Instagram, YouTube, TikTok and X release from his
   one "Approve this week's mix" press on content-engine's board, inside every
@@ -104,8 +116,8 @@ rulings above; everything else above stands.
 - LinkedIn is unchanged: unscheduled drafts, and his final click.
 - Signed exact payloads post autonomously only through the go-live step
   (AGENTS.md, Autonomy), with the readback rules above.
-- Ad-hoc meme ideas are built, shown to him, then queued and posted only on
-  his approval of the exact payload.
+- Ad-hoc meme ideas are built by content-engine, shown to him, then queued and
+  posted only on his approval of the exact payload.
 - Substack articles keep their approved editorial rhythm; no daily target.
 - No spending, new connections (including connecting Substack in Buffer),
   new automation or engagement submission follows from these rulings.
@@ -201,8 +213,8 @@ rulings above; everything above stands unless a line here says otherwise.
   bound by the spec signature's `concepts_digest` and `concept_proposal_id`
   (`engine/run/decision.py`, fields in `docs/CONCEPT-MANIFEST.md`).
 - **It authorises every post made from it.** On those four channels the
-  engine makes, schedules and publishes each post derived from an approved
-  concept with no per-post approval, through `growth.py run release`, the
+  engine drafts (from content-engine's assets and captions), schedules and
+  publishes each post derived from an approved concept with no per-post approval, through `growth.py run release`, the
   Buffer channel lock and every check above (copy lint, share asks, the
   ecosystem route, route capability checks, the creative bar). For these
   posts this supersedes "Approve each day Monday" and "New creative ...
@@ -350,3 +362,52 @@ engine.
 
 No spending, new connection, automation or account-setting change follows
 from this ruling.
+
+## 25 November 2026: the weekly edition
+
+Rulings: Krish, 25 November 2026, on the weekly edition design (pull request
+143, `docs/plans/2026-11-25-weekly-edition/`). His words, taking every
+recommendation: "Yes take all recommendations - but Claude now in charge of
+Buffer scheduling not Codex". They add to the rulings above; everything above
+stands unless a line here says otherwise.
+
+- **One email a week.** The publication emails its whole list once a week:
+  the weekly edition, "makeyourmindup weekly", every Saturday at 08:00 New
+  York. The Monday, Wednesday and Friday pieces keep their days and go live on
+  the web and in the Substack app. The Substack step of a series piece never
+  emails the whole list; only the weekly edition emails everyone. A reader who
+  opted in to every piece may get it by email, through that section or a send
+  to that segment only.
+- **The edition goes only on his press.** Krish presses Approve for send on
+  the edition's Saturday item on the board, bound to the sha256 of the exact
+  edition package content-engine wrote. No press, or a package with another
+  sha256, and nothing is scheduled. The edition is scheduled with "Schedule
+  time to email and publish" for 08:00 New York, never published at once, and
+  a sent post is never edited (`jobs/edition.md`).
+- **Who does what.** Codex on the worker does only the edition's Substack
+  editor step: it builds the draft from the package, sends Substack's test
+  email to the publication owner, schedules the post after his press and reads
+  it back; it uploads nothing and never touches Buffer. Since 26 November 2026
+  (`docs/V5-REBRAND.md`, sections 3 and 5) it schedules nothing until the
+  Substack branding is v5 (Krish: "send nothing until all this is done") or
+  while a picture Krish places is missing, and the edition's only named lines
+  are his opener and signed footnote, which come from the package alone. Claude schedules every
+  Buffer post after his approval, inside every rule above: the Saturday Note
+  that points to the edition, and every social post that points to a piece or
+  to the edition. Buffer's Substack channel posts Notes only, so the edition
+  never goes through Buffer. Notes and series posts still sign post by post.
+- **Measured every week.** The Monday Substack read takes the edition's
+  numbers and each series post's recipients (`jobs/subscribers.md`, steps 6b
+  and 6c). A series post that emailed more readers than the opt-in section
+  holds is a failure in the Sunday report (`jobs/report.md`, step 4c).
+- **Not settled yet.** Substack documents the web-only box for posts and
+  podcasts, not for Video posts, and every series piece is a Video post. The
+  check (V1 in the plan) is read the first time a Video post's publish screen
+  is open with a video attached; until then the series pieces keep their
+  current publish step.
+
+No spending, new connection or account-setting change follows from these
+rulings. The edition's three runs on the worker are written and switched off
+until Krish turns them on (`lanes.json`). The opt-in section and the new
+promise in Substack's description and welcome email are his settings, at the
+time.

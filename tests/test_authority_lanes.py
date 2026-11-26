@@ -81,7 +81,7 @@ class AuthorityTests(unittest.TestCase):
 
     def test_derivatives_wait_for_board_and_preview_then_post_alone(self):
         data = load_authority()
-        self.assertEqual(posting_lane(data, 'receipt-card', 'x', 'receipt-card'), 'L0_code')  # release.yml, alone
+        self.assertEqual(posting_lane(data, 'receipt-card', 'x', 'single-image'), 'L0_code')  # release.yml, alone
         self.assertTrue(needs_preview(data, '2026-11-29'))
         self.assertFalse(needs_preview(data, datetime.date(2026, 11, 30)))
         cases = [(dict(day='2026-11-10'), (False, 'publish_board_not_approved')),
@@ -93,7 +93,7 @@ class AuthorityTests(unittest.TestCase):
         for kwargs, expected in cases:
             day = kwargs.pop('day')
             # Instagram, YouTube and TikTok are named in the ruling: derivatives go there too.
-            for channel, fmt, name in (('instagram', 'story-frame', 'story-from-assets'),
+            for channel, fmt, name in (('instagram', 'story', 'story-from-assets'),
                                        ('youtube', 'short-video', 'video-cut'), ('tiktok', 'short-video', 'video-cut'),
                                        ('substack-notes', 'note', 'note-quote')):
                 self.assertEqual(may_post_alone(data, name, channel, fmt, day, **kwargs), expected, (channel, day))
@@ -102,7 +102,7 @@ class AuthorityTests(unittest.TestCase):
         data = load_authority()
         for name, channel, fmt in (('carousel', 'instagram', 'carousel'), ('meme', 'tiktok', 'meme'),
                                    ('opinion', 'threads', 'text'), ('reactive', 'x', 'text'),
-                                   ('scorecard', 'threads', 'scorecard'), ('poll', 'x', 'poll'),
+                                   ('scorecard', 'threads', 'single-image'), ('poll', 'x', 'text'),
                                    ('never-heard-of-it', 'x', 'text'),
                                    ('receipt-card', 'x', 'meme')):  # a derivative class on the wrong format
             self.assertEqual(posting_lane(data, name, channel, fmt), 'L2_eyes', name)
@@ -200,6 +200,19 @@ class LanesTests(unittest.TestCase):
         (folder / 'surprise.yml').write_text('name: surprise\n', encoding='utf-8')
         self.assertEqual(self.errors(), ['workflow not in lanes.json: surprise.yml'])
 
+    def test_the_weekly_edition_job_is_named_and_off_until_krish_turns_it_on(self):
+        # Krish, 2026-11-25: Codex keeps only the edition's Substack step. automations.json has no field that holds
+        # an entry off, so the job is named here, off, and in no automations.json entry until he turns it on.
+        entry = next(a for a in self.lanes['automations'] if 'jobs/edition.md' in a['jobs'])
+        self.assertEqual((entry['source'], entry['status'], entry['successor'], entry['jobs']),
+                         ('worker', 'off-until-krish', None, ['jobs/edition.md']))
+        config = json.loads((ROOT / 'automations.json').read_text(encoding='utf-8'))['automations']
+        self.assertNotIn('jobs/edition.md', [a['job'] for a in config])
+        self.assertEqual(self.errors(), [])
+        lanes = copy.deepcopy(self.lanes)
+        lanes['automations'] = [a for a in lanes['automations'] if a['name'] != entry['name']]
+        self.assertIn('job file in no automation: jobs/edition.md', self.errors(lanes))
+
     def test_every_job_file_and_automation_is_named_exactly_once(self):
         (self.root / 'jobs' / 'brand-new.md').write_text('# synthetic\n', encoding='utf-8')
         self.assertIn('job file in no automation: jobs/brand-new.md', self.errors())
@@ -259,6 +272,11 @@ class LanesTests(unittest.TestCase):
                    (lambda d: d['automations'][0].update(status='standing', successor='measure'), 'no successor'),
                    (lambda d: next(a for a in d['automations'] if a['source'] == 'engine-session').update(
                        status='standing'), 'on-request'),
+                   (lambda d: next(a for a in d['automations'] if a['source'] == 'worker').update(
+                       status='kept-until-W46'), 'off-until-krish'),
+                   (lambda d: next(a for a in d['automations'] if a['source'] == 'worker').update(
+                       successor='measure'), 'no successor'),
+                   (lambda d: d['automations'][0].update(source='laptop'), 'source is'),
                    (lambda d: d.update(extra=1), 'needs exactly'))
         with tempfile.TemporaryDirectory() as folder:
             for change, message in changes:

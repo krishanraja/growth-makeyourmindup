@@ -19,7 +19,7 @@ The 26 October all-branded-social ruling includes the verified publication
 Facebook Page. Krish added Substack Notes and personal Threads to scope on
 27 October 2026 (`CHANGES.md`); any other personal account still needs his
 explicit ruling, and a Buffer connection alone never adds one.
-Memes on Instagram, Facebook, TikTok, YouTube, X and Threads come from the
-Canva lane (`canva.md`) and post only after Krish approves the exact payload.
+Memes on Instagram, Facebook, TikTok, YouTube, X and Threads come from content-engine (26 November 2026) and
+post only after Krish approves the exact payload.
 Do not research a full tool landscape when the next need is one missing native
 operation. Record the bounded capability check and update only its owning profile.

@@ -123,9 +123,8 @@ Override 3 is narrowed by the 27 October 2026 rulings (`CHANGES.md`;
 and Notes go out through the go-live step, and LinkedIn stays his click.
 Override 6 is narrowed the same way: Krish's part is to read the pack, sign
 and send, and the go-live step posts what he signed on those four channels.
-Override 5 is narrowed for the Canva lane only (`docs/ENGINE-BOUNDARY.md`):
-Growth makes Substack Notes and memes that content-engine does not cover,
-never articles or scripts.
+Override 5 holds whole again since 26 November 2026 (Ruling, Krish, 2026-11-26: content-engine makes every asset;
+`docs/ENGINE-BOUNDARY.md`): the Canva lane that let Growth make Substack Notes and memes is retired.
 
 ## External growth skills, 10 November 2026
 

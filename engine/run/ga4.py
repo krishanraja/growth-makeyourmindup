@@ -19,6 +19,12 @@ guessed: a report or join that relies on an unverified event name is refused.
 Numbers go to .scratch/ and the Control Center report, never into this
 public repository, and a dated reading is never overwritten.
 
+A link from the weekly edition (Krish, 2026-11-25; specs/subscribe-route.json,
+edition: utm_source=newsletter, utm_medium=email, utm_campaign=weekly and an
+edition-<Saturday>-<place> utm_content) is credited to the source
+newsletter: the joins put its rows in their own newsletter block, never in a
+slot and never in the unmatched list.
+
     python -m engine.run.ga4 ga4 events --days 28 --live
     python -m engine.run.ga4 ga4 report --start YYYY-MM-DD --end YYYY-MM-DD --live
     python -m engine.run.ga4 ga4 join CAPTURE SPEC
@@ -65,6 +71,10 @@ CONFIG_KEYS = {'measurement_id', 'property_id_env', 'credentials_env', 'events',
                'note'}
 OWN_HOST = 'home.makeyourmindup.ai'
 UTMS = ('utm_source', 'utm_medium', 'utm_campaign', 'utm_content')
+# The weekly edition's own links (specs/subscribe-route.json, edition), credited to the source newsletter.
+EDITION_SOURCE = 'newsletter'
+EDITION_TAGS = (('utm_source', EDITION_SOURCE), ('utm_medium', 'email'), ('utm_campaign', 'weekly'))
+EDITION_CONTENT = re.compile(r'^edition-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{1,40}$')
 MAX_DAYS = 90
 MAX_ROWS = 1000
 TIMEOUT = 20
@@ -582,8 +592,32 @@ def validate_capture(capture, config=None, now=None):
 
 # Join to slots by utm_content --------------------------------------------------
 
+def edition_link(tags):
+    """True when a link's tags ({utm name: value}) are the weekly edition's: its three fixed tags, exactly, and an
+    edition utm_content (specs/subscribe-route.json, edition)."""
+    return (all(tags.get(key) == value for key, value in EDITION_TAGS)
+            and bool(EDITION_CONTENT.match(tags.get('utm_content') or '')))
+
+
+def credited_source(tags):
+    """The source a link is credited to: newsletter for a weekly-edition link, otherwise its own utm_source."""
+    return EDITION_SOURCE if edition_link(tags) else tags.get('utm_source')
+
+
+def edition_row(row):
+    """True for a GA4 row from a weekly-edition link: a capture row by its source, medium, campaign and content; a
+    Control Center row (directive_rows) by its source and content, the two it carries."""
+    content = row.get('content') or ''
+    if 'session_source' in row:
+        tags = {'utm_source': row.get('session_source'), 'utm_medium': row.get('session_medium'),
+                'utm_campaign': row.get('campaign'), 'utm_content': content}
+        return edition_link(tags)
+    return row.get('source') == EDITION_SOURCE and bool(EDITION_CONTENT.match(content))
+
+
 def own_links(words):
-    """Own links in a slot's words: (utm_content or None, tracked with all four UTMs)."""
+    """Own links in a slot's words: (utm_content or None, tracked with all four UTMs), whether it is a
+    weekly-edition link and the source it is credited to (newsletter for an edition link)."""
     out = []
     for match in URL.finditer(words if isinstance(words, str) else ''):
         url = match.group().rstrip('.,;!?)')
@@ -600,8 +634,21 @@ def own_links(words):
                 tags.setdefault(key.lower(), value)
         tracked = all(tags.get(k) for k in UTMS)
         out.append({'utm_content': tags.get('utm_content') if tracked else None, 'tracked': tracked,
-                    'utm_source': tags.get('utm_source'), 'utm_campaign': tags.get('utm_campaign')})
+                    'utm_source': tags.get('utm_source'), 'utm_campaign': tags.get('utm_campaign'),
+                    'edition': edition_link(tags), 'credited_source': credited_source(tags)})
     return out
+
+
+def _slot_contents(links):
+    """A slot's own join keys: its tracked links' utm_content, leaving out weekly-edition links, which are credited
+    to newsletter and never to a slot."""
+    return sorted({link['utm_content'] for link in links if link['tracked'] and not link['edition']})
+
+
+def _no_key_reason(links):
+    if any(link['tracked'] and link['edition'] for link in links):
+        return 'its only tracked links are the weekly edition\'s, credited to newsletter'
+    return 'no own link with all four UTMs in the slot words'
 
 
 def _sessions(rows):
@@ -641,29 +688,36 @@ def join(capture, spec, config=None, now=None):
         slots.append((slot['slot_id'], links))
     owners = {}
     for slot_id, links in slots:
-        for content in {link['utm_content'] for link in links if link['tracked']}:
+        for content in _slot_contents(links):
             owners.setdefault(content, []).append(slot_id)
     out = []
     for slot_id, links in slots:
-        contents = sorted({link['utm_content'] for link in links if link['tracked']})
+        contents = _slot_contents(links)
         entry = {'slot_id': slot_id, 'utm_content': contents, 'own_links': len(links),
                  'untracked_own_links': len([x for x in links if not x['tracked']])}
         shared = sorted(c for c in contents if len(owners[c]) > 1)
         if not contents or shared:
             reason = ('utm_content shared with another slot: ' + ', '.join(shared) if shared
-                      else 'no own link with all four UTMs in the slot words')
+                      else _no_key_reason(links))
             entry.update(sessions=None, rows=0, sign_ups={'value': None, 'event_name': None, 'reason': reason},
                          paid_subscriptions={'value': None, 'event_name': None, 'reason': reason}, reason=reason)
             out.append(entry)
             continue
-        rows = [r for r in capture['rows'] if r['content'] in contents]
+        rows = [r for r in capture['rows'] if r['content'] in contents and not edition_row(r)]
         entry.update(sessions=_sessions(rows), rows=len(rows), sign_ups=_outcome(rows, config, 'sign_up'),
                      paid_subscriptions=_outcome(rows, config, 'paid_subscription'), reason=None)
         out.append(entry)
-    unmatched = sorted({r['content'] for r in capture['rows']} - set(owners))
+    # The weekly edition's rows are credited to newsletter, in their own block: never a slot's, never unmatched.
+    edition = [r for r in capture['rows'] if edition_row(r)]
+    newsletter = {'source': EDITION_SOURCE, 'utm_content': sorted({r['content'] for r in edition}),
+                  'sessions': _sessions(edition), 'rows': len(edition),
+                  'sign_ups': _outcome(edition, config, 'sign_up'),
+                  'paid_subscriptions': _outcome(edition, config, 'paid_subscription')}
+    unmatched = sorted({r['content'] for r in capture['rows'] if not edition_row(r)} - set(owners))
     return {'local_only': True, 'measurement_id': capture['measurement_id'], 'date_range': capture['date_range'],
             'join_key': 'utm_content', 'sessions_basis': 'largest per date, source, medium, campaign, content and '
-            'landing page across event rows, so a lower bound', 'slots': out, 'unmatched_content': unmatched}
+            'landing page across event rows, so a lower bound', 'slots': out, 'unmatched_content': unmatched,
+            'newsletter': newsletter}
 
 
 # Control Center's directive block (protocol 1.10.0) -------------------------
@@ -733,19 +787,19 @@ def join_directive(block, spec, config=None):
             raise ValueError('each slot needs a slot_id')
         links = own_links(slot.get('words'))
         slots.append((slot['slot_id'], links))
-        for content in {link['utm_content'] for link in links if link['tracked']}:
+        for content in _slot_contents(links):
             owners.setdefault(content, []).append(slot['slot_id'])
     unknown = coverage.get('reason') or 'Control Center sent no per-post rows'
     out = []
     for slot_id, links in slots:
-        contents = sorted({link['utm_content'] for link in links if link['tracked']})
+        contents = _slot_contents(links)
         shared = sorted(c for c in contents if len(owners[c]) > 1)
         entry = {'slot_id': slot_id, 'utm_content': contents}
         reason = None
         if rows is None:
             reason = unknown
         elif not contents:
-            reason = 'no own link with all four UTMs in the slot words'
+            reason = _no_key_reason(links)
         elif shared:
             reason = 'utm_content shared with another slot: ' + ', '.join(shared)
         if reason:
@@ -754,31 +808,54 @@ def join_directive(block, spec, config=None):
                          reason=reason)
             out.append(entry)
             continue
-        mine = [r for r in rows if r['content'] in contents]
-        groups = {}
-        for r in mine:
-            key = (r['date'], r['source'], r['content'])
-            groups[key] = max(groups.get(key, 0), r['sessions'])
-        entry.update(sessions=sum(groups.values()), sign_ups=_directive_outcome(mine, config, 'sign_up', key_events),
+        mine = [r for r in rows if r['content'] in contents and not edition_row(r)]
+        entry.update(sessions=_directive_sessions(mine),
+                     sign_ups=_directive_outcome(mine, config, 'sign_up', key_events),
                      paid_subscriptions=_directive_outcome(mine, config, 'paid_subscription', key_events), reason=None)
         out.append(entry)
-    seen = {r['content'] for r in rows or []}
+    # The weekly edition's rows are credited to newsletter, in their own block: never a slot's, never unmatched.
+    if rows is None:
+        empty = {'value': None, 'event_name': None, 'basis': None, 'reason': unknown}
+        newsletter = {'source': EDITION_SOURCE, 'utm_content': [], 'sessions': None, 'sign_ups': empty,
+                      'paid_subscriptions': empty, 'reason': unknown}
+    else:
+        edition = [r for r in rows if edition_row(r)]
+        newsletter = {'source': EDITION_SOURCE, 'utm_content': sorted({r['content'] for r in edition}),
+                      'sessions': _directive_sessions(edition),
+                      'sign_ups': _directive_outcome(edition, config, 'sign_up', key_events),
+                      'paid_subscriptions': _directive_outcome(edition, config, 'paid_subscription', key_events),
+                      'reason': None}
+    seen = {r['content'] for r in rows or [] if not edition_row(r)}
     return {'local_only': True, 'source': 'control-center web_analytics', 'measurement_id': block['measurement_id'],
             'through': block.get('through'), 'days': block.get('days'),
             'coverage': {'complete': coverage.get('complete') is True, 'reason': coverage.get('reason')},
             'join_key': 'utm_content', 'sessions_basis': 'largest per date, source and content across event rows, '
-            'so a lower bound', 'slots': out, 'unmatched_content': sorted(seen - set(owners))}
+            'so a lower bound', 'slots': out, 'unmatched_content': sorted(seen - set(owners)),
+            'newsletter': newsletter}
+
+
+def _directive_sessions(rows):
+    """Sessions from Control Center's rows without double counting: the largest per date, source and content."""
+    groups = {}
+    for r in rows:
+        key = (r['date'], r['source'], r['content'])
+        groups[key] = max(groups.get(key, 0), r['sessions'])
+    return sum(groups.values())
 
 
 def post_window(block, words, config, start, end):
     """One post's sessions and sign-ups from Control Center's block, over its own days only (start to end).
 
     The post's tracked own links name its utm_content; rows outside its days are left out, so a post is
-    judged on its first days and no other. Unknown stays None with the reason, never zero."""
-    contents = sorted({link['utm_content'] for link in own_links(words) if link['tracked']})
+    judged on its first days and no other. A weekly-edition link is credited to newsletter, never to the post.
+    Unknown stays None with the reason, never zero."""
+    links = own_links(words)
+    contents = _slot_contents(links)
     rows, reason = None, None
     if not contents:
-        reason = 'no own link with all four UTMs in its words'
+        reason = ('its only tracked links are the weekly edition\'s, credited to newsletter'
+                  if any(link['tracked'] and link['edition'] for link in links)
+                  else 'no own link with all four UTMs in its words')
     elif not isinstance(block, dict) or block.get('measurement_id') != config['measurement_id']:
         reason = "today's directive carried no web_analytics for " + config['measurement_id']
     else:
@@ -793,7 +870,7 @@ def post_window(block, words, config, start, end):
         empty = {'value': None, 'event_name': None, 'basis': None, 'reason': reason}
         return {'utm_content': contents, 'sessions': None, 'sign_ups': empty, 'reason': reason}
     start, end = calendar_date(start).isoformat(), calendar_date(end).isoformat()
-    mine = [r for r in rows if r['content'] in contents and start <= r['date'] <= end]
+    mine = [r for r in rows if r['content'] in contents and start <= r['date'] <= end and not edition_row(r)]
     events = block.get('events') if isinstance(block.get('events'), list) else []
     key_events = {e.get('name') for e in events if isinstance(e, dict) and e.get('key_event') is True}
     groups = {}

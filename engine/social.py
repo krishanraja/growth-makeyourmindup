@@ -188,8 +188,6 @@ def inventory(root=ROOT):
                 raise ValueError('unknown channel lesson: ' + lesson)
     for obj in result['format'].values():
         local_ref(root, obj['guide'])
-        if obj['production_owner'] == 'growth-canva':
-            local_ref(root, obj['production_reference'])
         if obj['max_assets'] is not None and obj['min_assets'] > obj['max_assets']:
             raise ValueError('inconsistent format asset bounds')
         mechanics = [c for c in obj['delivery_checks'] if c.startswith(SHARE_MECHANIC)]
@@ -237,7 +235,7 @@ def inventory(root=ROOT):
     return result
 
 
-# The video routes whose grid tile or player shows a cover (engine/run/video_cover.py COVER_CHANNELS).
+# The video routes whose grid tile or player shows a cover (engine/run/cover_gate.py COVER_CHANNELS).
 COVER_VIDEO_FORMATS = ('short-video', 'long-video')
 COVER_VIDEO_CHANNELS = ('instagram', 'tiktok', 'youtube', 'facebook', 'threads', 'x')
 

@@ -202,48 +202,8 @@
       "w45": false
     },
     {
-      "id": "canva-studio",
-      "row": 8,
-      "name": "Canva Studio (new)",
-      "owns": [
-        "brand kit custody",
-        "memes",
-        "Note images",
-        "receipt and quote cards",
-        "scorecards",
-        "poll results",
-        "profile art",
-        "resizes"
-      ],
-      "channels": [
-        "instagram",
-        "facebook",
-        "youtube",
-        "tiktok",
-        "x",
-        "threads",
-        "substack-notes"
-      ],
-      "formats": [
-        "meme",
-        "note-image",
-        "receipt-card",
-        "quote-card",
-        "scorecard",
-        "poll-result",
-        "profile-art",
-        "highlight-art",
-        "platform-resize"
-      ],
-      "lint": "engine/run/canva.py:lint",
-      "check": "engine/run/measure.py:check_canva",
-      "card": "crew/canva-studio/card.md",
-      "lens": "crew/canva-studio/lens.md",
-      "w45": false
-    },
-    {
       "id": "engagement",
-      "row": 9,
+      "row": 8,
       "name": "Engagement Preparer",
       "owns": [
         "Krish's reply list"
@@ -265,7 +225,7 @@
     },
     {
       "id": "attribution-ladder",
-      "row": 10,
+      "row": 9,
       "name": "Measurement Specialist",
       "owns": [
         "North Star",
@@ -287,7 +247,7 @@
     },
     {
       "id": "what-works",
-      "row": 11,
+      "row": 10,
       "name": "What-Works Analyst",
       "owns": [
         "experiments",
@@ -315,7 +275,7 @@
     },
     {
       "id": "channel-auditor",
-      "row": 12,
+      "row": 11,
       "name": "Channel Auditor",
       "owns": [
         "Saturday audit"
@@ -344,7 +304,7 @@
     },
     {
       "id": "send-test",
-      "row": 13,
+      "row": 12,
       "name": "Send-Test Reader (blind, new)",
       "owns": [
         "the blind send test",

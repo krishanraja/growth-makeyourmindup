@@ -1,3 +1,5 @@
+> **Superseded on 26 November 2026.** The kit is the v5 kit and its old contents (guidelines, logos, the component book) are archived; read `docs/BRAND-KIT.md`. This brief is kept as the record of 11 November.
+
 # Correction: the makeyourmindup brand kit (11 November 2026, final)
 
 Read this if you were briefed on the brand kit earlier on 11 November 2026. Some of

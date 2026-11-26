@@ -55,14 +55,16 @@
     },
     {
       "id": "R05",
-      "statement": "Content-engine owns production and voice standards for every format; Growth applies them (the Canva lane is the 27 Oct exception, R63).",
+      "statement": "Content-engine owns production and voice standards for every format and, since 26 Nov 2026, makes every asset and caption itself (R132); Growth applies its standards when it posts.",
       "source_file": "AGENTS.md",
       "quote": "Content-engine owns production and voice standards for every format.",
       "enforced_by": [
-        "engine/social.py:preflight"
+        "engine/social.py:preflight",
+        "engine/run/invariants.py:check_production_boundary"
       ],
       "tests": [
-        "test_wrong_account_context_and_unreviewed_voice_are_rejected"
+        "test_wrong_account_context_and_unreviewed_voice_are_rejected",
+        "test_this_repository_produces_nothing"
       ]
     },
     {
@@ -219,13 +221,16 @@
     },
     {
       "id": "R18",
-      "statement": "No parallel production pipeline or quality canon in Growth; superseded for the Canva lane only by R63.",
+      "statement": "No production pipeline or quality canon in Growth at all: since 26 Nov 2026 no exception remains (R132; the Canva lane exception of R63 is retired).",
       "source_file": "AGENTS.md",
       "quote": "Do not build a parallel production pipeline or quality canon in Growth.",
       "enforced_by": [
-        "process"
+        "engine/run/invariants.py:check_production_boundary"
       ],
-      "tests": []
+      "tests": [
+        "test_this_repository_produces_nothing",
+        "test_a_renderer_or_kit_coming_back_is_refused"
+      ]
     },
     {
       "id": "R19",
@@ -730,14 +735,14 @@
     },
     {
       "id": "R63",
-      "statement": "The Canva lane (growth-canva) may produce what content-engine does not cover; content-engine keeps its formats and standards (invariants/boundary.json).",
+      "statement": "Superseded on 26 Nov 2026 (R132): the Canva lane (growth-canva) is retired, \"Canva is crap so we don't use that anymore\"; content-engine makes every format. Kept as the record of the 27 Oct ruling.",
       "source_file": "CHANGES.md",
       "quote": "For that Canva lane only, this supersedes `docs/ENGINE-BOUNDARY.md`'s no-parallel-production line; content-engine keeps its formats and standards.",
       "enforced_by": [
-        "process"
+        "engine/run/invariants.py:load_boundary"
       ],
       "tests": [
-        "test_boundary_follows_the_canva_ruling"
+        "test_boundary_follows_the_26_november_ruling"
       ]
     },
     {
@@ -892,7 +897,7 @@
     },
     {
       "id": "R78",
-      "statement": "The one-off brand kit may be built by Cowork computer use on Krish's PC, started by him; nothing else widens.",
+      "statement": "Superseded on 26 Nov 2026 (R132): the Canva brand kit and its Cowork build are retired with the Canva lane; content-engine's v5 Library holds the brand artwork. Kept as the record of the 27 Oct one-off.",
       "source_file": "CHANGES.md",
       "quote": "you can create the brand kit in Canva with computer use on my PC",
       "enforced_by": [
@@ -1386,22 +1391,19 @@
     },
     {
       "id": "R105",
-      "statement": "Derivatives of a piece whose publish board (article, assets, video recordings) Krish approved post on every channel but LinkedIn without per-post sign-off. On or before 2026-11-29 (W45 to W48) each batch is shown to him first. Carousels, memes, opinion and reactive posts, and any class not on the derivatives list, need his approval item by item, and carousel copy must be plain English, human and humble (invariants/authority.json, engine/run/plain.py).",
+      "statement": "Derivatives of a piece whose publish board (article, assets, video recordings) Krish approved post on every channel but LinkedIn without per-post sign-off. On or before 2026-11-29 (W45 to W48) each batch is shown to him first. Carousels, memes, opinion and reactive posts, and any class not on the derivatives list, need his approval item by item (invariants/authority.json). Carousel copy must be plain English, human and humble: since 26 Nov 2026 content-engine checks that at make time, because it writes every caption (Ruling, Krish).",
       "source_file": "CHANGES.md",
       "quote": "Derivatives of approved pieces. That actually includes Instagram as well as YouTube and TikTok. Once I'm happy with the publish board (article, the assets and video recordings), you should be able to just go for gold everywhere else. I would say that for the first 4 weeks you need to show me before you post. However I think you're going to be creating new formats like carousels. The last one that went up on Make Your Mind Up Instagram was good but could have been better. It wasn't plain English and human and humble enough.",
       "enforced_by": [
         "engine/run/invariants.py:load_authority",
         "engine/run/invariants.py:may_post_alone",
-        "engine/run/calendar.py:lint",
-        "engine/run/plain.py:lint_carousel"
+        "engine/run/calendar.py:lint"
       ],
       "tests": [
         "test_authority_encodes_the_27_october_standing_approval",
         "test_derivatives_wait_for_board_and_preview_then_post_alone",
         "test_new_formats_and_unlisted_classes_need_eyes",
-        "test_linkedin_is_never_posted_alone",
-        "test_a_carousel_needs_a_humble_human_line_and_six_to_eight_cards",
-        "test_run_lint_blocks_an_unplain_carousel_and_warns_on_other_captions"
+        "test_linkedin_is_never_posted_alone"
       ]
     },
     {
@@ -1525,19 +1527,14 @@
     },
     {
       "id": "R114",
-      "statement": "The code renderer draws every post; a piece kit is built by Codex only from a card a Claude session writes, through the Codex plugin (Ruling, Krish, 2026-11-13), and the renderer checks it (house colours and fonts painted, byte-identical renders, no pictures of people, nothing remote) before any mock of it reaches his approval.",
+      "statement": "Superseded on 26 Nov 2026 (R132): Growth has no renderer, no piece kits and no kit checks. Content-engine's v5 Library templates are the only artwork; this rule stays as the record of the 13 Nov route.",
       "source_file": "CHANGES.md",
       "quote": "we need to find a way of combining strengths",
       "enforced_by": [
-        "engine/run/kits.py:kit_errors",
-        "engine/run/kits.py:painted_errors",
-        "engine/run/kits.py:main"
+        "engine/run/invariants.py:check_production_boundary"
       ],
       "tests": [
-        "test_an_off_kit_colour",
-        "test_a_remote_font",
-        "test_an_img",
-        "test_the_wordmark_a_person_a_secret_and_a_stray_file"
+        "test_the_old_producers_are_gone"
       ]
     },
     {
@@ -1771,16 +1768,14 @@
     },
     {
       "id": "R126",
-      "statement": "Every carousel, meme and Notes image is made in a Claude session, with the Codex plugin building it; no workflow, cron or runner here runs Codex, the renderer or the kit checks, and memes and Notes images follow the carousel route, not the Canva lane (content-engine docs/CAROUSEL-STANDARD.md, \"How a carousel is made\").",
+      "statement": "Superseded on 26 Nov 2026 (R132): carousels, memes and Notes images are made by content-engine from its v5 Library (python scripts/library/make_piece.py <piece> --set <set>), never in Growth; no workflow, cron or runner here makes one.",
       "source_file": "CHANGES.md",
       "quote": "all the carousels should now be done in Claude, but using the Codex plug in as per the other usual workflows",
       "enforced_by": [
-        "process"
+        "engine/run/invariants.py:check_production_boundary"
       ],
       "tests": [
-        "test_no_workflow_makes_one",
-        "test_no_runner_or_lane_runs_codex",
-        "test_memes_and_notes_images_take_the_same_route"
+        "test_a_renderer_or_kit_coming_back_is_refused"
       ]
     },
     {
@@ -1802,7 +1797,7 @@
     },
     {
       "id": "R128",
-      "statement": "No video goes out without its designed cover: on Instagram, TikTok, YouTube, Facebook, Threads and X every video carries a thumbnailOffset that points at the designed cover appended to the cut (growth.py run cover append), and release, the L0 carry, the maker and the pre-send read refuse or hold one with a null offset; every video route closes against its grid or player cover.",
+      "statement": "No video goes out without its designed cover: on Instagram, TikTok, YouTube, Facebook, Threads and X every video carries a thumbnailOffset that points at the designed cover content-engine baked into the cut, and release, the L0 carry, the maker and the pre-send read refuse or hold one with a null offset; every video route closes against its grid or player cover. Since 26 Nov 2026 Growth keeps only this gate (engine/run/cover_gate.py); content-engine makes the cover.",
       "source_file": "CHANGES.md",
       "quote": "\"the thumbnail is ridiculously poor, and that must never be the case\"",
       "enforced_by": [
@@ -1810,7 +1805,7 @@
         "engine/run/buffer_api.py:carried",
         "engine/run/maker.py:mock_manifest",
         "engine/run/reconcile.py:presend",
-        "engine/run/video_cover.py:prepare",
+        "engine/run/cover_gate.py:offset_ok",
         "engine/engines/publishing.py:applicable_checks"
       ],
       "tests": [
@@ -1822,37 +1817,26 @@
     },
     {
       "id": "R129",
-      "statement": "A carousel's cover is its own template and never looks like its body cards; every body card carries one full plain sentence of 8 to 20 words that leans on no other card, set centred inside the safe margin under a visual anchor; the judges are given each card's own view link and never judge blind.",
+      "statement": "A carousel's cover is its own template and never looks like its body cards, every body card carries one full plain sentence, and the judges see each card, never judging blind. Since 26 Nov 2026 content-engine holds all of this at make time (its v5 Library, CAROUSEL-FORMAT.md, and its make flow asks the 10/10 judges itself); Growth only binds the pass to the post it saves.",
       "source_file": "CHANGES.md",
       "quote": "\"the front cover card does not look like a front cover. It looks like all the rest of the cards\"",
       "enforced_by": [
-        "engine/run/kits.py:cover_errors",
-        "engine/run/kits.py:layout_errors",
-        "engine/run/plain.py:body_card_errors",
-        "engine/run/judges.py:judge"
+        "engine/run/judges.py:bind"
       ],
       "tests": [
-        "test_a_cover_drawn_like_its_body_cards_is_refused",
-        "test_every_body_card_is_one_full_sentence_a_stranger_can_follow",
-        "test_a_centred_line_sits_on_the_centre_line",
-        "test_every_picture_goes_with_its_view_link_and_a_blind_ask_holds"
+        "test_every_carousel_and_short_is_bound_to_its_post_and_no_judge_is_asked"
       ]
     },
     {
       "id": "R130",
-      "statement": "Every tall frame keeps what must be read inside the clear box every channel leaves (y 270 to 1320, x 200 to 880), and a tall meme with a clip is built on meme-tall and composed with growth.py run meme compose, centred by construction, never by hand.",
+      "statement": "Superseded on 26 Nov 2026 (R132): the tall frame's clear box and the tall meme's composition are content-engine's v5 Library rules, held by its gates at make time; Growth composes nothing.",
       "source_file": "CHANGES.md",
       "quote": "\"The POV computer meme, it's not centralized on the screen.\"",
       "enforced_by": [
-        "engine/run/kits.py:layout_errors",
-        "engine/run/tall_meme.py:placement_errors",
-        "engine/run/tall_meme.py:compose"
+        "engine/run/invariants.py:check_production_boundary"
       ],
       "tests": [
-        "test_a_tall_frame_keeps_everything_in_the_clear_box",
-        "test_every_clip_shape_lands_centred_in_the_clear_box",
-        "test_compose_puts_the_clip_in_the_window",
-        "test_the_redrawn_cards_and_the_tall_meme_are_centred_inside_the_safe_box"
+        "test_a_renderer_import_or_an_image_tool_call_is_refused"
       ]
     },
     {
@@ -1871,6 +1855,40 @@
         "test_the_module_opens_no_network_connection",
         "test_a_recorded_boost_holds_its_post_out_of_the_organic_baseline",
         "test_subscribers_from_a_boosted_platform_in_its_window_are_not_provably_organic"
+      ]
+    },
+    {
+      "id": "R132",
+      "statement": "Content-engine makes every asset: hero pieces, carousels, memes, Substack Notes images and copy, the captions and titles for each channel, covers, thumbnails, cuts and the weekly edition package, from its v5 Library, and hands Growth finished, approved assets with their captions in the piece manifest. Growth grows the channel: it posts, schedules in Buffer, places the weekly edition in Substack, distributes, runs the subscribe route, measures, learns, keeps mix.json and the experiments, and reports performance back. A renderer, template, font, image tool or caption writer in this repository fails the build (invariants/boundary.json).",
+      "source_file": "CHANGES.md",
+      "quote": "I believe that growth should move all asset production to Content Engine. I see no point in having a separate repository produce specific assets.",
+      "enforced_by": [
+        "engine/run/invariants.py:check_production_boundary",
+        "engine/run/invariants.py:load_boundary"
+      ],
+      "tests": [
+        "test_every_asset_kind_is_made_by_content_engine",
+        "test_this_repository_produces_nothing",
+        "test_a_renderer_or_kit_coming_back_is_refused",
+        "test_a_template_font_or_design_file_is_refused",
+        "test_a_renderer_import_or_an_image_tool_call_is_refused",
+        "test_a_caption_writer_coming_back_is_refused",
+        "test_the_dated_plan_records_and_the_tests_are_exempt",
+        "test_a_slot_with_no_caption_holds_and_the_maker_writes_none"
+      ]
+    },
+    {
+      "id": "R133",
+      "statement": "Only the weekly edition emails the whole list (Ruling, Krish, 2026-11-25). A series piece's (Monday, Wednesday, Friday) Substack step never emails everyone: the piece goes to the web and the app, and a reader who opted in to every piece may get it through that section or a send to that segment only. The Monday read names any series post that emailed more readers than the opt-in section holds, a count it could not read is unknown and never a pass, and the Sunday report shows each one as a failure.",
+      "source_file": "docs/PUBLISHING-AUTHORITY.md",
+      "quote": "The Substack step of a series piece never emails the whole list; only the weekly edition emails everyone.",
+      "enforced_by": [
+        "engine/run/subscribers.py:series_email_check"
+      ],
+      "tests": [
+        "test_a_series_post_above_the_opt_in_section_is_a_failure",
+        "test_with_no_opt_in_section_any_email_is_a_failure_and_unknown_is_never_a_pass",
+        "test_the_weekly_edition_rule_is_quoted_and_guarded"
       ]
     }
   ]

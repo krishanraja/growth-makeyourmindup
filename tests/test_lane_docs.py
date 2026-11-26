@@ -59,7 +59,8 @@ class LaneDocTests(unittest.TestCase):
         docs = ['README.md', 'AGENTS.md', 'docs/RUN.md', 'docs/LANES.md', 'docs/SETUP-ONCE.md', 'docs/KEY.md',
                 'docs/GET-GOING.md', 'docs/SESSION-HANDOVER.md', 'docs/TASTE.md', 'jobs/daily-growth.md']
         for doc in docs:
-            body = text(doc)
+            # The canon block is rendered from ai-harness and names paths in other repositories.
+            body = re.sub(r'<!-- krish-canon:start.*?<!-- krish-canon:end -->', '', text(doc), flags=re.S)
             base = (ROOT / doc).parent
             for target in LINK.findall(body):
                 if re.match(r'[a-z]+:', target) or target.startswith('#'):

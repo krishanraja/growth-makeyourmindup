@@ -1,5 +1,42 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-26: The weekly edition's Substack step follows v5. His words: "send nothing until all this is done".
+  `jobs/edition.md` now schedules nothing until `docs/V5-REBRAND.md` section 5 records that the Substack branding
+  is v5 (`branding_not_v5`). His handwritten opener and signed footnote (signed Krish, with his signature, headshot,
+  krishraja.com and one mindmake.co link; section 3) come only from the package. Codex still uploads nothing: part
+  A leaves the email's pictures for him to place (`images_pending`) and part B holds while one or its alt text is
+  missing (`images_missing`). Edition one opens draft 226648035. Nothing was sent, posted, scheduled or spent.
+- 2026-11-26: The weekly edition goes to all subscribers. His words: "substack weekly should be sent to ALL
+  subscribers". On this publication a new Substack post starts as "Paid subscribers only", so `jobs/edition.md` now
+  sets the edition post's audience to Everyone in part A and reads it back. Part B schedules nothing on any other
+  audience (`wrong_audience`). That post's audience is the one setting the job may change. Nothing was sent, posted,
+  scheduled or spent.
+- 2026-11-25: One email a week, the weekly edition, and Claude schedules in Buffer. His words, on the weekly edition
+  design (pull request 143): "Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex".
+  The publication sends one email a week, "makeyourmindup weekly", Saturday 08:00 New York, only on his Approve for
+  send bound to the edition package's sha256; the Monday, Wednesday and Friday pieces go to the web and the app and
+  never email the whole list (R133). On the follow-up he chose "Codex, Substack step only": Codex on the worker keeps
+  only the edition's Substack editor step (`jobs/edition.md`, written and switched off until he turns it on), and
+  Claude schedules every Buffer post. The edition's links carry `utm_source=newsletter` (`specs/subscribe-route.json`,
+  `edition`); the Monday read takes the edition's numbers and names any series post that emailed more readers than
+  the opt-in section holds. Nothing was sent, posted, scheduled or spent.
+- 2026-11-26: Content-engine makes every asset; Growth grows the channel. His words, in the story-engine session:
+  "I believe that growth should move all asset production to Content Engine. I see no point in having a separate
+  repository produce specific assets. How can you accomplish this and ensure that this is updated absolutely
+  everywhere and that there can be no confusion moving forward? This would leave growth in charge of simply growing
+  the channel." Then "I want everything to be one harmonious engine." Captions and titles move to content-engine too,
+  which retires his 19 Nov ruling that Growth generates every caption. On Canva: "Canva is crap so we don't use that
+  anymore." The Canva lane is retired whole (its receipt, quote, scorecard, poll and Story frame formats,
+  crew/canva-studio, canva.py and the Canva briefs). The v5 Library in content-engine is locked (he delegated its
+  approval and said "I approve the new cover thumbnail systems, go"), so Growth's renderer is deleted, not moved:
+  covers and thumbnails come from content-engine's `python scripts/covers/make_covers.py <piece> --out <folder>` and
+  carousels from `python scripts/library/make_piece.py <piece> --set <set>`. What stays Growth: posting, scheduling in
+  Buffer, the weekly edition's Substack placement (PR 144), distribution, the subscribe route, measurement, learning,
+  mix.json and the experiments, and reporting performance back. This supersedes the rulings of 26 Oct (the split),
+  27 Oct (the Canva lane), 28 Oct (Growth makes derived carousels, Notes, memes and off-day posts), the Growth-side kit
+  route of 13 Nov (R126) and 19 Nov (captions). `invariants/boundary.json` assigns every asset kind to content-engine
+  and `tests/test_production_boundary.py` fails if a renderer, template, font, image tool or caption writer comes back.
+  Nothing was posted, sent or spent.
 - 2026-11-19: ManyChat Pro kept for the keyword-DM test. Asked whether to keep the makeyourmindup.ai workspace on Pro
   when its trial ends on 27 Nov 2026, at $348 a year plus overages, Krish chose "Approve $348/year". Only that workspace
   is used ("only use makeyourmindup.ai account, NOT the other one"). Instagram @makeyourmind.up is already connected

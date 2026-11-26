@@ -221,5 +221,175 @@ class IngestTests(unittest.TestCase):
             self.assertEqual(ROUTES['subscribers'], 'subscribers')
 
 
+RENEWED = {'cohorts': [{'first_paid_month': '2026-09', 'renewed': 4, 'cancelled': 1},
+                       {'first_paid_month': '2026-10', 'renewed': 6, 'cancelled': 0}],
+           'source_url': 'https://synthetic.substack.com/publish/subscribers/paid', 'reason': None}
+
+
+class RenewalTests(unittest.TestCase):
+    """Renewals and paid cancellations by first-paid month, counts only (config/revenue-desk.json, renewal)."""
+
+    def test_counted_when_every_cohort_shows_both(self):
+        capture = subscribers.validate(taken(renewals=copy.deepcopy(RENEWED)), NOW)
+        got = subscribers.renewals(capture)
+        self.assertEqual((got['renewed'], got['cancelled'], got['reason']), (10, 1, None))
+        self.assertEqual([c['first_paid_month'] for c in got['cohorts']], ['2026-09', '2026-10'])
+
+    def test_unknown_is_null_with_its_reason_never_zero(self):
+        gap = copy.deepcopy(RENEWED)
+        gap['cohorts'][1]['cancelled'] = None
+        got = subscribers.renewals(subscribers.validate(taken(renewals=gap), NOW))
+        self.assertIsNone(got['renewed'])
+        self.assertIn('2026-10', got['reason'])
+        shown = {'cohorts': [], 'source_url': None, 'reason': 'the dashboard showed no renewals view'}
+        self.assertEqual(subscribers.renewals(taken(renewals=shown))['reason'], shown['reason'])
+        self.assertIn('predates', subscribers.renewals(subscribers.validate(taken(), NOW))['reason'])
+        self.assertIsNone(subscribers.renewals(missed())['renewed'])
+
+    def test_the_block_is_closed(self):
+        bad = [dict(RENEWED, reason='both'),
+               {'cohorts': [], 'source_url': None, 'reason': None},
+               dict(RENEWED, cohorts=[{'first_paid_month': '2026-9', 'renewed': 1, 'cancelled': 0}]),
+               dict(RENEWED, cohorts=[{'first_paid_month': '2026-12', 'renewed': 1, 'cancelled': 0}]),
+               dict(RENEWED, cohorts=[{'first_paid_month': '2026-09', 'renewed': -1, 'cancelled': 0}]),
+               dict(RENEWED, cohorts=[{'first_paid_month': '2026-09', 'renewed': 1, 'cancelled': 0, 'email': 'x'}]),
+               dict(RENEWED, cohorts=RENEWED['cohorts'] + RENEWED['cohorts'][:1])]
+        for block in bad:
+            with self.assertRaises(ValueError, msg=str(block)):
+                subscribers.validate(taken(renewals=copy.deepcopy(block)), NOW)
+
+    def test_the_template_asks_for_it(self):
+        self.assertEqual(subscribers.template(NOW)['renewals']['reason'], 'not checked')
+
+
+EDITION_WEEK = read_json(Path(__file__).resolve().parent / 'fixtures' / 'subscribers' / 'edition-week.json')
+
+
+def with_edition(**changes):
+    """A taken capture with the fixture's edition and series blocks (jobs/subscribers.md steps 6b and 6c)."""
+    blocks = {'edition': copy.deepcopy(EDITION_WEEK['edition']),
+              'series_posts': copy.deepcopy(EDITION_WEEK['series_posts'])}
+    blocks.update(changes)
+    return taken(**blocks)
+
+
+class EditionReadTests(unittest.TestCase):
+    """The weekly edition's numbers and each series post's recipients (Krish, 2026-11-25: one email a week; the
+    pieces go to the web and the app, by email only to the readers who opted in). Synthetic fixture only."""
+
+    def test_an_older_capture_without_the_blocks_still_ingests_unchanged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = root(tmp)
+            done = subscribers.ingest(taken(), base, True, NOW, APPROVED)
+            self.assertEqual((done['state']['current'], done['ledger']), (5, 'appended'))
+            kept = done['summary']
+            self.assertFalse(kept['edition']['read'])
+            self.assertIn('predates', kept['edition']['reason'])
+            self.assertIn('predates', kept['series_emails']['reason'])
+            self.assertEqual(kept['series_emails']['failures'], [])
+
+    def test_the_edition_numbers_are_read_as_shown_and_a_gap_keeps_its_reason(self):
+        got = subscribers.edition_reading(subscribers.validate(with_edition(), NOW))
+        self.assertTrue(got['read'])
+        self.assertEqual((got['edition_date'], got['recipients'], got['unique_clicks'], got['click_rate'],
+                          got['unsubscribes'], got['new_subscriptions']), ('2026-11-14', 480, 30, 6.2, 2, 3))
+        self.assertIsNone(got['open_rate'])
+        self.assertIn('no open rate', got['not_shown']['open_rate'])
+        not_read = copy.deepcopy(subscribers.template(NOW)['edition'])
+        not_read['reason'] = 'no weekly edition went out that week'
+        self.assertEqual(subscribers.edition_reading(subscribers.validate(with_edition(edition=not_read), NOW)),
+                         {'read': False, 'edition_date': '2026-11-14', 'reason': 'no weekly edition went out that week'})
+        self.assertEqual(subscribers.edition_reading(missed())['reason'], 'the weekly read was not taken')
+
+    def test_a_series_post_above_the_opt_in_section_is_a_failure(self):
+        check = subscribers.series_email_check(subscribers.validate(with_edition(), NOW))
+        self.assertEqual((check['checked'], check['passed'], check['allowed'], check['reason']), (3, 2, 12, None))
+        self.assertEqual(check['failures'], [{'day': 'fri', 'url': 'https://home.makeyourmindup.ai/p/synthetic-friday-piece',
+                                              'recipients': 478, 'allowed': 12}])
+        self.assertEqual(check['unknown'], [])
+
+    def test_with_no_opt_in_section_any_email_is_a_failure_and_unknown_is_never_a_pass(self):
+        series = copy.deepcopy(EDITION_WEEK['series_posts'])
+        series['section'] = {'name': None, 'subscribers': None, 'source_url': None,
+                             'reason': 'the publication has no opt-in section yet'}
+        check = subscribers.series_email_check(subscribers.validate(with_edition(series_posts=series), NOW))
+        self.assertEqual(([f['day'] for f in check['failures']], check['allowed']), (['wed', 'fri'], 0))
+        series['section'] = {'name': 'Synthetic every piece', 'subscribers': None, 'source_url': None,
+                             'reason': 'the sections page showed no subscriber count'}
+        series['posts'][0]['recipients'], series['posts'][0]['reason'] = None, 'the post showed no recipients'
+        check = subscribers.series_email_check(subscribers.validate(with_edition(series_posts=series), NOW))
+        self.assertEqual(check['failures'], [])
+        self.assertEqual(check['passed'], 0)
+        self.assertEqual([u['day'] for u in check['unknown']], ['mon', 'wed', 'fri'])
+        self.assertIn('no recipients', check['unknown'][0]['reason'])
+        self.assertIn('no subscriber count', check['unknown'][1]['reason'])
+
+    def test_the_sunday_report_reads_the_failure_from_the_private_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = root(tmp)
+            subscribers.ingest(with_edition(), base, True, NOW, APPROVED)
+            kept = [json.loads(x) for x in (base / '.scratch/substack/weekly.jsonl').read_text().splitlines()]
+            self.assertEqual(len(kept[-1]['series_emails']['failures']), 1)
+            self.assertEqual(kept[-1]['edition']['recipients'], 480)
+            # Counts stay in the ignored .scratch, never in the committed ledger.
+            self.assertNotIn('480', (base / 'lists' / 'northstar-history.jsonl').read_text())
+            path = base / '.scratch' / 'week.json'
+            path.write_text(json.dumps(with_edition()), encoding='utf-8')
+            code, text = run(['ingest', str(path), '--now', NOW, '--sources', str(APPROVED)], base)
+            self.assertEqual(code, 0, text)
+            self.assertIn('Weekly edition of 2026-11-14: recipients 480, unique clicks 30, unsubscribes 2, '
+                          'new subscriptions 3.', text)
+            self.assertIn('1 emailed more readers than the opt-in section holds (a failure for the Sunday report)',
+                          text)
+            self.assertNotIn('%', text)
+
+    def test_the_blocks_are_closed_and_never_guess(self):
+        def edition(**changes):
+            block = copy.deepcopy(EDITION_WEEK['edition'])
+            block.update(changes)
+            return block
+
+        def series(change):
+            block = copy.deepcopy(EDITION_WEEK['series_posts'])
+            change(block)
+            return block
+        bad = [
+            ({'edition': edition(edition_date='2026-11-15')}, 'Saturday of the week read'),
+            ({'edition': edition(recipients=-1)}, 'non-negative'),
+            ({'edition': edition(click_rate=101)}, 'percent sign'),
+            ({'edition': edition(click_rate='6.2 percent')}, 'percent sign'),
+            ({'edition': edition(open_rate=None, not_shown={})}, 'not_shown names every null'),
+            ({'edition': edition(open_rate=20.1)}, 'not_shown names every null'),
+            ({'edition': edition(unique_clicks=481)}, 'more than its recipients'),
+            ({'edition': edition(url='https://example.com/p/x')}, 'on Substack itself'),
+            ({'edition': edition(email='x')}, 'exactly'),
+            ({'edition': edition(reason='not read')}, 'nothing is guessed'),
+            ({'edition': edition(not_shown={'open_rate': 'about thirty per cent'})}, 'percentage'),
+            ({'series_posts': series(lambda b: b['posts'][0].update(day='tue'))}, 'day is'),
+            ({'series_posts': series(lambda b: b['posts'][0].update(recipients=None))}, 'not both'),
+            ({'series_posts': series(lambda b: b['posts'].append(dict(b['posts'][0])))}, 'once'),
+            ({'series_posts': series(lambda b: b['section'].update(subscribers=None))}, 'not both'),
+            ({'series_posts': series(lambda b: b['section'].update(source_url=None))}, 'page it was read on'),
+            ({'series_posts': series(lambda b: b['section'].update(name=None))}, 'no opt-in section'),
+            ({'series_posts': series(lambda b: b.update(reason='not checked'))}, 'nothing is guessed'),
+            ({'series_posts': series(lambda b: b['posts'][0].update(email='x'))}, 'exactly'),
+        ]
+        for changes, message in bad:
+            with self.assertRaisesRegex(ValueError, message, msg=str(changes)):
+                subscribers.validate(with_edition(**changes), NOW)
+        guessed = missed()
+        guessed['edition'] = copy.deepcopy(EDITION_WEEK['edition'])
+        with self.assertRaisesRegex(ValueError, 'nothing is guessed'):
+            subscribers.validate(guessed, NOW)
+        empty = subscribers.template(NOW)
+        subscribers.validate(dict(missed(), edition=empty['edition'], series_posts=empty['series_posts']), NOW)
+
+    def test_the_template_asks_for_both(self):
+        made = subscribers.template(NOW)
+        self.assertEqual(set(made['edition']), subscribers.EDITION_KEYS)
+        self.assertEqual((made['edition']['edition_date'], made['edition']['reason']), ('2026-11-14', 'not checked'))
+        self.assertEqual(made['series_posts'], {'section': None, 'posts': [], 'reason': 'not checked'})
+
+
 if __name__ == '__main__':
     unittest.main()

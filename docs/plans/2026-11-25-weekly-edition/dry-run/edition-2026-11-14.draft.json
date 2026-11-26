@@ -1,0 +1,175 @@
+{
+  "checks": {
+    "kill_list": "pass",
+    "sources": "pass",
+    "voice": "pass",
+    "words": 0
+  },
+  "edition_date": "2026-11-14",
+  "name": "makeyourmindup weekly",
+  "preview_text": "Plus how an AI demo became a UK number two, why ranking staff by AI use backfired, and three new lawsuits against Suno.",
+  "schema": "content-engine-edition/1",
+  "sections": [
+    {
+      "kind": "opener",
+      "text": "From today you get one email a week, every Saturday, with the week's three pieces and the news that matters. If you want each piece by email the day it goes up, switch it on in your email settings. This week: Disney and a bankrupt AI app, an AI demo that reached number two, and staff who gamed AI rankings."
+    },
+    {
+      "kind": "contents",
+      "lines": [
+        "Monday: why Disney is hiring the team behind bankrupt Character.AI",
+        "Wednesday: how an AI demo became a UK number two",
+        "Friday: why ranking staff by AI use backfired",
+        "Also: three new lawsuits against Suno, Disney's AI deal with Adobe, and five more stories from film, music and media"
+      ]
+    },
+    {
+      "cover": {
+        "alt": "The Delaware bankruptcy court filing for Character Technologies, with Disney Worldwide Services circled, beside the logos of Google, Disney, Character.AI, Warner Music Group and Universal Music Group.",
+        "url": "https://substack-post-media.s3.amazonaws.com/public/images/37a8c1b0-6c2b-412b-b7c9-c9d583bdb857_1200x630.png"
+      },
+      "day": "mon",
+      "kind": "piece",
+      "label": "Monday: who gets paid",
+      "summary": "Character.AI, the app where millions of people chat with made-up characters, filed for bankruptcy on 12 October. In 2024 Google reportedly paid $2.7 billion to licence Character.AI's technology and hire the founders. Now Disney has offered jobs to 66 Character.AI staff, worth about $180 million over three years, and opened the bidding for the technology at $20 million, through the bankruptcy court. The piece follows who gets what, and who keeps the lawsuits.",
+      "title": "Why is Disney eating the scraps of bankrupt Character.AI?",
+      "url": "https://home.makeyourmindup.ai/p/why-is-disney-eating-the-scraps-of?utm_source=newsletter&utm_medium=email&utm_campaign=weekly&utm_content=edition-2026-11-14-piece-mon",
+      "video_url": null
+    },
+    {
+      "cover": {
+        "alt": "The Official Charts page for Movin' To The Sun by HUGEL, Imael Angel and Ultra Naté, with its peak position circled.",
+        "url": "https://substack-post-media.s3.amazonaws.com/public/images/04c8cee2-69cf-4140-97c6-39ddb7dfbcc5_1200x630.png"
+      },
+      "day": "wed",
+      "kind": "piece",
+      "label": "Wednesday: how it really works",
+      "summary": "Movin' To The Sun reached number two in the UK, credited to HUGEL, Imael Angel and Ultra Naté. It began as a demo that Imael Angel, a Reiki master with no studio, made with an AI music app. The DJ HUGEL rebuilt the track from samples and presets, and Ultra Naté sang it over a thin layer of the original AI voice. The piece traces who did which bit, and why the Grammys split the song in two.",
+      "title": "A Reiki master wrote a UK number two, and it's both AI and human",
+      "url": "https://home.makeyourmindup.ai/p/a-reiki-master-wrote-a-uk-number?utm_source=newsletter&utm_medium=email&utm_campaign=weekly&utm_content=edition-2026-11-14-piece-wed",
+      "video_url": null
+    },
+    {
+      "cover": {
+        "alt": "A Fortune article headlined: A Meta employee created a dashboard so coworkers can compete to be the company's No. 1 AI token user.",
+        "url": "https://substack-post-media.s3.amazonaws.com/public/images/99c70a4b-fa84-4deb-93a0-b7b8735e189d_1200x630.png"
+      },
+      "day": "fri",
+      "kind": "piece",
+      "label": "Friday: where it leads",
+      "summary": "At Meta, an internal leaderboard ranked the top 250 of more than 85,000 staff by how many AI tokens they used, with titles like Token Legend. At Amazon, some staff set AI agents to work on unnecessary tasks to climb a ranking called KiroRank. Both rankings came down, and Duolingo, Meta and Amazon have since backed away from judging staff on AI use. The piece explains why counting AI use backfires, and what to count instead.",
+      "title": "Meta staff were ranked by AI use. They gamed it.",
+      "url": "https://home.makeyourmindup.ai/p/meta-staff-were-ranked-by-ai-use?utm_source=newsletter&utm_medium=email&utm_campaign=weekly&utm_content=edition-2026-11-14-piece-fri",
+      "video_url": null
+    },
+    {
+      "groups": [
+        {
+          "items": [
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "Suno is the embodiment of why the ELVIS Act (Ensuring Likeness, Voice, and Image Security) was so essentially required.",
+              "source_name": "the court filing",
+              "source_url": "https://storage.courtlistener.com/recap/gov.uscourts.cand.483292/gov.uscourts.cand.483292.1.0.pdf",
+              "text": "Elvis Presley Enterprises and other rights holders sued the AI music app Suno for copyright infringement in California on 6 November, citing Tennessee's ELVIS Act, which protects a performer's voice and likeness."
+            },
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "Eight Mile Style identifies 269 Works herein",
+              "source_name": "the court filing",
+              "source_url": "https://storage.courtlistener.com/recap/gov.uscourts.cand.483293/gov.uscourts.cand.483293.1.0.pdf",
+              "text": "The same day, Eminem's publisher, Eight Mile Style, sued Suno over 269 of his songs."
+            },
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "A list of 1,368 copyrighted musical compositions in which Reservoir owns 100 percent or exclusively controls the United States copyrights",
+              "source_name": "the court filing",
+              "source_url": "https://archive.org/download/gov.uscourts.cand.481740/gov.uscourts.cand.481740.20.0.pdf",
+              "text": "On 11 November the music publisher Reservoir filed an amended complaint against Suno that lists 1,368 of its songs."
+            }
+          ],
+          "topic": "Licensing and rights"
+        },
+        {
+          "items": [
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "these proprietary models are trained on unique world knowledge (character attributes, environments, visual styles",
+              "source_name": "Adobe",
+              "source_url": "https://news.adobe.com/news/2026/11/adobe-and-the-walt-disney-company-alliance",
+              "text": "Disney signed a multi-year deal with Adobe on 9 November that includes generative AI models built for Disney's own characters, settings and visual styles."
+            },
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "the latest in AI tools, we expect to bring Paramount+ and HBO Max together much faster",
+              "source_name": "Paramount Skydance, letter to shareholders",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/2041610/000204161026000062/ex99_q326.htm",
+              "text": "Paramount Skydance told shareholders on 9 November that, with the latest AI tools, it expects to bring Paramount+ and HBO Max together much faster."
+            }
+          ],
+          "topic": "Film, TV and streaming"
+        },
+        {
+          "items": [
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "Expands a traditional 8-10 asset shoot into approximately 30-50 media-ready assets",
+              "source_name": "Ogilvy",
+              "source_url": "https://www.ogilvy.com/ideas/ogilvy-launches-echo-industrys-first-talent-consent-based-creative-ai-platform",
+              "text": "The ad agency Ogilvy launched ECHO with the talent agency CAA on 9 November. It makes ads from stars' stored digital scans, nothing goes out until the star's side signs it off, and Ogilvy says one shoot that gave 8 to 10 pieces can now give about 30 to 50."
+            }
+          ],
+          "topic": "Media and entertainment"
+        },
+        {
+          "items": [
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "Prompts entered in Bridge create brand new instrumentation and vocals that fit the tempo, key, style, harmonic content and groove of your Ableton session.",
+              "source_name": "Suno",
+              "source_url": "https://suno.com/blog/introducing-bridge",
+              "text": "Suno launched a test version of Bridge on 13 November, an app that writes new instrument and vocal parts inside Ableton Live 12 on a Mac, matched to the song's tempo and key."
+            }
+          ],
+          "topic": "Music"
+        },
+        {
+          "items": [
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "top models from Adobe, Topaz Labs and partners including ByteDance, Google, Kling, OpenAI, ElevenLabs and more",
+              "source_name": "Adobe",
+              "source_url": "https://news.adobe.com/news/2026/11/adobe-firefly-expands",
+              "text": "Adobe said on 10 November that its Firefly app now offers AI models from ByteDance, Google, Kling, OpenAI and ElevenLabs alongside its own."
+            }
+          ],
+          "topic": "Creative tools and platforms"
+        },
+        {
+          "items": [
+            {
+              "checked_at": "2026-11-25T19:40:00Z",
+              "quote": "we saw CANVAS episodes read by our non-English readers grow almost 40%",
+              "source_name": "WEBTOON, letter to shareholders",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1997859/000199785926000098/a261106_2026q3xsharehold.htm",
+              "text": "WEBTOON said on 9 November that after it began translating self-published English comics into other languages with AI, its non-English readers read almost 40% more episodes of those comics."
+            }
+          ],
+          "topic": "Creators and creator tech"
+        }
+      ],
+      "kind": "news"
+    },
+    {
+      "kind": "pass_it_on",
+      "text": "Forward this to one person in music, film, games or media who should read it. If someone forwarded it to you, you can get your own every Saturday.",
+      "url": "https://home.makeyourmindup.ai/subscribe?utm_source=newsletter&utm_medium=email&utm_campaign=weekly&utm_content=edition-2026-11-14-forward"
+    },
+    {
+      "kind": "close",
+      "text": "That's the week. The next edition lands on Saturday 21 November."
+    }
+  ],
+  "subject": "Why is Disney eating the scraps of bankrupt Character.AI?",
+  "week_of": "2026-11-09"
+}

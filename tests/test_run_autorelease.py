@@ -1216,9 +1216,10 @@ class ShowBeforePostTests(unittest.TestCase):
         # Krish, 27 Oct: derivatives of an approved piece go out everywhere once the preview weeks end.
         from engine.run.autorelease import derivative_formats
         real = derivative_formats()
-        self.assertTrue({'quote-card', 'receipt-card', 'note', 'story-frame', 'short-video'} <= real)
+        # The quote and receipt card classes post as single images since the Canva lane retired (26 Nov 2026).
+        self.assertTrue({'single-image', 'note', 'story', 'short-video'} <= real)
         self.assertFalse({'carousel', 'meme'} & real, 'new formats need his eyes, item by item')
-        slot = {'format': 'quote-card'}
+        slot = {'format': 'single-image'}
         self.assertFalse(standing_derivative_allowed(slot, {'decision': 'approved'}, '2026-11-29'))
         self.assertTrue(standing_derivative_allowed(slot, {'decision': 'approved'}, '2026-11-30'))
         self.assertFalse(standing_derivative_allowed({'format': 'carousel'}, {'decision': 'approved'}, '2026-11-30'))

@@ -737,32 +737,17 @@
       "id": "F70",
       "title": "A carousel or caption is not plain English, human and humble",
       "source": "CHANGES.md 2026-10-27 (evening) (R105); social/lessons/carousel-plain-english.json",
-      "guard": "engine/run/plain.py:lint_carousel and engine/run/plain.py:lint_text",
-      "tests": [
-        "test_good_synthetic_carousel_passes",
-        "test_long_sentences_and_long_averages_are_refused",
-        "test_jargon_and_em_dashes_are_refused",
-        "test_stacked_two_word_fragments_are_refused",
-        "test_a_carousel_needs_a_humble_human_line_and_six_to_eight_cards",
-        "test_carousel_lint_is_a_run_route",
-        "test_run_lint_blocks_an_unplain_carousel_and_warns_on_other_captions"
-      ],
-      "status": "tested"
+      "guard": "Superseded on 26 Nov 2026: content-engine writes every caption and checks carousel copy for plain English at make time (Ruling, Krish: content-engine makes every asset); Growth's plain.py is deleted, and the maker still holds any caption that fails the copy lint, the claim or the voice check",
+      "tests": [],
+      "status": "superseded"
     },
     {
       "id": "F71",
       "title": "A Canva export is off the brand kit, the wrong size for its channel, carries boilerplate or quotes words the piece does not contain",
       "source": "social/guides/canva.md; social/brand/kit.json (kit kAHZOJ-K6I8)",
-      "guard": "engine/run/canva.py:lint_design and engine/social.py:has_boilerplate",
-      "tests": [
-        "test_kit_holds_the_makeyourmindup_brand",
-        "test_an_on_kit_design_passes",
-        "test_off_kit_colour_font_and_size_are_refused",
-        "test_a_quote_must_be_a_literal_match_to_the_piece",
-        "test_boilerplate_and_unapproved_templates_are_refused",
-        "test_canva_lint_is_a_run_route"
-      ],
-      "status": "tested"
+      "guard": "Superseded on 26 Nov 2026: Krish retired the Canva lane (\"Canva is crap so we don't use that anymore\"), so Growth exports nothing from Canva; content-engine's v5 Library makes every asset and its gates check them",
+      "tests": [],
+      "status": "superseded"
     },
     {
       "id": "F72",
@@ -1501,13 +1486,13 @@
       "id": "F133",
       "title": "A Buffer reel went out with thumbnailOffset null and showed frame 0, an AI scene, instead of its designed cover",
       "source": "Counting rat tails reel, reposted to Instagram through Buffer on 14 Nov 2026 (Buffer post 6af7980e81e1228421cd5b7b); Krish, 15 Nov 2026",
-      "guard": "engine/run/release.py:cover_errors; engine/run/buffer_api.py:carried; engine/run/video_cover.py:prepare; engine/run/reconcile.py:presend",
+      "guard": "engine/run/release.py:cover_errors; engine/run/buffer_api.py:carried; engine/run/cover_gate.py:offset_ok; engine/run/reconcile.py:presend",
       "tests": [
         "test_a_video_with_no_offset_is_refused_on_every_cover_channel",
         "test_a_video_with_no_cover_frame_is_never_carried_forward",
         "test_a_video_whose_designed_cover_frame_is_not_recorded_is_held_never_made",
         "test_a_scheduled_video_with_no_cover_frame_is_held_whoever_scheduled_it",
-        "test_the_cover_is_appended_and_its_frame_is_the_offset"
+        "test_an_offset_is_a_whole_number_of_milliseconds_never_null"
       ],
       "status": "tested"
     },

@@ -52,7 +52,8 @@ verified.
 | Level-up advice | 10 | 5 to 25 | ideas | carousel, Shorts, X text |
 
 The lanes are the 28 October off-day lanes (`docs/ENGINE-BOUNDARY.md`) plus
-the derived carousels, now on every day. Weights become whole slots by largest
+the derived carousels, now on every day. Growth plans the lanes and slots; content-engine makes every post in
+them, captions included (Ruling, Krish, 2026-11-26: content-engine makes every asset). Weights become whole slots by largest
 remainder (25 a week per channel: 13, 6, 4 and 2 by default) and are spread
 through the week by smooth weighted round robin, so lanes interleave and every
 day carries a repurposed carousel. A piece or idea runs at most once per
