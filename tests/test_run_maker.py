@@ -632,8 +632,8 @@ class MakerTests(unittest.TestCase):
         self.handoff(payload)
         self.decide([r['proposals'][0] for r in self.cc.reports.values() if r['proposals']])
         summary, code = self.make()
-        self.assertEqual(summary['holds'], {'video_without_designed_cover': 1}, summary)
-        self.assertIn('video_without_designed_cover', summary['loud'])
+        self.assertEqual(summary['holds'], {'video_cover_in_cut_gap': 1}, summary)
+        self.assertIn('video_cover_in_cut_gap', summary['loud'])
         self.assertEqual(code, 1)
         sent = [a for c in self.creates() for a in c['variables']['input']['assets']]
         self.assertTrue(sent and not any('video' in a for a in sent), 'no video draft is saved without its cover')

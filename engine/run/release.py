@@ -770,7 +770,7 @@ def cover_errors(channel, assets):
         offset = (video.get('metadata') or {}).get('thumbnailOffset') if isinstance(video, dict) else None
         if not cover_gate.offset_ok(offset):
             out.append('video_without_designed_cover: a video on ' + str(channel) + ' goes out only with its designed'
-                       ' cover baked into the cut and thumbnailOffset set to it; never a null offset')
+                       ' cover in the cut and thumbnailOffset set to it, never a null offset; ' + cover_gate.CUT_ROUTE_GAP)
     return out
 
 

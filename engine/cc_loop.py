@@ -1452,10 +1452,12 @@ INSPIRATION_USE = ('These are Krish\'s own suggestions. Treat them as the baseli
                    'queues a draft reads this block.')
 # Protocol 1.21.0 (Ruling, Krish, 2026-11-12: an inspiration card he ticks is an instruction that jumps the queue:
 # Production means use the style within a week). A card he ticked is not a suggestion.
-INSTRUCTION_USE = ('MUST USE: Krish ticked these as instructions, not inspiration. Use each style in your next fitting '
-                   'asset (a carousel, a meme or an off-day post) before its date, rebuilt in our voice and look, '
-                   'never copied. Name the card as the concept\'s style_card in the mocks file, so the report says it '
-                   'was used (inspiration_used) and his tick closes.')
+INSTRUCTION_USE = ('MUST USE: Krish ticked these as instructions, not inspiration. Pass each style to content-engine, '
+                   'which makes every asset (R132): name the card on the fitting board item or brief (a carousel, a meme '
+                   'or an off-day post) before its date, for content-engine\'s makers to use in its own voice and look, '
+                   'never copied. Growth makes nothing from it. Name the card as the concept\'s style_card in the mocks '
+                   'file when the finished asset comes back, so the report says it was used (inspiration_used) and his '
+                   'tick closes.')
 
 
 def inspiration_suggestions(directive):

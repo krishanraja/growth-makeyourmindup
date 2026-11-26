@@ -82,9 +82,9 @@ Four event types, each with a closed client_payload (unknown keys refused):
   manifest sent again with a different mock_files map (a file id corrected)
   is written as the manifest's next version, after its last numbered record,
   and so is one whose optional "mock_covers" {video sha256: thumbnailOffset
-  ms} changed (the designed cover's frame, appended with `growth.py run cover
-  append`; a video the maker finds with none is held,
-  `video_without_designed_cover`), or whose optional "mock_captions"
+  ms} changed (the designed cover's frame in the cut, named by content-engine
+  once it has a cover-in-cut route; a video the maker finds with none is held,
+  `video_cover_in_cut_gap`), or whose optional "mock_captions"
   {concept_id: {channel or "channel:format": {"words", "title"?}}} changed:
   the caption and YouTube title content-engine wrote for each concept and
   channel (Ruling, Krish, 2026-11-26: content-engine writes every caption;
@@ -462,7 +462,7 @@ class MockMap(dict):
 def validate_mock_covers(value, files):
     """The optional mock_covers {video sha256: thumbnailOffset ms} (Ruling, Krish, 2026-11-15; F133): the frame of
     the designed cover content-engine baked into that cut (engine/run/cover_gate.py). Each key is a file mock_files
-    names; the maker holds a video whose cover is not named as video_without_designed_cover."""
+    names; the maker holds a video whose cover is not named as video_cover_in_cut_gap (cover_gate.CUT_ROUTE_GAP)."""
     if value is None:
         return {}
     if not isinstance(value, dict) or not files or not all(

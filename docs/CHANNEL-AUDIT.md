@@ -10,8 +10,8 @@ require approval. This supersedes the older blanket read-only browser rule
 only for these operations; it grants no posting, messaging, spending,
 deletion, feature activation, audience or account-setting authority.
 
-The audience is senior business leaders judging AI's commercial impact who
-are themselves publicly visible on the topic. Relevant judgment and public
+The audience is people who make the calls or make the work in the creative, arts, music, entertainment, media and sports industries
+(docs/NORTH_STAR.md, narrowed by Krish on 26 November 2026). Relevant judgment and public
 participation matter more than raw follower counts. Subscriber growth from
 useful shared work remains the North Star; no paid boosts.
 

@@ -53,6 +53,14 @@ word (`docs/MAKER.md`); the board write-backs (posted, off-day posts, the judges
 measurement, learn, the subscribe route, the engines, the experiments and `mix.json`; and the weekly edition's
 Substack editor step (PR 144), which places a finished asset and schedules it.
 
+**Known stop: the cover in the cut.** `video_cover.py` appended the designed cover to a cut and set
+`thumbnailOffset`; it went with the renderer. Content-engine has no route that does it yet: its
+`config/asset-routes.json` lists kind `video-cover-in-cut` as a gap (`make_covers.py` writes the cover image only).
+Until that route lands, no cut arrives with its cover frame named, so every video on Instagram, TikTok, YouTube,
+Facebook, Threads or X holds: the maker as `video_cover_in_cut_gap` (loud) and release as `video_without_designed_cover`,
+each naming the gap (`engine/run/cover_gate.py` `CUT_ROUTE_GAP`). It fails safe: nothing ships with frame 0. Carousels,
+stills and words are not held by it.
+
 **How it is held.** `invariants/boundary.json` assigns every asset kind to content-engine, and
 `tests/test_production_boundary.py` fails the build if a renderer, template, font, image tool or caption writer
 reappears here (rule R132). `docs/plans` and `docs/history` are dated records and exempt, so the weekly edition's
@@ -149,11 +157,12 @@ It proposes new placements with a reason and the access/action required;
 discovering a channel does not silently authorise creating an account there.
 
 Content-engine owns production standards for ALL formats, not only visual
-standards for this carousel. Growth draws on those standards and its existing
-production route to execute the selected format at the required quality.
-For example, Growth decides whether an article needs a carousel or a video,
-which opening to test and where to place it; content-engine governs the
-clarity, narrative craft, visual treatment and production QA of that asset.
+standards for this carousel, and since 26 November 2026 it makes every asset
+(R132). Growth chooses the format and content-engine makes it: Growth
+decides whether an article needs a carousel or a video, which opening to test
+and where to place it, and asks for it; content-engine makes that asset from
+its v5 Library and governs its clarity, narrative craft, visual treatment and
+production QA. Growth posts the finished asset.
 
 Channel/posting best practices stay in Growth. Production craft and quality
 standards stay in content-engine. Native post packaging and engagement
