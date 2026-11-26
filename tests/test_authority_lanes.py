@@ -81,7 +81,7 @@ class AuthorityTests(unittest.TestCase):
 
     def test_derivatives_wait_for_board_and_preview_then_post_alone(self):
         data = load_authority()
-        self.assertEqual(posting_lane(data, 'receipt-card', 'x', 'receipt-card'), 'L0_code')  # release.yml, alone
+        self.assertEqual(posting_lane(data, 'receipt-card', 'x', 'single-image'), 'L0_code')  # release.yml, alone
         self.assertTrue(needs_preview(data, '2026-11-29'))
         self.assertFalse(needs_preview(data, datetime.date(2026, 11, 30)))
         cases = [(dict(day='2026-11-10'), (False, 'publish_board_not_approved')),
@@ -93,7 +93,7 @@ class AuthorityTests(unittest.TestCase):
         for kwargs, expected in cases:
             day = kwargs.pop('day')
             # Instagram, YouTube and TikTok are named in the ruling: derivatives go there too.
-            for channel, fmt, name in (('instagram', 'story-frame', 'story-from-assets'),
+            for channel, fmt, name in (('instagram', 'story', 'story-from-assets'),
                                        ('youtube', 'short-video', 'video-cut'), ('tiktok', 'short-video', 'video-cut'),
                                        ('substack-notes', 'note', 'note-quote')):
                 self.assertEqual(may_post_alone(data, name, channel, fmt, day, **kwargs), expected, (channel, day))
@@ -102,7 +102,7 @@ class AuthorityTests(unittest.TestCase):
         data = load_authority()
         for name, channel, fmt in (('carousel', 'instagram', 'carousel'), ('meme', 'tiktok', 'meme'),
                                    ('opinion', 'threads', 'text'), ('reactive', 'x', 'text'),
-                                   ('scorecard', 'threads', 'scorecard'), ('poll', 'x', 'poll'),
+                                   ('scorecard', 'threads', 'single-image'), ('poll', 'x', 'text'),
                                    ('never-heard-of-it', 'x', 'text'),
                                    ('receipt-card', 'x', 'meme')):  # a derivative class on the wrong format
             self.assertEqual(posting_lane(data, name, channel, fmt), 'L2_eyes', name)

@@ -97,6 +97,30 @@ class ParseTests(unittest.TestCase):
         self.assertEqual(piece_manifest.line_hold(value, dict(image, assets=['c' * 64])), 'manifest_differs')
 
 
+    def test_a_titled_manifest_is_version_1_1_and_its_title_is_read(self):
+        # Content-engine writes every caption and title at make time (Ruling, Krish, 2026-11-26) and says
+        # content-engine-piece-manifest/1.1 when a channel carries one; an untitled manifest stays /1.
+        value = manifest(schema=piece_manifest.SCHEMA_TITLED)
+        value['channels']['youtube:short-video'] = {'words': 'Synthetic short words.', 'alt_text': None, 'assets': [],
+                                                    'title': 'Synthetic short title'}
+        data, digest = encoded(value)
+        read = piece_manifest.parse(data, digest)
+        self.assertEqual(piece_manifest.title_for(read, 'youtube', 'short-video'), 'Synthetic short title')
+        self.assertIsNone(piece_manifest.title_for(read, 'x'))
+        piece_manifest.validate(manifest(schema=piece_manifest.SCHEMA_TITLED))  # 1.1 with no title still reads
+        for bad_title in ('', ' ', 'x' * 101, 7):
+            bad = json.loads(json.dumps(value))
+            bad['channels']['youtube:short-video']['title'] = bad_title
+            with self.assertRaises(piece_manifest.ManifestRejected, msg=repr(bad_title)):
+                piece_manifest.validate(bad)
+        old = json.loads(json.dumps(value))
+        old['schema'] = piece_manifest.SCHEMA  # a title needs 1.1
+        with self.assertRaises(piece_manifest.ManifestRejected):
+            piece_manifest.validate(old)
+        with self.assertRaises(piece_manifest.ManifestRejected):
+            piece_manifest.validate(manifest(schema='content-engine-piece-manifest/2'))
+
+
 class HandoffWithManifest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

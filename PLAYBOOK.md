@@ -57,9 +57,10 @@ briefs; production standards continue to live solely in content-engine.
 | Communities | Answer the actual question, disclose authorship when linking, follow local rules | useful answer; link only when welcome |
 | Partners | Named quote kit, guest offer, co-made asset and genuine recommendation | matched landing with a distinct placement |
 
-Content-engine owns captions, scripts, articles, media production and all
-production standards. Growth chooses amplification opportunities and briefs
-the required native editions, then owns platform packaging, posting and
+Content-engine makes every asset and owns captions, scripts, articles, media production and all
+production standards (Ruling, Krish, 2026-11-26: "I believe that growth should move all asset production to
+Content Engine"). Growth chooses amplification opportunities and plans the
+native editions, then owns platform packaging from content-engine's captions, posting and
 distribution learning. Read docs/ENGINE-BOUNDARY.md; do not create a second
 editorial or rendering pipeline here. Existing-field browser
 repairs follow the scoped 2026-10-21 ruling in AGENTS.md and
@@ -67,8 +68,8 @@ jobs/channel-audit.md. Other sends/publication remain behind their gates.
 No Notes, WhatsApp, paid boosts or automated outreach.
 27 October 2026 (`CHANGES.md`; `docs/plans/2026-10-27-engine-architecture.md`):
 Substack Notes are back, from Krish's Substack profile at up to two a day
-as he signs, and Threads joins with delegated cadence. The Canva lane
-(`docs/ENGINE-BOUNDARY.md`) produces what content-engine does not cover.
+as he signs, and Threads joins with delegated cadence. The Canva lane that produced what content-engine did not cover is retired (26 November 2026; content-engine
+makes every asset).
 WhatsApp, paid boosts and automated outreach stay off.
 
 ## Copy doctrine

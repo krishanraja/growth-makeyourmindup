@@ -2,11 +2,11 @@
 
 Status: Current
 Owner: Krish Raja
-Last verified: 2026-10-18
+Last verified: 2026-11-26
 
-> By 31 December 2026, the publication grows every week from posts people share because they are useful, with zero paid boosts, and the right leaders make up most of the new subscribers.
+> By 31 December 2026, the publication grows every week from posts people share because they are useful, with zero paid boosts, and people who make the calls or make the work in the creative, arts, music, entertainment, media and sports industries make up most of the new subscribers.
 
-Set by Krish on 18 October 2026. It is not reached yet. It is what every session in this repository works toward.
+Set by Krish on 18 October 2026; its reader narrowed by Krish on 26 November 2026. It is not reached yet. It is what every session in this repository works toward.
 
 This repository serves [makeyourmindup's North Star](https://github.com/krishanraja/makeyourmindup/blob/main/docs/NORTH_STAR.md). The lines above are this repository's part of it.
 

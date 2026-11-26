@@ -1,11 +1,9 @@
 # Social operating system
 
 Start here for distribution work. Growth owns channel strategy, amplification,
-delivery, tool operation and learning. Content-engine owns production and all
-production standards. Do not copy its visual or narrative canon into this tree.
-The one exception is the Canva lane (Krish, 27 October 2026): Growth makes the
-formats content-engine does not cover, today `note` and `meme`, under
-`guides/canva.md`, applying content-engine's standards by reference.
+delivery, tool operation and learning. Content-engine makes every asset and caption and owns all
+production standards (Ruling, Krish, 2026-11-26: content-engine makes every asset). Do not copy its visual or narrative canon into this tree,
+and make nothing here: the Canva lane of 27 October is retired.
 
 ## Locate the work before reading more
 
@@ -21,8 +19,8 @@ creating or uploading a package; keep private evidence out of the shared library
 | What exact post is proposed? | Private package conforming to `schemas/package.schema.json` |
 | Why would one person send it to another? | The package's `share` block, checked against `share.json`; the blind reader is `crew/send-test/` |
 | How is creative made and judged? | Content-engine's production contract; see `docs/ENGINE-BOUNDARY.md` |
-| Where is a brand asset (logo, font, colour, photo, template, sting, music)? | `brand/library.json` (Drive ids), with `docs/BRAND-KIT.md` |
-| How are Notes and memes made? | In a Claude session, with the Codex plugin building them: content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made" (Ruling, Krish, 2026-11-13; lesson `one-route-for-pictures`) |
+| Where is a brand asset (logo, font, colour, photo, template, sting, music)? | Content-engine's (its `docs/DRIVE.md`); see `docs/BRAND-KIT.md` |
+| How are carousels, Notes and memes made? | By content-engine, from its v5 Library, captions included (Ruling, Krish, 2026-11-26; lesson `content-engine-makes-every-asset`) |
 | What is live right now? | Actual owned native pages and tool readback; private run evidence |
 
 These are typed contracts, not a second queue or publishing orchestrator. They

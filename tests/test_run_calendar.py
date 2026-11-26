@@ -60,7 +60,7 @@ class CalendarTests(unittest.TestCase):
             self.assertNotEqual(r['channel'], 'linkedin', r['id'])
             if r['class'] in ('carousel', 'meme', 'scorecard', 'poll'):
                 self.assertEqual(r['lane'], 'L2_eyes', r['id'])
-        self.assertEqual({row(calendar, i)['lane'] for i in ('note-quote', 'receipt-x', 'short-tiktok',
+        self.assertEqual({row(calendar, i)['lane'] for i in ('note-quote', 'recut-x', 'short-tiktok',
                                                              'story-hook-instagram')}, {'L0_code'})
         self.assertEqual(row(calendar, 'carousel-instagram')['format'], 'carousel')
         for channel in ('instagram', 'facebook'):
@@ -69,9 +69,9 @@ class CalendarTests(unittest.TestCase):
     def test_a_wrong_lane_is_refused(self):
         for row_id, lane, expected in (('carousel-instagram', 'L0_code', {'lane', 'new_format_not_eyes'}),
                                        ('meme-tiktok-tu', 'L0_code', {'lane', 'new_format_not_eyes'}),
-                                       ('receipt-x', 'L2_eyes', {'lane'}),
+                                       ('recut-x', 'L2_eyes', {'lane'}),
                                        # No L1: there are no Claude routines (Krish, 29 Oct 2026).
-                                       ('receipt-x', 'L1_judgement', {'schema'})):
+                                       ('recut-x', 'L1_judgement', {'schema'})):
             calendar = v1()
             row(calendar, row_id)['lane'] = lane
             self.assertEqual(codes(calendar), expected, row_id)
@@ -83,7 +83,7 @@ class CalendarTests(unittest.TestCase):
             calendar = v1()
             calendar['weekly'].append({'id': 'linkedin-mo', 'weekday': 'MO', 'at': at, 'channel': 'linkedin',
                                        'format': 'text', 'class': 'linkedin-draft', 'template': None,
-                                       'producer': 'words', 'lane': lane, 'priority': 1, 'requires': None,
+                                       'producer': 'content-engine', 'lane': lane, 'priority': 1, 'requires': None,
                                        'link': 'none'})
             result = lint(calendar)
             self.assertFalse(result['valid'], lane)
@@ -93,7 +93,7 @@ class CalendarTests(unittest.TestCase):
 
     def test_formats_producers_and_templates_must_exist(self):
         calendar = v1()
-        row(calendar, 'receipt-x')['format'] = 'hologram'
+        row(calendar, 'recut-x')['format'] = 'hologram'
         self.assertIn('unknown_format', codes(calendar))
         calendar = v1()
         row(calendar, 'meme-instagram-tu')['format'] = 'hologram'  # a declared new format may be ahead of its record
@@ -101,17 +101,23 @@ class CalendarTests(unittest.TestCase):
         calendar = v1()
         row(calendar, 'short-youtube')['format'] = 'note'
         self.assertIn('format_not_allowed', codes(calendar))
+        # Every row is made by content-engine (Ruling, Krish, 2026-11-26): Growth's own words and the Canva lane
+        # are retired, so any other producer is refused.
+        for producer in ('words', 'canva-lane'):
+            calendar = v1()
+            row(calendar, 'recut-x')['producer'] = producer
+            self.assertEqual(codes(calendar), {'schema'}, producer)
         calendar = v1()
-        row(calendar, 'receipt-x').update(producer='content-engine', template=None)
-        self.assertIn('producer', codes(calendar))
-        calendar = v1()
-        row(calendar, 'receipt-x')['template'] = 'story-hook'
-        self.assertIn('template_size', codes(calendar))
-        calendar = v1()
-        calendar['templates']['note-image'] = 'billboard'
+        row(calendar, 'recut-x')['template'] = 'story-hook'
         self.assertIn('template', codes(calendar))
         calendar = v1()
-        row(calendar, 'poll-result-x')['requires'] = 'nothing-here'
+        row(calendar, 'story-hook-instagram')['template'] = None
+        self.assertIn('template', codes(calendar))
+        calendar = v1()
+        row(calendar, 'story-hook-instagram')['template'] = 'story-cliffhanger'
+        self.assertIn('template', codes(calendar))
+        calendar = v1()
+        row(calendar, 'poll-result-notes')['requires'] = 'nothing-here'
         self.assertIn('requires', codes(calendar))
 
     def test_floors_and_caps_are_checked_on_the_resolved_week(self):
@@ -125,9 +131,10 @@ class CalendarTests(unittest.TestCase):
         calendar['caps'] = [SYNTHETIC_CAP]
         self.assertNotIn('cap', codes(calendar))
         calendar = v1()
-        calendar['weekly'].append(dict(row(calendar, 'meme-instagram-tu'), id='meme-threads-mo', channel='threads',
-                                       weekday='MO', priority=1))
-        # Threads takes one a day; a day-0 receipt must never be cut (X takes four since R102).
+        for n in (1, 2):
+            calendar['weekly'].append(dict(row(calendar, 'meme-instagram-tu'), id='meme-threads-mo-%d' % n,
+                                           channel='threads', weekday='MO', priority=1))
+        # Threads takes one a day, so of two priority 1 rows one is cut: a priority 1 row must never be cut.
         self.assertIn('day0_bumped', codes(calendar))
         calendar = v1()
         calendar['memes']['max'] = 2
@@ -179,12 +186,12 @@ class CalendarTests(unittest.TestCase):
         self.assertEqual(daily_caps(calendar, records)['substack-notes'], 2)
 
     def test_a_result_card_runs_only_after_its_poll(self):
-        # On a channel taking one a day a poll can be bumped and its result card must drop with it. X took one
-        # a day until main's 29 Oct ruling (R102: four); the rule is proved on a record kept at one.
+        # A poll can be bumped by the channel's cap, and its result must drop with it. Proved by making the Notes
+        # poll the lowest priority on its day, so the recut Notes take both of that day's slots.
         records = copy.deepcopy(inventory()['channel'])
-        records['x']['daily_posts_target'] = 1
-        records['x']['daily_posts_floor'] = None
-        kept, bumped = resolve(v1(), records)
+        calendar = v1()
+        row(calendar, 'poll-notes')['priority'] = 10
+        kept, bumped = resolve(calendar, records)
         ran = {(k['piece'], k['row']['id']) for k in kept}
         for item in kept:
             if item['row']['requires']:

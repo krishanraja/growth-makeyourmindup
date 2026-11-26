@@ -804,11 +804,11 @@ def insight_ideas(path, lane, ideas, root=ROOT):
 
 
 def command(argv, root=ROOT, client_factory=None):
-    if argv and argv[0] in ('offdays', 'topup', 'clock', 'briefs'):
+    if argv and argv[0] in ('offdays', 'topup', 'clock'):
         from .offday import command as offday
         return offday(argv, root)
     parser = argparse.ArgumentParser(prog='growth.py mix', description='The weekly mix and its learning. Offline.',
-                                     epilog='Also: offdays, topup, clock and briefs, the off-day lane '
+                                     epilog='Also: offdays, topup and clock, the off-day lane '
                                             '(engine/offday.py; growth.py mix offdays --help).')
     sub = parser.add_subparsers(dest='action', required=True)
     p = sub.add_parser('plan', help="lay out the week and the one plan proposal of Krish's ideas and mocks")

@@ -84,7 +84,12 @@ Four event types, each with a closed client_payload (unknown keys refused):
   and so is one whose optional "mock_covers" {video sha256: thumbnailOffset
   ms} changed (the designed cover's frame, appended with `growth.py run cover
   append`; a video the maker finds with none is held,
-  `video_without_designed_cover`),
+  `video_without_designed_cover`), or whose optional "mock_captions"
+  {concept_id: {channel or "channel:format": {"words", "title"?}}} changed:
+  the caption and YouTube title content-engine wrote for each concept and
+  channel (Ruling, Krish, 2026-11-26: content-engine writes every caption;
+  copied from its piece manifest). The maker posts exactly those words and
+  holds a slot with none as `caption_missing`,
   and the maker reads the highest; its keys must still be the plan's own mock
   hashes, and every file's bytes are still hashed by the maker and by
   release. With
@@ -163,7 +168,7 @@ LENS = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 MIX_KEYS = frozenset({'week_of', 'targets', 'weights', 'moved', 'slots', 'concepts', 'shortfalls'})
 # Optional: each approved mock file's Drive file id, for the maker's downloads (never part of what he approves).
 # records_only: write the week's slots and mock records and nothing else, for a plan already reported and in force.
-MIX_OPTIONAL = frozenset({'mock_files', 'mock_covers', 'records_only'})
+MIX_OPTIONAL = frozenset({'mock_files', 'mock_covers', 'mock_captions', 'records_only'})
 DRIVE_ID = re.compile(r'^[A-Za-z0-9_-]{10,128}$')
 MAX_MOCK_FILES = 400
 MIX_SLOT_KEYS = frozenset({'slot_id', 'channel', 'format', 'lane', 'day', 'due_at', 'concept_id'})
@@ -448,13 +453,15 @@ def validate_mock_files(value, mix):
 
 
 class MockMap(dict):
-    """The mock manifest {sha256: Drive file id}, with .covers {video sha256: its designed cover's frame in ms}."""
+    """The mock manifest {sha256: Drive file id}, with .covers {video sha256: its designed cover's frame in ms} and
+    .captions {concept_id: {channel or "channel:format": {"words", "title"?}}}."""
     covers = None
+    captions = None
 
 
 def validate_mock_covers(value, files):
     """The optional mock_covers {video sha256: thumbnailOffset ms} (Ruling, Krish, 2026-11-15; F133): the frame of
-    the designed cover a session appended to that cut (growth.py run cover append). Each key is a file mock_files
+    the designed cover content-engine baked into that cut (engine/run/cover_gate.py). Each key is a file mock_files
     names; the maker holds a video whose cover is not named as video_without_designed_cover."""
     if value is None:
         return {}
@@ -463,6 +470,46 @@ def validate_mock_covers(value, files):
             for k, v in value.items()):
         raise PayloadRejected('bad_mock_covers')
     return {k: value[k] for k in sorted(value)}
+
+
+CAPTION_KEY = re.compile(r'^(x|instagram|tiktok|youtube|threads|facebook|substack-notes)(?::[a-z0-9][a-z0-9_-]{0,47})?$')
+CAPTION_MAX, TITLE_MAX = 5000, 100
+
+
+def check_captions(value):
+    """The captions map, closed and sorted: {concept_id: {channel or "channel:format": {"words", "title"?}}}, words a
+    non-empty string, title optional. PayloadRejected('bad_mock_captions') otherwise. The words are content-engine's,
+    never changed here; the maker checks them again against the claim, the copy lint and the voice check."""
+    if not isinstance(value, dict):
+        raise PayloadRejected('bad_mock_captions')
+    out = {}
+    for cid, by_channel in value.items():
+        if not isinstance(cid, str) or not cid or len(cid) > 120 or not isinstance(by_channel, dict) or not by_channel:
+            raise PayloadRejected('bad_mock_captions')
+        clean = {}
+        for key, entry in by_channel.items():
+            if not isinstance(key, str) or not CAPTION_KEY.match(key) or not isinstance(entry, dict) \
+                    or not set(entry) or set(entry) - {'words', 'title'} or 'words' not in entry \
+                    or not isinstance(entry['words'], str) or not entry['words'].strip() \
+                    or len(entry['words']) > CAPTION_MAX \
+                    or ('title' in entry and not (isinstance(entry['title'], str) and len(entry['title']) <= TITLE_MAX)):
+                raise PayloadRejected('bad_mock_captions')
+            clean[key] = {k: entry[k] for k in sorted(entry)}
+        out[cid] = {k: clean[k] for k in sorted(clean)}
+    return {k: out[k] for k in sorted(out)}
+
+
+def validate_mock_captions(value, mix):
+    """The optional mock_captions: {} when absent. Each concept is one of the plan's own
+    (`caption_not_in_plan` otherwise)."""
+    if value is None:
+        return {}
+    captions = check_captions(value)
+    if not captions:
+        raise PayloadRejected('bad_mock_captions')
+    if set(captions) - {c['concept_id'] for c in mix['concepts']}:
+        raise PayloadRejected('caption_not_in_plan')
+    return captions
 
 
 VALIDATORS = {GO_LIVE: validate_manifest, WEEK_PACKET: validate_packet, MAKE_PIECE: validate_piece,
@@ -1218,13 +1265,22 @@ def week_records(mix, version, files, now, root, first=1, manifest_version=1):
                 'shortfalls': len(mix['shortfalls']), 'slots': group}
 
     covers = getattr(files, 'covers', None) or {}
+    captions = getattr(files, 'captions', None) or {}
 
     def mocks(group, number, total):
+        # group mixes ('file', sha256, Drive id) and ('caption', concept_id, key, entry) items, files first.
+        got = {item[1]: item[2] for item in group if item[0] == 'file'}
         record = {'schema': cc_records.MOCKS, 'week_of': mix['week_of'], 'plan': parts, 'version': manifest_version,
-                  'chunk': number, 'chunks': total, 'files': dict(group)}
-        chunk_covers = {k: covers[k] for k, _ in group if k in covers}
+                  'chunk': number, 'chunks': total, 'files': got}
+        chunk_covers = {k: covers[k] for k in got if k in covers}
         if chunk_covers:
             record['covers'] = chunk_covers  # only when set, so a record made before covers is unchanged
+        chunk_captions = {}
+        for item in group:
+            if item[0] == 'caption':
+                chunk_captions.setdefault(item[1], {})[item[2]] = item[3]
+        if chunk_captions:
+            record['captions'] = chunk_captions  # only when set, so a record made before captions is unchanged
         return record
 
     out = []
@@ -1234,8 +1290,11 @@ def week_records(mix, version, files, now, root, first=1, manifest_version=1):
             ['The slots of the mix plan for the week of ' + mix['week_of'] + ', chunk ' + str(record['chunk'])
              + ' of ' + str(record['chunks']) + ', for the maker', 'Posted, sent, published and spent nothing'],
             now, rev)))
-    if files:
-        for record in cc_records.chunked(cc_records.MOCKS, mocks, sorted(files.items())):
+    if files or captions:
+        items = [('file', k, v) for k, v in sorted((files or {}).items())] + [
+            ('caption', cid, key, entry) for cid, by_channel in sorted(captions.items())
+            for key, entry in sorted(by_channel.items())]
+        for record in cc_records.chunked(cc_records.MOCKS, mocks, items):
             out.append((cc_records.MOCKS, cc_records.record_report(
                 cc_records.mocks_run_id(label, key, first + record['chunk'] - 1), cc_records.MOCKS, record,
                 ['Where the approved mock files of the week of ' + mix['week_of'] + ' are kept, version '
@@ -1255,8 +1314,13 @@ def deliver_mocks(cc, mix, version, files, now, root, summary):
         return
     current = cc_records.latest_version(found)
     covers = getattr(files, 'covers', None) or {}
-    if current is not None and {k: v for c in current for k, v in (c.get('files') or {}).items()} == files \
-            and {k: v for c in current for k, v in (c.get('covers') or {}).items()} == covers:
+    captions = getattr(files, 'captions', None) or {}
+    had = {}
+    for chunk in current or []:
+        for cid, by_channel in (chunk.get('captions') or {}).items():
+            had.setdefault(cid, {}).update(by_channel)
+    if current is not None and {k: v for c in current for k, v in (c.get('files') or {}).items()} == dict(files) \
+            and {k: v for c in current for k, v in (c.get('covers') or {}).items()} == covers and had == captions:
         summary['reports']['already_reported'] += 1
         return
     reports = [report for schema, report in week_records(
@@ -1322,9 +1386,10 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                 raise PayloadRejected('week_over')
             files, missing = validate_mock_files(payload.get('mock_files'), mix)
             covers = validate_mock_covers(payload.get('mock_covers'), files)
-            if files is not None:
-                files = MockMap(files)
-                files.covers = covers
+            captions = validate_mock_captions(payload.get('mock_captions'), mix)
+            if files is not None or captions:
+                files = MockMap(files or {})
+                files.covers, files.captions = covers, captions
             records_only = payload.get('records_only', False)
             if not isinstance(records_only, bool):
                 raise PayloadRejected('bad_records_only')
@@ -1352,7 +1417,7 @@ def handoff(event, payload, cc=None, buffer=None, now=None, deliver=False, fetch
                 for schema, report in records:
                     if schema == cc_records.SLOTS:
                         deliver_records(cc, [report], schema, summary)
-                if files and version:
+                if files is not None and version:
                     deliver_mocks(cc, mix, version, files, now, root, summary)
             return _finish(summary, slots)
         VALIDATORS[event](payload)

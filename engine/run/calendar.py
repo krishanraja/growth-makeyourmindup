@@ -21,7 +21,9 @@ WEEKDAYS = ('MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU')
 # Stories expire in a day and are not feed posts, so no daily post cap counts them;
 # the stories floor checks them instead.
 STORY_FORMATS = ('story', 'story-frame')
-PRODUCERS = {'content-engine': 'content-engine', 'growth-canva': 'canva-lane'}
+# Every row is made by content-engine (Ruling, Krish, 2026-11-26: content-engine makes every asset, captions included;
+# Growth posts, schedules and measures). The Canva lane and Growth's own words producer are retired.
+PRODUCER = 'content-engine'
 CAP_SOURCES = ('knowledge/', 'social/', 'docs/')
 
 
@@ -132,7 +134,7 @@ def week_counts(kept):
     return counts
 
 
-def _row_errors(at, row, authority, records, calendar, kit):
+def _row_errors(at, row, authority, records, calendar):
     errors = []
     channel, fmt = records['channel'].get(row['channel']), records['format'].get(row['format'])
     kind, _ = class_of(authority, row['class'])
@@ -155,21 +157,13 @@ def _row_errors(at, row, authority, records, calendar, kit):
         errors.append(finding('new_format_not_eyes', at + '.lane', row['class'] + ' is a new format: L2_eyes'))
     if (row['at'] == 'draft') != (row['lane'] == 'L3_hands'):
         errors.append(finding('draft_timing', at + '.at', 'only his hands take an unscheduled draft, and they take only that'))
-    if fmt:
-        owner = PRODUCERS[fmt['production_owner']]
-        words_ok = row['template'] is None and fmt['min_assets'] == 0
-        if row['producer'] != owner and not (row['producer'] == 'words' and words_ok):
-            errors.append(finding('producer', at + '.producer', row['format'] + ' is made by ' + owner
-                                  + (' or by words alone' if words_ok else '')))
-    if (row['producer'] == 'canva-lane') != (row['template'] is not None):
-        errors.append(finding('template', at + '.template', 'a canva-lane row names its template; no other row does'))
-    if row['template'] is not None:
-        size = calendar['templates'].get(row['template'])
-        dims = kit['dimensions'].get(size) if isinstance(size, str) else None
-        if dims is None:
-            errors.append(finding('template', at + '.template', row['template'] + ' maps to no brand-kit size'))
-        elif row['channel'] not in dims['channels']:
-            errors.append(finding('template_size', at + '.template', size + ' is not a size for ' + row['channel']))
+    if row['producer'] != PRODUCER or (fmt and fmt['production_owner'] != PRODUCER):
+        errors.append(finding('producer', at + '.producer', row['format'] + ' is made by content-engine'))
+    frames = calendar['stories']['templates']
+    if (row['format'] in STORY_FORMATS) != (row['template'] is not None) or (
+            row['template'] is not None and row['template'] not in frames):
+        errors.append(finding('template', at + '.template', 'a Story row names its frame, one of stories.templates;'
+                              ' no other row does'))
     return errors
 
 
@@ -186,7 +180,6 @@ def lint(calendar, root=ROOT, urgency=None):
                 'bumped': [], 'week': {}}
     authority = load_authority(root)
     records = inventory(root)
-    kit = read_json(root / calendar['kit'])
     errors, warnings, held = [], [], []
     errors += [finding('timezone', '$.tz', e) for e in timezone_errors(calendar['tz'])]
     if calendar['preview_until'] != authority['show_before_post_until']:
@@ -196,14 +189,11 @@ def lint(calendar, root=ROOT, urgency=None):
     errors += [finding('duplicate_row', '$', 'row id used twice: ' + i) for i in sorted({i for i in ids if ids.count(i) > 1})]
     wave_ids = {row['id'] for row in calendar['wave']}
     for at, kind, row in rows(calendar):
-        errors += _row_errors(at, row, authority, records, calendar, kit)
+        errors += _row_errors(at, row, authority, records, calendar)
         if kind == 'wave' and row['days'][0] > row['days'][1]:
             errors.append(finding('days', at + '.days', 'days run from the first to the last, in order'))
         if row['requires'] is not None and (kind != 'wave' or row['requires'] not in wave_ids):
             errors.append(finding('requires', at + '.requires', 'requires names another wave row'))
-    for name, size in sorted(calendar['templates'].items()):
-        if size not in kit['dimensions']:
-            errors.append(finding('template', '$.templates.' + name, size + ' is not a size in ' + calendar['kit']))
     for i, cap in enumerate(calendar['caps']):
         at = '$.caps[%d]' % i
         if cap['per'] == 'day':

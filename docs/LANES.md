@@ -32,12 +32,12 @@ Nobody has to be awake or online for these.
 | Discoverability (`discoverability.yml`, [DISCOVERABILITY.md](DISCOVERABILITY.md)): reads how findable makeyourmindup.ai is and reports it to Control Center: the pages its sitemaps submit, read live; Google impressions and clicks by desk and the pages Google and Bing hold, once Control Center serves its search signals; AI citations by engine from AEO-Engine's research; and last week's new subscribers from search, AI assistants and the site, by Substack's own label. A part not served is unknown with its reason, never zero; the log never carries a number. It posts, submits, publishes and spends nothing | Mondays 07:41 | 07:41 |
 | Learn (`learn.yml`): judges the posts of the latest week whose posts have all had their seven days by the subscribers they brought, joins each to its lane, runs `growth.py mix learn` and commits `lists/mix-learn/for-<next Monday>.json`, tallies and counts only, which next week's `mix plan` reads ([MIX.md](MIX.md), "Learning"). It posts, schedules and spends nothing | Sundays 10:30, before next week's plan is made | 10:30 |
 | The handoff (`handoff.yml`): turns the Buffer drafts, week packet or week's mix plan a session or PC automation saved into one ask on Krish's list, after checking each draft against its hash, and records the review of each post made from an approved idea | when that maker wakes it | when that maker wakes it |
-| The maker (`maker.yml`, [MAKER.md](MAKER.md)): makes the next New York day's posts from the ideas and mocks Krish approved in the week's mix plan, as Buffer drafts with no due time, writes their words and a blind review of them with the Anthropic API, and hands each off with its review, so release can schedule it. Only the approved mock files, checked by hash; one draft per idea, channel and week; never LinkedIn; it never schedules, publishes or deletes. With no approved mix for a week it drafts from the standing plan into Control Center only and asks Krish once that week (Ruling, Krish, 2026-11-12) | every day 04:30; by hand a dry run unless deliver is ticked | 04:30 |
+| The maker (`maker.yml`, [MAKER.md](MAKER.md)): turns the next New York day's posts from the ideas Krish approved in the week's mix plan into Buffer drafts with no due time, from the files content-engine made and the captions it wrote, word for word (Ruling, Krish, 2026-11-26: content-engine makes every asset), declares each caption's share and reviews it blind with the Anthropic API, and hands each off with its review, so release can schedule it. Only the approved files, checked by hash; one draft per idea, channel and week; never LinkedIn; it never writes a caption, schedules, publishes or deletes. With no approved mix for a week it makes nothing and asks Krish once that week (Ruling, Krish, 2026-11-12) | every day 04:30; by hand a dry run unless deliver is ticked | 04:30 |
 | The ledger (`ledger.yml`): rebuilds `calendar/ledger.json` and `calendar/LEDGER.md`, one row per day per slot for the next 14 days, from content-engine's board and Buffer, read-only (`docs/OPERATING_MODEL.md` section 4). It keeps the two files as the run's artifact for 14 days and commits, posts, schedules and ticks nothing | every day 04:05, before the maker | 04:05 |
 | The test suite (`check.yml`), which on main also folds each closeout note (`now-notes/`) into `NOW.md` and removes it (`engine/closeout.py`), moving NOW.md's oldest lines to `docs/history/LOG.md` to keep it under its byte cap | on every push and pull request; the fold on every push to main | on every push and pull request |
 
-No L0 job makes a carousel, a meme or a Notes image: each is made in a Claude session, with the Codex plugin building
-it (Ruling, Krish, 2026-11-13; content-engine's `docs/CAROUSEL-STANDARD.md`, "How a carousel is made"). The Saturday art-direction workflow, which ran Codex on an API key,
+No job or session here makes a carousel, a meme, a Notes image or any other asset: content-engine makes every one
+(Ruling, Krish, 2026-11-26: content-engine makes every asset; content-engine's v5 Library (`python scripts/covers/make_covers.py <piece> --out <folder>` for covers and thumbnails, `python scripts/library/make_piece.py <piece> --set <set>` for carousels)). The Saturday art-direction workflow, which ran Codex on an API key,
 is retired.
 
 Of the lanes, only this one holds the Control Center engine key, as a
@@ -45,11 +45,8 @@ GitHub repository secret. The one other copy is the file on Krish's PC that
 the PC automations use for Codex workspace runs (`docs/KEY.md`). No Claude
 session holds it.
 
-Art direction is the one L0 job that runs a model. Codex makes there under
-the same walls as every maker: it writes only a piece kit, which reaches the
-repository only through a pull request Krish merges, and it never posts,
-sends, schedules or spends beyond its capped run. Its key is the repository
-secret `OPEN_AI_API_KEY`, given to that one step and to no other job.
+Art direction, the L0 job that ran Codex to write piece kits, is retired with the kits (13 and 26 November 2026);
+no job here holds `OPEN_AI_API_KEY`.
 
 ### How release reads what Krish approved
 
@@ -111,15 +108,13 @@ and `check_lanes` fails any other Claude session or routine.
 
 ## Who makes
 
-Making is not a lane of its own. Canva assets, words, Buffer drafts and the
-week's packet are made by interactive sessions and by the existing jobs on
-Krish's PC, and each piece's visual idea by Codex in the art direction job
-(L0, above), under the same walls. The one other exception is the maker
-(`maker.yml`, `docs/MAKER.md`): an L0 job that drafts each day's posts made
-from ideas and mocks he already approved, and hands them off in the same
-run. With art direction, it is one of the two L0 jobs that call a model (the
-Anthropic API, for the words and their blind review; Krish kept model jobs in
-L0, 29 October). It keeps the walls below, except that, as L0
+Making is not a lane of its own, and since 26 November 2026 no asset or caption is made here: content-engine
+makes them all. Buffer drafts of its finished assets and the week's packet are made by interactive sessions and by
+the existing jobs on Krish's PC, under the same walls. The one other exception is the maker
+(`maker.yml`, `docs/MAKER.md`): an L0 job that drafts each day's posts from
+ideas he already approved, with content-engine's files and captions, and hands them off in the same
+run. It is the one L0 job that calls a model (the Anthropic API, for each caption's share declaration and its
+blind review, never to write words; Krish kept model jobs in L0, 29 October). It keeps the walls below, except that, as L0
 code, it reads Control Center with the engine key and records its drafts
 through the handoff's own code instead of a dispatch:
 
