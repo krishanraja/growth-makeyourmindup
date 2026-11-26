@@ -10,9 +10,11 @@ the Library is locked and names the template IDs to use (Krish: "I felt like it 
 package is rendered in the weekly edition template it names and comes back to him once, for the shape, the words and
 the look together.
 
+**Not the design:** `edition-2026-11-14.preview.html` is in the old look and is superseded by the v5 Library's weekly edition template.
+
 - `edition-2026-11-14.draft.json`: the package, in the contract's shape (`content-engine-edition/1`), keys sorted.
-- `edition-2026-11-14.preview.html`: the page it renders to. Structure only: the v5 look comes from the Library's
-  `newsletter-weekly-edition` template once Krish approves the Library.
+- `edition-2026-11-14.preview.html`: the page it renders to. Structure only, in the old look: the v5 look comes from the
+  Library's weekly edition template once the Library is locked.
 - `render_edition.py`: the renderer and checks used here, until content-engine's `scripts/edition/edition.py` replaces it.
 
 ## What was checked

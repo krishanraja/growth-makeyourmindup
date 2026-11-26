@@ -97,8 +97,11 @@ promise line and the per-piece email to everyone are refused by C1, G2 and M1.
 
 ## Where each piece is (25 Nov 2026, evening)
 
-All drafts; Krish merges each himself. Merge order: growth 144, then content-engine 980 and 979, then control-center,
-then makeyourmindup 55 the week edition one sends.
+All drafts, held for the switch-over week (26 Nov: Krish allowed merging work that is 10/10, on the rebrand session's
+advice, and that session's call is to hold them): they merge together once the rebrand session says the Library is
+locked, V1 is read and K1 and K2 are done, and makeyourmindup 55 also needs Krish's own yes then, since it changes the
+live site's promise. Merge order: growth 144, then content-engine 980 and 979, then control-center, then makeyourmindup
+55. This plan's own pull request (growth 143, documents only) merged on 26 Nov with that session's yes.
 
 | Items | Pull request | State |
 |---|---|---|
