@@ -50,5 +50,13 @@
     ]
   },
   "sources_rule": "Each key is a pinned channel and the utm_source a new link is built with; its list is every utm_source the subscribe gate accepts for that channel (Buffer's own service name included).",
-  "content_of": "lower case; each run of characters outside a-z, 0-9, _ and - becomes one -; no leading - or _; at most 64 (engine/route.py content_of)"
+  "content_of": "lower case; each run of characters outside a-z, 0-9, _ and - becomes one -; no leading - or _; at most 64 (engine/route.py content_of)",
+  "edition": {
+    "utm_source": "newsletter",
+    "utm_medium": "email",
+    "utm_campaign": "weekly",
+    "utm_content_pattern": "^edition-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{1,40}$",
+    "places": ["forward", "subscribe", "piece-mon", "piece-wed", "piece-fri", "video-mon", "video-wed", "video-fri", "note"],
+    "rule": "Every link in the weekly edition carries all four tags; utm_content is edition-<the Saturday, YYYY-MM-DD>-<place>. A subscribe link goes to the one page; a piece link goes to the piece's own address with the same four tags."
+  }
 }

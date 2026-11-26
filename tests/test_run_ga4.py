@@ -642,3 +642,73 @@ class DirectiveBlockTests(unittest.TestCase):
         self.assertEqual(threads['sessions'], 8)
         self.assertIsNone(threads['sign_ups']['value'])
         self.assertIsNotNone(threads['sign_ups']['reason'])
+
+
+EDITION_CONTENT = 'edition-2026-10-31-forward'
+EDITION_LINK = ('https://home.makeyourmindup.ai/subscribe?utm_source=newsletter&utm_medium=email'
+                '&utm_campaign=weekly&utm_content=' + EDITION_CONTENT)
+
+
+def edition_capture_row(event, sessions, count, **changes):
+    row = {'date': '2026-11-03', 'session_source': 'newsletter', 'session_medium': 'email', 'campaign': 'weekly',
+           'content': EDITION_CONTENT, 'landing_page': '/subscribe', 'event_name': event, 'sessions': sessions,
+           'engaged_sessions': sessions, 'event_count': count, 'key_events': 0}
+    row.update(changes)
+    return row
+
+
+class EditionCreditTests(unittest.TestCase):
+    """The weekly edition's links are credited to the source newsletter (Krish, 2026-11-25; specs/subscribe-route.json,
+    edition): their own block, never a slot's and never unmatched. Synthetic rows only."""
+
+    def config(self):
+        return load_config(path=FIXTURES / 'config-verified.json')
+
+    def test_ga4_capture_rows_from_the_edition_are_credited_to_newsletter(self):
+        capture = load('capture.json')
+        plain = join(copy.deepcopy(capture), load('spec.json'), self.config(), NOW)
+        self.assertEqual((plain['newsletter']['sessions'], plain['newsletter']['utm_content']), (0, []))
+        capture['rows'] += [edition_capture_row('session_start', 3, 3),
+                            edition_capture_row('synthetic_sign_up', 1, 1),
+                            # newsletter with another medium is not the edition's: it stays unmatched, as before.
+                            edition_capture_row('session_start', 2, 2, session_medium='social')]
+        result = join(capture, load('spec.json'), self.config(), NOW)
+        newsletter = result['newsletter']
+        self.assertEqual((newsletter['source'], newsletter['utm_content'], newsletter['sessions']),
+                         ('newsletter', [EDITION_CONTENT], 3))
+        self.assertEqual(newsletter['sign_ups']['value'], 1)
+        self.assertEqual(result['unmatched_content'], sorted(plain['unmatched_content'] + [EDITION_CONTENT]))
+        self.assertEqual([s['sessions'] for s in result['slots']], [s['sessions'] for s in plain['slots']])
+
+    def test_ga4_an_edition_link_in_a_slot_is_never_the_slots(self):
+        spec = {'slots': [{'slot_id': 'w48-sat-note-1', 'words': 'TEST FIXTURE ONLY. Read the week: ' + EDITION_LINK}]}
+        capture = load('capture.json')
+        capture['rows'].append(edition_capture_row('session_start', 3, 3))
+        slot = join(capture, spec, self.config(), NOW)['slots'][0]
+        self.assertEqual(slot['utm_content'], [])
+        self.assertIsNone(slot['sessions'])
+        self.assertIn('credited to newsletter', slot['reason'])
+        block = load('directive-block.json')
+        window = ga4.post_window(block, spec['slots'][0]['words'], self.config(), '2026-11-03', '2026-11-04')
+        self.assertIsNone(window['sessions'])
+        self.assertIn('credited to newsletter', window['reason'])
+
+    def test_ga4_directive_rows_from_the_edition_are_credited_to_newsletter(self):
+        block = load('directive-block.json')
+        plain = ga4.join_directive(copy.deepcopy(block), load('spec.json'), self.config())
+        block['rows'] += [{'date': '2026-11-03', 'dim_type': 'utm_content', 'value': EDITION_CONTENT + '|newsletter|page_view',
+                           'sessions': 4, 'users': 4, 'key_events': 0},
+                          {'date': '2026-11-03', 'dim_type': 'utm_content',
+                           'value': EDITION_CONTENT + '|newsletter|synthetic_sign_up', 'sessions': 1, 'users': 1,
+                           'key_events': 1}]
+        result = ga4.join_directive(block, load('spec.json'), self.config())
+        newsletter = result['newsletter']
+        self.assertEqual((newsletter['utm_content'], newsletter['sessions'], newsletter['reason']),
+                         ([EDITION_CONTENT], 4, None))
+        self.assertEqual((newsletter['sign_ups']['value'], newsletter['sign_ups']['basis']), (1, 'key events'))
+        self.assertEqual(result['unmatched_content'], plain['unmatched_content'])
+        self.assertEqual([s['sessions'] for s in result['slots']], [s['sessions'] for s in plain['slots']])
+        unknown = dict(block, rows=None, coverage={'complete': False, 'reason': 'nothing read today', 'dates': None})
+        newsletter = ga4.join_directive(unknown, load('spec.json'), self.config())['newsletter']
+        self.assertEqual((newsletter['sessions'], newsletter['sign_ups']['value'], newsletter['reason']),
+                         (None, None, 'nothing read today'))

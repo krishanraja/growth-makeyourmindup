@@ -167,6 +167,27 @@ class RuleTests(unittest.TestCase):
                        'independently read back names, parents and sizes', 'a folder named Private as an access boundary'):
             self.assertIn(anchor, storage)
 
+    def test_the_weekly_edition_rule_is_quoted_and_guarded(self):
+        # Ruling, Krish, 2026-11-25: one email a week. Only the weekly edition emails the whole list; a series piece's
+        # Substack step never does, and the Monday read names any series post that did.
+        rule = {r['id']: r for r in load_rules()}['R133']
+        self.assertEqual(rule['source_file'], 'docs/PUBLISHING-AUTHORITY.md')
+        self.assertEqual(collapse(rule['quote']), 'The Substack step of a series piece never emails the whole list; '
+                                                  'only the weekly edition emails everyone.')
+        section = (ROOT / 'docs' / 'PUBLISHING-AUTHORITY.md').read_text(encoding='utf-8').split(
+            '## 25 November 2026: the weekly edition')
+        self.assertEqual(len(section), 2, 'the dated section is there once')
+        self.assertIn(collapse(rule['quote']), collapse(section[1]))
+        self.assertIn('Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex',
+                      collapse(section[1]))
+        self.assertEqual(rule['enforced_by'], ['engine/run/subscribers.py:series_email_check'])
+        for name in ('test_a_series_post_above_the_opt_in_section_is_a_failure',
+                     'test_with_no_opt_in_section_any_email_is_a_failure_and_unknown_is_never_a_pass'):
+            self.assertIn(name, rule['tests'])
+        for word in ('Monday', 'Wednesday', 'Friday', 'opted in', 'failure'):
+            self.assertIn(word, rule['statement'])
+        self.assertEqual(check_rule_links([rule]), [])
+
 
 class FailureRegisterTests(unittest.TestCase):
     def test_failure_register_tests_exist(self):

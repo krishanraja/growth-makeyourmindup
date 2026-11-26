@@ -1,5 +1,25 @@
 # Changes Krish made to the growth engine
 
+- 2026-11-26: The weekly edition's Substack step follows v5. His words: "send nothing until all this is done".
+  `jobs/edition.md` now schedules nothing until `docs/V5-REBRAND.md` section 5 records that the Substack branding
+  is v5 (`branding_not_v5`). His handwritten opener and signed footnote (signed Krish, with his signature, headshot,
+  krishraja.com and one mindmake.co link; section 3) come only from the package. Codex still uploads nothing: part
+  A leaves the email's pictures for him to place (`images_pending`) and part B holds while one or its alt text is
+  missing (`images_missing`). Edition one opens draft 226648035. Nothing was sent, posted, scheduled or spent.
+- 2026-11-26: The weekly edition goes to all subscribers. His words: "substack weekly should be sent to ALL
+  subscribers". On this publication a new Substack post starts as "Paid subscribers only", so `jobs/edition.md` now
+  sets the edition post's audience to Everyone in part A and reads it back. Part B schedules nothing on any other
+  audience (`wrong_audience`). That post's audience is the one setting the job may change. Nothing was sent, posted,
+  scheduled or spent.
+- 2026-11-25: One email a week, the weekly edition, and Claude schedules in Buffer. His words, on the weekly edition
+  design (pull request 143): "Yes take all recommendations - but Claude now in charge of Buffer scheduling not Codex".
+  The publication sends one email a week, "makeyourmindup weekly", Saturday 08:00 New York, only on his Approve for
+  send bound to the edition package's sha256; the Monday, Wednesday and Friday pieces go to the web and the app and
+  never email the whole list (R133). On the follow-up he chose "Codex, Substack step only": Codex on the worker keeps
+  only the edition's Substack editor step (`jobs/edition.md`, written and switched off until he turns it on), and
+  Claude schedules every Buffer post. The edition's links carry `utm_source=newsletter` (`specs/subscribe-route.json`,
+  `edition`); the Monday read takes the edition's numbers and names any series post that emailed more readers than
+  the opt-in section holds. Nothing was sent, posted, scheduled or spent.
 - 2026-11-26: Content-engine makes every asset; Growth grows the channel. His words, in the story-engine session:
   "I believe that growth should move all asset production to Content Engine. I see no point in having a separate
   repository produce specific assets. How can you accomplish this and ensure that this is updated absolutely
@@ -17,6 +37,29 @@
   route of 13 Nov (R126) and 19 Nov (captions). `invariants/boundary.json` assigns every asset kind to content-engine
   and `tests/test_production_boundary.py` fails if a renderer, template, font, image tool or caption writer comes back.
   Nothing was posted, sent or spent.
+- 2026-11-19: ManyChat Pro kept for the keyword-DM test. Asked whether to keep the makeyourmindup.ai workspace on Pro
+  when its trial ends on 27 Nov 2026, at $348 a year plus overages, Krish chose "Approve $348/year". Only that workspace
+  is used ("only use makeyourmindup.ai account, NOT the other one"). Instagram @makeyourmind.up is already connected
+  there. Any payment step ManyChat asks for is his click; no Codex brief touches billing. The Start here Story
+  (approved after he saw it) is posted from his phone: the worker's browser bridge cannot attach a downloaded file, and
+  Instagram web rarely offers a link sticker.
+- 2026-11-19: No Canva. Shown a Canva copy of the story template for Instagram's Start here highlight, Krish said "It
+  looks terrible and boring and off-brand, and components are cramped, and it doesn't have anything enjoyable about it.
+  It feels like you've not read any of my engines", then "canva drafts are always shitty, forget about canva". So this
+  engine makes no draft in Canva for any format (`social/guides/canva.md`, top): every still is built in code from the
+  house kit and the publication's real published artwork, and checked at full size before he sees it (lesson
+  `real-artwork-not-templates`). Both quotes are filed with his taste engine.
+- 2026-11-19: Instagram's profile gets an exit. Krish shared a 28-day read of @makeyourmind.up and asked this engine to
+  act on it as its growth lead. A live readback in the worker's Chromium found the funnel is paid: one boosted carousel
+  held 173 of 251 profile visits, and 14 unboosted posts earned 934 views and no follow
+  (`docs/reviews/2026-11-19-instagram-profile-leak.md`). He pinned three posts himself, approved the bio "Daily AI take.
+  Free newsletter ↓" with the three series lines (option A, word for word), and approved one closing line on the three
+  pinned captions, "The full breakdown lands free in the newsletter every Mon, Wed and Fri. Link in bio.". Codex saved
+  the bio and the Claude Duet caption and read them back; the two boosted posts' captions did not persist and are
+  held; the pins were not yet visible on desktop. Three lessons, two planned experiments (`ig-one-take-reel`,
+  `ig-profile-follow-reason`) and the guide's "Profile conversion" section record it. Same day, on the worker's tabs:
+  "close down the rest of the tabs so you don't waste all the compute. But you don't also close down tabs you need"
+  (`BROWSER.md`). Nothing was posted, boosted or spent.
 - 2026-11-17: Make Your Mind Up makes no dated-and-scored calls. His words: "I don't do dated-and-scored
   make-your-mind-up pieces because it felt quite tacky and gimmicky. I don't really have the clout such that my opinion
   can hold up in official scores.. Lets get rid of that from the cover page makeyourmindup repo and all documentation".
