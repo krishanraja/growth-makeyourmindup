@@ -62,6 +62,12 @@ what Codex reports. The Codex app on Krish's PC and its in-app browser belong to
 Make Your Mind Up. Every other line of this file still binds; where the section below says "the Codex in-app
 browser beside this chat", read "the worker's Chromium".
 
+Tabs (Krish, 2026-11-19: "close down the rest of the tabs so you don't waste all the compute. But you don't also close
+down tabs you need"): keep one tab per signed-in account the engine reads (Instagram, Meta Ad Center, Substack
+dashboard, Substack reader, TikTok Studio, TikTok Ads, YouTube Studio, X, Threads, the Drive asset folder), close
+everything else, and every Codex brief opens its own tab and closes it when done. Closing a tab never signs an
+account out: the logins live in the Chromium profile.
+
 ## Codex browser only (Ruling, Krish, 2026-10-24)
 
 Use the Codex in-app browser beside this chat, reusing its signed-in tabs.

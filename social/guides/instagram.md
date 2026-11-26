@@ -30,3 +30,18 @@ plus source-attributed subscribers where available. Missing metrics stay missing
 Select comparable posts and note topic/audience differences. No result is implied
 by a successful upload. Use the native audit for ongoing account health; do not
 infer profile, pin or creative-change authority from draft preparation.
+
+## Profile conversion (19 Nov 2026)
+
+Lessons `instagram-paid-carries-funnel`, `instagram-profile-exit` and `instagram-utility-follow-reason`;
+`docs/reviews/2026-11-19-instagram-profile-leak.md`.
+
+- Read every funnel number with boosted posts taken out. Instagram's account view mixes them, and on 19 Nov one
+  boosted carousel held 173 of 251 profile visits while 14 unboosted posts earned no follow.
+- Keep three pins that prove the follow reason (today: "Ten jobs you can hand to AI this week", "The UK number two",
+  "Claude Duet messages you first"). A pin change is Krish's yes.
+- The bio says what arrives and when, and its link stays the tagged `/subscribe` URL (`utm_content=bio`).
+- A caption that carries the piece's take names the newsletter as the payoff in its last line, in words approved
+  through the week's go-live. Never a bare "Follow for more" with the link in a comment.
+- Default organic format: the one-take Reel (experiment `ig-one-take-reel`). Carousels stay for saves, not reach.
+- No boost until a Reel brings tagged subscribers organically; a boost is then its own test on Krish's Yes.

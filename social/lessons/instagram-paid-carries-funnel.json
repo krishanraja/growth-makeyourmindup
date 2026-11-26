@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "instagram-paid-carries-funnel",
+  "category": "account",
+  "scope": [
+    "instagram"
+  ],
+  "status": "observed",
+  "finding": "On @makeyourmind.up the funnel numbers (profile visits, follows, saves) are carried by boosted posts; unboosted posts earn reach of about a thousand views a month and no follows. Read every account-level funnel number with the boosted posts taken out before calling it organic pull, and never compare it with an unboosted account.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": "docs/reviews/2026-11-19-instagram-profile-leak.md",
+    "observed_at": "2026-11-19",
+    "result": "30 days to 19 Nov: 251 profile visits, 173 of them on the boosted 'Ten jobs' carousel; 2 boosted posts 9,226 views, 28 follows, 19 saves; 14 unboosted posts 934 views, 0 follows, 0 saves; boosts about $95 in the window, 0 new Substack subscribers in the boost week."
+  },
+  "revisit_when": "A month with no boost: read organic visits, follows and link taps on their own.",
+  "supersedes": null
+}

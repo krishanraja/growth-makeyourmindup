@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "real-artwork-not-templates",
+  "category": "format",
+  "scope": [
+    "instagram",
+    "story-frame",
+    "story",
+    "quote-card",
+    "poll",
+    "scorecard",
+    "receipt-card"
+  ],
+  "status": "accepted",
+  "finding": "A still for Make Your Mind Up is built from the publication's own published artwork (real covers, real screenshots, real logos) in the house look: deep ink ground, series neon in its day's colour, Anton headlines on colour blocks, mono labels, the official mark. A text-only card from a generic template is rejected on sight, and a label is checked at full size, never judged from a thumbnail.",
+  "evidence": {
+    "kind": "user_ruling",
+    "ref": "CHANGES.md, 2026-11-19; .scratch/start-here/ (private)",
+    "observed_at": "2026-11-19",
+    "result": "Canva text-only Start here frame rejected as boring, off-brand and cramped, with 'STARTHERE' collapsed by the template's letter-spacing; the rebuild from the three real Mon, Wed and Fri covers in the house look was put to him the same day."
+  },
+  "revisit_when": "Krish approves or amends a still built this way; record his words beside it.",
+  "supersedes": null
+}

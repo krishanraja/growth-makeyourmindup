@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "lesson",
+  "id": "instagram-profile-exit",
+  "category": "channel",
+  "scope": [
+    "instagram"
+  ],
+  "status": "observed",
+  "finding": "A profile visit converts only when the profile continues what the visitor came for: pins that prove the follow reason, a bio that says what arrives and when, and a caption that names the newsletter step. With no pins, no highlights and no caption naming the newsletter, 251 visits gave 2 link taps even with a working tagged subscribe link.",
+  "evidence": {
+    "kind": "live_readback",
+    "ref": "docs/reviews/2026-11-19-instagram-profile-leak.md",
+    "observed_at": "2026-11-19",
+    "result": "Bio link opened /subscribe with utm_content=bio intact; 0 pinned posts, 0 highlights; 0 of 16 captions since 26 Oct named the newsletter; 2 external link taps in 30 days. Changed 19 Nov: bio follow reason saved and read back; the newsletter line saved on the Claude Duet Reel and held on the two boosted posts (the edit did not persist); Krish pinned three posts in the app, not yet visible on desktop."
+  },
+  "revisit_when": "26 Nov 2026, seven days after the fix: link taps per 100 organic profile visits against experiment ig-profile-follow-reason's bar of 5.",
+  "supersedes": null
+}
