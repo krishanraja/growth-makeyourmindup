@@ -23,7 +23,7 @@ The makeyourmindup growth engine: it plans, schedules, posts and measures the wo
 
 ## Who it is for and why it matters for Mindmake
 
-Senior commercial leaders who should be reading makeyourmindup. The publication is the front door to Mindmake.
+People who make the calls or make the work in the creative, arts, music, entertainment, media and sports industries (`docs/NORTH_STAR.md`, narrowed 26 Nov 2026). Start with `docs/V5-REBRAND.md`.
 
 ## Where it is right now (as of 2026-11-18)
 

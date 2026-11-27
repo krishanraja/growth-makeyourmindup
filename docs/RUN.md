@@ -1,5 +1,7 @@
 # Run sessions
 
+Read `docs/V5-REBRAND.md` first: the look, the promise, no series names, and the Saturday edition to all subscribers. Where this file disagrees, that one wins.
+
 Read first in every run session (`run pack` puts it atop each pack). Plan:
 `docs/plans/2026-10-27-engine-architecture.md` (Krish, 27 Oct).
 

@@ -21,10 +21,7 @@ measure whether they act ([Final Operating Doctrine]).
   more narrowly, his words win. Write to one of them at a time ([The Rule of One]).
 - **The purpose line**, locked: "I see what is coming before it is obvious
   and make it legible to people while it still counts."
-- **USP** ([The USP test]): For a leader who has to make AI calls early,
-  makeyourmindup shows one AI shift before it is obvious, three times a week,
-  because every piece follows who gets paid, opens up how it works and says
-  plainly where it leads (no dated calls: Ruling, Krish, 2026-11-17 and 2026-11-18).
+- **USP** ([The USP test]): the promise: **AI news for the creative industries, every morning.** Series names never appear on a public surface (`docs/V5-REBRAND.md`).
 - **Big idea:** see it while it still counts. Every asset carries that one
   idea, one emotion (the calm of seeing clearly, not alarm) and one action.
 
