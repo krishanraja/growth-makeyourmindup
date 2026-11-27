@@ -5,8 +5,7 @@ instructions in `AGENTS.md` and `CHANGES.md` take precedence. The goal is
 relevant readers who subscribe, find value, and stay. Reach and followers
 are discovery signals. They do not stand in for subscribers.
 
-The promise stays: **What's coming in AI, before it's obvious.**
-Monday: follow.the.money. Wednesday: under.the.hood. Friday: mind.the.gap.
+The promise: **AI news for the creative industries, every morning.** Series names never appear on a public surface (`docs/V5-REBRAND.md`).
 
 **Current (5 November 2026).** The seven engines below are the doctrine's
 growth levers. The work itself runs as four engines, one per session:

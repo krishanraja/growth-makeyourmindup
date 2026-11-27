@@ -15,9 +15,9 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 ## No branch is ever left unmerged (Ruling, Krish, 2026-11-26)
 
 Krish, 26 Nov 2026: "ensure stray branches may NEVER ever be left unmerged". Every session reads the open pull
-requests before it starts (), so it never works blind to unmerged work, and ends with its
+requests before it starts (`gh pr list --state open`), so it never works blind to unmerged work, and ends with its
 branch either merged (a ready pull request, never a draft left behind) or deleted. The stray guard
-(, every hour) enforces it: it deletes merged branches and branches whose pull
+(`.github/workflows/stray-guard.yml`, every hour) enforces it: it deletes merged branches and branches whose pull
 request was closed, opens a pull request for any branch idle six hours without one, marks drafts idle a day ready,
 merges every ready pull request whose CI is green, and lists whatever it cannot land in one issue, "Stray branches and
 pull requests". A red pull request on that list is fixed or closed the same day.
@@ -26,7 +26,7 @@ pull requests". A red pull request on that list is fixed or closed the same day.
 
 Krish locked the v5 look on 25 Nov ("s3h is great, lock v5") and asked that this engine carry all of the rebrand's work. `docs/V5-REBRAND.md` says what changed: the look and what is retired, the promise ("AI news for the creative industries, every morning."), no series names on new surfaces, the Saturday edition going to all subscribers ("substack weekly should be sent to ALL subscribers"), nothing sending until the Substack branding is v5, content-engine making every asset, and the social profiles and ManyChat work in flight. Where an older section below disagrees on the look, the copy or who makes what, that file wins.
 
-**Current (5 November 2026).** The work runs as four engines, one per session: read "Four engines" below before anything else. Make Your Mind Up outreach is this engine's and social engagement is the Engagement engine's; Krish enacts both in his own Codex sessions on the exact payload he approves, and only Mindmake's outreach stays with Control Center ("Outreach for Make Your Mind Up" below). Through the shadow week the existing automations, `jobs/daily-growth.md` and the GitHub workflows keep running. Krish's personal LinkedIn is growth-mindmake's since 13 November 2026, not this engine's ("Krish's personal LinkedIn is growth-mindmake's" below). Older sections below stay as dated evidence; where one says otherwise, those sections win.
+**Current (5 November 2026).** The work runs as four engines, one per session: read "Four engines" below before anything else. Make Your Mind Up outreach is this engine's and social engagement is the Engagement engine's; Krish enacts both in his own Codex sessions on the exact payload he approves, and only Mindmake's outreach stays with Control Center ("Outreach for Make Your Mind Up" below). Through the shadow week the existing automations, `jobs/daily-growth.md` and the GitHub workflows keep running. Krish's personal LinkedIn is growth-mindmake's since 13 November 2026, not this engine's ("Krish's personal LinkedIn is growth-mindmake's" below). Older sections below stay as dated evidence; where an older section says otherwise, this section and `docs/V5-REBRAND.md` win.
 
 ## Content-engine makes every asset; Growth grows the channel (Ruling, Krish, 2026-11-26)
 
@@ -551,17 +551,15 @@ the setup. Where the section below says a session runs on his own computer or sh
 
 ## What you are growing
 
-**makeyourmindup** is Krish's AI media channel: "What's coming in AI, before
-it's obvious. Three times a week I take one AI story apart: who gets paid,
-what's real, and where it leads. You make your mind up."
+**makeyourmindup** is AI news for the creative industries, every morning (`docs/V5-REBRAND.md`).
 
-| Day | Series | What it asks |
+| Day | Series (internal routing only; never shown) | What it asks |
 |---|---|---|
 | Monday | follow.the.money | who gets paid |
 | Wednesday | under.the.hood | how it really works |
 | Friday | mind.the.gap | where it leads (no dated calls: Rulings, Krish, 2026-11-17 and 2026-11-18) |
 
-Each piece is a Substack article plus a "VIDEO:" post, a 3-minute YouTube
+Each piece is a Substack article plus a "VIDEO:" post, a 5-minute YouTube
 video and a 90-second vertical cut (Shorts, Reels, TikTok, X).
 
 **One email a week (Ruling, Krish, 2026-11-25).** Subscribers get one email a

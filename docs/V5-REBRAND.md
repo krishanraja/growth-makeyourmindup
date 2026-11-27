@@ -2,6 +2,14 @@
 
 Written by the v5 rebrand session for this engine, at Krish's request on 26 Nov 2026: "ensure growth-makeyourmindup drives this session ... it has been upgraded with 100% of your and your sessions work". Read this before any Make Your Mind Up work. Where an older section of `AGENTS.md`, `docs/ACCOUNT-VOICE.md` or a plan says otherwise about the look, the copy or who makes what, this file wins until that section is rewritten.
 
+## Why it exists, why these industries, what makes it different
+
+(approved by Krish, 27 Nov 2026)
+
+- **Why it exists:** "makeyourmindup exists so the people who make the work, and the businesses around them, use AI rather than get used by it: what it lets them make, earn and express, and who gets paid."
+- **Why the creative industries:** "These industries run on creativity, and AI is changing how creative work makes money: who gets paid, what it costs, who wins the market. Our AI Music breakdown showed how much these readers want that explained."
+- **What makes it different:** "We don't hand you a verdict. Every piece climbs five whys from one story to how the money moves, so you make your own mind up. Positive about what AI lets makers do, honest about who gets paid."
+
 ## 1. The look is locked: v5 only
 
 Krish locked full look v5 on 25 Nov 2026 ("s3h is great, lock v5") and asked that everything before it be "unable to be accidentally used". Everything older is retired.
@@ -23,17 +31,18 @@ Krish locked full look v5 on 25 Nov 2026 ("s3h is great, lock v5") and asked tha
 - Fraunces for headlines on the site and the share cards.
 - Archivo for structure and video captions.
 - DM Mono for labels and data. It replaces IBM Plex Mono, which is retired.
-- The four v5 files are in content-engine `assets/fonts/makeyourmindup/`. Growth's old render kit (its fonts, brand PNGs and `render/KIT.md`) is deleted from this repository, and a guard keeps it from coming back (R132).
+- The v5 fonts (Anton, Archivo, Fraunces upright and italic, DM Mono regular and medium) are in content-engine `assets/fonts/makeyourmindup/`; the IBMPlexMono files in that folder are retired. Growth's old render kit (its fonts, brand PNGs and `render/KIT.md`) is deleted from this repository, and a guard keeps it from coming back (R132).
 
 **Marks:** content-engine `assets/brand/makeyourmindup/v5/`:
 
 | File | What it is |
 |---|---|
-| `d-face-off.svg` | The split-circle icon. |
-| `v4.svg` | The wordmark, MAKE YOUR MIND/UP with UP in mint. |
-| `v9.svg` | The horizontal lockup. |
-| `v10.svg` | The stacked lockup. |
-| `-ink` variants | For an ink ground. |
+| `d-face-off.svg` | The icon. Favicons, the Substack logo. |
+| `v4.svg` | The wordmark, on ink only. |
+| `v9.svg` | The horizontal lockup, on ink only (mastheads, email banner). |
+| `s3h.svg` | The square lockup with the icon as the O. Every profile picture, and the one wordmark on every video outro. |
+
+Retired, though the files are still in the folder: `v10.svg`, `v6.svg` and every `-ink` variant (the on-light versions).
 
 **Retired, never to be used again:**
 - every id in content-engine `config/retired-styles.json`;
@@ -70,7 +79,7 @@ Krish locked full look v5 on 25 Nov 2026 ("s3h is great, lock v5") and asked tha
 - **content-engine makes every asset:**
   - pieces, covers, thumbnails, carousels, memes, Notes images and copy, captions (written into the piece manifest), derived cuts and the weekly edition's render;
   - its v5 Library (`docs/ve/cards/library/`) is the one template source, merged as content-engine #984;
-  - covers go only through `scripts/library/make_covers.py`.
+  - covers go only through `scripts/covers/make_covers.py`.
 - **Growth grows the channel:** posting, Buffer scheduling, distribution, the subscribe route, the Substack editor step for the edition, measurement, experiments, channel strategy, discoverability (`docs/DISCOVERABILITY.md`) and the social profiles.
 - **Canva is retired:** "Canva is crap so we don't use that anymore".
 
@@ -101,7 +110,8 @@ The site's discoverability is this engine's job (`docs/DISCOVERABILITY.md`).
   - Record what each profile carries in content-engine `docs/AMPLIFICATION.md` ("The profiles every link lands on") and here.
 - **ManyChat:** the keyword-DM test (`docs/plans/2026-11-13-keyword-dm-test.md`, `docs/GET-GOING.md` Step 0.4).
   - Rule 5 and R07 still bind: one DM reply to someone who commented the keyword on that post, nothing else.
-  - The DM words came from the old piece format ("three things to do tomorrow"). Check them against the v5 piece, and get Krish's approval of the exact words before any flow goes live.
+  - The DM words quote the article's "3 things you can do tomorrow" section (content-engine rule 11, still enforced). Check them against the v5 piece and get Krish's approval of the exact words before any flow goes live.
+  - State (27 Nov 2026): the keyword flow is kept as Draft and nothing is live. The trial ended on 27 Nov; staying on Pro is spend and waits on Krish's yes.
 - **Old-look copy and assets in this repository** to rewrite or retire when touched:
   - the Mon/Wed/Fri and series lines in channel copy;
   - "AI, unpicked" bios.

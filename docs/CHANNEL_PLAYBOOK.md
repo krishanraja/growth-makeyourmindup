@@ -38,11 +38,9 @@ Ready-to-paste cadence block for [Substack About](https://home.makeyourmindup.ai
 > Wednesday: under.the.hood. I look at how it really works.
 > Friday: mind.the.gap. I look at where it leads.
 
-Suggested subscribe benefit text, preserving the existing promise:
+Suggested subscribe benefit text:
 
-> What's coming in AI, before it's obvious.
-> Three times a week I take one AI story apart: who gets paid, what's real,
-> and where it leads. You make your mind up.
+> The promise: **AI news for the creative industries, every morning.** Series names never appear on a public surface (`docs/V5-REBRAND.md`).
 
 Use the existing subscribe control with a clear label such as "Get the next
 breakdown". Do not promise free or paid benefits that have not been verified.
