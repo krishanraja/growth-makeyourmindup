@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/growth-makeyourmindup
 product: makeyourmindup growth engine
-as_of: 2026-11-18
-head: c775b12
+as_of: 2026-11-27
+head: e8cde21
 lifecycle: live
 production_url: none
 state_doc: README.md
@@ -25,7 +25,7 @@ The makeyourmindup growth engine: it plans, schedules, posts and measures the wo
 
 People who make the calls or make the work in the creative, arts, music, entertainment, media and sports industries (`docs/NORTH_STAR.md`, narrowed 26 Nov 2026). Start with `docs/V5-REBRAND.md`.
 
-## Where it is right now (as of 2026-11-18)
+## Where it is right now (as of 2026-11-27)
 
 <!-- north-star-state {"week_of":"2026-11-09","week_target":162,"current":0,"current_as_of":"2026-11-15","current_source":"Substack new-subscriber emails to Krish's inbox, New York week of 2026-11-09: 0 new, 0 organic; counted by Control Center","urgency":5,"urgency_reason":"under 40% of the week's target two weeks running (0% now)"} --> **North Star number: U5, stalled.** New publication subscribers a week from organic posts and shares, zero paid: 0, against 162 in the week of 9 November 2026, on the way to 2,500 by 28 December 2026. Everything else pauses unless it moves the number.
 
@@ -33,31 +33,31 @@ The last reading is the whole week of 2 November: 1 new subscriber of 86, all so
 
 Lifecycle: live. The detail is in `README.md`.
 
-- The engine can consult divergent-thinker through Control Center (engine/divergent.py): three unconventional recovery plays at U4 or U5 when the runner proposes nothing, checked against the walls and the copy lint before the top one is asked; a zero-call hook score before the weekly mix plan that flags repeated or obvious hooks; a record of what went live; and an at-will command, `python growth.py divergent <op>`, for any session to map, provoke, challenge, diverge, score or record by hand (AGENTS.md, "At will"). All of it is dormant until Control Center serves features.divergent (control-center#963). (2026-11-18)
-- Auto-merge now merges on either copy of the check workflow (push or pull_request). Before, when the push-event run finished last it was skipped, and a green pull request never merged (growth-heartside #117, growth-makeyourmindup #129 on 17 Nov). (2026-11-17)
-- The humour engine is on call here: `python growth.py humour check|compare|doctor` (engine/humour.py), holding three house rules (no joke at the poster, no humour on Mindmake, no joke that needs explaining), with AGENTS.md saying when to consult it. (2026-11-17)
-- Every Make Your Mind Up post from 5 Oct to 14 Nov (139, read from Buffer) is analysed in docs/reviews/2026-11-16-what-works.md, with four new lessons: reach, not polish, is the constraint; Instagram video that opens on one named thing holds people; a written Substack Note brought the only subscriber; Threads and X video earn almost nothing. Four posts still look paid, unconfirmed, because Codex could not reach the browser. (2026-11-16)
-- AGENTS.md says where each kind of Codex work runs (Ruling, Krish, 2026-11-15): visual builds are content production, queued as cards from any session and built by his PC's lane, never shown in Codex Desktop; social legwork is started only from a Claude session on his own computer, through scripts/codex_thread.mjs, so it shows in his Codex Desktop app. (2026-11-15)
-- `growth.py run paid audit` reads paid reach apart from organic interest, read only (R131): on 15 Nov's Buffer read it found the same four posts that look paid as the hand review (TikTok and YouTube 11 Nov, YouTube and Facebook 13 Nov), none with a boost reading. HyperFrames and Claude Ads were evaluated and neither is installed (docs/reviews/2026-11-15-hyperframes-and-claude-ads.md); the slideshow video job keeps its seconds with mixed frame sizes. (2026-11-15)
-- scripts/codex_thread.mjs carries the canonical header (ai-harness holds the source, byte for byte, since Krish approved the visible Codex sessions proposal), and AGENTS.md says so. (2026-11-15)
-- the branch sweep takes an approved list (branch@sha) on a hand run and deletes each named branch only at that exact commit, skipping and logging anything else; the weekly run is unchanged. Copied from ai-harness's canonical script and workflow. (2026-11-15)
+- The v5 docs now lead a cold session to the rebrand: RUN.md, AGENTS.md, PLAYBOOK.md, CHANNEL_PLAYBOOK.md and COPY-DOCTRINE.md point at docs/V5-REBRAND.md and the promise, and V5-REBRAND.md carries the right marks, fonts, covers script, ManyChat state and Krish's approved positioning lines (27 Nov 2026). (2026-11-27)
+- docs/V5-REBRAND.md now names Archivo as a v5 face (structure and video captions) beside Anton, Fraunces and DM Mono; only IBM Plex Mono is retired. (2026-11-26)
+- This engine now carries the makeyourmindup v5 rebrand in docs/V5-REBRAND.md, read first from AGENTS.md: the locked look and what is retired, the daily Edition and its promise, no series names on new surfaces, the Saturday edition to all subscribers (Krish, 26 Nov), nothing sent until Substack's branding is v5, content-engine making every asset, and the social profiles and ManyChat work in flight. (2026-11-26)
+- docs/V5-REBRAND.md section 7 now says the v5 profile set is final, in Drive 1 Brand kit (permanent) > Channel art and in the makeyourmindup brand kit zip under Channel art/, and that content-engine scripts/channel-kit/ is retired. (2026-11-26)
+- docs/BRAND-KIT.md and docs/ASSET-STORAGE.md describe the v5 brand kit in Drive: one folder, 1 Brand kit (permanent), with Channel art inside it; 2 Channel art (permanent) is retired and everything older is in _Archive / 2026-11-26 v4 brand (retired, do not use). (2026-11-26)
+- No branch is left unmerged: the hourly stray guard (.github/workflows/stray-guard.yml) deletes merged and closed-PR branches, opens a pull request for any branch idle six hours, marks drafts idle a day ready, merges green ones and lists the rest in one issue; AGENTS.md tells every session to read open pull requests first and land or delete its branch. (2026-11-26)
+- tests/test_lane_docs.py no longer checks the links inside the krish-canon block, which is rendered from ai-harness and names files in other repositories, so the canon sync pull request can pass. (2026-11-26)
+- Growth grows the channel and makes no asset: content-engine makes every asset and caption (Krish, 26 Nov), Growth's render kit, Canva lane and caption writer are deleted, a production boundary guard (R132) keeps them out, and the North Star reader is the creative, arts, music, entertainment, media and sports industries. (2026-11-26)
 
 ## What changed recently
 
+- 2026-11-27 docs/V5-REBRAND.md marks table, fonts, make_covers path, DM words and ManyChat state; the reader in NOW.md; the stray-branch rule's lost names in AGENTS.md.
+- 2026-11-19 Krish's 28-day Instagram read, checked live on the worker; he approved the bio and the caption line word for word.
+- 2026-11-18 Ruling (Krish, 2026-11-18): "i have abandoned the prediction format, it feels lame"; the copy doctrine, channel playbook, daily pack, series table and hook families drop dated calls and the calls record, and content-engine, the site's brand-kit builder and ai-harness's content-corpus skill get the same change in their own pull requests. Krish asked (18 Nov) to pick up the growth push; comments under media accounts are now an observed dead end (social/lessons/media-account-comments.json) and Substack Live co-hosting facts are recorded (social/lessons/substack-live-cohost.json).
+- 2026-11-18 render/templates/carousel-body.html, render/templates.json, render/KIT_RULES.md, engine/run/kits.py, tests/test_render_templates.py, tests/test_piece_kits.py.
+- 2026-11-17 Ruling (Krish, 2026-11-17): no dated-and-scored calls. Offer 3 (the scored call) is replaced by the live disagreement. Fix C7, the playbook scoreboard row and item 7 of the content-engine brief are withdrawn, and the copy doctrine no longer leans on checkable calls. The cover's scoreboard is removed in krishanraja/makeyourmindup PR 48.
+- 2026-11-16 Comment drafts now follow krish-voice humour.md and comment-evidence.md (Krish, 16 Nov: "They're too pristine, not sharp enough, and not rough and human enough."). Krish asked for an aggressive 7-day push (16 Nov): the analysis first, then a comment campaign approved in batches in Codex, and a boost test on the top performers, each boost on his Yes.
 - 2026-11-17 engine/humour.py, engine/control_center.py (Client.humour), growth.py, tests/test_humour.py, requirements-humour*.txt, AGENTS.md, docs/ENGAGEMENT-LOOP.md, CHANGES.md.
 - 2026-11-16 Krish asked for an aggressive 7-day push (16 Nov): the analysis first, then a comment campaign approved in batches in Codex, and a boost test on the top performers, each boost on his Yes.
 - 2026-11-15 Krish asked to improve automated creative production and advertising analysis, with ad account changes draft-only and no launches or budget changes.
 - 2026-11-15 copied from content-engine (krishanraja/content-engine#719), where it was tested live on 15 Nov.
-- 2026-11-15 Krish, 15 Nov: "the thumbnail is ridiculously poor, and that must never be the case"; the cover did not look like a front cover; the cards were bland, off centre and too short to follow; the POV meme was not centred.
-- 2026-11-14 Fleet integration items I-09 and I-14, this repository's halves: tolerant readers behind flags, nothing made, scheduled or posted.
-- 2026-11-14 Fixes from the fleet integration audit of 14 November 2026 (gmymu-1 to gmymu-6, gha-1, ai-cost-4): hardening and de-duplication only, nothing drafted, scheduled or posted.
-- 2026-11-13 Krish ruled that Saturday's post, and all vertical content, goes to all five; Threads and X now take carousels and Threads takes shorts.
-- 2026-11-13 The calendar's four weekly LinkedIn drafts and its LinkedIn cap are gone, the engagement queue is X, TikTok and Instagram, the handoff and release hold a LinkedIn slot before reading its draft, a week packet holds a LinkedIn slot and never names it in the ask, a tap opening a linkedin.com or lnkd.in page is refused whatever platform it claims, and LinkedIn's Buffer channel is no longer pinned and is refused by id (seven pinned channels), by the Buffer subscribe gate hook too, at every urgency. An edit goes by the channel its post was read on (a hook records it; an unread post's edit waits for get_post), an Engagement item is LinkedIn's by the page it opens, a page is read as a browser reads its host, the board tick never ticks LinkedIn, a go-live still waiting with a LinkedIn line is proposed again without it (only the 10 newest reports are looked at, the most Control Center serves, and the runner says so when that page is full), and the measure job, the learn job and the ledger still judge LinkedIn posts from before the handover, with no hold. AGENTS.md, CHANGES.md, docs/PUBLISHING-AUTHORITY.md and R125.
-- 2026-11-13 Krish asked for an uplifting carousel on AI correcting past mistakes, then rebuilt it from his Perplexity research, then put the wider piece "The Great Recount" (human plus AI beats either alone) on Fri 20 Nov. Content-engine #627 moved the data-centres piece forward to Tue 17 Nov.
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-18): Once control-center#963 merges and features.divergent is on, read the next runner report for the recovery play and the measure job's "recorded" line.
+- Next (2026-11-27): Krish decides whether to stay on ManyChat Pro (the trial ended 27 Nov) and approves the exact DM words before any flow goes live.
 - Waiting on Krish (11 November): run Tasks 2 and 4 of the Cowork subscriber-push brief, the subscribe surfaces and the ranked swap list for Acquisition (`docs/briefs/2026-11-11-cowork-substack-subscriber-push.md`). Its Task 1 reading is now the weekly subscriber job (`jobs/subscribers.md`, first run 12 November) and its Task 3 profile links are the browser audit's (`jobs/channel-audit.md`, approved 12 November).
 - Waiting on Krish (10 November): his yes or no on one outreach draft at his gate, a recommendation ask to Nate's Newsletter. Its author, Nate B. Jones, wrote the post it cites, read in full; it passed `growth.py check` and the voice check. He sends it from his own Codex session, on the exact draft he approves. Three more are held, not at his gate, until their source is read in full: pitches to Claire Vo (How I AI) and Dan Turchin (AI and the Future of Work), and an ask to Gennaro Cuofano (The Business Engineer). Rows are in `lists/swaps.md` and `lists/pitches.md`; exact words stay in the ignored `.scratch/`.
 - Waiting on Krish (10 November): two rulings, nothing built until he gives them. At U5, may the swaps and pitches jobs research more than three a run (`intensity.json` raises only posts and engagement taps)? Is one honest follow-up, seven or more days after no reply, allowed under "no follow chasing" (rule 5)? The third question, whether Substack shows subscribers per Note, was answered by the 12 November read: it found per-item subscriber metrics for posts and for Notes (two items inspected, not the whole week).
@@ -65,7 +65,7 @@ Lifecycle: live. The detail is in `README.md`.
 - Waiting on Krish (29 October, not re-checked since): six set-up answers. The Canva Cowork prompt (retired with the Canva lane on 26 November); the Substack handle (@mindmake belongs to another profile named Mindmake); the Buffer plan purchase, his click; whether the blind send-test reader gets the North Star persona (`send_test.reader` in `social/share.json`) and whether share asks are refused beyond snackable posts (`share_cta_scope`); and his own handles and address that spell his name, which public copy can no longer carry.
 - Waiting on Krish (11 November, optional): one instruction from Control Centre's Engine drawer, to prove protocol 1.20.0 live end to end. The runner acks it received, then a workspace job or an engine session acks started, done or blocked.
 - Open elsewhere: the GA4 paid event name (`invariants/ga4.json`; `sign_up` is verified, 12 November), and the Wave 2 fields Control Center was asked to name on 29 October, not re-checked since (`docs/briefs/2026-10-29-wave2-content-engine-and-control-center.md`).
-- North Star check (2026-11-18): holds.
+- North Star check (2026-11-27): holds.
 
 ## Read next
 
