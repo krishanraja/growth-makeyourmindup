@@ -1,3 +1,0 @@
-Status: The revenue desk adapter is in (Ruling, Krish, 2026-11-24): config/revenue-desk.json declares the money path from post to renewal, where each step is read in this engine, gross apart from net retention by cohort, and that a discount is the last lever, always traded for something. Renewal and cohort retention are measure first, since no field counts renewals or paid cancellations yet. Bands are unset assumptions that bind only after Krish's yes, and spend_authority is none. tests/test_revenue_desk.py checks the adapter parses and its sources exist.
-Next: add renewal and paid cancellation counts by first-paid month to the weekly Substack read (jobs/subscribers.md), counts only, so the renewal step leaves measure first.
-North Star check (2026-11-24): holds.
