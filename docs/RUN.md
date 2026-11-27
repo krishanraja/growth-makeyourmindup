@@ -1,17 +1,16 @@
 # Run sessions
 
-Read `docs/V5-REBRAND.md` first: the look, the promise, no series names, and the Saturday edition to all subscribers. Where this file disagrees, that one wins.
-
-Read first in every run session (`run pack` puts it atop each pack). Plan:
-`docs/plans/2026-10-27-engine-architecture.md` (Krish, 27 Oct).
+Read `docs/V5-REBRAND.md` first (look, promise, no series names, Saturday
+edition to everyone); it wins where this file disagrees. Then this
+file, atop each `run pack`. Plan: `docs/plans/2026-10-27-engine-architecture.md`
+(Krish, 27 Oct).
 
 ## What a run session does
 
 A run carries one signed spec (`growth-run-spec/1`) from draft to verdict:
 a `week`, one published `piece` (days 0 to 7) or one `express` idea. Krish
 signs exact payloads, or a concept's idea and mock (R101); the engine releases
-exactly that, reads it back and measures it. LinkedIn is growth-mindmake's.
-Nothing is spent.
+exactly that, reads it back and measures it.
 
 A session does one job, then ends at a gate packet:
 
@@ -131,7 +130,7 @@ Draft counts are never outcomes.
 Control Center shows one ask per engine at a time. Release checks each slot's
 bytes against its signed manifest line; a file in 4 Growth is never trusted.
 
-## Budgets (provisional until the Phase 0 baseline)
+## Budgets (provisional)
 
 - Measure up to 20 calls, express up to 15; 0.5M tokens each.
 - Krish: 20 minutes a weekday, 30 on Sunday; gates first.
