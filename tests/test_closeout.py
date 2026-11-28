@@ -225,7 +225,11 @@ class RepositoryNotesTests(unittest.TestCase):
     def test_the_fold_job_runs_on_main_only_and_writes_only_its_files(self):
         text = (ROOT / '.github' / 'workflows' / 'check.yml').read_text(encoding='utf-8')
         fold = text[text.index('  fold:'):]
-        for needle in ("if: github.event_name == 'push' && github.ref == 'refs/heads/main'", 'contents: write',
+        # Main pushes, plus an hourly schedule and a manual run, because merges made with the Actions token start
+        # no push workflow (NOW.md sat unfolded 18 to 27 Nov 2026). Every attempt resets to origin/main first.
+        self.assertIn("cron: '23 * * * *'", text[:text.index('jobs:')])
+        self.assertIn('git reset --quiet --hard origin/main', fold)
+        for needle in ("if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'", 'contents: write',
                        'python growth.py closeout fold', 'git add -A -- NOW.md now-notes docs/history/LOG.md',
                        'docs(closeout): fold closeout notes into NOW.md'):
             self.assertIn(needle, fold)
