@@ -4,6 +4,18 @@ Newest first. Entries are written by the docs steward (`krishanraja/ai-harness`,
 and by people doing the same job by hand. Nothing in this file describes current behaviour; `NOW.md` and
 `README.md` do. Text moved here from `NOW.md` keeps its wording verbatim.
 
+## 2026-11-28
+
+Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
+
+From "What changed recently":
+
+- 2026-11-15 copied from content-engine (krishanraja/content-engine#719), where it was tested live on 15 Nov.
+
+From "Where it is right now":
+
+- Growth grows the channel and makes no asset: content-engine makes every asset and caption (Krish, 26 Nov), Growth's render kit, Canva lane and caption writer are deleted, a production boundary guard (R132) keeps them out, and the North Star reader is the creative, arts, music, entertainment, media and sports industries. (2026-11-26)
+
 ## 2026-11-27
 
 Moved verbatim from `NOW.md` (closeout fold, to keep NOW.md under its byte cap).
