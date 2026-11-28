@@ -13,7 +13,8 @@ name: Auto-merge
 # auto-merge guard test.
 #
 # A merge made with the Actions token starts no push workflow on main, so a
-# closeout note it carries folds on the next push to main.
+# closeout note it carries folds on the next push to main or check.yml's
+# hourly fold, whichever comes first.
 # Either copy of "check" may merge (fixed 2026-11-17). A push to a pull
 # request's branch starts two check runs, one for push and one for
 # pull_request. Whichever finishes first sees the other still running and

@@ -1,9 +1,17 @@
 name: check
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  # Pull requests merged with the Actions token (auto-merge, the stray guard) start no push workflow, so the
+  # fold also runs every hour on main and on demand (NOW.md sat unfolded 18 to 27 Nov 2026).
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
   self-test:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -30,8 +38,9 @@ jobs:
     # A closeout note that reaches main is folded into NOW.md and removed, so pull requests never edit NOW.md
     # at once (Ruling, Krish, 2026-10-28). ai-harness's administration publisher excludes this repository,
     # so the fold is this repository's own (engine/closeout.py). Every attempt folds afresh from the newest
-    # main. A push made with the job's token starts no workflow, so the fold never folds itself.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # main. A push made with the job's token starts no workflow, so the fold never folds itself. The hourly
+    # schedule catches every merge made with the Actions token.
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
