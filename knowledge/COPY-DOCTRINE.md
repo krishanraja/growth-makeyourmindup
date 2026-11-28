@@ -12,13 +12,16 @@ measure whether they act ([Final Operating Doctrine]).
 
 ## The offer, the reader, the promise
 
-- **The offer** is a free subscription: one AI story taken apart three times
-  a week. Monday follow.the.money (who gets paid), Wednesday under.the.hood
-  (how it really works), Friday mind.the.gap (where it leads, with a dated
-  call). Each piece also comes as a 3-minute video and a 90-second cut.
-- **The reader** is the North Star's "right leaders": people who have to
-  decide what to do about AI before the picture is clear. If Krish names them
-  more narrowly, his words win. Write to one of them at a time ([The Rule of One]).
+- **The offer** is a free subscription: AI news for the creative industries,
+  every morning, in the daily Edition at makeyourmindup.ai; pieces built as a
+  5 Whys ladder from one story to how the money moves; and one email every
+  Saturday to every subscriber. Each piece also comes as a 5-minute video and
+  short cuts. Series names (follow.the.money, under.the.hood, mind.the.gap) are
+  internal routing and never appear in copy (`docs/V5-REBRAND.md`).
+- **The reader** is the people who make the calls or make the work in the
+  creative, arts, music, entertainment, media and sports industries
+  (`docs/NORTH_STAR.md`, narrowed by Krish on 26 Nov 2026). Write to one of
+  them at a time ([The Rule of One]).
 - **The purpose line**, locked: "I see what is coming before it is obvious
   and make it legible to people while it still counts."
 - **USP** ([The USP test]): the promise: **AI news for the creative industries, every morning.** Series names never appear on a public surface (`docs/V5-REBRAND.md`).
@@ -31,14 +34,14 @@ Find the weakest link and fix only that ([The persuasion chain]).
 
 | Link | The reader asks | Our answer |
 |---|---|---|
-| Relevance | Is this for me? | Name the decision a leader faces, in the first line |
+| Relevance | Is this for me? | Name the maker's or the business's stake, in the first line |
 | Attention | Why notice it? | The sourced finding itself, not a tease |
 | Desire | Do I want it? | Seeing the shift before peers do, while it still counts |
-| Difference | Why this one? | Who gets paid, how it works, where it leads |
+| Difference | Why this one? | No verdict handed down: five whys from one story to how the money moves |
 | Belief | Will it be right? | Facts from the published piece, each with its source |
-| Value | Worth my inbox? | Free, one story, plain words, three fixed days |
+| Value | Worth my inbox? | Free, plain words, one email a week, on Saturday |
 | Safety | What if it isn't? | Free and easy to leave; say only what is true |
-| Timing | Why now? | The story is live now, or the call's date is near |
+| Timing | Why now? | The story is live now |
 | Action | What do I do? | One next step from `journeys.json` |
 
 ## Awareness, sophistication and the lead
@@ -53,25 +56,26 @@ Schwartz's awareness levels ([Breakthrough Advertising]) and the six leads
 | Substack front door, About, welcome | Solution or product aware | Promise, then Offer |
 | Pitches, swaps, partners | Product aware peers | The direct outreach structure (below) |
 
-Series and lead: follow.the.money and under.the.hood suit a Secret (a true
-mechanism or money flow most people miss). mind.the.gap suits a Proclamation
-(where the pattern leads, never a dated call). A Story opening must reach the point within two sentences.
+Lead by what the piece's ladder lands on: a money flow or a mechanism most
+people miss suits a Secret; where the pattern leads suits a Proclamation, never
+a dated call. A Story opening must reach the point within two sentences.
 
-**Sophistication is high.** Leaders have heard every louder AI claim. Do not
+**Sophistication is high.** These readers have heard every louder AI claim. Do not
 shout harder. Show the mechanism (who gets paid, how it works) and identify
-with the reader's actual decision ([Breakthrough Advertising], sophistication).
+with what the reader actually stands to make or lose ([Breakthrough Advertising], sophistication).
 
 ## Value Equation for a free subscription
 
 ([$100M Offers], [Phase 5: Engineer the offer])
 
-- **Dream outcome:** make the right AI call earlier than the room does.
+- **Dream outcome:** use AI rather than get used by it: know what it lets you
+  make, earn and express, and who gets paid.
 - **Likelihood:** named sources, the mechanism shown, every number naming whoever
   produced it. No dated or scored calls (Ruling, Krish, 2026-11-17).
 - **Time delay:** the first useful finding is in the post itself. The welcome
   gives one start-here read straight away.
-- **Effort:** one story per piece, plain words, a 3-minute or 90-second
-  version. Exactly three a week, so the inbox cost is known.
+- **Effort:** one story per piece, plain words, a 5-minute video or a short
+  cut. One email a week, on Saturday, so the inbox cost is known.
 
 Bonuses, guarantees and scarcity are out: the honest enhancer is a useful
 first read and a clear cadence.
